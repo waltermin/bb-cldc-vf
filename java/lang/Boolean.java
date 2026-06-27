@@ -1,0 +1,30 @@
+package java.lang;
+
+public final class Boolean {
+   private boolean value;
+   public static final Boolean TRUE;
+   public static final Boolean FALSE;
+
+   public Boolean(boolean var1) {
+      this.value = var1;
+   }
+
+   public final boolean booleanValue() {
+      return this.value;
+   }
+
+   @Override
+   public final String toString() {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   @Override
+   public final int hashCode() {
+      return this.value ? 1231 : 1237;
+   }
+
+   @Override
+   public final boolean equals(Object var1) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+}

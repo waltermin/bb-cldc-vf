@@ -1,0 +1,91 @@
+package net.rim.device.internal.ui.component;
+
+import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldLabelProvider;
+import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.text.TextRect;
+import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.StringProvider;
+
+public class PropertyField extends Field implements FieldLabelProvider {
+   private TextRect _label = (TextRect)(new Object(this));
+   private Object _value;
+   private TextRect _text = (TextRect)(new Object(this));
+   private static Tag TAG;
+   private static Tag TAG_LABEL;
+   private static final int PADDING;
+
+   public void setValue(Object var1) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public String getName() {
+      return this.getLabel();
+   }
+
+   public Object getValue() {
+      return this._value;
+   }
+
+   @Override
+   public void setLabel(String var1) {
+      this._label.setText(var1);
+      this.updateLayout();
+   }
+
+   @Override
+   public void setLabelStringProvider(StringProvider var1) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   @Override
+   public String getLabel() {
+      return (String)this._label.getText();
+   }
+
+   public PropertyField(String var1, String var2, long var3) {
+      super(var3);
+      this.setTag(TAG);
+      this._label.setTag(TAG_LABEL);
+      this._label.setText(var1);
+      this.setValue(var2);
+   }
+
+   @Override
+   protected void layout(int var1, int var2) {
+      this._label.layout(var1, var2);
+      this._label.setPosition(0, 0);
+      this._text.layout(var1, var2);
+      if (!ThemeManager.getActiveTheme().isLabelOnOwnLine() && this._label.getWidth() + this._text.getWidth() <= var1) {
+         this._text.setPosition(var1 - this._text.getWidth(), 0);
+      } else {
+         this._text.setPosition(0, this._label.getHeight());
+      }
+
+      this.setExtent(var1, this._text.getExtent().Y2());
+   }
+
+   @Override
+   protected void paint(Graphics var1) {
+      this._label.paintSelf(var1);
+      this._text.paintSelf(var1);
+   }
+
+   @Override
+   protected void applyTheme() {
+      super.applyTheme();
+      this._label.applyTheme();
+      this._text.applyTheme();
+   }
+
+   public PropertyField(String var1, String var2) {
+      this(var1, var2, 18014398509481984L);
+   }
+
+   public PropertyField() {
+      super(18014398509481984L);
+      this.setTag(TAG);
+      this._label.setTag(TAG_LABEL);
+   }
+}

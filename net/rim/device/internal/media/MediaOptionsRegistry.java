@@ -1,0 +1,43 @@
+package net.rim.device.internal.media;
+
+import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.internal.util.OptionsRegistry;
+import net.rim.device.internal.util.OptionsRegistry$ParameterDefinition;
+
+public class MediaOptionsRegistry extends OptionsRegistry {
+   private static final long GUID;
+   public static final long REPEAT_OPTION_KEY;
+   public static final long SHUFFLE_OPTION_KEY;
+   public static final long SHUFFLE_SONGS_OPTION_KEY;
+   public static final long FULLSCREEN_OPTION_KEY;
+   public static final long VOLUME_BOOST_MODE_KEY;
+   public static final long SIM_CARD_IMSI_KEY;
+   public static final long VOLUME_BOOST_DONT_ASK_KEY;
+   public static final long TURN_OFF_AUTO_BACKLIGHT;
+
+   public static MediaOptionsRegistry getInstance() {
+      MediaOptionsRegistry var0 = (MediaOptionsRegistry)ApplicationRegistry.getApplicationRegistry().get(-6531603410989162255L);
+      if (var0 == null) {
+         var0 = new MediaOptionsRegistry();
+         ApplicationRegistry.getApplicationRegistry().replace(-6531603410989162255L, var0);
+      }
+
+      return var0;
+   }
+
+   private MediaOptionsRegistry() {
+      super(-6531603410989162255L);
+      this.initialize();
+   }
+
+   private void initialize() {
+      this.define(8428678949875667391L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(-7071091113559016691L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(-2846908971875712627L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(-4212305096992551720L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(2886183832722201160L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(-811168513825316359L, (OptionsRegistry$ParameterDefinition)(new Object(-1, Integer.MIN_VALUE, Integer.MAX_VALUE)));
+      this.define(-4387502259448276168L, (OptionsRegistry$ParameterDefinition)(new Object(false)));
+      this.define(-1314075862077144981L, (OptionsRegistry$ParameterDefinition)(new Object(true)));
+   }
+}

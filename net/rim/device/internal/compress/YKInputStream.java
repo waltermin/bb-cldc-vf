@@ -1,0 +1,126 @@
+package net.rim.device.internal.compress;
+
+import java.io.InputStream;
+
+public final class YKInputStream extends InputStream {
+   private InputStream _inputStream;
+   private byte[] _currentChunk;
+   private int _currentOffset;
+   private byte[] _inputBuffer;
+   private YKDecode _decode;
+   private boolean _isClosed;
+
+   public YKInputStream(InputStream var1) {
+      this(var1, 4096);
+   }
+
+   public YKInputStream(InputStream var1, int var2) {
+      if (var1 != null && var2 >= 1024) {
+         this._inputStream = var1;
+         this._inputBuffer = new byte[var2];
+         this._decode = new YKDecode(false);
+      } else {
+         throw new Object();
+      }
+   }
+
+   @Override
+   public final synchronized int read() {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
+   }
+
+   @Override
+   public final synchronized int read(byte[] var1, int var2, int var3) {
+      if (var1 == null) {
+         throw new Object();
+      }
+
+      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
+         if (this._isClosed) {
+            throw new Object();
+         }
+
+         if (var3 == 0) {
+            return 0;
+         }
+
+         int var4 = 0;
+
+         while (var3 > 0) {
+            if (this._currentChunk != null && this._currentOffset < this._currentChunk.length) {
+               int var5 = Math.min(this._currentChunk.length - this._currentOffset, var3);
+               System.arraycopy(this._currentChunk, this._currentOffset, var1, var2, var5);
+               this._currentOffset += var5;
+               var2 += var5;
+               var4 += var5;
+               var3 -= var5;
+            } else if (!this.readNextChunk()) {
+               if (var4 > 0) {
+                  return var4;
+               }
+
+               return -1;
+            }
+         }
+
+         return var4 > 0 ? var4 : -1;
+      } else {
+         throw new Object();
+      }
+   }
+
+   public final synchronized byte[] saveContextMap() {
+      if (this._isClosed) {
+         throw new Object();
+      } else {
+         return this._decode.getContextMap();
+      }
+   }
+
+   public final synchronized void loadContextMap(byte[] var1) {
+      if (this._isClosed) {
+         throw new Object();
+      }
+
+      this._decode.loadContextMap(var1);
+   }
+
+   public final synchronized void loadSideData(InputStream var1) {
+      byte[] var2 = new byte[4096];
+
+      for (int var3 = var1.read(var2); var3 >= 0; var3 = var1.read(var2)) {
+         if (var3 > 0) {
+            this._decode.yk_load_side_data(var2, 0, var3);
+         }
+      }
+   }
+
+   @Override
+   public final synchronized int available() {
+      if (this._isClosed) {
+         throw new Object();
+      } else {
+         return this._currentChunk != null ? this._currentChunk.length - this._currentOffset : 0;
+      }
+   }
+
+   @Override
+   public final void close() {
+      throw new RuntimeException("cod2jar: exception table");
+   }
+
+   private final boolean readNextChunk() {
+      if (this._isClosed) {
+         throw new Object();
+      }
+
+      int var1 = this._inputStream.read(this._inputBuffer);
+      if (var1 < 0) {
+         return false;
+      }
+
+      this._currentChunk = this._decode.yk_decode(this._inputBuffer, 0, var1);
+      this._currentOffset = 0;
+      return true;
+   }
+}
