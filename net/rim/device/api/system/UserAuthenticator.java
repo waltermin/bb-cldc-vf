@@ -5,7 +5,7 @@ public class UserAuthenticator {
       throw null;
    }
 
-   public boolean initialize(String var1) {
+   public boolean initialize(String _1) {
       throw null;
    }
 
@@ -17,7 +17,7 @@ public class UserAuthenticator {
       throw null;
    }
 
-   public boolean authenticate(String var1) {
+   public boolean authenticate(String _1) {
       throw null;
    }
 
@@ -29,7 +29,7 @@ public class UserAuthenticator {
       throw null;
    }
 
-   public boolean setStateData(byte[] var1) {
+   public boolean setStateData(byte[] _1) {
       throw null;
    }
 
@@ -37,7 +37,7 @@ public class UserAuthenticator {
       throw null;
    }
 
-   public Object getInformation(long var1, Object var3, Object var4) {
+   public Object getInformation(long _1, Object _3, Object _4) {
       throw null;
    }
 

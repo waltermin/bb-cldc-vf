@@ -66,8 +66,8 @@ public final class NvStore {
 
    private static final native boolean writeDataInternal(int var0, byte[] var1, int var2, int var3);
 
-   private static final boolean isContentProtected(int var0) {
-      switch (var0) {
+   private static final boolean isContentProtected(int field) {
+      switch (field) {
          case 17:
          case 21:
          case 22:
@@ -82,8 +82,8 @@ public final class NvStore {
       }
    }
 
-   private static final boolean isRAMOnly(int var0) {
-      switch (var0) {
+   private static final boolean isRAMOnly(int field) {
+      switch (field) {
          case 19:
          case 24:
          case 41:
@@ -93,54 +93,54 @@ public final class NvStore {
       }
    }
 
-   public static final byte[] readData(int var0) {
-      byte[] var1 = readDataInternal(var0);
-      if (isContentProtected(var0)) {
-         Object var2 = PersistentContent.waitForTicket();
-         var2.hashCode();
-         Object var3 = PersistentContent.convertByteArrayToEncoding(var1);
-         var1 = PersistentContentInternal.decodeByteArray(var3, false, isRAMOnly(var0));
+   public static final byte[] readData(int field) {
+      byte[] data = readDataInternal(field);
+      if (isContentProtected(field)) {
+         Object ticket = PersistentContent.waitForTicket();
+         ticket.hashCode();
+         Object encoding = PersistentContent.convertByteArrayToEncoding(data);
+         data = PersistentContentInternal.decodeByteArray(encoding, false, isRAMOnly(field));
       }
 
-      return var1;
+      return data;
    }
 
-   public static final boolean writeData(int var0, byte[] var1) {
-      return writeData(var0, var1, 0, var1.length);
+   public static final boolean writeData(int field, byte[] data) {
+      return writeData(field, data, 0, data.length);
    }
 
-   public static final boolean writeData(int var0, byte[] var1, int var2, int var3) {
-      if (isContentProtected(var0)) {
-         Object var4 = PersistentContent.encode(var1, var2, var3, false, true);
-         var1 = PersistentContent.convertEncodingToByteArray(var4);
-         var2 = 0;
-         var3 = var1.length;
+   public static final boolean writeData(int field, byte[] data, int offset, int length) {
+      if (isContentProtected(field)) {
+         Object encoding = PersistentContent.encode(data, offset, length, false, true);
+         data = PersistentContent.convertEncodingToByteArray(encoding);
+         offset = 0;
+         length = data.length;
       }
 
-      return writeDataInternal(var0, var1, var2, var3);
+      return writeDataInternal(field, data, offset, length);
    }
 
    public static final native int readInt(int var0, int var1);
 
    public static final native boolean writeInt(int var0, int var1);
 
-   public static final boolean getFlag(int var0) {
-      return (readInt(1, 0) & var0) != 0;
+   public static final boolean getFlag(int flag) {
+      return (readInt(1, 0) & flag) != 0;
    }
 
-   public static final boolean setFlag(int var0, boolean var1) {
-      int var2 = readInt(1, 0);
-      if ((var2 & var0) != 0 == var1) {
+   public static final boolean setFlag(int flag, boolean value) {
+      int flags = readInt(1, 0);
+      if ((flags & flag) != 0 == value) {
          return true;
       }
 
-      if (var1) {
-         var2 |= var0;
+      if (value) {
+         flags |= flag;
       } else {
-         var2 &= ~var0;
+         flags &= ~flag;
       }
 
-      return writeInt(1, var2);
+      return writeInt(1, flags);
    }
 
    public static final native boolean deleteData(int var0);
@@ -153,13 +153,13 @@ public final class NvStore {
       reCryptField(24);
    }
 
-   private static final void reCryptField(int var0) {
-      byte[] var1 = readDataInternal(var0);
-      Object var2 = PersistentContent.convertByteArrayToEncoding(var1);
-      if (!PersistentContent.checkEncoding(var2)) {
-         var2 = PersistentContent.reEncode(var2);
-         var1 = PersistentContent.convertEncodingToByteArray(var2);
-         writeDataInternal(var0, var1, 0, var1.length);
+   private static final void reCryptField(int field) {
+      byte[] data = readDataInternal(field);
+      Object encoding = PersistentContent.convertByteArrayToEncoding(data);
+      if (!PersistentContent.checkEncoding(encoding)) {
+         encoding = PersistentContent.reEncode(encoding);
+         data = PersistentContent.convertEncodingToByteArray(encoding);
+         writeDataInternal(field, data, 0, data.length);
       }
    }
 

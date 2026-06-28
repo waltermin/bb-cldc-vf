@@ -23,239 +23,239 @@ import net.rim.device.internal.io.NativeSocketListener;
 import net.rim.vm.Message;
 
 public final class Events {
-   public static final void dispatchSystemEvent(int var0, int var1, int var2, Object var3, SystemListener var4) {
+   public static final void dispatchSystemEvent(int event, int subMessage, int dataLength, Object object0, SystemListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final boolean dispatchKeyEvent(int var0, char var1, int var2, int var3, KeyListener var4) {
-      switch (var0) {
+   public static final boolean dispatchKeyEvent(int event, char key, int keycode, int time, KeyListener listener) {
+      switch (event) {
          case 513:
-            return var4.keyDown(var2, var3);
+            return listener.keyDown(keycode, time);
          case 514:
-            return var4.keyRepeat(var2, var3);
+            return listener.keyRepeat(keycode, time);
          case 515:
-            return var4.keyUp(var2, var3);
+            return listener.keyUp(keycode, time);
          case 520:
-            return var4.keyStatus(var2, var3);
+            return listener.keyStatus(keycode, time);
          case 32768:
-            return var4.keyChar(var1, var2 & 65535, var3);
+            return listener.keyChar(key, keycode & 65535, time);
          default:
             return false;
       }
    }
 
-   public static final boolean dispatchStylusEvent(int var0, int var1, int var2, int var3, int var4, StylusListener var5) {
-      switch (var0) {
+   public static final boolean dispatchStylusEvent(int event, int x, int y, int status, int time, StylusListener listener) {
+      switch (event) {
          case 6655:
             return false;
          case 6656:
          default:
-            return var5.stylusDown(var1, var2, var3, var4);
+            return listener.stylusDown(x, y, status, time);
          case 6657:
-            return var5.stylusDrag(var1, var2, var3, var4);
+            return listener.stylusDrag(x, y, status, time);
          case 6658:
-            return var5.stylusUp(var1, var2, var3, var4);
+            return listener.stylusUp(x, y, status, time);
          case 6659:
-            return var5.stylusTap(var1, var2, var3, var4);
+            return listener.stylusTap(x, y, status, time);
          case 6660:
-            return var5.stylusTapHold(var1, var2, var3, var4);
+            return listener.stylusTapHold(x, y, status, time);
          case 6661:
-            return var5.stylusDoubleTap(var1, var2, var3, var4);
+            return listener.stylusDoubleTap(x, y, status, time);
       }
    }
 
-   public static final boolean dispatchTrackwheelEvent(int var0, int var1, int var2, int var3, TrackwheelListener var4) {
-      switch (var0) {
+   public static final boolean dispatchTrackwheelEvent(int event, int magnitude, int status, int time, TrackwheelListener listener) {
+      switch (event) {
          case 515:
          case 518:
             return false;
          case 516:
          default:
-            return var4.trackwheelClick(var2, var3);
+            return listener.trackwheelClick(status, time);
          case 517:
-            return var4.trackwheelUnclick(var2, var3);
+            return listener.trackwheelUnclick(status, time);
          case 519:
-            return var4.trackwheelRoll(var1, var2, var3);
+            return listener.trackwheelRoll(magnitude, status, time);
       }
    }
 
-   public static final void dispatchRealtimeClockEvent(int var0, RealtimeClockListener var1) {
+   public static final void dispatchRealtimeClockEvent(int event, RealtimeClockListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchUSBPortEvent(int var0, int var1, int var2, USBPortListener var3) {
+   public static final void dispatchUSBPortEvent(int event, int subMessage, int dataLength, USBPortListener usbListener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private static final RadioPacketListener getListener(RadioListener var0, int var1) {
+   private static final RadioPacketListener getListener(RadioListener listener, int data1) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchRadioPacketEvent(int var0, int var1, int var2, int var3, Object var4, Object var5, RadioListener var6) {
+   public static final void dispatchRadioPacketEvent(int event, int subMessage, int data0, int data1, Object object0, Object object1, RadioListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final boolean dispatchPhoneCallEvent(int var0, int var1, int var2, PhoneCallListener var3) {
-      switch (var0) {
+   public static final boolean dispatchPhoneCallEvent(int event, int subMessage, int data0, PhoneCallListener listener) {
+      switch (event) {
          case 1553:
-            var3.callIncoming(var1);
+            listener.callIncoming(subMessage);
             return true;
          case 1554:
-            var3.callWaiting(var1);
+            listener.callWaiting(subMessage);
             return true;
          case 1555:
-            var3.callConnected(var1);
+            listener.callConnected(subMessage);
             return true;
          case 1556:
-            var3.callFailed(var1, var2);
+            listener.callFailed(subMessage, data0);
             return true;
          case 1557:
-            var3.callDisconnected(var1);
+            listener.callDisconnected(subMessage);
             return true;
          case 1558:
-            var3.callHeld(var1);
+            listener.callHeld(subMessage);
             return true;
          case 1559:
-            var3.callResumed(var1);
+            listener.callResumed(subMessage);
             return true;
          case 1560:
-            var3.callAdded(var1);
+            listener.callAdded(subMessage);
             return true;
          case 1561:
-            var3.callRemoved(var1);
+            listener.callRemoved(subMessage);
             return true;
          case 1562:
-            var3.callManipulateFailed(var1, var2);
+            listener.callManipulateFailed(subMessage, data0);
             return true;
          case 1563:
-            var3.callDelivered(var1);
+            listener.callDelivered(subMessage);
             return true;
          case 1564:
-            var3.callInitiated(var1);
+            listener.callInitiated(subMessage);
             return true;
          case 1574:
-            var3.callDisplayUpdated(var1);
+            listener.callDisplayUpdated(subMessage);
             return true;
          case 1600:
-            var3.callOTAStatusUpdated(var1, var2);
+            listener.callOTAStatusUpdated(subMessage, data0);
             return true;
          case 1605:
-            var3.callVoicePrivacyUpdated(var1, var2 == 0);
+            listener.callVoicePrivacyUpdated(subMessage, data0 == 0);
             return true;
          case 1668:
-            var3.callTransferred(var1, var2);
+            listener.callTransferred(subMessage, data0);
             return true;
          case 5001:
-            var3.callTransferStateUpdated(var1, var2);
+            listener.callTransferStateUpdated(subMessage, data0);
             return true;
          case 5003:
-            var3.dtmfData(var1);
+            listener.dtmfData(subMessage);
             return true;
          default:
             return false;
       }
    }
 
-   public static final boolean dispatchPhoneTimerEvent(int var0, int var1, int var2, PhoneTimerListener var3) {
-      switch (var0) {
+   public static final boolean dispatchPhoneTimerEvent(int event, int subMessage, int data0, PhoneTimerListener listener) {
+      switch (event) {
          case 1568:
-            var3.callTimerUpdated(var1, var2);
+            listener.callTimerUpdated(subMessage, data0);
             return true;
          default:
             return false;
       }
    }
 
-   public static final boolean dispatchPhoneControlEvent(int var0, int var1, int var2, int var3, Object var4, PhoneControlListener var5) {
+   public static final boolean dispatchPhoneControlEvent(int event, int subMessage, int data0, int data1, Object object0, PhoneControlListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchRadioEngineeringEvent(int var0, int var1, int var2, Object var3, EngineeringDataListener var4) {
+   public static final void dispatchRadioEngineeringEvent(int event, int subMessage, int data0, Object object0, EngineeringDataListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchRadioModemEvent(int var0, int var1, ModemListener var2) {
-      switch (var0) {
+   public static final void dispatchRadioModemEvent(int event, int subMessage, ModemListener listener) {
+      switch (event) {
          case 1593:
          case 1594:
-            var2.networkChangeResult(var0, var1);
+            listener.networkChangeResult(event, subMessage);
          default:
             return;
          case 1680:
-            var2.networkSelectionModeChanged(var1);
+            listener.networkSelectionModeChanged(subMessage);
             return;
          case 1681:
-            var2.queryNetworkDisplayName(RadioInfo.convertNetworkId(var1));
+            listener.queryNetworkDisplayName(RadioInfo.convertNetworkId(subMessage));
       }
    }
 
-   public static final void dispatchRadioDirectConnectEvent(int var0, int var1, int var2, int var3, DirectConnectListener var4) {
-      switch (var0) {
+   public static final void dispatchRadioDirectConnectEvent(int event, int subMessage, int data0, int data1, DirectConnectListener listener) {
+      switch (event) {
          case 2048:
          default:
-            var4.dcCallConnected(var1, var2, var3 == 1);
+            listener.dcCallConnected(subMessage, data0, data1 == 1);
             return;
          case 2049:
-            var4.dcCallDisconnected(var1, var2, var3);
+            listener.dcCallDisconnected(subMessage, data0, data1);
             return;
          case 2050:
-            var4.dcRequestFailed(var1, var2, var3);
+            listener.dcRequestFailed(subMessage, data0, data1);
             return;
          case 2051:
-            var4.dcCallStatusUpdated(var1, var2);
+            listener.dcCallStatusUpdated(subMessage, data0);
             return;
          case 2052:
-            var4.dcTalkStatusUpdated(var1, var2, var3);
+            listener.dcTalkStatusUpdated(subMessage, data0, data1);
             return;
          case 2053:
-            var4.dcTalkGroupIdUpdated(var1, var2 != 1, var3);
+            listener.dcTalkGroupIdUpdated(subMessage, data0 != 1, data1);
             return;
          case 2054:
-            var4.dcCallAlertUpdate(var1, var2, var3);
+            listener.dcCallAlertUpdate(subMessage, data0, data1);
             return;
          case 2055:
-            var4.dcServiceUpdated(var1, var2 == 0, var3 != 0);
+            listener.dcServiceUpdated(subMessage, data0 == 0, data1 != 0);
          case 2047:
       }
    }
 
-   public static final void dispatchWLANEvent(int var0, int var1, int var2, int var3, WLANListenerInternal var4) {
+   public static final void dispatchWLANEvent(int event, int subMessage, int data0, int data1, WLANListenerInternal listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchVPNEvent(int var0, int var1, int var2, int var3, VPNListener var4) {
-      switch (var0) {
+   public static final void dispatchVPNEvent(int event, int subMessage, int data0, int data1, VPNListener listener) {
+      switch (event) {
          case 8960:
          case 8961:
          case 8962:
          case 8966:
-            var4.vpnStatusChanged(var0, var1, var2, var3);
+            listener.vpnStatusChanged(event, subMessage, data0, data1);
       }
    }
 
-   public static final void dispatchGANEvent(int var0, int var1, int var2, int var3, GANStatusListener var4) {
-      switch (var0) {
+   public static final void dispatchGANEvent(int event, int subMessage, int data0, int data1, GANStatusListener listener) {
+      switch (event) {
          case 1596:
-            var4.ganEventOccurred(var1, var2, var3);
+            listener.ganEventOccurred(subMessage, data0, data1);
       }
    }
 
-   public static final void dispatchHolsterEvent(int var0, HolsterListener var1) {
-      switch (var0) {
+   public static final void dispatchHolsterEvent(int event, HolsterListener listener) {
+      switch (event) {
          case 1792:
-            var1.outOfHolster();
+            listener.outOfHolster();
          case 1791:
             return;
          case 1793:
          default:
-            var1.inHolster();
+            listener.inHolster();
       }
    }
 
-   public static final void dispatchAlertEvent(int var0, int var1, AlertListener var2) {
+   public static final void dispatchAlertEvent(int event, int subMessage, AlertListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void dispatchNativeSocketEvent(Message var0, NativeSocketListener var1) {
+   public static final void dispatchNativeSocketEvent(Message message, NativeSocketListener listener) {
    }
 }

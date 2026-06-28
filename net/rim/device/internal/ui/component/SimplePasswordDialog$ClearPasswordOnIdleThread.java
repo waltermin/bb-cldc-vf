@@ -7,9 +7,9 @@ class SimplePasswordDialog$ClearPasswordOnIdleThread extends Thread {
    private boolean _stopThread;
    private final SimplePasswordDialog this$0;
 
-   SimplePasswordDialog$ClearPasswordOnIdleThread(SimplePasswordDialog var1, Application var2) {
-      this.this$0 = var1;
-      this._app = var2;
+   SimplePasswordDialog$ClearPasswordOnIdleThread(SimplePasswordDialog _1, Application app) {
+      this.this$0 = _1;
+      this._app = app;
    }
 
    public void stopThread() {
@@ -18,6 +18,6 @@ class SimplePasswordDialog$ClearPasswordOnIdleThread extends Thread {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

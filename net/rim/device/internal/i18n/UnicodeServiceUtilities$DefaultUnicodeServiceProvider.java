@@ -16,10 +16,10 @@ final class UnicodeServiceUtilities$DefaultUnicodeServiceProvider implements Uni
    }
 
    @Override
-   public final byte resolveEncoding(byte[] var1, byte[] var2) {
-      if (var2 != null && var2.length != 0 && var1 != null && var1.length != 0) {
-         byte var3 = UnicodeServiceUtilities.getPreferredEncoding();
-         byte var4 = -1;
+   public final byte resolveEncoding(byte[] clientServiceEncodings, byte[] hostServiceEncodings) {
+      if (hostServiceEncodings != null && hostServiceEncodings.length != 0 && clientServiceEncodings != null && clientServiceEncodings.length != 0) {
+         byte prefEnc = UnicodeServiceUtilities.getPreferredEncoding();
+         byte curEnc = -1;
          if (this._defaultSupportedEncodings == null) {
             this._defaultSupportedEncodings = this.getSupportedEncodings();
             if (this._defaultSupportedEncodings == null) {
@@ -27,45 +27,45 @@ final class UnicodeServiceUtilities$DefaultUnicodeServiceProvider implements Uni
             }
          }
 
-         for (int var5 = 0; var5 < var1.length; var5++) {
-            for (int var6 = 0; var6 < var2.length; var6++) {
-               if (var2[var6] == var1[var5]) {
-                  int var7 = 0;
+         for (int i = 0; i < clientServiceEncodings.length; i++) {
+            for (int j = 0; j < hostServiceEncodings.length; j++) {
+               if (hostServiceEncodings[j] == clientServiceEncodings[i]) {
+                  int k = 0;
 
-                  while (var7 < this._defaultSupportedEncodings.length && this._defaultSupportedEncodings[var7] != var1[var5]) {
-                     var7++;
+                  while (k < this._defaultSupportedEncodings.length && this._defaultSupportedEncodings[k] != clientServiceEncodings[i]) {
+                     k++;
                   }
 
-                  if (var7 < this._defaultSupportedEncodings.length) {
-                     if (var4 == -1) {
-                        var4 = var1[var5];
+                  if (k < this._defaultSupportedEncodings.length) {
+                     if (curEnc == -1) {
+                        curEnc = clientServiceEncodings[i];
                      }
 
-                     if (var3 == var1[var5] && var3 != -1) {
-                        return var3;
+                     if (prefEnc == clientServiceEncodings[i] && prefEnc != -1) {
+                        return prefEnc;
                      }
                   }
                }
             }
          }
 
-         return var4;
+         return curEnc;
       } else {
          return -1;
       }
    }
 
    @Override
-   public final String getEncoding(byte var1) {
+   public final String getEncoding(byte encodingType) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final byte getEncoding(String var1) {
-      if (var1 != null) {
-         for (int var2 = 0; var2 < _definedSerializationEncodingsBytes.length; var2++) {
-            if (StringUtilities.startsWithIgnoreCase(_definedSerializationEncodingsNames[var2], var1, 1701707776)) {
-               return _definedSerializationEncodingsBytes[var2];
+   public final byte getEncoding(String encodingType) {
+      if (encodingType != null) {
+         for (int i = 0; i < _definedSerializationEncodingsBytes.length; i++) {
+            if (StringUtilities.startsWithIgnoreCase(_definedSerializationEncodingsNames[i], encodingType, 1701707776)) {
+               return _definedSerializationEncodingsBytes[i];
             }
          }
       }
@@ -73,7 +73,7 @@ final class UnicodeServiceUtilities$DefaultUnicodeServiceProvider implements Uni
       return -1;
    }
 
-   UnicodeServiceUtilities$DefaultUnicodeServiceProvider(UnicodeServiceUtilities$1 var1) {
+   UnicodeServiceUtilities$DefaultUnicodeServiceProvider(UnicodeServiceUtilities$1 x0) {
       this();
    }
 }

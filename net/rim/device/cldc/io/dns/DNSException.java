@@ -8,15 +8,15 @@ public final class DNSException extends IOException {
    public DNSException() {
    }
 
-   public DNSException(String var1) {
+   public DNSException(String s) {
    }
 
-   public DNSException(String var1, int var2) {
-      super(var1);
-      this._errorCode = var2;
+   public DNSException(String s, int errorCode) {
+      super(s);
+      this._errorCode = errorCode;
    }
 
-   public DNSException(int var1) {
+   public DNSException(int errcode) {
    }
 
    public final int getErrorCode() {

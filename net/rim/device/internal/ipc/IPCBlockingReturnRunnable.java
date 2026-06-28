@@ -5,17 +5,44 @@ public class IPCBlockingReturnRunnable extends IPCBaseRunnable {
    private boolean _success;
    private String _message;
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      Object result = null;
+      boolean var5 = false /* VF: Semaphore variable */;
+
+      label30: {
+         try {
+            var5 = true;
+            this._result.clear();
+            result = this.doRun(this.getListener());
+            this._success = true;
+            var5 = false;
+            break label30;
+         } catch (Throwable t) {
+            this.doLogging(t);
+            this._success = false;
+            var5 = false;
+         } finally {
+            if (var5) {
+               this.setResult(result);
+            }
+         }
+
+         this.setResult(result);
+         return;
+      }
+
+      this.setResult(result);
    }
 
-   protected Object doRun(Object var1) {
+   protected Object doRun(Object _1) {
       throw null;
    }
 
-   private void setResult(Object var1) {
-      this._result.setResult(var1);
+   private void setResult(Object result) {
+      this._result.setResult(result);
    }
 
    Object getResult() {
@@ -30,7 +57,7 @@ public class IPCBlockingReturnRunnable extends IPCBaseRunnable {
       return this._message;
    }
 
-   protected void setMessage(String var1) {
+   protected void setMessage(String message) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

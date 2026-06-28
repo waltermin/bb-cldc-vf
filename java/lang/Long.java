@@ -5,29 +5,29 @@ public final class Long {
    public static final long MIN_VALUE;
    public static final long MAX_VALUE;
 
-   public static final String toString(long var0, int var2) {
-      byte[] var3 = new byte[10];
-      return new String(var3, 0, toString(var0, var2, var3, 0));
+   public static final String toString(long i, int radix) {
+      byte[] buf = new byte[10];
+      return new String(buf, 0, toString(i, radix, buf, 0));
    }
 
-   static final int toString(long var0, int var2, Object var3, int var4) {
+   static final int toString(long i, int radix, Object obuf, int offset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final String toString(long var0) {
-      return toString(var0, 10);
+   public static final String toString(long i) {
+      return toString(i, 10);
    }
 
-   public static final long parseLong(String var0, int var1) {
+   public static final long parseLong(String s, int radix) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final long parseLong(String var0) {
-      return parseLong(var0, 10);
+   public static final long parseLong(String s) {
+      return parseLong(s, 10);
    }
 
-   public Long(long var1) {
-      this.value = var1;
+   public Long(long value) {
+      this.value = value;
    }
 
    public final long longValue() {
@@ -53,7 +53,7 @@ public final class Long {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

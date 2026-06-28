@@ -12,8 +12,8 @@ final class MediaOptionsUtilities$VolumeBoostMoreInformationScreen extends MainS
    }
 
    @Override
-   protected final boolean invokeAction(int var1) {
-      if (var1 == 1 && this.shouldInvoke()) {
+   protected final boolean invokeAction(int action) {
+      if (action == 1 && this.shouldInvoke()) {
          this.invokeDefaultMenuItem(0);
       }
 
@@ -21,18 +21,18 @@ final class MediaOptionsUtilities$VolumeBoostMoreInformationScreen extends MainS
    }
 
    private final boolean shouldInvoke() {
-      boolean var1 = false;
-      MenuItem var2 = this.getDefaultMenuItem(0);
-      if (!(var2 instanceof Object)) {
-         var1 = true;
+      boolean invoke = false;
+      MenuItem item = this.getDefaultMenuItem(0);
+      if (!(item instanceof Object)) {
+         invoke = true;
       }
 
-      return var1;
+      return invoke;
    }
 
    @Override
-   public final void onOptionsRegistryChange(long var1) {
-      if (var1 == 2886183832722201160L) {
+   public final void onOptionsRegistryChange(long key) {
+      if (key == 2886183832722201160L) {
          this._closeWhenVisible = true;
       }
    }

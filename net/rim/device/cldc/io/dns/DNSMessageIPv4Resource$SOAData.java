@@ -11,13 +11,13 @@ public class DNSMessageIPv4Resource$SOAData {
    public int expire;
    public int minimum;
 
-   public DNSMessageIPv4Resource$SOAData(DataBuffer var1) {
-      this.mName = DNSMessageIPv4.readDomainName(var1);
-      this.rName = DNSMessageIPv4.readDomainName(var1);
-      this.serial = var1.readInt();
-      this.refresh = var1.readInt();
-      this.retry = var1.readInt();
-      this.expire = var1.readInt();
-      this.minimum = var1.readInt();
+   public DNSMessageIPv4Resource$SOAData(DataBuffer db) {
+      this.mName = DNSMessageIPv4.readDomainName(db);
+      this.rName = DNSMessageIPv4.readDomainName(db);
+      this.serial = db.readInt();
+      this.refresh = db.readInt();
+      this.retry = db.readInt();
+      this.expire = db.readInt();
+      this.minimum = db.readInt();
    }
 }

@@ -1,6 +1,7 @@
 package net.rim.device.internal.crypto.fips;
 
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Ui;
@@ -22,11 +23,11 @@ final class SelfTestsStartupDialog extends PopupScreen {
    int _numTestsCompleted;
    private static final ResourceBundle _rb;
 
-   SelfTestsStartupDialog(SelfTests var1, String[] var2) {
+   SelfTestsStartupDialog(SelfTests selfTests, String[] tests) {
       super((Manager)(new Object()));
-      this._selfTests = var1;
-      this._tests = var2;
-      this._testResults = new boolean[var2.length];
+      this._selfTests = selfTests;
+      this._tests = tests;
+      this._testResults = new boolean[tests.length];
       this.add((Field)(new Object(_rb.getString(5), 36028797018963968L)));
       this.add((Field)(new Object()));
       this._gaugeField = (GaugeField)(new Object(null, 0, this._tests.length, 0, 4));
@@ -39,48 +40,66 @@ final class SelfTestsStartupDialog extends PopupScreen {
       Ui.getUiEngine().pushGlobalScreen(this, Integer.MIN_VALUE, 0);
    }
 
-   final void setTestPassed(int var1) {
-      this._testResults[var1] = true;
+   final void setTestPassed(int passedIndex) {
+      this._testResults[passedIndex] = true;
       this.testCompleted();
    }
 
-   final void setTestFailed(int var1) {
-      this._testResults[var1] = false;
+   final void setTestFailed(int failedIndex) {
+      this._testResults[failedIndex] = false;
       this.testCompleted();
    }
 
    final void testCompleted() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._numTestsCompleted++;
+      synchronized (Application.getApplication().getAppEventLock()) {
+         this._gaugeField.setValue(this._numTestsCompleted);
+      }
    }
 
    final void testsPassed() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getApplication().getAppEventLock()) {
+         this._resultField.setText(_rb.getString(2));
+      }
+
+      try {
+         Thread.sleep(1000);
+      } catch (InterruptedException var3) {
+      }
+
+      synchronized (Application.getApplication().getAppEventLock()) {
+         Ui.getUiEngine().popScreen(this);
+      }
    }
 
    private final void addFailButtons() {
-      Object var1 = new Object(12884901888L);
+      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
       this._okButton = (ButtonField)(new Object(CommonResource.getString(100)));
       this._detailsButton = (ButtonField)(new Object(_rb.getString(7)));
-      ((HorizontalFieldManager)var1).add(this._okButton);
-      ((HorizontalFieldManager)var1).add(this._detailsButton);
-      this.add((Field)var1);
+      buttonManager.add(this._okButton);
+      buttonManager.add(this._detailsButton);
+      this.add(buttonManager);
    }
 
    final void testsFailed() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getApplication().getAppEventLock()) {
+         this._resultField.setText(_rb.getString(3));
+         this.addFailButtons();
+         this._okButton.setFocus();
+      }
    }
 
    @Override
-   protected final boolean trackwheelClick(int var1, int var2) {
-      super.trackwheelClick(var1, var2);
+   protected final boolean trackwheelClick(int status, int time) {
+      super.trackwheelClick(status, time);
       if (this._okButton != null) {
-         Field var3 = this.getLeafFieldWithFocus();
-         if (var3 == this._okButton) {
+         Field fieldWithFocus = this.getLeafFieldWithFocus();
+         if (fieldWithFocus == this._okButton) {
             Ui.getUiEngine().popScreen(this);
             return true;
          }
 
-         if (var3 == this._detailsButton) {
+         if (fieldWithFocus == this._detailsButton) {
             this.showDetails();
             Ui.getUiEngine().popScreen(this);
          }
@@ -90,12 +109,12 @@ final class SelfTestsStartupDialog extends PopupScreen {
    }
 
    @Override
-   protected final boolean keyChar(char var1, int var2, int var3) {
-      boolean var4 = super.keyChar(var1, var2, var3);
+   protected final boolean keyChar(char key, int status, int time) {
+      boolean ret = super.keyChar(key, status, time);
       if (this._okButton != null) {
-         Field var5 = this.getLeafFieldWithFocus();
-         if ((var5 != this._okButton || var1 != '\n') && var1 != 27) {
-            if (var5 == this._detailsButton) {
+         Field fieldWithFocus = this.getLeafFieldWithFocus();
+         if ((fieldWithFocus != this._okButton || key != '\n') && key != 27) {
+            if (fieldWithFocus == this._detailsButton) {
                this.showDetails();
                Ui.getUiEngine().popScreen(this);
             }
@@ -104,19 +123,19 @@ final class SelfTestsStartupDialog extends PopupScreen {
          }
       }
 
-      return var4;
+      return ret;
    }
 
    private final void showDetails() {
-      SelfTestsDialog var1 = new SelfTestsDialog(null, this._tests, true, this._testResults);
-      var1.testsFailed();
-      var1.display();
+      SelfTestsDialog detailedDialog = new SelfTestsDialog(null, this._tests, true, this._testResults);
+      detailedDialog.testsFailed();
+      detailedDialog.display();
    }
 
    @Override
-   public final void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1) {
+   public final void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached) {
          this._selfTests.dialogDisplayed();
       }
    }

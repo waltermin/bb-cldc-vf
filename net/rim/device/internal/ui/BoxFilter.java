@@ -9,7 +9,7 @@ class BoxFilter implements Filter {
    }
 
    @Override
-   public int weightFP(int var1) {
-      return Fixed32.abs(var1) <= 32768 ? 65536 : 0;
+   public int weightFP(int valFP) {
+      return Fixed32.abs(valFP) <= 32768 ? 65536 : 0;
    }
 }

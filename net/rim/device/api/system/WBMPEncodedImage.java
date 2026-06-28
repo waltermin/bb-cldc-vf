@@ -3,10 +3,10 @@ package net.rim.device.api.system;
 public final class WBMPEncodedImage extends EncodedImage {
    private WBMPEncodedImage$WBMPImageInfo _wbmpInfo;
 
-   WBMPEncodedImage(byte[] var1, int var2, int var3) {
-      super._data = var1;
-      super._offset = var2;
-      super._length = var3;
+   WBMPEncodedImage(byte[] data, int offset, int length) {
+      super._data = data;
+      super._offset = offset;
+      super._length = length;
       this.init();
    }
 
@@ -22,8 +22,8 @@ public final class WBMPEncodedImage extends EncodedImage {
       super._frameInfo[0].hasTransparency = this._wbmpInfo.hasTransparency;
    }
 
-   WBMPEncodedImage(String var1) {
-      super._filename = var1;
+   WBMPEncodedImage(String filename) {
+      super._filename = filename;
       this.init();
    }
 
@@ -32,8 +32,8 @@ public final class WBMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getBitmapType(int var1) {
-      if (var1 < 0 || var1 >= super._info.frameCount) {
+   public final int getBitmapType(int frameIndex) {
+      if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
          throw new Object();
       } else {
          return (super._decodeMode & 2) != 0 ? Bitmap.DEFAULT_TYPE : Bitmap.DEFAULT_TYPE & 128 | 0 | 1;
@@ -41,8 +41,8 @@ public final class WBMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getAlphaType(int var1) {
-      if (var1 >= 0 && var1 < super._info.frameCount) {
+   public final int getAlphaType(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
          throw new Object();
@@ -50,17 +50,17 @@ public final class WBMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   final Bitmap getBitmapImpl(int var1) {
-      if (var1 != 0) {
+   final Bitmap getBitmapImpl(int frameIndex) {
+      if (frameIndex != 0) {
          throw new Object();
       }
 
-      boolean var2 = (super._decodeMode & 4) != 0;
-      int var3 = this.getScaledWidth();
-      int var4 = this.getScaledHeight();
-      Object var5 = new Object(this.getBitmapType(var1), var3, var4, null, var2, false);
-      this.getWBMPImage((Bitmap)var5, super._scaleX, super._scaleY, super._decodeMode);
-      return (Bitmap)var5;
+      boolean readonly = (super._decodeMode & 4) != 0;
+      int width = this.getScaledWidth();
+      int height = this.getScaledHeight();
+      Bitmap bitmap = (Bitmap)(new Object(this.getBitmapType(frameIndex), width, height, null, readonly, false));
+      this.getWBMPImage(bitmap, super._scaleX, super._scaleY, super._decodeMode);
+      return bitmap;
    }
 
    @Override

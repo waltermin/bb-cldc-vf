@@ -10,205 +10,222 @@ public final class Theme$Writer {
    private ResourceFetcher _resourceFetcher;
    private final Theme this$0;
 
-   public Theme$Writer(Theme var1) {
-      this.this$0 = var1;
+   public Theme$Writer(Theme _1) {
+      this.this$0 = _1;
    }
 
-   public final void setResourceBundle(ResourceBundle var1) {
-      this.this$0.setResourceBundle(var1);
+   public final void setResourceBundle(ResourceBundle resourceBundle) {
+      this.this$0.setResourceBundle(resourceBundle);
    }
 
    public final void addResources() {
       this.this$0.addResources(this._resourceFetcher, false);
    }
 
-   public final void setOption(String var1, String var2) {
-      if (!this.this$0._options.containsKey(var1)) {
-         this.this$0._options.put(var1, var2);
+   public final void setOption(String id, String value) {
+      if (!this.this$0._options.containsKey(id)) {
+         this.this$0._options.put(id, value);
       }
    }
 
    public final void loadScrollbar(
-      String var1,
-      String var2,
-      String var3,
-      String var4,
-      String var5,
-      String var6,
-      String var7,
-      String var8,
-      String var9,
-      String var10,
-      String var11,
-      String var12,
-      String var13,
-      String var14,
-      String var15,
-      String var16,
-      String var17,
-      String var18,
-      String var19
+      String name,
+      String sliderVertical,
+      String sliderHorizontal,
+      String trackVertical,
+      String trackHorizontal,
+      String upArrow,
+      String downArrow,
+      String leftArrow,
+      String rightArrow,
+      String corner,
+      String sliderVerticalInactive,
+      String sliderHorizontalInactive,
+      String trackVerticalInactive,
+      String trackHorizontalInactive,
+      String upArrowInactive,
+      String downArrowInactive,
+      String leftArrowInactive,
+      String rightArrowInactive,
+      String cornerInactive
    ) {
-      if (this.this$0.getScrollbar(var1) == null) {
-         Bitmap[] var20 = new Bitmap[18];
-         EncodedImage var21 = this.this$0.getImage(var2, true);
-         var20[0] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var3, true);
-         var20[1] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var4, true);
-         var20[2] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var5, true);
-         var20[3] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var6, true);
-         var20[4] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var7, true);
-         var20[5] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var8, true);
-         var20[6] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var9, true);
-         var20[7] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var10, true);
-         var20[8] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var11, true);
-         var20[9] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var12, true);
-         var20[10] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var13, true);
-         var20[11] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var14, true);
-         var20[12] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var15, true);
-         var20[13] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var16, true);
-         var20[14] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var17, true);
-         var20[15] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var18, true);
-         var20[16] = var21 == null ? null : var21.getBitmap();
-         var21 = this.this$0.getImage(var19, true);
-         var20[17] = var21 == null ? null : var21.getBitmap();
-         this.this$0._scrollbars.put(var1, var20);
+      if (this.this$0.getScrollbar(name) == null) {
+         Bitmap[] images = new Bitmap[18];
+         EncodedImage image = this.this$0.getImage(sliderVertical, true);
+         images[0] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(sliderHorizontal, true);
+         images[1] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(trackVertical, true);
+         images[2] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(trackHorizontal, true);
+         images[3] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(upArrow, true);
+         images[4] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(downArrow, true);
+         images[5] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(leftArrow, true);
+         images[6] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(rightArrow, true);
+         images[7] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(corner, true);
+         images[8] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(sliderVerticalInactive, true);
+         images[9] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(sliderHorizontalInactive, true);
+         images[10] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(trackVerticalInactive, true);
+         images[11] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(trackHorizontalInactive, true);
+         images[12] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(upArrowInactive, true);
+         images[13] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(downArrowInactive, true);
+         images[14] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(leftArrowInactive, true);
+         images[15] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(rightArrowInactive, true);
+         images[16] = image == null ? null : image.getBitmap();
+         image = this.this$0.getImage(cornerInactive, true);
+         images[17] = image == null ? null : image.getBitmap();
+         this.this$0._scrollbars.put(name, images);
       }
    }
 
-   public final void createBorder(String var1, int var2, int var3, int var4, int var5) {
-      this.createBorderBitmap(var1, var2, var3, var4, var5);
+   public final void createBorder(String name, int top, int right, int bottom, int left) {
+      this.createBorderBitmap(name, top, right, bottom, left);
    }
 
-   public final void createBorderBitmap(String var1, int var2, int var3, int var4, int var5) {
-      this.createBorderBitmap(var1, var2, var3, var4, var5, var2, var3, var4, var5);
+   public final void createBorderBitmap(String name, int top, int right, int bottom, int left) {
+      this.createBorderBitmap(name, top, right, bottom, left, top, right, bottom, left);
    }
 
-   public final void createBorderBitmap(String var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
+   public final void createBorderBitmap(
+      String name, int top, int right, int bottom, int left, int topCorners, int rightCorners, int bottomCorners, int leftCorners
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void createBorderRounded(String var1, int var2, int var3, int var4, int var5) {
-      if (this.getBorder(var1) == null) {
-         Object var6 = new Object(var2, var3, var4, var5, 2);
-         this.putBorder(var1, (Border)var6);
+   public final void createBorderRounded(String name, int top, int right, int bottom, int left) {
+      if (this.getBorder(name) == null) {
+         Border border = (Border)(new Object(top, right, bottom, left, 2));
+         this.putBorder(name, border);
       }
    }
 
-   public final void createBorderSimple(String var1, int var2, int var3, int var4, int var5) {
-      if (this.getBorder(var1) == null) {
-         Object var6 = new Object(var2, var3, var4, var5);
-         this.putBorder(var1, (Border)var6);
+   public final void createBorderSimple(String name, int top, int right, int bottom, int left) {
+      if (this.getBorder(name) == null) {
+         Border border = (Border)(new Object(top, right, bottom, left));
+         this.putBorder(name, border);
       }
    }
 
    public final void createBorder3d(
-      String var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13
+      String name,
+      int top,
+      int right,
+      int bottom,
+      int left,
+      int colorTop0,
+      int colorTop1,
+      int colorRight0,
+      int colorRight1,
+      int colorBottom0,
+      int colorBottom1,
+      int colorLeft0,
+      int colorLeft1
    ) {
-      if (this.getBorder(var1) == null) {
-         Object var14 = new Object(var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13);
-         this.putBorder(var1, (Border)var14);
+      if (this.getBorder(name) == null) {
+         Border border = (Border)(new Object(
+            top, right, bottom, left, colorTop0, colorTop1, colorRight0, colorRight1, colorBottom0, colorBottom1, colorLeft0, colorLeft1
+         ));
+         this.putBorder(name, border);
       }
    }
 
-   public final ThemeAttributeSet$Writer createThemeAttributeSetWriter(String var1) {
-      return this.createThemeAttributeSetWriter(var1, this._resourceFetcher);
+   public final ThemeAttributeSet$Writer createThemeAttributeSetWriter(String element) {
+      return this.createThemeAttributeSetWriter(element, this._resourceFetcher);
    }
 
-   public final ThemeAttributeSet$Writer createThemeAttributeSetWriter(String var1, ResourceFetcher var2) {
-      Object var3 = new Object(var1);
-      return ((ThemeAttributeSet)var3).getWriterInternal(var2);
+   public final ThemeAttributeSet$Writer createThemeAttributeSetWriter(String element, ResourceFetcher resourceFetcher) {
+      ThemeAttributeSet tas = (ThemeAttributeSet)(new Object(element));
+      return tas.getWriterInternal(resourceFetcher);
    }
 
-   public final Manager getLayout(String var1, Object var2) {
+   public final Manager getLayout(String name, Object context) {
       return null;
    }
 
-   public final Border getBorder(String var1) {
-      return (Border)this.this$0._borders.get(var1);
+   public final Border getBorder(String name) {
+      Border border = (Border)this.this$0._borders.get(name);
+      return border;
    }
 
    public final int getBorderStyle() {
       return this.this$0._borderStyle;
    }
 
-   public final void setBorderStyle(int var1) {
-      if (var1 >= 0 && var1 < 3) {
-         this.this$0._borderStyle = var1;
+   public final void setBorderStyle(int style) {
+      if (style >= 0 && style < 3) {
+         this.this$0._borderStyle = style;
       } else {
          throw new Object();
       }
    }
 
-   private final int getStateForName(String var1) {
+   private final int getStateForName(String statename) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void put(ThemeAttributeSet$Writer var1) {
-      this.put(var1, false);
+   public final void put(ThemeAttributeSet$Writer attributesWriter) {
+      this.put(attributesWriter, false);
    }
 
-   public final void put(ThemeAttributeSet$Writer var1, boolean var2) {
+   public final void put(ThemeAttributeSet$Writer attributesWriter, boolean force) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final void putBorder(String var1, Border var2) {
-      if (this.this$0._borders.get(var1) == null) {
-         this.this$0._borders.put(var1, var2);
+   public final void putBorder(String name, Border border) {
+      if (this.this$0._borders.get(name) == null) {
+         this.this$0._borders.put(name, border);
       }
    }
 
-   public final void putPaletteEntry(String var1, int var2) {
+   public final void putPaletteEntry(String name, int color) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final void setApplicationIconSize(int var1, int var2) {
+   public final void setApplicationIconSize(int width, int height) {
       if (!this.this$0._ribbonIconSizeSet) {
          this.this$0._ribbonIconSizeSet = true;
-         this.this$0._ribbonIconWidth = var1;
-         this.this$0._ribbonIconHeight = var2;
+         this.this$0._ribbonIconWidth = width;
+         this.this$0._ribbonIconHeight = height;
       }
    }
 
-   public final void setIdleScreenName(String var1) {
+   public final void setIdleScreenName(String idleScreenName) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public final void setThumbnailName(String var1) {
+   public final void setThumbnailName(String thumbnailName) {
       if (!this.this$0._thumbnailNameSet) {
          this.this$0._thumbnailNameSet = true;
-         this.this$0._thumbnailName = var1;
+         this.this$0._thumbnailName = thumbnailName;
       }
    }
 
-   public final void setLabelOnOwnLine(boolean var1) {
-      this.this$0._isLabelOnOwnLine = var1;
+   public final void setLabelOnOwnLine(boolean isLabelOnOwnLine) {
+      this.this$0._isLabelOnOwnLine = isLabelOnOwnLine;
    }
 
-   public final void setLayoutFactory(Theme$LayoutFactory var1) {
-      this.this$0._layoutFactory = var1;
+   public final void setLayoutFactory(Theme$LayoutFactory layoutFactory) {
+      this.this$0._layoutFactory = layoutFactory;
    }
 
-   public final void setResourceFetcher(ResourceFetcher var1) {
+   public final void setResourceFetcher(ResourceFetcher resourceFetcher) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void addAlias(String var1, String var2) {
-      this.this$0._aliasList.put(var1, var2);
+   public final void addAlias(String name, String aka) {
+      this.this$0._aliasList.put(name, aka);
    }
 }

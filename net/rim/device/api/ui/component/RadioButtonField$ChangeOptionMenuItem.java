@@ -8,14 +8,14 @@ class RadioButtonField$ChangeOptionMenuItem extends MenuItem {
       super(CommonResource.getBundle(), 1, 30270, 10);
    }
 
-   RadioButtonField$ChangeOptionMenuItem(String var1) {
-      super(var1, 30270, 10);
+   RadioButtonField$ChangeOptionMenuItem(String text) {
+      super(text, 30270, 10);
    }
 
    @Override
    public void run() {
-      RadioButtonField var1 = (RadioButtonField)this.getTarget();
-      var1.keyChar('\n', 0, 0);
+      RadioButtonField rbf = (RadioButtonField)this.getTarget();
+      rbf.keyChar('\n', 0, 0);
    }
 
    @Override

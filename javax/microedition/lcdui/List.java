@@ -1,45 +1,74 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.Manager;
+
 public class List extends Screen implements Choice {
    ChoiceGroup _list;
    private Command _selectCommand;
    public static final Command SELECT_COMMAND;
 
-   public void setSelectCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public void setSelectCommand(Command command) {
+      synchronized (Application.getEventLock()) {
+         if (this._list.getType() == 3) {
+            if (command == SELECT_COMMAND) {
+               if (this._selectCommand != command) {
+                  this.removeCommand(this._selectCommand);
+                  if (this._list.size() > 0) {
+                     this.addCommand(command);
+                  }
 
-   @Override
-   public String getString(int var1) {
-      return this._list.getString(var1);
-   }
+                  this._selectCommand = command;
+               }
+            } else if (command == null) {
+               if (this._selectCommand != null) {
+                  this.removeCommand(this._selectCommand);
+               }
 
-   @Override
-   public Image getImage(int var1) {
-      return this._list.getImage(var1);
-   }
+               this._selectCommand = null;
+            } else {
+               this.removeCommand(this._selectCommand);
+               if (this._list.size() > 0) {
+                  this.addCommand(command);
+               }
 
-   @Override
-   public int append(String var1, Image var2) {
-      int var3 = this._list.append(var1, var2);
-      if (this._list.getType() == 3 && this._list.size() == 1 && this._selectCommand != null) {
-         this.addCommand(this._selectCommand);
-      }
-
-      return var3;
-   }
-
-   @Override
-   public void insert(int var1, String var2, Image var3) {
-      this._list.insert(var1, var2, var3);
-      if (this._list.getType() == 3 && this._list.size() == 1 && this._selectCommand != null) {
-         this.addCommand(this._selectCommand);
+               this._selectCommand = command;
+            }
+         }
       }
    }
 
    @Override
-   public void delete(int var1) {
-      this._list.delete(var1);
+   public String getString(int elementNum) {
+      return this._list.getString(elementNum);
+   }
+
+   @Override
+   public Image getImage(int elementNum) {
+      return this._list.getImage(elementNum);
+   }
+
+   @Override
+   public int append(String stringPart, Image imagePart) {
+      int result = this._list.append(stringPart, imagePart);
+      if (this._list.getType() == 3 && this._list.size() == 1 && this._selectCommand != null) {
+         this.addCommand(this._selectCommand);
+      }
+
+      return result;
+   }
+
+   @Override
+   public void insert(int elementNum, String stringPart, Image imagePart) {
+      this._list.insert(elementNum, stringPart, imagePart);
+      if (this._list.getType() == 3 && this._list.size() == 1 && this._selectCommand != null) {
+         this.addCommand(this._selectCommand);
+      }
+   }
+
+   @Override
+   public void delete(int elementNum) {
+      this._list.delete(elementNum);
       if (this._list.getType() == 3 && this._list.size() == 0) {
          this.removeCommandInternal(this._selectCommand, false);
       }
@@ -54,33 +83,40 @@ public class List extends Screen implements Choice {
    }
 
    @Override
-   public void set(int var1, String var2, Image var3) {
-      this._list.set(var1, var2, var3);
+   public void set(int elementNum, String stringPart, Image imagePart) {
+      this._list.set(elementNum, stringPart, imagePart);
    }
 
    @Override
-   public boolean isSelected(int var1) {
-      return this._list.isSelected(var1);
+   public boolean isSelected(int elementNum) {
+      return this._list.isSelected(elementNum);
    }
 
    @Override
    public int getSelectedIndex() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         int index = this._list.getSelectedIndex();
+         if (index == -1 && this._list.getType() != 2 && this._list.size() > 0) {
+            index = 0;
+         }
+
+         return index;
+      }
    }
 
    @Override
-   public int getSelectedFlags(boolean[] var1) {
-      return this._list.getSelectedFlags(var1);
+   public int getSelectedFlags(boolean[] selectedArray_return) {
+      return this._list.getSelectedFlags(selectedArray_return);
    }
 
    @Override
-   public void setSelectedIndex(int var1, boolean var2) {
-      this._list.setSelectedIndex(var1, var2);
+   public void setSelectedIndex(int elementNum, boolean selected) {
+      this._list.setSelectedIndex(elementNum, selected);
    }
 
    @Override
-   public void setSelectedFlags(boolean[] var1) {
-      this._list.setSelectedFlags(var1);
+   public void setSelectedFlags(boolean[] selectedArray) {
+      this._list.setSelectedFlags(selectedArray);
    }
 
    @Override
@@ -89,8 +125,8 @@ public class List extends Screen implements Choice {
    }
 
    @Override
-   public void setFitPolicy(int var1) {
-      this._list.setFitPolicy(var1);
+   public void setFitPolicy(int fitPolicy) {
+      this._list.setFitPolicy(fitPolicy);
    }
 
    @Override
@@ -99,37 +135,53 @@ public class List extends Screen implements Choice {
    }
 
    @Override
-   public void setFont(int var1, Font var2) {
-      this._list.setFont(var1, var2);
+   public void setFont(int elementNum, Font font) {
+      this._list.setFont(elementNum, font);
    }
 
    @Override
-   public Font getFont(int var1) {
-      return this._list.getFont(var1);
+   public Font getFont(int elementNum) {
+      return this._list.getFont(elementNum);
    }
 
-   private void init(String var1, int var2, String[] var3, Image[] var4, boolean var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void init(String title, int listType, String[] stringElements, Image[] imageElements, boolean validateElements) {
+      synchronized (Application.getEventLock()) {
+         this.getPeer().setDisplayable(this);
+         Manager container = (Manager)(new Object(3459045988797251584L));
+         this.getPeer().add(container);
+         this._list = new ChoiceGroup(listType, stringElements, imageElements, validateElements);
+         container.add(this._list.addToForm(null));
+         this.setTitle(title);
+         boolean addSelectCommand = listType == 3 && this._list.size() > 0;
+         if (addSelectCommand) {
+            this.addCommand(SELECT_COMMAND);
+         }
+      }
    }
 
-   public List(String var1, int var2, String[] var3, Image[] var4) {
+   public List(String title, int listType, String[] stringElements, Image[] imageElements) {
       super(new MIDPScreen());
       this._selectCommand = SELECT_COMMAND;
-      this.init(var1, var2, var3, var4, true);
+      this.init(title, listType, stringElements, imageElements, true);
    }
 
    @Override
-   public void removeCommand(Command var1) {
-      this.removeCommandInternal(var1, true);
+   public void removeCommand(Command cmd) {
+      this.removeCommandInternal(cmd, true);
    }
 
-   public List(String var1, int var2) {
+   public List(String title, int listType) {
       super(new MIDPScreen());
       this._selectCommand = SELECT_COMMAND;
-      this.init(var1, var2, null, null, false);
+      this.init(title, listType, null, null, false);
    }
 
-   private void removeCommandInternal(Command var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void removeCommandInternal(Command cmd, boolean canClearSelectCommand) {
+      synchronized (Application.getEventLock()) {
+         super.removeCommand(cmd);
+         if (canClearSelectCommand && cmd == this._selectCommand) {
+            this._selectCommand = null;
+         }
+      }
    }
 }

@@ -24,20 +24,20 @@ class ActiveRegionSupport {
    private static final long COOKIES_ATTRIB_MASK;
    private static final long COOKIES_ATTRIB_SHIFT;
 
-   ActiveRegionSupport(AttributedString$Iterator var1, ActiveRegionSupport$ActiveRegionFieldIf var2) {
-      this._runIterator = var1;
-      this._arField = var2;
+   ActiveRegionSupport(AttributedString$Iterator iterator, ActiveRegionSupport$ActiveRegionFieldIf arField) {
+      this._runIterator = iterator;
+      this._arField = arField;
       this.init();
    }
 
-   public boolean isInCookieRegion(int var1) {
-      this.adjustCurrentRun(var1);
+   public boolean isInCookieRegion(int caretPos) {
+      this.adjustCurrentRun(caretPos);
       return this.isInCookieRegion();
    }
 
    private boolean isInCookieRegion() {
-      long var1 = this._runIterator.runXAttrib() & 65504;
-      return var1 != 0 && this._arField.isCookieValid((int)(var1 >> 5) - 1);
+      long shiftedCookieId = this._runIterator.runXAttrib() & 65504;
+      return shiftedCookieId != 0 && this._arField.isCookieValid((int)(shiftedCookieId >> 5) - 1);
    }
 
    public int getRunStart() {
@@ -61,119 +61,119 @@ class ActiveRegionSupport {
    }
 
    public boolean nextActiveRegion() {
-      boolean var1 = true;
+      boolean hasNext = true;
 
-      while (var1) {
+      while (hasNext) {
          if (this.isInCookieRegion()) {
             return true;
          }
 
-         var1 = this.nextRun();
+         hasNext = this.nextRun();
       }
 
       return false;
    }
 
    public boolean prevActiveRegion() {
-      boolean var1 = true;
+      boolean hasPrev = true;
 
-      while (var1) {
+      while (hasPrev) {
          if (this.isInCookieRegion()) {
             return true;
          }
 
-         var1 = this.prevRun();
+         hasPrev = this.prevRun();
       }
 
       return false;
    }
 
-   public void getFocusRect(XYRect var1, TextField var2) {
-      if (this.isInCookieRegion(var2.getCaretPosition())) {
-         int var3 = this.getSameCookieRunStart(this._arField);
-         int var4 = this.getSameCookieRunEnd(this._arField);
-         if (var3 < var4) {
-            XYRect var5 = Ui.getTmpXYRect();
-            ArticInterface$LineInfo var6 = var2.getLineInfoForDocPos(var3, true);
-            ArticInterface$Line var7 = var6._line;
-            int var8 = var6._top;
+   public void getFocusRect(XYRect rect, TextField field) {
+      if (this.isInCookieRegion(field.getCaretPosition())) {
+         int firstOffset = this.getSameCookieRunStart(this._arField);
+         int lastOffset = this.getSameCookieRunEnd(this._arField);
+         if (firstOffset < lastOffset) {
+            XYRect tempRect = Ui.getTmpXYRect();
+            ArticInterface$LineInfo info = field.getLineInfoForDocPos(firstOffset, true);
+            ArticInterface$Line line = info._line;
+            int y = info._top;
 
-            for (int var9 = var6._start; var7 != null && var9 < var4; var7 = var7._next) {
-               int var10 = var9 <= var3 ? var3 : var9;
-               int var11 = var9 + var7._textLength > var4 ? var4 : var9 + var7._textLength;
-               Formatter.getTextBounds(var10, var11, var5, var7, var9, var8);
-               var1.union(var5);
-               var8 += var5.height;
-               var9 += var7._textLength + var7._skippedCharacters;
+            for (int offset = info._start; line != null && offset < lastOffset; line = line._next) {
+               int offset1 = offset <= firstOffset ? firstOffset : offset;
+               int offset2 = offset + line._textLength > lastOffset ? lastOffset : offset + line._textLength;
+               Formatter.getTextBounds(offset1, offset2, tempRect, line, offset, y);
+               rect.union(tempRect);
+               y += tempRect.height;
+               offset += line._textLength + line._skippedCharacters;
             }
 
-            Ui.returnTmpXYRect(var5);
+            Ui.returnTmpXYRect(tempRect);
          }
       }
    }
 
-   public int scrollVertically(int var1, TextField var2, ArticInterface$Line var3) {
+   public int scrollVertically(int amount, TextField field, ArticInterface$Line curLine) {
       this._adjustedAmount = 0;
       this._endsOnCookie = true;
-      if (var1 > 0) {
-         for (boolean var6 = this.scrollToNextActiveRegion((ActiveRegionSupport$ActiveRegionFieldIf)var2, var2.getCaretPosition());
-            var6;
-            var6 = this.nextActiveRegion()
+      if (amount > 0) {
+         for (boolean hasActiveRegion = this.scrollToNextActiveRegion((ActiveRegionSupport$ActiveRegionFieldIf)field, field.getCaretPosition());
+            hasActiveRegion;
+            hasActiveRegion = this.nextActiveRegion()
          ) {
-            int var4 = this._currentRunStart;
-            ArticInterface$LineInfo var7 = var2.getLineInfoForDocPos(var4, true);
-            ArticInterface$Line var8 = var7._line;
-            int var9 = 0;
+            int newPos = this._currentRunStart;
+            ArticInterface$LineInfo info = field.getLineInfoForDocPos(newPos, true);
+            ArticInterface$Line newLine = info._line;
+            int skipLineCount = 0;
 
-            for (int var10 = var1; var10 > 0 && var8 != var3; var9++) {
-               var3 = var3._next;
-               var10--;
+            for (int amountRemain = amount; amountRemain > 0 && newLine != curLine; skipLineCount++) {
+               curLine = curLine._next;
+               amountRemain--;
             }
 
-            if (var8 != var3) {
+            if (newLine != curLine) {
                this._endsOnCookie = false;
             }
 
-            this._adjustedAmount += var9;
-            var1 -= Math.max(1, var9);
-            var3 = var8;
-            if (var1 == 0) {
-               return var1;
+            this._adjustedAmount += skipLineCount;
+            amount -= Math.max(1, skipLineCount);
+            curLine = newLine;
+            if (amount == 0) {
+               return amount;
             }
 
             this.nextRun();
          }
       } else {
-         for (boolean var12 = this.scrollToPrevActiveRegion((ActiveRegionSupport$ActiveRegionFieldIf)var2, var2.getCaretPosition());
-            var12;
-            var12 = this.prevActiveRegion()
+         for (boolean hasActiveRegion = this.scrollToPrevActiveRegion((ActiveRegionSupport$ActiveRegionFieldIf)field, field.getCaretPosition());
+            hasActiveRegion;
+            hasActiveRegion = this.prevActiveRegion()
          ) {
-            int var11 = this.getRunEnd() - 1;
-            ArticInterface$LineInfo var13 = var2.getLineInfoForDocPos(var11, true);
-            ArticInterface$Line var14 = var13._line;
-            int var15 = 0;
+            int newPos = this.getRunEnd() - 1;
+            ArticInterface$LineInfo info = field.getLineInfoForDocPos(newPos, true);
+            ArticInterface$Line newLine = info._line;
+            int skipLineCount = 0;
 
-            for (int var16 = -var1; var16 > 0 && var14 != var3; var15++) {
-               var3 = var3._prev;
-               var16--;
+            for (int amountRemain = -amount; amountRemain > 0 && newLine != curLine; skipLineCount++) {
+               curLine = curLine._prev;
+               amountRemain--;
             }
 
-            if (var14 != var3) {
+            if (newLine != curLine) {
                this._endsOnCookie = false;
             }
 
-            this._adjustedAmount -= var15;
-            var1 += Math.max(1, var15);
-            var3 = var14;
-            if (var1 == 0) {
-               return var1;
+            this._adjustedAmount -= skipLineCount;
+            amount += Math.max(1, skipLineCount);
+            curLine = newLine;
+            if (amount == 0) {
+               return amount;
             }
 
             this.prevRun();
          }
       }
 
-      return var1;
+      return amount;
    }
 
    public int getAdjustedAmount() {
@@ -184,17 +184,17 @@ class ActiveRegionSupport {
       return this._endsOnCookie;
    }
 
-   public int getRegion(int var1) {
-      return !this.adjustCurrentRun(var1) ? -1 : this._currentRunIndex;
+   public int getRegion(int curPos) {
+      return !this.adjustCurrentRun(curPos) ? -1 : this._currentRunIndex;
    }
 
-   public String getRegionText(int var1, AttributedString var2) {
-      return !this.adjustCurrentRunForIndex(var1) ? null : var2.getText(this._currentRunStart, this.getRunEnd());
+   public String getRegionText(int region, AttributedString text) {
+      return !this.adjustCurrentRunForIndex(region) ? null : text.getText(this._currentRunStart, this.getRunEnd());
    }
 
-   public String getCurrentRegionText(int var1, AttributedString var2) {
-      this.adjustCurrentRun(var1);
-      return var2.getText(this._currentRunStart, this.getRunEnd());
+   public String getCurrentRegionText(int curPos, AttributedString text) {
+      this.adjustCurrentRun(curPos);
+      return text.getText(this._currentRunStart, this.getRunEnd());
    }
 
    public void init() {
@@ -203,14 +203,14 @@ class ActiveRegionSupport {
       this._runIterator.set(0, this._runIterator.text().length());
    }
 
-   public boolean adjustCurrentRunForIndex(int var1) {
-      while (this._currentRunIndex < var1) {
+   public boolean adjustCurrentRunForIndex(int index) {
+      while (this._currentRunIndex < index) {
          if (!this.nextRun()) {
             return false;
          }
       }
 
-      while (this._currentRunIndex > var1) {
+      while (this._currentRunIndex > index) {
          if (!this.prevRun()) {
             return false;
          }
@@ -220,67 +220,75 @@ class ActiveRegionSupport {
    }
 
    public static void addCookieMenuItems(
-      CookieProvider var0, AbstractString var1, int var2, int var3, int var4, StringPatternContainer var5, ContextMenu var6, Object var7, int var8
+      CookieProvider provider,
+      AbstractString str,
+      int minIndex,
+      int curIndex,
+      int maxIndex,
+      StringPatternContainer patterns,
+      ContextMenu contextMenu,
+      Object context,
+      int instance
    ) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   static MenuItem addCookieMenuItems(CookieProvider var0, Object var1, ContextMenu var2, Object var3) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private static MenuItem cookieToMenuItem(ActiveFieldCookie var0, CookieProvider var1, ContextMenu var2, Object var3) {
-      MenuItem var4 = null;
-      Object var5 = new Object();
-      var4 = var0.getFocusVerbs(var1, var3, (Vector)var5);
-      int var6 = ((Vector)var5).size();
+   static MenuItem addCookieMenuItems(CookieProvider provider, Object cookie, ContextMenu contextMenu, Object context) {
+      throw new RuntimeException("cod2jar: type check");
+   }
 
-      for (int var7 = 0; var7 < var6; var7++) {
-         Object var8 = ((Vector)var5).elementAt(var7);
-         if (var2 != null) {
-            var2.addItem((MenuItem)var8);
+   private static MenuItem cookieToMenuItem(ActiveFieldCookie cookie, CookieProvider provider, ContextMenu contextMenu, Object context) {
+      MenuItem defaultItem = null;
+      Vector items = (Vector)(new Object());
+      defaultItem = cookie.getFocusVerbs(provider, context, items);
+      int count = items.size();
+
+      for (int i = 0; i < count; i++) {
+         MenuItem menuItem = (MenuItem)items.elementAt(i);
+         if (contextMenu != null) {
+            contextMenu.addItem(menuItem);
          }
       }
 
-      return var4;
+      return defaultItem;
    }
 
-   private static Object createCookie(long var0, String var2) {
-      ActiveFieldContext var3 = new ActiveFieldContext(var2);
-      var3.setID(var0);
-      return FactoryUtil.createInstance(var0, var3);
+   private static Object createCookie(long cookieID, String text) {
+      ActiveFieldContext context = new ActiveFieldContext(text);
+      context.setID(cookieID);
+      return FactoryUtil.createInstance(cookieID, context);
    }
 
-   public Object getCookieWithFocus(int var1) {
-      if (!this.isInCookieRegion(var1)) {
+   public Object getCookieWithFocus(int curPos) {
+      if (!this.isInCookieRegion(curPos)) {
          return null;
       }
 
-      int var2 = (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
-      return this._arField.getCookie(var2);
+      int cookieId = (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
+      return this._arField.getCookie(cookieId);
    }
 
-   public int getCookieWithFocusId(int var1) {
-      return !this.isInCookieRegion(var1) ? -1 : (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
+   public int getCookieWithFocusId(int curPos) {
+      return !this.isInCookieRegion(curPos) ? -1 : (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
    }
 
-   public Object getCookieForRegionIndex(int var1) {
-      if (!this.adjustCurrentRunForIndex(var1)) {
+   public Object getCookieForRegionIndex(int regionIndex) {
+      if (!this.adjustCurrentRunForIndex(regionIndex)) {
          return null;
       }
 
-      int var2 = (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
-      return this._arField.getCookie(var2);
+      int cookieId = (int)((this._runIterator.runXAttrib() & 65504) >> 5) - 1;
+      return this._arField.getCookie(cookieId);
    }
 
-   private boolean adjustCurrentRun(int var1) {
-      while (var1 >= this._currentRunStart + this._runIterator.runLength()) {
+   private boolean adjustCurrentRun(int offset) {
+      while (offset >= this._currentRunStart + this._runIterator.runLength()) {
          if (!this.nextRun()) {
             return false;
          }
       }
 
-      while (this._currentRunStart > var1) {
+      while (this._currentRunStart > offset) {
          if (!this.prevRun()) {
             return false;
          }
@@ -289,55 +297,60 @@ class ActiveRegionSupport {
       return true;
    }
 
-   public boolean scrollToNextActiveRegion(ActiveRegionSupport$ActiveRegionFieldIf var1, int var2) {
-      boolean var3 = true;
-      if (this.isInCookieRegion(var2)) {
-         var3 = this.nextDifferentCookieRun(var1);
+   public boolean scrollToNextActiveRegion(ActiveRegionSupport$ActiveRegionFieldIf arField, int curPos) {
+      boolean hasNext = true;
+      if (this.isInCookieRegion(curPos)) {
+         hasNext = this.nextDifferentCookieRun(arField);
       }
 
-      return var3 && this.nextActiveRegion();
+      return hasNext && this.nextActiveRegion();
    }
 
-   public boolean scrollToPrevActiveRegion(ActiveRegionSupport$ActiveRegionFieldIf var1, int var2) {
-      boolean var3 = true;
-      if (this.isInCookieRegion(var2)) {
-         var3 = this.prevDifferentCookieRun(var1);
+   public boolean scrollToPrevActiveRegion(ActiveRegionSupport$ActiveRegionFieldIf arField, int curPos) {
+      boolean hasPrev = true;
+      if (this.isInCookieRegion(curPos)) {
+         hasPrev = this.prevDifferentCookieRun(arField);
       }
 
-      return var3 && this.prevActiveRegion();
+      return hasPrev && this.prevActiveRegion();
    }
 
-   public int getSameCookieRunStart(ActiveRegionSupport$ActiveRegionFieldIf var1) {
-      int var2 = this._currentRunIndex;
-      int var3 = this._currentRunStart;
+   public int getSameCookieRunStart(ActiveRegionSupport$ActiveRegionFieldIf arField) {
+      int initialRunId = this._currentRunIndex;
+      int start = this._currentRunStart;
 
-      while (this.prevRun() && var1.regionsHaveSameCookie(this._currentRunIndex, this._currentRunIndex + 1)) {
-         var3 = this._currentRunStart;
+      while (this.prevRun() && arField.regionsHaveSameCookie(this._currentRunIndex, this._currentRunIndex + 1)) {
+         start = this._currentRunStart;
       }
 
-      this.adjustCurrentRunForIndex(var2);
-      return var3;
+      this.adjustCurrentRunForIndex(initialRunId);
+      return start;
    }
 
-   public int getSameCookieRunEnd(ActiveRegionSupport$ActiveRegionFieldIf var1) {
-      int var2 = this._currentRunIndex;
-      int var3 = this._currentRunStart + this._runIterator.runLength();
+   public int getSameCookieRunEnd(ActiveRegionSupport$ActiveRegionFieldIf arField) {
+      int initialRunId = this._currentRunIndex;
+      int end = this._currentRunStart + this._runIterator.runLength();
 
-      while (this.nextRun() && var1.regionsHaveSameCookie(this._currentRunIndex - 1, this._currentRunIndex)) {
-         var3 = this._currentRunStart + this._runIterator.runLength();
+      while (this.nextRun() && arField.regionsHaveSameCookie(this._currentRunIndex - 1, this._currentRunIndex)) {
+         end = this._currentRunStart + this._runIterator.runLength();
       }
 
-      this.adjustCurrentRunForIndex(var2);
-      return var3;
+      this.adjustCurrentRunForIndex(initialRunId);
+      return end;
    }
 
-   Object createCookie(AttributedString var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   Object createCookie(AttributedString text, long cookieId) {
+      try {
+         String cookieText = text.getText(this._currentRunStart, this.getRunEnd());
+         return createCookie(cookieId, cookieText);
+      } catch (IndexOutOfBoundsException e) {
+         return null;
+      }
    }
 
-   private boolean nextDifferentCookieRun(ActiveRegionSupport$ActiveRegionFieldIf var1) {
+   private boolean nextDifferentCookieRun(ActiveRegionSupport$ActiveRegionFieldIf arField) {
       while (this.nextRun()) {
-         if (!var1.regionsHaveSameCookie(this._currentRunIndex - 1, this._currentRunIndex)) {
+         if (!arField.regionsHaveSameCookie(this._currentRunIndex - 1, this._currentRunIndex)) {
             return true;
          }
       }
@@ -345,9 +358,9 @@ class ActiveRegionSupport {
       return false;
    }
 
-   private boolean prevDifferentCookieRun(ActiveRegionSupport$ActiveRegionFieldIf var1) {
+   private boolean prevDifferentCookieRun(ActiveRegionSupport$ActiveRegionFieldIf arField) {
       while (this.prevRun()) {
-         if (!var1.regionsHaveSameCookie(this._currentRunIndex, this._currentRunIndex + 1)) {
+         if (!arField.regionsHaveSameCookie(this._currentRunIndex, this._currentRunIndex + 1)) {
             return true;
          }
       }
@@ -356,22 +369,22 @@ class ActiveRegionSupport {
    }
 
    private boolean nextRun() {
-      boolean var1 = this._runIterator.next();
-      if (var1) {
+      boolean hasNext = this._runIterator.next();
+      if (hasNext) {
          this._currentRunStart = this._runIterator.pos();
          this._currentRunIndex++;
       }
 
-      return var1;
+      return hasNext;
    }
 
    private boolean prevRun() {
-      boolean var1 = this._runIterator.prev();
-      if (var1) {
+      boolean hasPrev = this._runIterator.prev();
+      if (hasPrev) {
          this._currentRunStart = this._runIterator.pos();
          this._currentRunIndex--;
       }
 
-      return var1;
+      return hasPrev;
    }
 }

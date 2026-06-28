@@ -2,6 +2,7 @@ package net.rim.device.cldc.io.tcpsocket;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.microedition.io.SocketConnection;
@@ -45,40 +46,146 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
       this.releaseSocketIfNecessary();
    }
 
-   final void write(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void write(byte[] data, int offset, int length) {
+      synchronized (this._writeLock) {
+         if (this._outputStreamState == 3) {
+            throw new Object();
+         }
+
+         if (data != null && offset >= 0 && length >= 0 && offset + length <= data.length) {
+            while (length > 0) {
+               int result = this._nativeSocket.send(data, offset, length, 0);
+               if (result == 0) {
+                  try {
+                     this._writeLock.wait();
+                  } catch (InterruptedException var7) {
+                  }
+               } else {
+                  offset += result;
+                  length -= result;
+               }
+            }
+         } else {
+            throw new Object();
+         }
+      }
    }
 
-   public final void connect(int var1, int var2) {
+   public final void connect(int ipv4Addr, int destPort) {
       if (this._nativeSocket == null) {
          throw new Object();
       }
 
-      this._nativeSocket.connectIPv4(var1, var2);
+      this._nativeSocket.connectIPv4(ipv4Addr, destPort);
    }
 
-   final void write(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void write(int data) {
+      synchronized (this._writeLock) {
+         if (this._outputStreamState == 3) {
+            throw new Object();
+         }
+
+         while (true) {
+            int result = this._nativeSocket.send(data, 0);
+            if (result != 0) {
+               return;
+            }
+
+            try {
+               this._writeLock.wait();
+            } catch (InterruptedException var5) {
+            }
+         }
+      }
    }
 
-   final int read(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   final int read(byte[] data, int offset, int length) {
+      synchronized (this._readLock) {
+         if (this._inputStreamState == 3) {
+            throw new Object();
+         }
+
+         if (length == 0) {
+            return 0;
+         }
+
+         if (data != null && offset >= 0 && length >= 0 && offset + length <= data.length) {
+            if (this._readBufferOffset < this._readBufferLength) {
+               int toRead = Math.min(this._readBufferLength - this._readBufferOffset, length);
+               System.arraycopy(this._readBuffer, this._readBufferOffset, data, offset, toRead);
+               offset += toRead;
+               length -= toRead;
+               this._readBufferOffset += toRead;
+               return toRead;
+            }
+
+            do {
+               int numRead = 0;
+               if (length < 1500) {
+                  this._readBufferLength = this._nativeSocket.receive(this._readBuffer, 0, this._readBuffer.length, 0);
+                  this._readBufferOffset = 0;
+                  int toRead = Math.min(this._readBufferLength - this._readBufferOffset, length);
+                  System.arraycopy(this._readBuffer, this._readBufferOffset, data, offset, toRead);
+                  offset += toRead;
+                  this._readBufferOffset += toRead;
+                  numRead = toRead;
+               } else {
+                  numRead = this._nativeSocket.receive(data, offset, length, 0);
+               }
+
+               if (numRead != 0) {
+                  return numRead;
+               }
+
+               if (this._inputStreamState == 2) {
+                  return -1;
+               }
+
+               try {
+                  this._readLock.wait();
+               } catch (InterruptedException var7) {
+               }
+
+               if (this._inputStreamState == 2) {
+                  return -1;
+               }
+            } while (this._inputStreamState != 3);
+
+            throw new Object();
+         } else {
+            throw new Object();
+         }
+      }
    }
 
    final int available() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._readLock) {
+         return this._readBufferLength - this._readBufferOffset + this._nativeSocket.available();
+      }
    }
 
    final int read() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    final void inputClosed() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._inputStreamState = 3;
+      this._inStream = null;
+      synchronized (this._readLock) {
+         this._readLock.notify();
+      }
+
+      this.releaseSocketIfNecessary();
    }
 
    final void outputClosed() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._outputStreamState = 3;
+      this._outStream = null;
+      synchronized (this._writeLock) {
+         this._writeLock.notify();
+      }
+
+      this.releaseSocketIfNecessary();
    }
 
    public final void init() {
@@ -128,12 +235,12 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
    }
 
    @Override
-   public final int getSocketOption(byte var1) {
+   public final int getSocketOption(byte option) {
       return 0;
    }
 
    @Override
-   public final void setSocketOption(byte var1, int var2) {
+   public final void setSocketOption(byte option, int value) {
    }
 
    @Override
@@ -143,30 +250,52 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
    @Override
    public final void socketDataReady() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._readLock) {
+         this._readLock.notify();
+      }
    }
 
    @Override
    public final void socketWriteReady() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._writeLock) {
+         this._writeLock.notify();
+      }
    }
 
    @Override
    public final void socketDisconnected() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._inputStreamState = 2;
+      synchronized (this._readLock) {
+         this._readLock.notify();
+      }
+
+      this.outputClosed();
    }
 
-   public TcpSocket(Tunnel var1, TcpAddress var2) {
+   public TcpSocket(Tunnel tunnel, TcpAddress address) {
       this._readLock = new Object();
       this._writeLock = new Object();
-      this._tunnel = var1;
+      this._tunnel = tunnel;
       this._nativeSocket = (NativeSocket)(new Object());
-      this._address = var2;
-      PortAssigner.getInstance(6).registerConnection(var2.getLocalPort(), this, var1.getConfig().getName());
+      this._address = address;
+      PortAssigner.getInstance(6).registerConnection(address.getLocalPort(), this, tunnel.getConfig().getName());
       NativeSocketEventDispatcher.addListener(this);
    }
 
    private final void releaseSocketIfNecessary() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._nativeSocket != null) {
+         if (this._inputStreamState == 3 && this._outputStreamState == 3) {
+            try {
+               this._nativeSocket.close();
+            } catch (IOException var2) {
+            }
+
+            this._nativeSocket = null;
+         }
+
+         NativeSocketEventDispatcher.removeListener(this);
+         PortAssigner.getInstance(6).deregisterConnection(this._address.getLocalPort(), this, this._tunnel.getConfig().getName());
+         this._tunnel.close();
+      }
    }
 }

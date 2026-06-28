@@ -4,6 +4,6 @@ public class EOFException extends IOException {
    public EOFException() {
    }
 
-   public EOFException(String var1) {
+   public EOFException(String s) {
    }
 }

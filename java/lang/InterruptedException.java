@@ -4,6 +4,6 @@ public class InterruptedException extends Exception {
    public InterruptedException() {
    }
 
-   public InterruptedException(String var1) {
+   public InterruptedException(String s) {
    }
 }

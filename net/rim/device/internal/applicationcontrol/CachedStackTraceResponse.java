@@ -8,39 +8,39 @@ final class CachedStackTraceResponse implements Persistable {
    private long _responseReceivedMask;
    private static final long FLAG;
 
-   CachedStackTraceResponse(byte[] var1) {
-      this._traceHash = var1;
+   CachedStackTraceResponse(byte[] traceHash) {
+      this._traceHash = traceHash;
       this._responseReceivedMask = Integer.MIN_VALUE;
    }
 
-   final boolean equals(CachedStackTraceResponse var1) {
-      return Arrays.equals(this._traceHash, var1._traceHash);
+   final boolean equals(CachedStackTraceResponse stackPerms) {
+      return Arrays.equals(this._traceHash, stackPerms._traceHash);
    }
 
-   final boolean equals(byte[] var1) {
-      return Arrays.equals(this._traceHash, var1);
+   final boolean equals(byte[] traceHash) {
+      return Arrays.equals(this._traceHash, traceHash);
    }
 
-   final void setAllowed(int var1, int var2, boolean var3) {
-      if (var3) {
-         this._responseReceivedMask |= Long.MIN_VALUE >>> var1;
-         this._responseReceivedMask &= Long.MIN_VALUE >>> var2 ^ -1;
+   final void setAllowed(int allowFlag, int promptFlag, boolean allow) {
+      if (allow) {
+         this._responseReceivedMask |= Long.MIN_VALUE >>> allowFlag;
+         this._responseReceivedMask &= Long.MIN_VALUE >>> promptFlag ^ -1;
       } else {
-         this._responseReceivedMask &= Long.MIN_VALUE >>> var1 ^ -1;
-         this._responseReceivedMask &= Long.MIN_VALUE >>> var2 ^ -1;
+         this._responseReceivedMask &= Long.MIN_VALUE >>> allowFlag ^ -1;
+         this._responseReceivedMask &= Long.MIN_VALUE >>> promptFlag ^ -1;
       }
    }
 
-   final int isAllowed(int var1, int var2) {
-      return ApplicationControlImpl.permissionMaskToTriState(this._responseReceivedMask, var1, var2);
+   final int isAllowed(int allowFlag, int promptFlag) {
+      return ApplicationControlImpl.permissionMaskToTriState(this._responseReceivedMask, allowFlag, promptFlag);
    }
 
-   final void reset(int var1, int var2) {
-      this._responseReceivedMask |= Long.MIN_VALUE >>> var1;
-      this._responseReceivedMask |= Long.MIN_VALUE >>> var2;
+   final void reset(int allowFlag, int promptFlag) {
+      this._responseReceivedMask |= Long.MIN_VALUE >>> allowFlag;
+      this._responseReceivedMask |= Long.MIN_VALUE >>> promptFlag;
    }
 
-   static final int responseToPermission(CachedStackTraceResponse var0, int var1, int var2) {
-      return var0 != null ? var0.isAllowed(var1, var2) : 2;
+   static final int responseToPermission(CachedStackTraceResponse response, int allowFlag, int promptFlag) {
+      return response != null ? response.isAllowed(allowFlag, promptFlag) : 2;
    }
 }

@@ -7,9 +7,9 @@ public class URLParameters {
    private Vector _keys = (Vector)(new Object());
    private Vector _values = (Vector)(new Object());
 
-   public boolean containParameter(String var1) {
-      int var2 = this.searchForIndex(var1);
-      return var2 >= 0;
+   public boolean containParameter(String key) {
+      int index = this.searchForIndex(key);
+      return index >= 0;
    }
 
    public Vector getKeys() {
@@ -20,52 +20,52 @@ public class URLParameters {
       return this._values;
    }
 
-   public String getValue(String var1) {
-      Object var2 = null;
-      int var3 = this.searchForIndex(var1);
-      if (var3 >= 0) {
-         var2 = this._values.elementAt(var3);
+   public String getValue(String key) {
+      String value = null;
+      int index = this.searchForIndex(key);
+      if (index >= 0) {
+         value = (String)this._values.elementAt(index);
       }
 
-      return (String)var2;
+      return value;
    }
 
-   public String remove(String var1) {
-      Object var2 = null;
-      int var3 = this.searchForIndex(var1);
-      if (var3 >= 0) {
-         var2 = this._values.elementAt(var3);
-         this._keys.removeElementAt(var3);
-         this._values.removeElementAt(var3);
+   public String remove(String key) {
+      String value = null;
+      int index = this.searchForIndex(key);
+      if (index >= 0) {
+         value = (String)this._values.elementAt(index);
+         this._keys.removeElementAt(index);
+         this._values.removeElementAt(index);
       }
 
-      return (String)var2;
+      return value;
    }
 
-   private int searchForIndex(String var1) {
-      int var2 = this._keys.size();
-      int var3 = 0;
+   private int searchForIndex(String key) {
+      int vectorSize = this._keys.size();
+      int position = 0;
 
-      while (var3 < var2 && !StringUtilities.strEqualIgnoreCase(var1, (String)this._keys.elementAt(var3), 1701707776)) {
-         var3++;
+      while (position < vectorSize && !StringUtilities.strEqualIgnoreCase(key, (String)this._keys.elementAt(position), 1701707776)) {
+         position++;
       }
 
-      return var3 < var2 ? var3 : -1;
+      return position < vectorSize ? position : -1;
    }
 
-   public void setParameter(String var1, String var2) {
+   public void setParameter(String name, String value) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public String toString() {
-      Object var1 = new Object();
-      int var2 = this._keys.size();
+      StringBuffer buffer = (StringBuffer)(new Object());
+      int size = this._keys.size();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         ((StringBuffer)var1).append(';').append(this._keys.elementAt(var3)).append('=').append(this._values.elementAt(var3));
+      for (int i = 0; i < size; i++) {
+         buffer.append(';').append(this._keys.elementAt(i)).append('=').append(this._values.elementAt(i));
       }
 
-      return ((StringBuffer)var1).toString();
+      return buffer.toString();
    }
 }

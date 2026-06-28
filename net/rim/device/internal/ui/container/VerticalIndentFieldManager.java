@@ -13,47 +13,47 @@ public class VerticalIndentFieldManager extends VerticalFieldManager {
       this(0);
    }
 
-   public VerticalIndentFieldManager(long var1) {
-      super(var1);
+   public VerticalIndentFieldManager(long style) {
+      super(style);
    }
 
-   public void add(Field var1, int var2) {
-      Arrays.add(this._indentAmounts, var2);
-      super.add(var1);
-   }
-
-   @Override
-   public void add(Field var1) {
-      this.add(var1, 0);
-   }
-
-   public void insert(Field var1, int var2, int var3) {
-      Arrays.insertAt(this._indentAmounts, var3, var2);
-      super.insert(var1, var2);
+   public void add(Field field, int indentAmount) {
+      Arrays.add(this._indentAmounts, indentAmount);
+      super.add(field);
    }
 
    @Override
-   public void insert(Field var1, int var2) {
-      this.insert(var1, var2, 0);
+   public void add(Field field) {
+      this.add(field, 0);
+   }
+
+   public void insert(Field field, int index, int indentAmount) {
+      Arrays.insertAt(this._indentAmounts, indentAmount, index);
+      super.insert(field, index);
    }
 
    @Override
-   public void delete(Field var1) {
-      Arrays.removeAt(this._indentAmounts, var1.getIndex());
-      super.delete(var1);
+   public void insert(Field field, int index) {
+      this.insert(field, index, 0);
    }
 
    @Override
-   public void deleteRange(int var1, int var2) {
-      for (int var3 = var1 + var2 - 1; var3 >= var1; var3--) {
-         Arrays.removeAt(this._indentAmounts, var3);
+   public void delete(Field field) {
+      Arrays.removeAt(this._indentAmounts, field.getIndex());
+      super.delete(field);
+   }
+
+   @Override
+   public void deleteRange(int start, int count) {
+      for (int i = start + count - 1; i >= start; i--) {
+         Arrays.removeAt(this._indentAmounts, i);
       }
 
-      super.deleteRange(var1, var2);
+      super.deleteRange(start, count);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
+   protected void sublayout(int width, int height) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

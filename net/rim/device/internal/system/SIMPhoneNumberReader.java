@@ -10,93 +10,93 @@ public final class SIMPhoneNumberReader implements SIMCardEfTask {
    static final byte UNKNOWN_CONST;
    static StringBuffer _tempNumber;
 
-   public SIMPhoneNumberReader(SIMPhoneNumberReader$PhoneNumberList var1, int var2, int var3) {
-      if (var1 == null) {
+   public SIMPhoneNumberReader(SIMPhoneNumberReader$PhoneNumberList list, int efID, int recNum) {
+      if (list == null) {
          throw new Object();
       }
 
-      this._list = var1;
-      this._efID = var2;
-      this._recNum = var3;
+      this._list = list;
+      this._efID = efID;
+      this._recNum = recNum;
    }
 
    @Override
-   public final void doWork(SIMCardEfHandler var1) {
-      int var2 = var1.infoRequest(this._efID);
-      if (var2 == 0) {
-         int var3 = var1.getNumRecords();
-         if (var3 > 0 && this._recNum <= var3) {
-            int var4 = var1.getRecordLength();
-            byte[] var5 = new byte[var4];
-            int var6 = 1;
+   public final void doWork(SIMCardEfHandler efHandler) {
+      int res = efHandler.infoRequest(this._efID);
+      if (res == 0) {
+         int lastRecNum = efHandler.getNumRecords();
+         if (lastRecNum > 0 && this._recNum <= lastRecNum) {
+            int recLen = efHandler.getRecordLength();
+            byte[] buffer = new byte[recLen];
+            int startRecNum = 1;
             if (this._recNum > 0) {
-               var6 = this._recNum;
-               var3 = this._recNum;
+               startRecNum = this._recNum;
+               lastRecNum = this._recNum;
             }
 
-            for (int var7 = var6; var7 <= var3; var7++) {
-               var2 = var1.readRequest(var7, var5);
-               if (var2 != 0) {
+            for (int recNum = startRecNum; recNum <= lastRecNum; recNum++) {
+               res = efHandler.readRequest(recNum, buffer);
+               if (res != 0) {
                   return;
                }
 
-               this.readFromBuffer(var7, var4, var5);
+               this.readFromBuffer(recNum, recLen, buffer);
             }
          }
       }
    }
 
-   private final void readFromBuffer(int var1, int var2, byte[] var3) {
-      String var4 = null;
-      String var5 = null;
-      if (var2 > 14) {
-         var4 = SIMCard.decodeAlphaId(var3, 0, var2 - 14);
+   private final void readFromBuffer(int recNum, int size, byte[] buffer) {
+      String name = null;
+      String number = null;
+      if (size > 14) {
+         name = SIMCard.decodeAlphaId(buffer, 0, size - 14);
       }
 
-      if (var4 != null) {
-         var4 = var4.trim();
+      if (name != null) {
+         name = name.trim();
       }
 
       _tempNumber.setLength(0);
-      int var6 = var3[var2 - 14];
-      if (var6 > 1) {
-         var6--;
-         byte var7 = var3[var2 - 14 + 1];
-         int var8 = var2 - 14 + 2;
-         readBCDNumber(_tempNumber, var3, var8, var8 + var6);
-         var5 = _tempNumber.toString();
-         byte var9 = var3[var2 - 14 + 13];
-         this._list.addPhoneNumber(var1, var4, var5, var9, var7);
+      int len = buffer[size - 14];
+      if (len > 1) {
+         len--;
+         byte tonAndNpi = buffer[size - 14 + 1];
+         int start = size - 14 + 2;
+         readBCDNumber(_tempNumber, buffer, start, start + len);
+         number = _tempNumber.toString();
+         byte extRecord = buffer[size - 14 + 13];
+         this._list.addPhoneNumber(recNum, name, number, extRecord, tonAndNpi);
       }
    }
 
-   public static final void readBCDNumber(StringBuffer var0, byte[] var1, int var2, int var3) {
-      for (int var4 = var2; var4 < var3; var4++) {
-         byte var5 = var1[var4];
-         if (var5 == -1) {
+   public static final void readBCDNumber(StringBuffer number, byte[] buffer, int start, int endplus1) {
+      for (int i = start; i < endplus1; i++) {
+         byte b = buffer[i];
+         if (b == -1) {
             return;
          }
 
-         int var6 = (var5 & 240) >> 4;
-         int var7 = var5 & 15;
-         handleDigit(var0, var7);
-         handleDigit(var0, var6);
+         int dig2 = (b & 240) >> 4;
+         int dig1 = b & 15;
+         handleDigit(number, dig1);
+         handleDigit(number, dig2);
       }
    }
 
-   private static final void handleDigit(StringBuffer var0, int var1) {
-      if (var1 < 10) {
-         char var2 = (char)(48 + var1);
-         var0.append(var2);
-      } else if (var1 == 10) {
-         var0.append('*');
-      } else if (var1 == 11) {
-         var0.append('#');
-      } else if (var1 == 12) {
-         var0.append(',');
+   private static final void handleDigit(StringBuffer number, int dig) {
+      if (dig < 10) {
+         char c = (char)(48 + dig);
+         number.append(c);
+      } else if (dig == 10) {
+         number.append('*');
+      } else if (dig == 11) {
+         number.append('#');
+      } else if (dig == 12) {
+         number.append(',');
       } else {
-         if (var1 == 13) {
-            var0.append('?');
+         if (dig == 13) {
+            number.append('?');
          }
       }
    }

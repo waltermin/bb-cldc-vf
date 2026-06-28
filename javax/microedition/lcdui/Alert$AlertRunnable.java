@@ -3,8 +3,8 @@ package javax.microedition.lcdui;
 class Alert$AlertRunnable implements Runnable {
    private final Alert this$0;
 
-   Alert$AlertRunnable(Alert var1) {
-      this.this$0 = var1;
+   Alert$AlertRunnable(Alert _1) {
+      this.this$0 = _1;
    }
 
    @Override

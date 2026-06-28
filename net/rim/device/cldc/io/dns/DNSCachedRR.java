@@ -5,24 +5,24 @@ public final class DNSCachedRR {
    private int _expiryTime;
    private Object _data;
 
-   public DNSCachedRR(DNSMessageIPv4Resource var1, int var2) {
-      this._type = var1.getType();
-      this._expiryTime = var2 + var1.getTTL();
+   public DNSCachedRR(DNSMessageIPv4Resource resource, int timeStamp) {
+      this._type = resource.getType();
+      this._expiryTime = timeStamp + resource.getTTL();
       switch (this._type) {
          case 6:
-            this._data = ((DNSMessageIPv4Resource$SOAData)var1.getData()).mName;
+            this._data = ((DNSMessageIPv4Resource$SOAData)resource.getData()).mName;
             return;
          case 11:
-            this._data = ((DNSMessageIPv4Resource$WKSData)var1.getData()).address;
+            this._data = ((DNSMessageIPv4Resource$WKSData)resource.getData()).address;
             return;
          case 14:
-            this._data = ((DNSMessageIPv4Resource$MINFOData)var1.getData()).rMailBox;
+            this._data = ((DNSMessageIPv4Resource$MINFOData)resource.getData()).rMailBox;
             return;
          case 15:
-            this._data = ((DNSMessageIPv4Resource$MXData)var1.getData()).domainName;
+            this._data = ((DNSMessageIPv4Resource$MXData)resource.getData()).domainName;
             return;
          default:
-            this._data = var1.getData();
+            this._data = resource.getData();
       }
    }
 

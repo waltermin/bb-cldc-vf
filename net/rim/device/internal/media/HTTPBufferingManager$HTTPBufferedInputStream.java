@@ -9,13 +9,13 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
    private boolean _skipping;
    private final HTTPBufferingManager this$0;
 
-   HTTPBufferingManager$HTTPBufferedInputStream(HTTPBufferingManager var1) {
-      this.this$0 = var1;
+   HTTPBufferingManager$HTTPBufferedInputStream(HTTPBufferingManager _1) {
+      this.this$0 = _1;
       this.readBuffer = new byte[1];
    }
 
    @Override
-   public void mark(int var1) {
+   public void mark(int readlimit) {
       this._markingPos = this.this$0._readOffset;
    }
 
@@ -26,7 +26,7 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
 
    @Override
    public void reset() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -35,30 +35,80 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
    }
 
    @Override
-   public long skip(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public long skip(long n) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this.this$0._lock) {
+         int read = this.read(this.readBuffer, 0, 1);
+         return read > 0 ? this.readBuffer[0] & 0xFF : -1;
+      }
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int read(byte[] buffer, int start, int length) {
+      if (this._closed) {
+         return -1;
+      }
+
+      synchronized (this.this$0._lock) {
+         while (this.this$0._dataLength == 0) {
+            if (this.this$0._shutdown || this._closed) {
+               return -1;
+            }
+
+            try {
+               this.this$0._lock.wait();
+            } catch (InterruptedException var8) {
+            }
+         }
+
+         int bytesRead = Math.min(length, this.this$0._dataLength);
+         int len1 = Math.min(bytesRead, this.this$0._buffer.length - this.this$0._readOffset);
+         if (!this._skipping) {
+            this.arrayCopy(this.this$0._buffer, this.this$0._readOffset, buffer, start, len1);
+         }
+
+         HTTPBufferingManager.access$512(this.this$0, len1);
+         if (len1 < bytesRead) {
+            start += len1;
+            this.this$0._readOffset = 0;
+            len1 = bytesRead - len1;
+            if (!this._skipping) {
+               this.arrayCopy(this.this$0._buffer, this.this$0._readOffset, buffer, start, len1);
+            }
+
+            HTTPBufferingManager.access$512(this.this$0, len1);
+         }
+
+         if (this.this$0._readOffset == this.this$0._buffer.length) {
+            this.this$0._readOffset = 0;
+         }
+
+         synchronized (this.this$0._lock) {
+            HTTPBufferingManager.access$620(this.this$0, bytesRead);
+            this.this$0._lock.notifyAll();
+         }
+
+         return bytesRead;
+      }
    }
 
-   private void arrayCopy(byte[] var1, int var2, byte[] var3, int var4, int var5) {
-      if (var5 == 1) {
-         var3[var4] = var1[var2];
+   private void arrayCopy(byte[] src, int srcIndex, byte[] dest, int destIndex, int length) {
+      if (length == 1) {
+         dest[destIndex] = src[srcIndex];
       } else {
-         System.arraycopy(var1, var2, var3, var4, var5);
+         System.arraycopy(src, srcIndex, dest, destIndex, length);
       }
    }
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._closed = true;
+      synchronized (this.this$0._lock) {
+         this.this$0._lock.notifyAll();
+      }
    }
 }

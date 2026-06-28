@@ -8,18 +8,18 @@ import net.rim.device.api.util.IntHashtable;
 final class ResourceBundleFamily$MyIntHashtable extends IntHashtable implements MemoryCleanerListener {
    private final ResourceBundleFamily this$0;
 
-   ResourceBundleFamily$MyIntHashtable(ResourceBundleFamily var1, int var2) {
-      super(var2);
-      this.this$0 = var1;
+   ResourceBundleFamily$MyIntHashtable(ResourceBundleFamily _1, int initialCapacity) {
+      super(initialCapacity);
+      this.this$0 = _1;
       MemoryCleanerDaemon.addWeakListener(this, false);
    }
 
    @Override
-   public final boolean cleanNow(int var1) {
-      if (var1 == 6 && PersistentContent.isEncryptionEnabled()) {
-         boolean var2 = this.this$0._cache.size() > 0;
+   public final boolean cleanNow(int event) {
+      if (event == 6 && PersistentContent.isEncryptionEnabled()) {
+         boolean gc = this.this$0._cache.size() > 0;
          this.this$0._cache.clear();
-         return var2;
+         return gc;
       } else {
          return false;
       }

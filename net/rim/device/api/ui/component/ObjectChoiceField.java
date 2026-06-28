@@ -7,48 +7,48 @@ public class ObjectChoiceField extends ChoiceField {
       this(null, null, 0, 0);
    }
 
-   public ObjectChoiceField(String var1, Object[] var2) {
-      this(var1, var2, 0, 0);
+   public ObjectChoiceField(String label, Object[] choices) {
+      this(label, choices, 0, 0);
    }
 
-   public ObjectChoiceField(String var1, Object[] var2, int var3) {
-      this(var1, var2, var3, 0);
+   public ObjectChoiceField(String label, Object[] choices, int initialIndex) {
+      this(label, choices, initialIndex, 0);
    }
 
-   public ObjectChoiceField(String var1, Object[] var2, int var3, long var4) {
-      super(var1, var2 != null ? var2.length : 0, var3, var4);
-      int var6 = var2 != null ? var2.length : 0;
-      this._choices = new Object[var6];
-      if (var6 != 0) {
-         System.arraycopy(var2, 0, this._choices, 0, var6);
+   public ObjectChoiceField(String label, Object[] choices, int initialIndex, long style) {
+      super(label, choices != null ? choices.length : 0, initialIndex, style);
+      int length = choices != null ? choices.length : 0;
+      this._choices = new Object[length];
+      if (length != 0) {
+         System.arraycopy(choices, 0, this._choices, 0, length);
       }
    }
 
-   public ObjectChoiceField(String var1, Object[] var2, Object var3) {
-      super(var1, var2.length, 0);
-      this.setChoices(var2);
-      this.setSelectedIndex(var3);
+   public ObjectChoiceField(String label, Object[] choices, Object initialObject) {
+      super(label, choices.length, 0);
+      this.setChoices(choices);
+      this.setSelectedIndex(initialObject);
    }
 
    @Override
-   public Object getChoice(int var1) {
-      if (this._choices.length == 0 && var1 == 0) {
+   public Object getChoice(int index) {
+      if (this._choices.length == 0 && index == 0) {
          return null;
-      } else if (var1 >= 0 && this._choices.length > var1) {
-         return this._choices[var1];
+      } else if (index >= 0 && this._choices.length > index) {
+         return this._choices[index];
       } else {
-         throw new Object(Integer.toString(var1));
+         throw new Object(Integer.toString(index));
       }
    }
 
-   public void setChoices(Object[] var1) {
-      int var2 = var1 != null ? var1.length : 0;
-      this._choices = new Object[var2];
-      if (var2 != 0) {
-         System.arraycopy(var1, 0, this._choices, 0, var2);
+   public void setChoices(Object[] choices) {
+      int length = choices != null ? choices.length : 0;
+      this._choices = new Object[length];
+      if (length != 0) {
+         System.arraycopy(choices, 0, this._choices, 0, length);
       }
 
-      this.setSize(var2);
+      this.setSize(length);
       super._selectedWidth = 0;
    }
 }

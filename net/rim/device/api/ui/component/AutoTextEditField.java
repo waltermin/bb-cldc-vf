@@ -59,11 +59,11 @@ public class AutoTextEditField extends EditField {
       this(null, null, 1000000, 4503599627370496L);
    }
 
-   public AutoTextEditField(String var1, String var2) {
-      this(var1, var2, 1000000, 4503599627370496L);
+   public AutoTextEditField(String label, String initialValue) {
+      this(label, initialValue, 1000000, 4503599627370496L);
    }
 
-   public AutoTextEditField(String var1, String var2, int var3, long var4) {
+   public AutoTextEditField(String label, String initialValue, int maxNumChars, long style) {
    }
 
    @Override
@@ -91,36 +91,36 @@ public class AutoTextEditField extends EditField {
       return super.backspace();
    }
 
-   private synchronized boolean handleClauseSeparator(char var1) {
-      if (var1 == ' ' && this._shiftPressed) {
+   private synchronized boolean handleClauseSeparator(char character) {
+      if (character == ' ' && this._shiftPressed) {
          return true;
-      } else if (var1 == ' ' && this.getCaretPosition() > 0 && this.getAttributedText().charAt(this.getCaretPosition() - 1) == ' ') {
-         this.handleAutoPeriod(var1);
+      } else if (character == ' ' && this.getCaretPosition() > 0 && this.getAttributedText().charAt(this.getCaretPosition() - 1) == ' ') {
+         this.handleAutoPeriod(character);
          return true;
       } else {
-         return this.handleAutoText(var1) && this.handleAutoQuote(var1);
+         return this.handleAutoText(character) && this.handleAutoQuote(character);
       }
    }
 
    @Override
-   protected boolean insert(char var1, int var2) {
+   protected boolean insert(char key, int status) {
       if (this.isSelecting()) {
          this.selectionDelete();
       }
 
-      boolean var3 = true;
-      if (_autoTextEngine.isClauseSeparator(var1)) {
-         var3 = this.handleClauseSeparator(var1);
-      } else if (Character.isLowerCase(var1) && !this._processingKeyHeldWhileRolling) {
-         var1 = this.handleLowerCaseCharacter(var1);
+      boolean performInsert = true;
+      if (_autoTextEngine.isClauseSeparator(key)) {
+         performInsert = this.handleClauseSeparator(key);
+      } else if (Character.isLowerCase(key) && !this._processingKeyHeldWhileRolling) {
+         key = this.handleLowerCaseCharacter(key);
       }
 
       if (this._bookmarks[2] != -1 && this._bookmarks[2] == this.getCaretPosition() && this._lastAutoCapAction == 2) {
          this.resetBookmark(2);
       }
 
-      if (var3) {
-         return super.insert(var1, var2);
+      if (performInsert) {
+         return super.insert(key, status);
       }
 
       this.fieldChangeNotify(0);
@@ -132,27 +132,27 @@ public class AutoTextEditField extends EditField {
          return true;
       }
 
-      int var1 = this.previousIndexOf(AUTOCAP_DELIMITERS, false);
-      char var2 = 0;
-      if (var1 >= this.getLabelLength()) {
-         var2 = this.getAttributedText().charAt(var1);
+      int prevNotIgnoredCharOffset = this.previousIndexOf(AUTOCAP_DELIMITERS, false);
+      char prevNotIgnoredChar = 0;
+      if (prevNotIgnoredCharOffset >= this.getLabelLength()) {
+         prevNotIgnoredChar = this.getAttributedText().charAt(prevNotIgnoredCharOffset);
       }
 
-      switch (var2) {
+      switch (prevNotIgnoredChar) {
          case '\n':
          case '\u2029':
             return true;
          default:
-            if (var1 < this.getCaretPosition() - 1 && _autoTextEngine.isSentenceTerminator(var2)) {
+            if (prevNotIgnoredCharOffset < this.getCaretPosition() - 1 && _autoTextEngine.isSentenceTerminator(prevNotIgnoredChar)) {
                return true;
             } else {
-               int var3 = this.previousIndexOf(AUTOLIST_SPACE, false);
-               if (var3 > this.getLabelLength()) {
-                  boolean var4 = AUTOLIST_DELIMITERS.indexOf(this.getAttributedText().charAt(var3)) >= 0;
-                  if (var4) {
-                     int var5 = this.previousIndexOf(AUTOLIST_CONTENT, false);
-                     char var6 = var5 >= 0 ? this.getAttributedText().charAt(var5) : '\u0000';
-                     switch (var6) {
+               int endListIndex = this.previousIndexOf(AUTOLIST_SPACE, false);
+               if (endListIndex > this.getLabelLength()) {
+                  boolean isDelimiter = AUTOLIST_DELIMITERS.indexOf(this.getAttributedText().charAt(endListIndex)) >= 0;
+                  if (isDelimiter) {
+                     int index = this.previousIndexOf(AUTOLIST_CONTENT, false);
+                     char startList = index >= 0 ? this.getAttributedText().charAt(index) : '\u0000';
+                     switch (startList) {
                         case '\u0000':
                         case '\n':
                         case '\u2029':
@@ -182,163 +182,198 @@ public class AutoTextEditField extends EditField {
       return !this.isStyle(131072);
    }
 
-   private boolean isPreviousCharacterAtBookmark(int var1) {
-      return this._bookmarks[var1] != -1 && this.getCaretPosition() - 1 == this._bookmarks[var1];
+   private boolean isPreviousCharacterAtBookmark(int bookmarkIndex) {
+      return this._bookmarks[bookmarkIndex] != -1 && this.getCaretPosition() - 1 == this._bookmarks[bookmarkIndex];
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected int replace(int var1, int var2, AttributedString$Iterator var3, long var4, long var6, int var8, int var9, boolean var10, int var11) {
-      if (var11 == 0 && var8 == 1 && var3.length() == 1 && this.getComposedTextEnd() == this.getComposedTextStart() && this._bookmarks != null) {
-         this.keyChar(var3.text().charAt(var3.pos()), 0, 0);
+   protected int replace(
+      int aStart,
+      int aEnd,
+      AttributedString$Iterator aIterator,
+      long aIteratorMask,
+      long aIteratorXMask,
+      int aCommittedLen,
+      int aPosInsideComposedText,
+      boolean aMoveCursor,
+      int aContext
+   ) {
+      if (aContext == 0 && aCommittedLen == 1 && aIterator.length() == 1 && this.getComposedTextEnd() == this.getComposedTextStart() && this._bookmarks != null
+         )
+       {
+         this.keyChar(aIterator.text().charAt(aIterator.pos()), 0, 0);
          return 0;
       } else {
-         return super.replace(var1, var2, var3, var4, var6, var8, var9, var10, var11);
+         return super.replace(aStart, aEnd, aIterator, aIteratorMask, aIteratorXMask, aCommittedLen, aPosInsideComposedText, aMoveCursor, aContext);
       }
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       this._keyRepeatProcessed = false;
-      return super.keyDown(var1, var2);
+      return super.keyDown(keycode, time);
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      boolean var3 = false;
-      char var4 = Keypad.map(var1);
+   protected boolean keyRepeat(int keycode, int time) {
+      boolean result = false;
+      char charkey = Keypad.map(keycode);
       if (this.isEnteringRollerCharacter() || !this.isEditable()) {
-         var3 = super.keyRepeat(var1, var2);
-      } else if (var4 == '\n' || var4 == '\b') {
-         var3 = super.keyRepeat(var1, var2);
-      } else if (Character.isLowerCase(var4) || Character.isUpperCase(var4)) {
+         result = super.keyRepeat(keycode, time);
+      } else if (charkey == '\n' || charkey == '\b') {
+         result = super.keyRepeat(keycode, time);
+      } else if (Character.isLowerCase(charkey) || Character.isUpperCase(charkey)) {
          if (SymbolScreen.contains(this.getLastKeyPressed())) {
             this.insert((char)this.getLastKeyPressed(), 0);
-            var3 = true;
+            result = true;
          } else if (!this._keyRepeatProcessed) {
-            if (Character.isLowerCase(var4)) {
-               var4 = Character.toUpperCase(var4);
+            if (Character.isLowerCase(charkey)) {
+               charkey = Character.toUpperCase(charkey);
             }
 
             this.backspace();
-            this.insert(var4, 0);
+            this.insert(charkey, 0);
          }
 
-         var3 = true;
+         result = true;
       }
 
       this._keyRepeatProcessed = true;
-      return var3;
+      return result;
+   }
+
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   protected int moveFocus(int amount, int status, int time) {
+      int ret = 0;
+      boolean var6 = false /* VF: Semaphore variable */;
+
+      try {
+         var6 = true;
+         if ((status & 8) != 0) {
+            this._processingKeyHeldWhileRolling = true;
+         }
+
+         ret = super.moveFocus(amount, status, time);
+         var6 = false;
+      } finally {
+         if (var6) {
+            this._processingKeyHeldWhileRolling = false;
+         }
+      }
+
+      this._processingKeyHeldWhileRolling = false;
+      return ret;
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   protected void setText(String var1, int var2) {
+   protected void setText(String text, int context) {
       this.resetBookmark(0);
       this.resetBookmark(1);
       this.resetBookmark(2);
-      super.setText(var1, var2);
+      super.setText(text, context);
    }
 
-   private void handleAutoPeriod(char var1) {
+   private void handleAutoPeriod(char character) {
       if (this.isAutoPeriodOn() && InputContext.getInstance().isAutoPeriodOn()) {
-         int var2 = this.getPrevNonSpaceCharOffset();
-         char var3 = var2 == -1 ? '\u0000' : this.getAttributedText().charAt(var2);
-         int var4 = var2 == -1 ? this.getLabelLength() : var2 + 1;
-         if (this._bookmarks[1] == -1 || this._lastAutoPeriodAction != 2 || this._bookmarks[1] != var4) {
-            if (!_autoTextEngine.isNoAutoPeriodCharacter(var3)) {
-               FieldChangeListener var5 = this.getChangeListener();
+         int prevNonSpaceOffset = this.getPrevNonSpaceCharOffset();
+         char prevNonSpaceChar = prevNonSpaceOffset == -1 ? '\u0000' : this.getAttributedText().charAt(prevNonSpaceOffset);
+         int offset = prevNonSpaceOffset == -1 ? this.getLabelLength() : prevNonSpaceOffset + 1;
+         if (this._bookmarks[1] == -1 || this._lastAutoPeriodAction != 2 || this._bookmarks[1] != offset) {
+            if (!_autoTextEngine.isNoAutoPeriodCharacter(prevNonSpaceChar)) {
+               FieldChangeListener oldListener = this.getChangeListener();
                this.setChangeListener(null);
-               int var6 = var4;
-               this.getAttributedText().delete(var6, var6 + 1);
-               this.getAttributedText().insert(var6, this.getPeriodSymbol());
-               this._bookmarks[1] = var6;
+               int periodOffset = offset;
+               this.getAttributedText().delete(periodOffset, periodOffset + 1);
+               this.getAttributedText().insert(periodOffset, this.getPeriodSymbol());
+               this._bookmarks[1] = periodOffset;
                this._lastAutoPeriodAction = 1;
-               this.setChangeListener(var5);
+               this.setChangeListener(oldListener);
             }
          }
       }
    }
 
    private char getPeriodSymbol() {
-      Object var1 = this.getInputContext().getInputMethodControlObject();
-      return ((SLControlObject)var1).getPeriodSymbol();
+      SLControlObject cObj = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+      return cObj.getPeriodSymbol();
    }
 
-   private boolean handleAutoQuote(char var1) {
+   private boolean handleAutoQuote(char character) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private boolean handleAutoText(char var1) {
+   private boolean handleAutoText(char character) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private String checkEntry(String var1, int var2) {
+   private String checkEntry(String original, int macroIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private String replaceMacros(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private static boolean isAllUpperCase(String var0) {
+   private String replaceMacros(String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private String adjustCase(String var1, String var2, int var3) {
+   private static boolean isAllUpperCase(String s) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private char handleLowerCaseCharacter(char var1) {
+   private String adjustCase(String replacement, String original, int caseType) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   private char handleLowerCaseCharacter(char character) {
       if (!this.isAutoCapsOn()) {
-         return var1;
-      } else if (this._bookmarks[2] != -1 && this._bookmarks[2] == this.getCaretPosition() && this._lastAutoCapAction == 2 && var1 == this._lastAutoCapChar) {
-         return var1;
+         return character;
+      } else if (this._bookmarks[2] != -1
+         && this._bookmarks[2] == this.getCaretPosition()
+         && this._lastAutoCapAction == 2
+         && character == this._lastAutoCapChar) {
+         return character;
       } else if (this.isAutoCapLocation()) {
-         this._lastAutoCapChar = var1;
+         this._lastAutoCapChar = character;
          this._pendingAutoCapBookmark = this.getCaretPosition();
          this._pendingAutoCapAction = 1;
-         return Character.toUpperCase(var1);
+         return Character.toUpperCase(character);
       } else {
-         return var1;
+         return character;
       }
    }
 
-   private String replace(String var1, String var2) {
+   private String replace(String replaceString, String replacementString) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected void update(int var1) {
-      super.update(var1);
-      if (var1 > 0) {
-         this.updateBookmarks(this.getCaretPosition() - var1, this.getCaretPosition() - 1, false);
+   protected void update(int delta) {
+      super.update(delta);
+      if (delta > 0) {
+         this.updateBookmarks(this.getCaretPosition() - delta, this.getCaretPosition() - 1, false);
       } else {
-         if (var1 < 0) {
-            this.updateBookmarks(this.getCaretPosition(), this.getCaretPosition() - var1 - 1, true);
+         if (delta < 0) {
+            this.updateBookmarks(this.getCaretPosition(), this.getCaretPosition() - delta - 1, true);
          }
       }
    }
 
-   private void updateBookmark(int var1, int var2, int var3, boolean var4) {
+   private void updateBookmark(int bookmarkIndex, int changeStartOffset, int changeEndOffset, boolean delete) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   private void updateBookmarks(int var1, int var2, boolean var3) {
+   private void updateBookmarks(int changeStartOffset, int changeEndOffset, boolean delete) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   private void resetBookmark(int var1) {
-      this._bookmarks[var1] = -1;
-      switch (var1) {
+   private void resetBookmark(int bookmarkIndex) {
+      this._bookmarks[bookmarkIndex] = -1;
+      switch (bookmarkIndex) {
          case 0:
          default:
             this._lastAutoTextAction = 0;
@@ -356,12 +391,12 @@ public class AutoTextEditField extends EditField {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static boolean getBooleanResource(int var0) {
-      String var1 = _inputFamily.getString(var0);
-      return unfoldBooleanResource(var1);
+   private static boolean getBooleanResource(int id) {
+      String value = _inputFamily.getString(id);
+      return unfoldBooleanResource(value);
    }
 
-   private static boolean unfoldBooleanResource(String var0) {
+   private static boolean unfoldBooleanResource(String value) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -369,8 +404,8 @@ public class AutoTextEditField extends EditField {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static long validateStyle(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static long validateStyle(long style) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -379,50 +414,50 @@ public class AutoTextEditField extends EditField {
    }
 
    @Override
-   public int insert(String var1, int var2, boolean var3, boolean var4) {
+   public int insert(String text, int context, boolean stripInvalid, boolean validateText) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public int inputMethodTextChanged(InputMethodEvent var1) {
-      if (var1.getID() != 1103) {
-         AttributedString var2 = var1.getText();
-         int var3 = var2.length();
-         int var4 = var1.getCommittedCharacterCount();
-         if (var3 == 1 && var4 == 0 && this.getComposedTextStart() == this.getComposedTextEnd()) {
-            char var5 = var2.getText().charAt(0);
-            if (_autoTextEngine.isClauseSeparator(var5)) {
-               this.handleClauseSeparator(var5);
+   public int inputMethodTextChanged(InputMethodEvent event) {
+      if (event.getID() != 1103) {
+         AttributedString insertText = event.getText();
+         int inserted_len = insertText.length();
+         int committed_count = event.getCommittedCharacterCount();
+         if (inserted_len == 1 && committed_count == 0 && this.getComposedTextStart() == this.getComposedTextEnd()) {
+            char key = insertText.getText().charAt(0);
+            if (_autoTextEngine.isClauseSeparator(key)) {
+               this.handleClauseSeparator(key);
             }
          }
       }
 
-      return super.inputMethodTextChanged(var1);
+      return super.inputMethodTextChanged(event);
    }
 
    private int getPrevNonSpaceCharOffset() {
-      int var1 = this.getCaretPosition();
-      AttributedString var2 = this.getAttributedText();
-      int var3 = this.getLabelLength();
+      int pos = this.getCaretPosition();
+      AttributedString text = this.getAttributedText();
+      int labelLen = this.getLabelLength();
 
-      for (int var4 = var1 - 1; var4 >= var3; var4--) {
-         if (var2.charAt(var4) != ' ') {
-            return var4;
+      for (int i = pos - 1; i >= labelLen; i--) {
+         if (text.charAt(i) != ' ') {
+            return i;
          }
       }
 
       return -1;
    }
 
-   private int previousIndexOf(String var1, boolean var2) {
-      int var3 = this.getCaretPosition();
-      AttributedString var4 = this.getAttributedText();
-      int var5 = this.getLabelLength();
+   private int previousIndexOf(String s, boolean match) {
+      int pos = this.getCaretPosition();
+      AttributedString text = this.getAttributedText();
+      int labelLen = this.getLabelLength();
 
-      for (int var6 = var3 - 1; var6 >= var5; var6--) {
-         boolean var7 = var1.indexOf(var4.charAt(var6)) != -1;
-         if (var2 == var7) {
-            return var6;
+      for (int i = pos - 1; i >= labelLen; i--) {
+         boolean actualMatch = s.indexOf(text.charAt(i)) != -1;
+         if (match == actualMatch) {
+            return i;
          }
       }
 

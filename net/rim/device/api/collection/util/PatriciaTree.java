@@ -6,203 +6,247 @@ public class PatriciaTree {
    private int _numLeaves;
    private static final int[] _bitCountMasks;
 
-   public PatriciaTree(PatriciaTreeData var1) {
-      if (var1 == null) {
+   public PatriciaTree(PatriciaTreeData data) {
+      if (data == null) {
          throw new Object();
       }
 
-      this._data = var1;
+      this._data = data;
    }
 
-   public void insert(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void insert(int id) {
+      synchronized (this._data) {
+         this.doInsert(id);
+      }
    }
 
-   private void doInsert(int var1) {
+   private void doInsert(int id) {
       if (this._data.size() == 0) {
-         this._data.insert(0, 0, 0, var1, 0);
+         this._data.insert(0, 0, 0, id, 0);
       } else {
-         this.lookupId(var1);
-         int var6 = this._data.compareBits(var1, this._data.getLeaf(this._leafIndex));
-         if (var6 == 0) {
+         this.lookupId(id);
+         int cmp = this._data.compareBits(id, this._data.getLeaf(this._leafIndex));
+         if (cmp == 0) {
             throw new Object();
          }
 
-         int var8;
-         if (var6 > 0) {
-            var8 = var6 - 1;
+         int insertBitNum;
+         if (cmp > 0) {
+            insertBitNum = cmp - 1;
          } else {
-            var8 = -var6 - 1;
+            insertBitNum = -cmp - 1;
          }
 
-         int var7 = this._leafIndex;
-         int var4 = 0;
+         int insertLeafIndex = this._leafIndex;
+         int nodeIndex = 0;
          this._leafIndex = 0;
          this._numLeaves = this._data.size();
 
          while (this._numLeaves > 1) {
-            int var2 = this._data.getBitNumber(var4);
-            int var3 = this._data.getLeftNodes(var4);
-            if (var2 > var8) {
+            int bitNum = this._data.getBitNumber(nodeIndex);
+            int leftNodes = this._data.getLeftNodes(nodeIndex);
+            if (bitNum > insertBitNum) {
                break;
             }
 
-            if (var7 <= this._leafIndex + var3) {
-               this._data.adjustLeftNodes(var4, 1);
-               var4++;
-               this._numLeaves = var3 + 1;
+            if (insertLeafIndex <= this._leafIndex + leftNodes) {
+               this._data.adjustLeftNodes(nodeIndex, 1);
+               nodeIndex++;
+               this._numLeaves = leftNodes + 1;
             } else {
-               var3++;
-               this._numLeaves -= var3;
-               var4 += var3;
-               this._leafIndex += var3;
+               leftNodes++;
+               this._numLeaves -= leftNodes;
+               nodeIndex += leftNodes;
+               this._leafIndex += leftNodes;
             }
          }
 
-         int var10;
-         if (var6 > 0) {
-            var10 = this._numLeaves - 1;
+         int leftNodes;
+         if (cmp > 0) {
+            leftNodes = this._numLeaves - 1;
             this._leafIndex = this._leafIndex + this._numLeaves;
          } else {
-            var10 = 0;
+            leftNodes = 0;
          }
 
-         this._data.insert(var10, var8, var4, var1, this._leafIndex);
+         this._data.insert(leftNodes, insertBitNum, nodeIndex, id, this._leafIndex);
       }
    }
 
-   public void delete(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void delete(int id) {
+      synchronized (this._data) {
+         this.doDelete(id);
+      }
    }
 
-   private void doDelete(int var1) {
-      this.lookupId(var1);
+   private void doDelete(int id) {
+      this.lookupId(id);
       if (this._numLeaves != 0) {
-         if (this._data.getLeaf(this._leafIndex) == var1) {
+         if (this._data.getLeaf(this._leafIndex) == id) {
             this.deleteLeaf(this._leafIndex);
          }
       }
    }
 
-   public void deleteLeaf(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void deleteLeaf(int deleteLeafIndex) {
+      synchronized (this._data) {
+         this._leafIndex = deleteLeafIndex;
+         this._numLeaves = this._data.size();
+         if (deleteLeafIndex < this._numLeaves) {
+            int nodeIndex;
+            if (this._numLeaves <= 1) {
+               nodeIndex = 0;
+            } else {
+               nodeIndex = 0;
+               this._leafIndex = 0;
+
+               while (true) {
+                  int leftNodes = this._data.getLeftNodes(nodeIndex);
+                  if (deleteLeafIndex <= this._leafIndex + leftNodes) {
+                     this._data.adjustLeftNodes(nodeIndex, -1);
+                     this._numLeaves = leftNodes + 1;
+                     if (this._numLeaves == 1) {
+                        break;
+                     }
+
+                     nodeIndex++;
+                  } else {
+                     leftNodes++;
+                     this._numLeaves -= leftNodes;
+                     this._leafIndex += leftNodes;
+                     if (this._numLeaves == 1) {
+                        break;
+                     }
+
+                     nodeIndex += leftNodes;
+                  }
+               }
+            }
+
+            this._data.delete(nodeIndex, this._leafIndex);
+         }
+      }
    }
 
-   public int search(Object var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int search(Object prefix, Object result) {
+      synchronized (this._data) {
+         this.lookupPrefix(prefix);
+         this._data.recordFound(result, this._leafIndex, this._numLeaves);
+         return this._numLeaves;
+      }
    }
 
-   private void lookupPrefix(Object var1) {
-      int var2 = 0;
+   private void lookupPrefix(Object prefix) {
+      int nodeIndex = 0;
       this._leafIndex = 0;
       this._numLeaves = this._data.size();
-      if (this._numLeaves != 0 && var1 != null) {
+      if (this._numLeaves != 0 && prefix != null) {
          while (this._numLeaves > 1) {
-            int var3 = this._data.getBitNumber(var2);
-            int var4 = this._data.getLeftNodes(var2);
-            int var5 = this._data.getPrefixBit(var1, var3);
-            if (var5 < 0) {
+            int bitNum = this._data.getBitNumber(nodeIndex);
+            int leftNodes = this._data.getLeftNodes(nodeIndex);
+            int bit = this._data.getPrefixBit(prefix, bitNum);
+            if (bit < 0) {
                break;
             }
 
-            if (var5 == 0) {
-               this._numLeaves = var4 + 1;
-               var2++;
+            if (bit == 0) {
+               this._numLeaves = leftNodes + 1;
+               nodeIndex++;
             } else {
-               var4++;
-               this._numLeaves -= var4;
-               var2 += var4;
-               this._leafIndex += var4;
+               leftNodes++;
+               this._numLeaves -= leftNodes;
+               nodeIndex += leftNodes;
+               this._leafIndex += leftNodes;
             }
          }
 
-         if (!this._data.prefixMatches(var1, this._data.getLeaf(this._leafIndex))) {
+         if (!this._data.prefixMatches(prefix, this._data.getLeaf(this._leafIndex))) {
             this._numLeaves = 0;
          }
       }
    }
 
-   private void lookupId(int var1) {
-      int var2 = 0;
+   private void lookupId(int id) {
+      int nodeIndex = 0;
       this._leafIndex = 0;
       this._numLeaves = this._data.size();
       if (this._numLeaves != 0) {
          while (this._numLeaves > 1) {
-            int var3 = this._data.getBitNumber(var2);
-            int var4 = this._data.getLeftNodes(var2);
-            int var5 = this._data.getBit(var1, var3);
-            if (var5 < 0) {
+            int bitNum = this._data.getBitNumber(nodeIndex);
+            int leftNodes = this._data.getLeftNodes(nodeIndex);
+            int bit = this._data.getBit(id, bitNum);
+            if (bit < 0) {
                throw new Object();
             }
 
-            if (var5 == 0) {
-               this._numLeaves = var4 + 1;
+            if (bit == 0) {
+               this._numLeaves = leftNodes + 1;
                if (this._numLeaves == 1) {
                   return;
                }
 
-               var2++;
+               nodeIndex++;
             } else {
-               var4++;
-               this._numLeaves -= var4;
-               var2 += var4;
-               this._leafIndex += var4;
+               leftNodes++;
+               this._numLeaves -= leftNodes;
+               nodeIndex += leftNodes;
+               this._leafIndex += leftNodes;
             }
          }
       }
    }
 
-   public static int getStringBit(String var0, int var1, int var2, int var3, int var4) {
+   public static int getStringBit(String str, int offset, int length, int id, int bitNum) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int getStringBit(String var0, int var1, int var2) {
+   public static int getStringBit(String str, int id, int bitNum) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int compareStringBits(String var0, int var1, int var2, int var3, String var4, int var5, int var6, int var7) {
+   public static int compareStringBits(String lookupStr, int lookupOffset, int lookupLength, int lookupId, String str, int offset, int length, int id) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int compareStringBits(String var0, int var1, String var2, int var3) {
+   public static int compareStringBits(String lookupStr, int lookupId, String str, int id) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int bitDifference(int var0, int var1, int var2, int var3) {
-      if (var1 == var2) {
+   public static int bitDifference(int bitNum, int lookup, int value, int numBits) {
+      if (lookup == value) {
          return 0;
       }
 
-      var2 ^= var1;
-      var0 += var3;
-      int var4 = _bitCountMasks.length;
+      value ^= lookup;
+      bitNum += numBits;
+      int i = _bitCountMasks.length;
 
-      for (byte var6 = 16; --var4 >= 0; var6 >>= 1) {
-         int var5 = var2 & _bitCountMasks[var4];
-         if (var5 != 0) {
-            var0 -= var6;
-            var2 = var5;
+      for (int skip = 16; --i >= 0; skip >>= 1) {
+         int masked = value & _bitCountMasks[i];
+         if (masked != 0) {
+            bitNum -= skip;
+            value = masked;
          }
       }
 
-      return (var1 & var2) == 0 ? -var0 : var0;
+      return (lookup & value) == 0 ? -bitNum : bitNum;
    }
 
    public void dump() {
       this.dump(0, 0, 0, this._data.size());
    }
 
-   private void dump(int var1, int var2, int var3, int var4) {
+   private void dump(int indent, int nodeIndex, int leafIndex, int numLeaves) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public boolean validate() {
-      boolean var2 = true;
-      int var1 = this._data.size();
-      return var1 < 2 ? true : this.validateNode(0, var1, -1);
+      boolean valid = true;
+      int numLeaves = this._data.size();
+      return numLeaves < 2 ? true : this.validateNode(0, numLeaves, -1);
    }
 
-   private boolean validateNode(int var1, int var2, int var3) {
+   private boolean validateNode(int nodeIndex, int numLeaves, int parentBitNum) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

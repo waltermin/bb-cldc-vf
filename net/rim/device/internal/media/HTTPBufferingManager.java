@@ -1,8 +1,10 @@
 package net.rim.device.internal.media;
 
+import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.HttpConnection;
 import net.rim.device.api.system.Application;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.vm.Array;
 
 public final class HTTPBufferingManager extends Thread {
@@ -27,12 +29,12 @@ public final class HTTPBufferingManager extends Thread {
    static final int READ_INTERVAL;
    private static final int WATERMARK_CHECK_INTERVAL;
 
-   public HTTPBufferingManager(HttpConnection var1, InputStream var2, HTTPBufferingCallback var3) {
-      this._inputConnection = var1;
-      this._subIn = var2;
-      this._callback = var3;
+   public HTTPBufferingManager(HttpConnection input, InputStream inputStream, HTTPBufferingCallback callback) {
+      this._inputConnection = input;
+      this._subIn = inputStream;
+      this._callback = callback;
       this._lock = this;
-      this._totalInputLength = this.getInputLength(var1);
+      this._totalInputLength = this.getInputLength(input);
       if (this._totalInputLength != -1 && this._totalInputLength <= 1048576) {
          this._buffer = new byte[(int)this._totalInputLength];
       } else {
@@ -42,8 +44,8 @@ public final class HTTPBufferingManager extends Thread {
       this._progressStatusId = Application.getApplication().invokeLater(new HTTPBufferingManager$UpdateBufferRunner(this), 1000, true);
    }
 
-   private final long getInputLength(HttpConnection var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final long getInputLength(HttpConnection input) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -54,10 +56,24 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    public final void shutdown() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._shutdown = true;
+
+      try {
+         this._subIn.close();
+      } catch (IOException var4) {
+      }
+
+      try {
+         this._inputConnection.close();
+      } catch (IOException var3) {
+      }
+
+      synchronized (this._lock) {
+         this._lock.notifyAll();
+      }
    }
 
-   public final void setHTTPBufferingCallback(HTTPBufferingCallback var1) {
+   public final void setHTTPBufferingCallback(HTTPBufferingCallback callback) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -69,8 +85,8 @@ public final class HTTPBufferingManager extends Thread {
       return this.bufferContainsAllContent() ? this._buffer.length : this._totalInputLength;
    }
 
-   public final void setStreamLength(long var1) {
-      this._totalInputLength = var1;
+   public final void setStreamLength(long length) {
+      this._totalInputLength = length;
    }
 
    public final boolean bufferWillContainAllContent() {
@@ -87,44 +103,44 @@ public final class HTTPBufferingManager extends Thread {
       return (InputStream)(this.bufferContainsAllContent() ? new Object(this._buffer) : new HTTPBufferingManager$HTTPBufferedInputStream(this));
    }
 
-   public final void setEstimatedTime(long var1) {
+   public final void setEstimatedTime(long time) {
       if (this._totalInputLength != this._buffer.length) {
-         this._estimatedTime = var1;
-         if (this._totalInputLength != -1 && var1 > 0) {
-            this.setBandwidthRequired((int)((float)this._totalInputLength / ((float)var1 / 1148846080)));
+         this._estimatedTime = time;
+         if (this._totalInputLength != -1 && time > 0) {
+            this.setBandwidthRequired((int)((float)this._totalInputLength / ((float)time / 1148846080)));
          }
       }
    }
 
-   public final void setBandwidthRequired(int var1) {
+   public final void setBandwidthRequired(int bytesPerSecond) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private final void resizeBuffer(int var1) {
-      int var2 = this._buffer.length;
-      Array.resize(this._buffer, var1);
+   private final void resizeBuffer(int newBufferSize) {
+      int oldBufferSize = this._buffer.length;
+      Array.resize(this._buffer, newBufferSize);
       if (this._readOffset >= this._writeOffset) {
-         int var3 = var1 - var2;
-         System.arraycopy(this._buffer, this._readOffset, this._buffer, this._readOffset + var3, var2 - this._readOffset);
-         this._readOffset += var3;
+         int diff = newBufferSize - oldBufferSize;
+         System.arraycopy(this._buffer, this._readOffset, this._buffer, this._readOffset + diff, oldBufferSize - this._readOffset);
+         this._readOffset += diff;
       }
    }
 
-   private final void notifyCallbackBufferReady(HTTPBufferingCallback var1) {
-      if (var1 != null) {
-         var1.streamingBufferReady();
+   private final void notifyCallbackBufferReady(HTTPBufferingCallback callback) {
+      if (callback != null) {
+         callback.streamingBufferReady();
       }
    }
 
-   private final void notifyCallbackStreamingDone(HTTPBufferingCallback var1, double var2) {
-      if (var1 != null) {
-         var1.streamingDone(var2);
+   private final void notifyCallbackStreamingDone(HTTPBufferingCallback callback, double percent) {
+      if (callback != null) {
+         callback.streamingDone(percent);
       }
    }
 
-   private final void notifyCallbackBufferStatus(HTTPBufferingCallback var1, long var2, long var4) {
-      if (var1 != null) {
-         var1.updateStreamingBufferStatus(var2, var4);
+   private final void notifyCallbackBufferStatus(HTTPBufferingCallback callback, long buffered, long expected) {
+      if (callback != null) {
+         callback.updateStreamingBufferStatus(buffered, expected);
       }
    }
 
@@ -133,16 +149,165 @@ public final class HTTPBufferingManager extends Thread {
       throw new RuntimeException("cod2jar: ldc");
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      boolean calledReady = false;
+      long startTime = InternalServices.getUptime();
+      int watermarkCheckSize = 30720;
+
+      while (true) {
+         boolean var21 = false /* VF: Semaphore variable */;
+
+         try {
+            var21 = true;
+            if (this._shutdown) {
+               var21 = false;
+               break;
+            }
+
+            int bytesToRead = 0;
+            synchronized (this._lock) {
+               if (!calledReady && watermarkCheckSize <= 0) {
+                  watermarkCheckSize = 30720;
+                  long now = InternalServices.getUptime();
+                  if (now - startTime >= 3000 && this._consumeRate > 0) {
+                     long transferRate = this._totalBytesBuffered / ((now - startTime) / 1000);
+                     if (this._consumeRate * 6 / 5 <= transferRate) {
+                        this.notifyCallbackBufferReady(this._callback);
+                        calledReady = true;
+                     } else {
+                        long secondsLeftToTransfer = (this._totalInputLength - this._totalBytesBuffered) * transferRate;
+                        long secondsToPlay = this._totalBytesBuffered / this._consumeRate;
+                        if (secondsToPlay * 6 / 5 < secondsLeftToTransfer) {
+                           this.notifyCallbackBufferReady(this._callback);
+                           calledReady = true;
+                        }
+                     }
+                  }
+               }
+
+               if (this._dataLength == this._buffer.length) {
+                  long now = InternalServices.getUptime();
+                  if (this._estimatedTime > 0 && startTime < now) {
+                     long transferRate = this._totalBytesBuffered / ((now - startTime) / 1000);
+                     if (this._consumeRate > transferRate) {
+                        int newBufferSize = (int)((this._consumeRate - transferRate) * (this._estimatedTime / 1000));
+                        if (newBufferSize > this._buffer.length << 1) {
+                           newBufferSize = this._buffer.length << 1;
+                        }
+
+                        if (newBufferSize > 2097152) {
+                           newBufferSize = 2097152;
+                        }
+
+                        if (newBufferSize > this._buffer.length) {
+                           this.resizeBuffer(newBufferSize);
+                        }
+                     }
+                  }
+
+                  if (this._totalInputLength != -1
+                     && this._totalInputLength <= 1048576
+                     && this._dataLength == this._buffer.length
+                     && this._totalBytesBuffered < 1048576) {
+                     this.resizeBuffer(this._buffer.length + 8192);
+                  }
+
+                  while (!this._shutdown && this._dataLength == this._buffer.length) {
+                     this.notifyCallbackBufferReady(this._callback);
+                     calledReady = true;
+
+                     try {
+                        this._lock.wait();
+                     } catch (InterruptedException var24) {
+                     }
+                  }
+               }
+            }
+
+            int nextWriteOffset = this._writeOffset == this._buffer.length ? 0 : this._writeOffset;
+            if (nextWriteOffset >= this._readOffset) {
+               bytesToRead = this._buffer.length - nextWriteOffset;
+            } else {
+               bytesToRead = this._readOffset - nextWriteOffset;
+            }
+
+            if (bytesToRead > 6144) {
+               bytesToRead = 6144;
+            }
+
+            int numRead = this._subIn.read(this._buffer, nextWriteOffset, bytesToRead);
+            if (numRead == -1) {
+               synchronized (this._lock) {
+                  this._totalInputLength = this._totalBytesBuffered;
+                  if (this._buffer.length > this._totalBytesBuffered) {
+                     Array.resize(this._buffer, (int)this._totalBytesBuffered);
+                  }
+
+                  this._lock.notifyAll();
+                  var21 = false;
+                  break;
+               }
+            }
+
+            watermarkCheckSize -= numRead;
+            synchronized (this._lock) {
+               this._writeOffset = nextWriteOffset + numRead;
+               this._dataLength += numRead;
+               this._totalBytesBuffered += numRead;
+               this._lock.notifyAll();
+               continue;
+            }
+         } catch (IOException var26) {
+            var21 = false;
+         } finally {
+            if (var21) {
+               Application.getApplication().cancelInvokeLater(this._progressStatusId);
+               if (!this._shutdown) {
+                  this.shutdown();
+               }
+
+               if (this._totalInputLength <= 0) {
+                  this.notifyCallbackStreamingDone(this._callback, (double)4607182418800017408L);
+               } else {
+                  this.notifyCallbackStreamingDone(this._callback, (double)this._totalBytesBuffered / this._totalInputLength);
+               }
+            }
+         }
+
+         Application.getApplication().cancelInvokeLater(this._progressStatusId);
+         if (!this._shutdown) {
+            this.shutdown();
+         }
+
+         if (this._totalInputLength <= 0) {
+            this.notifyCallbackStreamingDone(this._callback, (double)4607182418800017408L);
+            return;
+         }
+
+         this.notifyCallbackStreamingDone(this._callback, (double)this._totalBytesBuffered / this._totalInputLength);
+         return;
+      }
+
+      Application.getApplication().cancelInvokeLater(this._progressStatusId);
+      if (!this._shutdown) {
+         this.shutdown();
+      }
+
+      if (this._totalInputLength <= 0) {
+         this.notifyCallbackStreamingDone(this._callback, (double)4607182418800017408L);
+      } else {
+         this.notifyCallbackStreamingDone(this._callback, (double)this._totalBytesBuffered / this._totalInputLength);
+      }
    }
 
-   static final int access$512(HTTPBufferingManager var0, int var1) {
+   static final int access$512(HTTPBufferingManager x0, int x1) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   static final int access$620(HTTPBufferingManager var0, int var1) {
+   static final int access$620(HTTPBufferingManager x0, int x1) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

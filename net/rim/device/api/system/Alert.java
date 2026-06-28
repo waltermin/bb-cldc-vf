@@ -3,6 +3,7 @@ package net.rim.device.api.system;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.media.MediaNatives;
+import net.rim.device.internal.media.MediaStreamingManager;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.vm.TraceBack;
@@ -21,24 +22,24 @@ public final class Alert {
    }
 
    private static final Alert$MidiListener getMidiListener() {
-      Alert$MidiListener var0 = (Alert$MidiListener)ApplicationRegistry.getApplicationRegistry().getOrWaitFor(2808165152854904955L);
-      if (var0 == null) {
-         var0 = new Alert$MidiListener(null);
-         ApplicationRegistry.getApplicationRegistry().put(2808165152854904955L, var0);
-         Proxy.getInstance().addAlertListener(var0);
+      Alert$MidiListener listener = (Alert$MidiListener)ApplicationRegistry.getApplicationRegistry().getOrWaitFor(2808165152854904955L);
+      if (listener == null) {
+         listener = new Alert$MidiListener(null);
+         ApplicationRegistry.getApplicationRegistry().put(2808165152854904955L, listener);
+         Proxy.getInstance().addAlertListener(listener);
       }
 
-      return var0;
+      return listener;
    }
 
    public static final boolean isAudioSupported() {
       return Audio.isSupported();
    }
 
-   public static final void startAudio(short[] var0, int var1) {
+   public static final void startAudio(short[] tune, int volume) {
       assertMediaPermission();
       stopAudioImpl();
-      startAudioImpl(var0, var1);
+      startAudioImpl(tune, volume);
    }
 
    private static final native void startAudioImpl(short[] var0, int var1);
@@ -54,25 +55,25 @@ public final class Alert {
       return InternalServices.isDeviceCapable(9);
    }
 
-   public static final void startBuzzer(short[] var0, int var1) {
-      startBuzzer(var0, var1, 2);
+   public static final void startBuzzer(short[] tune, int volume) {
+      startBuzzer(tune, volume, 2);
    }
 
-   public static final void startBuzzer(short[] var0, int var1, boolean var2) {
-      startBuzzer(var0, var1, var2 ? 2 : 0);
+   public static final void startBuzzer(short[] tune, int volume, boolean interruptable) {
+      startBuzzer(tune, volume, interruptable ? 2 : 0);
    }
 
-   public static final void startBuzzer(short[] var0, int var1, int var2) {
+   public static final void startBuzzer(short[] tune, int volume, int interruptable) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
       assertMediaPermission();
       stopBuzzerImpl();
-      startBuzzerImpl(var0, var1, var2);
+      startBuzzerImpl(tune, volume, interruptable);
    }
 
    private static final native void startBuzzerImpl(short[] var0, int var1, int var2);
 
-   public static final void playBuzzer(short[] var0, int var1) {
-      startBuzzer(var0, var1, 0);
+   public static final void playBuzzer(short[] tune, int volume) {
+      startBuzzer(tune, volume, 0);
    }
 
    public static final void stopBuzzer() {
@@ -86,9 +87,9 @@ public final class Alert {
       return true;
    }
 
-   public static final void startVibrate(int var0) {
+   public static final void startVibrate(int duration) {
       assertMediaPermission();
-      startVibrateImpl(var0);
+      startVibrateImpl(duration);
    }
 
    private static final native void startVibrateImpl(int var0);
@@ -102,16 +103,33 @@ public final class Alert {
 
    public static final native boolean isMIDISupported();
 
-   public static final int startMIDI(byte[] var0, boolean var1) {
-      return startMIDI(var0, var1 ? 1 : 0, null);
+   public static final int startMIDI(byte[] tune, boolean interruptable) {
+      return startMIDI(tune, interruptable ? 1 : 0, null);
    }
 
-   public static final int startMIDI(byte[] var0, int var1) {
-      return startMIDI(var0, var1, null);
+   public static final int startMIDI(byte[] tune, int interruptable) {
+      return startMIDI(tune, interruptable, null);
    }
 
-   public static final synchronized int startMIDI(byte[] var0, int var1, AlertListener2 var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final synchronized int startMIDI(byte[] tune, int interruptable, AlertListener2 midiListener) {
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      assertMediaPermission();
+      if (isSingleSharedAudioChannel()) {
+         MediaStreamingManager msm = MediaStreamingManager.getInstance();
+         if (msm != null) {
+            msm.stopSingleChannelAudio();
+         }
+      }
+
+      stopMIDI();
+      Alert$MidiListener listener = getMidiListener();
+
+      try {
+         return listener.midiStart(midiListener, startMIDIImpl(tune, interruptable));
+      } catch (OutOfMemoryError e) {
+         net.rim.vm.Memory.maximizeContiguousRAM();
+         return listener.midiStart(midiListener, startMIDIImpl(tune, interruptable));
+      }
    }
 
    public static final boolean isSingleSharedAudioChannel() {
@@ -147,43 +165,43 @@ public final class Alert {
       return false;
    }
 
-   public static final int startADPCM(byte[] var0, boolean var1) {
+   public static final int startADPCM(byte[] tune, boolean interruptable) {
       throw new Object();
    }
 
    public static final void stopADPCM() {
    }
 
-   public static final void enablePWMSync(boolean var0) {
+   public static final void enablePWMSync(boolean enable) {
    }
 
-   public static final void setADPCMVolume(int var0) {
+   public static final void setADPCMVolume(int volume) {
    }
 
-   public static final void setBuzzerVolume(int var0) {
+   public static final void setBuzzerVolume(int volume) {
       assertDeviceSettingsPermission();
-      setBuzzerVolumeImpl(var0);
+      setBuzzerVolumeImpl(volume);
    }
 
    private static final native void setBuzzerVolumeImpl(int var0);
 
-   public static final void setVolume(int var0) {
+   public static final void setVolume(int volume) {
       assertDeviceSettingsPermission();
-      setVolumeImpl(var0);
+      setVolumeImpl(volume);
    }
 
    private static final native void setVolumeImpl(int var0);
 
    public static final native int getVolume();
 
-   public static final void mute(boolean var0) {
+   public static final void mute(boolean newMuteState) {
       assertDeviceSettingsPermission();
-      muteImpl(var0);
+      muteImpl(newMuteState);
    }
 
    private static final native void muteImpl(boolean var0);
 
-   public static final void enablePowerAmp(boolean var0) {
+   public static final void enablePowerAmp(boolean enable) {
    }
 
    private static final void assertMediaPermission() {

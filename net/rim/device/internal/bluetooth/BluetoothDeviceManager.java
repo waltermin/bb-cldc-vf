@@ -14,7 +14,7 @@ public class BluetoothDeviceManager extends Application {
       return (BluetoothDeviceManager)ApplicationRegistry.getApplicationRegistry().waitForStartup(-4148425341967320934L);
    }
 
-   public void enableTCKTestMode(boolean var1) {
+   public void enableTCKTestMode(boolean _1) {
       throw null;
    }
 
@@ -40,11 +40,11 @@ public class BluetoothDeviceManager extends Application {
       return !ITPolicy.getBoolean(34, 16, false);
    }
 
-   public boolean isRadioOnPromptIfOff(boolean var1) {
+   public boolean isRadioOnPromptIfOff(boolean _1) {
       throw null;
    }
 
-   public boolean setPowerOn(boolean var1) {
+   public boolean setPowerOn(boolean _1) {
       throw null;
    }
 

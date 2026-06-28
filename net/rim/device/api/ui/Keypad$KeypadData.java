@@ -22,11 +22,11 @@ final class Keypad$KeypadData implements Persistable {
       return Locale.get(this._osLocale, Locale.convertKeyboardIDToString(this._osLocaleVariant));
    }
 
-   public final void setLocale(Locale var1) {
+   public final void setLocale(Locale locale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void setKeymap(Locale var1, ResourceBundle var2) {
+   private final void setKeymap(Locale locale, ResourceBundle bundle) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

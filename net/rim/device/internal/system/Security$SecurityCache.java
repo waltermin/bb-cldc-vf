@@ -1,6 +1,8 @@
 package net.rim.device.internal.system;
 
 import net.rim.device.api.itpolicy.ITPolicy;
+import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.Persistable;
 
 class Security$SecurityCache implements Persistable {
@@ -21,15 +23,15 @@ class Security$SecurityCache implements Persistable {
    private Security$SecurityCache() {
    }
 
-   private void setMaxPasswordAttempts(int var1) {
-      this._maxPasswordAttempts = var1;
+   private void setMaxPasswordAttempts(int maxAttempts) {
+      this._maxPasswordAttempts = maxAttempts;
       this.commit();
    }
 
    private void markLongTermTimeOutTimeStamp() {
       if (ITPolicy.getBoolean(14, false)) {
-         int var1 = ITPolicy.getInteger(22, 8, 60) * 60 * 1000;
-         this._longTermSecurityTimeStamp = System.currentTimeMillis() + var1;
+         int longTermTimeout = ITPolicy.getInteger(22, 8, 60) * 60 * 1000;
+         this._longTermSecurityTimeStamp = System.currentTimeMillis() + longTermTimeout;
          this.commit();
       }
    }
@@ -38,10 +40,10 @@ class Security$SecurityCache implements Persistable {
       return Math.min(this._currentTimeOut, ITPolicy.getInteger(10, 60) * 60);
    }
 
-   private boolean setCurrentTimeOut(int var1) {
-      int var2 = ITPolicy.getInteger(10, 60) * 60;
-      if (var1 > 0 && var1 <= var2) {
-         this._currentTimeOut = var1;
+   private boolean setCurrentTimeOut(int seconds) {
+      int maxTimeout = ITPolicy.getInteger(10, 60) * 60;
+      if (seconds > 0 && seconds <= maxTimeout) {
+         this._currentTimeOut = seconds;
          this.commit();
          return true;
       } else {
@@ -53,7 +55,7 @@ class Security$SecurityCache implements Persistable {
       return this._lockWhenHolstered || ITPolicy.getBoolean(24, 12, false);
    }
 
-   private void setLockWhenHolstered(boolean var1) {
+   private void setLockWhenHolstered(boolean lockWhenHolstered) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -61,7 +63,7 @@ class Security$SecurityCache implements Persistable {
       return this._passwordRequiredForAppInstall || ITPolicy.getBoolean(24, 75, false);
    }
 
-   private void setPasswordRequiredForAppInstall(boolean var1) {
+   private void setPasswordRequiredForAppInstall(boolean passwordRequiredForAppInstall) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -69,39 +71,39 @@ class Security$SecurityCache implements Persistable {
       return this._allowOutgoingCallWhileLocked;
    }
 
-   private void setAllowOutgoingCallWhileLocked(boolean var1) {
-      this._allowOutgoingCallWhileLocked = var1;
+   private void setAllowOutgoingCallWhileLocked(boolean allowOutgoingCall) {
+      this._allowOutgoingCallWhileLocked = allowOutgoingCall;
       this.commit();
    }
 
-   private void setAutoFillUserAuthenticatorPasswordField(boolean var1) {
-      this._autoFillUserAuthenticatorPasswordField = var1;
+   private void setAutoFillUserAuthenticatorPasswordField(boolean autoFill) {
+      this._autoFillUserAuthenticatorPasswordField = autoFill;
       this.commit();
    }
 
-   private void setSecurityServiceColours(int var1, int var2) {
-      this._securityITPolicyServiceColour = var1;
-      this._securityOtherServiceColour = var2;
+   private void setSecurityServiceColours(int ITPolicyServiceColour, int otherServiceColour) {
+      this._securityITPolicyServiceColour = ITPolicyServiceColour;
+      this._securityOtherServiceColour = otherServiceColour;
       this.commit();
    }
 
-   private void setExcludeAddressBookFromContentProtection(boolean var1) {
-      this._excludeAddressBookFromContentProtection = var1;
+   private void setExcludeAddressBookFromContentProtection(boolean excludeAddressBookFromContentProtection) {
+      this._excludeAddressBookFromContentProtection = excludeAddressBookFromContentProtection;
       this.commit();
    }
 
-   private void setNumericUserAuthenticatorPassword(boolean var1) {
-      this._numericUserAuthenticatorPassword = var1;
+   private void setNumericUserAuthenticatorPassword(boolean numericUserAuthenticatorPassword) {
+      this._numericUserAuthenticatorPassword = numericUserAuthenticatorPassword;
       this.commit();
    }
 
-   private void setNumericHandheldPassword(boolean var1) {
-      this._numericHandheldPassword = var1;
+   private void setNumericHandheldPassword(boolean numericHandheldPassword) {
+      this._numericHandheldPassword = numericHandheldPassword;
       this.commit();
    }
 
-   private void setSmartPasswordEntry(boolean var1) {
-      this._smartPasswordEntry = var1;
+   private void setSmartPasswordEntry(boolean smartPasswordEntry) {
+      this._smartPasswordEntry = smartPasswordEntry;
       if (!this._smartPasswordEntry) {
          this._numericUserAuthenticatorPassword = false;
          this._numericHandheldPassword = false;
@@ -111,10 +113,14 @@ class Security$SecurityCache implements Persistable {
    }
 
    private void commit() {
-      throw new RuntimeException("cod2jar: exception table");
+      PersistentObject store = RIMPersistentStore.getPersistentObject(5031265368654170436L);
+      synchronized (store) {
+         store.setContents(this, 51);
+         store.commit();
+      }
    }
 
-   Security$SecurityCache(Security$1 var1) {
+   Security$SecurityCache(Security$1 x0) {
       this();
    }
 }

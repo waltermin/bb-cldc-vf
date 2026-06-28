@@ -13,101 +13,101 @@ public class ObjectListField extends ListField implements DrawStyle, ListFieldCa
    private static String EMPTY_ROW;
    private static final int ATTRIBUTES_MASK;
 
-   public void set(Object[] var1) {
-      if (var1 == null) {
-         var1 = new Object[0];
+   public void set(Object[] list) {
+      if (list == null) {
+         list = new Object[0];
       }
 
-      this._list.setSize(var1.length);
+      this._list.setSize(list.length);
 
-      for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-         this._list.setElementAt(var1[var2], var2);
+      for (int lv = list.length - 1; lv >= 0; lv--) {
+         this._list.setElementAt(list[lv], lv);
       }
 
-      this.setSize(var1.length, 0);
+      this.setSize(list.length, 0);
       this.fieldChangeNotify(Integer.MIN_VALUE);
    }
 
-   public Object get(int var1) {
-      return this._list.elementAt(var1);
+   public Object get(int index) {
+      return this._list.elementAt(index);
    }
 
-   public void set(int var1, Object var2) {
-      if (var2 == null) {
+   public void set(int index, Object object) {
+      if (object == null) {
          throw new Object();
       }
 
-      this._list.setElementAt(var2, var1);
+      this._list.setElementAt(object, index);
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      this.invalidate(var1);
+      this.invalidate(index);
    }
 
-   public void insert(int var1, Object var2) {
-      if (var2 == null) {
+   public void insert(int index, Object object) {
+      if (object == null) {
          throw new Object();
       }
 
-      this._list.insertElementAt(var2, var1);
-      super.insert(var1);
+      this._list.insertElementAt(object, index);
+      super.insert(index);
    }
 
    @Override
-   public int indexOfList(ListField var1, String var2, int var3) {
+   public int indexOfList(ListField listField, String prefix, int start) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public int getPreferredWidth(ListField var1) {
+   public int getPreferredWidth(ListField listField) {
       return this._prefWidth;
    }
 
    @Override
-   public Object get(ListField var1, int var2) {
-      return this._list.elementAt(var2);
+   public Object get(ListField listField, int index) {
+      return this._list.elementAt(index);
    }
 
    @Override
-   public void drawListRow(ListField var1, Graphics var2, int var3, int var4, int var5) {
-      String var6 = this._list.elementAt(var3).toString();
-      int var7 = (int)(this.getStyle() & 71);
-      int var8 = var1.adjustRowHeight(var2.getFont(), var3, var6);
-      var2.drawText(var6, 0, Integer.MAX_VALUE, 0, var4 + var8, var7, var5);
+   public void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
+      String text = this._list.elementAt(index).toString();
+      int style = (int)(this.getStyle() & 71);
+      int fudge = listField.adjustRowHeight(graphics.getFont(), index, text);
+      graphics.drawText(text, 0, Integer.MAX_VALUE, 0, y + fudge, style, width);
    }
 
    @Override
-   public void insert(int var1) {
-      this.insert(var1, EMPTY_ROW);
+   public void insert(int index) {
+      this.insert(index, EMPTY_ROW);
    }
 
-   public ObjectListField(long var1) {
-      super(0, var1);
+   public ObjectListField(long style) {
+      super(0, style);
       this.setCallback(this);
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       if (this.isStyle(1152921504606846976L)) {
-         Font var3 = this.getFont();
+         Font font = this.getFont();
          this._prefWidth = 0;
-         int var4 = this._list.size();
+         int end = this._list.size();
 
-         for (int var5 = var4 - 1; var5 >= 0; var5--) {
-            int var6 = var3.getBounds(this._list.elementAt(var5).toString());
-            if (this._prefWidth < var6) {
-               this._prefWidth = var6;
+         for (int lv = end - 1; lv >= 0; lv--) {
+            int temp = font.getBounds(this._list.elementAt(lv).toString());
+            if (this._prefWidth < temp) {
+               this._prefWidth = temp;
             }
          }
       } else {
-         this._prefWidth = var1;
+         this._prefWidth = width;
       }
 
-      super.layout(var1, var2);
+      super.layout(width, height);
    }
 
    @Override
-   public void delete(int var1) {
-      this._list.removeElementAt(var1);
-      super.delete(var1);
+   public void delete(int index) {
+      this._list.removeElementAt(index);
+      super.delete(index);
    }
 
    public ObjectListField() {

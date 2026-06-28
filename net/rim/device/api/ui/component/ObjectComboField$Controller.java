@@ -3,19 +3,19 @@ package net.rim.device.api.ui.component;
 public class ObjectComboField$Controller extends ComboFieldController {
    private final ObjectComboField this$0;
 
-   public ObjectComboField$Controller(ObjectComboField var1) {
-      this.this$0 = var1;
+   public ObjectComboField$Controller(ObjectComboField _1) {
+      this.this$0 = _1;
    }
 
    @Override
-   protected void textChanged(String var1, int var2) {
+   protected void textChanged(String newText, int context) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected void select(Object var1, int var2) {
-      if (var1 != null) {
-         super._comboField.setText(var1.toString());
+   protected void select(Object selection, int type) {
+      if (selection != null) {
+         super._comboField.setText(selection.toString());
       }
 
       super._comboField.hideDropList();

@@ -1,5 +1,7 @@
 package javax.microedition.rms;
 
+import net.rim.vm.Array;
+
 class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumeration, RecordListener {
    private boolean _destroyed;
    protected RecordStore _recordStore;
@@ -9,16 +11,19 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
    protected boolean _inError;
    protected int _currentIndex;
 
-   BaseRecordEnumeration(RecordStore var1, RecordEventGenerator var2, boolean var3) {
-      this._recordStore = var1;
-      this._recordSource = var2;
+   BaseRecordEnumeration(RecordStore recordStore, RecordEventGenerator recordSource, boolean listen) {
+      this._recordStore = recordStore;
+      this._recordSource = recordSource;
       this._recordIds = new int[0];
-      this.keepUpdated(var3);
+      this.keepUpdated(listen);
    }
 
    @Override
-   void loadRecordIDs(int[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void loadRecordIDs(int[] recordIds) {
+      synchronized (this._recordIds) {
+         Array.resize(recordIds, this._recordIds.length);
+         System.arraycopy(this._recordIds, 0, recordIds, 0, this._recordIds.length);
+      }
    }
 
    protected void mustBeValid() {
@@ -34,18 +39,18 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
    }
 
    @Override
-   public void keepUpdated(boolean var1) {
+   public void keepUpdated(boolean listen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public synchronized void addRecordListener(RecordListener var1) {
-      this._recordStore.addRecordListener(var1);
+   public synchronized void addRecordListener(RecordListener listener) {
+      this._recordStore.addRecordListener(listener);
    }
 
    @Override
-   public synchronized void removeRecordListener(RecordListener var1) {
-      this._recordStore.removeRecordListener(var1);
+   public synchronized void removeRecordListener(RecordListener listener) {
+      this._recordStore.removeRecordListener(listener);
    }
 
    @Override
@@ -56,12 +61,28 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    @Override
    public byte[] nextRecord() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.mustBeValid();
+      synchronized (this._recordIds) {
+         return this._recordStore.getRecord(this.nextRecordId());
+      }
    }
 
    @Override
    public int nextRecordId() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._inError) {
+         throw new InvalidRecordIDException();
+      }
+
+      this.mustBeValid();
+      this._currentIndex++;
+      synchronized (this._recordIds) {
+         if (this._currentIndex >= this._recordIds.length) {
+            this._inError = true;
+            throw new InvalidRecordIDException();
+         } else {
+            return this._recordIds[this._currentIndex];
+         }
+      }
    }
 
    @Override
@@ -72,12 +93,32 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    @Override
    public byte[] previousRecord() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.mustBeValid();
+      synchronized (this._recordIds) {
+         return this._recordStore.getRecord(this.previousRecordId());
+      }
    }
 
    @Override
    public int previousRecordId() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._inError) {
+         throw new InvalidRecordIDException();
+      }
+
+      this.mustBeValid();
+      synchronized (this._recordIds) {
+         if (this._currentIndex == -1) {
+            this._currentIndex = this._recordIds.length;
+         }
+
+         this._currentIndex--;
+         if (this._currentIndex < 0) {
+            this._inError = true;
+            throw new InvalidRecordIDException();
+         } else {
+            return this._recordIds[this._currentIndex];
+         }
+      }
    }
 
    @Override
@@ -95,7 +136,7 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    @Override
    public void rebuild() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -107,19 +148,35 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
    }
 
    @Override
-   public void recordAdded(RecordStore var1, int var2) {
+   public void recordAdded(RecordStore recordStore, int recordId) {
       this.mustBeValid();
-      this.notifyRecordAdded(var1, var2);
+      this.notifyRecordAdded(recordStore, recordId);
    }
 
    @Override
-   public void recordChanged(RecordStore var1, int var2) {
+   public void recordChanged(RecordStore recordStore, int recordId) {
       this.mustBeValid();
-      this.notifyRecordChanged(var1, var2);
+      this.notifyRecordChanged(recordStore, recordId);
    }
 
    @Override
-   public void recordDeleted(RecordStore var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void recordDeleted(RecordStore recordStore, int recordId) {
+      this.mustBeValid();
+      synchronized (this._recordIds) {
+         int count = this._recordIds.length;
+
+         for (int i = 0; i < count; i++) {
+            if (this._recordIds[i] == recordId) {
+               System.arraycopy(this._recordIds, i + 1, this._recordIds, i, count - i - 1);
+               Array.resize(this._recordIds, count - 1);
+               if (this._currentIndex != -1 && this._currentIndex >= i) {
+                  this._currentIndex--;
+               }
+
+               this.notifyRecordDeleted(recordStore, recordId);
+               break;
+            }
+         }
+      }
    }
 }

@@ -7,14 +7,14 @@ final class IntMultiMap$KeyValuesEnumeration implements Enumeration {
    private int _i;
    private int _key;
 
-   IntMultiMap$KeyValuesEnumeration(IntMultiMap var1, int var2) {
-      this._map = var1;
-      this._i = this._map.findKey(var2);
+   IntMultiMap$KeyValuesEnumeration(IntMultiMap map, int key) {
+      this._map = map;
+      this._i = this._map.findKey(key);
       if (this._i < 0) {
          this._i = 0;
       }
 
-      this._key = var2;
+      this._key = key;
    }
 
    @Override

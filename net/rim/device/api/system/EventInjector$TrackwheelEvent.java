@@ -7,9 +7,9 @@ public class EventInjector$TrackwheelEvent extends EventInjector$Event {
    public static final int THUMB_ROLL_UP;
    public static final int THUMB_ROLL_DOWN;
 
-   public EventInjector$TrackwheelEvent(int var1, int var2, int var3) {
-      super(2, var1 == 518 ? 519 : var1, var1 == 518 ? -var2 : var2, var3, 0, null, null);
-      if (var1 == 518) {
+   public EventInjector$TrackwheelEvent(int event, int amount, int status) {
+      super(2, event == 518 ? 519 : event, event == 518 ? -amount : amount, status, 0, null, null);
+      if (event == 518) {
          this._isThumbRollUp = true;
       }
    }
@@ -20,31 +20,31 @@ public class EventInjector$TrackwheelEvent extends EventInjector$Event {
    }
 
    @Override
-   public void setEvent(int var1) {
-      if (var1 != this.getEvent()) {
+   public void setEvent(int event) {
+      if (event != this.getEvent()) {
          if (this._isThumbRollUp) {
             this._isThumbRollUp = false;
             this.setAmount(-this.getAmount());
-         } else if (var1 == 518) {
-            var1 = 519;
+         } else if (event == 518) {
+            event = 519;
             this._isThumbRollUp = true;
             this.setAmount(-this.getAmount());
          }
       }
 
-      super.setEvent(var1);
+      super.setEvent(event);
    }
 
-   public void setAmount(int var1) {
+   public void setAmount(int amount) {
       if (this._isThumbRollUp) {
-         var1 = -var1;
+         amount = -amount;
       }
 
-      super._msg.setSubMessage(var1);
+      super._msg.setSubMessage(amount);
    }
 
    public int getAmount() {
-      int var1 = super._msg.getSubMessage();
-      return this._isThumbRollUp ? -var1 : var1;
+      int amount = super._msg.getSubMessage();
+      return this._isThumbRollUp ? -amount : amount;
    }
 }

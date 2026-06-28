@@ -63,20 +63,20 @@ public final class PMEGraphics {
    public static final int PMEGRAPHICS_STATS_NUM;
    public static final int PMEGRAPHICS_STATS_SIZE;
 
-   public final void setFillContext(Object var1) {
+   public final void setFillContext(Object g) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void setStrokeContext(Object var1) {
+   public final void setStrokeContext(Object g) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final int clear(Object var1) {
-      if (var1 instanceof Graphics) {
+   public final int clear(Object g) {
+      if (g instanceof Graphics) {
          if (this._bkgrndColour != -1) {
-            Graphics var2 = (Graphics)var1;
-            var2.setColor(this._bkgrndColour);
-            var2.fillRect(this._clip.x, this._clip.y, this._clip.width, this._clip.height);
+            Graphics gfx = (Graphics)g;
+            gfx.setColor(this._bkgrndColour);
+            gfx.fillRect(this._clip.x, this._clip.y, this._clip.width, this._clip.height);
          }
 
          this._returnState = 0;
@@ -87,9 +87,9 @@ public final class PMEGraphics {
       return this._returnState;
    }
 
-   public final int render(Object var1, int var2) {
-      if (var1 instanceof Graphics) {
-         this._returnState = this.renderNative((Graphics)var1, var2);
+   public final int render(Object g, int iNodeOffset) {
+      if (g instanceof Graphics) {
+         this._returnState = this.renderNative((Graphics)g, iNodeOffset);
       } else {
          this._returnState = 2;
       }
@@ -97,9 +97,9 @@ public final class PMEGraphics {
       return this._returnState;
    }
 
-   public final int renderList(Object var1, int var2) {
-      if (var1 instanceof Graphics) {
-         this._returnState = this.renderListNative((Graphics)var1, var2);
+   public final int renderList(Object g, int iNodeOffset) {
+      if (g instanceof Graphics) {
+         this._returnState = this.renderListNative((Graphics)g, iNodeOffset);
       } else {
          this._returnState = 2;
       }
@@ -107,12 +107,12 @@ public final class PMEGraphics {
       return this._returnState;
    }
 
-   public final int renderLeafNodes(Object var1, int var2) {
+   public final int renderLeafNodes(Object g, int iNodeOffset) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final int renderNode(Object var1, int var2) {
-      if (var1 instanceof Graphics) {
+   public final int renderNode(Object g, int iNode) {
+      if (g instanceof Graphics) {
          return 1;
       }
 
@@ -120,17 +120,17 @@ public final class PMEGraphics {
       return this._returnState;
    }
 
-   public final int update(int var1) {
+   public final int update(int iNodeOffset) {
       if (this._boundsDirty == null) {
          this._boundsDirty = (XYRect)(new Object());
       }
 
-      int var2 = this.getLeafCount(this._iNodeRoot);
-      if (this._leafNodeList == null || var2 > this._leafNodeList.length) {
-         this._leafNodeList = new int[var2];
+      int numLeafNodes = this.getLeafCount(this._iNodeRoot);
+      if (this._leafNodeList == null || numLeafNodes > this._leafNodeList.length) {
+         this._leafNodeList = new int[numLeafNodes];
       }
 
-      return this.updateNative(var1);
+      return this.updateNative(iNodeOffset);
    }
 
    public final XYRect getDirtyBounds() {
@@ -145,83 +145,83 @@ public final class PMEGraphics {
 
    private final native int updateNative(int var1);
 
-   public final boolean setNodes(int[] var1) {
-      if (this._nodes != var1) {
-         this._nodes = var1;
+   public final boolean setNodes(int[] nodes) {
+      if (this._nodes != nodes) {
+         this._nodes = nodes;
          return true;
       } else {
          return false;
       }
    }
 
-   public final void setRootIndex(int var1) {
+   public final void setRootIndex(int rootIndex) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final boolean setCoords(int[][][] var1) {
-      if (this._coords != var1) {
-         this._coords = var1;
+   public final boolean setCoords(int[][][] coords) {
+      if (this._coords != coords) {
+         this._coords = coords;
          return true;
       } else {
          return false;
       }
    }
 
-   public final boolean setPointTypes(byte[][][] var1) {
-      if (this._pointTypes != var1) {
-         this._pointTypes = var1;
+   public final boolean setPointTypes(byte[][][] pointTypes) {
+      if (this._pointTypes != pointTypes) {
+         this._pointTypes = pointTypes;
          return true;
       } else {
          return false;
       }
    }
 
-   public final boolean setImages(Object[] var1) {
-      if (this._images != var1) {
-         this._images = var1;
+   public final boolean setImages(Object[] images) {
+      if (this._images != images) {
+         this._images = images;
          return true;
       } else {
          return false;
       }
    }
 
-   public final boolean setForeignObjects(Object[] var1) {
-      if (this._foreignObjects != var1) {
-         this._foreignObjects = var1;
+   public final boolean setForeignObjects(Object[] foreignObjects) {
+      if (this._foreignObjects != foreignObjects) {
+         this._foreignObjects = foreignObjects;
          return true;
       } else {
          return false;
       }
    }
 
-   public final boolean setStrings(char[][][] var1) {
-      if (this._strings != var1) {
-         this._strings = var1;
+   public final boolean setStrings(char[][][] strings) {
+      if (this._strings != strings) {
+         this._strings = strings;
          return true;
       } else {
          return false;
       }
    }
 
-   public final boolean setFontFamilies(String[] var1) {
-      if (this._fontFamilies != var1) {
-         this._fontFamilies = var1;
+   public final boolean setFontFamilies(String[] fontFamilies) {
+      if (this._fontFamilies != fontFamilies) {
+         this._fontFamilies = fontFamilies;
          return true;
       } else {
          return false;
       }
    }
 
-   public final void setDefaultFontFamily(String var1) {
+   public final void setDefaultFontFamily(String defaultFontFamily) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setNodeList(int[] var1) {
+   public final void setNodeList(int[] nodeList) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setClip(int var1, int var2, int var3, int var4) {
-      this._clip.set(var1, var2, var3, var4);
+   public final void setClip(int x, int y, int width, int height) {
+      this._clip.set(x, y, width, height);
    }
 
    public final int getLastReturn() {
@@ -232,38 +232,38 @@ public final class PMEGraphics {
       return this._lastNode;
    }
 
-   public final int getNextListNode(int var1) {
+   public final int getNextListNode(int iNode) {
       if (this._nodeList == null) {
          return -1;
       }
 
-      int var2 = this._nodeList.length - 1;
-      byte var3 = -1;
+      int numNxtNodes = this._nodeList.length - 1;
+      int iNodeNxt = -1;
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         if (this._nodeList[var4] == var1) {
-            return this._nodeList[var4 + 1];
+      for (int i = 0; i < numNxtNodes; i++) {
+         if (this._nodeList[i] == iNode) {
+            return this._nodeList[i + 1];
          }
       }
 
-      return var3;
+      return iNodeNxt;
    }
 
-   public final int getNextLeafNode(int var1) {
+   public final int getNextLeafNode(int iNode) {
       if (this._leafNodeList == null) {
          return -1;
       }
 
-      int var2 = this._leafNodeList.length - 1;
-      byte var3 = -1;
+      int numNxtNodes = this._leafNodeList.length - 1;
+      int iNodeNxt = -1;
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         if (this._leafNodeList[var4] == var1) {
-            return this._leafNodeList[var4 + 1];
+      for (int i = 0; i < numNxtNodes; i++) {
+         if (this._leafNodeList[i] == iNode) {
+            return this._leafNodeList[i + 1];
          }
       }
 
-      return var3;
+      return iNodeNxt;
    }
 
    public final int[] getLeafNodeList() {
@@ -278,21 +278,21 @@ public final class PMEGraphics {
       return this._lastClip;
    }
 
-   public final void setViewport(int var1, int var2, int var3, int var4) {
-      this._viewport.set(var1, var2, var3, var4);
+   public final void setViewport(int fX, int fY, int fWidth, int fHeight) {
+      this._viewport.set(fX, fY, fWidth, fHeight);
    }
 
-   public final void setTransform(int[] var1) {
+   public final void setTransform(int[] transform) {
       if (this._transform == null) {
          this._transform = new int[9];
       }
 
-      if (this._transform != null && var1.length == 9) {
-         System.arraycopy(var1, 0, this._transform, 0, 9);
+      if (this._transform != null && transform.length == 9) {
+         System.arraycopy(transform, 0, this._transform, 0, 9);
       }
    }
 
-   public final void setBackgroundColour(int var1) {
+   public final void setBackgroundColour(int rgbColour) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -300,18 +300,18 @@ public final class PMEGraphics {
       return this._bkgrndColour;
    }
 
-   public final void setStats(int[] var1) {
-      if (this._stats != var1) {
-         this._stats = var1;
+   public final void setStats(int[] stats) {
+      if (this._stats != stats) {
+         this._stats = stats;
          this.resetStats(-1);
       }
    }
 
-   public final int getStatsCount(int var1) {
+   public final int getStatsCount(int type) {
       if (this._stats != null) {
-         for (byte var2 = 0; var2 < this._stats.length; var2 += 4) {
-            if (this._stats[var2] == var1) {
-               return this._stats[var2 + 1];
+         for (int i = 0; i < this._stats.length; i += 4) {
+            if (this._stats[i] == type) {
+               return this._stats[i + 1];
             }
          }
       }
@@ -319,11 +319,11 @@ public final class PMEGraphics {
       return -1;
    }
 
-   public final int getStatsDuration(int var1) {
+   public final int getStatsDuration(int type) {
       if (this._stats != null) {
-         for (byte var2 = 0; var2 < this._stats.length; var2 += 4) {
-            if (this._stats[var2] == var1) {
-               return this._stats[var2 + 2];
+         for (int i = 0; i < this._stats.length; i += 4) {
+            if (this._stats[i] == type) {
+               return this._stats[i + 2];
             }
          }
       }
@@ -331,10 +331,10 @@ public final class PMEGraphics {
       return -1;
    }
 
-   public final int getStatsAvgDuration(int var1) {
-      int var2 = this.getStatsCount(var1);
-      int var3 = this.getStatsDuration(var1);
-      return var2 > 0 && var3 > 0 ? var3 / var2 : -1;
+   public final int getStatsAvgDuration(int type) {
+      int count = this.getStatsCount(type);
+      int dur = this.getStatsDuration(type);
+      return count > 0 && dur > 0 ? dur / count : -1;
    }
 
    public static final boolean isDisabled() {
@@ -353,55 +353,67 @@ public final class PMEGraphics {
       return _regOptions == null ? false : _regOptions._logStats;
    }
 
-   public static final boolean toggleRegOption(int var0) {
+   public static final boolean toggleRegOption(int option) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final void renderClip(Object var1) {
-      Graphics var2 = (Graphics)var1;
-      var2.setColor(0);
+   public final void renderClip(Object g) {
+      Graphics gfx = (Graphics)g;
+      gfx.setColor(0);
       this._clipColour >>= 8;
       if (this._clipColour == 0) {
          this._clipColour = 16711680;
       }
 
-      var2.drawRect(this._clip.x + 1, this._clip.y + 1, this._clip.width - 2, this._clip.height - 2);
+      gfx.drawRect(this._clip.x + 1, this._clip.y + 1, this._clip.width - 2, this._clip.height - 2);
    }
 
-   public final void renderStats(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void renderStats(Object g) {
+      Graphics gfx = (Graphics)g;
+      int update = this.getStatsAvgDuration(14);
+      int render = this.getStatsAvgDuration(15);
+      String strUpdate = Integer.toString(update);
+      String strRender = Integer.toString(render);
+
+      try {
+         FontFamily fontFamily = FontFamily.forName(FontFamily.FAMILY_SYSTEM);
+         gfx.setFont(fontFamily.getFont(1, 10));
+         gfx.drawText(strUpdate, this._clip.x, this._clip.y);
+         gfx.drawText(strRender, this._clip.x, this._clip.y + 11);
+      } catch (Exception var8) {
+      }
    }
 
-   public final void resetStats(int var1) {
+   public final void resetStats(int type) {
       if (this._stats != null) {
-         for (byte var2 = 0; var2 < this._stats.length; var2 += 4) {
-            if (this._stats[var2] == var1 || var1 < 0) {
-               this._stats[var2 + 1] = 0;
-               this._stats[var2 + 2] = 0;
-               if (this._stats[var2] == var1) {
+         for (int i = 0; i < this._stats.length; i += 4) {
+            if (this._stats[i] == type || type < 0) {
+               this._stats[i + 1] = 0;
+               this._stats[i + 2] = 0;
+               if (this._stats[i] == type) {
                   break;
                }
             }
          }
       }
 
-      if (var1 < 0) {
+      if (type < 0) {
          this._statsResetTime = System.currentTimeMillis();
       }
    }
 
-   public final void startStats(int var1) {
+   public final void startStats(int type) {
       if (this._stats != null) {
-         for (byte var2 = 0; var2 < this._stats.length; var2 += 4) {
-            if (this._stats[var2] == var1) {
-               this._stats[var2 + 3] = (int)(System.currentTimeMillis() - this._statsResetTime);
+         for (int i = 0; i < this._stats.length; i += 4) {
+            if (this._stats[i] == type) {
+               this._stats[i + 3] = (int)(System.currentTimeMillis() - this._statsResetTime);
                return;
             }
          }
       }
    }
 
-   public final void stopStats(int var1) {
+   public final void stopStats(int type) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 }

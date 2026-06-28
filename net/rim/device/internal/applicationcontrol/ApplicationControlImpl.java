@@ -34,150 +34,185 @@ final class ApplicationControlImpl {
    private static IntHashtable _transactions;
    private static boolean _isDesktopVM;
 
-   static final void removeModule(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void removeModule(int moduleHandle) {
+      if (moduleHandle != 0) {
+         synchronized (_permissions) {
+            _permissions.invalidate();
+            doSetModulePermissions(moduleHandle, 0);
+            _userPermissions.removeSetting(moduleHandle);
+         }
+      }
    }
 
    static final boolean reloadModulePermissions() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    static final boolean reloadDefaultModulePermissions() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static final boolean applyDefaultPermissions() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    static final void checkInitialization() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final boolean addModule(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final boolean addModule(int moduleHandle) {
+      if (moduleHandle == 0) {
+         return false;
+      }
+
+      byte[] hash;
+      try {
+         hash = CodeModuleManager.getModuleHash(moduleHandle);
+      } catch (IllegalArgumentException iae) {
+         return false;
+      }
+
+      if (hash == null) {
+         return false;
+      }
+
+      synchronized (_permissions) {
+         UserSetting us = _userPermissions.getSetting(hash);
+         boolean policySettingPresent = isModuleSettingPresent(hash);
+         long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
+         long perms;
+         if (us == null) {
+            perms = policySettingPresent ? policyPermissions : combinePermissions(policyPermissions, _userPermissions.getDefaultSetting().getPermissions());
+         } else {
+            perms = combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt());
+            _userPermissions.putSetting(moduleHandle, us, false);
+            us.setPermissions(perms);
+         }
+
+         return doSetModulePermissions(moduleHandle, perms);
+      }
    }
 
-   static final void addTransactionModule(int var0, int var1) {
+   static final void addTransactionModule(int newModuleHandle, int transactionHandle) {
       if (_transactions == null) {
          _transactions = (IntHashtable)(new Object());
       }
 
-      Object var2 = _transactions.get(var1);
-      if (var2 == null) {
-         var2 = new Object();
+      IntVector handles = (IntVector)_transactions.get(transactionHandle);
+      if (handles == null) {
+         handles = (IntVector)(new Object());
       }
 
-      ((IntVector)var2).addElement(var0);
-      _transactions.put(var1, var2);
+      handles.addElement(newModuleHandle);
+      _transactions.put(transactionHandle, handles);
    }
 
-   static final void endTransactionAddModules(int var0) {
+   static final void endTransactionAddModules(int transactionHandle) {
       if (_transactions != null) {
-         Object var1 = _transactions.get(var0);
-         if (var1 == null) {
+         IntVector handles = (IntVector)_transactions.get(transactionHandle);
+         if (handles == null) {
             throw new Object();
          }
 
-         ((IntVector)var1).trimToSize();
-         int[] var2 = ((IntVector)var1).getArray();
+         handles.trimToSize();
+         int[] array = handles.getArray();
 
-         for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-            addModule(var2[var3]);
+         for (int i = array.length - 1; i >= 0; i--) {
+            addModule(array[i]);
          }
       }
    }
 
-   static final void removeUserSetting(int var0) {
-      UserSetting var1 = _userPermissions.getSetting(var0);
-      if (var0 != 0 && var1 != null) {
-         if (isModuleSettingPresent(var1.getHash())) {
-            doSetModulePermissions(var0, getModulePermissions(var0, var1.getHash()));
+   static final void removeUserSetting(int handle) {
+      UserSetting us = _userPermissions.getSetting(handle);
+      if (handle != 0 && us != null) {
+         if (isModuleSettingPresent(us.getHash())) {
+            doSetModulePermissions(handle, getModulePermissions(handle, us.getHash()));
          } else {
-            doSetModulePermissions(var0, _userPermissions.getDefaultSetting().getPermissions());
+            doSetModulePermissions(handle, _userPermissions.getDefaultSetting().getPermissions());
          }
 
-         _userPermissions.removeSetting(var0, var1);
+         _userPermissions.removeSetting(handle, us);
       }
    }
 
-   static final void removeUserSettings(boolean var0) {
+   static final void removeUserSettings(boolean removeDefaults) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   static final int getPolicyPermission(int var0, boolean var1) {
-      return getStackPolicyPermission(var0, var1);
+   static final int getPolicyPermission(int flag, boolean checkProcess) {
+      return getStackPolicyPermission(flag, checkProcess);
    }
 
-   static final int getPolicyPermissionTernary(int var0, int var1, boolean var2) {
-      int var3 = getStackPolicyPermission(var0, var2);
-      if (var3 == 0) {
-         return isStackPromptPolicyPermission(var1, var2) ? 2 : 0;
+   static final int getPolicyPermissionTernary(int allowedFlag, int promptFlag, boolean checkProcess) {
+      int allowPerm = getStackPolicyPermission(allowedFlag, checkProcess);
+      if (allowPerm == 0) {
+         return isStackPromptPolicyPermission(promptFlag, checkProcess) ? 2 : 0;
       } else {
          return 1;
       }
    }
 
-   static final int getPolicyPermission(String var0, int var1, boolean var2) {
-      if (getPolicyPermission(var1, true) == 0) {
+   static final int getPolicyPermission(String domain, int flag, boolean checkProcess) {
+      if (getPolicyPermission(flag, true) == 0) {
          return 0;
       }
 
-      switch (var1) {
+      switch (flag) {
          case 12:
-            byte var3 = 3;
-            return isConnectionAllowed(var0, var3, true);
+            byte domainTag = 3;
+            return isConnectionAllowed(domain, domainTag, true);
          default:
             throw new Object();
       }
    }
 
-   static final int getPolicyPermissionTernary(String var0, int var1, int var2, boolean var3) {
-      int var4 = getPolicyPermissionTernary(var1, var2, var3);
-      if (var4 != 1) {
-         return var4 == 0 ? var4 : 2;
+   static final int getPolicyPermissionTernary(String domain, int allowFlag, int promptFlag, boolean checkProcess) {
+      int perm = getPolicyPermissionTernary(allowFlag, promptFlag, checkProcess);
+      if (perm != 1) {
+         return perm == 0 ? perm : 2;
       }
 
-      byte var5;
-      switch (var1) {
+      byte domainTag;
+      switch (allowFlag) {
          case 3:
-            var5 = 1;
+            domainTag = 1;
             break;
          case 5:
-            var5 = 2;
+            domainTag = 2;
             break;
          default:
             throw new Object();
       }
 
-      return isConnectionAllowed(var0, var5, true);
+      return isConnectionAllowed(domain, domainTag, true);
    }
 
-   private static final long getPolicyPermissionIgnoringDefaults(int var0, byte[] var1, int var2) {
-      boolean var5 = isModuleSettingPresent(var1);
-      return var5 ? getModulePermission(var0, var1, var2) : Long.MIN_VALUE >>> var2 & _permissions.getPermittedPermissions();
+   private static final long getPolicyPermissionIgnoringDefaults(int moduleHandle, byte[] moduleHash, int flag) {
+      boolean policySettingPresent = isModuleSettingPresent(moduleHash);
+      return policySettingPresent ? getModulePermission(moduleHandle, moduleHash, flag) : Long.MIN_VALUE >>> flag & _permissions.getPermittedPermissions();
    }
 
-   private static final int getStackPolicyPermission(int var0, boolean var1) {
-      if (var1 && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle) && isSettingPresent(_processModuleHash)) {
-         long var2 = getPolicyPermissionIgnoringDefaults(_processModuleHandle, _processModuleHash, var0);
-         if (var2 == 0) {
+   private static final int getStackPolicyPermission(int flag, boolean checkProcess) {
+      if (checkProcess && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle) && isSettingPresent(_processModuleHash)) {
+         long perm = getPolicyPermissionIgnoringDefaults(_processModuleHandle, _processModuleHash, flag);
+         if (perm == 0) {
             return 1;
          }
       }
 
-      int[] var8 = TraceBack.getCallingModules();
-      byte[] var3 = new byte[20];
+      int[] handles = TraceBack.getCallingModules();
+      byte[] hash = new byte[20];
 
-      for (int var4 = var8.length - 1; var4 >= 0; var4--) {
-         int var5 = var8[var4];
-         if (!isSignedWithRRI(var5)) {
-            if (!CodeModuleManager.getModuleHash(var5, var3)) {
+      for (int i = handles.length - 1; i >= 0; i--) {
+         int handle = handles[i];
+         if (!isSignedWithRRI(handle)) {
+            if (!CodeModuleManager.getModuleHash(handle, hash)) {
                return 1;
             }
 
-            long var6 = getPolicyPermissionIgnoringDefaults(var5, var3, var0);
-            if (var6 == 0) {
+            long perm = getPolicyPermissionIgnoringDefaults(handle, hash, flag);
+            if (perm == 0) {
                return 1;
             }
          }
@@ -186,26 +221,26 @@ final class ApplicationControlImpl {
       return 0;
    }
 
-   private static final boolean isStackPromptPolicyPermission(int var0, boolean var1) {
-      if (var1 && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle) && isSettingPresent(_processModuleHash)) {
-         long var2 = getPolicyPermissionIgnoringDefaults(_processModuleHandle, _processModuleHash, var0);
-         if (var2 != 0) {
+   private static final boolean isStackPromptPolicyPermission(int flag, boolean checkProcess) {
+      if (checkProcess && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle) && isSettingPresent(_processModuleHash)) {
+         long perm = getPolicyPermissionIgnoringDefaults(_processModuleHandle, _processModuleHash, flag);
+         if (perm != 0) {
             return true;
          }
       }
 
-      int[] var8 = TraceBack.getCallingModules();
-      byte[] var3 = new byte[20];
+      int[] handles = TraceBack.getCallingModules();
+      byte[] hash = new byte[20];
 
-      for (int var4 = var8.length - 1; var4 >= 0; var4--) {
-         int var5 = var8[var4];
-         if (!isSignedWithRRI(var5)) {
-            if (!CodeModuleManager.getModuleHash(var5, var3)) {
+      for (int i = handles.length - 1; i >= 0; i--) {
+         int handle = handles[i];
+         if (!isSignedWithRRI(handle)) {
+            if (!CodeModuleManager.getModuleHash(handle, hash)) {
                return true;
             }
 
-            long var6 = getPolicyPermissionIgnoringDefaults(var5, var3, var0);
-            if (var6 != 0) {
+            long perm = getPolicyPermissionIgnoringDefaults(handle, hash, flag);
+            if (perm != 0) {
                return true;
             }
          }
@@ -214,243 +249,280 @@ final class ApplicationControlImpl {
       return false;
    }
 
-   static final long getPermittedPermission(int var0, byte[] var1, int var2) {
-      if (var0 == 0 || !isModuleSettingPresent(var1)) {
-         return _permissions.getPermittedPermissions() & Long.MIN_VALUE >>> var2;
+   static final long getPermittedPermission(int moduleHandle, byte[] moduleHash, int flag) {
+      if (moduleHandle == 0 || !isModuleSettingPresent(moduleHash)) {
+         return _permissions.getPermittedPermissions() & Long.MIN_VALUE >>> flag;
       } else {
-         return isPermitted(var1, var2) ? Long.MIN_VALUE >>> var2 : 0;
+         return isPermitted(moduleHash, flag) ? Long.MIN_VALUE >>> flag : 0;
       }
    }
 
-   static final long getUserPermission(int var0, int var1) {
-      UserSetting var2 = _userPermissions.getSetting(var0);
-      return getUserPermission(var2, var1);
+   static final long getUserPermission(int moduleHandle, int flag) {
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+      return getUserPermission(us, flag);
    }
 
-   public static final long getDefaultUserPermission(int var0) {
-      UserSetting var1 = _userPermissions.getDefaultSetting();
-      return getUserPermission(var1, var0);
+   public static final long getDefaultUserPermission(int flag) {
+      UserSetting us = _userPermissions.getDefaultSetting();
+      return getUserPermission(us, flag);
    }
 
-   private static final long getUserPermission(UserSetting var0, int var1) {
-      if (var0 == null) {
-         var0 = _userPermissions.getDefaultSetting();
-         if (var0 == null) {
-            return _permissions.getDefaultPermissions() & Long.MIN_VALUE >>> var1;
+   private static final long getUserPermission(UserSetting us, int flag) {
+      if (us == null) {
+         us = _userPermissions.getDefaultSetting();
+         if (us == null) {
+            return _permissions.getDefaultPermissions() & Long.MIN_VALUE >>> flag;
          }
       }
 
-      return var0.getPermissions() & Long.MIN_VALUE >>> var1;
+      return us.getPermissions() & Long.MIN_VALUE >>> flag;
    }
 
-   static final boolean isUserSettingPresent(int var0) {
-      return _userPermissions.getSetting(var0) != null;
+   static final boolean isUserSettingPresent(int moduleHandle) {
+      return _userPermissions.getSetting(moduleHandle) != null;
    }
 
-   static final boolean isUserPermissionSet(int var0, int var1) {
-      UserSetting var2 = _userPermissions.getSetting(var0);
-      return isUserPermissionSet(var2, var1);
+   static final boolean isUserPermissionSet(int moduleHandle, int flag) {
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+      return isUserPermissionSet(us, flag);
    }
 
-   private static final boolean isUserPermissionSet(UserSetting var0, int var1) {
-      return var0 == null ? false : (var0.getIsSet() & Long.MIN_VALUE >>> var1) != 0;
+   private static final boolean isUserPermissionSet(UserSetting userSetting, int flag) {
+      return userSetting == null ? false : (userSetting.getIsSet() & Long.MIN_VALUE >>> flag) != 0;
    }
 
-   static final boolean differsFromUserDefaults(int var0) {
-      UserSetting var1 = _userPermissions.getSetting(var0);
-      if (var1 != null) {
-         UserSetting var2 = _userPermissions.getDefaultSetting();
-         return (var2.getPermissions() & var1.getIsSet()) != (var1.getPermissions() & var1.getIsSet());
+   static final boolean differsFromUserDefaults(int moduleHandle) {
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+      if (us != null) {
+         UserSetting defaults = _userPermissions.getDefaultSetting();
+         return (defaults.getPermissions() & us.getIsSet()) != (us.getPermissions() & us.getIsSet());
       } else {
          return false;
       }
    }
 
-   static final boolean isSignedWithRRI(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final boolean isSignedWithRRI(int moduleHandle) {
+      synchronized (_permissions) {
+         return (doGetModulePermissions(moduleHandle) & 1) != 0;
+      }
    }
 
-   static final boolean isAllowed(int var0, boolean var1) {
-      return isAllowed(var0, var1, null);
+   static final boolean isAllowed(int flag, boolean checkProcess) {
+      return isAllowed(flag, checkProcess, null);
    }
 
-   static final boolean isAllowed(int var0, boolean var1, int[] var2) {
+   static final boolean isAllowed(int flag, boolean checkProcess, int[] additionalModules) {
       checkInitialization();
-      boolean var3 = false;
-      int[] var4 = TraceBack.getCallingModules();
-      Thread var5 = Thread.currentThread();
-      ApplicationControlImpl$CachedPermissions var6 = (ApplicationControlImpl$CachedPermissions)ThreadSpecificData.get(var5, 1);
-      if (var6 != null && var6._check == _permissions.getCheck() && var6.equals(var4)) {
-         if ((var6._perms & Long.MIN_VALUE >>> var0) != 0) {
+      boolean traceMatched = false;
+      int[] trace = TraceBack.getCallingModules();
+      Thread thread = Thread.currentThread();
+      ApplicationControlImpl$CachedPermissions cp = (ApplicationControlImpl$CachedPermissions)ThreadSpecificData.get(thread, 1);
+      if (cp != null && cp._check == _permissions.getCheck() && cp.equals(trace)) {
+         if ((cp._perms & Long.MIN_VALUE >>> flag) != 0) {
             return true;
          }
 
-         var3 = true;
+         traceMatched = true;
       }
 
-      boolean var7 = doGetCallingModulesPermission(Long.MIN_VALUE >>> var0, 0, 1, _processModuleHandle == 0 ? false : var1, _processModuleHandle, var2) == 2;
-      if (!var7) {
-         logDenial(_processModuleHandle, var0);
+      boolean rc = doGetCallingModulesPermission(
+            Long.MIN_VALUE >>> flag, 0, 1, _processModuleHandle == 0 ? false : checkProcess, _processModuleHandle, additionalModules
+         )
+         == 2;
+      if (!rc) {
+         logDenial(_processModuleHandle, flag);
       }
 
-      if (var6 == null || !var3) {
-         var6 = new ApplicationControlImpl$CachedPermissions(var4);
-         ThreadSpecificData.set(var5, 1, var6);
+      if (cp == null || !traceMatched) {
+         cp = new ApplicationControlImpl$CachedPermissions(trace);
+         ThreadSpecificData.set(thread, 1, cp);
       }
 
-      long var8 = var7 ? Long.MIN_VALUE >>> var0 | var6._perms : (Long.MIN_VALUE >>> var0 ^ -1) & var6._perms;
-      var6.setCachedPerms(var8, _permissions.getCheck());
-      return var7;
+      long cache = rc ? Long.MIN_VALUE >>> flag | cp._perms : (Long.MIN_VALUE >>> flag ^ -1) & cp._perms;
+      cp.setCachedPerms(cache, _permissions.getCheck());
+      return rc;
    }
 
-   static final int isAllowedTernary(int var0, int var1, boolean var2) {
-      return isAllowedTernary(var0, var1, var2, null);
+   static final int isAllowedTernary(int allowFlag, int promptFlag, boolean checkProcess) {
+      return isAllowedTernary(allowFlag, promptFlag, checkProcess, null);
    }
 
-   static final int isAllowedTernary(int var0, int var1, boolean var2, int[] var3) {
+   static final int isAllowedTernary(int allowFlag, int promptFlag, boolean checkProcess, int[] additionalModules) {
       checkInitialization();
-      int var4 = doGetCallingModulesPermission(
-         Long.MIN_VALUE >>> var0, Long.MIN_VALUE >>> var1, 1, _processModuleHandle == 0 ? false : var2, _processModuleHandle, var3
+      int rc = doGetCallingModulesPermission(
+         Long.MIN_VALUE >>> allowFlag,
+         Long.MIN_VALUE >>> promptFlag,
+         1,
+         _processModuleHandle == 0 ? false : checkProcess,
+         _processModuleHandle,
+         additionalModules
       );
-      if (var4 != 2) {
-         if (var4 == 1) {
+      if (rc != 2) {
+         if (rc == 1) {
             return 2;
          }
 
-         logDenial(_processModuleHandle, var0);
+         logDenial(_processModuleHandle, allowFlag);
          return 1;
       } else {
          return 0;
       }
    }
 
-   static final int permissionMaskToTriState(long var0, int var2, int var3) {
-      if ((var0 & Long.MIN_VALUE >>> var2) != 0) {
-         return (var0 & Long.MIN_VALUE >>> var3) != 0 ? 2 : 0;
+   static final int permissionMaskToTriState(long permissions, int allowFlag, int promptFlag) {
+      if ((permissions & Long.MIN_VALUE >>> allowFlag) != 0) {
+         return (permissions & Long.MIN_VALUE >>> promptFlag) != 0 ? 2 : 0;
       } else {
          return 1;
       }
    }
 
-   static final int isConnectionAllowed(String var0, byte var1, boolean var2) {
-      return isConnectionAllowed(var0, var1, var2, null);
+   static final int isConnectionAllowed(String domain, byte domainTag, boolean checkProcess) {
+      return isConnectionAllowed(domain, domainTag, checkProcess, null);
    }
 
-   static final int isConnectionAllowed(String var0, byte var1, boolean var2, int[] var3) {
-      boolean var4 = false;
-      if (var2 && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle)) {
-         int var5 = 1;
+   static final int isConnectionAllowed(String domain, byte domainTag, boolean checkProcess, int[] additionalModules) {
+      boolean prompt = false;
+      if (checkProcess && _processModuleHandle != 0 && !isSignedWithRRI(_processModuleHandle)) {
+         int perm = 1;
          if (isSettingPresent(_processModuleHash)) {
-            var5 = isDomainAllowed(_processModuleHash, var0, var1);
+            perm = isDomainAllowed(_processModuleHash, domain, domainTag);
          }
 
-         if (var5 == 1) {
+         if (perm == 1) {
             return 1;
          }
 
-         var4 |= var5 == 2;
+         prompt |= perm == 2;
       }
 
-      int[] var11 = TraceBack.getCallingModules();
-      byte[] var6 = new byte[20];
+      int[] handles = TraceBack.getCallingModules();
+      byte[] hash = new byte[20];
 
-      for (int var7 = var11.length - 1; var7 >= 0; var7--) {
-         int var8 = var11[var7];
-         if (!isSignedWithRRI(var8)) {
-            if (!CodeModuleManager.getModuleHash(var8, var6)) {
+      for (int i = handles.length - 1; i >= 0; i--) {
+         int handle = handles[i];
+         if (!isSignedWithRRI(handle)) {
+            if (!CodeModuleManager.getModuleHash(handle, hash)) {
                return 1;
             }
 
-            int var9 = 1;
-            if (isSettingPresent(var6)) {
-               var9 = isDomainAllowed(var6, var0, var1);
+            int perm = 1;
+            if (isSettingPresent(hash)) {
+               perm = isDomainAllowed(hash, domain, domainTag);
             }
 
-            if (var9 == 1) {
+            if (perm == 1) {
                return 1;
             }
 
-            var4 |= var9 == 2;
+            prompt |= perm == 2;
          }
       }
 
-      int var12 = var3 == null ? 0 : var3.length;
+      int numAdditionalModules = additionalModules == null ? 0 : additionalModules.length;
 
-      for (int var13 = var12 - 1; var13 >= 0; var13--) {
-         int var14 = var3[var13];
-         if (!isSignedWithRRI(var14)) {
-            if (!CodeModuleManager.getModuleHash(var14, var6)) {
+      for (int i = numAdditionalModules - 1; i >= 0; i--) {
+         int handle = additionalModules[i];
+         if (!isSignedWithRRI(handle)) {
+            if (!CodeModuleManager.getModuleHash(handle, hash)) {
                return 1;
             }
 
-            int var10 = 1;
-            if (isSettingPresent(var6)) {
-               var10 = isDomainAllowed(var6, var0, var1);
+            int perm = 1;
+            if (isSettingPresent(hash)) {
+               perm = isDomainAllowed(hash, domain, domainTag);
             }
 
-            if (var10 == 1) {
+            if (perm == 1) {
                return 1;
             }
 
-            var4 |= var10 == 2;
+            prompt |= perm == 2;
          }
       }
 
-      return var4 ? 2 : 0;
+      return prompt ? 2 : 0;
    }
 
-   static final boolean isFlagSetBoolean(byte[] var0, int var1) {
-      return isFlagSet(var0, var1);
+   static final boolean isFlagSetBoolean(byte[] hash, int allowFlag) {
+      return isFlagSet(hash, allowFlag);
    }
 
-   static final int isFlagSetTernary(byte[] var0, int var1, int var2) {
-      if (isFlagSet(var0, var1)) {
-         return isFlagSet(var0, var2) ? 2 : 0;
+   static final int isFlagSetTernary(byte[] hash, int allowFlag, int promptFlag) {
+      if (isFlagSet(hash, allowFlag)) {
+         return isFlagSet(hash, promptFlag) ? 2 : 0;
       } else {
          return 1;
       }
    }
 
-   static final void assertIPCAllowed(boolean var0) {
+   static final void assertIPCAllowed(boolean checkProcess) {
       if (!_isDesktopVM) {
-         if (!ApplicationControl.isIPCAllowed(var0)) {
+         if (!ApplicationControl.isIPCAllowed(checkProcess)) {
             throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[2]);
          }
       }
    }
 
-   static final boolean isThemeDataAllowed(int var0) {
-      boolean var1 = checkModulePermissions(var0, 19) == 0;
-      if (var1 && !isSignedWithRRI(var0)) {
+   static final boolean isThemeDataAllowed(int moduleHandle) {
+      boolean rc = checkModulePermissions(moduleHandle, 19) == 0;
+      if (rc && !isSignedWithRRI(moduleHandle)) {
          setGrantedPermissions(17592186044416L);
       }
 
-      return var1;
+      return rc;
    }
 
-   static final boolean isAuthenticatorApiAllowed(int var0) {
-      boolean var1 = checkModulePermissions(var0, 20, -1) == 0;
-      if (var1) {
+   static final boolean isAuthenticatorApiAllowed(int moduleHandle) {
+      boolean rc = checkModulePermissions(moduleHandle, 20, -1) == 0;
+      if (rc) {
          setGrantedPermissions(8796093022208L);
       }
 
-      return var1;
+      return rc;
    }
 
-   static final int checkModulePermissions(int var0, int var1) {
-      return checkModulePermissions(var0, var1, -1, 63);
+   static final int checkModulePermissions(int moduleHandle, int allowFlag) {
+      return checkModulePermissions(moduleHandle, allowFlag, -1, 63);
    }
 
-   static final int checkModulePermissionsIgnoringBypass(int var0, int var1) {
-      return checkModulePermissions(var0, var1, -1, 0);
+   static final int checkModulePermissionsIgnoringBypass(int moduleHandle, int allowFlag) {
+      return checkModulePermissions(moduleHandle, allowFlag, -1, 0);
    }
 
-   static final int checkModulePermissions(int var0, int var1, int var2) {
-      return checkModulePermissions(var0, var1, var2, 63);
+   static final int checkModulePermissions(int moduleHandle, int allowFlag, int promptFlag) {
+      return checkModulePermissions(moduleHandle, allowFlag, promptFlag, 63);
    }
 
-   private static final int checkModulePermissions(int var0, int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int checkModulePermissions(int moduleHandle, int allowFlag, int promptFlag, int bypassFlag) {
+      checkInitialization();
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+      long permissions;
+      synchronized (_permissions) {
+         if (moduleHandle == 0) {
+            if (us == null) {
+               permissions = _permissions.getDefaultPermissions();
+            } else {
+               permissions = us.getPermissions();
+            }
+         } else {
+            permissions = doGetModulePermissions(moduleHandle);
+         }
+      }
+
+      if (bypassFlag != 63 || (permissions & Long.MIN_VALUE >>> bypassFlag) == 0) {
+         if (allowFlag != -1 && (permissions & Long.MIN_VALUE >>> allowFlag) == 0) {
+            return 1;
+         }
+
+         if (promptFlag != -1
+            && (permissions & Long.MIN_VALUE >>> promptFlag) != 0
+            && (us == null || (us.getDontPrompt() & Long.MIN_VALUE >>> promptFlag) == 0)) {
+            return 2;
+         }
+      }
+
+      return 0;
    }
 
    static final boolean setRestrictiveDefaultPermission() {
@@ -465,509 +537,578 @@ final class ApplicationControlImpl {
       return setModuleUserPermission(ApplicationControlConstants.EMPTY_HASH, 0, 3869672972855803904L);
    }
 
-   static final boolean setModuleUserPermission(byte[] var0, int var1, ApplicationPermissions var2) {
-      if (var2 != null && var0 != null) {
-         int[] var3 = var2.getPermissionKeys();
-         long var4 = 0;
+   static final boolean setModuleUserPermission(byte[] moduleHash, int moduleHandle, ApplicationPermissions appPermissions) {
+      if (appPermissions != null && moduleHash != null) {
+         int[] appPerms = appPermissions.getPermissionKeys();
+         long setAppPerms = 0;
 
-         for (int var9 = 0; var9 < var3.length; var9++) {
-            int var6 = var3[var9];
-            int var7 = var2.getPermissionInternal(var6);
-            int var8 = ApplicationControlConstants.APP_PERM_TO_APP_CONTROL_MAP[var6];
-            if (var7 != -1) {
-               var4 |= getPermissionFlags(var8);
-               var4 |= correspondingPromptFlag(var8);
+         for (int i = 0; i < appPerms.length; i++) {
+            int currAppPermKey = appPerms[i];
+            int currAppPerm = appPermissions.getPermissionInternal(currAppPermKey);
+            int permission = ApplicationControlConstants.APP_PERM_TO_APP_CONTROL_MAP[currAppPermKey];
+            if (currAppPerm != -1) {
+               setAppPerms |= getPermissionFlags(permission);
+               setAppPerms |= correspondingPromptFlag(permission);
             }
          }
 
-         UserSetting var12 = _userPermissions.getDefaultSetting();
-         UserSetting var10 = getOrCreateUserSetting(var0, var1);
+         UserSetting defaults = _userPermissions.getDefaultSetting();
+         UserSetting us = getOrCreateUserSetting(moduleHash, moduleHandle);
          return applyModulePermissions(
-            var0, var1, var10, var4 & convertApplicationPermissions(var2) | (var4 ^ -1) & var12.getPermissions(), var10.getDontPrompt() & (var4 ^ -1), var4
+            moduleHash,
+            moduleHandle,
+            us,
+            setAppPerms & convertApplicationPermissions(appPermissions) | (setAppPerms ^ -1) & defaults.getPermissions(),
+            us.getDontPrompt() & (setAppPerms ^ -1),
+            setAppPerms
          );
       } else {
          throw new Object();
       }
    }
 
-   static final boolean setModuleUserPermission(byte[] var0, int var1, long var2) {
-      UserSetting var4 = getOrCreateUserSetting(var0, var1);
-      return applyModulePermissions(var0, var1, var4, var2, var4.getDontPrompt(), var4.getIsSet());
+   static final boolean setModuleUserPermission(byte[] moduleHash, int moduleHandle, long permissions) {
+      UserSetting us = getOrCreateUserSetting(moduleHash, moduleHandle);
+      return applyModulePermissions(moduleHash, moduleHandle, us, permissions, us.getDontPrompt(), us.getIsSet());
    }
 
-   private static final boolean applyModulePermissions(byte[] var0, int var1, UserSetting var2, long var3, long var5, long var7) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final boolean applyModulePermissions(byte[] moduleHash, int moduleHandle, UserSetting us, long permissions, long dontPrompt, long isSet) {
+      synchronized (_permissions) {
+         _permissions.invalidate();
+         long policyPermissions = getPolicyPermissions(moduleHandle, moduleHash);
+         long oldPermissions;
+         if (moduleHandle == 0) {
+            oldPermissions = us.getPermissions();
+         } else {
+            oldPermissions = doGetModulePermissions(moduleHandle);
+         }
+
+         UserSetting oldUS = (UserSetting)(new Object(us));
+         if (moduleHandle == 0) {
+            _userPermissions.setPermissions(oldUS, us, combinePermissions(policyPermissions, permissions));
+            if (isMoreRestrictive(oldPermissions, us.getPermissions())) {
+               return true;
+            }
+         } else {
+            _userPermissions.setPermissions(oldUS, us, permissions, dontPrompt, isSet);
+            long newPermissions = combinePermissions(policyPermissions, permissions, dontPrompt);
+            doSetModulePermissions(moduleHandle, newPermissions);
+            if (isMoreRestrictive(oldPermissions, newPermissions)) {
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
-   static final boolean setModulePermission(byte[] var0, int var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final boolean setModulePermission(byte[] moduleHash, int moduleHandle, long permissions) {
+      if (moduleHandle != 0 && moduleHash != null) {
+         synchronized (_permissions) {
+            _permissions.invalidate();
+            long policyPermissions = getPolicyPermissions(moduleHandle, moduleHash);
+            long oldPermissions = doGetModulePermissions(moduleHandle);
+            long newPermissions = combinePermissions(policyPermissions, permissions);
+            doSetModulePermissions(moduleHandle, newPermissions);
+            return isMoreRestrictive(oldPermissions, newPermissions);
+         }
+      } else {
+         throw new Object();
+      }
    }
 
-   private static final long getPolicyPermissions(int var0, byte[] var1) {
-      long var2 = 0;
-      if (var0 == 0) {
+   private static final long getPolicyPermissions(int moduleHandle, byte[] moduleHash) {
+      long policyPermissions = 0;
+      if (moduleHandle == 0) {
          return _permissions.getPermittedPermissions();
-      } else if (var1 == null) {
+      } else if (moduleHash == null) {
          throw new Object();
       } else {
-         return getModulePolicyPermittedPermissions(var0, var1);
+         return getModulePolicyPermittedPermissions(moduleHandle, moduleHash);
       }
    }
 
-   private static final UserSetting getOrCreateUserSetting(byte[] var0, int var1) {
-      UserSetting var2 = _userPermissions.getSetting(var1);
-      if (var2 == null) {
-         var2 = (UserSetting)(new Object(var0, _userPermissions.getDefaultSetting().getPermissions()));
-         _userPermissions.putSetting(var1, var2, false);
-         return var2;
+   private static final UserSetting getOrCreateUserSetting(byte[] moduleHash, int moduleHandle) {
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+      if (us == null) {
+         us = (UserSetting)(new Object(moduleHash, _userPermissions.getDefaultSetting().getPermissions()));
+         _userPermissions.putSetting(moduleHandle, us, false);
+         return us;
       }
 
-      if (var1 == 0) {
+      if (moduleHandle == 0) {
          _userPermissions.removeBackedUpDefaultSetting();
       }
 
-      return var2;
+      return us;
    }
 
-   static final boolean isPromptResponseSaved(int var0) {
-      boolean var1 = false;
-      long var2 = Long.MIN_VALUE >>> var0;
-      UserSetting var4 = _userPermissions.getSetting(_processModuleHandle);
-      if (var4 != null) {
-         var1 |= (var4.getDontPrompt() & var2) != 0;
+   static final boolean isPromptResponseSaved(int promptFlag) {
+      boolean saved = false;
+      long mask = Long.MIN_VALUE >>> promptFlag;
+      UserSetting us = _userPermissions.getSetting(_processModuleHandle);
+      if (us != null) {
+         saved |= (us.getDontPrompt() & mask) != 0;
       } else if (!isSignedWithRRI(_processModuleHandle)) {
-         var1 = false;
+         saved = false;
       }
 
-      int[] var5 = TraceBack.getCallingModules();
+      int[] handles = TraceBack.getCallingModules();
 
-      for (int var7 = var5.length - 1; var7 >= 0 && var1; var7--) {
-         int var6 = var5[var7];
-         var4 = _userPermissions.getSetting(var6);
-         if (var4 != null) {
-            var1 |= (var4.getDontPrompt() & var2) != 0;
-         } else if (!isSignedWithRRI(var6)) {
-            var1 = false;
+      for (int i = handles.length - 1; i >= 0 && saved; i--) {
+         int handle = handles[i];
+         us = _userPermissions.getSetting(handle);
+         if (us != null) {
+            saved |= (us.getDontPrompt() & mask) != 0;
+         } else if (!isSignedWithRRI(handle)) {
+            saved = false;
          }
       }
 
-      return var1;
+      return saved;
    }
 
-   private static final void saveResponsePermissions(int[] var0, int var1, int var2, boolean var3) {
-      byte[] var6 = new byte[20];
-      if (_processModuleHandle != 0 && Arrays.getIndex(var0, _processModuleHandle) == -1) {
-         Arrays.add(var0, _processModuleHandle);
+   private static final void saveResponsePermissions(int[] handles, int allowFlag, int promptFlag, boolean allow) {
+      byte[] hash = new byte[20];
+      if (_processModuleHandle != 0 && Arrays.getIndex(handles, _processModuleHandle) == -1) {
+         Arrays.add(handles, _processModuleHandle);
       }
 
-      long var8 = Long.MIN_VALUE >>> var1;
-      long var10 = Long.MIN_VALUE >>> var2;
+      long allowMask = Long.MIN_VALUE >>> allowFlag;
+      long promptMask = Long.MIN_VALUE >>> promptFlag;
 
-      for (int var12 = 0; var12 < var0.length; var12++) {
-         int var4 = var0[var12];
-         if (!isSignedWithRRI(var4)) {
-            if (!CodeModuleManager.getModuleHash(var4, var6)) {
+      for (int i = 0; i < handles.length; i++) {
+         int moduleHandle = handles[i];
+         if (!isSignedWithRRI(moduleHandle)) {
+            if (!CodeModuleManager.getModuleHash(moduleHandle, hash)) {
                throw new Object();
             }
 
-            Object var7 = _userPermissions.getSetting(var4);
-            if (var7 == null) {
-               var7 = new Object(var6, doGetModulePermissions(var4));
-               _userPermissions.putSetting(var4, (UserSetting)var7, false);
-            } else if (!((UserSetting)var7).hashEquals(var6)) {
+            UserSetting us = _userPermissions.getSetting(moduleHandle);
+            if (us == null) {
+               us = (UserSetting)(new Object(hash, doGetModulePermissions(moduleHandle)));
+               _userPermissions.putSetting(moduleHandle, us, false);
+            } else if (!us.hashEquals(hash)) {
                throw new Object();
             }
 
-            Object var13 = new Object((UserSetting)var7);
-            long var14 = ((UserSetting)var7).getPermissions();
-            if (!var3) {
-               var14 &= var8 ^ -1;
+            UserSetting oldUS = (UserSetting)(new Object(us));
+            long perms = us.getPermissions();
+            if (!allow) {
+               perms &= allowMask ^ -1;
             }
 
             _userPermissions.setPermissions(
-               (UserSetting)var13,
-               (UserSetting)var7,
-               var14 & (var10 ^ -1),
-               ((UserSetting)var7).getDontPrompt() | var10 | var8,
-               ((UserSetting)var7).getIsSet() | var10 | var8,
-               false
+               oldUS, us, perms & (promptMask ^ -1), us.getDontPrompt() | promptMask | allowMask, us.getIsSet() | promptMask | allowMask, false
             );
-            long var16 = getModulePolicyPermittedPermissions(var4, var6);
-            doSetModulePermissions(var4, combinePermissions(var16, ((UserSetting)var7).getPermissions(), ((UserSetting)var7).getDontPrompt()));
+            long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
+            doSetModulePermissions(moduleHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
          }
       }
 
       _userPermissions.commit();
    }
 
-   static final void resetPrompts(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void resetPrompts(int moduleHandle) {
+      _responseStackPermissions.removeResponses(moduleHandle);
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+
+      byte[] hash;
+      try {
+         hash = CodeModuleManager.getModuleHash(moduleHandle);
+      } catch (IllegalArgumentException iae) {
+         return;
+      }
+
+      if (us != null && hash != null) {
+         UserSetting oldUS = (UserSetting)(new Object(us));
+         _userPermissions.resetPrompts(oldUS, us);
+         long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
+         doSetModulePermissions(moduleHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
+      }
    }
 
-   static final void resetPrompt(int var0, int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void resetPrompt(int moduleHandle, int allowFlag, int promptFlag) {
+      _responseStackPermissions.removeResponses(moduleHandle, allowFlag, promptFlag);
+      UserSetting us = _userPermissions.getSetting(moduleHandle);
+
+      byte[] hash;
+      try {
+         hash = CodeModuleManager.getModuleHash(moduleHandle);
+      } catch (IllegalArgumentException iae) {
+         return;
+      }
+
+      if (us != null && hash != null) {
+         UserSetting oldUS = (UserSetting)(new Object(us));
+         _userPermissions.resetPrompt(oldUS, us, Long.MIN_VALUE >>> allowFlag | Long.MIN_VALUE >>> promptFlag);
+         long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
+         doSetModulePermissions(moduleHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
+      }
    }
 
    static final void resetAllPrompts() {
       _responseStackPermissions.removeAllResponses();
-      int[] var0 = _userPermissions.getLoadedHandles();
+      int[] handles = _userPermissions.getLoadedHandles();
 
-      for (int var4 = 0; var4 < var0.length; var4++) {
-         int var1 = var0[var4];
-         UserSetting var2 = _userPermissions.getSetting(var1);
-         if (var2 != null) {
-            byte[] var3 = var2.getHash();
-            Object var5 = new Object(var2);
-            _userPermissions.resetPrompts((UserSetting)var5, var2, false);
-            long var6 = getModulePolicyPermittedPermissions(var1, var3);
-            doSetModulePermissions(var1, combinePermissions(var6, var2.getPermissions(), var2.getDontPrompt()));
+      for (int i = 0; i < handles.length; i++) {
+         int currHandle = handles[i];
+         UserSetting us = _userPermissions.getSetting(currHandle);
+         if (us != null) {
+            byte[] hash = us.getHash();
+            UserSetting oldUS = (UserSetting)(new Object(us));
+            _userPermissions.resetPrompts(oldUS, us, false);
+            long policyPermissions = getModulePolicyPermittedPermissions(currHandle, hash);
+            doSetModulePermissions(currHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
          }
       }
 
       _userPermissions.commit();
    }
 
-   static final void resetAllPrompts(int var0, int var1) {
-      _responseStackPermissions.removeAllResponses(var0, var1);
-      int[] var2 = _userPermissions.getLoadedHandles();
-      long var6 = Long.MIN_VALUE >>> var0 | Long.MIN_VALUE >>> var1;
+   static final void resetAllPrompts(int allowFlag, int promptFlag) {
+      _responseStackPermissions.removeAllResponses(allowFlag, promptFlag);
+      int[] handles = _userPermissions.getLoadedHandles();
+      long mask = Long.MIN_VALUE >>> allowFlag | Long.MIN_VALUE >>> promptFlag;
 
-      for (int var8 = 0; var8 < var2.length; var8++) {
-         int var3 = var2[var8];
-         UserSetting var4 = _userPermissions.getSetting(var3);
-         if (var4 != null) {
-            byte[] var5 = var4.getHash();
-            Object var9 = new Object(var4);
-            _userPermissions.resetPrompt((UserSetting)var9, var4, var6, false);
-            long var10 = getModulePolicyPermittedPermissions(var3, var5);
-            doSetModulePermissions(var3, combinePermissions(var10, var4.getPermissions(), var4.getDontPrompt()));
+      for (int i = 0; i < handles.length; i++) {
+         int currHandle = handles[i];
+         UserSetting us = _userPermissions.getSetting(currHandle);
+         if (us != null) {
+            byte[] hash = us.getHash();
+            UserSetting oldUS = (UserSetting)(new Object(us));
+            _userPermissions.resetPrompt(oldUS, us, mask, false);
+            long policyPermissions = getModulePolicyPermittedPermissions(currHandle, hash);
+            doSetModulePermissions(currHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
          }
       }
 
       _userPermissions.commit();
    }
 
-   private static final long getModulePermission(int var0, byte[] var1, int var2) {
-      return isFlagSet(var1, var2) ? Long.MIN_VALUE >>> var2 : 0;
+   private static final long getModulePermission(int handle, byte[] hash, int flag) {
+      return isFlagSet(hash, flag) ? Long.MIN_VALUE >>> flag : 0;
    }
 
-   private static final long getModuleControlPermissions(int var0, byte[] var1) {
-      long var2 = 0;
-      var2 |= ControlledAccess.verifyCodeModuleSignature(var0, 51) ? 1 : 0;
-      var2 |= isFlagSet(var1, 0) ? Long.MIN_VALUE : 0;
-      var2 |= isFlagSet(var1, 1) ? 4611686018427387904L : 0;
-      return var2 | (isFlagSet(var1, 20) ? 8796093022208L : 0);
+   private static final long getModuleControlPermissions(int handle, byte[] hash) {
+      long perms = 0;
+      perms |= ControlledAccess.verifyCodeModuleSignature(handle, 51) ? 1 : 0;
+      perms |= isFlagSet(hash, 0) ? Long.MIN_VALUE : 0;
+      perms |= isFlagSet(hash, 1) ? 4611686018427387904L : 0;
+      return perms | (isFlagSet(hash, 20) ? 8796093022208L : 0);
    }
 
-   private static final long getModulePolicyPermittedPermissions(int var0, byte[] var1) {
-      boolean var4 = isModuleSettingPresent(var1);
-      long var2;
-      if (var4) {
-         var2 = getModuleAppControlPermittedPermissions(var0, var1);
+   private static final long getModulePolicyPermittedPermissions(int handle, byte[] hash) {
+      boolean policySettingPresent = isModuleSettingPresent(hash);
+      long permissions;
+      if (policySettingPresent) {
+         permissions = getModuleAppControlPermittedPermissions(handle, hash);
       } else {
-         var2 = _permissions.getPermittedPermissions();
+         permissions = _permissions.getPermittedPermissions();
       }
 
-      return var2 | getModuleControlPermissions(var0, var1);
+      return permissions | getModuleControlPermissions(handle, hash);
    }
 
-   private static final long getModulePermissions(int var0, byte[] var1) {
-      long var2 = getModuleControlPermissions(var0, var1);
-      if ((var2 & 1) != 0) {
-         return var2;
+   private static final long getModulePermissions(int handle, byte[] hash) {
+      long perms = getModuleControlPermissions(handle, hash);
+      if ((perms & 1) != 0) {
+         return perms;
       }
 
-      long var4 = Long.MIN_VALUE;
-      var2 |= isFlagSet(var1, 2) ? var4 >>> 2 : 0;
-      var2 |= isFlagSet(var1, 3) ? var4 >>> 3 : 0;
-      var2 |= isFlagSet(var1, 4) ? var4 >>> 4 : 0;
-      var2 |= isFlagSet(var1, 5) ? var4 >>> 5 : 0;
-      var2 |= isFlagSet(var1, 6) ? var4 >>> 6 : 0;
-      var2 |= isFlagSet(var1, 7) ? var4 >>> 7 : 0;
-      var2 |= isFlagSet(var1, 8) ? var4 >>> 8 : 0;
-      var2 |= isFlagSet(var1, 9) ? var4 >>> 9 : 0;
-      var2 |= isFlagSet(var1, 10) ? var4 >>> 10 : 0;
-      var2 |= isFlagSet(var1, 11) ? var4 >>> 11 : 0;
-      var2 |= isFlagSet(var1, 12) ? var4 >>> 12 : 0;
-      var2 |= isFlagSet(var1, 13) ? var4 >>> 13 : 0;
-      var2 |= isFlagSet(var1, 14) ? var4 >>> 14 : 0;
-      var2 |= isFlagSet(var1, 15) ? var4 >>> 15 : 0;
-      var2 |= isFlagSet(var1, 16) ? var4 >>> 16 : 0;
-      var2 |= isFlagSet(var1, 17) ? var4 >>> 17 : 0;
-      var2 |= isFlagSet(var1, 18) ? var4 >>> 18 : 0;
-      var2 |= isFlagSet(var1, 19) ? var4 >>> 19 : 0;
-      var2 |= isFlagSet(var1, 21) ? var4 >>> 21 : 0;
-      var2 |= isFlagSet(var1, 22) ? var4 >>> 22 : 0;
-      var2 |= isFlagSet(var1, 23) ? var4 >>> 23 : 0;
-      var2 |= isFlagSet(var1, 24) ? var4 >>> 24 : 0;
-      var2 |= isFlagSet(var1, 25) ? var4 >>> 25 : 0;
-      var2 |= isFlagSet(var1, 26) ? var4 >>> 26 : 0;
-      var2 |= isFlagSet(var1, 27) ? var4 >>> 27 : 0;
-      var2 |= isFlagSet(var1, 28) ? var4 >>> 28 : 0;
-      var2 |= isFlagSet(var1, 29) ? var4 >>> 29 : 0;
-      var2 |= isFlagSet(var1, 30) ? var4 >>> 30 : 0;
-      var2 |= isFlagSet(var1, 31) ? var4 >>> 31 : 0;
-      return var2 | (isFlagSet(var1, 32) ? var4 >>> 32 : 0);
+      long flag = Long.MIN_VALUE;
+      perms |= isFlagSet(hash, 2) ? flag >>> 2 : 0;
+      perms |= isFlagSet(hash, 3) ? flag >>> 3 : 0;
+      perms |= isFlagSet(hash, 4) ? flag >>> 4 : 0;
+      perms |= isFlagSet(hash, 5) ? flag >>> 5 : 0;
+      perms |= isFlagSet(hash, 6) ? flag >>> 6 : 0;
+      perms |= isFlagSet(hash, 7) ? flag >>> 7 : 0;
+      perms |= isFlagSet(hash, 8) ? flag >>> 8 : 0;
+      perms |= isFlagSet(hash, 9) ? flag >>> 9 : 0;
+      perms |= isFlagSet(hash, 10) ? flag >>> 10 : 0;
+      perms |= isFlagSet(hash, 11) ? flag >>> 11 : 0;
+      perms |= isFlagSet(hash, 12) ? flag >>> 12 : 0;
+      perms |= isFlagSet(hash, 13) ? flag >>> 13 : 0;
+      perms |= isFlagSet(hash, 14) ? flag >>> 14 : 0;
+      perms |= isFlagSet(hash, 15) ? flag >>> 15 : 0;
+      perms |= isFlagSet(hash, 16) ? flag >>> 16 : 0;
+      perms |= isFlagSet(hash, 17) ? flag >>> 17 : 0;
+      perms |= isFlagSet(hash, 18) ? flag >>> 18 : 0;
+      perms |= isFlagSet(hash, 19) ? flag >>> 19 : 0;
+      perms |= isFlagSet(hash, 21) ? flag >>> 21 : 0;
+      perms |= isFlagSet(hash, 22) ? flag >>> 22 : 0;
+      perms |= isFlagSet(hash, 23) ? flag >>> 23 : 0;
+      perms |= isFlagSet(hash, 24) ? flag >>> 24 : 0;
+      perms |= isFlagSet(hash, 25) ? flag >>> 25 : 0;
+      perms |= isFlagSet(hash, 26) ? flag >>> 26 : 0;
+      perms |= isFlagSet(hash, 27) ? flag >>> 27 : 0;
+      perms |= isFlagSet(hash, 28) ? flag >>> 28 : 0;
+      perms |= isFlagSet(hash, 29) ? flag >>> 29 : 0;
+      perms |= isFlagSet(hash, 30) ? flag >>> 30 : 0;
+      perms |= isFlagSet(hash, 31) ? flag >>> 31 : 0;
+      return perms | (isFlagSet(hash, 32) ? flag >>> 32 : 0);
    }
 
-   private static final long getModuleAppControlPermittedPermissions(int var0, byte[] var1) {
-      long var2 = getModuleControlPermissions(var0, var1);
-      if ((var2 & 1) != 0) {
-         return var2;
+   private static final long getModuleAppControlPermittedPermissions(int handle, byte[] hash) {
+      long perms = getModuleControlPermissions(handle, hash);
+      if ((perms & 1) != 0) {
+         return perms;
       }
 
-      long var4 = Long.MIN_VALUE;
-      var2 |= isPermitted(var1, 2) ? var4 >>> 2 : 0;
-      var2 |= isPermitted(var1, 3) ? var4 >>> 3 : 0;
-      var2 |= isPermitted(var1, 4) ? var4 >>> 4 : 0;
-      var2 |= isPermitted(var1, 5) ? var4 >>> 5 : 0;
-      var2 |= isPermitted(var1, 6) ? var4 >>> 6 : 0;
-      var2 |= isPermitted(var1, 7) ? var4 >>> 7 : 0;
-      var2 |= isPermitted(var1, 8) ? var4 >>> 8 : 0;
-      var2 |= isPermitted(var1, 9) ? var4 >>> 9 : 0;
-      var2 |= isPermitted(var1, 10) ? var4 >>> 10 : 0;
-      var2 |= isPermitted(var1, 11) ? var4 >>> 11 : 0;
-      var2 |= isPermitted(var1, 12) ? var4 >>> 12 : 0;
-      var2 |= isPermitted(var1, 13) ? var4 >>> 13 : 0;
-      var2 |= isPermitted(var1, 14) ? var4 >>> 14 : 0;
-      var2 |= isPermitted(var1, 15) ? var4 >>> 15 : 0;
-      var2 |= isPermitted(var1, 16) ? var4 >>> 16 : 0;
-      var2 |= isPermitted(var1, 17) ? var4 >>> 17 : 0;
-      var2 |= isPermitted(var1, 18) ? var4 >>> 18 : 0;
-      var2 |= isPermitted(var1, 19) ? var4 >>> 19 : 0;
-      var2 |= isPermitted(var1, 21) ? var4 >>> 21 : 0;
-      var2 |= isPermitted(var1, 22) ? var4 >>> 22 : 0;
-      var2 |= isPermitted(var1, 23) ? var4 >>> 23 : 0;
-      var2 |= isPermitted(var1, 24) ? var4 >>> 24 : 0;
-      var2 |= isPermitted(var1, 25) ? var4 >>> 25 : 0;
-      var2 |= isPermitted(var1, 26) ? var4 >>> 26 : 0;
-      var2 |= isPermitted(var1, 27) ? var4 >>> 27 : 0;
-      var2 |= isPermitted(var1, 28) ? var4 >>> 28 : 0;
-      var2 |= isPermitted(var1, 29) ? var4 >>> 29 : 0;
-      var2 |= isPermitted(var1, 30) ? var4 >>> 30 : 0;
-      var2 |= isPermitted(var1, 31) ? var4 >>> 31 : 0;
-      return var2 | (isPermitted(var1, 32) ? var4 >>> 32 : 0);
+      long flag = Long.MIN_VALUE;
+      perms |= isPermitted(hash, 2) ? flag >>> 2 : 0;
+      perms |= isPermitted(hash, 3) ? flag >>> 3 : 0;
+      perms |= isPermitted(hash, 4) ? flag >>> 4 : 0;
+      perms |= isPermitted(hash, 5) ? flag >>> 5 : 0;
+      perms |= isPermitted(hash, 6) ? flag >>> 6 : 0;
+      perms |= isPermitted(hash, 7) ? flag >>> 7 : 0;
+      perms |= isPermitted(hash, 8) ? flag >>> 8 : 0;
+      perms |= isPermitted(hash, 9) ? flag >>> 9 : 0;
+      perms |= isPermitted(hash, 10) ? flag >>> 10 : 0;
+      perms |= isPermitted(hash, 11) ? flag >>> 11 : 0;
+      perms |= isPermitted(hash, 12) ? flag >>> 12 : 0;
+      perms |= isPermitted(hash, 13) ? flag >>> 13 : 0;
+      perms |= isPermitted(hash, 14) ? flag >>> 14 : 0;
+      perms |= isPermitted(hash, 15) ? flag >>> 15 : 0;
+      perms |= isPermitted(hash, 16) ? flag >>> 16 : 0;
+      perms |= isPermitted(hash, 17) ? flag >>> 17 : 0;
+      perms |= isPermitted(hash, 18) ? flag >>> 18 : 0;
+      perms |= isPermitted(hash, 19) ? flag >>> 19 : 0;
+      perms |= isPermitted(hash, 21) ? flag >>> 21 : 0;
+      perms |= isPermitted(hash, 22) ? flag >>> 22 : 0;
+      perms |= isPermitted(hash, 23) ? flag >>> 23 : 0;
+      perms |= isPermitted(hash, 24) ? flag >>> 24 : 0;
+      perms |= isPermitted(hash, 25) ? flag >>> 25 : 0;
+      perms |= isPermitted(hash, 26) ? flag >>> 26 : 0;
+      perms |= isPermitted(hash, 27) ? flag >>> 27 : 0;
+      perms |= isPermitted(hash, 28) ? flag >>> 28 : 0;
+      perms |= isPermitted(hash, 29) ? flag >>> 29 : 0;
+      perms |= isPermitted(hash, 30) ? flag >>> 30 : 0;
+      perms |= isPermitted(hash, 31) ? flag >>> 31 : 0;
+      return perms | (isPermitted(hash, 32) ? flag >>> 32 : 0);
    }
 
-   static final long getRequestedPermissions(ApplicationPermissions var0) {
-      long var1 = 0;
-      long var3 = Long.MIN_VALUE;
-      var1 |= var0.getPermissionInternal(0) != 997 ? var3 >>> 20 : 0;
-      var1 |= var0.getPermissionInternal(11) != 997 ? var3 >>> 2 : 0;
-      var1 |= var0.getPermissionInternal(10) != 997 ? var3 >>> 3 : 0;
-      var1 |= var0.getPermissionInternal(7) != 997 ? var3 >>> 5 : 0;
-      var1 |= var0.getPermissionInternal(13) != 997 ? var3 >>> 7 : 0;
-      var1 |= var0.getPermissionInternal(15) != 997 ? var3 >>> 8 : 0;
-      var1 |= var0.getPermissionInternal(5) != 997 ? var3 >>> 10 : 0;
-      var1 |= var0.getPermissionInternal(16) != 997 ? var3 >>> 11 : 0;
-      var1 |= var0.getPermissionInternal(2) != 997 ? var3 >>> 12 : 0;
-      var1 |= var0.getPermissionInternal(6) != 997 ? var3 >>> 13 : 0;
-      var1 |= var0.getPermissionInternal(1) != 997 ? var3 >>> 14 : 0;
-      var1 |= var0.getPermissionInternal(9) != 997 ? var3 >>> 15 : 0;
-      var1 |= var0.getPermissionInternal(12) != 997 ? var3 >>> 16 : 0;
-      var1 |= var0.getPermissionInternal(14) != 997 ? var3 >>> 17 : 0;
-      var1 |= var0.getPermissionInternal(18) != 997 ? var3 >>> 19 : 0;
-      var1 |= var0.getPermissionInternal(8) != 997 ? var3 >>> 21 : 0;
-      var1 |= var0.getPermissionInternal(4) != 997 ? var3 >>> 22 : 0;
-      var1 |= var0.getPermissionInternal(3) != 997 ? var3 >>> 23 : 0;
-      var1 |= var0.getPermissionInternal(17) != 997 ? var3 >>> 25 : 0;
-      var1 |= var0.getPermissionInternal(19) != 997 ? var3 >>> 27 : 0;
-      var1 |= var0.getPermissionInternal(20) != 997 ? var3 >>> 29 : 0;
-      return var1 | (var0.getPermissionInternal(21) != 997 ? var3 >>> 31 : 0);
+   static final long getRequestedPermissions(ApplicationPermissions requestedPermissions) {
+      long perms = 0;
+      long flag = Long.MIN_VALUE;
+      perms |= requestedPermissions.getPermissionInternal(0) != 997 ? flag >>> 20 : 0;
+      perms |= requestedPermissions.getPermissionInternal(11) != 997 ? flag >>> 2 : 0;
+      perms |= requestedPermissions.getPermissionInternal(10) != 997 ? flag >>> 3 : 0;
+      perms |= requestedPermissions.getPermissionInternal(7) != 997 ? flag >>> 5 : 0;
+      perms |= requestedPermissions.getPermissionInternal(13) != 997 ? flag >>> 7 : 0;
+      perms |= requestedPermissions.getPermissionInternal(15) != 997 ? flag >>> 8 : 0;
+      perms |= requestedPermissions.getPermissionInternal(5) != 997 ? flag >>> 10 : 0;
+      perms |= requestedPermissions.getPermissionInternal(16) != 997 ? flag >>> 11 : 0;
+      perms |= requestedPermissions.getPermissionInternal(2) != 997 ? flag >>> 12 : 0;
+      perms |= requestedPermissions.getPermissionInternal(6) != 997 ? flag >>> 13 : 0;
+      perms |= requestedPermissions.getPermissionInternal(1) != 997 ? flag >>> 14 : 0;
+      perms |= requestedPermissions.getPermissionInternal(9) != 997 ? flag >>> 15 : 0;
+      perms |= requestedPermissions.getPermissionInternal(12) != 997 ? flag >>> 16 : 0;
+      perms |= requestedPermissions.getPermissionInternal(14) != 997 ? flag >>> 17 : 0;
+      perms |= requestedPermissions.getPermissionInternal(18) != 997 ? flag >>> 19 : 0;
+      perms |= requestedPermissions.getPermissionInternal(8) != 997 ? flag >>> 21 : 0;
+      perms |= requestedPermissions.getPermissionInternal(4) != 997 ? flag >>> 22 : 0;
+      perms |= requestedPermissions.getPermissionInternal(3) != 997 ? flag >>> 23 : 0;
+      perms |= requestedPermissions.getPermissionInternal(17) != 997 ? flag >>> 25 : 0;
+      perms |= requestedPermissions.getPermissionInternal(19) != 997 ? flag >>> 27 : 0;
+      perms |= requestedPermissions.getPermissionInternal(20) != 997 ? flag >>> 29 : 0;
+      return perms | (requestedPermissions.getPermissionInternal(21) != 997 ? flag >>> 31 : 0);
    }
 
-   static final long convertApplicationPermissions(ApplicationPermissions var0) {
-      long var1 = 0;
-      var1 |= convertPermToFlag(var0, 0, 20);
-      var1 |= convertPermToFlag(var0, 11, 2);
-      var1 |= convertPermToFlagTernary(var0, 10, 3, 4);
-      var1 |= convertPermToFlagTernary(var0, 7, 5, 6);
-      var1 |= convertPermToFlag(var0, 13, 7);
-      var1 |= convertPermToFlagTernary(var0, 15, 8, 9);
-      var1 |= convertPermToFlag(var0, 5, 10);
-      var1 |= convertPermToFlag(var0, 16, 11);
-      var1 |= convertPermToFlag(var0, 2, 12);
-      var1 |= convertPermToFlag(var0, 6, 13);
-      var1 |= convertPermToFlag(var0, 1, 14);
-      var1 |= convertPermToFlag(var0, 9, 15);
-      var1 |= convertPermToFlag(var0, 12, 16);
-      var1 |= convertPermToFlagTernary(var0, 14, 17, 18);
-      var1 |= convertPermToFlag(var0, 18, 19);
-      var1 |= convertPermToFlag(var0, 8, 21);
-      var1 |= convertPermToFlag(var0, 4, 22);
-      var1 |= convertPermToFlagTernary(var0, 3, 23, 24);
-      var1 |= convertPermToFlagTernary(var0, 17, 25, 26);
-      var1 |= convertPermToFlagTernary(var0, 19, 27, 28);
-      var1 |= convertPermToFlagTernary(var0, 20, 29, 30);
-      return var1 | convertPermToFlagTernary(var0, 21, 31, 32);
+   static final long convertApplicationPermissions(ApplicationPermissions appPerms) {
+      long perms = 0;
+      perms |= convertPermToFlag(appPerms, 0, 20);
+      perms |= convertPermToFlag(appPerms, 11, 2);
+      perms |= convertPermToFlagTernary(appPerms, 10, 3, 4);
+      perms |= convertPermToFlagTernary(appPerms, 7, 5, 6);
+      perms |= convertPermToFlag(appPerms, 13, 7);
+      perms |= convertPermToFlagTernary(appPerms, 15, 8, 9);
+      perms |= convertPermToFlag(appPerms, 5, 10);
+      perms |= convertPermToFlag(appPerms, 16, 11);
+      perms |= convertPermToFlag(appPerms, 2, 12);
+      perms |= convertPermToFlag(appPerms, 6, 13);
+      perms |= convertPermToFlag(appPerms, 1, 14);
+      perms |= convertPermToFlag(appPerms, 9, 15);
+      perms |= convertPermToFlag(appPerms, 12, 16);
+      perms |= convertPermToFlagTernary(appPerms, 14, 17, 18);
+      perms |= convertPermToFlag(appPerms, 18, 19);
+      perms |= convertPermToFlag(appPerms, 8, 21);
+      perms |= convertPermToFlag(appPerms, 4, 22);
+      perms |= convertPermToFlagTernary(appPerms, 3, 23, 24);
+      perms |= convertPermToFlagTernary(appPerms, 17, 25, 26);
+      perms |= convertPermToFlagTernary(appPerms, 19, 27, 28);
+      perms |= convertPermToFlagTernary(appPerms, 20, 29, 30);
+      return perms | convertPermToFlagTernary(appPerms, 21, 31, 32);
    }
 
-   private static final long convertPermToFlag(ApplicationPermissions var0, int var1, int var2) {
-      return var0.getPermissionInternal(var1) == 999 ? getPermissionFlags(var2) : 0;
+   private static final long convertPermToFlag(ApplicationPermissions appPerms, int appPerm, int allowFlag) {
+      return appPerms.getPermissionInternal(appPerm) == 999 ? getPermissionFlags(allowFlag) : 0;
    }
 
-   private static final long convertPermToFlagTernary(ApplicationPermissions var0, int var1, int var2, int var3) {
-      int var4 = var0.getPermissionInternal(var1);
-      if (var4 == 999) {
-         return getPermissionFlags(var2);
+   private static final long convertPermToFlagTernary(ApplicationPermissions appPerms, int appPerm, int allowFlag, int promptFlag) {
+      int permSetting = appPerms.getPermissionInternal(appPerm);
+      if (permSetting == 999) {
+         return getPermissionFlags(allowFlag);
       } else {
-         return var4 == 998 ? getPermissionFlags(var2, var3) : 0;
+         return permSetting == 998 ? getPermissionFlags(allowFlag, promptFlag) : 0;
       }
    }
 
-   static final ApplicationPermissions buildPermissions(long var0) {
-      return buildPermissions(var0, -1);
+   static final ApplicationPermissions buildPermissions(long permissions) {
+      return buildPermissions(permissions, -1);
    }
 
-   static final ApplicationPermissions buildPermissions(long var0, long var2) {
-      Object var4 = new Object();
-      addAppPermission((ApplicationPermissions)var4, 0, var0, var2, 20);
-      addAppPermission((ApplicationPermissions)var4, 11, var0, var2, 2);
-      addAppPermissionTernary((ApplicationPermissions)var4, 10, var0, var2, 3, 4);
-      addAppPermissionTernary((ApplicationPermissions)var4, 7, var0, var2, 5, 6);
-      addAppPermission((ApplicationPermissions)var4, 13, var0, var2, 7);
-      addAppPermissionTernary((ApplicationPermissions)var4, 15, var0, var2, 8, 9);
-      addAppPermission((ApplicationPermissions)var4, 5, var0, var2, 10);
-      addAppPermission((ApplicationPermissions)var4, 16, var0, var2, 11);
-      addAppPermission((ApplicationPermissions)var4, 2, var0, var2, 12);
-      addAppPermission((ApplicationPermissions)var4, 6, var0, var2, 13);
-      addAppPermission((ApplicationPermissions)var4, 1, var0, var2, 14);
-      addAppPermission((ApplicationPermissions)var4, 9, var0, var2, 15);
-      addAppPermission((ApplicationPermissions)var4, 12, var0, var2, 16);
-      addAppPermissionTernary((ApplicationPermissions)var4, 14, var0, var2, 17, 18);
-      addAppPermission((ApplicationPermissions)var4, 18, var0, var2, 19);
-      addAppPermission((ApplicationPermissions)var4, 8, var0, var2, 21);
-      addAppPermission((ApplicationPermissions)var4, 4, var0, var2, 22);
-      addAppPermissionTernary((ApplicationPermissions)var4, 3, var0, var2, 23, 24);
-      addAppPermissionTernary((ApplicationPermissions)var4, 17, var0, var2, 25, 26);
-      addAppPermissionTernary((ApplicationPermissions)var4, 19, var0, var2, 27, 28);
-      addAppPermissionTernary((ApplicationPermissions)var4, 20, var0, var2, 29, 30);
-      addAppPermissionTernary((ApplicationPermissions)var4, 21, var0, var2, 31, 32);
-      return (ApplicationPermissions)var4;
+   static final ApplicationPermissions buildPermissions(long permissions, long nonDefaults) {
+      ApplicationPermissions appPerms = (ApplicationPermissions)(new Object());
+      addAppPermission(appPerms, 0, permissions, nonDefaults, 20);
+      addAppPermission(appPerms, 11, permissions, nonDefaults, 2);
+      addAppPermissionTernary(appPerms, 10, permissions, nonDefaults, 3, 4);
+      addAppPermissionTernary(appPerms, 7, permissions, nonDefaults, 5, 6);
+      addAppPermission(appPerms, 13, permissions, nonDefaults, 7);
+      addAppPermissionTernary(appPerms, 15, permissions, nonDefaults, 8, 9);
+      addAppPermission(appPerms, 5, permissions, nonDefaults, 10);
+      addAppPermission(appPerms, 16, permissions, nonDefaults, 11);
+      addAppPermission(appPerms, 2, permissions, nonDefaults, 12);
+      addAppPermission(appPerms, 6, permissions, nonDefaults, 13);
+      addAppPermission(appPerms, 1, permissions, nonDefaults, 14);
+      addAppPermission(appPerms, 9, permissions, nonDefaults, 15);
+      addAppPermission(appPerms, 12, permissions, nonDefaults, 16);
+      addAppPermissionTernary(appPerms, 14, permissions, nonDefaults, 17, 18);
+      addAppPermission(appPerms, 18, permissions, nonDefaults, 19);
+      addAppPermission(appPerms, 8, permissions, nonDefaults, 21);
+      addAppPermission(appPerms, 4, permissions, nonDefaults, 22);
+      addAppPermissionTernary(appPerms, 3, permissions, nonDefaults, 23, 24);
+      addAppPermissionTernary(appPerms, 17, permissions, nonDefaults, 25, 26);
+      addAppPermissionTernary(appPerms, 19, permissions, nonDefaults, 27, 28);
+      addAppPermissionTernary(appPerms, 20, permissions, nonDefaults, 29, 30);
+      addAppPermissionTernary(appPerms, 21, permissions, nonDefaults, 31, 32);
+      return appPerms;
    }
 
-   private static final void addAppPermission(ApplicationPermissions var0, int var1, long var2, long var4, int var6) {
-      if (isBitSet(var4, var6)) {
-         if (isBitSet(var2, var6)) {
-            var0.addPermission(var1, 999);
+   private static final void addAppPermission(ApplicationPermissions appPerms, int appPerm, long permissions, long nonDefaults, int allowFlag) {
+      if (isBitSet(nonDefaults, allowFlag)) {
+         if (isBitSet(permissions, allowFlag)) {
+            appPerms.addPermission(appPerm, 999);
             return;
          }
 
-         var0.addPermission(var1, 997);
+         appPerms.addPermission(appPerm, 997);
       }
    }
 
-   private static final void addAppPermissionTernary(ApplicationPermissions var0, int var1, long var2, long var4, int var6, int var7) {
-      if (isBitSet(var4, var6)) {
-         if (isBitSet(var2, var7)) {
-            var0.addPermission(var1, 998);
+   private static final void addAppPermissionTernary(
+      ApplicationPermissions appPerms, int appPerm, long permissions, long nonDefaults, int allowFlag, int promptFlag
+   ) {
+      if (isBitSet(nonDefaults, allowFlag)) {
+         if (isBitSet(permissions, promptFlag)) {
+            appPerms.addPermission(appPerm, 998);
             return;
          }
 
-         if (isBitSet(var2, var6)) {
-            var0.addPermission(var1, 999);
+         if (isBitSet(permissions, allowFlag)) {
+            appPerms.addPermission(appPerm, 999);
             return;
          }
 
-         var0.addPermission(var1, 997);
+         appPerms.addPermission(appPerm, 997);
       }
    }
 
-   static final long getPermissionFlags(int var0) {
-      return Long.MIN_VALUE >>> var0;
+   static final long getPermissionFlags(int allowFlag) {
+      return Long.MIN_VALUE >>> allowFlag;
    }
 
-   static final long getPermissionFlags(int var0, int var1) {
-      return Long.MIN_VALUE >>> var0 | Long.MIN_VALUE >>> var1;
+   static final long getPermissionFlags(int allowFlag, int promptFlag) {
+      return Long.MIN_VALUE >>> allowFlag | Long.MIN_VALUE >>> promptFlag;
    }
 
-   static final boolean isBitSet(long var0, int var2) {
-      return (var0 & Long.MIN_VALUE >>> var2) != 0;
+   static final boolean isBitSet(long mask, int flag) {
+      return (mask & Long.MIN_VALUE >>> flag) != 0;
    }
 
-   private static final long correspondingPromptFlag(int var0) {
-      return (1477252511105548288L & getPermissionFlags(var0)) >>> 1;
+   private static final long correspondingPromptFlag(int allowFlag) {
+      return (1477252511105548288L & getPermissionFlags(allowFlag)) >>> 1;
    }
 
-   private static final long combinePermissions(long var0, long var2) {
-      return combinePermissions(var0, var2, 0);
+   private static final long combinePermissions(long itpolicy, long user) {
+      return combinePermissions(itpolicy, user, 0);
    }
 
-   private static final long combinePermissions(long var0, long var2, long var4) {
-      long var6 = 0;
-      long var8 = 1152921504606846976L;
-      long var10 = 576460752303423488L;
-      long var12 = 288230376151711744L;
-      long var14 = 144115188075855872L;
-      long var16 = 36028797018963968L;
-      long var18 = 18014398509481984L;
-      long var20 = 70368744177664L;
-      long var22 = 35184372088832L;
-      long var24 = 1099511627776L;
-      long var26 = 549755813888L;
-      long var28 = 274877906944L;
-      long var30 = 137438953472L;
-      long var32 = 68719476736L;
-      long var34 = 34359738368L;
-      long var36 = 17179869184L;
-      long var38 = 8589934592L;
-      long var40 = 4294967296L;
-      long var42 = 2147483648L;
-      if ((var0 & 1) != 0) {
-         var6 = var2 | 1;
+   private static final long combinePermissions(long itpolicy, long user, long dontPrompt) {
+      long perms = 0;
+      long internalAllowFlag = 1152921504606846976L;
+      long internalPromptFlag = 576460752303423488L;
+      long externalAllowFlag = 288230376151711744L;
+      long externalPromptFlag = 144115188075855872L;
+      long phoneAllowFlag = 36028797018963968L;
+      long phonePromptFlag = 18014398509481984L;
+      long lapiAllowFlag = 70368744177664L;
+      long lapiPromptFlag = 35184372088832L;
+      long deviceSettingsAllowFlag = 1099511627776L;
+      long deviceSettingsPromptFlag = 549755813888L;
+      long screenCaptureAllowFlag = 274877906944L;
+      long screenCapturePromptFlag = 137438953472L;
+      long wifiAllowFlag = 68719476736L;
+      long wifiPromptFlag = 34359738368L;
+      long idleTimerAllowFlag = 17179869184L;
+      long idleTimerPromptFlag = 8589934592L;
+      long mediaAllowFlag = 4294967296L;
+      long mediaPromptFlag = 2147483648L;
+      if ((itpolicy & 1) != 0) {
+         perms = user | 1;
       } else {
-         long var44 = var0 | var2;
-         var6 = var0 & var2;
-         if ((var6 & var8) != 0) {
-            var6 |= var44 & var10 & (var4 & var10 ^ -1);
+         long orPerms = itpolicy | user;
+         perms = itpolicy & user;
+         if ((perms & internalAllowFlag) != 0) {
+            perms |= orPerms & internalPromptFlag & (dontPrompt & internalPromptFlag ^ -1);
          }
 
-         if ((var6 & var12) != 0) {
-            var6 |= var44 & var14 & (var4 & var14 ^ -1);
+         if ((perms & externalAllowFlag) != 0) {
+            perms |= orPerms & externalPromptFlag & (dontPrompt & externalPromptFlag ^ -1);
          }
 
-         if ((var6 & var16) != 0) {
-            var6 |= var44 & var18 & (var4 & var18 ^ -1);
+         if ((perms & phoneAllowFlag) != 0) {
+            perms |= orPerms & phonePromptFlag & (dontPrompt & phonePromptFlag ^ -1);
          }
 
-         if ((var6 & var20) != 0) {
-            var6 |= var44 & var22 & (var4 & var22 ^ -1);
+         if ((perms & lapiAllowFlag) != 0) {
+            perms |= orPerms & lapiPromptFlag & (dontPrompt & lapiPromptFlag ^ -1);
          }
 
-         if ((var6 & var24) != 0) {
-            var6 |= var44 & var26 & (var4 & var26 ^ -1);
+         if ((perms & deviceSettingsAllowFlag) != 0) {
+            perms |= orPerms & deviceSettingsPromptFlag & (dontPrompt & deviceSettingsPromptFlag ^ -1);
          }
 
-         if ((var6 & var28) != 0) {
-            var6 |= var44 & var30 & (var4 & var30 ^ -1);
+         if ((perms & screenCaptureAllowFlag) != 0) {
+            perms |= orPerms & screenCapturePromptFlag & (dontPrompt & screenCapturePromptFlag ^ -1);
          }
 
-         if ((var6 & var32) != 0) {
-            var6 |= var44 & var34 & (var4 & var34 ^ -1);
+         if ((perms & wifiAllowFlag) != 0) {
+            perms |= orPerms & wifiPromptFlag & (dontPrompt & wifiPromptFlag ^ -1);
          }
 
-         if ((var6 & var36) != 0) {
-            var6 |= var44 & var38 & (var4 & var38 ^ -1);
+         if ((perms & idleTimerAllowFlag) != 0) {
+            perms |= orPerms & idleTimerPromptFlag & (dontPrompt & idleTimerPromptFlag ^ -1);
          }
 
-         if ((var6 & var40) != 0) {
-            var6 |= var44 & var42 & (var4 & var42 ^ -1);
+         if ((perms & mediaAllowFlag) != 0) {
+            perms |= orPerms & mediaPromptFlag & (dontPrompt & mediaPromptFlag ^ -1);
          }
       }
 
-      return var6 | var0 & -4611677222334365695L;
+      return perms | itpolicy & -4611677222334365695L;
    }
 
-   private static final boolean isMoreRestrictive(long var0, long var2) {
-      long var4 = getGrantedPermissions();
-      var0 &= Integer.MIN_VALUE;
-      var2 &= Integer.MIN_VALUE;
-      var4 |= (var4 & 1477252511105548288L) >> 1;
-      long var6 = var0 ^ var2;
-      long var8 = var6 & var0 & 3873059760727130112L & var4;
-      long var10 = var0 & var2 & 1477252511105548288L & var4;
-      long var12 = var6 & var2;
-      return var8 != 0 || (var10 >>> 1 & var12) != 0;
+   private static final boolean isMoreRestrictive(long oldPermission, long newPermission) {
+      long grantedPermissions = getGrantedPermissions();
+      oldPermission &= Integer.MIN_VALUE;
+      newPermission &= Integer.MIN_VALUE;
+      grantedPermissions |= (grantedPermissions & 1477252511105548288L) >> 1;
+      long xored = oldPermission ^ newPermission;
+      long removedAllowFlags = xored & oldPermission & 3873059760727130112L & grantedPermissions;
+      long stillSetAllowFlags = oldPermission & newPermission & 1477252511105548288L & grantedPermissions;
+      long newlySetFlags = xored & newPermission;
+      return removedAllowFlags != 0 || (stillSetAllowFlags >>> 1 & newlySetFlags) != 0;
    }
 
    static final boolean isPolicyDataPresent() {
@@ -982,135 +1123,152 @@ final class ApplicationControlImpl {
       return _permissions.isXmitDisabled();
    }
 
-   static final void logDenial(int var0, int var1) {
+   static final void logDenial(int moduleHandle, int flag) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void logReset(String var0) {
+   private static final void logReset(String reason) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final boolean doSetModulePermissions(int var0, long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final boolean doSetModulePermissions(int moduleHandle, long permissions) {
+      try {
+         setModulePermissions(moduleHandle, permissions);
+         return true;
+      } catch (IllegalArgumentException iae) {
+         return false;
+      }
    }
 
-   private static final long doGetModulePermissions(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final long doGetModulePermissions(int moduleHandle) {
+      try {
+         return getModulePermissions(moduleHandle);
+      } catch (IllegalArgumentException var2) {
+         return 0;
+      }
    }
 
-   private static final int doGetCallingModulesPermission(long var0, long var2, long var4, boolean var6, int var7, int[] var8) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int doGetCallingModulesPermission(
+      long allowMask, long promptMask, long bypassMask, boolean checkProcess, int processModuleHandle, int[] additionalModules
+   ) {
+      try {
+         return getCallingModulesPermission(allowMask, promptMask, bypassMask, checkProcess, processModuleHandle, additionalModules);
+      } catch (IllegalArgumentException var10) {
+         return 0;
+      }
    }
 
-   static final boolean isModuleSettingPresent(byte[] var0) {
-      return var0 != null && _permissions.isAppControlPolicyDataPresent() ? isSettingPresent(var0) : false;
+   static final boolean isModuleSettingPresent(byte[] hash) {
+      return hash != null && _permissions.isAppControlPolicyDataPresent() ? isSettingPresent(hash) : false;
    }
 
-   static final String getInternalConnectionDomains(byte[] var0) {
-      return getConnectionDomains(var0, (byte)1);
+   static final String getInternalConnectionDomains(byte[] hash) {
+      return getConnectionDomains(hash, (byte)1);
    }
 
-   static final String getExternalConnectionDomains(byte[] var0) {
-      return getConnectionDomains(var0, (byte)2);
+   static final String getExternalConnectionDomains(byte[] hash) {
+      return getConnectionDomains(hash, (byte)2);
    }
 
-   static final String getBrowserFilterConnectionDomains(byte[] var0) {
-      return getConnectionDomains(var0, (byte)3);
+   static final String getBrowserFilterConnectionDomains(byte[] hash) {
+      return getConnectionDomains(hash, (byte)3);
    }
 
-   static final String getConnectionDomains(byte[] var0, byte var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   static final void scheduleDeviceReset(String var0) {
+   static final String getConnectionDomains(byte[] hash, byte type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void scheduleDeviceReset(String var0, long var1) {
+   static final void scheduleDeviceReset(String reason) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void scheduleDeviceReset(String var0, int var1, long var2) {
+   static final void scheduleDeviceReset(String reason, long timeBetweenResetWarnings) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void doPromptWork(int var0, ResourceBundleFamily var1, int var2, int var3, int var4) {
-      if (var1 == null) {
+   static final void scheduleDeviceReset(String reason, int numResetWarnings, long timeBetweenResetWarnings) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   static final void doPromptWork(int ternary, ResourceBundleFamily rb, int rbKey, int allowFlag, int promptFlag) {
+      if (rb == null) {
          throw new Object();
       }
 
-      switch (var0) {
+      switch (ternary) {
          case -1:
             return;
          case 0:
             return;
          case 1:
-            throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[var3]);
+            throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
          case 2:
          default:
-            Process var5 = Process.currentProcess();
-            int var6 = var5.getModuleHandle();
-            boolean var7 = false;
-            int[] var8 = TraceBack.getCallingModules();
-            int var9 = 0;
-            int[] var10 = new int[var8.length];
+            Process currentProcess = Process.currentProcess();
+            int processHandle = currentProcess.getModuleHandle();
+            boolean somePermRestrictedByPolicy = false;
+            int[] stackModules = TraceBack.getCallingModules();
+            int numStackModulesToChange = 0;
+            int[] stackModulesToChange = new int[stackModules.length];
 
-            for (int var12 = 0; var12 < var8.length; var12++) {
-               int var13 = var8[var12];
-               UserSetting var11 = _userPermissions.getSetting(var8[var12]);
-               if (!isSignedWithRRI(var13) && (getUserPermission(var11, var3) == 0 || getUserPermission(var11, var4) != 0)) {
-                  byte[] var14 = CodeModuleManager.getModuleHash(var13);
-                  if (var14 != null) {
-                     if (getPolicyPermissionIgnoringDefaults(var13, var14, var3) == 0 || getPolicyPermissionIgnoringDefaults(var13, var14, var4) != 0) {
-                        var7 = true;
+            for (int i = 0; i < stackModules.length; i++) {
+               int moduleHandle = stackModules[i];
+               UserSetting moduleUserSetting = _userPermissions.getSetting(stackModules[i]);
+               if (!isSignedWithRRI(moduleHandle)
+                  && (getUserPermission(moduleUserSetting, allowFlag) == 0 || getUserPermission(moduleUserSetting, promptFlag) != 0)) {
+                  byte[] hash = CodeModuleManager.getModuleHash(moduleHandle);
+                  if (hash != null) {
+                     if (getPolicyPermissionIgnoringDefaults(moduleHandle, hash, allowFlag) == 0
+                        || getPolicyPermissionIgnoringDefaults(moduleHandle, hash, promptFlag) != 0) {
+                        somePermRestrictedByPolicy = true;
                         break;
                      }
 
-                     var10[var9++] = var13;
+                     stackModulesToChange[numStackModulesToChange++] = moduleHandle;
                   }
                }
             }
 
-            Array.resize(var10, var9);
-            if (var10.length == 0) {
-               var7 = true;
+            Array.resize(stackModulesToChange, numStackModulesToChange);
+            if (stackModulesToChange.length == 0) {
+               somePermRestrictedByPolicy = true;
             }
 
-            if (var7) {
-               int var15 = _responseStackPermissions.getResponsePermission(var6, var8, var3, var4);
-               if (var15 == 0) {
+            if (somePermRestrictedByPolicy) {
+               int stackResponse = _responseStackPermissions.getResponsePermission(processHandle, stackModules, allowFlag, promptFlag);
+               if (stackResponse == 0) {
                   return;
                }
 
-               if (var15 == 1) {
-                  throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[var3]);
+               if (stackResponse == 1) {
+                  throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
                }
 
-               var10 = new int[0];
+               stackModulesToChange = new int[0];
             }
 
-            String var16 = MessageFormat.format(var1.getString(var2), new String[]{var5.getModuleName()});
-            Object var17 = new Object(var16, CommonResource.getString(10094), var8, var10);
-            if (((PermissionDialog)var17).getPermission()) {
-               if (((PermissionDialog)var17).getUserOptionCheckBoxValue()) {
-                  if (var7) {
-                     _responseStackPermissions.setResponse(var6, var8, var3, var4, true);
+            String message = MessageFormat.format(rb.getString(rbKey), new String[]{currentProcess.getModuleName()});
+            PermissionDialog ptd = (PermissionDialog)(new Object(message, CommonResource.getString(10094), stackModules, stackModulesToChange));
+            if (ptd.getPermission()) {
+               if (ptd.getUserOptionCheckBoxValue()) {
+                  if (somePermRestrictedByPolicy) {
+                     _responseStackPermissions.setResponse(processHandle, stackModules, allowFlag, promptFlag, true);
                   } else {
-                     saveResponsePermissions(var10, var3, var4, true);
+                     saveResponsePermissions(stackModulesToChange, allowFlag, promptFlag, true);
                   }
                }
 
-               setGrantedPermissions(Long.MIN_VALUE >>> var3 | Long.MIN_VALUE >>> var4);
+               setGrantedPermissions(Long.MIN_VALUE >>> allowFlag | Long.MIN_VALUE >>> promptFlag);
             } else {
-               if (((PermissionDialog)var17).getUserOptionCheckBoxValue()) {
-                  if (var7) {
-                     _responseStackPermissions.setResponse(var6, var8, var3, var4, false);
+               if (ptd.getUserOptionCheckBoxValue()) {
+                  if (somePermRestrictedByPolicy) {
+                     _responseStackPermissions.setResponse(processHandle, stackModules, allowFlag, promptFlag, false);
                   } else {
-                     saveResponsePermissions(var10, var3, var4, false);
+                     saveResponsePermissions(stackModulesToChange, allowFlag, promptFlag, false);
                   }
                }
 
-               throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[var3]);
+               throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
             }
       }
    }

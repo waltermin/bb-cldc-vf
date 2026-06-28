@@ -11,15 +11,15 @@ class EventLogger$MyPersistentContentListener implements PersistentContentListen
    }
 
    @Override
-   public void persistentContentModeChanged(int var1) {
+   public void persistentContentModeChanged(int generation) {
       this._isEncryptionEnabled = PersistentContent.isEncryptionEnabled();
    }
 
    @Override
-   public void persistentContentStateChanged(int var1) {
+   public void persistentContentStateChanged(int state) {
    }
 
-   EventLogger$MyPersistentContentListener(EventLogger$1 var1) {
+   EventLogger$MyPersistentContentListener(EventLogger$1 x0) {
       this();
    }
 }

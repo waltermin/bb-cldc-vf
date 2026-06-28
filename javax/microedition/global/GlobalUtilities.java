@@ -4,11 +4,11 @@ class GlobalUtilities {
    private GlobalUtilities() {
    }
 
-   public static String convertUnderscoreToHyphens(String var0) {
-      return var0 == null ? null : var0.replace('_', '-');
+   public static String convertUnderscoreToHyphens(String locale) {
+      return locale == null ? null : locale.replace('_', '-');
    }
 
-   public static boolean isValidLocale(String var0) {
+   public static boolean isValidLocale(String locale) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

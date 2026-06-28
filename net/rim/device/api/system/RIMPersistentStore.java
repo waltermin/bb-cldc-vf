@@ -10,16 +10,16 @@ public final class RIMPersistentStore implements Persistable {
    private RIMPersistentStore() {
    }
 
-   public static final PersistentObject getPersistentObject(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final PersistentObject getPersistentObject(long key) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void destroyPersistentObject(long var0) {
-      destroyPersistentObject(var0, TraceBack.getCallingModule(0));
+   public static final void destroyPersistentObject(long key) {
+      destroyPersistentObject(key, TraceBack.getCallingModule(0));
    }
 
-   static final void destroyPersistentObject(long var0, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void destroyPersistentObject(long key, int callingModule) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static final Object getSynchObject() {

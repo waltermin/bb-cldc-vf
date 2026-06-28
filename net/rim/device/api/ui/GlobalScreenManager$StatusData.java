@@ -11,13 +11,13 @@ class GlobalScreenManager$StatusData {
    boolean suppress;
    boolean redisplay;
 
-   GlobalScreenManager$StatusData(Screen var1, int var2, boolean var3, boolean var4, Process var5, UiEngineImpl var6) {
-      this.screen = var1;
-      this.priority = var2;
-      this.inputRequired = var3;
-      this.suppress = var4;
-      this.process = var5;
-      this.engine = var6;
+   GlobalScreenManager$StatusData(Screen screen, int priority, boolean inputRequired, boolean suppress, Process process, UiEngineImpl engine) {
+      this.screen = screen;
+      this.priority = priority;
+      this.inputRequired = inputRequired;
+      this.suppress = suppress;
+      this.process = process;
+      this.engine = engine;
       this.redisplay = false;
    }
 }

@@ -8,8 +8,8 @@ import net.rim.device.api.system.PersistentContentListener;
 public class ContentProtectedHashtable extends Hashtable implements Persistable, PersistentContentListener {
    private boolean _protected;
 
-   public ContentProtectedHashtable(boolean var1) {
-      if (var1) {
+   public ContentProtectedHashtable(boolean protect) {
+      if (protect) {
          this.reCrypt();
       }
    }
@@ -18,49 +18,49 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
       this(true);
    }
 
-   public ContentProtectedHashtable(int var1) {
-      this(var1, true);
+   public ContentProtectedHashtable(int initialCapacity) {
+      this(initialCapacity, true);
    }
 
-   public ContentProtectedHashtable(int var1, boolean var2) {
-      super(var1);
-      if (var2) {
+   public ContentProtectedHashtable(int initialCapacity, boolean protect) {
+      super(initialCapacity);
+      if (protect) {
          this.reCrypt();
       }
    }
 
-   public ContentProtectedHashtable(Hashtable var1, boolean var2) {
-      if (var1 == null) {
+   public ContentProtectedHashtable(Hashtable hashtable, boolean protect) {
+      if (hashtable == null) {
          throw new Object();
       }
 
-      Enumeration var3 = var1.keys();
+      Enumeration enumeration = hashtable.keys();
 
-      while (var3.hasMoreElements()) {
-         Object var4 = var3.nextElement();
-         this.put(var4, var1.get(var4));
+      while (enumeration.hasMoreElements()) {
+         Object key = enumeration.nextElement();
+         this.put(key, hashtable.get(key));
       }
 
-      if (var2) {
+      if (protect) {
          this.reCrypt();
       }
    }
 
    @Override
-   public synchronized boolean contains(Object var1) {
+   public synchronized boolean contains(Object value) {
       if (!this._protected) {
-         return super.contains(var1);
+         return super.contains(value);
       }
 
-      if (var1 == null) {
+      if (value == null) {
          throw new Object();
       }
 
-      Enumeration var2 = super.elements();
+      Enumeration enumeration = super.elements();
 
-      while (var2.hasMoreElements()) {
-         Object var3 = PersistentContent.decode(var2.nextElement());
-         if (var3.equals(var1)) {
+      while (enumeration.hasMoreElements()) {
+         Object obj = PersistentContent.decode(enumeration.nextElement());
+         if (obj.equals(value)) {
             return true;
          }
       }
@@ -70,36 +70,36 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
 
    @Override
    public synchronized Enumeration elements() {
-      Object var1 = super.elements();
+      Enumeration enumeration = super.elements();
       if (this._protected) {
-         var1 = new Object((Enumeration)var1);
+         enumeration = (Enumeration)(new Object(enumeration));
       }
 
-      return (Enumeration)var1;
+      return enumeration;
    }
 
    @Override
-   public synchronized Object get(Object var1) {
-      Object var2 = super.get(var1);
+   public synchronized Object get(Object key) {
+      Object value = super.get(key);
       if (this._protected) {
-         var2 = PersistentContent.decode(var2);
+         value = PersistentContent.decode(value);
       }
 
-      return var2;
+      return value;
    }
 
    @Override
-   public synchronized Object put(Object var1, Object var2) {
+   public synchronized Object put(Object key, Object value) {
       if (this._protected) {
-         var2 = PersistentContent.encodeObject(var2);
+         value = PersistentContent.encodeObject(value);
       }
 
-      Object var3 = super.put(var1, var2);
+      Object returnValue = super.put(key, value);
       if (this._protected) {
-         var3 = PersistentContent.decode(var3);
+         returnValue = PersistentContent.decode(returnValue);
       }
 
-      return var3;
+      return returnValue;
    }
 
    public synchronized boolean isProtected() {
@@ -111,11 +111,11 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
          return false;
       }
 
-      Enumeration var1 = this.keys();
+      Enumeration enumeration = this.keys();
 
-      while (var1.hasMoreElements()) {
-         Object var2 = var1.nextElement();
-         if (!PersistentContent.checkEncoding(super.get(var2))) {
+      while (enumeration.hasMoreElements()) {
+         Object key = enumeration.nextElement();
+         if (!PersistentContent.checkEncoding(super.get(key))) {
             return false;
          }
       }
@@ -133,31 +133,31 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
 
    private void transitionToProtected() {
       this._protected = true;
-      Enumeration var1 = this.keys();
+      Enumeration enumeration = this.keys();
 
-      while (var1.hasMoreElements()) {
-         Object var2 = var1.nextElement();
-         super.put(var2, PersistentContent.encodeObject(super.get(var2)));
+      while (enumeration.hasMoreElements()) {
+         Object key = enumeration.nextElement();
+         super.put(key, PersistentContent.encodeObject(super.get(key)));
       }
 
       PersistentContent.addWeakListener(this);
    }
 
    private void reCrypt2() {
-      Enumeration var1 = this.keys();
+      Enumeration enumeration = this.keys();
 
-      while (var1.hasMoreElements()) {
-         Object var2 = var1.nextElement();
-         super.put(var2, PersistentContent.reEncode(super.get(var2)));
+      while (enumeration.hasMoreElements()) {
+         Object key = enumeration.nextElement();
+         super.put(key, PersistentContent.reEncode(super.get(key)));
       }
    }
 
    @Override
-   public synchronized void persistentContentModeChanged(int var1) {
+   public synchronized void persistentContentModeChanged(int generation) {
       this.reCrypt2();
    }
 
    @Override
-   public synchronized void persistentContentStateChanged(int var1) {
+   public synchronized void persistentContentStateChanged(int state) {
    }
 }

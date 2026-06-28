@@ -4,13 +4,13 @@ final class UiEngineImpl$StatusDismissedHandler implements Runnable {
    private Screen _screen;
    private final UiEngineImpl this$0;
 
-   UiEngineImpl$StatusDismissedHandler(UiEngineImpl var1, Screen var2) {
-      this.this$0 = var1;
-      this._screen = var2;
+   UiEngineImpl$StatusDismissedHandler(UiEngineImpl _1, Screen screen) {
+      this.this$0 = _1;
+      this._screen = screen;
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

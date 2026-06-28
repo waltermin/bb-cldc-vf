@@ -2,7 +2,11 @@ package net.rim.device.cldc.io.udp;
 
 import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
+import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.IOProperties;
+import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioPacketHeader;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.system.UDPPacketListener;
@@ -10,6 +14,7 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.cldc.io.datarecovery.DataRecovery;
 import net.rim.device.cldc.io.datarecovery.DataRecoveryListener;
 import net.rim.device.cldc.io.nativebase.NativeTransport;
+import net.rim.device.internal.system.VoiceDataUsage;
 
 public final class Transport extends NativeTransport implements UDPPacketListener, DataRecoveryListener {
    private byte[] _txAddress;
@@ -18,18 +23,41 @@ public final class Transport extends NativeTransport implements UDPPacketListene
    private boolean _connectionAvailable;
    private boolean _isBlackBerryTrafficInvalid;
 
-   public final Datagram newMidletDatagram(byte[] var1, int var2, int var3, String var4) {
-      return new MIDletDatagram(var1, var2, var3, var4);
+   public final Datagram newMidletDatagram(byte[] buffer, int offset, int length, String address) {
+      return new MIDletDatagram(buffer, offset, length, address);
    }
 
    @Override
-   public final void packetReceived(UDPPacketHeader var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void packetReceived(UDPPacketHeader header, byte[] data) {
+      EventLogger.logEvent(super.GUID, 1381528436, 4);
+      byte[] ipAddress = header.getSourceAddress();
+      int destPort = header.getDestinationPort();
+      int srcPort = header.getSourcePort();
+
+      String apn;
+      try {
+         apn = RadioInfo.getAccessPointName(header.getAccessPointNumber());
+      } catch (RadioException e) {
+         EventLogger.logEvent(super.GUID, 1380278640, 2);
+         return;
+      }
+
+      int type = 1;
+      DatagramBase dgram = (DatagramBase)(new Object(data, 0, data.length, new UdpInternalAddress(ipAddress, destPort, srcPort, apn, type, data)));
+      EventLogger.logEvent(super.GUID, 1381527669, 5);
+      if (this.passUpDatagram(dgram)) {
+         if (!super._itPolicyEnabled) {
+            VoiceDataUsage.addDataBytes(data.length);
+            return;
+         }
+      } else {
+         EventLogger.logEvent(super.GUID, 1381527152, 3);
+      }
    }
 
    @Override
-   public final void dataRecoveryEventOccurred(int var1, int var2) {
-      switch (var1) {
+   public final void dataRecoveryEventOccurred(int event, int linkType) {
+      switch (event) {
          case 1:
             this._connectionAvailable = true;
          default:
@@ -41,22 +69,22 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativePreSend() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public final void nativeSendSetupHeader(Datagram var1, IOProperties var2) {
+   public final void nativeSendSetupHeader(Datagram datagram, IOProperties properties) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final void nativeSendSetupData(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void nativeSendSetupData(Datagram datagram) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public final int nativeGetStatus(int var1) {
-      switch (var1) {
+   public final int nativeGetStatus(int status) {
+      switch (status) {
          case -3:
          case 249:
             return -3;
@@ -65,7 +93,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
          case 1:
          case 2:
          case 129:
-            return var1;
+            return status;
          case 250:
             if (this._txRetryOnNoContext) {
                return -3;
@@ -90,23 +118,23 @@ public final class Transport extends NativeTransport implements UDPPacketListene
    }
 
    @Override
-   public final DatagramAddressBase newDatagramAddressBase(String var1, boolean var2) {
-      UdpInternalAddress var3 = new UdpInternalAddress(var1);
-      if (var2) {
-         var3.swap();
+   public final DatagramAddressBase newDatagramAddressBase(String address, boolean swap) {
+      UdpInternalAddress ret = new UdpInternalAddress(address);
+      if (swap) {
+         ret.swap();
       }
 
-      return var3;
+      return ret;
    }
 
    @Override
-   public final DatagramAddressBase newDatagramAddressBase(DatagramAddressBase var1, boolean var2) {
-      UdpInternalAddress var3 = new UdpInternalAddress(var1);
-      if (var2) {
-         var3.swap();
+   public final DatagramAddressBase newDatagramAddressBase(DatagramAddressBase addressBase, boolean swap) {
+      UdpInternalAddress ret = new UdpInternalAddress(addressBase);
+      if (swap) {
+         ret.swap();
       }
 
-      return var3;
+      return ret;
    }
 
    @Override
@@ -119,7 +147,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
    }
 
    @Override
-   public final void nativeSendVerify(DatagramAddressBase var1, Datagram var2) {
+   public final void nativeSendVerify(DatagramAddressBase addressBase, Datagram datagram) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

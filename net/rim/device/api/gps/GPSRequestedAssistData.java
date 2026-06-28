@@ -92,11 +92,11 @@ public class GPSRequestedAssistData {
       return this._realTimeIntegrity;
    }
 
-   public int getSatelliteID(int var1) {
-      return this._satID[var1] & 0xFF;
+   public int getSatelliteID(int index) {
+      return this._satID[index] & 0xFF;
    }
 
-   public int getSatelliteIode(int var1) {
-      return this._iode[var1] & 0xFF;
+   public int getSatelliteIode(int index) {
+      return this._iode[index] & 0xFF;
    }
 }

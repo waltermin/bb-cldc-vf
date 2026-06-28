@@ -15,82 +15,103 @@ public class BigUnsortedReadableList implements ChainableCollection, LoadableCol
    private static final int MINIMUM_CAPACITY;
 
    @Override
-   public void loadFrom(Object var1) {
+   public void loadFrom(Object collection) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   protected synchronized boolean doRemove(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected synchronized boolean doRemove(Object element) {
+      boolean fireEvent = false;
+      synchronized (this) {
+         int index = this.getIndex(element);
+         if (index != -1) {
+            this._elements.removeElementAt(index);
+            this._lastInsertedUpdated = null;
+            fireEvent = true;
+         }
+
+         return fireEvent;
+      }
    }
 
-   protected void fireReset(Collection var1) {
-      this._listenerManager.fireReset(var1);
+   protected void fireReset(Collection collection) {
+      this._listenerManager.fireReset(collection);
    }
 
-   protected void fireElementAdded(Collection var1, Object var2) {
-      this._listenerManager.fireElementAdded(var1, var2);
+   protected void fireElementAdded(Collection collection, Object element) {
+      this._listenerManager.fireElementAdded(collection, element);
    }
 
-   protected void fireElementUpdated(Collection var1, Object var2, Object var3) {
-      this._listenerManager.fireElementUpdated(var1, var2, var3);
+   protected void fireElementUpdated(Collection collection, Object oldElement, Object newElement) {
+      this._listenerManager.fireElementUpdated(collection, oldElement, newElement);
    }
 
-   protected void fireElementRemoved(Collection var1, Object var2) {
-      this._listenerManager.fireElementRemoved(var1, var2);
+   protected void fireElementRemoved(Collection collection, Object element) {
+      this._listenerManager.fireElementRemoved(collection, element);
    }
 
-   protected synchronized boolean doUpdate(Object var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected synchronized boolean doUpdate(Object oldElement, Object newElement) {
+      boolean fireEvent = false;
+      synchronized (this) {
+         int index = this.getIndex(oldElement);
+         if (index != -1) {
+            this._elements.setElementAt(newElement, index);
+            this._lastInsertedUpdated = newElement;
+            this._lastInsertedUpdatedIndex = index;
+            fireEvent = true;
+         }
+
+         return fireEvent;
+      }
    }
 
-   protected synchronized void reload(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected synchronized void reload(Object collection) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   protected synchronized void insertAt(int var1, Object var2) {
-      this._elements.insertElementAt(var2, var1);
-      this._lastInsertedUpdated = var2;
-      this._lastInsertedUpdatedIndex = var1;
+   protected synchronized void insertAt(int index, Object element) {
+      this._elements.insertElementAt(element, index);
+      this._lastInsertedUpdated = element;
+      this._lastInsertedUpdatedIndex = index;
    }
 
-   protected synchronized void doAdd(Object var1) {
-      this._lastInsertedUpdated = var1;
+   protected synchronized void doAdd(Object element) {
+      this._lastInsertedUpdated = element;
       this._lastInsertedUpdatedIndex = this._elements.size();
-      this._elements.addElement(var1);
+      this._elements.addElement(element);
    }
 
-   public void replaceAt(Object var1, int var2) {
-      this._elements.setElementAt(var1, var2);
+   public void replaceAt(Object element, int index) {
+      this._elements.setElementAt(element, index);
    }
 
    @Override
-   public synchronized int getAt(int var1, int var2, Object[] var3, int var4) {
-      int var5 = this._elements.size();
-      if (var2 > var5 - var1) {
-         var2 = var5 - var1;
+   public synchronized int getAt(int index, int count, Object[] elements, int destIndex) {
+      int tmpCount = this._elements.size();
+      if (count > tmpCount - index) {
+         count = tmpCount - index;
       }
 
-      if (var3.length < var2 + var4) {
-         Array.resize(var3, var2 + var4);
+      if (elements.length < count + destIndex) {
+         Array.resize(elements, count + destIndex);
       }
 
-      this._elements.copyInto(var1, var2, var3, var4);
-      return var2;
+      this._elements.copyInto(index, count, elements, destIndex);
+      return count;
    }
 
    @Override
-   public Object getAt(int var1) {
-      return this._elements.elementAt(var1);
+   public Object getAt(int index) {
+      return this._elements.elementAt(index);
    }
 
    @Override
-   public int getIndex(Object var1) {
-      return var1 == this._lastInsertedUpdated && var1 != null ? this._lastInsertedUpdatedIndex : this._elements.firstIndexOf(var1);
+   public int getIndex(Object element) {
+      return element == this._lastInsertedUpdated && element != null ? this._lastInsertedUpdatedIndex : this._elements.firstIndexOf(element);
    }
 
    @Override
-   public void reset(Collection var1) {
-      this.loadFrom(var1);
+   public void reset(Collection collection) {
+      this.loadFrom(collection);
    }
 
    @Override
@@ -99,39 +120,39 @@ public class BigUnsortedReadableList implements ChainableCollection, LoadableCol
    }
 
    @Override
-   public void elementAdded(Collection var1, Object var2) {
-      this.doAdd(var2);
-      this.fireElementAdded(this, var2);
+   public void elementAdded(Collection collection, Object element) {
+      this.doAdd(element);
+      this.fireElementAdded(this, element);
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._listenerManager.addCollectionListener(var1);
+   public void addCollectionListener(Object listener) {
+      this._listenerManager.addCollectionListener(listener);
    }
 
    @Override
-   public void elementUpdated(Collection var1, Object var2, Object var3) {
-      if (this.doUpdate(var2, var3)) {
-         this.fireElementUpdated(this, var2, var3);
+   public void elementUpdated(Collection collection, Object oldElement, Object newElement) {
+      if (this.doUpdate(oldElement, newElement)) {
+         this.fireElementUpdated(this, oldElement, newElement);
       }
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._listenerManager.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._listenerManager.removeCollectionListener(listener);
    }
 
    @Override
-   public void elementRemoved(Collection var1, Object var2) {
-      if (this.doRemove(var2)) {
-         this.fireElementRemoved(this, var2);
+   public void elementRemoved(Collection collection, Object element) {
+      if (this.doRemove(element)) {
+         this.fireElementRemoved(this, element);
       }
    }
 
-   public BigUnsortedReadableList(CollectionEventSource var1) {
-      var1.addCollectionListener(this);
-      if (var1 instanceof Collection) {
-         this.reload(var1);
+   public BigUnsortedReadableList(CollectionEventSource sourceCollection) {
+      sourceCollection.addCollectionListener(this);
+      if (sourceCollection instanceof Collection) {
+         this.reload(sourceCollection);
       }
    }
 

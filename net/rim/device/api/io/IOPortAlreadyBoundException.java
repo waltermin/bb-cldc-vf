@@ -6,6 +6,6 @@ public class IOPortAlreadyBoundException extends IOException {
    public IOPortAlreadyBoundException() {
    }
 
-   public IOPortAlreadyBoundException(String var1) {
+   public IOPortAlreadyBoundException(String msg) {
    }
 }

@@ -6,13 +6,13 @@ public class IPCResult {
    private String _message;
    public static final IPCResult FAILED_RESULT;
 
-   IPCResult(Object var1, boolean var2) {
+   IPCResult(Object result, boolean wasSuccessful) {
    }
 
-   IPCResult(Object var1, boolean var2, String var3) {
-      this._result = var1;
-      this._wasSuccessful = var2;
-      this._message = var3;
+   IPCResult(Object result, boolean wasSuccessful, String message) {
+      this._result = result;
+      this._wasSuccessful = wasSuccessful;
+      this._message = message;
    }
 
    public Object getResult() {

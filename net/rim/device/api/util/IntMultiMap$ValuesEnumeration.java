@@ -6,8 +6,8 @@ final class IntMultiMap$ValuesEnumeration implements Enumeration {
    private IntMultiMap _map;
    private int _i;
 
-   IntMultiMap$ValuesEnumeration(IntMultiMap var1) {
-      this._map = var1;
+   IntMultiMap$ValuesEnumeration(IntMultiMap map) {
+      this._map = map;
       this._i = 0;
    }
 

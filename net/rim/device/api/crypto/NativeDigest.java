@@ -34,8 +34,8 @@ final class NativeDigest {
 
    public final native void reset();
 
-   public final void update(int var1) {
-      this.update((byte)var1);
+   public final void update(int data) {
+      this.update((byte)data);
    }
 
    private final native void update(byte var1);

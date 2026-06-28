@@ -1,5 +1,6 @@
 package net.rim.device.internal.media;
 
+import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.media.Control;
 import javax.microedition.media.protocol.ContentDescriptor;
@@ -28,9 +29,9 @@ public class DataSourceImpl extends DataSource implements SourceStream {
    public static final String MIME_MEDIA_PME;
    public static final String MIME_MEDIA_PMB;
 
-   public DataSourceImpl(String var1) {
+   public DataSourceImpl(String locator) {
       super(null);
-      this._locator = var1;
+      this._locator = locator;
    }
 
    @Override
@@ -45,7 +46,12 @@ public class DataSourceImpl extends DataSource implements SourceStream {
 
    @Override
    public void disconnect() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         this.stop();
+      } catch (Exception var2) {
+      }
+
+      this._connected = false;
    }
 
    @Override
@@ -55,7 +61,16 @@ public class DataSourceImpl extends DataSource implements SourceStream {
 
    @Override
    public void stop() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._started && this._connected) {
+         if (this._is != null) {
+            try {
+               this._is.close();
+            } catch (IOException var2) {
+            }
+         }
+
+         this._started = false;
+      }
    }
 
    @Override
@@ -67,8 +82,8 @@ public class DataSourceImpl extends DataSource implements SourceStream {
       return this._connected && this._started ? this._is : null;
    }
 
-   public void setInputStream(InputStream var1) {
-      this._is = var1;
+   public void setInputStream(InputStream is) {
+      this._is = is;
       if (this._is.markSupported()) {
          this._seekType = 2;
       }
@@ -76,7 +91,7 @@ public class DataSourceImpl extends DataSource implements SourceStream {
       this._connected = true;
    }
 
-   public void setContentType(String var1) {
+   public void setContentType(String ct) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -91,13 +106,13 @@ public class DataSourceImpl extends DataSource implements SourceStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      int var4 = this._is.read(var1, var2, var3);
-      if (var4 != -1) {
-         this._position += var4;
+   public int read(byte[] b, int off, int len) {
+      int numBytes = this._is.read(b, off, len);
+      if (numBytes != -1) {
+         this._position += numBytes;
       }
 
-      return var4;
+      return numBytes;
    }
 
    @Override
@@ -106,29 +121,29 @@ public class DataSourceImpl extends DataSource implements SourceStream {
    }
 
    @Override
-   public long seek(long var1) {
-      if (var1 < 0) {
-         var1 = 0;
+   public long seek(long where) {
+      if (where < 0) {
+         where = 0;
       }
 
       if (this._seekType == 0) {
          return this._position;
       }
 
-      if (this._seekType == 1 && var1 != 0) {
+      if (this._seekType == 1 && where != 0) {
          return this._position;
       }
 
-      if (var1 > this._contentLength && this._contentLength > 0) {
-         var1 = this._contentLength;
+      if (where > this._contentLength && this._contentLength > 0) {
+         where = this._contentLength;
       }
 
-      if (var1 < this._position) {
+      if (where < this._position) {
          this._is.reset();
          this._is.mark(Integer.MAX_VALUE);
-         this._position = this._is.skip(var1);
+         this._position = this._is.skip(where);
       } else {
-         this._position = this._position + this._is.skip(var1 - this._position);
+         this._position = this._position + this._is.skip(where - this._position);
       }
 
       return this._position;
@@ -154,7 +169,7 @@ public class DataSourceImpl extends DataSource implements SourceStream {
    }
 
    @Override
-   public Control getControl(String var1) {
+   public Control getControl(String controlType) {
       if (!this._connected) {
          throw new Object();
       } else {

@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import java.io.EOFException;
 import java.util.Vector;
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.ApplicationManager;
@@ -12,7 +13,9 @@ import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.UserAuthenticator;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.TLEUtilities;
+import net.rim.device.internal.applicationcontrol.ApplicationControl;
 
 public final class Security {
    private Security$SecurityCache _securityCache;
@@ -52,11 +55,11 @@ public final class Security {
 
    public static final Security getInstance() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (Security)var0.getOrWaitFor(9159244075162769423L);
+         ApplicationRegistry appRegistry = ApplicationRegistry.getApplicationRegistry();
+         _instance = (Security)appRegistry.getOrWaitFor(9159244075162769423L);
          if (_instance == null) {
             _instance = new Security();
-            var0.put(9159244075162769423L, _instance);
+            appRegistry.put(9159244075162769423L, _instance);
          }
       }
 
@@ -68,19 +71,22 @@ public final class Security {
    private Security() {
    }
 
-   public final boolean setUserAuthenticatorPassword(UserAuthenticator var1, String var2) {
-      if (var1 == null || this._userAuthenticator != null || var2 == null || !this._registeredUserAuthenticators.contains(var1)) {
+   public final boolean setUserAuthenticatorPassword(UserAuthenticator userAuthenticator, String userAuthenticatorPassword) {
+      if (userAuthenticator == null
+         || this._userAuthenticator != null
+         || userAuthenticatorPassword == null
+         || !this._registeredUserAuthenticators.contains(userAuthenticator)) {
          throw new Object();
       }
 
-      if (var1.initialize(var2)) {
-         this._userAuthenticator = var1;
-         this.setNumericPasswords(null, var2);
-         Class var3 = var1.getClass();
-         NvStore.writeData(15, var3.getName().getBytes());
-         byte[] var4 = var1.getStateData();
-         if (var4 != null) {
-            NvStore.writeData(16, var4);
+      if (userAuthenticator.initialize(userAuthenticatorPassword)) {
+         this._userAuthenticator = userAuthenticator;
+         this.setNumericPasswords(null, userAuthenticatorPassword);
+         Class authenticatorClass = userAuthenticator.getClass();
+         NvStore.writeData(15, authenticatorClass.getName().getBytes());
+         byte[] state = userAuthenticator.getStateData();
+         if (state != null) {
+            NvStore.writeData(16, state);
          }
 
          return true;
@@ -94,9 +100,9 @@ public final class Security {
          throw new Object();
       }
 
-      byte[] var1 = this._userAuthenticator.getStateData();
-      if (var1 != null) {
-         NvStore.writeData(16, var1);
+      byte[] state = this._userAuthenticator.getStateData();
+      if (state != null) {
+         NvStore.writeData(16, state);
       }
    }
 
@@ -110,29 +116,29 @@ public final class Security {
       }
    }
 
-   public final boolean setPassword(String var1, String var2, String var3) {
+   public final boolean setPassword(String oldPassword, String newPassword, String userAuthenticatorPassword) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public final void setTimeoutIfRequired() {
-      int var1 = 60 * ITPolicy.getInteger(22, 1, -1);
-      boolean var2 = ITPolicy.getBoolean(12, true);
-      if (var1 >= 0) {
-         if (var2) {
+      int setTimeout = 60 * ITPolicy.getInteger(22, 1, -1);
+      boolean allowUserToChangeTimeout = ITPolicy.getBoolean(12, true);
+      if (setTimeout >= 0) {
+         if (allowUserToChangeTimeout) {
             if (!this.isPasswordEnabled()) {
-               this.setTimeout(var1);
+               this.setTimeout(setTimeout);
                return;
             }
          } else {
-            this.setTimeout(var1);
+            this.setTimeout(setTimeout);
          }
       }
    }
 
-   public final void setContentProtection(boolean var1, int var2) {
+   public final void setContentProtection(boolean newEncryptionSetting, int newEncryptionStrength) {
       this._pendingContentProtectionChange = true;
-      this._pendingContentProtectionEncryptionSetting = var1;
-      this._pendingContentProtectionEncryptionStrength = var2;
+      this._pendingContentProtectionEncryptionSetting = newEncryptionSetting;
+      this._pendingContentProtectionEncryptionStrength = newEncryptionStrength;
    }
 
    public final int getEncryptionStrength() {
@@ -147,89 +153,119 @@ public final class Security {
       return this._pendingContentProtectionChange;
    }
 
-   public final int verifyPasswordPattern(String var1) {
+   public final int verifyPasswordPattern(String password) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public final native boolean verifyPasswordChallenge(byte[] var1, byte[] var2);
 
-   private static final boolean isLetter(char var0) {
-      return 'a' <= var0 && var0 <= 'z' || 'A' <= var0 && var0 <= 'Z';
+   private static final boolean isLetter(char ch) {
+      return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z';
    }
 
-   private static final boolean isUppercase(char var0) {
-      return 'A' <= var0 && var0 <= 'Z';
+   private static final boolean isUppercase(char ch) {
+      return 'A' <= ch && ch <= 'Z';
    }
 
-   private static final boolean isVowel(char var0) {
-      return var0 == 'a'
-         || var0 == 'e'
-         || var0 == 'i'
-         || var0 == 'o'
-         || var0 == 'u'
-         || var0 == 'y'
-         || var0 == 'A'
-         || var0 == 'E'
-         || var0 == 'I'
-         || var0 == 'O'
-         || var0 == 'U'
-         || var0 == 'Y';
+   private static final boolean isVowel(char ch) {
+      return ch == 'a'
+         || ch == 'e'
+         || ch == 'i'
+         || ch == 'o'
+         || ch == 'u'
+         || ch == 'y'
+         || ch == 'A'
+         || ch == 'E'
+         || ch == 'I'
+         || ch == 'O'
+         || ch == 'U'
+         || ch == 'Y';
    }
 
-   private static final boolean isDigit(char var0) {
-      return '0' <= var0 && var0 <= '9';
+   private static final boolean isDigit(char ch) {
+      return '0' <= ch && ch <= '9';
    }
 
-   public final boolean verifyPassword(String var1, String var2, int[] var3) {
-      boolean var4 = false;
-      if (this.verifyPassword(var1, var2)) {
-         var4 = true;
+   public final boolean verifyPassword(String password, String userAuthenticatorPassword, int[] uSBChannels) {
+      boolean result = false;
+      if (this.verifyPassword(password, userAuthenticatorPassword)) {
+         result = true;
       }
 
-      for (int var5 = 0; var5 < var3.length; var5++) {
-         USBPasswordRedirectManager.getInstance().allowChannel(var3[var5], var4);
+      for (int i = 0; i < uSBChannels.length; i++) {
+         USBPasswordRedirectManager.getInstance().allowChannel(uSBChannels[i], result);
       }
 
-      return var4;
+      return result;
    }
 
-   public final boolean verifyPassword(String var1, String var2) {
+   public final boolean verifyPassword(String password, String userAuthenticatorPassword) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final boolean processVerifyPassword(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final boolean processVerifyPassword(String password, String userAuthenticatorPassword) {
+      try {
+         if (this._userAuthenticator != null && this._userAuthenticator.isInitialized()) {
+            if (!this._userAuthenticator.authenticate(userAuthenticatorPassword)) {
+               return false;
+            }
+
+            this.setNumericPasswords(password, userAuthenticatorPassword);
+         }
+      } finally {
+         ;
+      }
+
+      this._securityCache.markLongTermTimeOutTimeStamp();
+      PersistentContentInternal.unlock(password);
+      if (this._pendingContentProtectionChange) {
+         this._pendingContentProtectionChange = false;
+         PersistentContentInternal.setContentProtection(
+            password, this._pendingContentProtectionEncryptionSetting, this._pendingContentProtectionEncryptionStrength
+         );
+      }
+
+      if (this._keyStoreListener != null) {
+         this._keyStoreListener.unlock(password);
+      }
+
+      if (this._fileSystemEncryptionListener != null) {
+         this._fileSystemEncryptionListener.unlock(password);
+      }
+
+      this._securityCache.setAutoFillUserAuthenticatorPasswordField(StringUtilities.strEqual(password, userAuthenticatorPassword));
+      return true;
    }
 
-   public final boolean setKeyStoreListener(DevicePasswordListener var1) {
+   public final boolean setKeyStoreListener(DevicePasswordListener listener) {
       if (this._keyStoreListener != null) {
          return false;
       }
 
-      this._keyStoreListener = var1;
+      this._keyStoreListener = listener;
       return true;
    }
 
-   public final boolean setFileSystemEncryptionListener(DevicePasswordListener var1) {
+   public final boolean setFileSystemEncryptionListener(DevicePasswordListener listener) {
       if (this._fileSystemEncryptionListener != null) {
          return false;
       }
 
-      this._fileSystemEncryptionListener = var1;
+      this._fileSystemEncryptionListener = listener;
       return true;
    }
 
-   public final boolean verifyStoredPasswordOnly(String var1) {
-      if (this.verifyPassword(var1)) {
+   public final boolean verifyStoredPasswordOnly(String password) {
+      if (this.verifyPassword(password)) {
          USBPasswordRedirectManager.getInstance().clearChannels(true);
          this._securityCache.markLongTermTimeOutTimeStamp();
-         PersistentContentInternal.unlock(var1);
+         PersistentContentInternal.unlock(password);
          if (this._keyStoreListener != null) {
-            this._keyStoreListener.unlock(var1);
+            this._keyStoreListener.unlock(password);
          }
 
          if (this._fileSystemEncryptionListener != null) {
-            this._fileSystemEncryptionListener.unlock(var1);
+            this._fileSystemEncryptionListener.unlock(password);
          }
 
          return true;
@@ -242,19 +278,19 @@ public final class Security {
       }
    }
 
-   public final int isPasswordValid(String var1) {
+   public final int isPasswordValid(String password) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final int checkCyclic(String var1, boolean var2) {
+   private final int checkCyclic(String password, boolean altedChar) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   static final boolean containsForbiddenPassword(String var0, String var1) {
+   static final boolean containsForbiddenPassword(String password, String forbiddenPasswords) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final void setCallHandler(SecurityCallHandler var1) {
+   public final void setCallHandler(SecurityCallHandler handler) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -264,12 +300,12 @@ public final class Security {
 
    public final native int getMaxPasswordAttempts();
 
-   public final void setMaxPasswordAttempts(int var1) {
-      int var2 = ITPolicy.getInteger(22, 2, 10);
-      int var3 = MathUtilities.clamp(3, var1, var2);
-      NvStore.writeInt(9, var3);
-      this._securityCache.setMaxPasswordAttempts(var3);
-      this.setMaxPasswordAttemptsInternal(var3);
+   public final void setMaxPasswordAttempts(int maxAttempts) {
+      int itPolicyMaxPasswordAttempts = ITPolicy.getInteger(22, 2, 10);
+      int clampedValue = MathUtilities.clamp(3, maxAttempts, itPolicyMaxPasswordAttempts);
+      NvStore.writeInt(9, clampedValue);
+      this._securityCache.setMaxPasswordAttempts(clampedValue);
+      this.setMaxPasswordAttemptsInternal(clampedValue);
    }
 
    private final native boolean setMaxPasswordAttemptsInternal(int var1);
@@ -278,29 +314,29 @@ public final class Security {
       return this.getPasswordFailureCount() + 1 >= this.getMaxPasswordAttempts();
    }
 
-   public final int getRevealPasswordAttempts(int var1) {
-      return FIPSPolicy.getBoolean(22, 3, false, true) ? var1 + 1 : var1 / 2;
+   public final int getRevealPasswordAttempts(int maxAttempts) {
+      return FIPSPolicy.getBoolean(22, 3, false, true) ? maxAttempts + 1 : maxAttempts / 2;
    }
 
    public final boolean isPasswordEnabled() {
       return !this.verifyPassword(null);
    }
 
-   public final boolean setTimeout(int var1) {
-      boolean var2 = this._securityCache.setCurrentTimeOut(var1);
-      if (var2) {
+   public final boolean setTimeout(int seconds) {
+      boolean timeoutSet = this._securityCache.setCurrentTimeOut(seconds);
+      if (timeoutSet) {
          RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 22, 1, null, null);
       }
 
-      return var2;
+      return timeoutSet;
    }
 
    public final int getTimeout() {
       return this._securityCache.getCurrentTimeOut();
    }
 
-   public final void setLockWhenHolstered(boolean var1) {
-      this._securityCache.setLockWhenHolstered(var1);
+   public final void setLockWhenHolstered(boolean lockWhenHolstered) {
+      this._securityCache.setLockWhenHolstered(lockWhenHolstered);
       RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 24, 12, null, null);
    }
 
@@ -308,16 +344,16 @@ public final class Security {
       return this._securityCache.getLockWhenHolstered();
    }
 
-   public final void setPasswordRequiredForAppInstall(boolean var1) {
-      this._securityCache.setPasswordRequiredForAppInstall(var1);
+   public final void setPasswordRequiredForAppInstall(boolean passwordRequiredForInstall) {
+      this._securityCache.setPasswordRequiredForAppInstall(passwordRequiredForInstall);
    }
 
    public final boolean getPasswordRequiredForAppInstall() {
       return this._securityCache.getPasswordRequiredForAppInstall();
    }
 
-   public final void setAllowOutgoingCallWhileLocked(boolean var1) {
-      this._securityCache.setAllowOutgoingCallWhileLocked(var1);
+   public final void setAllowOutgoingCallWhileLocked(boolean allowOutgoingCallWhileLocked) {
+      this._securityCache.setAllowOutgoingCallWhileLocked(allowOutgoingCallWhileLocked);
       RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 24, 40, null, null);
    }
 
@@ -329,13 +365,13 @@ public final class Security {
       return this._securityCache._autoFillUserAuthenticatorPasswordField;
    }
 
-   public final void setSecurityServiceColours(int var1, int var2) {
-      this._securityCache.setSecurityServiceColours(var1, var2);
+   public final void setSecurityServiceColours(int ITPolicyServiceColour, int otherServiceColour) {
+      this._securityCache.setSecurityServiceColours(ITPolicyServiceColour, otherServiceColour);
       RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 24, 42, null, null);
    }
 
-   private final int parseSecurityServiceColour(boolean var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int parseSecurityServiceColour(boolean ITPolicyServiceColour, int userColour) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public final int getSecurityITPolicyServiceColour() {
@@ -358,8 +394,8 @@ public final class Security {
       return this._securityCache._excludeAddressBookFromContentProtection;
    }
 
-   public final void setExcludeAddressBookFromContentProtection(boolean var1) {
-      this._securityCache.setExcludeAddressBookFromContentProtection(var1);
+   public final void setExcludeAddressBookFromContentProtection(boolean excludeAddressBookFromContentProtection) {
+      this._securityCache.setExcludeAddressBookFromContentProtection(excludeAddressBookFromContentProtection);
    }
 
    public final boolean isSmartPasswordEntryEnabledOnUserAuthenticatorPassword() {
@@ -370,19 +406,19 @@ public final class Security {
       return this.getSmartPasswordEntry() && this._securityCache._numericHandheldPassword;
    }
 
-   public final void setNumericPasswords(String var1, String var2) {
+   public final void setNumericPasswords(String handheldPassword, String userAuthenticatorPassword) {
       if (this.getSmartPasswordEntry()) {
-         if (var1 != null) {
-            this._securityCache.setNumericHandheldPassword(this.isNumeric(var1));
+         if (handheldPassword != null) {
+            this._securityCache.setNumericHandheldPassword(this.isNumeric(handheldPassword));
          }
 
-         if (var2 != null) {
-            this._securityCache.setNumericUserAuthenticatorPassword(this.isNumeric(var2));
+         if (userAuthenticatorPassword != null) {
+            this._securityCache.setNumericUserAuthenticatorPassword(this.isNumeric(userAuthenticatorPassword));
          }
       }
    }
 
-   private final boolean isNumeric(String var1) {
+   private final boolean isNumeric(String password) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -390,13 +426,13 @@ public final class Security {
       return ITPolicy.getBoolean(24, 62, false) ? false : this._securityCache._smartPasswordEntry;
    }
 
-   public final void setSmartPasswordEntry(boolean var1) {
-      this._securityCache.setSmartPasswordEntry(var1);
+   public final void setSmartPasswordEntry(boolean smartPasswordEntry) {
+      this._securityCache.setSmartPasswordEntry(smartPasswordEntry);
    }
 
-   public final boolean cleanNow(int var1) {
-      ApplicationManager var2 = ApplicationManager.getApplicationManager();
-      if (var1 != 6 && (var1 != 3 || !var2.isSystemLocked())) {
+   public final boolean cleanNow(int event) {
+      ApplicationManager manager = ApplicationManager.getApplicationManager();
+      if (event != 6 && (event != 3 || !manager.isSystemLocked())) {
          return false;
       }
 
@@ -409,18 +445,33 @@ public final class Security {
    }
 
    public final boolean activatePasswordAging() {
-      int var1 = ITPolicy.getInteger(11, 0);
-      long var2 = this.getPasswordEnableTimeStamp();
-      if (var1 != 0 && var2 != 0) {
-         long var4 = (System.currentTimeMillis() - var2) / 86400000;
-         return var4 >= var1;
+      int maxPasswordAge = ITPolicy.getInteger(11, 0);
+      long passwordEnableTimeStamp = this.getPasswordEnableTimeStamp();
+      if (maxPasswordAge != 0 && passwordEnableTimeStamp != 0) {
+         long days = (System.currentTimeMillis() - passwordEnableTimeStamp) / 86400000;
+         return days >= maxPasswordAge;
       } else {
          return false;
       }
    }
 
-   public final synchronized boolean registerUserAuthenticator(UserAuthenticator var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized boolean registerUserAuthenticator(UserAuthenticator authenticator) {
+      if (authenticator == null) {
+         throw new Object();
+      }
+
+      ApplicationControl.assertAuthenticatorApiAllowed(true);
+      Class newAuthenticatorClass = authenticator.getClass();
+
+      try {
+         newAuthenticatorClass.newInstance();
+         this._registeredUserAuthenticators.addElement(authenticator);
+         return true;
+      } catch (InstantiationException var4) {
+      } catch (IllegalAccessException var5) {
+      }
+
+      throw new Object();
    }
 
    public final UserAuthenticator getUserAuthenticator() {
@@ -428,10 +479,10 @@ public final class Security {
    }
 
    public final UserAuthenticator[] getRegisteredUserAuthenticators() {
-      int var1 = this._registeredUserAuthenticators.size();
-      UserAuthenticator[] var2 = new UserAuthenticator[var1];
-      this._registeredUserAuthenticators.copyInto(var2);
-      return var2;
+      int size = this._registeredUserAuthenticators.size();
+      UserAuthenticator[] result = new UserAuthenticator[size];
+      this._registeredUserAuthenticators.copyInto(result);
+      return result;
    }
 
    private final boolean isPhoneOff() {
@@ -439,13 +490,13 @@ public final class Security {
    }
 
    public final boolean isLockRequired() {
-      boolean var1 = this.isPasswordEnabled();
-      if (var1 && this._lockOnIdle && DeviceInfo.getIdleTime() >= this.getTimeout() && this.isPhoneOff()) {
+      boolean passwordEnabled = this.isPasswordEnabled();
+      if (passwordEnabled && this._lockOnIdle && DeviceInfo.getIdleTime() >= this.getTimeout() && this.isPhoneOff()) {
          return true;
       } else if (this._securityCache.getLockWhenHolstered() && DeviceInfo.isInHolster() && this.isPhoneOff()) {
          return true;
       } else {
-         return var1 ? this.activateLongTermTimeOut() : false;
+         return passwordEnabled ? this.activateLongTermTimeOut() : false;
       }
    }
 
@@ -453,7 +504,7 @@ public final class Security {
       return this._isAutoOnRequired;
    }
 
-   public final void setAutoOnRequired(boolean var1) {
+   public final void setAutoOnRequired(boolean required) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -474,25 +525,51 @@ public final class Security {
    }
 
    private final void setPasswordEnableTimeStamp() {
-      Object var1 = new Object(true);
-      Object var2 = new Object(true);
-      ((DataBuffer)var1).writeLong(System.currentTimeMillis());
-      TLEUtilities.writeDataField((DataBuffer)var2, 1, ((DataBuffer)var1).toArray());
-      NvStore.writeData(39, ((DataBuffer)var2).getArray());
+      DataBuffer buff = (DataBuffer)(new Object(true));
+      DataBuffer timeStampBuffer = (DataBuffer)(new Object(true));
+      buff.writeLong(System.currentTimeMillis());
+      TLEUtilities.writeDataField(timeStampBuffer, 1, buff.toArray());
+      NvStore.writeData(39, timeStampBuffer.getArray());
    }
 
    private final long getPasswordEnableTimeStamp() {
-      throw new RuntimeException("cod2jar: exception table");
+      long result = 0;
+      DataBuffer timestampBuffer = null;
+      byte[] buffer = NvStore.readData(39);
+      if (buffer != null) {
+         timestampBuffer = (DataBuffer)(new Object(true));
+         timestampBuffer.setData(buffer, 0, buffer.length, true);
+      }
+
+      if (timestampBuffer != null) {
+         try {
+            while (!timestampBuffer.eof()) {
+               int tag = TLEUtilities.getType(timestampBuffer);
+               switch (tag) {
+                  case 1:
+                     timestampBuffer.readCompressedInt();
+                     timestampBuffer.readCompressedInt();
+                     result = timestampBuffer.readLong();
+                     break;
+                  default:
+                     TLEUtilities.skipField(timestampBuffer);
+               }
+            }
+         } catch (EOFException var6) {
+         }
+      }
+
+      return result;
    }
 
-   public final boolean verifyPassword(String var1) {
-      return this.verifyPasswordInternal(var1 == null ? null : var1.getBytes());
+   public final boolean verifyPassword(String password) {
+      return this.verifyPasswordInternal(password == null ? null : password.getBytes());
    }
 
    private final native boolean verifyPasswordInternal(byte[] var1);
 
-   public final boolean setPassword(String var1, String var2) {
-      return this.setPasswordInternal(var1 == null ? null : var1.getBytes(), var2 == null ? null : var2.getBytes());
+   public final boolean setPassword(String oldPassword, String newPassword) {
+      return this.setPasswordInternal(oldPassword == null ? null : oldPassword.getBytes(), newPassword == null ? null : newPassword.getBytes());
    }
 
    private final native boolean setPasswordInternal(byte[] var1, byte[] var2);

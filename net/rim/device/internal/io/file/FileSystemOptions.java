@@ -82,7 +82,7 @@ public final class FileSystemOptions implements Persistable {
       return _instance._contentStoreTotalSize;
    }
 
-   public static final void setContentSizes(long var0, long var2) {
+   public static final void setContentSizes(long totalSize, long reservedPictureSize) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -117,22 +117,22 @@ public final class FileSystemOptions implements Persistable {
       }
    }
 
-   public static final boolean isMediaDirectory(String var0) {
-      return StringUtilities.startsWithIgnoreCase(var0, BLACKBERRY_MUSIC, 1701707776)
-         || StringUtilities.startsWithIgnoreCase(var0, BLACKBERRY_PICTURES, 1701707776)
-         || StringUtilities.startsWithIgnoreCase(var0, BLACKBERRY_RINGTONES, 1701707776)
-         || StringUtilities.startsWithIgnoreCase(var0, BLACKBERRY_VOICENOTES, 1701707776)
-         || StringUtilities.startsWithIgnoreCase(var0, BLACKBERRY_VIDEOS, 1701707776);
+   public static final boolean isMediaDirectory(String path) {
+      return StringUtilities.startsWithIgnoreCase(path, BLACKBERRY_MUSIC, 1701707776)
+         || StringUtilities.startsWithIgnoreCase(path, BLACKBERRY_PICTURES, 1701707776)
+         || StringUtilities.startsWithIgnoreCase(path, BLACKBERRY_RINGTONES, 1701707776)
+         || StringUtilities.startsWithIgnoreCase(path, BLACKBERRY_VOICENOTES, 1701707776)
+         || StringUtilities.startsWithIgnoreCase(path, BLACKBERRY_VIDEOS, 1701707776);
    }
 
-   public static final boolean isExternalEncryptionRequired(String var0) {
+   public static final boolean isExternalEncryptionRequired(String path) {
       switch (getExternalEncryptionLevel()) {
          case 0:
             return false;
          case 1:
          case 3:
          case 5:
-            if (!isMediaDirectory(var0)) {
+            if (!isMediaDirectory(path)) {
                return true;
             }
 
@@ -150,36 +150,36 @@ public final class FileSystemOptions implements Persistable {
          return 0;
       }
 
-      int var0 = ITPolicy.getInteger(24, 60, 0);
-      int var1 = _instance._externalEncryptionLevel;
-      switch (var0) {
+      int itPolicyValue = ITPolicy.getInteger(24, 60, 0);
+      int userSetting = _instance._externalEncryptionLevel;
+      switch (itPolicyValue) {
          case -1:
             return 6;
          case 0:
          default:
-            return var1;
+            return userSetting;
          case 1:
-            if (var1 != 2 && var1 != 5 && var1 != 6) {
-               return var0;
+            if (userSetting != 2 && userSetting != 5 && userSetting != 6) {
+               return itPolicyValue;
             }
 
-            return var1;
+            return userSetting;
          case 2:
          case 4:
-            if (var1 != 5 && var1 != 6) {
-               return var0;
+            if (userSetting != 5 && userSetting != 6) {
+               return itPolicyValue;
             }
 
             return 6;
          case 3:
-            if (var1 != 4 && var1 != 5 && var1 != 6) {
-               return var0;
+            if (userSetting != 4 && userSetting != 5 && userSetting != 6) {
+               return itPolicyValue;
             }
 
-            return var1;
+            return userSetting;
          case 5:
          case 6:
-            return var1 == 6 ? 6 : var0;
+            return userSetting == 6 ? 6 : itPolicyValue;
       }
    }
 
@@ -195,23 +195,23 @@ public final class FileSystemOptions implements Persistable {
       return _instance._safelyRemoveMode;
    }
 
-   public static final void setUSBMassStorageMode(boolean var0) {
+   public static final void setUSBMassStorageMode(boolean mode) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static final void setExternalEncryptionLevel(int var0) {
+   public static final void setExternalEncryptionLevel(int mode) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static final void setExternalMemoryEnabled(boolean var0) {
+   public static final void setExternalMemoryEnabled(boolean mode) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static final void setSafelyRemoveMode(int var0) {
+   public static final void setSafelyRemoveMode(int mode) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static final void setAutoEnableUSBMassStorageMode(int var0) {
+   public static final void setAutoEnableUSBMassStorageMode(int mode) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -219,9 +219,9 @@ public final class FileSystemOptions implements Persistable {
       commit(true);
    }
 
-   private static final void commit(boolean var0) {
+   private static final void commit(boolean notifyOfChanges) {
       _persistentObject.commit();
-      if (var0) {
+      if (notifyOfChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(-3054176912083292366L, _instance._dirty, 0);
          _instance._dirty = 0;
       }

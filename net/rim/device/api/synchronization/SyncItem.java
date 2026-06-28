@@ -4,17 +4,17 @@ import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.util.DataBuffer;
 
 public class SyncItem implements SyncObject, SyncCollection, SyncConverter {
-   public boolean setSyncData(DataBuffer var1, int var2) {
+   public boolean setSyncData(DataBuffer _1, int _2) {
       throw null;
    }
 
-   public boolean getSyncData(DataBuffer var1, int var2) {
+   public boolean getSyncData(DataBuffer _1, int _2) {
       throw null;
    }
 
    @Override
-   public boolean convert(SyncObject var1, DataBuffer var2, int var3) {
-      return this.getSyncData(var2, var3);
+   public boolean convert(SyncObject object, DataBuffer buffer, int version) {
+      return this.getSyncData(buffer, version);
    }
 
    @Override
@@ -23,8 +23,8 @@ public class SyncItem implements SyncObject, SyncCollection, SyncConverter {
    }
 
    @Override
-   public SyncObject convert(DataBuffer var1, int var2, int var3) {
-      return this.setSyncData(var1, var2) ? this : null;
+   public SyncObject convert(DataBuffer data, int version, int uid) {
+      return this.setSyncData(data, version) ? this : null;
    }
 
    @Override
@@ -38,22 +38,22 @@ public class SyncItem implements SyncObject, SyncCollection, SyncConverter {
    }
 
    @Override
-   public String getSyncName(Locale var1) {
+   public String getSyncName(Locale _1) {
       throw null;
    }
 
    @Override
-   public boolean addSyncObject(SyncObject var1) {
+   public boolean addSyncObject(SyncObject object) {
       return true;
    }
 
    @Override
-   public boolean updateSyncObject(SyncObject var1, SyncObject var2) {
+   public boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
       return true;
    }
 
    @Override
-   public boolean removeSyncObject(SyncObject var1) {
+   public boolean removeSyncObject(SyncObject object) {
       return true;
    }
 
@@ -68,21 +68,21 @@ public class SyncItem implements SyncObject, SyncCollection, SyncConverter {
    }
 
    @Override
-   public SyncObject getSyncObject(int var1) {
-      return var1 == this.getUID() ? this : null;
+   public SyncObject getSyncObject(int uid) {
+      return uid == this.getUID() ? this : null;
    }
 
    @Override
-   public boolean isSyncObjectDirty(SyncObject var1) {
+   public boolean isSyncObjectDirty(SyncObject object) {
       return true;
    }
 
    @Override
-   public void setSyncObjectDirty(SyncObject var1) {
+   public void setSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public void clearSyncObjectDirty(SyncObject var1) {
+   public void clearSyncObjectDirty(SyncObject object) {
    }
 
    @Override

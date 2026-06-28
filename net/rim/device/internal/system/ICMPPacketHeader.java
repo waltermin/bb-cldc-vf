@@ -65,39 +65,39 @@ public final class ICMPPacketHeader implements RadioPacketHeader {
       return this._ttl;
    }
 
-   public final void setSourceAddress(byte[] var1) {
-      this._sourceAddress = IPv4ByteArrayToInt(var1);
+   public final void setSourceAddress(byte[] address) {
+      this._sourceAddress = IPv4ByteArrayToInt(address);
    }
 
-   public final void setDestinationAddress(byte[] var1) {
-      this._destinationAddress = IPv4ByteArrayToInt(var1);
+   public final void setDestinationAddress(byte[] address) {
+      this._destinationAddress = IPv4ByteArrayToInt(address);
    }
 
-   public final void setAccessPointNumber(int var1) {
+   public final void setAccessPointNumber(int accessPointNumber) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setType(int var1) {
-      this._type = (byte)var1;
+   public final void setType(int type) {
+      this._type = (byte)type;
    }
 
-   public final void setCode(int var1) {
-      this._code = (byte)var1;
+   public final void setCode(int code) {
+      this._code = (byte)code;
    }
 
-   public final void setChecksum(int var1) {
-      this._checksum = (short)var1;
+   public final void setChecksum(int checksum) {
+      this._checksum = (short)checksum;
    }
 
-   public final void setTTL(byte var1) {
+   public final void setTTL(byte ttl) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public static final byte[] IPv4IntToByteArray(int var0) {
-      return new byte[]{(byte)(var0 >>> 24 & 0xFF), (byte)(var0 >>> 16 & 0xFF), (byte)(var0 >>> 8 & 0xFF), (byte)(var0 & 0xFF)};
+   public static final byte[] IPv4IntToByteArray(int address) {
+      return new byte[]{(byte)(address >>> 24 & 0xFF), (byte)(address >>> 16 & 0xFF), (byte)(address >>> 8 & 0xFF), (byte)(address & 0xFF)};
    }
 
-   public static final int IPv4ByteArrayToInt(byte[] var0) {
+   public static final int IPv4ByteArrayToInt(byte[] address) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

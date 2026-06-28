@@ -10,91 +10,91 @@ class MIDPLayoutManager extends FlowFieldManager {
       super(1153220571769602048L);
    }
 
-   private int layoutChildren(int var1, int var2, int var3) {
-      int var4 = this.getFieldCount();
-      int var5 = 0;
-      int var6 = 0;
-      byte var7 = 0;
-      boolean var8 = false;
+   private int layoutChildren(int width, int maxHeight, int heightUsed) {
+      int numFields = this.getFieldCount();
+      int widthUsed = 0;
+      int maxHeightOfRow = 0;
+      int startField = 0;
+      boolean forceNextItemToNewLine = false;
 
-      for (int var9 = var7; var9 < var4; var9++) {
-         Field var10 = this.getField(var9);
-         Item var11 = (Item)var10.getCookie();
-         int var12 = var11.getLayout();
-         int var13 = var11.getPreferredWidth();
-         boolean var14 = var13 > var1 - var5 && var5 != 0;
-         if (var14 && (var12 & 1024) != 0) {
-            int var15 = var11.getMinimumWidth();
-            if (var15 <= var1 - var5) {
-               var14 = false;
+      for (int i = startField; i < numFields; i++) {
+         Field field = this.getField(i);
+         Item peerItem = (Item)field.getCookie();
+         int peerItemLayoutStyle = peerItem.getLayout();
+         int prefWidth = peerItem.getPreferredWidth();
+         boolean tooWideForCurrentRow = prefWidth > width - widthUsed && widthUsed != 0;
+         if (tooWideForCurrentRow && (peerItemLayoutStyle & 1024) != 0) {
+            int minWidth = peerItem.getMinimumWidth();
+            if (minWidth <= width - widthUsed) {
+               tooWideForCurrentRow = false;
             }
          }
 
-         if (!var14 && (var11.getLayout() & 256) == 0 && !var8) {
-            this.layoutChild(var10, var1 - var5, var2 - var3);
-            var13 = var10.getWidth();
-            this.setPositionChild(var10, var5, var3);
-            var5 += var13;
-            int var22 = var10.getHeight();
-            if (var6 < var22) {
-               var6 = var22;
+         if (!tooWideForCurrentRow && (peerItem.getLayout() & 256) == 0 && !forceNextItemToNewLine) {
+            this.layoutChild(field, width - widthUsed, maxHeight - heightUsed);
+            prefWidth = field.getWidth();
+            this.setPositionChild(field, widthUsed, heightUsed);
+            widthUsed += prefWidth;
+            int temp = field.getHeight();
+            if (maxHeightOfRow < temp) {
+               maxHeightOfRow = temp;
             }
 
-            if (var5 >= var1) {
-               var5 = 0;
-               var3 += var6;
-               var6 = 0;
+            if (widthUsed >= width) {
+               widthUsed = 0;
+               heightUsed += maxHeightOfRow;
+               maxHeightOfRow = 0;
             }
          } else {
-            byte var16 = 0;
-            var3 += var6;
-            this.layoutChild(var10, var1 - var16, var2 - var3);
-            var13 = var10.getWidth();
-            this.setPositionChild(var10, var16, var3);
-            var6 = var10.getHeight();
-            var5 = var16 + var13;
-            if (var5 >= var1) {
-               var5 = 0;
-               var3 += var6;
-               var6 = 0;
+            int var16 = 0;
+            heightUsed += maxHeightOfRow;
+            this.layoutChild(field, width - var16, maxHeight - heightUsed);
+            prefWidth = field.getWidth();
+            this.setPositionChild(field, var16, heightUsed);
+            maxHeightOfRow = field.getHeight();
+            widthUsed = var16 + prefWidth;
+            if (widthUsed >= width) {
+               widthUsed = 0;
+               heightUsed += maxHeightOfRow;
+               maxHeightOfRow = 0;
             }
          }
 
-         var8 = (var11.getLayout() & 512) != 0;
+         forceNextItemToNewLine = (peerItem.getLayout() & 512) != 0;
       }
 
       if ((this.getStyle() & 12884901888L) != 0) {
-         int var17 = var1 - var5 >> 1;
+         int dx = width - widthUsed >> 1;
 
-         for (int var18 = var7; var18 < var4; var18++) {
-            Field var19 = this.getField(var18);
-            this.setPositionChild(var19, var19.getLeft() + var17, var19.getTop());
+         for (int i2 = startField; i2 < numFields; i2++) {
+            Field f = this.getField(i2);
+            this.setPositionChild(f, f.getLeft() + dx, f.getTop());
          }
       }
 
-      return var3 + var6;
+      return heightUsed + maxHeightOfRow;
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      int var3 = var2;
+   protected void sublayout(int width, int height) {
+      int heightAvail = height;
       if ((this.getStyle() & 281474976710656L) > 0) {
-         var3 = 1073741823;
+         heightAvail = 1073741823;
       }
 
-      int var4 = this.layoutChildren(var1, var3, 0);
+      int virtualHeight = this.layoutChildren(width, heightAvail, 0);
       if ((this.getStyle() & 2305843009213693952L) > 0) {
-         this.setExtent(var1, var2);
+         this.setExtent(width, height);
       } else {
-         this.setExtent(var1, Math.min(var2, var4));
+         this.setExtent(width, Math.min(height, virtualHeight));
       }
 
-      this.setVirtualExtent(var1, var4);
+      this.setVirtualExtent(width, virtualHeight);
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
-      Field var5 = this.getFieldWithFocus();
-      return var5 != null && var5.getCookie() instanceof CustomItem ? false : super.navigationMovement(var1, var2, var3, var4);
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
+      Field fieldWithFocus = this.getFieldWithFocus();
+      return fieldWithFocus != null && fieldWithFocus.getCookie() instanceof CustomItem ? false : super.navigationMovement(dx, dy, status, time);
    }
 }

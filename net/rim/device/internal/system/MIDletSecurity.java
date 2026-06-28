@@ -27,7 +27,7 @@ public final class MIDletSecurity {
    private MIDletSecurity() {
    }
 
-   private static final void setAllConnectors(byte[] var0, byte var1) {
+   private static final void setAllConnectors(byte[] policy, byte setting) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -35,26 +35,26 @@ public final class MIDletSecurity {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private static final void fillInUntrustedPolicy(byte[] var0) {
+   private static final void fillInUntrustedPolicy(byte[] policy) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    private static final int setDomainCache() {
-      byte[] var0 = new byte[40];
-      int var1 = MIDletSecurityCrypto.verifyMIDletTrailer(var0);
-      switch (var1) {
+      byte[] policy = new byte[40];
+      int status = MIDletSecurityCrypto.verifyMIDletTrailer(policy);
+      switch (status) {
          case -1:
          case 2:
-            Arrays.fill(var0, (byte)0);
+            Arrays.fill(policy, (byte)0);
             break;
          case 0:
-            byte[] var2 = new byte[40];
+            byte[] cleansedPolicy = new byte[40];
 
-            for (int var3 = 0; var3 < 40; var3++) {
-               byte var4 = 1;
-               if (var3 < var0.length) {
-                  byte var5 = var0[var3];
-                  switch (var5) {
+            for (int i = 0; i < 40; i++) {
+               byte setting = 1;
+               if (i < policy.length) {
+                  byte policySetting = policy[i];
+                  switch (policySetting) {
                      case -1:
                      case 5:
                         break;
@@ -65,44 +65,44 @@ public final class MIDletSecurity {
                      case 4:
                      case 6:
                      default:
-                        var4 = var5;
+                        setting = policySetting;
                   }
                }
 
-               var2[var3] = var4;
+               cleansedPolicy[i] = setting;
             }
 
-            var0 = var2;
+            policy = cleansedPolicy;
             break;
          case 1:
          default:
-            fillInUntrustedPolicy(var0);
+            fillInUntrustedPolicy(policy);
             break;
          case 3:
-            Arrays.fill(var0, (byte)6);
+            Arrays.fill(policy, (byte)6);
       }
 
-      _domainCache = var0;
-      return var1;
+      _domainCache = policy;
+      return status;
    }
 
-   private static final int getDomainSetting(int var0) {
+   private static final int getDomainSetting(int perm) {
       if (_domainCache == null) {
          setDomainCache();
       }
 
-      return var0 >= 0 && var0 < _domainCache.length ? _domainCache[var0] : 0;
+      return perm >= 0 && perm < _domainCache.length ? _domainCache[perm] : 0;
    }
 
    private static final byte[] fetchStoredSettings() {
-      byte[] var0 = MIDletSecurityCrypto.fetchStoredSettings();
-      if (var0 == null) {
-         var0 = new byte[40];
-         Arrays.fill(var0, (byte)5);
+      byte[] installed = MIDletSecurityCrypto.fetchStoredSettings();
+      if (installed == null) {
+         installed = new byte[40];
+         Arrays.fill(installed, (byte)5);
       }
 
-      _installedCache = var0;
-      return var0;
+      _installedCache = installed;
+      return installed;
    }
 
    private static final void updateStoredSettings() {
@@ -111,30 +111,39 @@ public final class MIDletSecurity {
 
    private static final synchronized byte[] getSessionCache() {
       if (_sessionCache == null) {
-         byte[] var0 = fetchStoredSettings();
-         _sessionCache = Arrays.copy(var0);
+         byte[] installed = fetchStoredSettings();
+         _sessionCache = Arrays.copy(installed);
       }
 
       return _sessionCache;
    }
 
-   private static final int askUser(int var0, int var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int askUser(int perm, int setting, String target) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void updateForGroup(byte[] var0, int var1, int var2) {
-      byte var3 = MIDletSecurityConstants.MIDletPermissionGroups[var1];
+   private static final void updateForGroup(byte[] settings, int perm, int groupSetting) {
+      int groupBeingSet = MIDletSecurityConstants.MIDletPermissionGroups[perm];
 
-      for (int var4 = var0.length - 1; var4 >= 0; var4--) {
-         byte var5 = MIDletSecurityConstants.MIDletPermissionGroups[var4];
-         if (var5 == var3) {
-            var0[var4] = (byte)var2;
+      for (int i = settings.length - 1; i >= 0; i--) {
+         int group = MIDletSecurityConstants.MIDletPermissionGroups[i];
+         if (group == groupBeingSet) {
+            settings[i] = (byte)groupSetting;
          }
       }
    }
 
    public static final void checkMIDletCreation() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (getSessionCache()) {
+         int status = setDomainCache();
+         if (status == 2) {
+            throw new Object();
+         }
+      }
+
+      if (!MIDletSecurityCrypto.checkDRMTrailer()) {
+         throw new Object();
+      }
    }
 
    public static final boolean checkUntrustedMIDlet() {
@@ -148,17 +157,17 @@ public final class MIDletSecurity {
       return false;
    }
 
-   public static final void checkPermission(int var0) {
-      checkPermission(var0, true, true, false, null);
+   public static final void checkPermission(int perm) {
+      checkPermission(perm, true, true, false, null);
    }
 
-   public static final void checkPermission(int var0, String var1) {
-      checkPermission(var0, true, true, false, var1);
+   public static final void checkPermission(int perm, String target) {
+      checkPermission(perm, true, true, false, target);
    }
 
-   public static final int checkPermissionNoPrompt(int var0) {
-      int var1 = checkPermission(var0, false, false, false, null);
-      switch (var1) {
+   public static final int checkPermissionNoPrompt(int perm) {
+      int setting = checkPermission(perm, false, false, false, null);
+      switch (setting) {
          case 0:
             return 0;
          case 6:
@@ -168,114 +177,182 @@ public final class MIDletSecurity {
       }
    }
 
-   public static final int checkRealPermissionNoPrompt(int var0) {
-      return checkPermission(var0, false, false, true, null);
+   public static final int checkRealPermissionNoPrompt(int perm) {
+      return checkPermission(perm, false, false, true, null);
    }
 
-   private static final int checkPermission(int var0, boolean var1, boolean var2, boolean var3, String var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int checkPermission(int perm, boolean askUser, boolean throwExc, boolean realValue, String target) {
+      int setting = 1;
+      byte[] sessionSettings = getSessionCache();
+      synchronized (sessionSettings) {
+         if (perm >= 0 && perm < sessionSettings.length) {
+            int cacheSetting = sessionSettings[perm];
+            if (cacheSetting == 5) {
+               int domainSetting = getDomainSetting(perm);
+               switch (domainSetting) {
+                  case 0:
+                  case 6:
+                     sessionSettings[perm] = (byte)domainSetting;
+                  default:
+                     if (domainSetting != 5) {
+                        setting = domainSetting;
+                     }
+               }
+            } else {
+               setting = cacheSetting;
+            }
+         } else {
+            setting = 0;
+         }
+
+         if (!askUser && realValue) {
+            return setting;
+         }
+
+         switch (setting) {
+            case 0:
+            case 5:
+               setting = 0;
+               break;
+            case 1:
+            case 2:
+            default:
+               if (askUser) {
+                  setting = askUser(perm, setting, target);
+               } else {
+                  setting = 5;
+               }
+               break;
+            case 3:
+               if (askUser) {
+                  setting = askUser(perm, setting, target);
+                  updateForGroup(sessionSettings, perm, setting);
+               } else {
+                  setting = 5;
+               }
+               break;
+            case 4:
+               if (askUser) {
+                  setting = askUser(perm, setting, target);
+                  updateForGroup(sessionSettings, perm, setting);
+                  if (setting == 6) {
+                     updateForGroup(_installedCache, perm, setting);
+                     updateStoredSettings();
+                  }
+               } else {
+                  setting = 5;
+               }
+            case 6:
+         }
+      }
+
+      if (setting == 0 && throwExc) {
+         throw new Object(MIDletSecurityConstants.MIDletPermissions[perm]);
+      } else {
+         return setting;
+      }
    }
 
-   public static final void setPermission(int var0, int var1, boolean var2) {
-      byte[] var3 = getSessionCache();
-      switch (var1) {
+   public static final void setPermission(int perm, int setting, boolean allowed) {
+      byte[] sessionSettings = getSessionCache();
+      switch (setting) {
          case 3:
          default:
-            updateForGroup(var3, var0, var2 ? 6 : 0);
+            updateForGroup(sessionSettings, perm, allowed ? 6 : 0);
             return;
          case 4:
-            updateForGroup(var3, var0, var2 ? 6 : 0);
-            if (var1 == 6) {
-               updateForGroup(_installedCache, var0, var2 ? 6 : 0);
+            updateForGroup(sessionSettings, perm, allowed ? 6 : 0);
+            if (setting == 6) {
+               updateForGroup(_installedCache, perm, allowed ? 6 : 0);
                updateStoredSettings();
             }
          case 2:
       }
    }
 
-   public static final int findPermission(String var0) {
-      String[] var1 = MIDletSecurityConstants.MIDletPermissions;
+   public static final int findPermission(String str) {
+      String[] strPerms = MIDletSecurityConstants.MIDletPermissions;
 
-      for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-         if (var0.equals(var1[var2])) {
-            return var2;
+      for (int i = strPerms.length - 1; i >= 0; i--) {
+         if (str.equals(strPerms[i])) {
+            return i;
          }
       }
 
       return 40;
    }
 
-   public static final int checkSymbolicPermission(String var0) {
-      int var1 = findPermission(var0);
-      return var1 >= 0 && var1 < 40 ? checkPermissionNoPrompt(var1) : 0;
+   public static final int checkSymbolicPermission(String str) {
+      int perm = findPermission(str);
+      return perm >= 0 && perm < 40 ? checkPermissionNoPrompt(perm) : 0;
    }
 
-   public static final String getMIDletCertificateTag(int var0, int var1) {
+   public static final String getMIDletCertificateTag(int n, int m) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final int checkJADCertChain(String[] var0) {
-      return MIDletSecurityCrypto.checkJADCertChain(var0);
+   public static final int checkJADCertChain(String[] certs) {
+      return MIDletSecurityCrypto.checkJADCertChain(certs);
    }
 
    public static final Digest getMIDletSignatureDigest() {
       return MIDletSecurityCrypto.getMIDletSignatureDigest();
    }
 
-   public static final int checkMIDletSignature(Digest var0, String var1, String[] var2, byte[] var3, byte[] var4) {
-      return MIDletSecurityCrypto.checkMIDletSignature(var0, var1, var2, var3, var4);
+   public static final int checkMIDletSignature(Digest digest, String rsaSHA1Sig, String[] signingCerts, byte[] refTrailerBytes, byte[] signerCertEncoding) {
+      return MIDletSecurityCrypto.checkMIDletSignature(digest, rsaSHA1Sig, signingCerts, refTrailerBytes, signerCertEncoding);
    }
 
-   public static final byte[] genMIDletTrailer(byte[] var0, byte[] var1) {
-      return MIDletSecurityCrypto.signMIDletTrailer(var0, var1);
+   public static final byte[] genMIDletTrailer(byte[] codfile, byte[] trailerBytes) {
+      return MIDletSecurityCrypto.signMIDletTrailer(codfile, trailerBytes);
    }
 
-   private static final boolean checkValidSettings(byte[] var0, int var1, int var2) {
-      if (var2 != 40) {
+   private static final boolean checkValidSettings(byte[] policy, int start, int len) {
+      if (len != 40) {
          return false;
       }
 
-      while (var2 > 0) {
-         int var3 = var0[var1] & 255;
-         if (var3 < 0 || var3 >= 7) {
+      while (len > 0) {
+         int perm = policy[start] & 255;
+         if (perm < 0 || perm >= 7) {
             return false;
          }
 
-         var1++;
-         var2--;
+         start++;
+         len--;
       }
 
       return true;
    }
 
-   public static final boolean checkDomainPolicy(byte[] var0) {
-      int var1 = var0.length;
-      return var1 != 61 ? false : checkValidSettings(var0, 21, var0[20] & 255);
+   public static final boolean checkDomainPolicy(byte[] policy) {
+      int policyLen = policy.length;
+      return policyLen != 61 ? false : checkValidSettings(policy, 21, policy[20] & 255);
    }
 
-   public static final void createTrailerFromNvStoreDomain(int var0, byte[] var1, byte[] var2) {
-      int var3 = var1[20] & 255;
-      if ((var3 & 3) != 0) {
+   public static final void createTrailerFromNvStoreDomain(int field, byte[] policy, byte[] refTrailer) {
+      int policyLen = policy[20] & 255;
+      if ((policyLen & 3) != 0) {
          throw new Object();
       }
 
-      Array.resize(var2, var3 + 4 + 20);
-      System.arraycopy(var1, 0, var2, 0, 20);
-      var2[20] = (byte)var0;
-      var2[21] = var1[20];
-      var2[22] = 0;
-      var2[23] = 0;
-      System.arraycopy(var1, 21, var2, 24, var3);
+      Array.resize(refTrailer, policyLen + 4 + 20);
+      System.arraycopy(policy, 0, refTrailer, 0, 20);
+      refTrailer[20] = (byte)field;
+      refTrailer[21] = policy[20];
+      refTrailer[22] = 0;
+      refTrailer[23] = 0;
+      System.arraycopy(policy, 21, refTrailer, 24, policyLen);
    }
 
-   public static final void copyPolicyFromMIDletTrailer(byte[] var0, byte[] var1) {
-      int var2 = var0[21] & 255;
-      System.arraycopy(var0, 24, var1, 0, Math.min(var2, var1.length));
+   public static final void copyPolicyFromMIDletTrailer(byte[] trailer, byte[] policy) {
+      int policyLen = trailer[21] & 255;
+      System.arraycopy(trailer, 24, policy, 0, Math.min(policyLen, policy.length));
    }
 
-   private static final int calcBaseDomain(byte[] var0) {
-      byte var1 = 0;
-      switch (var0[20]) {
+   private static final int calcBaseDomain(byte[] domainPolicy) {
+      int base = 0;
+      switch (domainPolicy[20]) {
          case 25:
          case 26:
          case 27:
@@ -284,76 +361,76 @@ public final class MIDletSecurity {
          case 30:
          case 33:
          default:
-            var1 = 24;
+            base = 24;
          case 24:
          case 31:
          case 32:
-            return var1;
+            return base;
       }
    }
 
-   public static final byte[] updateDesiredPolicy(byte[] var0, byte[] var1) {
-      int var2 = var0.length;
-      if (var2 > 40) {
+   public static final byte[] updateDesiredPolicy(byte[] desiredPolicy, byte[] domainPolicy) {
+      int desiredLen = desiredPolicy.length;
+      if (desiredLen > 40) {
          return null;
       }
 
-      int var3 = calcBaseDomain(var1);
-      if (var3 == 0) {
+      int baseDomain = calcBaseDomain(domainPolicy);
+      if (baseDomain == 0) {
          return null;
       }
 
-      int var4 = var1.length;
-      if (var4 > var3 && var4 <= var3 + 40) {
-         byte[] var5 = new byte[var3 + 40];
-         Arrays.fill(var5, (byte)0);
-         System.arraycopy(var1, 0, var5, 0, var3);
+      int domainLen = domainPolicy.length;
+      if (domainLen > baseDomain && domainLen <= baseDomain + 40) {
+         byte[] intersection = new byte[baseDomain + 40];
+         Arrays.fill(intersection, (byte)0);
+         System.arraycopy(domainPolicy, 0, intersection, 0, baseDomain);
 
-         for (int var6 = 0; var6 < 40; var6++) {
-            byte var7 = var6 < var2 ? var0[var6] : 0;
-            if (var7 != 0) {
-               int var8 = var6 + var3;
-               byte var9 = var8 < var4 ? var1[var8] : 0;
-               byte var10;
-               switch (var9) {
+         for (int i = 0; i < 40; i++) {
+            byte midletPerm = i < desiredLen ? desiredPolicy[i] : 0;
+            if (midletPerm != 0) {
+               int domainIndex = i + baseDomain;
+               byte domainPerm = domainIndex < domainLen ? domainPolicy[domainIndex] : 0;
+               byte desiredPerm;
+               switch (domainPerm) {
                   case 0:
-                     if (var7 != 5) {
-                        return new byte[]{(byte)var6};
+                     if (midletPerm != 5) {
+                        return new byte[]{(byte)i};
                      }
 
-                     var10 = 0;
+                     desiredPerm = 0;
                      break;
                   default:
-                     var10 = var9;
+                     desiredPerm = domainPerm;
                }
 
-               var5[var3 + var6] = var10;
+               intersection[baseDomain + i] = desiredPerm;
             }
          }
 
-         return var5;
+         return intersection;
       } else {
          return null;
       }
    }
 
-   private static final byte[] cleansePolicy(byte[] var0) {
-      int var1 = var0.length;
-      if (var1 > 0 && var1 <= 40 && (var1 & 3) == 0) {
-         if (var1 < 40) {
-            byte[] var2 = new byte[40];
-            Arrays.fill(var2, (byte)0);
-            System.arraycopy(var0, 0, var2, 0, var1);
-            var0 = var2;
+   private static final byte[] cleansePolicy(byte[] policy) {
+      int policyLen = policy.length;
+      if (policyLen > 0 && policyLen <= 40 && (policyLen & 3) == 0) {
+         if (policyLen < 40) {
+            byte[] cleansedPolicy = new byte[40];
+            Arrays.fill(cleansedPolicy, (byte)0);
+            System.arraycopy(policy, 0, cleansedPolicy, 0, policyLen);
+            policy = cleansedPolicy;
          }
 
-         return var0;
+         return policy;
       } else {
          throw new Object();
       }
    }
 
-   public static final void installRootDomain(byte[] var0, byte[] var1) {
+   public static final void installRootDomain(byte[] sha1, byte[] policy) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -362,25 +439,25 @@ public final class MIDletSecurity {
    }
 
    public static final byte[] createPolicy() {
-      byte[] var0 = new byte[40];
-      Arrays.fill(var0, (byte)0);
-      var0[0] = 6;
-      return var0;
+      byte[] policy = new byte[40];
+      Arrays.fill(policy, (byte)0);
+      policy[0] = 6;
+      return policy;
    }
 
-   public static final int adjustPolicy(byte[] var0, String var1, boolean var2) {
-      int var3 = findPermission(var1);
-      if (var3 != 40) {
-         if (var2) {
-            if (var0[var3] != 6) {
-               var0[var3] = 5;
-               return var3;
+   public static final int adjustPolicy(byte[] policy, String permName, boolean optPerm) {
+      int perm = findPermission(permName);
+      if (perm != 40) {
+         if (optPerm) {
+            if (policy[perm] != 6) {
+               policy[perm] = 5;
+               return perm;
             }
          } else {
-            var0[var3] = 6;
+            policy[perm] = 6;
          }
       }
 
-      return var3;
+      return perm;
    }
 }

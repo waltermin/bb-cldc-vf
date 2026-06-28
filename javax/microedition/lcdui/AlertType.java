@@ -11,17 +11,17 @@ public class AlertType {
    protected AlertType() {
    }
 
-   public boolean playSound(Display var1) {
-      var1.isColor();
+   public boolean playSound(Display display) {
+      display.isColor();
       this.playSound();
       return true;
    }
 
    void playSound() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void logit(Exception var1) {
-      System.err.println(var1.toString());
+   private void logit(Exception e) {
+      System.err.println(e.toString());
    }
 }

@@ -16,13 +16,13 @@ public class MediaOptionsRegistry extends OptionsRegistry {
    public static final long TURN_OFF_AUTO_BACKLIGHT;
 
    public static MediaOptionsRegistry getInstance() {
-      MediaOptionsRegistry var0 = (MediaOptionsRegistry)ApplicationRegistry.getApplicationRegistry().get(-6531603410989162255L);
-      if (var0 == null) {
-         var0 = new MediaOptionsRegistry();
-         ApplicationRegistry.getApplicationRegistry().replace(-6531603410989162255L, var0);
+      MediaOptionsRegistry instance = (MediaOptionsRegistry)ApplicationRegistry.getApplicationRegistry().get(-6531603410989162255L);
+      if (instance == null) {
+         instance = new MediaOptionsRegistry();
+         ApplicationRegistry.getApplicationRegistry().replace(-6531603410989162255L, instance);
       }
 
-      return var0;
+      return instance;
    }
 
    private MediaOptionsRegistry() {

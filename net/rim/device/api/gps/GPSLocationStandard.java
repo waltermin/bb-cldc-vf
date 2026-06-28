@@ -21,8 +21,8 @@ public class GPSLocationStandard extends GPSLocation {
       return this._utcTime;
    }
 
-   public void setUTCTime(long var1) {
-      this._utcTime = var1;
+   public void setUTCTime(long time) {
+      this._utcTime = time;
    }
 
    public double getLatitude() {
@@ -30,34 +30,34 @@ public class GPSLocationStandard extends GPSLocation {
          return (double)9221120237041090560L;
       }
 
-      int var1 = this._latitude;
-      int var2 = (var1 & -2147483648) == 0 ? 1 : -1;
-      var1 &= Integer.MAX_VALUE;
-      return var2 * var1 / 4696837146684686336L;
+      int latitude = this._latitude;
+      int sign = (latitude & -2147483648) == 0 ? 1 : -1;
+      latitude &= Integer.MAX_VALUE;
+      return sign * latitude / 4696837146684686336L;
    }
 
    public String getLatitudeString() {
       return getLatitudeString(this.getLatitude());
    }
 
-   public static String getLatitudeString(double var0) {
-      String var2 = null;
-      int var3 = var0 >= 0L ? 78 : 83;
-      var0 = Math.abs(var0);
-      double var4 = var0;
-      int var6 = (int)var0 & 65535;
-      var4 = (var4 - var6) * 4633641066610819072L;
-      Object var7 = new Object();
-      ((StringBuffer)var7).append((char)var3).append(' ').append(var6).append('°');
-      int var8 = (int)var4;
-      double var9 = var4 - var8;
-      var8 = (int)(var9 * 4666723172467343360L);
-      var9 = var8 / 4666723172467343360L;
-      var4 = (int)var4 + var9;
-      ((StringBuffer)var7).append(' ').append(var4).append('\'');
-      var2 = ((StringBuffer)var7).toString();
-      var7 = null;
-      return var2;
+   public static String getLatitudeString(double latitude) {
+      String lat = null;
+      char dirCh = (char)(latitude >= 0L ? 78 : 83);
+      latitude = Math.abs(latitude);
+      double tempLat = latitude;
+      int degree = (int)latitude & 65535;
+      tempLat = (tempLat - degree) * 4633641066610819072L;
+      StringBuffer buf = (StringBuffer)(new Object());
+      buf.append(dirCh).append(' ').append(degree).append('°');
+      int temp = (int)tempLat;
+      double temp2 = tempLat - temp;
+      temp = (int)(temp2 * 4666723172467343360L);
+      temp2 = temp / 4666723172467343360L;
+      tempLat = (int)tempLat + temp2;
+      buf.append(' ').append(tempLat).append('\'');
+      lat = buf.toString();
+      buf = null;
+      return lat;
    }
 
    public double getLongitude() {
@@ -65,34 +65,34 @@ public class GPSLocationStandard extends GPSLocation {
          return (double)9221120237041090560L;
       }
 
-      int var1 = this._longitude;
-      int var2 = (var1 & -2147483648) == 0 ? 1 : -1;
-      var1 &= Integer.MAX_VALUE;
-      return var2 * var1 / 4696837146684686336L;
+      int longitude = this._longitude;
+      int sign = (longitude & -2147483648) == 0 ? 1 : -1;
+      longitude &= Integer.MAX_VALUE;
+      return sign * longitude / 4696837146684686336L;
    }
 
    public String getLongitudeString() {
       return getLongitudeString(this.getLongitude());
    }
 
-   public static String getLongitudeString(double var0) {
-      String var2 = null;
-      int var3 = var0 >= 0L ? 69 : 87;
-      var0 = Math.abs(var0);
-      double var4 = var0;
-      int var6 = (int)var0 & 65535;
-      var4 = (var4 - var6) * 4633641066610819072L;
-      Object var7 = new Object();
-      ((StringBuffer)var7).append((char)var3).append(' ').append(var6).append('°');
-      int var8 = (int)var4;
-      double var9 = var4 - var8;
-      var8 = (int)(var9 * 4666723172467343360L);
-      var9 = var8 / 4666723172467343360L;
-      var4 = (int)var4 + var9;
-      ((StringBuffer)var7).append(' ').append(var4).append('\'');
-      var2 = ((StringBuffer)var7).toString();
-      var7 = null;
-      return var2;
+   public static String getLongitudeString(double longitude) {
+      String lon = null;
+      char dirCh = (char)(longitude >= 0L ? 69 : 87);
+      longitude = Math.abs(longitude);
+      double tempLong = longitude;
+      int degree = (int)longitude & 65535;
+      tempLong = (tempLong - degree) * 4633641066610819072L;
+      StringBuffer buf = (StringBuffer)(new Object());
+      buf.append(dirCh).append(' ').append(degree).append('°');
+      int temp = (int)tempLong;
+      double temp2 = tempLong - temp;
+      temp = (int)(temp2 * 4666723172467343360L);
+      temp2 = temp / 4666723172467343360L;
+      tempLong = (int)tempLong + temp2;
+      buf.append(' ').append(tempLong).append('\'');
+      lon = buf.toString();
+      buf = null;
+      return lon;
    }
 
    public int getTimeToFirstFix() {

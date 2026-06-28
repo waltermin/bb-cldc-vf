@@ -13,20 +13,20 @@ public class SimpleOKCancelInputDialog extends SimpleInputDialog implements Fiel
    private ButtonField _cancelButton;
    private HorizontalFieldManager _buttonManager;
 
-   public SimpleOKCancelInputDialog(int var1, String var2) {
-      this(var1, var2, 0, 1000000, 0);
+   public SimpleOKCancelInputDialog(int type, String prompt) {
+      this(type, prompt, 0, 1000000, 0);
    }
 
-   public SimpleOKCancelInputDialog(int var1, String var2, int var3, int var4, long var5) {
-      super(var1, var2, var3, var4, var5);
+   public SimpleOKCancelInputDialog(int type, String prompt, int minLength, int maxLength, long style) {
+      super(type, prompt, minLength, maxLength, style);
       this._okButton.setChangeListener(this);
       this._cancelButton = (ButtonField)(new Object(CommonResource.getString(10005), 65536));
       this._cancelButton.setChangeListener(this);
       this._buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
       this._buttonManager.add(this._okButton);
       this._buttonManager.add(this._cancelButton);
-      Object var7 = this.getDelegate();
-      ((DialogFieldManager)var7).addCustomField(this._buttonManager);
+      DialogFieldManager dfm = (DialogFieldManager)this.getDelegate();
+      dfm.addCustomField(this._buttonManager);
       this.setCancelAllowed(true);
    }
 
@@ -35,37 +35,37 @@ public class SimpleOKCancelInputDialog extends SimpleInputDialog implements Fiel
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 == this._okButton) {
+   public void fieldChanged(Field field, int context) {
+      if (field == this._okButton) {
          this.accept();
       } else {
-         if (var1 == this._cancelButton) {
+         if (field == this._cancelButton) {
             this.cancel();
          }
       }
    }
 
    @Override
-   public boolean navigationClick(int var1, int var2) {
-      Field var3 = this.getDelegate().getLeafFieldWithFocus();
-      return var3 == this._cancelButton ? this.cancel() : super.navigationClick(var1, var2);
+   public boolean navigationClick(int status, int time) {
+      Field field = this.getDelegate().getLeafFieldWithFocus();
+      return field == this._cancelButton ? this.cancel() : super.navigationClick(status, time);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == '\n') {
-         Field var4 = this.getDelegate().getLeafFieldWithFocus();
-         if (var4 == this._cancelButton) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == '\n') {
+         Field field = this.getDelegate().getLeafFieldWithFocus();
+         if (field == this._cancelButton) {
             return this.cancel();
          }
       }
 
-      return super.keyChar(var1, var2, var3);
+      return super.keyChar(key, status, time);
    }
 
    @Override
-   public void setType(int var1) {
-      super.setType(var1);
+   public void setType(int type) {
+      super.setType(type);
       if (this._buttonManager != null) {
          this.delete(this._buttonManager);
          this.add(this._buttonManager);

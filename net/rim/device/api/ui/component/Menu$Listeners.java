@@ -6,15 +6,15 @@ import net.rim.device.api.ui.ScreenUiEngineAttachedListener;
 class Menu$Listeners implements ScreenUiEngineAttachedListener {
    private final Menu this$0;
 
-   Menu$Listeners(Menu var1) {
-      this.this$0 = var1;
+   Menu$Listeners(Menu _1) {
+      this.this$0 = _1;
    }
 
    @Override
-   public void onScreenUiEngineAttached(Screen var1, boolean var2) {
-      if (!var2) {
+   public void onScreenUiEngineAttached(Screen screen, boolean attached) {
+      if (!attached) {
          this.this$0.close();
-         var1.removeScreenUiEngineAttachedListener(this);
+         screen.removeScreenUiEngineAttachedListener(this);
       }
    }
 }

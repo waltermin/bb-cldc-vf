@@ -13,41 +13,41 @@ final class MIDletMain$MessageConnection_PushRegistryConnectionWrapper implement
       this._messageConnection.close();
    }
 
-   final void pushBack(Message var1) {
+   final void pushBack(Message m) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public final Message newMessage(String var1, String var2) {
-      return this._messageConnection.newMessage(var1, var2);
+   public final Message newMessage(String type, String address) {
+      return this._messageConnection.newMessage(type, address);
    }
 
    @Override
-   public final int numberOfSegments(Message var1) {
-      return this._messageConnection.numberOfSegments(var1);
+   public final int numberOfSegments(Message msg) {
+      return this._messageConnection.numberOfSegments(msg);
    }
 
    @Override
    public final Message receive() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void send(Message var1) {
-      this._messageConnection.send(var1);
+   public final void send(Message msg) {
+      this._messageConnection.send(msg);
    }
 
    @Override
-   public final void setMessageListener(MessageListener var1) {
-      this._messageConnection.setMessageListener(var1);
+   public final void setMessageListener(MessageListener l) {
+      this._messageConnection.setMessageListener(l);
    }
 
    @Override
-   public final Message newMessage(String var1) {
-      return this._messageConnection.newMessage(var1);
+   public final Message newMessage(String type) {
+      return this._messageConnection.newMessage(type);
    }
 
-   public MIDletMain$MessageConnection_PushRegistryConnectionWrapper(MessageConnection var1) {
-      this._messageConnection = var1;
+   public MIDletMain$MessageConnection_PushRegistryConnectionWrapper(MessageConnection impl) {
+      this._messageConnection = impl;
    }
 }

@@ -22,26 +22,26 @@ public class StringTokenizer implements Enumeration {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public String nextToken(String var1) {
-      this.delimiters = var1;
+   public String nextToken(String delim) {
+      this.delimiters = delim;
       this.delimsChanged = true;
       this.setMaxDelimChar();
       return this.nextToken();
    }
 
    public int countTokens() {
-      int var1 = 0;
+      int count = 0;
 
-      for (int var2 = this.currentPosition; var2 < this.maxPosition; var1++) {
-         var2 = this.skipDelimiters(var2);
-         if (var2 >= this.maxPosition) {
-            return var1;
+      for (int currpos = this.currentPosition; currpos < this.maxPosition; count++) {
+         currpos = this.skipDelimiters(currpos);
+         if (currpos >= this.maxPosition) {
+            return count;
          }
 
-         var2 = this.scanToken(var2);
+         currpos = this.scanToken(currpos);
       }
 
-      return var1;
+      return count;
    }
 
    @Override
@@ -54,11 +54,11 @@ public class StringTokenizer implements Enumeration {
       return this.hasMoreTokens();
    }
 
-   private int skipDelimiters(int var1) {
+   private int skipDelimiters(int startPos) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private int scanToken(int var1) {
+   private int scanToken(int startPos) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -66,19 +66,19 @@ public class StringTokenizer implements Enumeration {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public StringTokenizer(String var1, String var2, boolean var3) {
+   public StringTokenizer(String str, String delim, boolean returnDelims) {
    }
 
-   public StringTokenizer(String var1, char var2) {
+   public StringTokenizer(String str, char delim) {
    }
 
-   private void initializer(String var1, String var2, boolean var3) {
+   private void initializer(String aString, String delim, boolean returnDelims) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public StringTokenizer(String var1) {
+   public StringTokenizer(String str) {
    }
 
-   public StringTokenizer(String var1, String var2) {
+   public StringTokenizer(String str, String delim) {
    }
 }

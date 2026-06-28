@@ -28,20 +28,20 @@ public class DialogFieldManager extends Manager {
       this(0);
    }
 
-   public DialogFieldManager(long var1) {
-      this(var1, 299067162755072L);
+   public DialogFieldManager(long style) {
+      this(style, 299067162755072L);
    }
 
-   public DialogFieldManager(long var1, long var3) {
-      this(var1, var3, false);
+   public DialogFieldManager(long style, long messageStyle) {
+      this(style, messageStyle, false);
    }
 
-   public DialogFieldManager(long var1, long var3, boolean var5) {
-      super(var1);
-      this._vfmLabel = new VerticalFieldManager(var3);
+   public DialogFieldManager(long style, long messageStyle, boolean disableQuantization) {
+      super(style);
+      this._vfmLabel = new VerticalFieldManager(messageStyle);
       this._vfmLabel.setNonfocusableOverride(true);
       this.add(this._vfmLabel);
-      if (var5) {
+      if (disableQuantization) {
          this._fm = new DialogFieldManager$1(this, 299067162755072L);
       } else {
          this._fm = new VerticalFieldManager(299067162755072L);
@@ -58,15 +58,15 @@ public class DialogFieldManager extends Manager {
       this.add(this._focusNullField);
    }
 
-   public void addButtonField(ButtonField var1) {
+   public void addButtonField(ButtonField field) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void addCustomField(Field var1) {
+   public void addCustomField(Field f) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void deleteCustomField(Field var1) {
+   public void deleteCustomField(Field field) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -75,13 +75,13 @@ public class DialogFieldManager extends Manager {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      if (var1 < this._middleManager.getFieldCount()) {
-         return this.getCustomField(var1);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      if (index < this._middleManager.getFieldCount()) {
+         return this.getCustomField(index);
       } else {
-         return var1 < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
-            ? this.getButtonField(var1 - this._middleManager.getFieldCount())
-            : this._bottomManager.getField(var1 - this._buttonManager.getFieldCount() - this._middleManager.getFieldCount());
+         return index < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
+            ? this.getButtonField(index - this._middleManager.getFieldCount())
+            : this._bottomManager.getField(index - this._buttonManager.getFieldCount() - this._middleManager.getFieldCount());
       }
    }
 
@@ -91,26 +91,26 @@ public class DialogFieldManager extends Manager {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      if (var1 >= 0 && var1 <= this.getAccessibleSelectionCount()) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      if (index >= 0 && index <= this.getAccessibleSelectionCount()) {
          if (this._middleManager.getFieldWithFocusIndex() > 0) {
-            var1 += this._middleManager.getFieldWithFocusIndex();
+            index += this._middleManager.getFieldWithFocusIndex();
          }
 
          if (this._buttonManager.getFieldWithFocusIndex() > 0) {
-            var1 += this._buttonManager.getFieldWithFocusIndex();
+            index += this._buttonManager.getFieldWithFocusIndex();
          }
 
          if (this._bottomManager.getFieldWithFocusIndex() > 0) {
-            var1 += this._bottomManager.getFieldWithFocusIndex();
+            index += this._bottomManager.getFieldWithFocusIndex();
          }
 
-         if (var1 < this._middleManager.getFieldCount()) {
-            return this.getCustomField(var1);
+         if (index < this._middleManager.getFieldCount()) {
+            return this.getCustomField(index);
          } else {
-            return var1 < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
-               ? this.getButtonField(var1 - this._middleManager.getFieldCount())
-               : this._bottomManager.getField(var1 - this._buttonManager.getFieldCount() - this._middleManager.getFieldCount());
+            return index < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
+               ? this.getButtonField(index - this._middleManager.getFieldCount())
+               : this._bottomManager.getField(index - this._buttonManager.getFieldCount() - this._middleManager.getFieldCount());
          }
       } else {
          throw new Object();
@@ -122,16 +122,16 @@ public class DialogFieldManager extends Manager {
       return 1;
    }
 
-   public Field getButtonField(int var1) {
-      return this.getButtonManager().getField(var1);
+   public Field getButtonField(int index) {
+      return this.getButtonManager().getField(index);
    }
 
    public Manager getButtonManager() {
       return this._buttonManager;
    }
 
-   public Field getCustomField(int var1) {
-      return this.getCustomManager().getField(var1);
+   public Field getCustomField(int index) {
+      return this.getCustomManager().getField(index);
    }
 
    public Manager getCustomManager() {
@@ -158,76 +158,76 @@ public class DialogFieldManager extends Manager {
       return this._middleManager.getFieldCount() > 0;
    }
 
-   public void insertCustomField(Field var1, int var2) {
+   public void insertCustomField(Field f, int index) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      if (var1 < this._middleManager.getFieldCount()) {
-         return this._middleManager.getFieldWithFocusIndex() == var1;
+   public boolean isAccessibleChildSelected(int index) {
+      if (index < this._middleManager.getFieldCount()) {
+         return this._middleManager.getFieldWithFocusIndex() == index;
       } else {
-         return var1 < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
-            ? this._buttonManager.getFieldWithFocusIndex() == var1 - this._middleManager.getFieldCount()
-            : this._bottomManager.getFieldWithFocusIndex() == var1 - this._middleManager.getFieldCount() - this._buttonManager.getFieldCount();
+         return index < this._middleManager.getFieldCount() + this._buttonManager.getFieldCount()
+            ? this._buttonManager.getFieldWithFocusIndex() == index - this._middleManager.getFieldCount()
+            : this._bottomManager.getFieldWithFocusIndex() == index - this._middleManager.getFieldCount() - this._buttonManager.getFieldCount();
       }
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      int var4 = super.moveFocus(var1, var2, var3);
-      if (var4 != 0 && this._label != null) {
-         int var5 = this._vfmLabel.getVerticalScroll();
-         var5 += this._label.getFont().getHeight() * var1;
-         var5 = MathUtilities.clamp(0, var5, Math.max(0, this._vfmLabel.getVirtualHeight() - this._vfmLabel.getContentHeight()));
-         this._vfmLabel.setVerticalScroll(var5);
+   protected int moveFocus(int amount, int status, int time) {
+      int result = super.moveFocus(amount, status, time);
+      if (result != 0 && this._label != null) {
+         int scroll = this._vfmLabel.getVerticalScroll();
+         scroll += this._label.getFont().getHeight() * amount;
+         scroll = MathUtilities.clamp(0, scroll, Math.max(0, this._vfmLabel.getVirtualHeight() - this._vfmLabel.getContentHeight()));
+         this._vfmLabel.setVerticalScroll(scroll);
       }
 
-      return var4;
+      return result;
    }
 
-   public void setIcon(BitmapField var1) {
+   public void setIcon(BitmapField icon) {
       if (this._icon != null) {
-         int var2 = this._icon.getIndex();
+         int index = this._icon.getIndex();
          this._icon = null;
-         this.deleteRange(var2, 1);
+         this.deleteRange(index, 1);
       }
 
-      if (var1 != null) {
-         var1.setTag(TAG_ICON);
-         this._icon = var1;
-         this.add(var1);
+      if (icon != null) {
+         icon.setTag(TAG_ICON);
+         this._icon = icon;
+         this.add(icon);
       }
    }
 
-   public void setIcon(ImageField var1) {
+   public void setIcon(ImageField icon) {
       if (this._icon != null) {
-         int var2 = this._icon.getIndex();
+         int index = this._icon.getIndex();
          this._icon = null;
-         this.deleteRange(var2, 1);
+         this.deleteRange(index, 1);
       }
 
-      if (var1 != null) {
-         var1.setTag(TAG_ICON);
-         var1.setPreferredSize(Display.getWidth() >> 2, Display.getHeight() >> 2);
-         this._icon = var1;
-         this.add(var1);
+      if (icon != null) {
+         icon.setTag(TAG_ICON);
+         icon.setPreferredSize(Display.getWidth() >> 2, Display.getHeight() >> 2);
+         this._icon = icon;
+         this.add(icon);
       }
    }
 
-   public void setMessage(RichTextField var1) {
+   public void setMessage(RichTextField label) {
       if (this._label != null) {
          this._vfmLabel.delete(this._label);
       }
 
-      this._label = var1;
-      if (var1 != null) {
-         this._vfmLabel.add(var1);
+      this._label = label;
+      if (label != null) {
+         this._vfmLabel.add(label);
       }
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
+   protected void sublayout(int width, int height) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

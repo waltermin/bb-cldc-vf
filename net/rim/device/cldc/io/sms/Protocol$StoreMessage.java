@@ -8,24 +8,24 @@ final class Protocol$StoreMessage {
    private int _count;
    private String _key;
 
-   public Protocol$StoreMessage(int var1, String var2) {
+   public Protocol$StoreMessage(int totalSegments, String key) {
    }
 
-   public final Message add(DatagramBase var1) {
-      int var2 = 1;
-      Object var3 = var1.getProperty(SmsUtil.PROPERTY_SEGMENT_NUMBER);
-      if (var3 != null) {
-         var2 = var3;
-         this._segments[var2 - 1] = (byte[][])var1.getData();
+   public final Message add(DatagramBase d) {
+      int segment = 1;
+      Integer ref = (Integer)d.getProperty(SmsUtil.PROPERTY_SEGMENT_NUMBER);
+      if (ref != null) {
+         segment = ref;
+         this._segments[segment - 1] = (byte[][])d.getData();
          this._count++;
 
-         for (int var4 = 0; var4 < this._segments.length; var4++) {
-            if (this._segments[var4] == null) {
+         for (int i = 0; i < this._segments.length; i++) {
+            if (this._segments[i] == null) {
                return null;
             }
          }
 
-         return this.getMessage(var1);
+         return this.getMessage(d);
       } else {
          return null;
       }
@@ -35,23 +35,23 @@ final class Protocol$StoreMessage {
       return this._key;
    }
 
-   private final Message getMessage(DatagramBase var1) {
-      int var3 = 0;
+   private final Message getMessage(DatagramBase datagram) {
+      int totalSize = 0;
 
-      for (int var4 = 0; var4 < this._segments.length; var4++) {
-         var3 += this._segments[var4].length;
+      for (int i = 0; i < this._segments.length; i++) {
+         totalSize += this._segments[i].length;
       }
 
-      byte[] var2 = new byte[var3];
-      int var7 = 0;
+      byte[] array = new byte[totalSize];
+      int count = 0;
 
-      for (int var5 = 0; var5 < this._segments.length; var5++) {
-         byte[][] var6 = this._segments[var5];
-         System.arraycopy(var6, 0, var2, var7, var6.length);
-         var7 += var6.length;
+      for (int i = 0; i < this._segments.length; i++) {
+         byte[] b = (byte[])this._segments[i];
+         System.arraycopy(b, 0, array, count, b.length);
+         count += b.length;
       }
 
-      var1.setData(var2, 0, var2.length);
-      return Protocol.makeMessage(var1);
+      datagram.setData(array, 0, array.length);
+      return Protocol.makeMessage(datagram);
    }
 }

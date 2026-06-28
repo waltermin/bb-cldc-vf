@@ -14,6 +14,6 @@ public class IndexOutOfBoundsException extends RuntimeException {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public IndexOutOfBoundsException(String var1) {
+   public IndexOutOfBoundsException(String s) {
    }
 }

@@ -9,10 +9,10 @@ public class PortAssigner$PortAssignedConnectionString {
    private static String COMPARISON_STRING;
    private static String SLASH_SLASH;
 
-   public PortAssigner$PortAssignedConnectionString(String var1, int var2, boolean var3) {
-      this._portWasAssigned = var3;
-      this._port = var2;
-      this._connectionString = var1;
+   public PortAssigner$PortAssignedConnectionString(String connectionString, int port, boolean portWasAssigned) {
+      this._portWasAssigned = portWasAssigned;
+      this._port = port;
+      this._connectionString = connectionString;
    }
 
    public boolean getPortAssigned() {
@@ -23,7 +23,7 @@ public class PortAssigner$PortAssignedConnectionString {
       return this._localPortWasAssigned;
    }
 
-   public void setPortAssigned(boolean var1) {
+   public void setPortAssigned(boolean portAssigned) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -31,7 +31,7 @@ public class PortAssigner$PortAssignedConnectionString {
       return this._connectionString;
    }
 
-   public void setConnectionString(String var1) {
+   public void setConnectionString(String cs) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -39,7 +39,7 @@ public class PortAssigner$PortAssignedConnectionString {
       return this._port;
    }
 
-   public void setPort(int var1) {
+   public void setPort(int port) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -47,8 +47,8 @@ public class PortAssigner$PortAssignedConnectionString {
       return this._localPort;
    }
 
-   void setLocalPort(int var1) {
-      this._localPort = var1;
+   void setLocalPort(int localPort) {
+      this._localPort = localPort;
       this._localPortWasAssigned = true;
    }
 }

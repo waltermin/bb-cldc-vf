@@ -4,8 +4,8 @@ final class VectorEnumerator implements Enumeration {
    Vector vector;
    int count;
 
-   VectorEnumerator(Vector var1) {
-      this.vector = var1;
+   VectorEnumerator(Vector v) {
+      this.vector = v;
       this.count = 0;
    }
 
@@ -16,6 +16,6 @@ final class VectorEnumerator implements Enumeration {
 
    @Override
    public final Object nextElement() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

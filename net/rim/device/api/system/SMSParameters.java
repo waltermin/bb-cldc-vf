@@ -150,16 +150,16 @@ public class SMSParameters {
       return this._peerPlan;
    }
 
-   public void setPeerAddress(String var1) {
-      this._peerAddress = var1;
+   public void setPeerAddress(String peerAddress) {
+      this._peerAddress = peerAddress;
       this._peerType = 0;
       this._peerPlan = 1;
    }
 
-   public void setPeerAddress(String var1, int var2, int var3) {
-      this._peerAddress = var1;
-      this._peerType = var2;
-      this._peerPlan = var3;
+   public void setPeerAddress(String peerAddress, int peerType, int peerPlan) {
+      this._peerAddress = peerAddress;
+      this._peerType = peerType;
+      this._peerPlan = peerPlan;
    }
 
    public String getSCAddress() {
@@ -174,23 +174,23 @@ public class SMSParameters {
       return this._scPlan;
    }
 
-   public void setSCAddress(String var1) {
-      this._scAddress = var1;
+   public void setSCAddress(String scAddress) {
+      this._scAddress = scAddress;
       this._scType = 0;
       this._scPlan = 1;
    }
 
-   public void setSCAddress(String var1, int var2, int var3) {
-      this._scAddress = var1;
-      this._scType = var2;
-      this._scPlan = var3;
+   public void setSCAddress(String scAddress, int scType, int scPlan) {
+      this._scAddress = scAddress;
+      this._scType = scType;
+      this._scPlan = scPlan;
    }
 
    public int getProtocolMeaning() {
       return this._protocolMeaning;
    }
 
-   public void setProtocolMeaning(int var1) {
+   public void setProtocolMeaning(int protocolMeaning) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -198,7 +198,7 @@ public class SMSParameters {
       return this._protocolId;
    }
 
-   public void setProtocolId(int var1) {
+   public void setProtocolId(int protocolId) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -206,7 +206,7 @@ public class SMSParameters {
       return this._messageCoding;
    }
 
-   public void setMessageCoding(int var1) {
+   public void setMessageCoding(int messageCoding) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -214,7 +214,7 @@ public class SMSParameters {
       return this._messageClass;
    }
 
-   public void setMessageClass(int var1) {
+   public void setMessageClass(int messageClass) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -222,7 +222,7 @@ public class SMSParameters {
       return this._validityPeriod;
    }
 
-   public void setValidityPeriod(int var1) {
+   public void setValidityPeriod(int validityPeriod) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -230,7 +230,7 @@ public class SMSParameters {
       return this._privacy;
    }
 
-   public void setPrivacy(int var1) {
+   public void setPrivacy(int privacy) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -238,7 +238,7 @@ public class SMSParameters {
       return this._priority;
    }
 
-   public void setPriority(int var1) {
+   public void setPriority(int priority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -246,7 +246,7 @@ public class SMSParameters {
       return this._language;
    }
 
-   public void setLanguage(int var1) {
+   public void setLanguage(int language) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -262,23 +262,23 @@ public class SMSParameters {
       return this._callbackPlan;
    }
 
-   public void setCallbackAddress(String var1) {
-      this._callbackAddress = var1;
+   public void setCallbackAddress(String callbackAddress) {
+      this._callbackAddress = callbackAddress;
       this._callbackType = 0;
       this._callbackPlan = 1;
    }
 
-   public void setCallbackAddress(String var1, int var2, int var3) {
-      this._callbackAddress = var1;
-      this._callbackType = var2;
-      this._callbackPlan = var3;
+   public void setCallbackAddress(String callbackAddress, int callbackType, int callbackPlan) {
+      this._callbackAddress = callbackAddress;
+      this._callbackType = callbackType;
+      this._callbackPlan = callbackPlan;
    }
 
    public int getDeliveryPeriod() {
       return this._deliveryPeriod;
    }
 
-   public void setDeliveryPeriod(int var1) {
+   public void setDeliveryPeriod(int deliveryPeriod) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

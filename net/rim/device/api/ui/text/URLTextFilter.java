@@ -2,22 +2,22 @@ package net.rim.device.api.ui.text;
 
 public class URLTextFilter extends TextFilter {
    @Override
-   public char convert(char var1, int var2) {
-      if (var1 == ' ') {
-         if ((var2 & 2) == 0) {
+   public char convert(char character, int status) {
+      if (character == ' ') {
+         if ((status & 2) == 0) {
             return '.';
          }
 
-         var1 = '/';
+         character = '/';
       }
 
-      return var1;
+      return character;
    }
 
    @Override
-   public boolean validate(char var1) {
-      if (var1 > ' ' && 127 > var1) {
-         switch (var1) {
+   public boolean validate(char character) {
+      if (character > ' ' && 127 > character) {
+         switch (character) {
             case '"':
             case '<':
             case '>':

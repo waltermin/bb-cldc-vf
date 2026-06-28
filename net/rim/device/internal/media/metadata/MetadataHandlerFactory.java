@@ -11,16 +11,16 @@ public class MetadataHandlerFactory {
    MetadataHandlerFactory() {
    }
 
-   public static MetaDataControl extract(EncodedImage var0) {
+   public static MetaDataControl extract(EncodedImage image) {
       if (_instance == null) {
-         ApplicationRegistry var1 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (MetadataHandlerFactory)var1.waitFor(-3049172664916265609L);
+         ApplicationRegistry registry = ApplicationRegistry.getApplicationRegistry();
+         _instance = (MetadataHandlerFactory)registry.waitFor(-3049172664916265609L);
       }
 
-      return _instance.extractMetadata(var0);
+      return _instance.extractMetadata(image);
    }
 
-   protected MetaDataControl extractMetadata(EncodedImage var1) {
+   protected MetaDataControl extractMetadata(EncodedImage _1) {
       throw null;
    }
 }

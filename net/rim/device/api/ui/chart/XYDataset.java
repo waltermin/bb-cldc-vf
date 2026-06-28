@@ -9,12 +9,12 @@ public class XYDataset {
    private int[] _xBounds;
    private int[] _yBounds;
 
-   public void add(int var1, int var2) {
-      Arrays.add(this._x, var1);
-      Arrays.add(this._y, var2);
+   public void add(int x, int y) {
+      Arrays.add(this._x, x);
+      Arrays.add(this._y, y);
    }
 
-   public void add(XYPoint var1) {
+   public void add(XYPoint point) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -25,7 +25,7 @@ public class XYDataset {
       }
    }
 
-   private int[] calcBounds(int[] var1) {
+   private int[] calcBounds(int[] array) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
@@ -49,36 +49,36 @@ public class XYDataset {
       return this._yBounds[0];
    }
 
-   public void getPoint(int var1, XYPoint var2) {
-      var2.x = this._x[var1];
-      var2.y = this._y[var1];
+   public void getPoint(int index, XYPoint point) {
+      point.x = this._x[index];
+      point.y = this._y[index];
    }
 
    public int getSize() {
       return this._x.length;
    }
 
-   public int getX(int var1) {
-      return this._x[var1];
+   public int getX(int index) {
+      return this._x[index];
    }
 
    int[] getXArrayInternal() {
       return this._x;
    }
 
-   public int getY(int var1) {
-      return this._y[var1];
+   public int getY(int index) {
+      return this._y[index];
    }
 
    int[] getYArrayInternal() {
       return this._y;
    }
 
-   protected void insert(int var1, int var2, int var3) {
+   protected void insert(int index, int x, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   protected void insert(int var1, XYPoint var2) {
+   protected void insert(int index, XYPoint point) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -86,11 +86,11 @@ public class XYDataset {
       return this._x.length == 0;
    }
 
-   public void setPoint(int var1, int var2, int var3) {
+   public void setPoint(int index, int x, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setPoint(int var1, XYPoint var2) {
+   public void setPoint(int index, XYPoint point) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

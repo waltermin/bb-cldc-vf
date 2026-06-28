@@ -13,20 +13,20 @@ public class MessageFormat extends Format {
    private static final String[] dateModifierList;
    private static final int MAX_ARGUMENTS;
 
-   public MessageFormat(String var1) {
+   public MessageFormat(String pattern) {
    }
 
-   private MessageFormat(String var1, Locale var2) {
+   private MessageFormat(String pattern, Locale locale) {
    }
 
-   public void applyPattern(String var1) {
+   public void applyPattern(String newPattern) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static final int findKeyword(String var0, String[] var1) {
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         if (var0.equals(var1[var2])) {
-            return var2;
+   private static final int findKeyword(String s, String[] list) {
+      for (int i = 0; i < list.length; i++) {
+         if (s.equals(list[i])) {
+            return i;
          }
       }
 
@@ -34,31 +34,31 @@ public class MessageFormat extends Format {
    }
 
    @Override
-   public final StringBuffer format(Object var1, StringBuffer var2, FieldPosition var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final StringBuffer format(Object arguments, StringBuffer result, FieldPosition ignored) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static String format(String var0, Object[] var1) {
-      MessageFormat var2 = new MessageFormat(var0);
-      return var2.format(var1);
+   public static String format(String pattern, Object[] arguments) {
+      MessageFormat temp = new MessageFormat(pattern);
+      return temp.format(arguments);
    }
 
-   private StringBuffer format(Object[] var1, StringBuffer var2, FieldPosition var3, int var4) {
+   private StringBuffer format(Object[] arguments, StringBuffer result, FieldPosition status, int recursionProtection) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public int[] getFields() {
-      int[] var1 = new int[this.maxOffset + 1];
-      System.arraycopy(this.argumentNumbers, 0, var1, 0, this.maxOffset + 1);
-      return var1;
+      int[] arguments = new int[this.maxOffset + 1];
+      System.arraycopy(this.argumentNumbers, 0, arguments, 0, this.maxOffset + 1);
+      return arguments;
    }
 
    public Format[] getFormats() {
-      int var1 = this._formats.length;
-      Format[] var2 = new Format[var1];
-      System.arraycopy(this._formats, 0, var2, 0, var1);
-      return var2;
+      int length = this._formats.length;
+      Format[] formats = new Format[length];
+      System.arraycopy(this._formats, 0, formats, 0, length);
+      return formats;
    }
 
    public Locale getLocale() {
@@ -70,27 +70,27 @@ public class MessageFormat extends Format {
       return this.pattern.hashCode();
    }
 
-   private void makeFormat(int var1, int var2, StringBuffer[] var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void makeFormat(int position, int offsetNumber, StringBuffer[] segments) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setFormats(Format[] var1) {
-      int var2 = var1 == null ? 0 : var1.length;
-      this._formats = new Format[var2];
-      if (var1 != null) {
-         System.arraycopy(var1, 0, this._formats, 0, var2);
+   public void setFormats(Format[] formats) {
+      int length = formats == null ? 0 : formats.length;
+      this._formats = new Format[length];
+      if (formats != null) {
+         System.arraycopy(formats, 0, this._formats, 0, length);
       }
    }
 
-   public void setFormat(int var1, Format var2) {
-      if (this._formats.length <= var1) {
-         Array.resize(this._formats, var1 + 1);
+   public void setFormat(int variable, Format format) {
+      if (this._formats.length <= variable) {
+         Array.resize(this._formats, variable + 1);
       }
 
-      this._formats[var1] = var2;
+      this._formats[variable] = format;
    }
 
-   public void setLocale(Locale var1) {
+   public void setLocale(Locale locale) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

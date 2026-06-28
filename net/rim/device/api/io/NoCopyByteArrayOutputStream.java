@@ -6,12 +6,12 @@ public class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
    public NoCopyByteArrayOutputStream() {
    }
 
-   public NoCopyByteArrayOutputStream(int var1) {
+   public NoCopyByteArrayOutputStream(int size) {
    }
 
-   public NoCopyByteArrayOutputStream(byte[] var1, int var2) {
-      super.buf = var1;
-      super.count = var2;
+   public NoCopyByteArrayOutputStream(byte[] buffer, int offset) {
+      super.buf = buffer;
+      super.count = offset;
    }
 
    public byte[] getByteArray() {

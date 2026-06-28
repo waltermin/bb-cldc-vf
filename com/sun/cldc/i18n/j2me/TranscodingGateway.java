@@ -4,33 +4,33 @@ class TranscodingGateway {
    static String ASCII;
    static String ISO8859_1;
 
-   static int sizeOf(int var0, int var1, int var2, boolean var3) {
-      if (var3) {
-         if (var0 == 0 || var0 == 1) {
-            if (var1 > var2) {
-               return var2;
+   static int sizeOf(int aEncodingType, int aSourceLength, int aDestLength, boolean isL2U) {
+      if (isL2U) {
+         if (aEncodingType == 0 || aEncodingType == 1) {
+            if (aSourceLength > aDestLength) {
+               return aDestLength;
             }
 
-            return var1;
+            return aSourceLength;
          }
       } else {
-         if (var0 >= 0 && var0 <= 26) {
-            if (var1 > var2) {
-               return var2;
+         if (aEncodingType >= 0 && aEncodingType <= 26) {
+            if (aSourceLength > aDestLength) {
+               return aDestLength;
             }
 
-            return var1;
+            return aSourceLength;
          }
 
-         switch (var0) {
+         switch (aEncodingType) {
             case 28:
             case 39:
-               var1 *= 2;
-               if (var1 <= var2) {
-                  return var1;
+               aSourceLength *= 2;
+               if (aSourceLength <= aDestLength) {
+                  return aSourceLength;
                }
 
-               return var2 - (var2 & 1);
+               return aDestLength - (aDestLength & 1);
          }
       }
 

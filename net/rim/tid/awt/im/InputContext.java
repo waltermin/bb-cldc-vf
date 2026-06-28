@@ -44,64 +44,64 @@ public class InputContext {
    protected InputContext() {
    }
 
-   protected synchronized boolean selectInputMethod(Locale var1, String var2, int var3) {
-      boolean var4 = false;
-      if (var1 != null && (this.isUnicodeInputAllowed() || this._inputMethod == null || var3 == 2 || var3 == 1)) {
+   protected synchronized boolean selectInputMethod(Locale locale, String imName, int state) {
+      boolean ret = false;
+      if (locale != null && (this.isUnicodeInputAllowed() || this._inputMethod == null || state == 2 || state == 1)) {
          this.endComposition();
-         Locale var5;
+         Locale lastUsedLocale;
          if (this._inputMethod != null) {
-            var5 = this._inputMethod.getLocale();
-            if (this._inputMethod.setLocale(var1, var3)) {
-               var4 = true;
+            lastUsedLocale = this._inputMethod.getLocale();
+            if (this._inputMethod.setLocale(locale, state)) {
+               ret = true;
             } else {
                this.enableClientWindowNotification(this._inputMethod, false);
                this._inputMethod.hideWindows();
                this._inputMethod.deactivate(false);
             }
          } else {
-            var5 = Locale.getDefaultInputForSystem();
+            lastUsedLocale = Locale.getDefaultInputForSystem();
          }
 
-         if (!SpellCheckUtilities.isSpellCheckVariant(var5)) {
-            this._lastUsedLocale = var5;
+         if (!SpellCheckUtilities.isSpellCheckVariant(lastUsedLocale)) {
+            this._lastUsedLocale = lastUsedLocale;
          }
 
-         if (!var4) {
-            InputMethod var6 = this._manager.getInputMethod(var1, var2);
-            if (var6 != null) {
+         if (!ret) {
+            InputMethod im = this._manager.getInputMethod(locale, imName);
+            if (im != null) {
                this._previousIM = this._inputMethod;
-               var4 = this.changeIM(var1, var6);
-               if (!var4) {
+               ret = this.changeIM(locale, im);
+               if (!ret) {
                   this._previousIM = null;
                } else {
-                  this._inputMethod = var6;
-                  int var7 = this.getHanMaskForLocale(this.getLocale());
-                  if (var7 != 0) {
-                     Font var8 = FontRegistry.getDefaultFont();
-                     Font var9 = this.getFontForHanMask(var8, var7);
-                     if (var8 != var9) {
-                        FontRegistry.setDefaultFont(var9);
+                  this._inputMethod = im;
+                  int hanMask = this.getHanMaskForLocale(this.getLocale());
+                  if (hanMask != 0) {
+                     Font curFont = FontRegistry.getDefaultFont();
+                     Font newFont = this.getFontForHanMask(curFont, hanMask);
+                     if (curFont != newFont) {
+                        FontRegistry.setDefaultFont(newFont);
                      }
 
-                     Font var10 = Font.getDefault();
-                     if (var9 != var10 && (var10.getStyle() & var7) != var7) {
-                        Font.setDefaultFont(this.getFontForHanMask(var10, var7));
+                     Font appFont = Font.getDefault();
+                     if (newFont != appFont && (appFont.getStyle() & hanMask) != hanMask) {
+                        Font.setDefaultFont(this.getFontForHanMask(appFont, hanMask));
                      }
                   }
 
-                  this.updateHanMask(this.getInputComponent(), var1);
+                  this.updateHanMask(this.getInputComponent(), locale);
                }
             }
          }
 
-         return var4;
+         return ret;
       } else {
-         return var4;
+         return ret;
       }
    }
 
-   public boolean selectInputMethod(Locale var1) {
-      return this.selectInputMethod(var1, null, 0);
+   public boolean selectInputMethod(Locale locale) {
+      return this.selectInputMethod(locale, null, 0);
    }
 
    public void releaseComponent() {
@@ -131,8 +131,8 @@ public class InputContext {
       }
    }
 
-   public static InputContext getInstance(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static InputContext getInstance(boolean init) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public boolean isInitialised() {
@@ -143,24 +143,24 @@ public class InputContext {
       return getInstance(true);
    }
 
-   protected boolean changeIM(Locale var1, InputMethod var2) {
+   protected boolean changeIM(Locale locale, InputMethod im) {
       return false;
    }
 
    protected void notifyClientWindowChange() {
    }
 
-   public void addSecureBuffer(ISecureInputMethodBuffer var1) {
+   public void addSecureBuffer(ISecureInputMethodBuffer buffer) {
    }
 
-   public void enableClientWindowNotification(InputMethod var1, boolean var2) {
+   public void enableClientWindowNotification(InputMethod im, boolean state) {
    }
 
-   public boolean addIMDescriptor(String var1, String var2) {
-      return this.addIMDescriptor(var1, var2, false);
+   public boolean addIMDescriptor(String imName, String className) {
+      return this.addIMDescriptor(imName, className, false);
    }
 
-   public boolean addIMDescriptor(String var1, String var2, boolean var3) {
+   public boolean addIMDescriptor(String imName, String className, boolean isAuxiliary) {
       return false;
    }
 
@@ -172,9 +172,9 @@ public class InputContext {
       return this._lastUsedLocale;
    }
 
-   public void setCompositionEnabled(boolean var1) {
+   public void setCompositionEnabled(boolean enable) {
       if (this._inputMethod != null) {
-         this._inputMethod.setCompositionEnabled(var1);
+         this._inputMethod.setCompositionEnabled(enable);
       }
    }
 
@@ -188,21 +188,21 @@ public class InputContext {
       }
    }
 
-   public synchronized void dispatchEvent(Event var1) {
-      switch (var1.getID()) {
+   public synchronized void dispatchEvent(Event event) {
+      switch (event.getID()) {
          case 100:
          case 101:
             this.notifyClientWindowChange();
             return;
          case 1004:
-            this.focusGained((FocusEvent)var1);
+            this.focusGained((FocusEvent)event);
             return;
          case 1005:
-            this.focusLost((FocusEvent)var1);
+            this.focusLost((FocusEvent)event);
             return;
          default:
             if (this._inputMethod != null) {
-               this._inputMethod.dispatchEvent(var1);
+               this._inputMethod.dispatchEvent(event);
             }
       }
    }
@@ -222,17 +222,17 @@ public class InputContext {
       }
    }
 
-   private void cleanComponent(IComponent var1) {
-      if (var1 != null) {
-         InputMethodEvent var2 = new InputMethodEvent(var1, 1103, 0, (AttributedString)(new Object()), 0, 0, 0, null, null);
-         var1.inputMethodTextChanged(var2);
+   private void cleanComponent(IComponent component) {
+      if (component != null) {
+         InputMethodEvent restartEvent = new InputMethodEvent(component, 1103, 0, (AttributedString)(new Object()), 0, 0, 0, null, null);
+         component.inputMethodTextChanged(restartEvent);
       }
    }
 
-   private synchronized void reset(int var1) {
+   private synchronized void reset(int type) {
       if (this._inputMethod != null) {
-         this._inputMethod.reset(var1);
-         if (var1 == 1) {
+         this._inputMethod.reset(type);
+         if (type == 1) {
             this.cleanComponent((IComponent)_component.get());
          }
       }
@@ -248,48 +248,48 @@ public class InputContext {
       this._inputMethod = null;
    }
 
-   public synchronized void notifyAppSwitch(boolean var1, int var2) {
-      IComponent var3 = (IComponent)_component.get();
-      if (var3 == null) {
-         if (var1) {
+   public synchronized void notifyAppSwitch(boolean foreground, int appID) {
+      IComponent comp = (IComponent)_component.get();
+      if (comp == null) {
+         if (foreground) {
             this.reset(0);
          }
       } else {
-         EventHandler var4 = EventHandler.getInstance();
-         if (var1) {
-            IComponent var8 = null;
-            Field var9 = null;
+         EventHandler eventHandler = EventHandler.getInstance();
+         if (foreground) {
+            IComponent fcomp = null;
+            Field f = null;
             if (UiApplication.getUiApplication() != null) {
-               Screen var7 = UiApplication.getUiApplication().getActiveScreen();
-               if (var7 != null) {
-                  var9 = var7.getLeafFieldWithFocus();
-                  if (var9 == var3) {
-                     var8 = var3;
-                  } else if (var9 != null && var3 != null && var9.getInputMethodRequests() == var3.getInputMethodRequests()) {
-                     var8 = var3;
+               Screen s = UiApplication.getUiApplication().getActiveScreen();
+               if (s != null) {
+                  f = s.getLeafFieldWithFocus();
+                  if (f == comp) {
+                     fcomp = comp;
+                  } else if (f != null && comp != null && f.getInputMethodRequests() == comp.getInputMethodRequests()) {
+                     fcomp = comp;
                   }
                }
             }
 
-            var4.focusGained(var8, (int)System.currentTimeMillis(), var2);
+            eventHandler.focusGained(fcomp, (int)System.currentTimeMillis(), appID);
             return;
          }
 
-         var3.actionPerformed(141, null);
-         var4.actionPerformed(1, null);
-         UiApplication var5 = UiApplication.getUiApplication();
-         if (var5 == null) {
+         comp.actionPerformed(141, null);
+         eventHandler.actionPerformed(1, null);
+         UiApplication app = UiApplication.getUiApplication();
+         if (app == null) {
             return;
          }
 
-         Screen var6 = var5.getActiveScreen();
-         if (var6 instanceof Object) {
+         Screen topAppScreen = app.getActiveScreen();
+         if (topAppScreen instanceof Object) {
             this.endComposition();
             if (this._inputMethod != null) {
                this._inputMethod.hideWindows();
             }
 
-            var4.focusLost(var3, (int)System.currentTimeMillis(), var2);
+            eventHandler.focusLost(comp, (int)System.currentTimeMillis(), appID);
             return;
          }
       }
@@ -309,11 +309,11 @@ public class InputContext {
       }
    }
 
-   public void enableLookup(boolean var1) {
+   public void enableLookup(boolean enable) {
    }
 
-   public synchronized void setIMSwitchEnabled(boolean var1) {
-      this._isIMSwitcherEnabled = var1;
+   public synchronized void setIMSwitchEnabled(boolean enable) {
+      this._isIMSwitcherEnabled = enable;
    }
 
    public synchronized boolean isIMSwitchAllowed() {
@@ -332,49 +332,49 @@ public class InputContext {
       return this._focusGainedAppId;
    }
 
-   private void switchLocaleIfNeeded(IComponent var1, Locale var2) {
+   private void switchLocaleIfNeeded(IComponent comp, Locale switchLocale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private synchronized void focusGained(FocusEvent var1) {
-      IComponent var2 = var1.getSource();
-      var1.setSource(null);
-      Locale var3 = null;
-      if (this._focusGainedAppId == -1 || this._focusGainedAppId == var1.getApplicationId()) {
+   private synchronized void focusGained(FocusEvent event) {
+      IComponent comp = event.getSource();
+      event.setSource(null);
+      Locale switchLocale = null;
+      if (this._focusGainedAppId == -1 || this._focusGainedAppId == event.getApplicationId()) {
          this.endComposition();
-         if (this._focusGainedAppId == var1.getApplicationId()) {
-            if (this._cachedLocale != null && var2 != _component.get()) {
-               var3 = this._cachedLocale;
+         if (this._focusGainedAppId == event.getApplicationId()) {
+            if (this._cachedLocale != null && comp != _component.get()) {
+               switchLocale = this._cachedLocale;
             }
 
             this.reset(0);
          }
 
-         if (var2.getInputMethodRequests() != null && var2.isInputMethodEnabled()) {
-            _component.set(var2);
-            var1.setSource(var2);
-            this._focusGainedAppId = var1.getApplicationId();
+         if (comp.getInputMethodRequests() != null && comp.isInputMethodEnabled()) {
+            _component.set(comp);
+            event.setSource(comp);
+            this._focusGainedAppId = event.getApplicationId();
          } else {
-            var1.setSource((IComponent)_component.get());
+            event.setSource((IComponent)_component.get());
             if (this._focusGainedAppId != -1) {
-               this._focusGainedAppId = var1.getApplicationId();
+               this._focusGainedAppId = event.getApplicationId();
             }
          }
-      } else if (var2.getInputMethodRequests() != null && var2.isInputMethodEnabled()) {
-         _component.set(var2);
-         var1.setSource(var2);
-         this._focusGainedAppId = var1.getApplicationId();
+      } else if (comp.getInputMethodRequests() != null && comp.isInputMethodEnabled()) {
+         _component.set(comp);
+         event.setSource(comp);
+         this._focusGainedAppId = event.getApplicationId();
          this.reset(1);
       } else {
-         var1.setSource((IComponent)_component.get());
+         event.setSource((IComponent)_component.get());
       }
 
-      this.switchLocaleIfNeeded(var2, var3);
-      var2 = var1.getSource();
-      if (this._inputMethod != null && var2 != null) {
-         this.updateHanMask(var2, this.getLocale());
-         this._inputMethod.dispatchEvent(var1);
-         if (var2.getInputMethodRequests() != null && var2.isInputMethodEnabled()) {
+      this.switchLocaleIfNeeded(comp, switchLocale);
+      comp = event.getSource();
+      if (this._inputMethod != null && comp != null) {
+         this.updateHanMask(comp, this.getLocale());
+         this._inputMethod.dispatchEvent(event);
+         if (comp.getInputMethodRequests() != null && comp.isInputMethodEnabled()) {
             this._isComponentAllowed = true;
             this._inputMethod.activate();
          }
@@ -383,23 +383,23 @@ public class InputContext {
       this._imSwitcherAllowed = this.isIMSwitchAllowedHelper();
    }
 
-   private void updateHanMask(IComponent var1, Locale var2) {
+   private void updateHanMask(IComponent comp, Locale locale) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private Font getFontForHanMask(Font var1, int var2) {
-      int var3 = var1.getStyle() & -7169;
-      return var1.derive(var3 | var2);
+   private Font getFontForHanMask(Font origin, int mask) {
+      int style = origin.getStyle() & -7169;
+      return origin.derive(style | mask);
    }
 
-   private int getHanMaskForLocale(Locale var1) {
+   private int getHanMaskForLocale(Locale locale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private synchronized void focusLost(FocusEvent var1) {
-      if (var1.getApplicationId() == this._focusGainedAppId) {
-         Object var2 = _component.get();
-         if (var1.getSource() == var2) {
+   private synchronized void focusLost(FocusEvent event) {
+      if (event.getApplicationId() == this._focusGainedAppId) {
+         Object comp = _component.get();
+         if (event.getSource() == comp) {
             if (this._cachedLocale != null) {
                this.selectInputMethod(this._cachedLocale, null, 2);
                this._cachedLocale = null;
@@ -407,15 +407,15 @@ public class InputContext {
 
             this.endComposition();
             if (this._inputMethod != null) {
-               this._inputMethod.dispatchEvent(var1);
+               this._inputMethod.dispatchEvent(event);
             }
 
             this._focusGainedAppId = -1;
             this._isComponentAllowed = false;
             return;
          }
-      } else if (var1.getSource() != null && this._inputMethod != null) {
-         this.cleanComponent(var1.getSource());
+      } else if (event.getSource() != null && this._inputMethod != null) {
+         this.cleanComponent(event.getSource());
       }
    }
 
@@ -427,43 +427,43 @@ public class InputContext {
       return this._manager;
    }
 
-   public int setListener(InputModeChangeListener var1) {
-      return this._inputMethod != null ? this._inputMethod.setListener(var1) : 2;
+   public int setListener(InputModeChangeListener listener) {
+      return this._inputMethod != null ? this._inputMethod.setListener(listener) : 2;
    }
 
    public InputModeChangeListener getListener() {
       return this._inputMethod != null ? this._inputMethod.getListener() : null;
    }
 
-   public CustomWordsRepository getRepository(int var1) {
-      if (var1 == 1 || var1 == 6) {
-         return this._manager.getRepository(var1);
+   public CustomWordsRepository getRepository(int type) {
+      if (type == 1 || type == 6) {
+         return this._manager.getRepository(type);
       } else {
-         return this._inputMethod != null ? this._inputMethod.getRepository(var1) : null;
+         return this._inputMethod != null ? this._inputMethod.getRepository(type) : null;
       }
    }
 
-   public CustomDictionary getCustomDictionary(int var1) {
-      return this._inputMethod != null ? this._inputMethod.getCustomDictionary(var1) : null;
+   public CustomDictionary getCustomDictionary(int type) {
+      return this._inputMethod != null ? this._inputMethod.getCustomDictionary(type) : null;
    }
 
    public boolean hasSureType() {
       return (this._manager.getAvailableInputMethodIDs() & 4096) != 0;
    }
 
-   public long getInputMethodIDForLocale(Locale var1) {
-      return this._manager.getInputMethodIDForLocale(var1);
+   public long getInputMethodIDForLocale(Locale locale) {
+      return this._manager.getInputMethodIDForLocale(locale);
    }
 
    public boolean isSureType() {
       return (this.getActiveInputMethodID() & 4096) != 0;
    }
 
-   public void setInvokableActionProducer(InvokableActionProducer var1) {
+   public void setInvokableActionProducer(InvokableActionProducer producer) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public InvokableAction[] getIMActions(Object var1) {
-      return this._invokableActionProducer != null ? this._invokableActionProducer.getIMActions(var1) : null;
+   public InvokableAction[] getIMActions(Object comp) {
+      return this._invokableActionProducer != null ? this._invokableActionProducer.getIMActions(comp) : null;
    }
 }

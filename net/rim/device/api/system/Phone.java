@@ -97,42 +97,42 @@ public class Phone {
       return CallControlSystem.getCommandHandler();
    }
 
-   public static int initiateCall(String var0, int var1) {
+   public static int initiateCall(String number, int clir) {
       ApplicationControl.assertPhonePermitted(true, CommonResource.getBundle(), 10045);
       if (ApplicationManager.getApplicationManager().isSystemLocked() && !Security.getInstance().getAllowOutgoingCallWhileLocked()) {
          return 0;
       }
 
-      int var2 = getInstance().startCall(var0, var1);
-      RIMGlobalMessagePoster.postGlobalEvent(-5324686711008477091L, var2, 0, var0, null);
-      return var2;
+      int callId = getInstance().startCall(number, clir);
+      RIMGlobalMessagePoster.postGlobalEvent(-5324686711008477091L, callId, 0, number, null);
+      return callId;
    }
 
-   public final int startCall(String var1) {
-      return this.startCall(var1, this.getCLIR());
+   public final int startCall(String number) {
+      return this.startCall(number, this.getCLIR());
    }
 
-   public int startCall(String var1, int var2) {
+   public int startCall(String _1, int _2) {
       throw null;
    }
 
-   public void answerCall(int var1) {
+   public void answerCall(int _1) {
       throw null;
    }
 
-   public String getNumber(int var1) {
+   public String getNumber(int _1) {
       throw null;
    }
 
-   public void stopCall(int var1) {
+   public void stopCall(int _1) {
       throw null;
    }
 
-   public void stopAllCalls(boolean var1) {
+   public void stopAllCalls(boolean _1) {
       throw null;
    }
 
-   public void rejectCall(int var1) {
+   public void rejectCall(int _1) {
       throw null;
    }
 
@@ -156,15 +156,15 @@ public class Phone {
       throw null;
    }
 
-   public void removeCallFromConference(int var1) {
+   public void removeCallFromConference(int _1) {
       throw null;
    }
 
-   public void startDTMF(int var1, byte var2) {
+   public void startDTMF(int _1, byte _2) {
       throw null;
    }
 
-   public void stopDTMF(int var1) {
+   public void stopDTMF(int _1) {
       throw null;
    }
 
@@ -184,19 +184,19 @@ public class Phone {
       throw null;
    }
 
-   public int getCallState(int var1) {
+   public int getCallState(int _1) {
       throw null;
    }
 
-   public int getCallDuration(int var1) {
+   public int getCallDuration(int _1) {
       throw null;
    }
 
-   public boolean isCallRedirected(int var1) {
+   public boolean isCallRedirected(int _1) {
       throw null;
    }
 
-   public int getCLIPDisplayMode(int var1) {
+   public int getCLIPDisplayMode(int _1) {
       throw null;
    }
 
@@ -204,43 +204,43 @@ public class Phone {
       return this._defaultCLIR;
    }
 
-   public final void setCLIR(int var1) {
+   public final void setCLIR(int clir) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public String getCallPhoneNumber(int var1) {
+   public String getCallPhoneNumber(int _1) {
       throw null;
    }
 
-   public String getCallPhoneNumber(int var1, boolean var2) {
+   public String getCallPhoneNumber(int _1, boolean _2) {
       throw null;
    }
 
-   public String getCallName(int var1) {
+   public String getCallName(int _1) {
       throw null;
    }
 
-   public String getCallName(int var1, boolean var2) {
+   public String getCallName(int _1, boolean _2) {
       throw null;
    }
 
-   public void querySSOption(int var1) {
+   public void querySSOption(int _1) {
       throw null;
    }
 
-   public int querySSOptionResult(int var1, int var2) {
+   public int querySSOptionResult(int _1, int _2) {
       throw null;
    }
 
-   public void setCallForwardingNumber(int var1, String var2) {
+   public void setCallForwardingNumber(int _1, String _2) {
       throw null;
    }
 
-   public String getCallForwardingNumber(int var1) {
+   public String getCallForwardingNumber(int _1) {
       throw null;
    }
 
-   public boolean isCallForwardUnconditionalActive(int var1) {
+   public boolean isCallForwardUnconditionalActive(int _1) {
       throw null;
    }
 
@@ -248,19 +248,19 @@ public class Phone {
       throw null;
    }
 
-   public void activateCallBarring(boolean var1, int var2, String var3) {
+   public void activateCallBarring(boolean _1, int _2, String _3) {
       throw null;
    }
 
-   public void setCallBarringPassword(String var1, String var2) {
+   public void setCallBarringPassword(String _1, String _2) {
       throw null;
    }
 
-   public void flash(String var1) {
+   public void flash(String _1) {
       throw null;
    }
 
-   public void activateCallWaiting(boolean var1) {
+   public void activateCallWaiting(boolean _1) {
       throw null;
    }
 
@@ -268,7 +268,7 @@ public class Phone {
       throw null;
    }
 
-   public void setUSSDResponse(byte[] var1) {
+   public void setUSSDResponse(byte[] _1) {
       throw null;
    }
 
@@ -276,11 +276,11 @@ public class Phone {
       throw null;
    }
 
-   public String getForwardingNumberForService(int var1, int var2) {
+   public String getForwardingNumberForService(int _1, int _2) {
       throw null;
    }
 
-   public void requestEnableFDN(boolean var1) {
+   public void requestEnableFDN(boolean _1) {
       throw null;
    }
 
@@ -292,7 +292,7 @@ public class Phone {
       throw null;
    }
 
-   public boolean inCallDTMFDigitsEntered(String var1) {
+   public boolean inCallDTMFDigitsEntered(String _1) {
       throw null;
    }
 
@@ -308,11 +308,11 @@ public class Phone {
       return getInstance().isActive();
    }
 
-   public void disableDTMFEcho(boolean var1) {
+   public void disableDTMFEcho(boolean _1) {
       throw null;
    }
 
-   public boolean isEmergencyNumber(String var1) {
+   public boolean isEmergencyNumber(String _1) {
       throw null;
    }
 
@@ -320,63 +320,63 @@ public class Phone {
       throw null;
    }
 
-   public static void setDTMFMode(boolean var0) {
-      getInstance().disableDTMFEcho(var0);
+   public static void setDTMFMode(boolean silent) {
+      getInstance().disableDTMFEcho(silent);
    }
 
-   public void setSSBasicService(int var1) {
+   public void setSSBasicService(int _1) {
       throw null;
    }
 
-   public void sendSSPasswordResponse(String var1) {
+   public void sendSSPasswordResponse(String _1) {
       throw null;
    }
 
-   public boolean setAlternateLine(int var1) {
+   public boolean setAlternateLine(int _1) {
       throw null;
    }
 
-   public int getAlternateLine(int var1) {
+   public int getAlternateLine(int _1) {
       throw null;
    }
 
-   public boolean canInvokeCallTransferAction(int var1, int var2) {
+   public boolean canInvokeCallTransferAction(int _1, int _2) {
       throw null;
    }
 
-   public boolean canHold(int var1) {
+   public boolean canHold(int _1) {
       throw null;
    }
 
-   public boolean canSwap(int var1) {
+   public boolean canSwap(int _1) {
       throw null;
    }
 
-   public boolean canJoin(int var1) {
+   public boolean canJoin(int _1) {
       throw null;
    }
 
-   public boolean canPark(int var1) {
+   public boolean canPark(int _1) {
       throw null;
    }
 
-   public boolean canSendToVoicemail(int var1) {
+   public boolean canSendToVoicemail(int _1) {
       throw null;
    }
 
-   public String getAlternateLineLabel(int var1) {
+   public String getAlternateLineLabel(int _1) {
       throw null;
    }
 
-   public boolean isAlternateLineAvailable(int var1) {
+   public boolean isAlternateLineAvailable(int _1) {
       throw null;
    }
 
-   public void setAlternateLineLabel(int var1, String var2) {
+   public void setAlternateLineLabel(int _1, String _2) {
       throw null;
    }
 
-   public String getAlternateLineNumber(int var1) {
+   public String getAlternateLineNumber(int _1) {
       throw null;
    }
 
@@ -384,35 +384,35 @@ public class Phone {
       throw null;
    }
 
-   public int getCallTransferState(int var1) {
+   public int getCallTransferState(int _1) {
       throw null;
    }
 
-   public String getVoiceMailNumber(int var1) {
+   public String getVoiceMailNumber(int _1) {
       throw null;
    }
 
-   public int getVoiceMailCount(int var1) {
+   public int getVoiceMailCount(int _1) {
       throw null;
    }
 
-   public int getWAFs(int var1) {
+   public int getWAFs(int _1) {
       throw null;
    }
 
-   public boolean invokeCallTransferAction(int var1, int var2, Object var3) {
+   public boolean invokeCallTransferAction(int _1, int _2, Object _3) {
       throw null;
    }
 
-   public void parkCall(int var1) {
+   public void parkCall(int _1) {
       throw null;
    }
 
-   public void sendToVoicemail(int var1) {
+   public void sendToVoicemail(int _1) {
       throw null;
    }
 
-   public boolean supportsCorporateExtensions(int var1) {
+   public boolean supportsCorporateExtensions(int _1) {
       throw null;
    }
 }

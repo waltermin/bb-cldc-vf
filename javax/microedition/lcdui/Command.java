@@ -17,14 +17,14 @@ public class Command {
    public static final int ITEM;
    private static final int LAST_COMMAND_TYPE;
 
-   public Command(String var1, int var2, int var3) {
+   public Command(String label, int commandType, int priority) {
    }
 
-   public Command(String var1, String var2, int var3, int var4) {
-      this(var1, var3, var4);
-      if (var2 != null) {
-         this._longLabel = var2;
-         this._menuLabel = var2;
+   public Command(String shortLabel, String longLabel, int commandType, int priority) {
+      this(shortLabel, commandType, priority);
+      if (longLabel != null) {
+         this._longLabel = longLabel;
+         this._menuLabel = longLabel;
       }
    }
 
@@ -48,7 +48,7 @@ public class Command {
       return this._menuLabel;
    }
 
-   void setMenuLabel(String var1) {
+   void setMenuLabel(String menuLabel) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

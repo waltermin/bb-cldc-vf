@@ -59,24 +59,24 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
       return this._text;
    }
 
-   public void setImage(Image var1) {
+   public void setImage(Image image) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setImageSize(int var1, int var2) {
-      this._imageWidth = var1;
-      this._imageHeight = var2;
+   public void setImageSize(int width, int height) {
+      this._imageWidth = width;
+      this._imageHeight = height;
    }
 
    @Override
-   public void setLabel(String var1) {
-      this._label = var1;
+   public void setLabel(String label) {
+      this._label = label;
       this._text.setText(this._label);
       this.updateLayout();
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -86,69 +86,69 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    private void applyFocusDifference() {
-      int var1 = this._topExtra;
-      int var2 = this._bottomExtra;
-      int var3 = this._leftExtra;
-      int var4 = this._rightExtra;
-      XYEdges var5 = ThemeAttributeSet.getEdges(this, 2);
-      if (var5 != null) {
-         var1 += var5.top;
-         var4 += var5.right;
-         var2 += var5.bottom;
-         var3 += var5.left;
+      int marginActiveTop = this._topExtra;
+      int marginActiveBottom = this._bottomExtra;
+      int marginActiveLeft = this._leftExtra;
+      int marginActiveRight = this._rightExtra;
+      XYEdges edges = ThemeAttributeSet.getEdges(this, 2);
+      if (edges != null) {
+         marginActiveTop += edges.top;
+         marginActiveRight += edges.right;
+         marginActiveBottom += edges.bottom;
+         marginActiveLeft += edges.left;
       }
 
-      this.setMargin(var1, var4, var2, var3);
+      this.setMargin(marginActiveTop, marginActiveRight, marginActiveBottom, marginActiveLeft);
    }
 
    @Override
    protected void applyThemeOnStateChange() {
-      boolean var1 = this.getState() == 6;
-      ThemeAttributeSet var2 = null;
-      ThemeAttributeSet var3 = null;
-      Border var4;
+      boolean on = this.getState() == 6;
+      ThemeAttributeSet attrNormal = null;
+      ThemeAttributeSet attrFocus = null;
+      Border border;
       if (this.isEditable()) {
-         if (var1 && this._active) {
+         if (on && this._active) {
             if (this._borderActive != null) {
-               var4 = this._borderActive;
+               border = this._borderActive;
             } else {
-               var4 = var1 ? this._borderFocus : this._borderAll;
+               border = on ? this._borderFocus : this._borderAll;
             }
 
             if (this._attrActive != null) {
-               var2 = this._attrActive;
-               var3 = this._attrActive;
+               attrNormal = this._attrActive;
+               attrFocus = this._attrActive;
             }
          } else {
-            var4 = var1 ? this._borderFocus : this._borderAll;
+            border = on ? this._borderFocus : this._borderAll;
          }
       } else {
-         var4 = var1 ? this._borderDisabledFocus : this._borderDisabled;
+         border = on ? this._borderDisabledFocus : this._borderDisabled;
          if (this._attrDisabled != null) {
-            var2 = this._attrDisabled;
-            var3 = this._attrDisabledFocus;
+            attrNormal = this._attrDisabled;
+            attrFocus = this._attrDisabledFocus;
          }
       }
 
-      if (var2 == null) {
-         var2 = this._attrNormal;
-         if (var3 == null) {
-            var3 = this._attrFocus;
+      if (attrNormal == null) {
+         attrNormal = this._attrNormal;
+         if (attrFocus == null) {
+            attrFocus = this._attrFocus;
          }
       }
 
-      this.setBorderWithoutLayout(var4);
+      this.setBorderWithoutLayout(border);
       this.calculateFocusDifference();
       this.applyFocusDifference();
-      this.setThemeAttributesAll(var2, var3);
+      this.setThemeAttributesAll(attrNormal, attrFocus);
       super.applyThemeOnStateChange();
-      int var5 = this.getBorderLeft() + this.getBorderRight() + this.getPaddingLeft() + this.getPaddingRight();
-      this._text.layout(Math.max(0, this.getExtent().width - var5), this.getExtent().height);
+      int horizontalSpacing = this.getBorderLeft() + this.getBorderRight() + this.getPaddingLeft() + this.getPaddingRight();
+      this._text.layout(Math.max(0, this.getExtent().width - horizontalSpacing), this.getExtent().height);
       this.invalidate();
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
@@ -177,204 +177,204 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    public int getPreferredWidth() {
-      Font var1 = this.getFontIfSet();
-      return this.getPreferredWidth(var1);
+      Font font = this.getFontIfSet();
+      return this.getPreferredWidth(font);
    }
 
-   private int getPreferredWidth(Font var1) {
-      int var2 = 0;
-      int var3 = 0;
-      if (var1 != null) {
-         var2 = var1.getBounds(this._label);
-         var3 = var1.getHeight();
+   private int getPreferredWidth(Font font) {
+      int width = 0;
+      int fontHeight = 0;
+      if (font != null) {
+         width = font.getBounds(this._label);
+         fontHeight = font.getHeight();
       } else if (this._attrNormal != null) {
-         var1 = this._attrNormal.getFont();
-         if (var1 != null) {
-            int var4 = var1.getBounds(this._label);
-            if (var4 > var2) {
-               var2 = var4;
+         font = this._attrNormal.getFont();
+         if (font != null) {
+            int focusWidth = font.getBounds(this._label);
+            if (focusWidth > width) {
+               width = focusWidth;
             }
 
-            int var5 = var1.getHeight();
-            if (var5 > var3) {
-               var3 = var5;
+            int focusHeight = font.getHeight();
+            if (focusHeight > fontHeight) {
+               fontHeight = focusHeight;
             }
          }
 
          if (this._attrFocus != this._attrNormal && this._attrFocus != null) {
-            var1 = this._attrFocus.getFont();
-            if (var1 != null) {
-               int var12 = var1.getBounds(this._label);
-               if (var12 > var2) {
-                  var2 = var12;
+            font = this._attrFocus.getFont();
+            if (font != null) {
+               int focusWidth = font.getBounds(this._label);
+               if (focusWidth > width) {
+                  width = focusWidth;
                }
 
-               int var16 = var1.getHeight();
-               if (var16 > var3) {
-                  var3 = var16;
+               int focusHeight = font.getHeight();
+               if (focusHeight > fontHeight) {
+                  fontHeight = focusHeight;
                }
             }
          }
 
          if (this._attrDisabled != this._attrNormal && this._attrDisabled != null) {
-            var1 = this._attrDisabled.getFont();
-            if (var1 != null) {
-               int var13 = var1.getBounds(this._label);
-               if (var13 > var2) {
-                  var2 = var13;
+            font = this._attrDisabled.getFont();
+            if (font != null) {
+               int disabledWidth = font.getBounds(this._label);
+               if (disabledWidth > width) {
+                  width = disabledWidth;
                }
 
-               int var17 = var1.getHeight();
-               if (var17 > var3) {
-                  var3 = var17;
+               int disabledHeight = font.getHeight();
+               if (disabledHeight > fontHeight) {
+                  fontHeight = disabledHeight;
                }
             }
          }
 
          if (this._attrDisabledFocus != this._attrNormal && this._attrDisabledFocus != null) {
-            var1 = this._attrDisabledFocus.getFont();
-            if (var1 != null) {
-               int var14 = var1.getBounds(this._label);
-               if (var14 > var2) {
-                  var2 = var14;
+            font = this._attrDisabledFocus.getFont();
+            if (font != null) {
+               int disabledFocusWidth = font.getBounds(this._label);
+               if (disabledFocusWidth > width) {
+                  width = disabledFocusWidth;
                }
 
-               int var18 = var1.getHeight();
-               if (var18 > var3) {
-                  var3 = var18;
+               int disabledFocusHeight = font.getHeight();
+               if (disabledFocusHeight > fontHeight) {
+                  fontHeight = disabledFocusHeight;
                }
             }
          }
 
          if (this._attrActive != this._attrNormal && this._attrActive != null) {
-            var1 = this._attrActive.getFont();
-            if (var1 != null) {
-               int var15 = var1.getBounds(this._label);
-               if (var15 > var2) {
-                  var2 = var15;
+            font = this._attrActive.getFont();
+            if (font != null) {
+               int activeWidth = font.getBounds(this._label);
+               if (activeWidth > width) {
+                  width = activeWidth;
                }
 
-               int var19 = var1.getHeight();
-               if (var19 > var3) {
-                  var3 = var19;
+               int activeHeight = font.getHeight();
+               if (activeHeight > fontHeight) {
+                  fontHeight = activeHeight;
                }
             }
          }
       }
 
-      if (var2 == 0 || var3 == 0) {
-         var1 = this.getFont();
-         var2 = var1.getBounds(this._label);
-         var3 = var1.getHeight();
+      if (width == 0 || fontHeight == 0) {
+         font = this.getFont();
+         width = font.getBounds(this._label);
+         fontHeight = font.getHeight();
       }
 
       if (this._image != null) {
-         var2 = var2 + this.getImageXYRect(var3).width + 2;
+         width = width + this.getImageXYRect(fontHeight).width + 2;
       }
 
-      return var2 + this._rightExtra + this._leftExtra;
+      return width + this._rightExtra + this._leftExtra;
    }
 
-   private XYRect getImageXYRect(int var1) {
-      int var2 = this._imageWidth;
-      if (var2 < 0) {
-         var2 *= -var1;
+   private XYRect getImageXYRect(int fontHeight) {
+      int imgWidth = this._imageWidth;
+      if (imgWidth < 0) {
+         imgWidth *= -fontHeight;
       }
 
-      int var3 = this._imageHeight;
-      if (var3 < 0) {
-         var3 *= -var1;
+      int imgHeight = this._imageHeight;
+      if (imgHeight < 0) {
+         imgHeight *= -fontHeight;
       }
 
-      return new XYRect(0, 0, this._image.getWidth(var2, var3), this._image.getHeight(var2, var3));
+      return new XYRect(0, 0, this._image.getWidth(imgWidth, imgHeight), this._image.getHeight(imgWidth, imgHeight));
    }
 
    @Override
    public int getPreferredHeight() {
-      Font var1 = this.getFontIfSet();
-      return this.getPreferredHeight(var1);
+      Font font = this.getFontIfSet();
+      return this.getPreferredHeight(font);
    }
 
-   private int getPreferredHeight(Font var1) {
-      int var2 = 0;
-      if (var1 != null) {
-         var2 = var1.getHeight();
+   private int getPreferredHeight(Font font) {
+      int height = 0;
+      if (font != null) {
+         height = font.getHeight();
       } else if (this._attrNormal != null) {
-         var1 = this._attrNormal.getFont();
-         if (var1 != null) {
-            int var3 = var1.getHeight();
-            if (var3 > var2) {
-               var2 = var3;
+         font = this._attrNormal.getFont();
+         if (font != null) {
+            int focusHeight = font.getHeight();
+            if (focusHeight > height) {
+               height = focusHeight;
             }
          }
 
          if (this._attrFocus != this._attrNormal && this._attrFocus != null) {
-            var1 = this._attrFocus.getFont();
-            if (var1 != null) {
-               int var12 = var1.getHeight();
-               if (var12 > var2) {
-                  var2 = var12;
+            font = this._attrFocus.getFont();
+            if (font != null) {
+               int focusHeight = font.getHeight();
+               if (focusHeight > height) {
+                  height = focusHeight;
                }
             }
          }
 
          if (this._attrDisabled != this._attrNormal && this._attrDisabled != null) {
-            var1 = this._attrDisabled.getFont();
-            if (var1 != null) {
-               int var13 = var1.getHeight();
-               if (var13 > var2) {
-                  var2 = var13;
+            font = this._attrDisabled.getFont();
+            if (font != null) {
+               int disabledHeight = font.getHeight();
+               if (disabledHeight > height) {
+                  height = disabledHeight;
                }
             }
          }
 
          if (this._attrDisabledFocus != this._attrNormal && this._attrDisabledFocus != null) {
-            var1 = this._attrDisabledFocus.getFont();
-            if (var1 != null) {
-               int var14 = var1.getHeight();
-               if (var14 > var2) {
-                  var2 = var14;
+            font = this._attrDisabledFocus.getFont();
+            if (font != null) {
+               int disabledFocusHeight = font.getHeight();
+               if (disabledFocusHeight > height) {
+                  height = disabledFocusHeight;
                }
             }
          }
 
          if (this._attrActive != this._attrNormal && this._attrActive != null) {
-            var1 = this._attrActive.getFont();
-            if (var1 != null) {
-               int var15 = var1.getHeight();
-               if (var15 > var2) {
-                  var2 = var15;
+            font = this._attrActive.getFont();
+            if (font != null) {
+               int activeHeight = font.getHeight();
+               if (activeHeight > height) {
+                  height = activeHeight;
                }
             }
          }
       }
 
-      if (var2 == 0) {
-         var1 = this.getFont();
-         var2 = var1.getHeight();
+      if (height == 0) {
+         font = this.getFont();
+         height = font.getHeight();
       }
 
       if (this._image != null) {
-         int var16 = this._imageWidth;
-         if (var16 < 0) {
-            var16 *= -var2;
+         int imgWidth = this._imageWidth;
+         if (imgWidth < 0) {
+            imgWidth *= -height;
          }
 
-         int var4 = this._imageHeight;
-         if (var4 < 0) {
-            var4 *= -var2;
+         int imgHeight = this._imageHeight;
+         if (imgHeight < 0) {
+            imgHeight *= -height;
          }
 
-         var2 = Math.max(var2, this._image.getHeight(var16, var4));
+         height = Math.max(height, this._image.getHeight(imgWidth, imgHeight));
       }
 
-      var2 = Math.max(var2, this._text.getHeight());
-      return var2 + this._topExtra + this._bottomExtra;
+      height = Math.max(height, this._text.getHeight());
+      return height + this._topExtra + this._bottomExtra;
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             if (this.isEditable()) {
                this._active = true;
@@ -393,24 +393,24 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       if (!this._acceptsKeyUpSet) {
          this._acceptsKeyUp = Application.getApplication().acceptsKeyUpEvents();
          this._acceptsKeyUpSet = true;
       }
 
-      if (this._acceptsKeyUp && Keypad.map(Keypad.key(var1), Keypad.status(var1)) == '\n') {
+      if (this._acceptsKeyUp && Keypad.map(Keypad.key(keycode), Keypad.status(keycode)) == '\n') {
          this._active = true;
          if (this._attrActive != null) {
             this.applyThemeOnStateChange();
          }
       }
 
-      return super.keyDown(var1, var2);
+      return super.keyDown(keycode, time);
    }
 
    @Override
-   protected boolean keyUp(int var1, int var2) {
+   protected boolean keyUp(int keycode, int time) {
       this._active = false;
       if (this._attrActive != null) {
          this.applyThemeOnStateChange();
@@ -420,8 +420,8 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (this.isEditable() && var1 == '\n') {
+   protected boolean keyChar(char key, int status, int time) {
+      if (this.isEditable() && key == '\n') {
          this.fieldChangeNotify(0);
          return true;
       } else {
@@ -430,62 +430,62 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      ThemeAttributeSet var3 = ThemeManager.getActiveTheme().getAttributeSet(this, 6);
-      Font var4 = null;
-      if (var3 != null) {
-         var4 = var3.getFont();
+   protected void layout(int width, int height) {
+      ThemeAttributeSet tas = ThemeManager.getActiveTheme().getAttributeSet(this, 6);
+      Font focusFont = null;
+      if (tas != null) {
+         focusFont = tas.getFont();
       }
 
-      int var5 = var1;
-      var1 = Math.min(var1, this.getPreferredWidth());
-      var1 = var4 != null ? Math.max(var1, this.getPreferredWidth(var4)) : var1;
-      var1 = Math.min(var5, var1);
-      int var6 = 0;
+      int maxWidth = width;
+      width = Math.min(width, this.getPreferredWidth());
+      width = focusFont != null ? Math.max(width, this.getPreferredWidth(focusFont)) : width;
+      width = Math.min(maxWidth, width);
+      int imageWidth = 0;
       if (this._image != null) {
-         var6 = this.getImageXYRect(this.getFont().getHeight()).width + 2;
-         this._text.setPosition(var6, 0);
+         imageWidth = this.getImageXYRect(this.getFont().getHeight()).width + 2;
+         this._text.setPosition(imageWidth, 0);
       }
 
-      this._text.layout(var1 - var6, var2);
-      var2 = Math.min(var2, this.getPreferredHeight());
-      var2 = var4 != null ? Math.max(var2, this.getPreferredHeight(var4)) : var2;
-      var2 = Math.max(this._text.getLineHeight(0), var2);
-      this.setExtent(var1, var2);
+      this._text.layout(width - imageWidth, height);
+      height = Math.min(height, this.getPreferredHeight());
+      height = focusFont != null ? Math.max(height, this.getPreferredHeight(focusFont)) : height;
+      height = Math.max(this._text.getLineHeight(0), height);
+      this.setExtent(width, height);
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      int var2 = var1.getColor();
-      boolean var3 = this.getState() == 6;
-      if (var3 && !this.isStyle(1024)) {
+   protected void paint(Graphics graphics) {
+      int foregroundColor = graphics.getColor();
+      boolean on = this.getState() == 6;
+      if (on && !this.isStyle(1024)) {
          if (this._attrFocus != null) {
-            var1.setColor(this._attrFocus.getColor(1));
+            graphics.setColor(this._attrFocus.getColor(1));
          } else {
-            var1.setColor(var1.getBackgroundColor());
+            graphics.setColor(graphics.getBackgroundColor());
          }
       }
 
       if (!this.isEditable()) {
-         if (var3 && this._attrDisabledFocus != null) {
-            var1.setColor(this._attrDisabledFocus.getColor(1));
-         } else if (!var3 && this._attrDisabled != null) {
-            var1.setColor(this._attrDisabled.getColor(1));
+         if (on && this._attrDisabledFocus != null) {
+            graphics.setColor(this._attrDisabledFocus.getColor(1));
+         } else if (!on && this._attrDisabled != null) {
+            graphics.setColor(this._attrDisabled.getColor(1));
          }
       }
 
-      Font var4 = var1.getFont();
-      int var5 = var4.getHeight();
-      int var6 = this.getContentHeight();
+      Font font = graphics.getFont();
+      int fontHeight = font.getHeight();
+      int contentHeight = this.getContentHeight();
       if (this._image != null) {
-         XYRect var7 = this.getImageXYRect(var5);
-         int var8 = var7.width;
-         int var9 = var7.height;
-         this._image.paint(var1, 0, var6 - var9 >>> 1, var8, var9);
+         XYRect dimensions = this.getImageXYRect(fontHeight);
+         int imgWidth = dimensions.width;
+         int imgHeight = dimensions.height;
+         this._image.paint(graphics, 0, contentHeight - imgHeight >>> 1, imgWidth, imgHeight);
       }
 
-      this._text.paintSelf(var1);
-      var1.setColor(var2);
+      this._text.paintSelf(graphics);
+      graphics.setColor(foregroundColor);
    }
 
    @Override
@@ -495,29 +495,29 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   public void setBorder(int var1, Border var2) {
+   public void setBorder(int state, Border border) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void setDirty(boolean var1) {
+   public void setDirty(boolean dirty) {
       if (!this.isStyle(32768)) {
-         super.setDirty(var1);
+         super.setDirty(dirty);
       }
    }
 
-   public ButtonField(long var1) {
-      this(null, var1);
+   public ButtonField(long style) {
+      this(null, style);
    }
 
-   public ButtonField(String var1) {
-      this(var1, 0);
+   public ButtonField(String label) {
+      this(label, 0);
    }
 
-   public ButtonField(String var1, long var2) {
-      super(verifyStyle(var2));
+   public ButtonField(String label, long style) {
+      super(verifyStyle(style));
       this.setTag(TAG);
-      this._label = var1;
+      this._label = label;
       this._text = (TextRect)(new Object(this));
       this._text.setText(this._label);
       this._text.setStyle(64);
@@ -525,12 +525,12 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    protected void applyTheme() {
-      Theme var1 = ThemeManager.getActiveTheme();
-      this._attrNormal = var1.getAttributeSet(this.getTag(), this.getId(), 0);
-      this._attrFocus = var1.getAttributeSet(this.getTag(), this.getId(), 6);
-      this._attrActive = var1.getAttributeSet(this.getTag(), this.getId(), 4, true);
-      this._attrDisabled = var1.getAttributeSet(this.getTag(), this.getId(), 7);
-      this._attrDisabledFocus = var1.getAttributeSet(this.getTag(), this.getId(), 8);
+      Theme theme = ThemeManager.getActiveTheme();
+      this._attrNormal = theme.getAttributeSet(this.getTag(), this.getId(), 0);
+      this._attrFocus = theme.getAttributeSet(this.getTag(), this.getId(), 6);
+      this._attrActive = theme.getAttributeSet(this.getTag(), this.getId(), 4, true);
+      this._attrDisabled = theme.getAttributeSet(this.getTag(), this.getId(), 7);
+      this._attrDisabledFocus = theme.getAttributeSet(this.getTag(), this.getId(), 8);
       if (this._attrFocus == null) {
          this._attrFocus = this._attrNormal;
       }
@@ -569,8 +569,8 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
       }
 
       if (this._borderAll == null) {
-         boolean var2 = this.isStyle(1024);
-         if (var2) {
+         boolean bare = this.isStyle(1024);
+         if (bare) {
             this._borderAll = (Border)(new Object(2, 4, 2, 4));
             this._borderDisabled = this._borderAll;
          } else {
@@ -578,9 +578,9 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
             this._borderDisabled = (Border)(new Object(2, 4, 2, 4, 6));
          }
 
-         int var3 = 4 | (var2 ? 0 : 1);
-         this._borderFocus = (Border)(new Object(2, 4, 2, 4, var3));
-         this._borderDisabledFocus = (Border)(new Object(2, 4, 2, 4, var3 | 1));
+         int style = 4 | (bare ? 0 : 1);
+         this._borderFocus = (Border)(new Object(2, 4, 2, 4, style));
+         this._borderDisabledFocus = (Border)(new Object(2, 4, 2, 4, style | 1));
       }
 
       this.calculateFocusDifference();
@@ -591,25 +591,25 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   public void setMuddy(boolean var1) {
+   public void setMuddy(boolean muddy) {
       if (!this.isStyle(32768)) {
-         super.setMuddy(var1);
+         super.setMuddy(muddy);
       }
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return this.trackwheelClick(var3, var4);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return this.trackwheelClick(status, time);
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       if (!this.isEditable()) {
          return false;
       }
 
       this._active = true;
-      if (this.isStyle(65536) || (var1 & 1073741824) != 0) {
+      if (this.isStyle(65536) || (status & 1073741824) != 0) {
          this.fieldChangeNotify(0);
       }
 
@@ -621,7 +621,7 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    @Override
-   protected boolean trackwheelUnclick(int var1, int var2) {
+   protected boolean trackwheelUnclick(int status, int time) {
       this._active = false;
       if (this._attrActive != null) {
          this.applyThemeOnStateChange();
@@ -630,16 +630,16 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
       return false;
    }
 
-   private static long verifyStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long verifyStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override

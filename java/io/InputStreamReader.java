@@ -5,12 +5,12 @@ import com.sun.cldc.i18n.Helper;
 public class InputStreamReader extends Reader {
    private Reader in;
 
-   public InputStreamReader(InputStream var1) {
-      this.in = Helper.getStreamReader(var1);
+   public InputStreamReader(InputStream is) {
+      this.in = Helper.getStreamReader(is);
    }
 
-   public InputStreamReader(InputStream var1, String var2) {
-      this.in = Helper.getStreamReader(var1, var2);
+   public InputStreamReader(InputStream is, String enc) {
+      this.in = Helper.getStreamReader(is, enc);
    }
 
    private void ensureOpen() {
@@ -24,19 +24,19 @@ public class InputStreamReader extends Reader {
    }
 
    @Override
-   public int read(char[] var1, int var2, int var3) {
+   public int read(char[] cbuf, int off, int len) {
       this.ensureOpen();
-      if (var2 < 0 || var2 > var1.length || var3 < 0 || var2 + var3 > var1.length || var2 + var3 < 0) {
+      if (off < 0 || off > cbuf.length || len < 0 || off + len > cbuf.length || off + len < 0) {
          throw new IndexOutOfBoundsException();
       } else {
-         return var3 == 0 ? 0 : this.in.read(var1, var2, var3);
+         return len == 0 ? 0 : this.in.read(cbuf, off, len);
       }
    }
 
    @Override
-   public long skip(long var1) {
+   public long skip(long n) {
       this.ensureOpen();
-      return this.in.skip(var1);
+      return this.in.skip(n);
    }
 
    @Override
@@ -51,9 +51,9 @@ public class InputStreamReader extends Reader {
    }
 
    @Override
-   public void mark(int var1) {
+   public void mark(int readAheadLimit) {
       this.ensureOpen();
-      this.in.mark(var1);
+      this.in.mark(readAheadLimit);
    }
 
    @Override

@@ -4,38 +4,38 @@ public class AbstractStringWrapper implements AbstractString {
    protected AbstractStringWrapper() {
    }
 
-   public static AbstractStringWrapper createInstance(Object var0) {
+   public static AbstractStringWrapper createInstance(Object string) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void reset(Object var1) {
+   public void reset(Object _1) {
       throw null;
    }
 
    @Override
    public int hashCode() {
-      int var1 = 0;
-      int var2 = this.length();
+      int hash = 0;
+      int idxMax = this.length();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         var1 = var1 * 31 + this.charAt(var3);
+      for (int idx = 0; idx < idxMax; idx++) {
+         hash = hash * 31 + this.charAt(idx);
       }
 
-      return var1;
+      return hash;
    }
 
    @Override
-   public void getChars(int var1, int var2, char[] var3, int var4) {
+   public void getChars(int _1, int _2, char[] _3, int _4) {
       throw null;
    }
 
    @Override
-   public char charAt(int var1) {
+   public char charAt(int _1) {
       throw null;
    }
 
    @Override
-   public int indexOf(char var1, int var2, int var3) {
+   public int indexOf(char _1, int _2, int _3) {
       throw null;
    }
 

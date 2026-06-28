@@ -3,8 +3,8 @@ package net.rim.device.api.listener;
 import net.rim.vm.WeakReference;
 
 final class EventListenerManager$PreEventNotification extends EventListenerManager$EventNotification {
-   EventListenerManager$PreEventNotification(WeakReference var1, Event var2) {
-      super(var1, null, var2);
+   EventListenerManager$PreEventNotification(WeakReference applicationWR, Event event) {
+      super(applicationWR, null, event);
    }
 
    @Override

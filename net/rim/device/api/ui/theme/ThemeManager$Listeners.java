@@ -8,26 +8,26 @@ import net.rim.device.internal.ui.UiOptionsRegistry;
 
 class ThemeManager$Listeners implements GlobalEventListener, LowMemoryListener, RegistryListener {
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == -4232371946002803201L) {
-         Theme var7 = ThemeManager._instance._activeTheme;
-         if (var7 != null) {
-            var7.clearAppIconCache();
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == -4232371946002803201L) {
+         Theme theme = ThemeManager._instance._activeTheme;
+         if (theme != null) {
+            theme.clearAppIconCache();
          }
       }
    }
 
    @Override
-   public boolean freeStaleObject(int var1) {
-      boolean var2 = false;
-      if (var1 == 0) {
-         Theme var3 = ThemeManager._instance._activeTheme;
-         if (var3 != null) {
-            var2 = var3.freeStaleObject(var1);
+   public boolean freeStaleObject(int priority) {
+      boolean ret = false;
+      if (priority == 0) {
+         Theme theme = ThemeManager._instance._activeTheme;
+         if (theme != null) {
+            ret = theme.freeStaleObject(priority);
          }
       }
 
-      return var2;
+      return ret;
    }
 
    @Override
@@ -35,21 +35,21 @@ class ThemeManager$Listeners implements GlobalEventListener, LowMemoryListener, 
       this.updateThemeFromRegistry(true);
    }
 
-   private void updateThemeFromRegistry(boolean var1) {
-      String var2 = UiOptionsRegistry.getInstance().getString(-7276267599751932452L);
-      if (var2 != null && !var2.equals(ThemeManager._instance._activeThemeName)) {
-         int var3 = ThemeManager.getIndex(var2);
-         if (var3 == -1 || var3 == 0 && Graphics.isColor()) {
-            var2 = null;
+   private void updateThemeFromRegistry(boolean restore) {
+      String newTheme = UiOptionsRegistry.getInstance().getString(-7276267599751932452L);
+      if (newTheme != null && !newTheme.equals(ThemeManager._instance._activeThemeName)) {
+         int index = ThemeManager.getIndex(newTheme);
+         if (index == -1 || index == 0 && Graphics.isColor()) {
+            newTheme = null;
          }
 
-         ThemeManager.setActiveTheme(var2, var1);
+         ThemeManager.setActiveTheme(newTheme, restore);
       }
    }
 
    @Override
-   public void registryChanged(long var1) {
-      if (var1 == -7276267599751932452L) {
+   public void registryChanged(long key) {
+      if (key == -7276267599751932452L) {
          this.updateThemeFromRegistry(false);
       }
    }

@@ -8,26 +8,26 @@ public final class TextHitInfo {
    public TextHitInfo() {
    }
 
-   public TextHitInfo(int var1, boolean var2) {
-      this._index = var1;
-      this._leadingEdge = var2;
+   public TextHitInfo(int aIndex, boolean aLeadingEdge) {
+      this._index = aIndex;
+      this._leadingEdge = aLeadingEdge;
    }
 
-   public final void set(int var1, boolean var2) {
-      this._index = var1;
-      this._leadingEdge = var2;
+   public final void set(int aIndex, boolean aLeadingEdge) {
+      this._index = aIndex;
+      this._leadingEdge = aLeadingEdge;
    }
 
-   public final boolean less(TextHitInfo var1) {
-      return this._index < var1._index || this._index == var1._index && !this._leadingEdge && var1._leadingEdge;
+   public final boolean less(TextHitInfo aInfo) {
+      return this._index < aInfo._index || this._index == aInfo._index && !this._leadingEdge && aInfo._leadingEdge;
    }
 
    public final Object clone() {
       return new TextHitInfo(this._index, this._leadingEdge);
    }
 
-   public final boolean equals(TextHitInfo var1) {
-      return this._index == var1._index && this._leadingEdge == var1._leadingEdge;
+   public final boolean equals(TextHitInfo aInfo) {
+      return this._index == aInfo._index && this._leadingEdge == aInfo._leadingEdge;
    }
 
    public final int getIndex() {
@@ -38,14 +38,14 @@ public final class TextHitInfo {
       return this._leadingEdge;
    }
 
-   public static final TextHitInfo leading(int var0) {
-      _tempHitInfo._index = var0;
+   public static final TextHitInfo leading(int aIndex) {
+      _tempHitInfo._index = aIndex;
       _tempHitInfo._leadingEdge = true;
       return _tempHitInfo;
    }
 
-   public static final TextHitInfo trailing(int var0) {
-      _tempHitInfo._index = var0;
+   public static final TextHitInfo trailing(int aIndex) {
+      _tempHitInfo._index = aIndex;
       _tempHitInfo._leadingEdge = false;
       return _tempHitInfo;
    }

@@ -8,15 +8,15 @@ public final class AttribRun {
    public AttribRun() {
    }
 
-   public AttribRun(int var1, int var2, int var3) {
-      this.iStart = var1;
-      this.iLength = var2;
-      this.iAttrib = var3;
+   public AttribRun(int aStart, int aLength, int aAttrib) {
+      this.iStart = aStart;
+      this.iLength = aLength;
+      this.iAttrib = aAttrib;
    }
 
-   public final void init(AttribRun var1) {
-      this.iStart = var1.iStart;
-      this.iLength = var1.iLength;
-      this.iAttrib = var1.iAttrib;
+   public final void init(AttribRun aRun) {
+      this.iStart = aRun.iStart;
+      this.iLength = aRun.iLength;
+      this.iAttrib = aRun.iAttrib;
    }
 }

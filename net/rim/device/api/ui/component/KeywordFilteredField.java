@@ -10,12 +10,12 @@ public class KeywordFilteredField extends VerticalFieldManager {
    private KeywordFilteredField$ListFieldCallbackImpl _listFieldCallback;
    private KeywordProvider _keywordProvider;
 
-   public KeywordFilteredField(ReadableList var1, KeywordProvider var2, String var3) {
-      this._keywordProvider = var2;
+   public KeywordFilteredField(ReadableList list, KeywordProvider provider, String findLabel) {
+      this._keywordProvider = provider;
       this._listFieldCallback = new KeywordFilteredField$ListFieldCallbackImpl();
-      this._finder = new KeywordFilteredListFinder(null, var3, false);
+      this._finder = new KeywordFilteredListFinder(null, findLabel, false);
       this._listField = new KeywordFilterCollectionListField(
-         (ReadableList)(new Object(var1, new KeywordFilteredField$KeywordIndexerHelperImpl(this))), this._listFieldCallback
+         (ReadableList)(new Object(list, new KeywordFilteredField$KeywordIndexerHelperImpl(this))), this._listFieldCallback
       );
       this.add(this._finder);
       this._finder.linkToField(this._listField);
@@ -24,12 +24,12 @@ public class KeywordFilteredField extends VerticalFieldManager {
    }
 
    @Override
-   public void delete(Field var1) {
+   public void delete(Field field) {
       throw new Object();
    }
 
    @Override
-   public void deleteRange(int var1, int var2) {
+   public void deleteRange(int start, int count) {
       throw new Object();
    }
 }

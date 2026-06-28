@@ -8,44 +8,44 @@ public class GPSLocationAiding {
    int _horUncertainty;
    int _altUncertainty;
 
-   public void setStatus(int var1) {
+   public void setStatus(int status) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setLatitude(float var1) {
-      int var2 = (int)var1 * 1000000;
-      if (var2 >= 0) {
-         this._latitude = var2;
+   public void setLatitude(float latitude) {
+      int value = (int)latitude * 1000000;
+      if (value >= 0) {
+         this._latitude = value;
       } else {
-         var2 = 0 - var2;
-         this._latitude = -2147483648 | var2;
+         value = 0 - value;
+         this._latitude = -2147483648 | value;
       }
    }
 
-   public void setLongitude(float var1) {
-      int var2 = (int)var1 * 1000000;
-      if (var2 >= 0) {
-         this._longitude = var2;
+   public void setLongitude(float longitude) {
+      int value = (int)longitude * 1000000;
+      if (value >= 0) {
+         this._longitude = value;
       } else {
-         var2 = 0 - var2;
-         this._longitude = -2147483648 | var2;
+         value = 0 - value;
+         this._longitude = -2147483648 | value;
       }
    }
 
-   public void setAltitude(int var1) {
-      int var2 = var1 & 32767;
-      if (var1 >= 0) {
-         this._altitude = 32768 | var2;
+   public void setAltitude(int altitude) {
+      int value = altitude & 32767;
+      if (altitude >= 0) {
+         this._altitude = 32768 | value;
       } else {
-         this._altitude = var2;
+         this._altitude = value;
       }
    }
 
-   public void setHorUncertainty(float var1) {
-      this._horUncertainty = (int)(var1 * 1120403456);
+   public void setHorUncertainty(float horUncertainty) {
+      this._horUncertainty = (int)(horUncertainty * 1120403456);
    }
 
-   public void setAltUncertainty(float var1) {
-      this._altUncertainty = (int)(var1 * 1120403456);
+   public void setAltUncertainty(float altUncertainty) {
+      this._altUncertainty = (int)(altUncertainty * 1120403456);
    }
 }

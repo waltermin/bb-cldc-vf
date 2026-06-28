@@ -16,8 +16,8 @@ public final class FileSystemJournal {
       return FileSystem.getNextJournalUSN();
    }
 
-   public static final FileSystemJournalEntry getEntry(long var0) {
+   public static final FileSystemJournalEntry getEntry(long usn) {
       assertPermissions();
-      return FileSystem.getJournalEntry(var0);
+      return FileSystem.getJournalEntry(usn);
    }
 }

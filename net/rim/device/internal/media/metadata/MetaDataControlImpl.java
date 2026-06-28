@@ -1,5 +1,6 @@
 package net.rim.device.internal.media.metadata;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.microedition.media.control.MetaDataControl;
 import net.rim.device.api.media.MetaDataObject;
@@ -9,33 +10,47 @@ public class MetaDataControlImpl implements MetaDataControl, BinaryMetaDataContr
    private Hashtable _metaData = (Hashtable)(new Object());
    private MetaDataObject[] _binaryObjects = new MetaDataObject[0];
 
-   public void put(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void put(String key, String value) {
+      if (value != null) {
+         synchronized (this._metaData) {
+            this._metaData.put(key, value);
+         }
+      }
    }
 
-   public void addObject(MetaDataObject var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addObject(MetaDataObject object) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public int size() {
       return this._metaData.size();
    }
 
-   public boolean containsKey(String var1) {
-      return this._metaData.containsKey(var1);
+   public boolean containsKey(String key) {
+      return this._metaData.containsKey(key);
    }
 
    @Override
    public String[] getKeys() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._metaData) {
+         String[] keys = new String[this._metaData.size()];
+         int i = 0;
+         Enumeration e = this._metaData.keys();
+
+         while (e.hasMoreElements()) {
+            keys[i++] = (String)e.nextElement();
+         }
+
+         return keys;
+      }
    }
 
    @Override
-   public String getKeyValue(String var1) {
-      if (var1 != null) {
-         Object var2 = this._metaData.get(var1);
-         if (var2 != null) {
-            return (String)var2;
+   public String getKeyValue(String key) {
+      if (key != null) {
+         String value = (String)this._metaData.get(key);
+         if (value != null) {
+            return value;
          }
       }
 

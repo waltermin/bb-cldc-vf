@@ -4,7 +4,7 @@ public class GPSSettings {
    private GPSSettings() {
    }
 
-   public static boolean setPDEInfo(String var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean setPDEInfo(String ip, int port) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

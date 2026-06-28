@@ -13,44 +13,44 @@ class FontPersist implements Persistable {
    public int[] _fontTransform;
    private static final long DEFAULT_FONT_KEY;
 
-   public FontPersist(Font var1) {
-      this._fontFamily = var1.getFontFamily().getName();
-      this._fontHeight = var1.getHeight(4194306);
-      this._fontStyle = var1.getStyle();
-      this._fontEffects = var1.getEffects();
-      this._fontAntialiasing = var1.getAntialiasMode();
+   public FontPersist(Font aFont) {
+      this._fontFamily = aFont.getFontFamily().getName();
+      this._fontHeight = aFont.getHeight(4194306);
+      this._fontStyle = aFont.getStyle();
+      this._fontEffects = aFont.getEffects();
+      this._fontAntialiasing = aFont.getAntialiasMode();
       this._fontTransform = new int[6];
-      System.arraycopy(var1.getTransform(), 0, this._fontTransform, 0, 6);
+      System.arraycopy(aFont.getTransform(), 0, this._fontTransform, 0, 6);
    }
 
-   static void setDefaultFont(Font var0) {
-      FontPersist var1 = new FontPersist(var0);
-      PersistentObject var2 = RIMPersistentStore.getPersistentObject(3057605627993471691L);
-      var2.setContents(var1, 51);
-      var2.commit();
+   static void setDefaultFont(Font aFont) {
+      FontPersist fp = new FontPersist(aFont);
+      PersistentObject po = RIMPersistentStore.getPersistentObject(3057605627993471691L);
+      po.setContents(fp, 51);
+      po.commit();
    }
 
    static Font getDefaultFont() {
-      PersistentObject var0 = RIMPersistentStore.getPersistentObject(3057605627993471691L);
-      FontPersist var1 = (FontPersist)var0.getContents();
-      if (var1 != null) {
-         String[] var2 = FontRegistry.getFontFamilies();
-         if (var2 != null && var2.length > 0 && var1._fontFamily != null) {
-            for (int var3 = 0; var3 < var2.length; var3++) {
-               if (var1._fontFamily.equals(var2[var3])) {
-                  FontFamily var4 = FontRegistry.get(var2[var3]);
-                  return var4.getFont(
-                     var1._fontStyle,
-                     var1._fontHeight,
+      PersistentObject po = RIMPersistentStore.getPersistentObject(3057605627993471691L);
+      FontPersist fp = (FontPersist)po.getContents();
+      if (fp != null) {
+         String[] fams = FontRegistry.getFontFamilies();
+         if (fams != null && fams.length > 0 && fp._fontFamily != null) {
+            for (int i = 0; i < fams.length; i++) {
+               if (fp._fontFamily.equals(fams[i])) {
+                  FontFamily ff = FontRegistry.get(fams[i]);
+                  return ff.getFont(
+                     fp._fontStyle,
+                     fp._fontHeight,
                      4194306,
-                     var1._fontAntialiasing,
-                     var1._fontEffects,
-                     var1._fontTransform[0],
-                     var1._fontTransform[1],
-                     var1._fontTransform[2],
-                     var1._fontTransform[3],
-                     var1._fontTransform[4],
-                     var1._fontTransform[5]
+                     fp._fontAntialiasing,
+                     fp._fontEffects,
+                     fp._fontTransform[0],
+                     fp._fontTransform[1],
+                     fp._fontTransform[2],
+                     fp._fontTransform[3],
+                     fp._fontTransform[4],
+                     fp._fontTransform[5]
                   );
                }
             }

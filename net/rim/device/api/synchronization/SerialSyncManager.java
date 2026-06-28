@@ -12,19 +12,19 @@ public class SerialSyncManager {
       return (SerialSyncManager)ApplicationRegistry.getApplicationRegistry().waitForStartup(-8492808042306585331L);
    }
 
-   public void enableSynchronization(SyncCollection var1) {
+   public void enableSynchronization(SyncCollection _1) {
       throw null;
    }
 
-   public void disableSynchronization(SyncCollection var1) {
+   public void disableSynchronization(SyncCollection _1) {
       throw null;
    }
 
-   public void addSyncListener(SerialSyncListener var1) {
+   public void addSyncListener(SerialSyncListener _1) {
       throw null;
    }
 
-   public void removeSyncListener(SerialSyncListener var1) {
+   public void removeSyncListener(SerialSyncListener _1) {
       throw null;
    }
 
@@ -32,7 +32,7 @@ public class SerialSyncManager {
       throw null;
    }
 
-   public void setStatusMessage(String var1) {
+   public void setStatusMessage(String _1) {
       throw null;
    }
 }

@@ -4,6 +4,6 @@ public final class StackOverflowError extends VirtualMachineError {
    public StackOverflowError() {
    }
 
-   public StackOverflowError(String var1) {
+   public StackOverflowError(String s) {
    }
 }

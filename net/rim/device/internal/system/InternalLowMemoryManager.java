@@ -7,7 +7,7 @@ public class InternalLowMemoryManager {
    }
 
    public static void exactPoll() {
-      ExactLowMemoryManager var0 = (ExactLowMemoryManager)ApplicationRegistry.getApplicationRegistry().waitFor(7979320271643693911L);
-      var0.exactPoll();
+      ExactLowMemoryManager lmm = (ExactLowMemoryManager)ApplicationRegistry.getApplicationRegistry().waitFor(7979320271643693911L);
+      lmm.exactPoll();
    }
 }

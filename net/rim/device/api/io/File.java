@@ -5,6 +5,7 @@ import net.rim.device.api.system.RadioInfo;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.io.file.FileSystem;
 import net.rim.device.internal.io.file.FileSystemInfo;
+import net.rim.device.internal.system.EventDispatchManager;
 
 public final class File {
    public static final int FILESYSTEM_PATRIOT;
@@ -20,62 +21,62 @@ public final class File {
       return RadioInfo.areWAFsSupported(8) && FileSystem.isSupported();
    }
 
-   public static final boolean isFileSystemSupported(int var0) {
-      return isSupported() ? FileSystem.isFileSystemSupported(var0) : false;
+   public static final boolean isFileSystemSupported(int fs) {
+      return isSupported() ? FileSystem.isFileSystemSupported(fs) : false;
    }
 
-   public static final void delete(int var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final void rename(int var0, String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final long getFileSystemTotalSpace(int var0) {
+   public static final void delete(int fs, String fileName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final long getFileSystemFreeSpace(int var0) {
+   public static final void rename(int fs, String oldFileName, String newFileName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final long getFileSize(int var0, String var1) {
+   public static final long getFileSystemTotalSpace(int fs) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String findFirst(int var0, String var1) {
+   public static final long getFileSystemFreeSpace(int fs) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean findFirst(int var0, String var1, FileInfo var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final String findNext(int var0) {
+   public static final long getFileSize(int fs, String fileName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean findNext(int var0, FileInfo var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String findFirst(int fs, String pattern) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final FileSystemInfo getFileSystemInfo(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean findFirst(int fs, String pattern, FileInfo fileInfo) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final int open(int var0, String var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String findNext(int fs) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void close(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean findNext(int fs, FileInfo fileInfo) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final boolean checkStatus(int var0) {
-      switch (var0) {
+   static final FileSystemInfo getFileSystemInfo(int fs) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   static final int open(int fs, String fileName, int mode) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   static final void close(int handle) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   static final boolean checkStatus(int status) {
+      switch (status) {
          case -1:
-            throw new FileIOException(var0);
+            throw new FileIOException(status);
          case 0:
          default:
             return true;
@@ -85,16 +86,25 @@ public final class File {
    }
 
    static final FileEventDispatcher getEventDispatcher() {
-      throw new RuntimeException("cod2jar: exception table");
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         FileEventDispatcher dispatcher = (FileEventDispatcher)dispatchManager.getDispatcher(19);
+         if (dispatcher == null) {
+            dispatcher = new FileEventDispatcher();
+            dispatchManager.setDispatcher(19, dispatcher);
+         }
+
+         return dispatcher;
+      }
    }
 
-   static final long read(int var0, byte[] var1) {
+   static final long read(int handle, byte[] data) {
       assertPermission();
-      return FileSystem.read(var0, var1);
+      return FileSystem.read(handle, data);
    }
 
-   static final int write(int var0, byte[] var1, int var2) {
+   static final int write(int handle, byte[] data, int length) {
       assertPermission();
-      return FileSystem.write(var0, var1, var2);
+      return FileSystem.write(handle, data, length);
    }
 }

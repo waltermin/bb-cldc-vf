@@ -5,8 +5,8 @@ import java.io.InputStream;
 final class TcpInputStream extends InputStream {
    private TcpSocket _socket;
 
-   public TcpInputStream(TcpSocket var1) {
-      this._socket = var1;
+   public TcpInputStream(TcpSocket socket) {
+      this._socket = socket;
    }
 
    @Override
@@ -15,8 +15,8 @@ final class TcpInputStream extends InputStream {
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
-      return this._socket.read(var1, var2, var3);
+   public final int read(byte[] b, int off, int len) {
+      return this._socket.read(b, off, len);
    }
 
    @Override

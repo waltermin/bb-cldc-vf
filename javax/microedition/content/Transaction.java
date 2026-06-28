@@ -5,28 +5,28 @@ import java.util.Hashtable;
 class Transaction extends Hashtable {
    private Invocation _curr;
 
-   Transaction(Invocation var1, RegistryImpl var2) {
-      this.put(var1, var2);
-      this._curr = var1;
+   Transaction(Invocation invocation, RegistryImpl registry) {
+      this.put(invocation, registry);
+      this._curr = invocation;
    }
 
    synchronized Invocation getActiveInvocation() {
       return this._curr;
    }
 
-   synchronized void append(Invocation var1, RegistryImpl var2) {
-      this.put(var1, var2);
-      this._curr = var1;
+   synchronized void append(Invocation invocation, RegistryImpl registry) {
+      this.put(invocation, registry);
+      this._curr = invocation;
    }
 
-   synchronized void remove(Invocation var1) {
+   synchronized void remove(Invocation key) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized void replaceActive(Invocation var1) {
-      RegistryImpl var2 = (RegistryImpl)this.get(this._curr);
+   synchronized void replaceActive(Invocation newInvocation) {
+      RegistryImpl ri = (RegistryImpl)this.get(this._curr);
       super.remove(this._curr);
-      this.put(var1, var2);
-      this._curr = var1;
+      this.put(newInvocation, ri);
+      this._curr = newInvocation;
    }
 }

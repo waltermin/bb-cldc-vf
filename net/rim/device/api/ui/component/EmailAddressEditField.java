@@ -7,18 +7,18 @@ public class EmailAddressEditField extends EditField {
    private boolean _convertSpace = true;
    private boolean _inBackspace;
 
-   public EmailAddressEditField(String var1, String var2) {
-      super(var1, var2, 1000000, 2147483648L);
+   public EmailAddressEditField(String label, String initialValue) {
+      super(label, initialValue, 1000000, 2147483648L);
       this.commonInit();
    }
 
-   public EmailAddressEditField(String var1, String var2, int var3) {
-      super(var1, var2, var3, 2147483648L);
+   public EmailAddressEditField(String label, String initialValue, int maxNumChars) {
+      super(label, initialValue, maxNumChars, 2147483648L);
       this.commonInit();
    }
 
-   public EmailAddressEditField(String var1, String var2, int var3, long var4) {
-      super(var1, var2, var3, var4);
+   public EmailAddressEditField(String label, String initialValue, int maxNumChars, long style) {
+      super(label, initialValue, maxNumChars, style);
       this.commonInit();
    }
 
@@ -34,38 +34,38 @@ public class EmailAddressEditField extends EditField {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected int insert(String var1, int var2) {
+   protected int insert(String text, int context) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected boolean insert(char var1, int var2) {
+   protected boolean insert(char key, int status) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
-      super.notifyTextChanged(var1, var2);
-      boolean var3 = this._convertSpace;
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
+      super.notifyTextChanged(aParams, aIsInsertionOrDeletion);
+      boolean convertSpace = this._convertSpace;
       if (!this._inBackspace) {
          this._convertSpace = true;
       }
 
-      int var4 = var1._changedTextStart;
-      if (var2 && var1._newLength == 1 && super._text.charAt(var4) == ' ') {
-         int var5 = super._text.getText().indexOf('@', this.getLabelLength(), super._text.length());
-         if (var5 == -1) {
-            if (var3) {
-               super._text.replace(var4, var4 + 1, '@');
+      int start = aParams._changedTextStart;
+      if (aIsInsertionOrDeletion && aParams._newLength == 1 && super._text.charAt(start) == ' ') {
+         int atIndex = super._text.getText().indexOf('@', this.getLabelLength(), super._text.length());
+         if (atIndex == -1) {
+            if (convertSpace) {
+               super._text.replace(start, start + 1, '@');
                return;
             }
-         } else if (var3) {
-            super._text.replace(var4, var4 + 1, '.');
+         } else if (convertSpace) {
+            super._text.replace(start, start + 1, '.');
          }
       }
    }

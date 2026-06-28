@@ -5,8 +5,8 @@ final class BreakingDataRegistryHelper$BreakingData {
    int _locale;
    byte[][][] _binaryData;
 
-   BreakingDataRegistryHelper$BreakingData(int var1, int var2) {
-      this._dataType = var2;
-      this._locale = var1;
+   BreakingDataRegistryHelper$BreakingData(int locale, int dataType) {
+      this._dataType = dataType;
+      this._locale = locale;
    }
 }

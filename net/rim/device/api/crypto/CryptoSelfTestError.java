@@ -7,8 +7,8 @@ public class CryptoSelfTestError extends Error {
       Process.killProcessIfThisThreadDies(true);
    }
 
-   public CryptoSelfTestError(String var1) {
-      super(var1);
+   public CryptoSelfTestError(String msg) {
+      super(msg);
       Process.killProcessIfThisThreadDies(true);
    }
 }

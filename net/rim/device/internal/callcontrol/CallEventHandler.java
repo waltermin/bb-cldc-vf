@@ -1,102 +1,102 @@
 package net.rim.device.internal.callcontrol;
 
 public class CallEventHandler extends AbstractCallEventHandler {
-   protected CallEventHandler(int var1) {
+   protected CallEventHandler(int order) {
    }
 
    @Override
-   public void callAdded(int var1) {
-      this.getNext().callAdded(var1);
+   public void callAdded(int callId) {
+      this.getNext().callAdded(callId);
    }
 
    @Override
-   public void callConnected(int var1) {
-      this.getNext().callConnected(var1);
+   public void callConnected(int callId) {
+      this.getNext().callConnected(callId);
    }
 
    @Override
-   public void callDelivered(int var1) {
-      this.getNext().callDelivered(var1);
+   public void callDelivered(int callId) {
+      this.getNext().callDelivered(callId);
    }
 
    @Override
-   public void callDisconnected(int var1) {
-      this.getNext().callDisconnected(var1);
+   public void callDisconnected(int callId) {
+      this.getNext().callDisconnected(callId);
    }
 
    @Override
-   public void callDisplayUpdated(int var1) {
-      this.getNext().callDisplayUpdated(var1);
+   public void callDisplayUpdated(int callId) {
+      this.getNext().callDisplayUpdated(callId);
    }
 
    @Override
-   public void callFailed(int var1, int var2) {
-      this.getNext().callFailed(var1, var2);
+   public void callFailed(int callId, int error) {
+      this.getNext().callFailed(callId, error);
    }
 
    @Override
-   public void callHeld(int var1) {
-      this.getNext().callHeld(var1);
+   public void callHeld(int callId) {
+      this.getNext().callHeld(callId);
    }
 
    @Override
-   public void callIncoming(int var1) {
-      this.getNext().callIncoming(var1);
+   public void callIncoming(int callId) {
+      this.getNext().callIncoming(callId);
    }
 
    @Override
-   public void callInitiated(int var1) {
-      this.getNext().callInitiated(var1);
+   public void callInitiated(int callId) {
+      this.getNext().callInitiated(callId);
    }
 
    @Override
-   public void callManipulateFailed(int var1, int var2) {
-      this.getNext().callManipulateFailed(var1, var2);
+   public void callManipulateFailed(int callId, int error) {
+      this.getNext().callManipulateFailed(callId, error);
    }
 
    @Override
-   public void callOTAStatusUpdated(int var1, int var2) {
-      this.getNext().callOTAStatusUpdated(var1, var2);
+   public void callOTAStatusUpdated(int callId, int status) {
+      this.getNext().callOTAStatusUpdated(callId, status);
    }
 
    @Override
-   public void callRemoved(int var1) {
-      this.getNext().callRemoved(var1);
+   public void callRemoved(int callId) {
+      this.getNext().callRemoved(callId);
    }
 
    @Override
-   public void callResumed(int var1) {
-      this.getNext().callResumed(var1);
+   public void callResumed(int callId) {
+      this.getNext().callResumed(callId);
    }
 
    @Override
-   public void callTransferred(int var1, int var2) {
-      this.getNext().callTransferred(var1, var2);
+   public void callTransferred(int status, int reason) {
+      this.getNext().callTransferred(status, reason);
    }
 
    @Override
-   public void callWaiting(int var1) {
-      this.getNext().callWaiting(var1);
+   public void callWaiting(int callId) {
+      this.getNext().callWaiting(callId);
    }
 
    @Override
-   public void callVoicePrivacyUpdated(int var1, boolean var2) {
-      this.getNext().callVoicePrivacyUpdated(var1, var2);
+   public void callVoicePrivacyUpdated(int callId, boolean on) {
+      this.getNext().callVoicePrivacyUpdated(callId, on);
    }
 
    @Override
-   public void callTransferStateUpdated(int var1, int var2) {
-      this.getNext().callTransferStateUpdated(var1, var2);
+   public void callTransferStateUpdated(int callId, int state) {
+      this.getNext().callTransferStateUpdated(callId, state);
    }
 
    @Override
-   public void dtmfData(int var1) {
-      this.getNext().dtmfData(var1);
+   public void dtmfData(int dtmf) {
+      this.getNext().dtmfData(dtmf);
    }
 
    @Override
-   public void callTimerUpdated(int var1, int var2) {
-      this.getNext().callTimerUpdated(var1, var2);
+   public void callTimerUpdated(int callId, int time) {
+      this.getNext().callTimerUpdated(callId, time);
    }
 
    @Override
@@ -105,23 +105,23 @@ public class CallEventHandler extends AbstractCallEventHandler {
    }
 
    @Override
-   public void responseEnableFDN(int var1) {
-      this.getNext().responseEnableFDN(var1);
+   public void responseEnableFDN(int status) {
+      this.getNext().responseEnableFDN(status);
    }
 
    @Override
-   public void ssNotification(int var1) {
-      this.getNext().ssNotification(var1);
+   public void ssNotification(int ssOption) {
+      this.getNext().ssNotification(ssOption);
    }
 
    @Override
-   public void ssPasswordRequested(int var1) {
-      this.getNext().ssPasswordRequested(var1);
+   public void ssPasswordRequested(int requestType) {
+      this.getNext().ssPasswordRequested(requestType);
    }
 
    @Override
-   public void ssRequestFailed(int var1, int var2, boolean var3) {
-      this.getNext().ssRequestFailed(var1, var2, var3);
+   public void ssRequestFailed(int reason, int bearerService, boolean isUSSDCmd) {
+      this.getNext().ssRequestFailed(reason, bearerService, isUSSDCmd);
    }
 
    @Override
@@ -130,33 +130,33 @@ public class CallEventHandler extends AbstractCallEventHandler {
    }
 
    @Override
-   public void ssRequestRejected(boolean var1) {
-      this.getNext().ssRequestRejected(var1);
+   public void ssRequestRejected(boolean isUSSDCmd) {
+      this.getNext().ssRequestRejected(isUSSDCmd);
    }
 
    @Override
-   public void ssRequestReleased(boolean var1) {
-      this.getNext().ssRequestReleased(var1);
+   public void ssRequestReleased(boolean isUSSDCmd) {
+      this.getNext().ssRequestReleased(isUSSDCmd);
    }
 
    @Override
-   public void ssRequestSucceeded(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
-      this.getNext().ssRequestSucceeded(var1, var2, var3, var4, var5, var6);
+   public void ssRequestSucceeded(int ss, int action, int result, int bearerService, boolean isUSSDCmd, boolean forwardingNumberAvailable) {
+      this.getNext().ssRequestSucceeded(ss, action, result, bearerService, isUSSDCmd, forwardingNumberAvailable);
    }
 
    @Override
-   public void ssUpdated(int var1, int var2) {
-      this.getNext().ssUpdated(var1, var2);
+   public void ssUpdated(int ssOption, int state) {
+      this.getNext().ssUpdated(ssOption, state);
    }
 
    @Override
-   public void ssUssDisplay(byte[] var1, int var2, boolean var3) {
-      this.getNext().ssUssDisplay(var1, var2, var3);
+   public void ssUssDisplay(byte[] data, int messageCoding, boolean collectInput) {
+      this.getNext().ssUssDisplay(data, messageCoding, collectInput);
    }
 
    @Override
-   public void voiceLineChanged(int var1) {
-      this.getNext().voiceLineChanged(var1);
+   public void voiceLineChanged(int line) {
+      this.getNext().voiceLineChanged(line);
    }
 
    @Override
@@ -165,7 +165,7 @@ public class CallEventHandler extends AbstractCallEventHandler {
    }
 
    @Override
-   public void voicemailCountUpdated(int var1, int var2) {
-      this.getNext().voicemailCountUpdated(var1, var2);
+   public void voicemailCountUpdated(int line, int count) {
+      this.getNext().voicemailCountUpdated(line, count);
    }
 }

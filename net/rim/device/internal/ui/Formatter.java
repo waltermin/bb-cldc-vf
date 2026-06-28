@@ -17,22 +17,32 @@ public class Formatter {
    private static int _errorReportCount;
 
    public static ArticInterface$Line incrementalFormat(
-      FormatParams var0, Field var1, int var2, AttributedString var3, int var4, boolean var5, int var6, boolean var7
+      FormatParams input, Field field, int width, AttributedString text, int cursor, boolean cursorLeadingEdge, int anchor, boolean doUpdateLayout
    ) {
-      return incrementalFormatHelper(var0, var1, var2, var3, var4, var5, var6, var7, false);
+      return incrementalFormatHelper(input, field, width, text, cursor, cursorLeadingEdge, anchor, doUpdateLayout, false);
    }
 
    private static ArticInterface$Line incrementalFormatHelper(
-      FormatParams var0, Field var1, int var2, AttributedString var3, int var4, boolean var5, int var6, boolean var7, boolean var8
+      FormatParams input,
+      Field field,
+      int width,
+      AttributedString text,
+      int cursor,
+      boolean cursorLeadingEdge,
+      int anchor,
+      boolean doUpdateLayout,
+      boolean afterFailure
    ) {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
-   private static ArticInterface$Line adjustLengths(int var0, ArticInterface$Layout var1, XYRect var2, ArticInterface$Line var3, ArticInterface$Line var4) {
+   private static ArticInterface$Line adjustLengths(
+      int aDelta, ArticInterface$Layout aLayout, XYRect aInvalid, ArticInterface$Line lineList, ArticInterface$Line startLine
+   ) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private static ArticInterface$Line readLines(ArticInterface$Layout var0, ArticInterface$Line var1, ArticInterface$Line var2) {
+   private static ArticInterface$Line readLines(ArticInterface$Layout aLayout, ArticInterface$Line lineList, ArticInterface$Line startLine) {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
@@ -40,83 +50,90 @@ public class Formatter {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
-   private static synchronized void returnLineToPool(ArticInterface$Line var0) {
-      var0._prev = null;
-      var0._next = _linesPool;
-      _linesPool = var0;
+   private static synchronized void returnLineToPool(ArticInterface$Line line) {
+      line._prev = null;
+      line._next = _linesPool;
+      _linesPool = line;
    }
 
-   public static ArticInterface$Line getLineInfoForDocPos(int var0, boolean var1, ArticInterface$Line var2, ArticInterface$LineInfo var3, boolean var4) {
-      if (var0 <= 0) {
-         if (var4) {
-            var3._line = var2;
-            var3._start = 0;
-            var3._top = 0;
+   public static ArticInterface$Line getLineInfoForDocPos(
+      int docPos, boolean leadingEdge, ArticInterface$Line lineList, ArticInterface$LineInfo info, boolean updateFormatParams
+   ) {
+      if (docPos <= 0) {
+         if (updateFormatParams) {
+            info._line = lineList;
+            info._start = 0;
+            info._top = 0;
          }
 
-         return var2;
+         return lineList;
       } else {
-         ArticInterface$Line var5 = var3._line;
-         int var6 = var3._start;
+         ArticInterface$Line line = info._line;
+         int start = info._start;
 
-         int var7;
-         for (var7 = var3._top; var0 < var6 || var0 == var6 && var0 > 0 && !var1; var7 -= var5._boundsBottom - var5._boundsTop) {
-            var5 = var5._prev;
-            var6 -= var5._textLength + var5._skippedCharacters;
+         int top;
+         for (top = info._top; docPos < start || docPos == start && docPos > 0 && !leadingEdge; top -= line._boundsBottom - line._boundsTop) {
+            line = line._prev;
+            start -= line._textLength + line._skippedCharacters;
          }
 
          while (true) {
-            int var8 = var6 + var5._textLength + var5._skippedCharacters;
-            if (var0 < var8 || var5._next == null || var0 == var8 && !var1) {
-               if (var4) {
-                  var3._line = var5;
-                  var3._start = var6;
-                  var3._top = var7;
+            int end = start + line._textLength + line._skippedCharacters;
+            if (docPos < end || line._next == null || docPos == end && !leadingEdge) {
+               if (updateFormatParams) {
+                  info._line = line;
+                  info._start = start;
+                  info._top = top;
                }
 
-               return var5;
+               return line;
             }
 
-            var6 = var8;
-            var7 += var5._boundsBottom - var5._boundsTop;
-            var5 = var5._next;
+            start = end;
+            top += line._boundsBottom - line._boundsTop;
+            line = line._next;
          }
       }
    }
 
-   public static void getLineInfoForYPos(int var0, ArticInterface$LineInfo var1) {
+   public static void getLineInfoForYPos(int aY, ArticInterface$LineInfo info) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public static void paint(
-      Graphics var0, DrawTextParam var1, ArticInterface$LineInfo var2, AttributedString$Iterator var3, Field var4, Formatter$TextRenderer var5
+      Graphics aGraphics,
+      DrawTextParam drawTextParam,
+      ArticInterface$LineInfo info,
+      AttributedString$Iterator iterator,
+      Field field,
+      Formatter$TextRenderer renderer
    ) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private static final void drawHighlightRegion(
-      Graphics var0,
-      int var1,
-      boolean var2,
-      int var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      DrawTextParam var10,
-      AttributedString$Picture var11,
-      int var12,
-      Field var13,
-      Formatter$TextRenderer var14
+      Graphics graphics,
+      int style,
+      boolean on,
+      int x,
+      int y,
+      int width,
+      int height,
+      int baseline_y,
+      int offset,
+      int length,
+      DrawTextParam drawTextParam,
+      AttributedString$Picture picture,
+      int run_flags,
+      Field field,
+      Formatter$TextRenderer renderer
    ) {
-      switch (ThemeAttributeSet.getFocusStyle(var13)) {
+      switch (ThemeAttributeSet.getFocusStyle(field)) {
          case -1:
             break;
          case 0:
          default:
-            switch (var1) {
+            switch (style) {
                case -1:
                   return;
                case 0:
@@ -125,61 +142,61 @@ public class Formatter {
                case 2:
                case 3:
                default:
-                  var0.invert(var3, var4, var5, var6);
+                  graphics.invert(x, y, width, height);
                   return;
             }
          case 1:
-            switch (var1) {
+            switch (style) {
                case -1:
                   return;
                case 0:
                   throw new Object();
                case 2:
-                  var0.invert(var3, var4, var5, var6);
+                  graphics.invert(x, y, width, height);
                   return;
                case 3:
                default:
-                  var0.invert(var3, var4, var5, var6);
+                  graphics.invert(x, y, width, height);
                case 1:
-                  int var15 = var4 + (var6 >> 1);
-                  var0.invert(var3, var15, var5, 1);
+                  int mid = y + (height >> 1);
+                  graphics.invert(x, mid, width, 1);
                   return;
             }
          case 2:
-            if (!var2) {
-               var0.pushContext(var3, var4, var5, var6, 0, 0);
-               if (var2) {
-                  var0.setDrawingStyle(8, (var1 & 1) != 0);
-                  var0.setDrawingStyle(16, (var1 & 2) != 0);
+            if (!on) {
+               graphics.pushContext(x, y, width, height, 0, 0);
+               if (on) {
+                  graphics.setDrawingStyle(8, (style & 1) != 0);
+                  graphics.setDrawingStyle(16, (style & 2) != 0);
                }
 
-               var0.clear();
-               drawPictureOrText(var0, var3, var7, var8, var9, var10, var11, var12, var14);
-               var0.popContext();
+               graphics.clear();
+               drawPictureOrText(graphics, x, baseline_y, offset, length, drawTextParam, picture, run_flags, renderer);
+               graphics.popContext();
                return;
             }
 
-            switch (var1) {
+            switch (style) {
                case -1:
                   return;
                case 0:
                   throw new Object();
                case 1:
-                  var0.drawRect(var3, var4, var5, var6);
+                  graphics.drawRect(x, y, width, height);
                   return;
                case 3:
                default:
-                  var0.drawRect(var3, var4, var5, var6);
+                  graphics.drawRect(x, y, width, height);
                case 2:
-                  var0.invert(var3, var4, var5, var6);
+                  graphics.invert(x, y, width, height);
                   return;
             }
          case 3:
-            var0.pushContext(var3, var4, var5, var6, 0, 0);
-            if (var2) {
-               var0.setDrawingStyle(8, (var1 & 1) != 0);
-               var0.setDrawingStyle(16, (var1 & 2) != 0);
-               switch (var1) {
+            graphics.pushContext(x, y, width, height, 0, 0);
+            if (on) {
+               graphics.setDrawingStyle(8, (style & 1) != 0);
+               graphics.setDrawingStyle(16, (style & 2) != 0);
+               switch (style) {
                   case -1:
                      break;
                   case 0:
@@ -187,111 +204,156 @@ public class Formatter {
                   case 1:
                   case 3:
                   default:
-                     var0.setColor(ThemeAttributeSet.getColor(var13, 3));
-                     var0.setBackgroundColor(ThemeAttributeSet.getColor(var13, 2));
+                     graphics.setColor(ThemeAttributeSet.getColor(field, 3));
+                     graphics.setBackgroundColor(ThemeAttributeSet.getColor(field, 2));
                      break;
                   case 2:
-                     var0.setColor(ThemeAttributeSet.getColor(var13, 5));
-                     var0.setBackgroundColor(ThemeAttributeSet.getColor(var13, 4));
+                     graphics.setColor(ThemeAttributeSet.getColor(field, 5));
+                     graphics.setBackgroundColor(ThemeAttributeSet.getColor(field, 4));
                }
 
-               var0.setBackgroundImage(null, 0, 0);
+               graphics.setBackgroundImage(null, 0, 0);
             }
 
-            var0.clear();
-            drawPictureOrText(var0, var3, var7, var8, var9, var10, var11, var12, var14);
-            var0.popContext();
+            graphics.clear();
+            drawPictureOrText(graphics, x, baseline_y, offset, length, drawTextParam, picture, run_flags, renderer);
+            graphics.popContext();
             return;
          case 4:
-            var0.pushContext(var3, var4, var5, var6, 0, 0);
-            if (var2) {
-               var0.setDrawingStyle(8, (var1 & 1) != 0);
-               var0.setDrawingStyle(16, (var1 & 2) != 0);
+            graphics.pushContext(x, y, width, height, 0, 0);
+            if (on) {
+               graphics.setDrawingStyle(8, (style & 1) != 0);
+               graphics.setDrawingStyle(16, (style & 2) != 0);
             }
 
-            var0.clear();
-            drawPictureOrText(var0, var3, var7, var8, var9, var10, var11, var12, var14);
-            var0.popContext();
+            graphics.clear();
+            drawPictureOrText(graphics, x, baseline_y, offset, length, drawTextParam, picture, run_flags, renderer);
+            graphics.popContext();
       }
    }
 
    private static void drawPictureOrText(
-      Graphics var0, int var1, int var2, int var3, int var4, DrawTextParam var5, AttributedString$Picture var6, int var7, Formatter$TextRenderer var8
+      Graphics graphics,
+      int x,
+      int y,
+      int offset,
+      int length,
+      DrawTextParam drawTextParam,
+      AttributedString$Picture picture,
+      int run_flags,
+      Formatter$TextRenderer renderer
    ) {
-      if (var6 != null) {
-         var6.draw(var0, var1, var2 + var6.getInfo()._y);
-      } else if ((var7 & 16) != 0) {
-         var0.drawText('‐', var1, var2, 8, -1);
-      } else if ((var7 & 8) == 0) {
-         var8.drawText(var0, var3, var4, var1, var2, var5);
+      if (picture != null) {
+         picture.draw(graphics, x, y + picture.getInfo()._y);
+      } else if ((run_flags & 16) != 0) {
+         graphics.drawText('‐', x, y, 8, -1);
+      } else if ((run_flags & 8) == 0) {
+         renderer.drawText(graphics, offset, length, x, y, drawTextParam);
       }
    }
 
    public static ArticInterface$Line setSelection(
-      ArticInterface$Line var0, int var1, int var2, int var3, int var4, boolean var5, int var6, AttributedString var7, FormatParams var8
+      ArticInterface$Line lineList,
+      int oldAnchor,
+      int oldCursor,
+      int newAnchor,
+      int newCursor,
+      boolean newCursorLeadingEdge,
+      int width,
+      AttributedString text,
+      FormatParams formatParams
    ) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private static ArticInterface$Line reformatAfterSelectionChange(
-      ArticInterface$Line var0, int var1, int var2, int var3, AttributedString var4, int var5, boolean var6, int var7, ArticInterface$LineInfo var8, int var9
+      ArticInterface$Line lineList,
+      int lineStart,
+      int lineEnd,
+      int width,
+      AttributedString text,
+      int cursor,
+      boolean cursorLeadingEdge,
+      int anchor,
+      ArticInterface$LineInfo cursorLineInfo,
+      int formatFlags
    ) {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static void getTextBounds(int var0, int var1, XYRect var2, ArticInterface$Line var3, int var4, int var5) {
-      var2.set(0, 0, 0, 0);
-      int var6 = var5;
-      int var7 = var3._boundsBottom - var3._boundsTop;
-      var0 -= var4;
-      var1 -= var4;
-      int var8 = var3._layoutRun == null ? 0 : var3._layoutRun.length;
-      int var9 = var3._originX;
+   public static void getTextBounds(int offset1, int offset2, XYRect rect, ArticInterface$Line line, int lineStart, int lineTop) {
+      rect.set(0, 0, 0, 0);
+      int y = lineTop;
+      int height = line._boundsBottom - line._boundsTop;
+      offset1 -= lineStart;
+      offset2 -= lineStart;
+      int runs = line._layoutRun == null ? 0 : line._layoutRun.length;
+      int run_x = line._originX;
 
-      for (int var10 = 0; var10 < var8; var10++) {
-         ArticInterface$LayoutRun var11 = var3._layoutRun[var10];
-         if (var0 <= var11._textStart && var11._textStart + var11._textLength <= var1) {
-            var2.union(var9, var6, var11._advance, var7);
+      for (int i = 0; i < runs; i++) {
+         ArticInterface$LayoutRun run = line._layoutRun[i];
+         if (offset1 <= run._textStart && run._textStart + run._textLength <= offset2) {
+            rect.union(run_x, y, run._advance, height);
          }
 
-         var9 += var11._advance;
+         run_x += run._advance;
       }
    }
 
-   public static void printPerformanceStats(long var0) {
+   public static void printPerformanceStats(long aTotalTime) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private static ArticInterface$Line recoverArticFailure(
-      RuntimeException var0, FormatParams var1, Field var2, int var3, AttributedString var4, int var5, boolean var6, int var7, boolean var8, boolean var9
+      RuntimeException e,
+      FormatParams input,
+      Field field,
+      int width,
+      AttributedString text,
+      int cursor,
+      boolean cursorLeadingEdge,
+      int anchor,
+      boolean doUpdateLayout,
+      boolean afterFailure
    ) {
-      if (var9) {
-         throw var0;
+      if (afterFailure) {
+         throw e;
       }
 
-      var0.printStackTrace();
+      e.printStackTrace();
       reportArticException(
-         var4, var3, var1, var5, var6, 0, 0, var7, var1._cursorLineInfo._start, var1._cursorLineInfo._top, var1._cursorLineInfo._line, var1._lineList
+         text,
+         width,
+         input,
+         cursor,
+         cursorLeadingEdge,
+         0,
+         0,
+         anchor,
+         input._cursorLineInfo._start,
+         input._cursorLineInfo._top,
+         input._cursorLineInfo._line,
+         input._lineList
       );
-      ArticInterface$Line var10 = new ArticInterface$Line();
-      var10._flags = 3;
-      var1.init(0, 0, var4.length(), var5, false, var10);
-      return incrementalFormatHelper(var1, var2, var3, var4, var5, var6, var7, var8, true);
+      ArticInterface$Line lineList = new ArticInterface$Line();
+      lineList._flags = 3;
+      input.init(0, 0, text.length(), cursor, false, lineList);
+      return incrementalFormatHelper(input, field, width, text, cursor, cursorLeadingEdge, anchor, doUpdateLayout, true);
    }
 
    public static void reportArticException(
-      AttributedString var0,
-      int var1,
-      FormatParams var2,
-      int var3,
-      boolean var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      ArticInterface$Line var10,
-      ArticInterface$Line var11
+      AttributedString text,
+      int width,
+      FormatParams input,
+      int cursor,
+      boolean cursorLeadingEdge,
+      int x,
+      int y,
+      int anchor,
+      int cursorLineStart,
+      int cursorLineTop,
+      ArticInterface$Line cursorLine,
+      ArticInterface$Line lineList
    ) {
       throw new RuntimeException("cod2jar: ldc");
    }

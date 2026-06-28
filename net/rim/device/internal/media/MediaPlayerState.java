@@ -9,44 +9,44 @@ public class MediaPlayerState {
    private WeakReference _mediaPlayer;
    private static final long APP_REGISTRY_KEY;
 
-   public static void setMediaPlayer(MediaPlayerStateInstance var0) {
-      MediaPlayerState var1 = getInstance();
-      if (var1 != null) {
-         if (var0 == null) {
-            var1._mediaPlayer = null;
+   public static void setMediaPlayer(MediaPlayerStateInstance player) {
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         if (player == null) {
+            instance._mediaPlayer = null;
             return;
          }
 
-         var1._mediaPlayer = (WeakReference)(new Object(var0));
+         instance._mediaPlayer = (WeakReference)(new Object(player));
       }
    }
 
-   public static void registerPlayer(MediaPlayerStateInstance var0) {
-      MediaPlayerState var1 = getInstance();
-      if (var1 != null) {
-         Object var2 = new Object(var0);
-         Arrays.add(var1._players, var2);
+   public static void registerPlayer(MediaPlayerStateInstance player) {
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference wr = (WeakReference)(new Object(player));
+         Arrays.add(instance._players, wr);
       }
 
       clean();
    }
 
-   public static void deregisterPlayer(MediaPlayerStateInstance var0) {
-      MediaPlayerState var1 = getInstance();
-      if (var1 != null) {
-         WeakReference[] var2 = var1._players;
-         WeakReference var3 = null;
+   public static void deregisterPlayer(MediaPlayerStateInstance player) {
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference[] players = instance._players;
+         WeakReference wr = null;
 
-         for (int var4 = var2.length - 1; var4 >= 0; var4--) {
-            var3 = var2[var4];
-            MediaPlayerStateInstance var5 = (MediaPlayerStateInstance)var3.get();
-            if (var5 != null && var5 == var0) {
+         for (int i = players.length - 1; i >= 0; i--) {
+            wr = players[i];
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null && mps == player) {
                break;
             }
          }
 
-         if (var3 != null) {
-            Arrays.remove(var1._players, var3);
+         if (wr != null) {
+            Arrays.remove(instance._players, wr);
          }
       }
 
@@ -54,18 +54,18 @@ public class MediaPlayerState {
    }
 
    private static void clean() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference[] var1 = var0._players;
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference[] players = instance._players;
 
-         for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-            WeakReference var3 = var1[var2];
-            if (var3.get() == null) {
-               Arrays.remove(var0._players, var3);
+         for (int i = players.length - 1; i >= 0; i--) {
+            WeakReference wr = players[i];
+            if (wr.get() == null) {
+               Arrays.remove(instance._players, wr);
             }
          }
 
-         if (var1.length == 0) {
+         if (players.length == 0) {
             ApplicationRegistry.getApplicationRegistry().remove(-4927398290786462096L);
          }
       }
@@ -73,24 +73,24 @@ public class MediaPlayerState {
 
    public static boolean areAnyPlayersRegistered() {
       clean();
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference[] var1 = var0._players;
-         return var1.length > 0 || isMediaPlayerRegistered();
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference[] players = instance._players;
+         return players.length > 0 || isMediaPlayerRegistered();
       } else {
          return false;
       }
    }
 
    public static boolean isPlaying() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference[] var1 = var0._players;
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference[] players = instance._players;
 
-         for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-            WeakReference var3 = var1[var2];
-            MediaPlayerStateInstance var4 = (MediaPlayerStateInstance)var3.get();
-            if (var4 != null && var4.isPlayerPlaying()) {
+         for (int i = players.length - 1; i >= 0; i--) {
+            WeakReference wr = players[i];
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null && mps.isPlayerPlaying()) {
                return true;
             }
          }
@@ -100,13 +100,13 @@ public class MediaPlayerState {
    }
 
    public static boolean isMediaPlayerPlaying() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference var1 = var0._mediaPlayer;
-         if (var1 != null) {
-            MediaPlayerStateInstance var2 = (MediaPlayerStateInstance)var1.get();
-            if (var2 != null) {
-               return var2.isPlayerPlaying();
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference wr = instance._mediaPlayer;
+         if (wr != null) {
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null) {
+               return mps.isPlayerPlaying();
             }
          }
       }
@@ -115,13 +115,13 @@ public class MediaPlayerState {
    }
 
    public static boolean isMediaPlayerPaused() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference var1 = var0._mediaPlayer;
-         if (var1 != null) {
-            MediaPlayerStateInstance var2 = (MediaPlayerStateInstance)var1.get();
-            if (var2 != null) {
-               return var2.isPlayerPaused();
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference wr = instance._mediaPlayer;
+         if (wr != null) {
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null) {
+               return mps.isPlayerPaused();
             }
          }
       }
@@ -130,13 +130,13 @@ public class MediaPlayerState {
    }
 
    public static String getMediaPlayerURL() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference var1 = var0._mediaPlayer;
-         if (var1 != null) {
-            MediaPlayerStateInstance var2 = (MediaPlayerStateInstance)var1.get();
-            if (var2 != null) {
-               return var2.getPlayingURL();
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference wr = instance._mediaPlayer;
+         if (wr != null) {
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null) {
+               return mps.getPlayingURL();
             }
          }
       }
@@ -145,12 +145,12 @@ public class MediaPlayerState {
    }
 
    public static boolean isMediaPlayerRegistered() {
-      MediaPlayerState var0 = getInstance();
-      if (var0 != null) {
-         WeakReference var1 = var0._mediaPlayer;
-         if (var1 != null) {
-            MediaPlayerStateInstance var2 = (MediaPlayerStateInstance)var1.get();
-            if (var2 != null) {
+      MediaPlayerState instance = getInstance();
+      if (instance != null) {
+         WeakReference wr = instance._mediaPlayer;
+         if (wr != null) {
+            MediaPlayerStateInstance mps = (MediaPlayerStateInstance)wr.get();
+            if (mps != null) {
                return true;
             }
 
@@ -162,13 +162,13 @@ public class MediaPlayerState {
    }
 
    private static MediaPlayerState getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      MediaPlayerState var1 = (MediaPlayerState)var0.get(-4927398290786462096L);
-      if (var1 == null) {
-         var1 = new MediaPlayerState();
-         var0.replace(-4927398290786462096L, var1);
+      ApplicationRegistry registry = ApplicationRegistry.getApplicationRegistry();
+      MediaPlayerState instance = (MediaPlayerState)registry.get(-4927398290786462096L);
+      if (instance == null) {
+         instance = new MediaPlayerState();
+         registry.replace(-4927398290786462096L, instance);
       }
 
-      return var1;
+      return instance;
    }
 }

@@ -16,26 +16,26 @@ public final class VecMath {
 
    public static final native void transformPoints32(int[] var0, int var1, int[] var2, int[] var3, int[] var4, int[] var5, int var6);
 
-   public static final boolean isIdentity(int[] var0, int var1) {
-      return var0[var1] == 65536
-         && var0[var1 + 1] == 0
-         && var0[var1 + 2] == 0
-         && var0[var1 + 3] == 0
-         && var0[var1 + 4] == 65536
-         && var0[var1 + 5] == 0
-         && var0[var1 + 6] == 0
-         && var0[var1 + 7] == 0
-         && var0[var1 + 8] == 65536;
+   public static final boolean isIdentity(int[] source, int index) {
+      return source[index] == 65536
+         && source[index + 1] == 0
+         && source[index + 2] == 0
+         && source[index + 3] == 0
+         && source[index + 4] == 65536
+         && source[index + 5] == 0
+         && source[index + 6] == 0
+         && source[index + 7] == 0
+         && source[index + 8] == 65536;
    }
 
-   public static final boolean isTranslation(int[] var0, int var1) {
-      return var0[var1] == 65536
-         && var0[var1 + 1] == 0
-         && var0[var1 + 3] == 0
-         && var0[var1 + 4] == 65536
-         && var0[var1 + 6] == 0
-         && var0[var1 + 7] == 0
-         && var0[var1 + 8] == 65536;
+   public static final boolean isTranslation(int[] source, int index) {
+      return source[index] == 65536
+         && source[index + 1] == 0
+         && source[index + 3] == 0
+         && source[index + 4] == 65536
+         && source[index + 6] == 0
+         && source[index + 7] == 0
+         && source[index + 8] == 65536;
    }
 
    public static final native void rotateMatrix(int[] var0, int var1, int var2, int var3, int var4, int[] var5);
@@ -48,9 +48,9 @@ public final class VecMath {
 
    public static final native boolean intersects(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7);
 
-   public static final void multiply3x3(int[] var0, int var1, int[] var2, int var3) {
-      multiply3x3(var0, var1, var2, var3, tempMatrix, 0);
-      System.arraycopy(tempMatrix, 0, var2, var3, 9);
+   public static final void multiply3x3(int[] a, int aStartIndex, int[] b, int bStartIndex) {
+      multiply3x3(a, aStartIndex, b, bStartIndex, tempMatrix, 0);
+      System.arraycopy(tempMatrix, 0, b, bStartIndex, 9);
    }
 
    public static final native void multiply3x3(int[] var0, int var1, int[] var2, int var3, int[] var4, int var5);
@@ -59,22 +59,22 @@ public final class VecMath {
 
    public static final native void pointMultiply3x3(int[] var0, int var1, int var2, int var3, int[] var4, int var5);
 
-   public static final void copyIdentity3x3(int[] var0, int var1) {
-      System.arraycopy(IDENTITY_3X3, 0, var0, var1, 9);
+   public static final void copyIdentity3x3(int[] dest, int startIndex) {
+      System.arraycopy(IDENTITY_3X3, 0, dest, startIndex, 9);
    }
 
-   public static final void invert2x2Mat(int var0, int var1, int var2, int var3, int[] var4, int var5) {
-      int var6 = Fixed32.mul(var0, var3) - Fixed32.mul(var1, var2);
-      if (var6 == 0) {
-         var4[var5++] = var0;
-         var4[var5++] = var1;
-         var4[var5++] = var2;
-         var4[var5++] = var3;
+   public static final void invert2x2Mat(int a, int b, int c, int d, int[] dest, int offset) {
+      int determinant = Fixed32.mul(a, d) - Fixed32.mul(b, c);
+      if (determinant == 0) {
+         dest[offset++] = a;
+         dest[offset++] = b;
+         dest[offset++] = c;
+         dest[offset++] = d;
       } else {
-         var4[var5++] = Fixed32.div(var3, var6);
-         var4[var5++] = Fixed32.div(-var1, var6);
-         var4[var5++] = Fixed32.div(-var2, var6);
-         var4[var5++] = Fixed32.div(var0, var6);
+         dest[offset++] = Fixed32.div(d, determinant);
+         dest[offset++] = Fixed32.div(-b, determinant);
+         dest[offset++] = Fixed32.div(-c, determinant);
+         dest[offset++] = Fixed32.div(a, determinant);
       }
    }
 }

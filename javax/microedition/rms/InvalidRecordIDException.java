@@ -4,6 +4,6 @@ public class InvalidRecordIDException extends RecordStoreException {
    public InvalidRecordIDException() {
    }
 
-   public InvalidRecordIDException(String var1) {
+   public InvalidRecordIDException(String s) {
    }
 }

@@ -4,9 +4,9 @@ public class StringIndexOutOfBoundsException extends IndexOutOfBoundsException {
    public StringIndexOutOfBoundsException() {
    }
 
-   public StringIndexOutOfBoundsException(String var1) {
+   public StringIndexOutOfBoundsException(String s) {
    }
 
-   public StringIndexOutOfBoundsException(int var1) {
+   public StringIndexOutOfBoundsException(int index) {
    }
 }

@@ -21,19 +21,19 @@ public final class SmsAddress extends DatagramAddressBase {
       this._header = (SMSPacketHeader)(new Object());
    }
 
-   public SmsAddress(SMSPacketHeader var1, int[] var2) {
-      this.init(var1, var2);
+   public SmsAddress(SMSPacketHeader header, int[] ports) {
+      this.init(header, ports);
    }
 
-   public SmsAddress(DatagramAddressBase var1) {
+   public SmsAddress(DatagramAddressBase addressBase) {
    }
 
-   public SmsAddress(String var1) {
+   public SmsAddress(String address) {
       this._header = (SMSPacketHeader)(new Object());
-      this.setAddress(var1);
+      this.setAddress(address);
    }
 
-   private final void init(SMSPacketHeader var1, int[] var2) {
+   private final void init(SMSPacketHeader header, int[] ports) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -46,7 +46,7 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    @Override
-   public final void setAddress(String var1) {
+   public final void setAddress(String address) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -60,35 +60,35 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object addressBase) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public final int hashCode() {
-      int var1 = 7;
-      String var2 = this._header.getPeerAddress();
-      if (var2 != null) {
-         var1 = 31 * var1 + var2.hashCode();
+      int hash = 7;
+      String peer = this._header.getPeerAddress();
+      if (peer != null) {
+         hash = 31 * hash + peer.hashCode();
       }
 
       if (this._ports != null) {
-         for (int var3 = this._ports.length - 1; var3 >= 0; var3--) {
-            var1 = 31 * var1 + this._ports[var3];
+         for (int i = this._ports.length - 1; i >= 0; i--) {
+            hash = 31 * hash + this._ports[i];
          }
       }
 
-      return var1;
+      return hash;
    }
 
-   private final boolean matchPort(SmsAddress var1) {
+   private final boolean matchPort(SmsAddress address) {
       if (this._ports == null) {
          return true;
       }
 
-      if (var1._ports != null) {
-         for (int var2 = this._ports.length - 1; var2 >= 0; var2--) {
-            if (this._ports[var2] == var1._ports[0]) {
+      if (address._ports != null) {
+         for (int i = this._ports.length - 1; i >= 0; i--) {
+            if (this._ports[i] == address._ports[0]) {
                return true;
             }
          }
@@ -97,17 +97,17 @@ public final class SmsAddress extends DatagramAddressBase {
       return false;
    }
 
-   public static final String makeAddress(boolean var0, SMSPacketHeader var1, int[] var2) {
-      Object var3 = new Object();
-      if (var1 == null) {
-         var1 = new Object();
+   public static final String makeAddress(boolean open, SMSPacketHeader header, int[] ports) {
+      StringBuffer buf = (StringBuffer)(new Object());
+      if (header == null) {
+         header = (SMSPacketHeader)(new Object());
       }
 
-      appendAddress((StringBuffer)var3, var0, ((SMSPacketHeader)var1).getPeerAddress(), var2);
-      return ((StringBuffer)var3).toString();
+      appendAddress(buf, open, header.getPeerAddress(), ports);
+      return buf.toString();
    }
 
-   private static final void appendAddress(StringBuffer var0, boolean var1, String var2, int[] var3) {
+   private static final void appendAddress(StringBuffer buf, boolean open, String peerAddress, int[] ports) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

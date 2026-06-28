@@ -32,19 +32,19 @@ public class Axis {
    public static final int EDGE_BOTTOM;
    public static final int EDGE_LEFT;
 
-   public Axis(ChartField var1) {
-      this._field = var1;
+   public Axis(ChartField field) {
+      this._field = field;
    }
 
-   private void calculateScaleAdvance(Font var1) {
-      int var2 = 0;
+   private void calculateScaleAdvance(Font font) {
+      int maxAdvance = 0;
 
-      for (int var3 = this._min + this._min % this._increment; var3 <= this._max; var3 += this._increment) {
-         int var4 = var1.getAdvance(Integer.toString(var3));
-         var2 = Math.max(var2, var4);
+      for (int index = this._min + this._min % this._increment; index <= this._max; index += this._increment) {
+         int advance = font.getAdvance(Integer.toString(index));
+         maxAdvance = Math.max(maxAdvance, advance);
       }
 
-      this._scaleTextWidth = var2;
+      this._scaleTextWidth = maxAdvance;
    }
 
    private void calculateScaleTickIndents() {
@@ -58,8 +58,8 @@ public class Axis {
             this._scaleTickSpacing = this._scalePadding;
          }
       } else if (this._showValues) {
-         Font var1 = this._field.getFont();
-         this._scaleTickSpacing = var1.getHeight();
+         Font font = this._field.getFont();
+         this._scaleTickSpacing = font.getHeight();
       } else {
          this._scaleTickSpacing = this._scalePadding;
       }
@@ -126,154 +126,154 @@ public class Axis {
       return this._showValues;
    }
 
-   public void layout(int var1, int var2) {
-      this._width = var1;
-      this._height = var2;
+   public void layout(int width, int height) {
+      this._width = width;
+      this._height = height;
       switch (this._edge) {
          case -1:
             return;
          case 0:
          default:
-            this._majorLength = var1;
+            this._majorLength = width;
             break;
          case 1:
-            this._majorLength = var2;
+            this._majorLength = height;
             break;
          case 2:
-            this._majorLength = var1;
+            this._majorLength = width;
             break;
          case 3:
-            this._majorLength = var2;
+            this._majorLength = height;
       }
 
       this._scaleTickSpacing = this._majorLength / ((this._max - this._min) / this._increment);
    }
 
-   public void paint(Graphics var1) {
-      int var2;
-      int var3;
-      int var4;
-      int var5;
+   public void paint(Graphics graphics) {
+      int x;
+      int y;
+      int width;
+      int height;
       switch (this._edge) {
          case -1:
             return;
          case 0:
          default:
-            var2 = 0;
-            var3 = this._height - 2;
-            var4 = this._width;
-            var5 = 2;
+            x = 0;
+            y = this._height - 2;
+            width = this._width;
+            height = 2;
             break;
          case 1:
-            var2 = 0;
-            var3 = 0;
-            var4 = 2;
-            var5 = this._height;
+            x = 0;
+            y = 0;
+            width = 2;
+            height = this._height;
             break;
          case 2:
-            var2 = 0;
-            var3 = 0;
-            var4 = this._width;
-            var5 = 2;
+            x = 0;
+            y = 0;
+            width = this._width;
+            height = 2;
             break;
          case 3:
-            var2 = this._width - 2;
-            var3 = 0;
-            var4 = 2;
-            var5 = this._height;
+            x = this._width - 2;
+            y = 0;
+            width = 2;
+            height = this._height;
       }
 
-      var1.fillRect(var2, var3, var4, var5);
-      this.paintScales(var1);
+      graphics.fillRect(x, y, width, height);
+      this.paintScales(graphics);
    }
 
-   private void paintScales(Graphics var1) {
-      int var2 = 0;
-      int var3 = 0;
-      int var4 = 0;
-      int var5 = 0;
-      int var9 = 0;
-      byte var6;
-      byte var7;
-      int var8;
-      byte var10;
+   private void paintScales(Graphics graphics) {
+      int x = 0;
+      int y = 0;
+      int xIncrement = 0;
+      int yIncrement = 0;
+      int textYPos = 0;
+      int tickWidth;
+      int tickHeight;
+      int textXPos;
+      int drawstyle;
       if (this._edge != 0 && this._edge != 2) {
          if (this._edge == 3) {
-            var2 = this.getWidth() - 6;
-            var8 = -this._scaleTextWidth;
+            x = this.getWidth() - 6;
+            textXPos = -this._scaleTextWidth;
          } else {
-            var8 = 0;
+            textXPos = 0;
          }
 
-         var9 = -(this._field.getFont().getHeight() >> 1);
-         var3 = this.getHeight();
-         var5 = -this._scaleTickSpacing;
-         var6 = 6;
-         var7 = 2;
-         var10 = 5;
+         textYPos = -(this._field.getFont().getHeight() >> 1);
+         y = this.getHeight();
+         yIncrement = -this._scaleTickSpacing;
+         tickWidth = 6;
+         tickHeight = 2;
+         drawstyle = 5;
       } else {
-         var4 = this._scaleTickSpacing;
-         var6 = 2;
-         var7 = 6;
-         var8 = -(this._scaleTextWidth >> 1);
+         xIncrement = this._scaleTickSpacing;
+         tickWidth = 2;
+         tickHeight = 6;
+         textXPos = -(this._scaleTextWidth >> 1);
          if (this._edge == 2) {
-            var9 += 6;
+            textYPos += 6;
          }
 
-         var10 = 4;
+         drawstyle = 4;
       }
 
-      for (int var11 = this._min + Math.abs(this._min) % this._increment; var11 <= this._max; var11 += this._increment) {
+      for (int index = this._min + Math.abs(this._min) % this._increment; index <= this._max; index += this._increment) {
          if (this._showValues) {
-            var1.drawText(Integer.toString(var11), var2 + var8, var3 + var9, var10, this._scaleTextWidth);
+            graphics.drawText(Integer.toString(index), x + textXPos, y + textYPos, drawstyle, this._scaleTextWidth);
          }
 
-         var1.fillRect(var2, var3, var6, var7);
-         var2 += var4;
-         var3 += var5;
+         graphics.fillRect(x, y, tickWidth, tickHeight);
+         x += xIncrement;
+         y += yIncrement;
       }
    }
 
-   int mapValueToPixel(int var1) {
-      return this._majorLength - (var1 - this._min) * this._majorLength / (this._max - this._min);
+   int mapValueToPixel(int value) {
+      return this._majorLength - (value - this._min) * this._majorLength / (this._max - this._min);
    }
 
-   void setEdge(int var1) {
+   void setEdge(int edge) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setIncrement(int var1) {
-      if (this._increment != var1) {
-         if (0 >= var1 || var1 > this._max - this._min) {
+   public void setIncrement(int increment) {
+      if (this._increment != increment) {
+         if (0 >= increment || increment > this._max - this._min) {
             throw new Object();
          }
 
-         this._increment = var1;
+         this._increment = increment;
       }
    }
 
-   public void setMinMax(int var1, int var2) {
-      if (var1 >= var2) {
+   public void setMinMax(int min, int max) {
+      if (min >= max) {
          throw new Object();
       }
 
-      this._min = var1;
-      this._max = var2;
+      this._min = min;
+      this._max = max;
    }
 
-   public void setPosition(int var1, int var2) {
-      this._x = var1;
-      this._y = var2;
+   public void setPosition(int x, int y) {
+      this._x = x;
+      this._y = y;
    }
 
-   public void setScalePadding(int var1) {
-      if (this._scalePadding != var1) {
-         switch (var1) {
+   public void setScalePadding(int scalePadding) {
+      if (this._scalePadding != scalePadding) {
+         switch (scalePadding) {
             case 0:
             case 12:
             case 18:
             case 24:
-               this._scalePadding = var1;
+               this._scalePadding = scalePadding;
                break;
             default:
                throw new Object();
@@ -281,9 +281,9 @@ public class Axis {
       }
    }
 
-   public void setScaleValuesDisplayed(boolean var1) {
-      if (this._showValues != var1) {
-         this._showValues = var1;
+   public void setScaleValuesDisplayed(boolean showValues) {
+      if (this._showValues != showValues) {
+         this._showValues = showValues;
       }
    }
 }

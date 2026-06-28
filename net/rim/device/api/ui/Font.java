@@ -1,6 +1,8 @@
 package net.rim.device.api.ui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.ui.StringBufferGap;
 import net.rim.vm.TraceBack;
@@ -74,92 +76,120 @@ public class Font {
    public static final int LICENSE_NAME_CODE;
    private static Font _defaultFont;
 
-   Font(FontFamily var1, int var2, int var3) {
-      this(var1, var2, var3, 1, 0, 65536, 0, 0, 65536, 0, 0);
+   Font(FontFamily family, int style, int height) {
+      this(family, style, height, 1, 0, 65536, 0, 0, 65536, 0, 0);
    }
 
-   Font(FontFamily var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      this(var1, var2, var3, 1, var5, var6, var7, var8, var9, var10, var11, 0, 16777215);
+   Font(FontFamily family, int style, int height, int antialiasingMode, int effects, int A, int B, int C, int D, int Tx, int Ty) {
+      this(family, style, height, 1, effects, A, B, C, D, Tx, Ty, 0, 16777215);
    }
 
-   Font(FontFamily var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13) {
+   Font(
+      FontFamily family,
+      int style,
+      int height,
+      int antialiasingMode,
+      int effects,
+      int A,
+      int B,
+      int C,
+      int D,
+      int Tx,
+      int Ty,
+      int effectsStrokeColor,
+      int effectsFillColor
+   ) {
    }
 
    private native void setMetrics();
 
-   public Font derive(int var1) {
-      return this.derive(var1, this._height);
+   public Font derive(int style) {
+      return this.derive(style, this._height);
    }
 
-   public Font derive(int var1, int var2) {
-      return this.derive(var1, var2, 0, this._antialiasMode, this._effects);
+   public Font derive(int style, int height) {
+      return this.derive(style, height, 0, this._antialiasMode, this._effects);
    }
 
-   public Font derive(int var1, int var2, int var3) {
-      return this.derive(var1, var2, var3, this._antialiasMode, this._effects);
+   public Font derive(int style, int height, int units) {
+      return this.derive(style, height, units, this._antialiasMode, this._effects);
    }
 
-   public Font derive(int var1, int var2, int var3, int var4, int var5) {
-      return this.derive(var1, var2, var3, var4, var5, this._A, this._B, this._C, this._D, this._Tx, this._Ty);
+   public Font derive(int style, int height, int units, int antialiasMode, int effects) {
+      return this.derive(style, height, units, antialiasMode, effects, this._A, this._B, this._C, this._D, this._Tx, this._Ty);
    }
 
-   public synchronized Font derive(int var1, int var2, int var3, int var4, int var5, int[] var6) {
-      return var6 != null && var6.length == 6 ? this.derive(var1, var2, var3, var4, var5, var6[0], var6[1], var6[2], var6[3], var6[4], var6[5]) : this;
+   public synchronized Font derive(int style, int height, int units, int antialiasMode, int effects, int[] transform) {
+      return transform != null && transform.length == 6
+         ? this.derive(style, height, units, antialiasMode, effects, transform[0], transform[1], transform[2], transform[3], transform[4], transform[5])
+         : this;
    }
 
-   public synchronized Font derive(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      Font var12 = null;
-      if (var5 >= 0 && 1 <= var4 && 4 >= var4) {
+   public synchronized Font derive(int style, int height, int units, int antialiasMode, int effects, int A, int B, int C, int D, int Tx, int Ty) {
+      Font font = null;
+      if (effects >= 0 && 1 <= antialiasMode && 4 >= antialiasMode) {
          if (this._family != null) {
-            var12 = this._family.getFont(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, this._effectsStrokeColor, this._effectsFillColor);
+            font = this._family.getFont(style, height, units, antialiasMode, effects, A, B, C, D, Tx, Ty, this._effectsStrokeColor, this._effectsFillColor);
          }
 
-         return var12 == null ? this : var12;
+         return font == null ? this : font;
       } else {
          return this;
       }
    }
 
    public synchronized Font derive(
-      int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12, int var13
+      int style,
+      int height,
+      int units,
+      int antialiasMode,
+      int effects,
+      int A,
+      int B,
+      int C,
+      int D,
+      int Tx,
+      int Ty,
+      int effectsStrokeColor,
+      int effectsFillColor
    ) {
-      Font var14 = null;
-      if (var5 >= 0 && 1 <= var4 && 4 >= var4) {
+      Font font = null;
+      if (effects >= 0 && 1 <= antialiasMode && 4 >= antialiasMode) {
          if (this._family != null) {
-            var14 = this._family.getFont(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13);
+            font = this._family.getFont(style, height, units, antialiasMode, effects, A, B, C, D, Tx, Ty, effectsStrokeColor, effectsFillColor);
          }
 
-         return var14 == null ? this : var14;
+         return font == null ? this : font;
       } else {
          return this;
       }
    }
 
-   public final int getAdvance(String var1) {
+   public final int getAdvance(String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public native int getAdvance(char var1);
 
-   public int getAdvance(String var1, int var2, int var3) {
+   public int getAdvance(String text, int offset, int length) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private native int _getAdvance(String var1, int var2, int var3);
 
-   public int getAdvance(StringBuffer var1, int var2, int var3) {
-      if (var1 != null) {
-         int var4 = var1.length();
-         if (var3 == Integer.MAX_VALUE) {
-            var3 = var4 - var2;
+   public int getAdvance(StringBuffer text, int offset, int length) {
+      if (text != null) {
+         int tLength = text.length();
+         if (length == Integer.MAX_VALUE) {
+            length = tLength - offset;
          }
 
-         if (var2 < 0 || var3 < 0 || var2 + var3 > var4) {
+         if (offset < 0 || length < 0 || offset + length > tLength) {
             throw new Object();
          } else {
-            return var4 == 0 ? 0 : this._getAdvance(var1, var2, var3);
+            return tLength == 0 ? 0 : this._getAdvance(text, offset, length);
          }
-      } else if ((var2 != 0 || var3 != 0) && var3 != Integer.MAX_VALUE) {
+      } else if ((offset != 0 || length != 0) && length != Integer.MAX_VALUE) {
          throw new Object();
       } else {
          return 0;
@@ -168,18 +198,18 @@ public class Font {
 
    private native int _getAdvance(StringBuffer var1, int var2, int var3);
 
-   public int getAdvance(char[] var1, int var2, int var3) {
-      if (var1 != null) {
-         if (var3 == Integer.MAX_VALUE) {
-            var3 = var1.length - var2;
+   public int getAdvance(char[] text, int offset, int length) {
+      if (text != null) {
+         if (length == Integer.MAX_VALUE) {
+            length = text.length - offset;
          }
 
-         if (var2 < 0 || var3 < 0 || var2 + var3 > var1.length) {
+         if (offset < 0 || length < 0 || offset + length > text.length) {
             throw new Object();
          } else {
-            return var1.length == 0 ? 0 : this._getAdvance(var1, var2, var3);
+            return text.length == 0 ? 0 : this._getAdvance(text, offset, length);
          }
-      } else if ((var2 != 0 || var3 != 0) && var3 != Integer.MAX_VALUE) {
+      } else if ((offset != 0 || length != 0) && length != Integer.MAX_VALUE) {
          throw new Object();
       } else {
          return 0;
@@ -204,8 +234,8 @@ public class Font {
       return _defaultFont != null ? _defaultFont : FontRegistry.getDefaultFont();
    }
 
-   public static int getDefaultHeight(int var0) {
-      return FontRegistry.getDefaultHeight(var0);
+   public static int getDefaultHeight(int units) {
+      return FontRegistry.getDefaultHeight(units);
    }
 
    public int getDescent() {
@@ -224,8 +254,8 @@ public class Font {
       return this._height;
    }
 
-   public int getHeight(int var1) {
-      return Ui.convertSize(this._height, 0, var1);
+   public int getHeight(int units) {
+      return Ui.convertSize(this._height, 0, units);
    }
 
    public int getLeading() {
@@ -264,16 +294,16 @@ public class Font {
       return (this._style & 15) == 0;
    }
 
-   public synchronized int measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
+   public synchronized int measureText(String text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private native int _measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public synchronized int measureText(StringBufferGap var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
-      if (var1 != null && var2 >= 0 && var3 >= 0) {
-         int var6 = var1.length();
-         return var2 + var3 <= var6 && var6 != 0 ? this._measureText(var1, var2, var3, var4, var5) : 0;
+   public synchronized int measureText(StringBufferGap text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         return offset + length <= tLength && tLength != 0 ? this._measureText(text, offset, length, param, metrics) : 0;
       } else {
          return 0;
       }
@@ -281,19 +311,19 @@ public class Font {
 
    private native int _measureText(StringBufferGap var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public synchronized int measureText(StringBuffer var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
-      if (var1 != null && var2 >= 0 && var3 >= 0) {
-         int var6 = var1.length();
-         return var2 + var3 <= var6 && var6 != 0 ? this._measureText(var1, var2, var3, var4, var5) : 0;
+   public synchronized int measureText(StringBuffer text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         return offset + length <= tLength && tLength != 0 ? this._measureText(text, offset, length, param, metrics) : 0;
       } else {
          return 0;
       }
    }
 
-   public synchronized int measureText(char[] var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
-      if (var1 != null && var2 >= 0 && var3 >= 0) {
-         int var6 = var1.length;
-         return var2 + var3 <= var6 && var6 != 0 ? this._measureText(var1, var2, var3, var4, var5) : 0;
+   public synchronized int measureText(char[] text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length;
+         return offset + length <= tLength && tLength != 0 ? this._measureText(text, offset, length, param, metrics) : 0;
       } else {
          return 0;
       }
@@ -303,33 +333,33 @@ public class Font {
 
    private native int _measureText(char[] var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public int getBounds(String var1) {
+   public int getBounds(String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public int getBounds(StringBuffer var1) {
-      if (var1 == null) {
+   public int getBounds(StringBuffer text) {
+      if (text == null) {
          return 0;
       }
 
-      int var2 = var1.length();
-      return var2 == 0 ? 0 : this.getBounds(var1, 0, var2);
+      int tLength = text.length();
+      return tLength == 0 ? 0 : this.getBounds(text, 0, tLength);
    }
 
-   public synchronized int getBounds(char var1) {
-      return this.getGlyphMetrics(var1, this._glyphMetrics) == 0
+   public synchronized int getBounds(char aChar) {
+      return this.getGlyphMetrics(aChar, this._glyphMetrics) == 0
          ? Math.max(
             this._glyphMetrics.iBearingX + this._glyphMetrics.iBitmapWidth,
             this._glyphMetrics.iAdvance >= this._glyphMetrics.iBitmapWidth ? this._glyphMetrics.iAdvance : this._glyphMetrics.iBitmapWidth
          )
-         : this.getAdvance(var1);
+         : this.getAdvance(aChar);
    }
 
-   public synchronized int getBounds(StringBuffer var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0) {
-         int var4 = var1.length();
-         if (var2 + var3 <= var4 && var4 != 0) {
-            this._measureText(var1, var2, var3, null, this._textMetrics);
+   public synchronized int getBounds(StringBuffer text, int offset, int length) {
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         if (offset + length <= tLength && tLength != 0) {
+            this._measureText(text, offset, length, null, this._textMetrics);
             return Math.max(
                this._textMetrics.iBoundsBrX - this._textMetrics.iBoundsTlX,
                this._textMetrics.iAdvanceX >= this._textMetrics.iBoundsBrX ? this._textMetrics.iAdvanceX : this._textMetrics.iBoundsBrX
@@ -342,11 +372,11 @@ public class Font {
       }
    }
 
-   public synchronized int getBounds(StringBufferGap var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0) {
-         int var4 = var1.length();
-         if (var2 + var3 <= var4 && var4 != 0) {
-            this._measureText(var1, var2, var3, null, this._textMetrics);
+   public synchronized int getBounds(StringBufferGap text, int offset, int length) {
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         if (offset + length <= tLength && tLength != 0) {
+            this._measureText(text, offset, length, null, this._textMetrics);
             return Math.max(
                this._textMetrics.iBoundsBrX - this._textMetrics.iBoundsTlX,
                this._textMetrics.iAdvanceX >= this._textMetrics.iBoundsBrX ? this._textMetrics.iAdvanceX : this._textMetrics.iBoundsBrX
@@ -359,15 +389,15 @@ public class Font {
       }
    }
 
-   public synchronized int getBounds(String var1, int var2, int var3) {
+   public synchronized int getBounds(String text, int offset, int length) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized int getBounds(char[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public synchronized int getBounds(char[] text, int offset, int length) {
+      if (text == null) {
          return 0;
-      } else if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length && var1.length != 0) {
-         this._measureText(var1, var2, var3, null, this._textMetrics);
+      } else if (offset >= 0 && length >= 0 && offset + length <= text.length && text.length != 0) {
+         this._measureText(text, offset, length, null, this._textMetrics);
          return Math.max(
             this._textMetrics.iBoundsBrX - this._textMetrics.iBoundsTlX,
             this._textMetrics.iAdvanceX >= this._textMetrics.iBoundsBrX ? this._textMetrics.iAdvanceX : this._textMetrics.iBoundsBrX
@@ -377,34 +407,39 @@ public class Font {
       }
    }
 
-   public void getMetrics(FontMetrics var1) {
-      this.getMetrics(var1, 0, 0);
+   public void getMetrics(FontMetrics aFontMetrics) {
+      this.getMetrics(aFontMetrics, 0, 0);
    }
 
-   public void getMetrics(FontMetrics var1, int var2) {
-      this.getMetrics(var1, var2, 0);
+   public void getMetrics(FontMetrics aFontMetrics, int aScripts) {
+      this.getMetrics(aFontMetrics, aScripts, 0);
    }
 
-   public void getMetricsForLocale(FontMetrics var1, int var2) {
-      this.getMetrics(var1, 0, var2);
+   public void getMetricsForLocale(FontMetrics aFontMetrics, int aLocale) {
+      this.getMetrics(aFontMetrics, 0, aLocale);
    }
 
    public native void getMetrics(FontMetrics var1, int var2, int var3);
 
    public native int getGlyphMetrics(char var1, GlyphMetrics var2);
 
-   public static void setDefaultFont(Font var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static void setDefaultFont(Font defaultFont) {
+      _defaultFont = defaultFont;
+
+      try {
+         RIMGlobalMessagePoster.postGlobalEvent(Application.getApplication().getProcessId(), -4394903006263251010L, 1, 0, null, null);
+      } catch (IllegalStateException var2) {
+      }
    }
 
-   public static void setDefaultFontForSystem(Font var0) {
+   public static void setDefaultFontForSystem(Font defaultFont) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static void setDefaultFontForSystem(String var0, int var1, int var2, int var3) {
+   public static void setDefaultFontForSystem(String family, int style, int size, int units) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      if (var0 != null && var2 != 0) {
-         FontRegistry.setDefaultFont(var0, var1, var2, var3);
+      if (family != null && size != 0) {
+         FontRegistry.setDefaultFont(family, style, size, units);
       } else {
          throw new Object();
       }
@@ -423,26 +458,39 @@ public class Font {
       return this.getName(13);
    }
 
-   public String getName(int var1) {
-      char[] var2 = new char[0];
-      this.getName(var2, var1);
-      return (String)(new Object(var2));
+   public String getName(int aNameCode) {
+      char[] s = new char[0];
+      this.getName(s, aNameCode);
+      return (String)(new Object(s));
    }
 
    private native void getName(char[] var1, int var2);
 
-   public boolean hasAttributes(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11, int var12) {
-      return var1 == this._style
-         && var2 == this._height
-         && var3 == this._antialiasMode
-         && var4 == this._effects
-         && var5 == this._A
-         && var6 == this._B
-         && var7 == this._C
-         && var8 == this._D
-         && var9 == this._Tx
-         && var10 == this._Ty
-         && var11 == this._effectsStrokeColor
-         && var12 == this._effectsFillColor;
+   public boolean hasAttributes(
+      int aStyle,
+      int aHeight,
+      int aAntialiasMode,
+      int aEffects,
+      int aA,
+      int aB,
+      int aC,
+      int aD,
+      int aTx,
+      int aTy,
+      int aEffectsStrokeColor,
+      int aEffectsFillColor
+   ) {
+      return aStyle == this._style
+         && aHeight == this._height
+         && aAntialiasMode == this._antialiasMode
+         && aEffects == this._effects
+         && aA == this._A
+         && aB == this._B
+         && aC == this._C
+         && aD == this._D
+         && aTx == this._Tx
+         && aTy == this._Ty
+         && aEffectsStrokeColor == this._effectsStrokeColor
+         && aEffectsFillColor == this._effectsFillColor;
    }
 }

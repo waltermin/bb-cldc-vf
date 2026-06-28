@@ -1,19 +1,24 @@
 package com.sun.cldc.i18n;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
 public class StreamReader extends Reader {
    public InputStream in;
 
-   public Reader open(InputStream var1, String var2) {
-      this.in = var1;
+   public Reader open(InputStream in, String enc) {
+      this.in = in;
       return this;
    }
 
    @Override
    public boolean ready() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         return this.in.available() > 0;
+      } catch (IOException x) {
+         return false;
+      }
    }
 
    @Override
@@ -22,7 +27,7 @@ public class StreamReader extends Reader {
    }
 
    @Override
-   public void mark(int var1) {
+   public void mark(int readAheadLimit) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -37,7 +42,7 @@ public class StreamReader extends Reader {
       this.in = null;
    }
 
-   public int sizeOf(byte[] var1, int var2, int var3) {
+   public int sizeOf(byte[] _1, int _2, int _3) {
       throw null;
    }
 }

@@ -36,30 +36,30 @@ public class CheckboxField extends Field implements FieldLabelProvider {
       return this._checked;
    }
 
-   public void setOptionsMenuText(String var1) {
+   public void setOptionsMenuText(String optionsMenuText) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setChecked(boolean var1) {
-      this._checked = var1;
+   public void setChecked(boolean checked) {
+      this._checked = checked;
       this.fieldChangeNotify(Integer.MIN_VALUE);
       this.invalidate();
    }
 
-   public void setImage(Bitmap var1) {
+   public void setImage(Bitmap image) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void setLabel(String var1) {
-      this._label = var1;
-      this._text.setText(var1);
+   public void setLabel(String label) {
+      this._label = label;
+      this._text.setText(label);
       this.updateLayout();
       this.invalidate();
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -69,8 +69,8 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
       this.invalidate();
    }
 
@@ -81,9 +81,9 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      int var2 = this.getTopAdjustment();
-      var1.set(0, 0, this._iconWidth, var2 + this._iconHeight);
+   public void getFocusRect(XYRect rect) {
+      int topAdjust = this.getTopAdjustment();
+      rect.set(0, 0, this._iconWidth, topAdjust + this._iconHeight);
    }
 
    private int getTopAdjustment() {
@@ -91,19 +91,19 @@ public class CheckboxField extends Field implements FieldLabelProvider {
          return 0;
       }
 
-      int var1 = this._text.getLineHeight(0) - this.getFont().getHeight();
-      if (var1 < 0) {
-         var1 = 0;
+      int topAdjust = this._text.getLineHeight(0) - this.getFont().getHeight();
+      if (topAdjust < 0) {
+         topAdjust = 0;
       }
 
-      return var1;
+      return topAdjust;
    }
 
    @Override
    public int getPreferredHeight() {
-      int var1 = this.getFont().getHeight();
-      int var2 = SystemIcon.COLLECTION.getHeight(var1, var1);
-      return Math.max(var1, var2);
+      int fontHeight = this.getFont().getHeight();
+      int iconHeight = SystemIcon.COLLECTION.getHeight(fontHeight, fontHeight);
+      return Math.max(fontHeight, iconHeight);
    }
 
    @Override
@@ -112,8 +112,8 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             if (this.isEditable()) {
                this.toggle();
@@ -125,8 +125,8 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (this.isEditable() && var1 == ' ') {
+   protected boolean keyChar(char key, int status, int time) {
+      if (this.isEditable() && key == ' ') {
          this.toggle();
          if (Ui.isTTSEnabled()) {
             super.accessibleEventOccurred(1, new Object(2), new Object(64), this);
@@ -139,66 +139,66 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      if (this.isEditable() && Keypad.key(var1) == 71 && InternalServices.isReducedFormFactor() && (Keypad.status(var1) & 1) == 0) {
+   protected boolean keyDown(int keycode, int time) {
+      if (this.isEditable() && Keypad.key(keycode) == 71 && InternalServices.isReducedFormFactor() && (Keypad.status(keycode) & 1) == 0) {
          this.toggle();
          return true;
       } else {
-         return super.keyDown(var1, var2);
+         return super.keyDown(keycode, time);
       }
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      Font var3 = this.getFont();
-      int var4 = var3.getHeight();
-      this._iconWidth = SystemIcon.COLLECTION.getWidth(var4, var4);
-      this._iconHeight = Math.max(var4, SystemIcon.COLLECTION.getHeight(var4, var4));
-      var2 = this._iconHeight;
-      int var5 = this._iconWidth;
-      int var6 = 0;
+   protected void layout(int width, int height) {
+      Font font = this.getFont();
+      int fontHeight = font.getHeight();
+      this._iconWidth = SystemIcon.COLLECTION.getWidth(fontHeight, fontHeight);
+      this._iconHeight = Math.max(fontHeight, SystemIcon.COLLECTION.getHeight(fontHeight, fontHeight));
+      height = this._iconHeight;
+      int x_pos = this._iconWidth;
+      int imageWidth = 0;
       if (this._image != null) {
-         var6 = this._image.getWidth() + 2;
-         var2 = Math.max(this._image.getHeight(), var2);
+         imageWidth = this._image.getWidth() + 2;
+         height = Math.max(this._image.getHeight(), height);
       }
 
-      this._text.setPosition(var5 + var6 + 2, 0);
-      this._text.layout(Math.max(var1 - var5 - var6 - 2, 0), var2);
-      var2 = Math.max(this._text.getHeight(), var2);
+      this._text.setPosition(x_pos + imageWidth + 2, 0);
+      this._text.layout(Math.max(width - x_pos - imageWidth - 2, 0), height);
+      height = Math.max(this._text.getHeight(), height);
       if (!this.isStyle(1152921504606846976L)) {
-         var1 = var5 + var6 + 2;
+         width = x_pos + imageWidth + 2;
          if (this._text.getText() != null) {
-            XYRect var7 = Ui.getTmpXYRect();
-            this._text.getTextBounds(var7);
-            var1 += var7.x + var7.width;
-            Ui.returnTmpXYRect(var7);
+            XYRect rect = Ui.getTmpXYRect();
+            this._text.getTextBounds(rect);
+            width += rect.x + rect.width;
+            Ui.returnTmpXYRect(rect);
          }
       }
 
-      this.setExtent(var1, var2);
+      this.setExtent(width, height);
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
-      super.makeContextMenu(var1);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      super.makeContextMenu(contextMenu);
       if (Ui.getMode() < 2 && this.isEditable()) {
          if (this._optionsMenuText == null) {
-            var1.addItem(_changeOptionsItem);
+            contextMenu.addItem(_changeOptionsItem);
             return;
          }
 
-         CheckboxField$ChangeOptionMenuItem var2 = new CheckboxField$ChangeOptionMenuItem(this._optionsMenuText);
-         var1.addItem(var2);
+         MenuItem item = new CheckboxField$ChangeOptionMenuItem(this._optionsMenuText);
+         contextMenu.addItem(item);
       }
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      if (this.isEditable() && (var2 & 1) != 0 && (var2 & 196608) == 0) {
+   protected int moveFocus(int amount, int status, int time) {
+      if (this.isEditable() && (status & 1) != 0 && (status & 196608) == 0) {
          this.toggle();
          return 0;
       } else {
-         return var1;
+         return amount;
       }
    }
 
@@ -211,26 +211,26 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      int var2 = this.getIconIndex();
+   protected void paint(Graphics graphics) {
+      int index = this.getIconIndex();
       if (this.isFocus() && SystemIcon.COLLECTION.containsIcon(this._iconHeight, this.getIconIndex() + 12)) {
-         var2 += 12;
+         index += 12;
       }
 
-      int var3 = this.getTopAdjustment();
-      SystemIcon.COLLECTION.paint(var1, 0, var3, this._iconWidth, this._iconHeight, var2);
+      int y_adjust = this.getTopAdjustment();
+      SystemIcon.COLLECTION.paint(graphics, 0, y_adjust, this._iconWidth, this._iconHeight, index);
       if (this._image != null) {
-         var1.drawBitmap(this._iconWidth, var3, this._image.getWidth(), this._image.getHeight(), this._image, 0, 0);
+         graphics.drawBitmap(this._iconWidth, y_adjust, this._image.getWidth(), this._image.getHeight(), this._image, 0, 0);
       }
 
-      this._text.paintSelf(var1);
+      this._text.paintSelf(graphics);
    }
 
-   public CheckboxField(String var1, boolean var2, long var3) {
-      super(verifyStyle(var3));
+   public CheckboxField(String label, boolean checked, long style) {
+      super(verifyStyle(style));
       this.setTag(TAG);
-      this.setLabel(var1);
-      this._checked = var2;
+      this.setLabel(label);
+      this._checked = checked;
    }
 
    @Override
@@ -240,9 +240,9 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       if (!SystemIcon.COLLECTION.containsIcon(this._iconHeight, this.getIconIndex() + 12)) {
-         super.drawFocus(var1, var2);
+         super.drawFocus(graphics, on);
       }
    }
 
@@ -250,29 +250,29 @@ public class CheckboxField extends Field implements FieldLabelProvider {
       this(null, false, 0);
    }
 
-   public CheckboxField(String var1, boolean var2) {
-      this(var1, var2, 0);
+   public CheckboxField(String label, boolean checked) {
+      this(label, checked, 0);
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
+   protected boolean stylusTap(int x, int y, int status, int time) {
       if (!this.isEditable()) {
          return false;
       }
 
-      if (var1 < 0) {
+      if (x < 0) {
          return false;
       }
 
-      if (var2 < 0) {
+      if (y < 0) {
          return false;
       }
 
-      if (var1 > this._iconWidth) {
+      if (x > this._iconWidth) {
          return false;
       }
 
-      if (var2 > this._iconHeight) {
+      if (y > this._iconHeight) {
          return false;
       }
 
@@ -290,7 +290,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       if (Ui.isTTSEnabled()) {
          super.accessibleEventOccurred(1, new Object(2), new Object(64), this);
       }
@@ -299,20 +299,20 @@ public class CheckboxField extends Field implements FieldLabelProvider {
          this.toggle();
          return true;
       } else {
-         return super.trackwheelClick(var1, var2);
+         return super.trackwheelClick(status, time);
       }
    }
 
-   private static long verifyStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long verifyStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override

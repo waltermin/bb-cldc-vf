@@ -9,22 +9,22 @@ class Tooltip$MyUiEngineListener extends UiEngineListener implements FocusChange
    private Screen _current;
 
    @Override
-   public void focusChanged(Field var1, int var2) {
-      if (var2 == 1 && var1 instanceof Tooltip$TooltipProvider) {
+   public void focusChanged(Field field, int eventType) {
+      if (eventType == 1 && field instanceof Tooltip$TooltipProvider) {
          Tooltip$TooltipPollingThread.reset();
       }
    }
 
    @Override
-   public void onFocus(Screen var1, Screen var2) {
+   public void onFocus(Screen previous, Screen screen) {
       if (this._current != null) {
          this._current.removeFocusChangeListener(this);
          this._current = null;
       }
 
-      if (var2 != null) {
-         var2.addFocusChangeListener(this);
-         this._current = var2;
+      if (screen != null) {
+         screen.addFocusChangeListener(this);
+         this._current = screen;
       }
    }
 }

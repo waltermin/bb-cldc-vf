@@ -5,13 +5,17 @@ final class CollectionListField$SetFocusedElementRunnable implements Runnable {
    Object _element;
    private final CollectionListField this$0;
 
-   CollectionListField$SetFocusedElementRunnable(CollectionListField var1) {
-      this.this$0 = var1;
+   CollectionListField$SetFocusedElementRunnable(CollectionListField _1) {
+      this.this$0 = _1;
       this._isQueued = false;
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         this._isQueued = false;
+      }
+
+      this.this$0.doSetElementWithFocus(this._element);
    }
 }

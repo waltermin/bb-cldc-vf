@@ -7,7 +7,7 @@ final class RIMDigestFactoryCrypto10 extends DigestFactory {
    }
 
    @Override
-   protected final Digest create(String var1) {
+   protected final Digest create(String algorithm) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

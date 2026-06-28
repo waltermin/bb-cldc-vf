@@ -20,41 +20,41 @@ public class BorderSimple extends Border {
    public static final int STYLE_INSET;
    public static final int STYLE_OUTSET;
 
-   public BorderSimple(int var1, int var2, int var3, int var4) {
+   public BorderSimple(int top, int right, int bottom, int left) {
    }
 
-   public BorderSimple(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      super(var1, var2, var3, var4);
+   public BorderSimple(int top, int right, int bottom, int left, int colorTop, int colorRight, int colorBottom, int colorLeft) {
+      super(top, right, bottom, left);
       this._colorSet = true;
-      this._colorTop = var5;
-      this._colorRight = var6;
-      this._colorBottom = var7;
-      this._colorLeft = var8;
+      this._colorTop = colorTop;
+      this._colorRight = colorRight;
+      this._colorBottom = colorBottom;
+      this._colorLeft = colorLeft;
    }
 
    @Override
-   public void paint(Graphics var1, XYRect var2) {
-      int var3 = var1.getColor();
+   public void paint(Graphics graphics, XYRect rect) {
+      int color = graphics.getColor();
       if (this._colorSet) {
-         var1.setColor(this._colorTop);
+         graphics.setColor(this._colorTop);
       }
 
-      var1.fillRect(var2.x, var2.y, var2.width, this.getTop());
+      graphics.fillRect(rect.x, rect.y, rect.width, this.getTop());
       if (this._colorSet) {
-         var1.setColor(this._colorRight);
+         graphics.setColor(this._colorRight);
       }
 
-      var1.fillRect(var2.X2() - this.getRight(), var2.y, this.getRight(), var2.height);
+      graphics.fillRect(rect.X2() - this.getRight(), rect.y, this.getRight(), rect.height);
       if (this._colorSet) {
-         var1.setColor(this._colorBottom);
+         graphics.setColor(this._colorBottom);
       }
 
-      var1.fillRect(var2.x, var2.Y2() - this.getBottom(), var2.width, this.getBottom());
+      graphics.fillRect(rect.x, rect.Y2() - this.getBottom(), rect.width, this.getBottom());
       if (this._colorSet) {
-         var1.setColor(this._colorLeft);
+         graphics.setColor(this._colorLeft);
       }
 
-      var1.fillRect(var2.x, var2.y, this.getLeft(), var2.height);
-      var1.setColor(var3);
+      graphics.fillRect(rect.x, rect.y, this.getLeft(), rect.height);
+      graphics.setColor(color);
    }
 }

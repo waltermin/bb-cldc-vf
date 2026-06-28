@@ -6,19 +6,19 @@ class SpacerField extends Field {
    private int _width;
    private int _height;
 
-   SpacerField(int var1, int var2) {
+   SpacerField(int width, int height) {
       super(3458764513820540928L);
-      this.setSize(var1, var2);
+      this.setSize(width, height);
    }
 
-   void setSize(int var1, int var2) {
-      this._width = var1;
-      this._height = var2;
+   void setSize(int width, int height) {
+      this._width = width;
+      this._height = height;
       this.invalidate();
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(this._width, this._height);
    }
 
@@ -38,6 +38,6 @@ class SpacerField extends Field {
    }
 
    @Override
-   protected void paint(net.rim.device.api.ui.Graphics var1) {
+   protected void paint(net.rim.device.api.ui.Graphics graphics) {
    }
 }

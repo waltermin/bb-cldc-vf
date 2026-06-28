@@ -7,75 +7,75 @@ public class EventInjector$KeyCodeEvent extends EventInjector$Event {
    public static final int KEY_REPEAT;
    public static final int KEY_UP;
 
-   public EventInjector$KeyCodeEvent(int var1, char var2, int var3, int var4) {
-      super(2, var1, 0, charToScancode(var2, var3), var4, null, null);
-      if (!this.isVaildStatus(var3)) {
+   public EventInjector$KeyCodeEvent(int event, char keyName, int status, int time) {
+      super(2, event, 0, charToScancode(keyName, status), time, null, null);
+      if (!this.isVaildStatus(status)) {
          throw new Object();
       }
    }
 
    public int getKeyCode() {
-      int var1 = super._msg.getData0();
-      return this.extractKeyCode(var1);
+      int scanCode = super._msg.getData0();
+      return this.extractKeyCode(scanCode);
    }
 
-   public void setKeyCode(char var1, int var2) {
-      if (!this.isVaildStatus(var2)) {
+   public void setKeyCode(char keyName, int status) {
+      if (!this.isVaildStatus(status)) {
          throw new Object();
       }
 
-      super._msg.setData0(charToScancode(var1, var2));
+      super._msg.setData0(charToScancode(keyName, status));
    }
 
    @Override
-   public void setStatus(int var1) {
-      if (!this.isVaildStatus(var1)) {
+   public void setStatus(int status) {
+      if (!this.isVaildStatus(status)) {
          throw new Object();
       }
 
-      int var2 = this.getKeyCode();
-      int var3 = var2 << 16;
-      var3 |= var1;
-      super._msg.setData0(var3);
+      int keyCode = this.getKeyCode();
+      int scanCode = keyCode << 16;
+      scanCode |= status;
+      super._msg.setData0(scanCode);
    }
 
    @Override
    public int getStatus() {
-      int var1 = super._msg.getData0();
-      return this.extractStatus(var1);
+      int scanCode = super._msg.getData0();
+      return this.extractStatus(scanCode);
    }
 
    public int getTime() {
       return super._msg.getData1();
    }
 
-   public void setTime(int var1) {
-      super._msg.setData1(var1);
+   public void setTime(int time) {
+      super._msg.setData1(time);
    }
 
-   private static int charToScancode(char var0, int var1) {
-      if (var0 >= 128 && var0 <= 159) {
-         return KeypadUtil.getKeyCode(var0, 0, 0);
+   private static int charToScancode(char c, int status) {
+      if (c >= 128 && c <= 159) {
+         return KeypadUtil.getKeyCode(c, 0, 0);
       }
 
-      if (var0 >= 'a' && var0 <= 'z') {
-         var0 = (char)(var0 - ' ');
+      if (c >= 'a' && c <= 'z') {
+         c = (char)(c - ' ');
       }
 
-      int var2 = var0 << 16;
-      return var2 | var1;
+      int scancode = c << 16;
+      return scancode | status;
    }
 
-   private int extractKeyCode(int var1) {
-      return var1 >> 16;
+   private int extractKeyCode(int scanCode) {
+      return scanCode >> 16;
    }
 
-   private int extractStatus(int var1) {
-      char var2 = '\uffff';
-      return var2 & var1;
+   private int extractStatus(int scanCode) {
+      int lowMask = 65535;
+      return lowMask & scanCode;
    }
 
-   private boolean isVaildStatus(int var1) {
-      return (var1 & -65536) == 0;
+   private boolean isVaildStatus(int status) {
+      return (status & -65536) == 0;
    }
 }

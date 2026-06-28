@@ -10,15 +10,15 @@ public class AttributedString$Iterator {
    private int _start;
    private final AttributedString this$0;
 
-   public AttributedString$Iterator(AttributedString var1) {
+   public AttributedString$Iterator(AttributedString _1) {
    }
 
-   public AttributedString$Iterator(AttributedString var1, int var2, int var3) {
-      this.this$0 = var1;
-      this.set(var2, var3);
+   public AttributedString$Iterator(AttributedString _1, int aStart, int aEnd) {
+      this.this$0 = _1;
+      this.set(aStart, aEnd);
    }
 
-   public void set(int var1, int var2) {
+   public void set(int aStart, int aEnd) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -83,10 +83,10 @@ public class AttributedString$Iterator {
          this._run_length = this._cur_run._length;
          this._pos = this._pos - this._run_length;
          if (this._pos < this._start) {
-            int var1 = this._start - this._pos;
+            int diff = this._start - this._pos;
             this._pos = this._start;
-            this._run_length -= var1;
-            this._total_length -= var1;
+            this._run_length -= diff;
+            this._total_length -= diff;
             return true;
          } else {
             this._total_length = this._total_length + this._run_length;

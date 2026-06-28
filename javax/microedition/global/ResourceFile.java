@@ -11,46 +11,46 @@ class ResourceFile {
    public static final int RESOURCE_TYPE_END;
    private static String EMPTY;
 
-   private ResourceFile(byte[] var1, int var2) {
-      int var3 = (var2 >> 3) - 1;
-      this._resources = new ResourceFile$Resource[var3];
+   private ResourceFile(byte[] filedata, int headerlength) {
+      int numresources = (headerlength >> 3) - 1;
+      this._resources = new ResourceFile$Resource[numresources];
 
-      for (int var4 = 0; var4 < var3; var4++) {
-         this._resources[var4] = new ResourceFile$Resource(var1, (var4 + 1) * 8);
-         if (var4 > 0) {
-            this._resources[var4 - 1].length = this._resources[var4].offset - this._resources[var4 - 1].offset;
+      for (int i = 0; i < numresources; i++) {
+         this._resources[i] = new ResourceFile$Resource(filedata, (i + 1) * 8);
+         if (i > 0) {
+            this._resources[i - 1].length = this._resources[i].offset - this._resources[i - 1].offset;
          }
       }
 
-      this._resources[var3 - 1].length = var1.length - this._resources[var3 - 1].offset;
-      this._filedata = var1;
+      this._resources[numresources - 1].length = filedata.length - this._resources[numresources - 1].offset;
+      this._filedata = filedata;
    }
 
-   public static ResourceFile getResourceFile(String var0) {
-      byte[] var1 = Resource.getResourceClass().getResource(var0);
-      if (var1 == null) {
-         throw new ResourceException(3, var0);
-      } else if (var1.length < 8) {
-         throw new ResourceException(5, var0);
-      } else if (var1[0] != 238 && var1[1] != 77 && var1[2] != 73 && var1[3] != 16) {
-         throw new ResourceException(5, var0);
+   public static ResourceFile getResourceFile(String filename) {
+      byte[] filedata = Resource.getResourceClass().getResource(filename);
+      if (filedata == null) {
+         throw new ResourceException(3, filename);
+      } else if (filedata.length < 8) {
+         throw new ResourceException(5, filename);
+      } else if (filedata[0] != 238 && filedata[1] != 77 && filedata[2] != 73 && filedata[3] != 16) {
+         throw new ResourceException(5, filename);
       } else {
-         int var2 = (var1[4] & 255) << 24 | (var1[5] & 255) << 16 | (var1[6] & 255) << 8 | var1[7] & 255;
-         if (var1.length < var2 + 8) {
-            throw new ResourceException(5, var0);
+         int headerlength = (filedata[4] & 255) << 24 | (filedata[5] & 255) << 16 | (filedata[6] & 255) << 8 | filedata[7] & 255;
+         if (filedata.length < headerlength + 8) {
+            throw new ResourceException(5, filename);
          } else {
-            return new ResourceFile(var1, var2);
+            return new ResourceFile(filedata, headerlength);
          }
       }
    }
 
-   private int getIndexForId(int var1) {
-      for (int var2 = this._resources.length - 1; var2 >= 0; var2--) {
-         if (this._resources[var2].id == var1) {
-            return var2;
+   private int getIndexForId(int id) {
+      for (int i = this._resources.length - 1; i >= 0; i--) {
+         if (this._resources[i].id == id) {
+            return i;
          }
 
-         if (this._resources[var2].id < var1) {
+         if (this._resources[i].id < id) {
             return -1;
          }
       }
@@ -58,37 +58,37 @@ class ResourceFile {
       return -1;
    }
 
-   private ResourceFile$Resource getResource(int var1) {
-      int var2 = this.getIndexForId(var1);
-      if (var2 == -1) {
+   private ResourceFile$Resource getResource(int id) {
+      int index = this.getIndexForId(id);
+      if (index == -1) {
          throw new ResourceException(1, EMPTY);
       } else {
-         return this._resources[var2];
+         return this._resources[index];
       }
    }
 
-   public boolean isValidId(int var1) {
-      return this.getIndexForId(var1) != -1;
+   public boolean isValidId(int id) {
+      return this.getIndexForId(id) != -1;
    }
 
-   public int getType(int var1) {
-      return this.getResource(var1).type;
+   public int getType(int id) {
+      return this.getResource(id).type;
    }
 
-   public Object getData(int var1) {
-      ResourceFile$Resource var2 = this.getResource(var1);
-      int var3 = var2.length;
-      Object var4 = new Object(var3);
+   public Object getData(int id) {
+      ResourceFile$Resource res = this.getResource(id);
+      int length = res.length;
+      ByteArrayOutputStream baos = (ByteArrayOutputStream)(new Object(length));
 
-      for (int var5 = 0; var5 < var3; var5++) {
-         ((ByteArrayOutputStream)var4).write(this._filedata[var5 + var2.offset]);
+      for (int i = 0; i < length; i++) {
+         baos.write(this._filedata[i + res.offset]);
       }
 
-      switch (var2.type) {
+      switch (res.type) {
          case 1:
-            return ((ByteArrayOutputStream)var4).toString();
+            return baos.toString();
          case 16:
-            return ((ByteArrayOutputStream)var4).toByteArray();
+            return baos.toByteArray();
          default:
             throw new ResourceException(6, EMPTY);
       }

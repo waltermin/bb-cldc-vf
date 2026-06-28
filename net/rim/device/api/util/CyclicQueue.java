@@ -15,16 +15,16 @@ public final class CyclicQueue {
       this(8);
    }
 
-   public CyclicQueue(int var1) {
-      var1 = roundCapacity(var1);
-      this._initialCapacity = var1;
-      this._queue = new Object[var1];
-      this._capacity = var1;
-      this._modulus = var1 - 1;
+   public CyclicQueue(int initialCapacity) {
+      initialCapacity = roundCapacity(initialCapacity);
+      this._initialCapacity = initialCapacity;
+      this._queue = new Object[initialCapacity];
+      this._capacity = initialCapacity;
+      this._modulus = initialCapacity - 1;
    }
 
-   public final void enqueue(Object var1) {
-      this._queue[this._head] = var1;
+   public final void enqueue(Object object) {
+      this._queue[this._head] = object;
       this._head = this._head + 1 & this._modulus;
       if (this._head == this._tail) {
          this.expandCapacity();
@@ -47,43 +47,43 @@ public final class CyclicQueue {
       return this._head - this._tail & this._modulus;
    }
 
-   private static final int roundCapacity(int var0) {
-      if (var0 <= 8) {
+   private static final int roundCapacity(int capacity) {
+      if (capacity <= 8) {
          return 8;
       }
 
-      var0--;
+      capacity--;
 
-      byte var1;
-      for (var1 = 8; var0 > 7; var1 <<= 1) {
-         var0 >>>= 1;
+      int ret;
+      for (ret = 8; capacity > 7; ret <<= 1) {
+         capacity >>>= 1;
       }
 
-      return var1;
+      return ret;
    }
 
    private final void expandCapacity() {
-      int var1 = this._capacity << 1;
-      Array.resize(this._queue, var1);
+      int newCapacity = this._capacity << 1;
+      Array.resize(this._queue, newCapacity);
       if (this._head <= this._capacity >> 1) {
          this._head = this._head + this._capacity;
          if (this._tail > 0) {
             System.arraycopy(this._queue, 0, this._queue, this._capacity, this._tail);
 
-            for (int var2 = 0; var2 < this._tail; var2++) {
-               this._queue[var2] = null;
+            for (int i = 0; i < this._tail; i++) {
+               this._queue[i] = null;
             }
          }
       } else {
          this._tail = this._tail + this._capacity;
          System.arraycopy(this._queue, this._head, this._queue, this._tail, this._capacity - this._head);
 
-         for (int var3 = this._head; var3 < this._capacity; var3++) {
-            this._queue[var3] = null;
+         for (int i = this._head; i < this._capacity; i++) {
+            this._queue[i] = null;
          }
       }
 
-      this._capacity = var1;
-      this._modulus = var1 - 1;
+      this._capacity = newCapacity;
+      this._modulus = newCapacity - 1;
    }
 }

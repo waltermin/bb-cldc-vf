@@ -8,10 +8,10 @@ final class PersistentContent$Listeners$EventLauncher implements Runnable {
    Event _event;
    boolean _broadcast;
 
-   PersistentContent$Listeners$EventLauncher(EventListenerManager var1, Event var2, boolean var3) {
-      this._listeners = var1;
-      this._event = var2;
-      this._broadcast = var3;
+   PersistentContent$Listeners$EventLauncher(EventListenerManager listeners, Event event, boolean broadcast) {
+      this._listeners = listeners;
+      this._event = event;
+      this._broadcast = broadcast;
    }
 
    @Override

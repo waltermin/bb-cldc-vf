@@ -20,40 +20,40 @@ public final class Message {
    public Message() {
    }
 
-   public Message(int var1, int var2) {
-      this._device = var1;
-      this._event = var2;
+   public Message(int device, int event) {
+      this._device = device;
+      this._event = event;
    }
 
-   public Message(int var1, int var2, int var3) {
-      this._device = var1;
-      this._event = var2;
-      this._subMessage = var3;
+   public Message(int device, int event, int subMessage) {
+      this._device = device;
+      this._event = event;
+      this._subMessage = subMessage;
    }
 
-   public Message(int var1, int var2, int var3, int var4, int var5) {
-      this._device = var1;
-      this._event = var2;
-      this._subMessage = var3;
-      this._data0 = var4;
-      this._data1 = var5;
+   public Message(int device, int event, int subMessage, int data0, int data1) {
+      this._device = device;
+      this._event = event;
+      this._subMessage = subMessage;
+      this._data0 = data0;
+      this._data1 = data1;
    }
 
-   public Message(int var1, int var2, Object var3, Object var4) {
-      this._device = var1;
-      this._event = var2;
-      this._object0 = var3;
-      this._object1 = var4;
+   public Message(int device, int event, Object object0, Object object1) {
+      this._device = device;
+      this._event = event;
+      this._object0 = object0;
+      this._object1 = object1;
    }
 
-   public Message(int var1, int var2, int var3, int var4, int var5, Object var6, Object var7) {
-      this._device = var1;
-      this._event = var2;
-      this._subMessage = var3;
-      this._data0 = var4;
-      this._data1 = var5;
-      this._object0 = var6;
-      this._object1 = var7;
+   public Message(int device, int event, int subMessage, int data0, int data1, Object object0, Object object1) {
+      this._device = device;
+      this._event = event;
+      this._subMessage = subMessage;
+      this._data0 = data0;
+      this._data1 = data1;
+      this._object0 = object0;
+      this._object1 = object1;
    }
 
    public final int getDevice() {
@@ -88,47 +88,47 @@ public final class Message {
       return this._object1;
    }
 
-   public final void setDevice(int var1) {
+   public final void setDevice(int device) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setEvent(int var1) {
+   public final void setEvent(int event) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setSubMessage(int var1) {
+   public final void setSubMessage(int subMessage) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setDataLength(int var1) {
+   public final void setDataLength(int dataLength) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setData0(int var1) {
+   public final void setData0(int data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setData1(int var1) {
+   public final void setData1(int data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setObject0(Object var1) {
+   public final void setObject0(Object data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setObject1(Object var1) {
+   public final void setObject1(Object data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void copy(Message var1) {
-      this._device = var1._device;
-      this._event = var1._event;
-      this._subMessage = var1._subMessage;
-      this._dataLength = var1._dataLength;
-      this._data0 = var1._data0;
-      this._data1 = var1._data1;
-      this._object0 = var1._object0;
-      this._object1 = var1._object1;
+   public final void copy(Message message) {
+      this._device = message._device;
+      this._event = message._event;
+      this._subMessage = message._subMessage;
+      this._dataLength = message._dataLength;
+      this._data0 = message._data0;
+      this._data1 = message._data1;
+      this._object0 = message._object0;
+      this._object1 = message._object1;
    }
 
    @Override

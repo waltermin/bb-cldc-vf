@@ -19,77 +19,77 @@ class InvocationCleanupManager implements GlobalEventListener {
    private static InvocationCleanupManager _instance;
 
    void checkModules() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   void addActiveInvocation(int var1, Invocation var2) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   void removeActiveInvocation(int var1, Invocation var2) {
+   void addActiveInvocation(int pid, Invocation invocation) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   boolean requestHandlerStarted(int var1, ContentHandlerServerImpl var2) {
-      InvocationCleanupManager$HandlerStatus var3 = (InvocationCleanupManager$HandlerStatus)this._activeRequestHandlers.get(var1);
-      if (var3 == null) {
-         this._activeRequestHandlers.put(var1, new InvocationCleanupManager$HandlerStatus(var2));
+   void removeActiveInvocation(int pid, Invocation invocation) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   boolean requestHandlerStarted(int pid, ContentHandlerServerImpl handler) {
+      InvocationCleanupManager$HandlerStatus status = (InvocationCleanupManager$HandlerStatus)this._activeRequestHandlers.get(pid);
+      if (status == null) {
+         this._activeRequestHandlers.put(pid, new InvocationCleanupManager$HandlerStatus(handler));
          return true;
       } else {
-         var3.invocationsAdded = true;
+         status.invocationsAdded = true;
          return false;
       }
    }
 
-   boolean responseHandlerStarted(int var1, RegistryImpl var2) {
-      InvocationCleanupManager$HandlerStatus var3 = (InvocationCleanupManager$HandlerStatus)this._activeResponseHandlers.get(var1);
-      if (var3 == null) {
-         this._activeResponseHandlers.put(var1, new InvocationCleanupManager$HandlerStatus(var2));
+   boolean responseHandlerStarted(int pid, RegistryImpl registry) {
+      InvocationCleanupManager$HandlerStatus status = (InvocationCleanupManager$HandlerStatus)this._activeResponseHandlers.get(pid);
+      if (status == null) {
+         this._activeResponseHandlers.put(pid, new InvocationCleanupManager$HandlerStatus(registry));
          return true;
       } else {
-         var3.invocationsAdded = true;
+         status.invocationsAdded = true;
          return false;
       }
    }
 
-   void requestRetreived(int var1) {
-      InvocationCleanupManager$HandlerStatus var2 = (InvocationCleanupManager$HandlerStatus)this._activeRequestHandlers.get(var1);
-      if (var2 != null) {
-         var2.canExit = true;
+   void requestRetreived(int pid) {
+      InvocationCleanupManager$HandlerStatus status = (InvocationCleanupManager$HandlerStatus)this._activeRequestHandlers.get(pid);
+      if (status != null) {
+         status.canExit = true;
       }
    }
 
-   void responseRetreived(int var1) {
-      InvocationCleanupManager$HandlerStatus var2 = (InvocationCleanupManager$HandlerStatus)this._activeResponseHandlers.get(var1);
-      if (var2 != null) {
-         var2.canExit = true;
+   void responseRetreived(int pid) {
+      InvocationCleanupManager$HandlerStatus status = (InvocationCleanupManager$HandlerStatus)this._activeResponseHandlers.get(pid);
+      if (status != null) {
+         status.canExit = true;
       }
    }
 
-   void addContentHandlerModule(int var1, String var2, boolean var3) {
+   void addContentHandlerModule(int moduleHandle, String classname, boolean dynamic) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   void removeContentHandler(int var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   void removeContentHandler(int moduleHandle, String classname) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   void moduleUpgraded(String var1, int var2) {
+   void moduleUpgraded(String moduleName, int moduleHandle) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    static InvocationCleanupManager getInstance() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (InvocationCleanupManager)var0.getOrWaitFor(-863891308161769843L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _instance = (InvocationCleanupManager)ar.getOrWaitFor(-863891308161769843L);
          if (_instance == null) {
             _instance = new InvocationCleanupManager();
-            var0.put(-863891308161769843L, _instance);
+            ar.put(-863891308161769843L, _instance);
          }
       }
 

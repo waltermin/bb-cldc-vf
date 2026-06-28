@@ -13,13 +13,13 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    protected DatagramStatusListener _listener;
    public static final int DG_NULL_ID;
 
-   public void copy(DatagramBase var1) {
-      this.setData(var1.getData(), var1.getOffset(), var1.getLength());
-      this._addressBase = var1._addressBase;
-      this._datagramId = var1._datagramId;
-      this._properties = var1._properties;
-      this._flags = var1._flags;
-      this._validFlags = var1._validFlags;
+   public void copy(DatagramBase dgram) {
+      this.setData(dgram.getData(), dgram.getOffset(), dgram.getLength());
+      this._addressBase = dgram._addressBase;
+      this._datagramId = dgram._datagramId;
+      this._properties = dgram._properties;
+      this._flags = dgram._flags;
+      this._validFlags = dgram._validFlags;
    }
 
    public DatagramAddressBase getAddressBase() {
@@ -47,11 +47,11 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
       return this._datagramId;
    }
 
-   public void setDatagramId(int var1) {
+   public void setDatagramId(int datagramId) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setAddressBase(DatagramAddressBase var1) {
+   public void setAddressBase(DatagramAddressBase addressBase) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -59,66 +59,66 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
       return this._listener;
    }
 
-   public void setDatagramStatusListener(DatagramStatusListener var1) {
+   public void setDatagramStatusListener(DatagramStatusListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void copyFlagsInto(DatagramBase var1) {
+   public void copyFlagsInto(DatagramBase dst) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public int getFlag(int var1) {
-      if ((this._validFlags & var1) != 0) {
-         return (this._flags & var1) != 0 ? 1 : 0;
+   public int getFlag(int flag) {
+      if ((this._validFlags & flag) != 0) {
+         return (this._flags & flag) != 0 ? 1 : 0;
       } else {
          return -1;
       }
    }
 
    @Override
-   public boolean isFlagSet(int var1) {
-      return (this._validFlags & var1) != 0 && (this._flags & var1) != 0;
+   public boolean isFlagSet(int flag) {
+      return (this._validFlags & flag) != 0 && (this._flags & flag) != 0;
    }
 
    @Override
-   public void setFlag(int var1, boolean var2) {
-      if (var2) {
-         this._flags |= var1;
+   public void setFlag(int flag, boolean value) {
+      if (value) {
+         this._flags |= flag;
       } else {
-         this._flags &= ~var1;
+         this._flags &= ~flag;
       }
 
-      this._validFlags |= var1;
+      this._validFlags |= flag;
    }
 
    @Override
-   public Object getProperty(String var1) {
-      return this._properties == null ? null : this._properties.get(var1);
+   public Object getProperty(String name) {
+      return this._properties == null ? null : this._properties.get(name);
    }
 
    @Override
-   public Object setProperty(String var1, Object var2) {
+   public Object setProperty(String name, Object data) {
       if (this._properties == null) {
          this._properties = (Hashtable)(new Object());
       }
 
-      return this._properties.put(var1, var2);
+      return this._properties.put(name, data);
    }
 
    @Override
-   public void setAddress(Datagram var1) {
+   public void setAddress(Datagram datagram) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void setAddress(String var1) {
-      if (var1 != null) {
+   public void setAddress(String address) {
+      if (address != null) {
          if (this._addressBase == null) {
             this._addressBase = this.newAddressBase();
          }
 
-         this._addressBase.setAddress(var1);
+         this._addressBase.setAddress(address);
       } else {
          this._addressBase = null;
       }
@@ -140,12 +140,12 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    }
 
    @Override
-   public void setData(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 + var3 > var1.length) {
+   public void setData(byte[] buffer, int offset, int length) {
+      if (buffer != null && offset + length > buffer.length) {
          throw new Object();
       }
 
-      this.setData(var1, var2, var3, true);
+      this.setData(buffer, offset, length, true);
    }
 
    @Override
@@ -153,18 +153,18 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public DatagramBase(byte[] var1, int var2, int var3, String var4) {
-      super(var1, var2, var3, true);
-      if (var1 != null && var2 + var3 > var1.length) {
+   public DatagramBase(byte[] buffer, int offset, int length, String address) {
+      super(buffer, offset, length, true);
+      if (buffer != null && offset + length > buffer.length) {
          throw new Object();
       }
 
-      this.setAddress(var4);
+      this.setAddress(address);
    }
 
-   public DatagramBase(byte[] var1, int var2, int var3) {
-      super(var1, var2, var3, true);
-      if (var1 != null && var2 + var3 > var1.length) {
+   public DatagramBase(byte[] buffer, int offset, int length) {
+      super(buffer, offset, length, true);
+      if (buffer != null && offset + length > buffer.length) {
          throw new Object();
       }
    }
@@ -176,17 +176,17 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    }
 
    @Override
-   public void setLength(int var1) {
+   public void setLength(int length) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public DatagramBase(byte[] var1, int var2, int var3, DatagramAddressBase var4) {
-      super(var1, var2, var3, true);
-      if (var1 != null && var2 + var3 > var1.length) {
+   public DatagramBase(byte[] buffer, int offset, int length, DatagramAddressBase addressBase) {
+      super(buffer, offset, length, true);
+      if (buffer != null && offset + length > buffer.length) {
          throw new Object();
       }
 
-      this.setAddressBase(var4);
+      this.setAddressBase(addressBase);
    }
 
    public DatagramBase() {

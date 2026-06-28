@@ -14,58 +14,58 @@ public final class Resource$Internal {
    private Resource$Internal() {
    }
 
-   private static final String getExtension(String var0) {
+   private static final String getExtension(String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final synchronized Resource findResourceClass(String var0, int var1, String var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final Resource getResourceClass(String var0) {
-      return getResourceClass(var0, true);
-   }
-
-   public static final Resource getResourceClass(String var0, boolean var1) {
-      throw new RuntimeException("cod2jar: string-special");
-   }
-
-   private static final byte[] FindResourceInDependencyGraph(int var0, int var1, String var2) {
+   public static final synchronized Resource findResourceClass(String moduleName, int moduleHandle, String ext, boolean cacheResult) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final byte[] getResource(String var0, int var1) {
-      String var2 = CodeModuleManager.getModuleName(var1, 0);
-      if (var2 != null) {
-         String var3 = getExtension(var0);
-         Resource var4 = findResourceClass(var2, var1, var3, true);
-         if (var4 != null) {
-            return var4.findResource(var0);
+   public static final Resource getResourceClass(String moduleName) {
+      return getResourceClass(moduleName, true);
+   }
+
+   public static final Resource getResourceClass(String moduleName, boolean cacheResult) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   private static final byte[] FindResourceInDependencyGraph(int firstRoot, int secondRoot, String name) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public static final byte[] getResource(String name, int moduleHandle) {
+      String moduleName = CodeModuleManager.getModuleName(moduleHandle, 0);
+      if (moduleName != null) {
+         String ext = getExtension(name);
+         Resource resource = findResourceClass(moduleName, moduleHandle, ext, true);
+         if (resource != null) {
+            return resource.findResource(name);
          }
       }
 
       return null;
    }
 
-   public static final ToIntHashtable getResourceCache(String var0) {
-      Object var1 = new Object();
-      String var3 = getExtension(var0);
+   public static final ToIntHashtable getResourceCache(String endsWithText) {
+      ToIntHashtable cache = (ToIntHashtable)(new Object());
+      String ext = getExtension(endsWithText);
 
-      for (int var4 = 0; var4 < MAX_MODULES; var4++) {
-         String var2 = Process.getModuleName(var4, 0);
-         if (var2 != null) {
-            Resource var5 = findResourceClass(var2, var4, var3, true);
-            if (var5 != null) {
-               Vector var6 = var5.listResourcesEndingWith(var0);
-               if (var6.size() > 0) {
-                  for (int var7 = 0; var7 < var6.size(); var7++) {
-                     ((ToIntHashtable)var1).put(var6.elementAt(var7), var4);
+      for (int moduleHandle = 0; moduleHandle < MAX_MODULES; moduleHandle++) {
+         String moduleName = Process.getModuleName(moduleHandle, 0);
+         if (moduleName != null) {
+            Resource resource = findResourceClass(moduleName, moduleHandle, ext, true);
+            if (resource != null) {
+               Vector matches = resource.listResourcesEndingWith(endsWithText);
+               if (matches.size() > 0) {
+                  for (int j = 0; j < matches.size(); j++) {
+                     cache.put(matches.elementAt(j), moduleHandle);
                   }
                }
             }
          }
       }
 
-      return (ToIntHashtable)var1;
+      return cache;
    }
 }

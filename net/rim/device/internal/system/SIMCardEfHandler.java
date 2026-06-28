@@ -1,7 +1,9 @@
 package net.rim.device.internal.system;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.SIMCard;
 import net.rim.device.api.system.SIMCardEFListener;
+import net.rim.device.api.system.SIMCardException;
 
 public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    private int _efId;
@@ -25,12 +27,55 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    private static final int STATE_READ_WAIT;
    private static final int STATE_WRITE_WAIT;
 
-   public void startTask(SIMCardEfTask var1, boolean var2) {
+   public void startTask(SIMCardEfTask task, boolean wait) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized int writeRequest(int var1, int var2, int var3, byte[] var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public synchronized int writeRequest(int efId, int structure, int record, byte[] buffer) {
+      if (this._state != 1) {
+         throw new Object();
+      }
+
+      this._efId = efId;
+      this._fileStructure = structure;
+      this._recordNumber = record;
+      this._buffer = buffer;
+      this._state = 4;
+      boolean var9 = false /* VF: Semaphore variable */;
+
+      label59: {
+         label60: {
+            try {
+               var9 = true;
+               SIMCard.requestEFWrite(this._efId, this._fileStructure, this._recordNumber, this._buffer);
+               super.wait();
+               var9 = false;
+               break label59;
+            } catch (InterruptedException ie) {
+               this._code = 11;
+               var9 = false;
+               break label60;
+            } catch (SIMCardException scEx) {
+               this._code = 11;
+               var9 = false;
+            } finally {
+               if (var9) {
+                  this._state = 1;
+               }
+            }
+
+            this._state = 1;
+            return this._code;
+         }
+
+         this._state = 1;
+         return this._code;
+      }
+
+      this._state = 1;
+      return this._code;
    }
 
    public boolean isRunning() {
@@ -61,55 +106,221 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
       return this._numRecords;
    }
 
-   public synchronized int infoRequest(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public synchronized int infoRequest(int efId) {
+      this._efId = efId;
+      if (this._state != 1) {
+         throw new Object();
+      }
+
+      boolean var6 = false /* VF: Semaphore variable */;
+
+      label57: {
+         label58: {
+            try {
+               var6 = true;
+               this._state = 2;
+               SIMCard.requestEFInfo(this._efId);
+               super.wait();
+               var6 = false;
+               break label57;
+            } catch (InterruptedException ie) {
+               this._code = 11;
+               var6 = false;
+               break label58;
+            } catch (SIMCardException scEx) {
+               this._code = 11;
+               var6 = false;
+            } finally {
+               if (var6) {
+                  this._state = 1;
+               }
+            }
+
+            this._state = 1;
+            return this._code;
+         }
+
+         this._state = 1;
+         return this._code;
+      }
+
+      this._state = 1;
+      return this._code;
    }
 
-   public synchronized int readRequest(int var1, int var2, int var3, byte[] var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public synchronized int readRequest(int efId, int structure, int record, byte[] buffer) {
+      int len = -1;
+      if (this._state != 1) {
+         throw new Object();
+      }
+
+      this._efId = efId;
+      this._fileStructure = structure;
+      this._recordNumber = record;
+      this._buffer = buffer;
+      this._state = 3;
+      boolean var10 = false /* VF: Semaphore variable */;
+
+      label80: {
+         label81: {
+            try {
+               var10 = true;
+               int scEx = 2;
+
+               while (--scEx >= 0) {
+                  len = SIMCard.requestEFRead(this._efId, this._fileStructure, this._recordNumber, this._buffer);
+                  if (len >= 0) {
+                     var10 = false;
+                     break label80;
+                  }
+
+                  super.wait();
+               }
+
+               var10 = false;
+               break label80;
+            } catch (InterruptedException ie) {
+               this._code = 11;
+               var10 = false;
+               break label81;
+            } catch (SIMCardException scEx) {
+               this._code = 11;
+               var10 = false;
+            } finally {
+               if (var10) {
+                  this._state = 1;
+               }
+            }
+
+            this._state = 1;
+            return this._code;
+         }
+
+         this._state = 1;
+         return this._code;
+      }
+
+      this._state = 1;
+      return this._code;
    }
 
-   public int readRequest(int var1, byte[] var2) {
-      return this.readRequest(this._efId, this._fileStructure, var1, var2);
+   public int readRequest(int record, byte[] buffer) {
+      return this.readRequest(this._efId, this._fileStructure, record, buffer);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      Application application = this._application;
+      boolean var5 = false /* VF: Semaphore variable */;
+
+      label57: {
+         try {
+            var5 = true;
+            SIMCard.addListener(application, this);
+            this._task.doWork(this);
+            var5 = false;
+            break label57;
+         } catch (Exception var6) {
+            var5 = false;
+         } finally {
+            if (var5) {
+               this._state = 0;
+               this.closeWaitingDialog();
+               SIMCard.removeListener(application, this);
+               if (this._callback != null) {
+                  this._callback.taskComplete(this._code, this._task);
+               }
+
+               this._task = null;
+               this._application = null;
+            }
+         }
+
+         this._state = 0;
+         this.closeWaitingDialog();
+         SIMCard.removeListener(application, this);
+         if (this._callback != null) {
+            this._callback.taskComplete(this._code, this._task);
+         }
+
+         this._task = null;
+         this._application = null;
+         return;
+      }
+
+      this._state = 0;
+      this.closeWaitingDialog();
+      SIMCard.removeListener(application, this);
+      if (this._callback != null) {
+         this._callback.taskComplete(this._code, this._task);
+      }
+
+      this._task = null;
+      this._application = null;
    }
 
    @Override
-   public void responseEFInfo(int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void responseEFInfo(int code, int id, int fileStatus, int structure, int fileSize, int recordLength, int numRecords) {
+      synchronized (this) {
+         if (this._state == 2 && this._efId == id) {
+            this._fileStatus = fileStatus;
+            this._fileStructure = structure;
+            this._fileSize = fileSize;
+            this._recordLength = recordLength;
+            this._numRecords = numRecords;
+            this.processResponse(code);
+         }
+      }
    }
 
    @Override
-   public void responseEFRead(int var1, int var2, int var3, int var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void responseEFRead(int code, int id, int structure, int length, int recordNumber) {
+      synchronized (this) {
+         if (this._state == 3 && this._efId == id) {
+            this.processResponse(code);
+         }
+      }
    }
 
    @Override
-   public void responseEFWrite(int var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void responseEFWrite(int code, int id, int structure, int recordNumber) {
+      synchronized (this) {
+         if (this._state == 4 && this._efId == id) {
+            this.processResponse(code);
+         }
+      }
    }
 
-   public SIMCardEfHandler(SIMCardEfHandlerCallback var1) {
-      this._callback = var1;
+   public SIMCardEfHandler(SIMCardEfHandlerCallback callback) {
+      this._callback = callback;
    }
 
    public SIMCardEfHandler() {
    }
 
-   private void processResponse(int var1) {
-      this._code = var1;
+   private void processResponse(int code) {
+      this._code = code;
       super.notify();
    }
 
    private void waitForComplete() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    private void closeWaitingDialog() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._gate != null) {
+         synchronized (this._gate) {
+            this._gate.notify();
+         }
+      } else {
+         Application app = this._application;
+         app.invokeAndWait((Runnable)(new Object(this, app)));
+      }
    }
 }

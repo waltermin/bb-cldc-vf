@@ -55,25 +55,25 @@ public class ListField extends Field implements VariableRowHeightProvider {
       this(0, 0);
    }
 
-   public ListField(int var1) {
-      this(var1, 0);
+   public ListField(int numRows) {
+      this(numRows, 0);
    }
 
-   public ListField(int var1, long var2) {
-      super(validateStyle(var2));
+   public ListField(int numRows, long style) {
+      super(validateStyle(style));
       this.setTag(TAG);
       this._size = 0;
       this._cursor = -1;
       this._selectionRange = 0;
       this._rowHeight = this.getFont().getHeight();
-      this._rowHeightAdjuster = new RowHeightAdjuster(this._rowHeight, var1);
-      this.setSize(var1, 0);
+      this._rowHeightAdjuster = new RowHeightAdjuster(this._rowHeight, numRows);
+      this.setSize(numRows, 0);
       if (this instanceof ListFieldCallback) {
          this._callback = (ListFieldCallback)this;
       }
    }
 
-   public int adjustRowHeight(Font var1, int var2, String var3) {
+   public int adjustRowHeight(Font font, int index, String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -81,8 +81,8 @@ public class ListField extends Field implements VariableRowHeightProvider {
    protected void applyFont() {
       super.applyFont();
       if (this._rowHeightSet < 0) {
-         int var1 = this.getFont().getHeight();
-         this._rowHeight = var1 * -this._rowHeightSet;
+         int lineHeight = this.getFont().getHeight();
+         this._rowHeight = lineHeight * -this._rowHeightSet;
          this._rowHeightAdjuster.setRowHeight(this._rowHeight);
       }
    }
@@ -92,83 +92,83 @@ public class ListField extends Field implements VariableRowHeightProvider {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private void calcFocusRect(boolean var1) {
-      if (var1) {
+   private void calcFocusRect(boolean move) {
+      if (move) {
          this.focusRemove();
       }
 
       this._focusRect.y = this.getYForRow(this._cursor);
       this._focusRect.height = this.getRowHeight(this._cursor);
-      if (var1) {
+      if (move) {
          this.focusAdd(true);
       }
    }
 
-   private void calcSelectedIndex(int var1) {
+   private void calcSelectedIndex(int index) {
       if (this._size == 0) {
          this._cursor = -1;
          this._selectionRange = 0;
       } else {
-         this._cursor = MathUtilities.clamp(0, var1, this._size - 1);
+         this._cursor = MathUtilities.clamp(0, index, this._size - 1);
          this._selectionRange = 0;
       }
    }
 
    private void checkLocale() {
       if (this._rbId != 0) {
-         int var1 = Locale.getDefault().getCode();
-         if (this._cachedLocaleCode != var1) {
-            this._cachedLocaleCode = var1;
-            ResourceBundleFamily var2 = ResourceBundle.getBundle(this._rbId, this._rbName);
-            this._emptyString = var2.getString(this._rbKey);
+         int currentCode = Locale.getDefault().getCode();
+         if (this._cachedLocaleCode != currentCode) {
+            this._cachedLocaleCode = currentCode;
+            ResourceBundleFamily family = ResourceBundle.getBundle(this._rbId, this._rbName);
+            this._emptyString = family.getString(this._rbKey);
          }
       }
    }
 
-   public void delete(int var1) {
-      boolean var2 = false;
-      if (var1 >= 0 && var1 <= this._size) {
+   public void delete(int index) {
+      boolean focusMoved = false;
+      if (index >= 0 && index <= this._size) {
          this._selectionRange = 0;
          this._size--;
-         this._rowHeightAdjuster.deletedRow(var1);
-         if (var1 < this._cursor) {
+         this._rowHeightAdjuster.deletedRow(index);
+         if (index < this._cursor) {
             this._cursor--;
-            var2 = true;
+            focusMoved = true;
          }
 
-         if (var1 == this._cursor && var1 == this._size) {
-            if (var1 == 0) {
+         if (index == this._cursor && index == this._size) {
+            if (index == 0) {
                this._cursor = -1;
             } else {
                this._cursor--;
-               var2 = true;
-               var1--;
+               focusMoved = true;
+               index--;
             }
          }
 
          this.calcFocusRect(false);
          this.fieldChangeNotify(Integer.MIN_VALUE);
-         Manager var3 = this.getManager();
-         if (var3 != null) {
+         Manager manager = this.getManager();
+         if (manager != null) {
             this.updateLayout();
-            if (var2) {
+            if (focusMoved) {
                this.focusAdd(false);
                this.focusChangeNotify(2);
             }
 
-            this.invalidate(0, this.getYForRow(var1), this.getWidth(), 1073741823);
+            this.invalidate(0, this.getYForRow(index), this.getWidth(), 1073741823);
          }
       } else {
-         throw new Object(var1);
+         throw new Object(index);
       }
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      if (!var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
+      if (!on) {
          this.invalidate(this._focusRect.x, this._focusRect.y, this._focusRect.width, this._focusRect.height);
       } else {
-         super.drawFocus(var1, var2);
+         super.drawFocus(graphics, on);
       }
    }
 
@@ -178,8 +178,8 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (super.getAccessibleStateSet() & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (super.getAccessibleStateSet() & state) != 0;
    }
 
    @Override
@@ -198,7 +198,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -208,7 +208,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -225,29 +225,29 @@ public class ListField extends Field implements VariableRowHeightProvider {
       return this._emptyStyle;
    }
 
-   private int getFirstVisibleLine(int var1) {
-      int var2 = this.getManager().getVerticalScroll() - this.getTop();
-      var2 = MathUtilities.clamp(0, var2, this.getContentHeight());
+   private int getFirstVisibleLine(int direction) {
+      int y = this.getManager().getVerticalScroll() - this.getTop();
+      y = MathUtilities.clamp(0, y, this.getContentHeight());
       if (!this.hasVariableLineHeights()) {
-         if (var1 > 0) {
-            var2 += this._rowHeight - 1;
+         if (direction > 0) {
+            y += this._rowHeight - 1;
          }
 
-         return this.getRowForY(var2);
+         return this.getRowForY(y);
       } else {
-         int var3 = this.getRowForY(var2);
-         int var4 = var2 - this.getYForRow(var3);
-         if (var4 > this.getRowHeight(var3) >> 2) {
-            var3++;
+         int firstVisibleLine = this.getRowForY(y);
+         int rowHeightOffScreen = y - this.getYForRow(firstVisibleLine);
+         if (rowHeightOffScreen > this.getRowHeight(firstVisibleLine) >> 2) {
+            firstVisibleLine++;
          }
 
-         return var3;
+         return firstVisibleLine;
       }
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      var1.set(this._focusRect);
+   public void getFocusRect(XYRect rect) {
+      rect.set(this._focusRect);
    }
 
    @Override
@@ -255,37 +255,37 @@ public class ListField extends Field implements VariableRowHeightProvider {
       return this._callback.getPreferredWidth(this);
    }
 
-   public int getRowForY(int var1) {
+   public int getRowForY(int y) {
       if (!this.hasVariableLineHeights()) {
-         return var1 / this._rowHeight;
+         return y / this._rowHeight;
       }
 
-      int var2 = 0;
-      int var3 = Math.abs(this._rowCachedY - var1);
+      int row = 0;
+      int distance = Math.abs(this._rowCachedY - y);
       this._delayUpdateLayouts = true;
-      if (var1 <= var3) {
-         int var4 = this.getRowHeight(0);
+      if (y <= distance) {
+         int currY = this.getRowHeight(0);
 
-         while (var4 < var1) {
-            var4 += this.getRowHeight(++var2);
+         while (currY < y) {
+            currY += this.getRowHeight(++row);
          }
-      } else if (this.getHeight() - this.getRowHeight(this._size - 1) - var1 <= var3) {
-         var2 = this._size;
+      } else if (this.getHeight() - this.getRowHeight(this._size - 1) - y <= distance) {
+         row = this._size;
 
-         for (int var5 = this.getHeight(); var5 >= var1; var5 -= this.getRowHeight(var2)) {
-            var2--;
+         for (int currY = this.getHeight(); currY >= y; currY -= this.getRowHeight(row)) {
+            row--;
          }
       } else {
-         var2 = this._rowCached;
-         if (this._rowCachedY < var1) {
-            int var6 = this._rowCachedY + this.getRowHeight(var2);
+         row = this._rowCached;
+         if (this._rowCachedY < y) {
+            int currY = this._rowCachedY + this.getRowHeight(row);
 
-            while (var6 < var1) {
-               var6 += this.getRowHeight(++var2);
+            while (currY < y) {
+               currY += this.getRowHeight(++row);
             }
          } else {
-            for (int var7 = this._rowCachedY; var7 > var1; var7 -= this.getRowHeight(var2)) {
-               var2--;
+            for (int currY = this._rowCachedY; currY > y; currY -= this.getRowHeight(row)) {
+               row--;
             }
          }
       }
@@ -295,15 +295,15 @@ public class ListField extends Field implements VariableRowHeightProvider {
          this.triggerUpdateLayout();
       }
 
-      return var2;
+      return row;
    }
 
    public int getRowHeight() {
       return this._rowHeight;
    }
 
-   public int getRowHeight(int var1) {
-      return this._rowHeightAdjuster.getRowHeight(var1);
+   public int getRowHeight(int row) {
+      return this._rowHeightAdjuster.getRowHeight(row);
    }
 
    public int getSelectedIndex() {
@@ -311,16 +311,16 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public int[] getSelection() {
-      int var1 = Math.abs(this._selectionRange) + 1;
-      int[] var2 = new int[var1];
-      int var3 = this._cursor + (this._selectionRange > 0 ? this._selectionRange : 0);
-      int var4 = var3;
+      int size = Math.abs(this._selectionRange) + 1;
+      int[] selection = new int[size];
+      int last = this._cursor + (this._selectionRange > 0 ? this._selectionRange : 0);
+      int index = last;
 
-      while (var1 > 0) {
-         var2[--var1] = var4--;
+      while (size > 0) {
+         selection[--size] = index--;
       }
 
-      return var2;
+      return selection;
    }
 
    private int getSelectionAnchor() {
@@ -331,68 +331,68 @@ public class ListField extends Field implements VariableRowHeightProvider {
       return this._size;
    }
 
-   public int getVisibleLinesPageDown(int var1) {
-      int var2 = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
+   public int getVisibleLinesPageDown(int topVisibleLine) {
+      int height = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
       if (!this.hasVariableLineHeights()) {
-         return var2 / this._rowHeight;
+         return height / this._rowHeight;
       }
 
-      int var3 = var1;
-      int var4 = this._rowHeight - (this._rowHeight >> 2);
+      int bottomVisibleLine = topVisibleLine;
+      int minRemainingHeight = this._rowHeight - (this._rowHeight >> 2);
 
-      for (int var5 = var2; var3 < this._size && var5 >= var4; var3++) {
-         var5 -= this.getRowHeight(var3);
+      for (int remainingHeight = height; bottomVisibleLine < this._size && remainingHeight >= minRemainingHeight; bottomVisibleLine++) {
+         remainingHeight -= this.getRowHeight(bottomVisibleLine);
       }
 
-      return var3 - var1;
+      return bottomVisibleLine - topVisibleLine;
    }
 
-   public int getVisibleLinesPageUp(int var1) {
-      int var2 = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
+   public int getVisibleLinesPageUp(int bottomVisibleLine) {
+      int height = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
       if (!this.hasVariableLineHeights()) {
-         return var2 / this._rowHeight;
+         return height / this._rowHeight;
       }
 
-      int var3 = var1;
-      int var4 = this._rowHeight - (this._rowHeight >> 2);
+      int topVisibleLine = bottomVisibleLine;
+      int minRemainingHeight = this._rowHeight - (this._rowHeight >> 2);
 
-      for (int var5 = var2; var3 >= 0 && var5 >= var4; var3--) {
-         var5 -= this.getRowHeight(var3);
+      for (int remainingHeight = height; topVisibleLine >= 0 && remainingHeight >= minRemainingHeight; topVisibleLine--) {
+         remainingHeight -= this.getRowHeight(topVisibleLine);
       }
 
-      return var1 - var3;
+      return bottomVisibleLine - topVisibleLine;
    }
 
-   public int getYForRow(int var1) {
-      int var2 = 0;
-      if (var1 < 0) {
+   public int getYForRow(int row) {
+      int y = 0;
+      if (row < 0) {
          return 0;
       }
 
       if (!this.hasVariableLineHeights()) {
-         var2 = var1 * this._rowHeight;
+         y = row * this._rowHeight;
       } else {
-         int var3 = Math.abs(this._rowCached - var1);
+         int distance = Math.abs(this._rowCached - row);
          this._delayUpdateLayouts = true;
-         if (var1 <= var3) {
-            for (int var7 = 0; var7 < var1; var7++) {
-               var2 += this.getRowHeight(var7);
+         if (row <= distance) {
+            for (int currRow = 0; currRow < row; currRow++) {
+               y += this.getRowHeight(currRow);
             }
-         } else if (this._size - var1 <= var3) {
-            var2 = this._rowHeightAdjuster.getHeight();
+         } else if (this._size - row <= distance) {
+            y = this._rowHeightAdjuster.getHeight();
 
-            for (int var6 = this._size - 1; var6 >= var1; var6--) {
-               var2 -= this.getRowHeight(var6);
+            for (int currRow = this._size - 1; currRow >= row; currRow--) {
+               y -= this.getRowHeight(currRow);
             }
          } else {
-            var2 = this._rowCachedY;
-            if (this._rowCached < var1) {
-               for (int var5 = this._rowCached; var5 < var1; var5++) {
-                  var2 += this.getRowHeight(var5);
+            y = this._rowCachedY;
+            if (this._rowCached < row) {
+               for (int currRow = this._rowCached; currRow < row; currRow++) {
+                  y += this.getRowHeight(currRow);
                }
             } else {
-               for (int var4 = this._rowCached - 1; var4 >= var1; var4--) {
-                  var2 -= this.getRowHeight(var4);
+               for (int currRow = this._rowCached - 1; currRow >= row; currRow--) {
+                  y -= this.getRowHeight(currRow);
                }
             }
          }
@@ -403,47 +403,47 @@ public class ListField extends Field implements VariableRowHeightProvider {
          }
       }
 
-      this._rowCached = var1;
-      this._rowCachedY = var2;
-      return var2;
+      this._rowCached = row;
+      this._rowCachedY = y;
+      return y;
    }
 
    protected boolean hasVariableLineHeights() {
       return this._rowHeightAdjuster.hasVariableLineHeights();
    }
 
-   public int indexOfList(String var1, int var2) {
+   public int indexOfList(String prefix, int start) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void insert(int var1) {
-      boolean var2 = false;
-      if (var1 >= 0 && var1 <= this._size) {
+   public void insert(int index) {
+      boolean focusMoved = false;
+      if (index >= 0 && index <= this._size) {
          this._selectionRange = 0;
          if (this._size == 0) {
             this._cursor = 0;
-         } else if (var1 <= this._cursor) {
-            var2 = true;
+         } else if (index <= this._cursor) {
+            focusMoved = true;
             this._cursor++;
             this.focusChangeNotify(2);
          }
 
          this._size++;
-         this._rowHeightAdjuster.insertedRow(var1);
+         this._rowHeightAdjuster.insertedRow(index);
          this.calcFocusRect(false);
-         Manager var3 = this.getManager();
-         if (var3 != null) {
+         Manager manager = this.getManager();
+         if (manager != null) {
             this.updateLayout();
-            if (var2) {
+            if (focusMoved) {
                this.focusAdd(false);
             }
 
-            this.invalidate(0, this.getYForRow(var1), this.getWidth(), 1073741823);
+            this.invalidate(0, this.getYForRow(index), this.getWidth(), 1073741823);
          }
 
          this.fieldChangeNotify(Integer.MIN_VALUE);
       } else {
-         throw new Object(var1);
+         throw new Object(index);
       }
    }
 
@@ -452,29 +452,29 @@ public class ListField extends Field implements VariableRowHeightProvider {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public void invalidate(int var1) {
-      this.invalidate(0, this.getYForRow(var1), this.getWidth(), this.getRowHeight(var1));
+   public void invalidate(int index) {
+      this.invalidate(0, this.getYForRow(index), this.getWidth(), this.getRowHeight(index));
    }
 
-   public void invalidateRange(int var1, int var2) {
-      if (var1 < 0) {
-         var1 = 0;
+   public void invalidateRange(int start, int end) {
+      if (start < 0) {
+         start = 0;
       }
 
-      if (var2 < var1) {
+      if (end < start) {
          throw new Object();
       }
 
-      if (var1 > this._size) {
+      if (start > this._size) {
          throw new Object();
       }
 
-      int var3 = this.getYForRow(var1);
-      if (var2 > this._size) {
-         var2 = Math.max(0, this._size - 1);
+      int y = this.getYForRow(start);
+      if (end > this._size) {
+         end = Math.max(0, this._size - 1);
       }
 
-      this.invalidate(0, var3, this.getContentWidth(), this.getYForRow(var2 + 1) - var3);
+      this.invalidate(0, y, this.getContentWidth(), this.getYForRow(end + 1) - y);
    }
 
    public boolean isEmpty() {
@@ -482,11 +482,11 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      int[] var2 = this.getSelection();
+   public boolean isAccessibleChildSelected(int index) {
+      int[] selectionRange = this.getSelection();
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         if (var2[var3] == var1) {
+      for (int i = 0; i < selectionRange.length; i++) {
+         if (selectionRange[i] == index) {
             return true;
          }
       }
@@ -495,8 +495,8 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == 27 && this._selectionRange != 0) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == 27 && this._selectionRange != 0) {
          this._selectionRange = 0;
          this.calcFocusRect(true);
          if (ThemeAttributeSet.getFocusStyle(this) != 0) {
@@ -506,9 +506,9 @@ public class ListField extends Field implements VariableRowHeightProvider {
          return true;
       } else {
          if (this._prefix != null) {
-            if (CharacterUtilities.isLetter(var1) || CharacterUtilities.isDigit(var1)) {
+            if (CharacterUtilities.isLetter(key) || CharacterUtilities.isDigit(key)) {
                if (InputContext.getInstance(false).isSureType()) {
-                  this.searchEntryForMultipleChars(var1, var2);
+                  this.searchEntryForMultipleChars(key, status);
                   if (Ui.isTTSEnabled()) {
                      super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
                   }
@@ -516,48 +516,48 @@ public class ListField extends Field implements VariableRowHeightProvider {
                   return true;
                }
 
-               int var4 = this._cursor;
-               if (Math.abs(var3 - this._prevTime) > this._searchResetInterval) {
+               int start = this._cursor;
+               if (Math.abs(time - this._prevTime) > this._searchResetInterval) {
                   this._prefix.setLength(0);
                }
 
-               if (this._prefix.length() != 1 || this._prefix.length() == 1 && var1 != this._prefix.charAt(0)) {
-                  this._prefix.append(var1);
+               if (this._prefix.length() != 1 || this._prefix.length() == 1 && key != this._prefix.charAt(0)) {
+                  this._prefix.append(key);
                }
 
-               if (this._prefix.length() == 1 && var1 == this._prefix.charAt(0)) {
-                  var4++;
+               if (this._prefix.length() == 1 && key == this._prefix.charAt(0)) {
+                  start++;
                }
 
-               if (0 > var4) {
-                  var4 = 0;
+               if (0 > start) {
+                  start = 0;
                }
 
-               this._prevTime = var3;
-               String var5 = this._prefix.toString();
-               if (!this.searchEntryFor(var5, var4)) {
-                  this.searchEntryFor(var5, 0);
+               this._prevTime = time;
+               String prefix = this._prefix.toString();
+               if (!this.searchEntryFor(prefix, start)) {
+                  this.searchEntryFor(prefix, 0);
                }
 
                return true;
             }
 
-            if (var1 == '\b') {
+            if (key == '\b') {
                this._prefix.setLength(0);
                this._prevTime = 0;
                return true;
             }
          }
 
-         return super.keyChar(var1, var2, var3);
+         return super.keyChar(key, status, time);
       }
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      switch (var1) {
+   protected boolean keyControl(char key, int status, int time) {
+      switch (key) {
          case '\u0082':
-            return super.keyControl(var1, var2, var3);
+            return super.keyControl(key, status, time);
          case '\u0083':
          case '\u0084':
          default:
@@ -566,109 +566,109 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       if (this._rowHeight != 0 && (this._rowHeight == this._rowHeightSet || this._rowHeightSet <= 0)) {
          this._focusRect.x = 0;
-         this._focusRect.width = var1;
+         this._focusRect.width = width;
          this._focusRect.height = this._rowHeight;
          this._rowCached = -1;
          this._rowCachedY = -1;
          this.calcFocusRect(false);
-         var2 = this._rowHeightAdjuster.getHeight();
-         this.setExtent(var1, var2);
+         height = this._rowHeightAdjuster.getHeight();
+         this.setExtent(width, height);
       } else {
          throw new Object();
       }
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
+   protected int moveFocus(int amount, int status, int time) {
       if (this._prefix != null) {
          this._prefix.setLength(0);
       }
 
-      if (this._size != 0 && (var2 & 65536) == 0) {
+      if (this._size != 0 && (status & 65536) == 0) {
          this.setMuddy(false);
-         if ((var2 & 1) == 0 || this.isStyle(8)) {
-            int var12 = this._cursor + var1;
-            int var14 = this._cursor;
-            this._cursor = MathUtilities.clamp(0, var12, this._size - 1);
-            var1 = var12 - this._cursor;
-            if ((var2 & 2) != 0) {
+         if ((status & 1) == 0 || this.isStyle(8)) {
+            int desiredAnchor = this._cursor + amount;
+            int oldCursor = this._cursor;
+            this._cursor = MathUtilities.clamp(0, desiredAnchor, this._size - 1);
+            amount = desiredAnchor - this._cursor;
+            if ((status & 2) != 0) {
                if (this.isStyle(2)) {
-                  boolean var7 = this._selectionRange != 0;
-                  this._selectionRange = this._selectionRange + (var14 - this._cursor);
-                  if (this._selectionRange != 0 || var7) {
-                     int var8 = Graphics.isColor() ? 1 : 0;
-                     int var9 = Math.min(var14, this._cursor + var8);
-                     int var10 = Math.max(var14, this._cursor - var8);
-                     this.invalidateRange(var9, var10);
+                  boolean wasMultiple = this._selectionRange != 0;
+                  this._selectionRange = this._selectionRange + (oldCursor - this._cursor);
+                  if (this._selectionRange != 0 || wasMultiple) {
+                     int fudge = Graphics.isColor() ? 1 : 0;
+                     int start = Math.min(oldCursor, this._cursor + fudge);
+                     int end = Math.max(oldCursor, this._cursor - fudge);
+                     this.invalidateRange(start, end);
                   }
                } else {
                   this._selectionRange = 0;
                }
 
-               var1 = 0;
+               amount = 0;
             } else {
                if (this._selectionRange != 0) {
-                  int var15 = Math.min(var14 + this._selectionRange, var14);
-                  int var16 = Math.max(var14 + this._selectionRange, var14);
-                  this.invalidateRange(var15, var16);
+                  int start = Math.min(oldCursor + this._selectionRange, oldCursor);
+                  int end = Math.max(oldCursor + this._selectionRange, oldCursor);
+                  this.invalidateRange(start, end);
                }
 
                this._selectionRange = 0;
             }
-         } else if ((var2 & 1) != 0) {
+         } else if ((status & 1) != 0) {
             if (this._selectionRange != 0) {
-               int var5 = Math.min(this._cursor + this._selectionRange, this._cursor);
-               int var6 = Math.max(this._cursor + this._selectionRange, this._cursor);
-               this.invalidateRange(var5, var6);
+               int start = Math.min(this._cursor + this._selectionRange, this._cursor);
+               int end = Math.max(this._cursor + this._selectionRange, this._cursor);
+               this.invalidateRange(start, end);
                this._selectionRange = 0;
             }
 
-            int var11 = this.getFirstVisibleLine(var1);
-            int var13 = this.getVisibleLinesPageDown(var11);
-            if (var1 < 0) {
-               if (this._cursor == var11) {
+            int firstVisibleLine = this.getFirstVisibleLine(amount);
+            int visibleLines = this.getVisibleLinesPageDown(firstVisibleLine);
+            if (amount < 0) {
+               if (this._cursor == firstVisibleLine) {
                   this._cursor = this._cursor - this.getVisibleLinesPageUp(this._cursor);
                   this._cursor = Math.max(0, this._cursor);
                } else {
-                  this._cursor = var11;
+                  this._cursor = firstVisibleLine;
                }
             } else {
-               if (this._cursor == var11 + var13 - 1) {
+               if (this._cursor == firstVisibleLine + visibleLines - 1) {
                   this._cursor = this._cursor + this.getVisibleLinesPageDown(this._cursor);
                } else {
-                  this._cursor = var11 + var13 - 1;
+                  this._cursor = firstVisibleLine + visibleLines - 1;
                }
 
                this._cursor = Math.min(this._cursor, this._size - 1);
             }
 
-            var1 = 0;
+            amount = 0;
          }
 
          this.calcFocusRect(false);
-         if (var1 == 0 && Ui.isTTSEnabled()) {
+         if (amount == 0 && Ui.isTTSEnabled()) {
             super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
          }
 
-         return var1;
+         return amount;
       } else {
-         return var1;
+         return amount;
       }
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
+   protected void moveFocus(int x, int y, int status, int time) {
       if (Ui.isTTSEnabled()) {
          super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
       }
 
       if (this._size != 0) {
-         int var5 = this.getRowForY(var2);
-         if (var5 < this._size && var5 >= 0) {
-            this._cursor = var5;
+         int row = this.getRowForY(y);
+         if (row < this._size && row >= 0) {
+            this._cursor = row;
             this._selectionRange = 0;
             this.focusChangeNotify(2);
             this.calcFocusRect(true);
@@ -677,15 +677,15 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected void onFocus(int var1) {
+   protected void onFocus(int direction) {
       if (Ui.isTTSEnabled()) {
          super.accessibleEventOccurred(1, new Object(1), new Object(2), this);
       }
 
       if (this._cursor < 0) {
-         if (var1 > 0) {
+         if (direction > 0) {
             this._cursor = Math.min(0, this._size - 1);
-         } else if (var1 != 0) {
+         } else if (direction != 0) {
             this._cursor = this._size - 1;
          }
       }
@@ -694,101 +694,101 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void paint(Graphics graphics) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private boolean searchEntryFor(String var1, int var2) {
-      int var3 = this._callback.indexOfList(this, var1, var2);
-      if (var3 != -1) {
-         this.setSelectedIndex(var3);
+   private boolean searchEntryFor(String prefix, int start) {
+      int index = this._callback.indexOfList(this, prefix, start);
+      if (index != -1) {
+         this.setSelectedIndex(index);
          this.focusChangeNotify(2);
          if (Ui.isTTSEnabled()) {
             super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
          }
       }
 
-      return var3 != -1;
+      return index != -1;
    }
 
-   private void searchEntryForMultipleChars(char var1, int var2) {
+   private void searchEntryForMultipleChars(char key, int status) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void setCallback(ListFieldCallback var1) {
+   public void setCallback(ListFieldCallback callback) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setEmptyString(ResourceBundleFamily var1, int var2, int var3) {
-      if (var1 != null) {
-         var1.getString(var2);
-         this.setEmptyStringFamily(var1, var2);
+   public void setEmptyString(ResourceBundleFamily family, int id, int style) {
+      if (family != null) {
+         family.getString(id);
+         this.setEmptyStringFamily(family, id);
       } else {
          this.setEmptyStringFamily(CommonResource.getBundle(), 1012);
       }
 
-      this._emptyStyle = var3;
+      this._emptyStyle = style;
    }
 
-   public void setEmptyString(String var1, int var2) {
+   public void setEmptyString(String emptyString, int style) {
       this._rbId = 0;
       this._rbName = null;
-      this._emptyString = var1;
-      this._emptyStyle = var2;
+      this._emptyString = emptyString;
+      this._emptyStyle = style;
    }
 
-   private void setEmptyStringFamily(ResourceBundleFamily var1, int var2) {
-      this._rbId = var1.getId();
-      this._rbName = var1.getName();
-      this._rbKey = var2;
+   private void setEmptyStringFamily(ResourceBundleFamily rb, int key) {
+      this._rbId = rb.getId();
+      this._rbName = rb.getName();
+      this._rbKey = key;
       this._cachedLocaleCode = 0;
    }
 
-   public void setRowHeight(int var1) {
+   public void setRowHeight(int rowHeight) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setRowHeight(int var1, int var2) {
-      if (this._rowHeightAdjuster.setRowHeight(var1, var2)) {
+   public void setRowHeight(int row, int rowHeight) {
+      if (this._rowHeightAdjuster.setRowHeight(row, rowHeight)) {
          this.triggerUpdateLayout();
       }
    }
 
-   public void setSearchable(boolean var1) {
-      if (var1) {
+   public void setSearchable(boolean searchable) {
+      if (searchable) {
          this._prefix = (StringBuffer)(new Object());
       } else {
          this._prefix = null;
       }
    }
 
-   public void setSelectedIndex(int var1) {
+   public void setSelectedIndex(int index) {
       if (this._cursor >= 0 && this._selectionRange != 0) {
-         int var2 = this._selectionRange > 0 ? this._cursor : this._cursor + this._selectionRange;
-         int var3 = this._selectionRange > 0 ? this._cursor + this._selectionRange : this._cursor;
-         this.invalidateRange(var2, var3);
+         int topIndex = this._selectionRange > 0 ? this._cursor : this._cursor + this._selectionRange;
+         int bottomIndex = this._selectionRange > 0 ? this._cursor + this._selectionRange : this._cursor;
+         this.invalidateRange(topIndex, bottomIndex);
       }
 
-      this.calcSelectedIndex(var1);
+      this.calcSelectedIndex(index);
       this.calcFocusRect(true);
    }
 
-   public void setSize(int var1) {
-      this.setSize(var1, 0);
+   public void setSize(int size) {
+      this.setSize(size, 0);
    }
 
-   public void setSize(int var1, int var2) {
-      boolean var3 = this._size != var1;
-      this._size = var1;
-      this._rowHeightAdjuster.setSize(var1);
-      this.calcSelectedIndex(var2);
+   public void setSize(int size, int focusRow) {
+      boolean sizeChange = this._size != size;
+      this._size = size;
+      this._rowHeightAdjuster.setSize(size);
+      this.calcSelectedIndex(focusRow);
       this._rowCached = -1;
       this._rowCachedY = -1;
       this.calcFocusRect(false);
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      Manager var4 = this.getManager();
-      if (var4 != null && var4.isValidLayout()) {
-         if (var3) {
+      Manager manager = this.getManager();
+      if (manager != null && manager.isValidLayout()) {
+         if (sizeChange) {
             this.updateLayout();
          }
 
@@ -798,15 +798,15 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      int var5 = this.getRowForY(var2);
-      return var5 != this._cursor ? true : this.getScreen().defaultStylusAction(0);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      int row = this.getRowForY(y);
+      return row != this._cursor ? true : this.getScreen().defaultStylusAction(0);
    }
 
    @Override
-   protected boolean stylusTapHold(int var1, int var2, int var3, int var4) {
-      int var5 = this.getRowForY(var2);
-      return var5 < this._size && var5 >= 0 ? this.getScreen().onMenu(0) : true;
+   protected boolean stylusTapHold(int x, int y, int status, int time) {
+      int row = this.getRowForY(y);
+      return row < this._size && row >= 0 ? this.getScreen().onMenu(0) : true;
    }
 
    private void triggerUpdateLayout() {
@@ -818,26 +818,26 @@ public class ListField extends Field implements VariableRowHeightProvider {
       }
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long validateStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override
-   public int getAdjustedY(Font var1, String var2, int var3) {
-      return this._rowHeightAdjuster.getAdjustedY(var1, var2, var3);
+   public int getAdjustedY(Font font, String text, int y) {
+      return this._rowHeightAdjuster.getAdjustedY(font, text, y);
    }
 
    @Override
-   public int getAdjustedY(Font var1, StringBuffer var2, int var3, int var4, int var5) {
-      return this._rowHeightAdjuster.getAdjustedY(var1, var2, var3, var4, var5);
+   public int getAdjustedY(Font font, StringBuffer text, int offset, int len, int y) {
+      return this._rowHeightAdjuster.getAdjustedY(font, text, offset, len, y);
    }
 
    @Override
-   public int getAdjustedY(int var1) {
-      return this._rowHeightAdjuster.getAdjustedY(var1);
+   public int getAdjustedY(int currentY) {
+      return this._rowHeightAdjuster.getAdjustedY(currentY);
    }
 }

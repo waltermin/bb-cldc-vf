@@ -5,8 +5,8 @@ import net.rim.device.internal.io.file.FileSystem;
 final class FileOutputStream$FileOutputStreamCleanupRunnable implements Runnable {
    private final FileOutputStream this$0;
 
-   FileOutputStream$FileOutputStreamCleanupRunnable(FileOutputStream var1) {
-      this.this$0 = var1;
+   FileOutputStream$FileOutputStreamCleanupRunnable(FileOutputStream _1) {
+      this.this$0 = _1;
    }
 
    @Override

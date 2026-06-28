@@ -4,7 +4,7 @@ public class NullPointerException extends RuntimeException {
    public NullPointerException() {
    }
 
-   public NullPointerException(String var1) {
-      super(var1);
+   public NullPointerException(String s) {
+      super(s);
    }
 }

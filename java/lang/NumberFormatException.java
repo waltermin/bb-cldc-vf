@@ -4,6 +4,6 @@ public class NumberFormatException extends IllegalArgumentException {
    public NumberFormatException() {
    }
 
-   public NumberFormatException(String var1) {
+   public NumberFormatException(String s) {
    }
 }

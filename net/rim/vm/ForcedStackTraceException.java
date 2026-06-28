@@ -4,6 +4,6 @@ public final class ForcedStackTraceException extends Exception {
    public ForcedStackTraceException() {
    }
 
-   public ForcedStackTraceException(String var1) {
+   public ForcedStackTraceException(String s) {
    }
 }

@@ -129,12 +129,12 @@ public final class InternalServices {
    }
 
    public static final boolean isDeviceClassA() {
-      boolean var0 = isUMTSCapable();
+      boolean rc = isUMTSCapable();
       if (RadioInfo.areWAFsSupported(4)) {
-         var0 = true;
+         rc = true;
       }
 
-      return var0;
+      return rc;
    }
 
    public static final boolean isEDGECapable() {
@@ -185,8 +185,8 @@ public final class InternalServices {
 
    public static final native void enableKeyUpMessages(boolean var0);
 
-   public static final void catastrophicFailure(int var0) {
-      catastrophicFailure(var0, null);
+   public static final void catastrophicFailure(int error) {
+      catastrophicFailure(error, null);
    }
 
    public static final native void catastrophicFailure(int var0, String var1);
@@ -226,8 +226,8 @@ public final class InternalServices {
    }
 
    public static final boolean isReducedFormFactor() {
-      int var0 = getFormFactor();
-      return var0 == 9 || var0 == 13;
+      int formFactor = getFormFactor();
+      return formFactor == 9 || formFactor == 13;
    }
 
    public static final native long getUptime();
@@ -251,16 +251,16 @@ public final class InternalServices {
    public static final native int getHardwareID();
 
    public static final void resetIdleTime() {
-      boolean var0 = !ITPolicyInternal.isITPolicyEnabled();
-      if (ITPolicy.getBoolean(24, 76, var0)) {
+      boolean allowResetIdleTimePolicyDefault = !ITPolicyInternal.isITPolicyEnabled();
+      if (ITPolicy.getBoolean(24, 76, allowResetIdleTimePolicyDefault)) {
          resetIdleTimeImpl();
       }
    }
 
    private static final native void resetIdleTimeImpl();
 
-   public static final int[] parsePlatformVersionString(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int[] parsePlatformVersionString(String pv) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final native int getOSAPIVersion();
@@ -281,71 +281,71 @@ public final class InternalServices {
 
    private static final native long getDriverVersion(int var0);
 
-   public static final String getDriverVersionString(int var0) {
-      long var1 = getDriverVersion(var0);
-      int var3 = (int)(var1 >>> 32);
-      int var4 = (int)(var1 & 4294967295L);
-      Object var5 = new Object(16);
-      switch (var4) {
+   public static final String getDriverVersionString(int driverType) {
+      long driverVersion = getDriverVersion(driverType);
+      int version = (int)(driverVersion >>> 32);
+      int format = (int)(driverVersion & 4294967295L);
+      StringBuffer buff = (StringBuffer)(new Object(16));
+      switch (format) {
          case -1:
             break;
          case 0:
          default:
-            ((StringBuffer)var5).append(var3 >>> 24);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 16 & 0xFF);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 8 & 0xFF);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 & 0xFF);
+            buff.append(version >>> 24);
+            buff.append('.');
+            buff.append(version >>> 16 & 0xFF);
+            buff.append('.');
+            buff.append(version >>> 8 & 0xFF);
+            buff.append('.');
+            buff.append(version & 0xFF);
             break;
          case 1:
-            ((StringBuffer)var5).append(var3 >>> 16);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 & 65535);
+            buff.append(version >>> 16);
+            buff.append('.');
+            buff.append(version & 65535);
             break;
          case 2:
-            ((StringBuffer)var5).append(var3 >>> 24);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 16 & 0xFF);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 15 & 1);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 & 32767);
+            buff.append(version >>> 24);
+            buff.append('.');
+            buff.append(version >>> 16 & 0xFF);
+            buff.append('.');
+            buff.append(version >>> 15 & 1);
+            buff.append('.');
+            buff.append(version & 32767);
             break;
          case 3:
-            ((StringBuffer)var5).append(var3 >>> 24);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 8 & 65535);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 & 0xFF);
+            buff.append(version >>> 24);
+            buff.append('.');
+            buff.append(version >>> 8 & 65535);
+            buff.append('.');
+            buff.append(version & 0xFF);
             break;
          case 4:
-            ((StringBuffer)var5).append(var3 >>> 24);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 16 & 0xFF);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 >>> 14 & 3);
-            ((StringBuffer)var5).append('.');
-            ((StringBuffer)var5).append(var3 & 16383);
+            buff.append(version >>> 24);
+            buff.append('.');
+            buff.append(version >>> 16 & 0xFF);
+            buff.append('.');
+            buff.append(version >>> 14 & 3);
+            buff.append('.');
+            buff.append(version & 16383);
             break;
          case 5:
-            int var6 = var3 >>> 12 & 15;
-            if (var6 != 0) {
-               ((StringBuffer)var5).append(var6);
+            int digit = version >>> 12 & 15;
+            if (digit != 0) {
+               buff.append(digit);
             }
 
-            ((StringBuffer)var5).append(var3 >>> 8 & 15);
-            ((StringBuffer)var5).append('.');
-            var6 = var3 >>> 4 & 15;
-            if (var6 != 0) {
-               ((StringBuffer)var5).append(var6);
+            buff.append(version >>> 8 & 15);
+            buff.append('.');
+            digit = version >>> 4 & 15;
+            if (digit != 0) {
+               buff.append(digit);
             }
 
-            ((StringBuffer)var5).append(var3 & 15);
+            buff.append(version & 15);
       }
 
-      return ((StringBuffer)var5).toString();
+      return buff.toString();
    }
 
    public static final native int getLightSensorADCReading();

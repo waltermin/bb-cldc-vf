@@ -15,33 +15,33 @@ final class RadioEventHandler extends CallEventHandler implements AudioInternalL
       EventDispatchManager.getInstance().setDispatcher(35, new RadioEventDispatcher());
    }
 
-   public final void startListening(Application var1) {
-      var1.addListener(35, this);
-      Audio.addListener(var1, this);
+   public final void startListening(Application app) {
+      app.addListener(35, this);
+      Audio.addListener(app, this);
    }
 
    @Override
-   public final void recordStreamDone(int var1, int var2) {
+   public final void recordStreamDone(int handle, int headerLength) {
    }
 
    @Override
-   public final void recordStreamFail(int var1) {
+   public final void recordStreamFail(int handle) {
    }
 
    @Override
-   public final void responseAVCModeChange(boolean var1, int var2) {
+   public final void responseAVCModeChange(boolean success, int mode) {
    }
 
    @Override
-   public final void micStatusChange(boolean var1) {
+   public final void micStatusChange(boolean micEnabled) {
    }
 
    @Override
    public final void dtmfDataAvailable() {
-      int var1 = AudioInternal.dtmfRead(this._dtmfBuffer);
+      int count = AudioInternal.dtmfRead(this._dtmfBuffer);
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         this.dtmfData(this._dtmfBuffer[var2]);
+      for (int idx = 0; idx < count; idx++) {
+         this.dtmfData(this._dtmfBuffer[idx]);
       }
    }
 

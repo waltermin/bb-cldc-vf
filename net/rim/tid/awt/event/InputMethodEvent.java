@@ -26,36 +26,96 @@ public final class InputMethodEvent extends Event {
    public static final int CARET_POSITION_CHANGED;
    public static final int INPUT_METHOD_LAST;
 
-   public InputMethodEvent(IComponent var1, int var2, int var3, AttributedString var4, long var5, int var7, int var8, TextHitInfo var9, TextHitInfo var10) {
-      super(var1, var2, Event.INPUT_METHOD_EVENT_MASK);
-      this.init(var1, var2, var3, var4, var5, var7, var8, var9, var10);
+   public InputMethodEvent(
+      IComponent source,
+      int id,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition
+   ) {
+      super(source, id, Event.INPUT_METHOD_EVENT_MASK);
+      this.init(source, id, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition);
    }
 
    public InputMethodEvent(
-      IComponent var1, int var2, int var3, AttributedString var4, long var5, int var7, int var8, TextHitInfo var9, TextHitInfo var10, int var11
+      IComponent source,
+      int id,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      int mask
    ) {
-      super(var1, var2, var11 | Event.INPUT_METHOD_EVENT_MASK);
-      this.init(var1, var2, var3, var4, var5, var7, var8, var9, var10);
-   }
-
-   public final void init(IComponent var1, int var2, int var3, AttributedString var4, long var5, int var7, int var8, TextHitInfo var9, TextHitInfo var10) {
-      this.init(var1, var2, var3, var4, var5, var7, var8, var9, var10, true);
+      super(source, id, mask | Event.INPUT_METHOD_EVENT_MASK);
+      this.init(source, id, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition);
    }
 
    public final void init(
-      IComponent var1, int var2, int var3, AttributedString var4, long var5, int var7, int var8, TextHitInfo var9, TextHitInfo var10, boolean var11
+      IComponent aSource,
+      int aId,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition
    ) {
-      this.init(var1, var2, var3, var4, var5, var7, var8, var9, var10, var11, (byte)4);
+      this.init(aSource, aId, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition, true);
    }
 
    public final void init(
-      IComponent var1, int var2, int var3, AttributedString var4, long var5, int var7, int var8, TextHitInfo var9, TextHitInfo var10, boolean var11, byte var12
+      IComponent aSource,
+      int aId,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      boolean overrideCommittedTextAttributes
+   ) {
+      this.init(
+         aSource,
+         aId,
+         modifiers,
+         text,
+         attribTextMask,
+         committedCharacterCount,
+         convertedCharacterCount,
+         caret,
+         visiblePosition,
+         overrideCommittedTextAttributes,
+         (byte)4
+      );
+   }
+
+   public final void init(
+      IComponent aSource,
+      int aId,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      boolean overrideCommittedTextAttributes,
+      byte caretShape
    ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public InputMethodEvent(IComponent var1, int var2, TextHitInfo var3, TextHitInfo var4) {
-      this(var1, var2, 0, null, 0, 0, 0, var3, var4, 0);
+   public InputMethodEvent(IComponent source, int id, TextHitInfo caret, TextHitInfo visiblePosition) {
+      this(source, id, 0, null, 0, 0, 0, caret, visiblePosition, 0);
    }
 
    public final AttributedString getText() {
@@ -90,7 +150,7 @@ public final class InputMethodEvent extends Event {
       return this._overrideCommittedTextAttributes;
    }
 
-   public final void setCommittedTextAttributesOverride(boolean var1) {
+   public final void setCommittedTextAttributesOverride(boolean override) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -114,7 +174,7 @@ public final class InputMethodEvent extends Event {
       return this._supplementaryInputData != null ? this._supplementaryInputData.getAlternativeReadingCommittedCharacterCount() : 0;
    }
 
-   public final void setSupplementaryInputData(ISupplementaryInputData var1) {
+   public final void setSupplementaryInputData(ISupplementaryInputData supplementaryInputData) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -130,7 +190,7 @@ public final class InputMethodEvent extends Event {
       return this._caretShape;
    }
 
-   public final void setCaretShape(byte var1) {
+   public final void setCaretShape(byte caretShape) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

@@ -6,30 +6,30 @@ public class ObjectEnumerator implements Enumeration {
    protected Object[] _elements;
    protected int _index;
 
-   public ObjectEnumerator(Object[] var1) {
-      this.resetEnumeration(var1);
+   public ObjectEnumerator(Object[] elements) {
+      this.resetEnumeration(elements);
    }
 
-   protected void resetEnumeration(Object[] var1) {
-      if (var1 == null) {
+   protected void resetEnumeration(Object[] elements) {
+      if (elements == null) {
          throw new Object();
       }
 
-      this._elements = var1;
+      this._elements = elements;
       this._index = 0;
    }
 
    protected boolean getNextElement() {
-      int var1 = this._index;
+      int i = this._index;
 
-      for (int var2 = this._elements.length; var1 < var2; var1++) {
-         if (this._elements[var1] != null) {
-            this._index = var1;
+      for (int len = this._elements.length; i < len; i++) {
+         if (this._elements[i] != null) {
+            this._index = i;
             return true;
          }
       }
 
-      this._index = var1;
+      this._index = i;
       return false;
    }
 

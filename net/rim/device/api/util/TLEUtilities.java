@@ -1,208 +1,245 @@
 package net.rim.device.api.util;
 
+import java.io.EOFException;
+import java.io.UnsupportedEncodingException;
+import net.rim.device.internal.i18n.UnicodeServiceUtilities;
+
 public final class TLEUtilities {
    private TLEUtilities() {
    }
 
-   public static final void parseBuffer(DataBuffer var0, TLEFieldController var1) {
-      int var2;
-      while (!var0.eof() && (var2 = var0.readUnsignedByte()) != 0) {
-         int var3 = var0.readCompressedInt();
-         if (!var1.processField(var2, var3, var0)) {
-            var0.skipBytes(var3);
+   public static final void parseBuffer(DataBuffer db, TLEFieldController con) {
+      int type;
+      while (!db.eof() && (type = db.readUnsignedByte()) != 0) {
+         int length = db.readCompressedInt();
+         if (!con.processField(type, length, db)) {
+            db.skipBytes(length);
          }
       }
    }
 
-   public static final void parseField(DataBuffer var0, TLEFieldController var1, int var2) {
-      int var3 = var0.getLength();
-      var0.setLength(var0.getPosition() + var2);
-      parseBuffer(var0, var1);
-      var0.setLength(var3);
+   public static final void parseField(DataBuffer db, TLEFieldController con, int length) {
+      int oldSize = db.getLength();
+      db.setLength(db.getPosition() + length);
+      parseBuffer(db, con);
+      db.setLength(oldSize);
    }
 
-   public static final int readIntegerField(DataBuffer var0, int var1) {
-      if (var0.readUnsignedByte() == var1) {
-         return readIntegerField(var0);
+   public static final int readIntegerField(DataBuffer buf, int type) {
+      if (buf.readUnsignedByte() == type) {
+         return readIntegerField(buf);
       } else {
          throw new Object();
       }
    }
 
-   public static final int readIntegerField(DataBuffer var0) {
-      return readIntegerFieldWithLength(var0, var0.readCompressedInt());
+   public static final int readIntegerField(DataBuffer buf) {
+      return readIntegerFieldWithLength(buf, buf.readCompressedInt());
    }
 
-   public static final int readIntegerFieldWithLength(DataBuffer var0, int var1) {
-      switch (var1) {
+   public static final int readIntegerFieldWithLength(DataBuffer buf, int length) {
+      switch (length) {
          case 0:
          case 3:
             throw new Object();
          case 1:
          default:
-            return var0.readUnsignedByte();
+            return buf.readUnsignedByte();
          case 2:
-            return var0.readUnsignedShort();
+            return buf.readUnsignedShort();
          case 4:
-            return var0.readInt();
+            return buf.readInt();
       }
    }
 
-   public static final byte[] readDataField(DataBuffer var0, int var1) {
-      if (var0.readUnsignedByte() == var1) {
-         return readDataField(var0);
+   public static final byte[] readDataField(DataBuffer buf, int type) {
+      if (buf.readUnsignedByte() == type) {
+         return readDataField(buf);
       } else {
          throw new Object();
       }
    }
 
-   public static final byte[] readDataField(DataBuffer var0) {
-      byte[] var1 = new byte[var0.readCompressedInt()];
-      var0.readFully(var1);
-      return var1;
+   public static final byte[] readDataField(DataBuffer buf) {
+      byte[] b = new byte[buf.readCompressedInt()];
+      buf.readFully(b);
+      return b;
    }
 
-   public static final String readStringField(DataBuffer var0, int var1) {
-      return readStringField(var0, var1, true);
+   public static final String readStringField(DataBuffer buf, int type) {
+      return readStringField(buf, type, true);
    }
 
-   public static final String readStringField(DataBuffer var0, int var1, boolean var2) {
-      if (var0.readUnsignedByte() != var1) {
+   public static final String readStringField(DataBuffer buf, int type, boolean stripNull) {
+      if (buf.readUnsignedByte() != type) {
          throw new Object();
       } else {
-         return readStringField(var0, var2);
+         return readStringField(buf, stripNull);
       }
    }
 
-   public static final String readStringField(DataBuffer var0, boolean var1) {
+   public static final String readStringField(DataBuffer buf, boolean stripNull) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String readStringFieldEncoded(DataBuffer var0) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public static final String readStringFieldEncoded(DataBuffer buf) {
+      int oldPosition = buf.getPosition();
+      int type = buf.readUnsignedByte();
+      int length = buf.readCompressedInt();
+      byte[] data = buf.getArray();
+      int offset = buf.getArrayPosition();
+      String returnedString = null;
+      boolean encoded = (type & 128) != 0 && (type & 240) != 240;
 
-   public static final void writeDataField(DataBuffer var0, int var1, byte[] var2) {
-      int var3 = var2 != null ? var2.length : 0;
-      writeDataField(var0, var1, var2, 0, var3);
-   }
-
-   public static final void writeDataField(DataBuffer var0, int var1, byte[] var2, int var3, int var4) {
-      var0.writeByte(var1);
-      var0.writeCompressedInt(var4);
-      if (var2 != null) {
-         var0.write(var2, var3, var4);
-      }
-   }
-
-   public static final void writeDataField(DataBuffer var0, int var1, String var2, int var3, int var4, boolean var5) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
-   }
-
-   public static final void writeField(DataBuffer var0, int var1, TLEFieldController var2) {
-      var0.writeByte(var1);
-      int var3 = var0.getPosition();
-      var0.writeInt(0);
-      var0.writeByte(0);
-      var2.dumpField(var1, var0);
-      int var4 = var0.getPosition();
-      int var5 = var4 - var3 - 5;
-      var0.setPosition(var3);
-
-      for (byte var6 = 28; var6 > 0; var6 -= 7) {
-         var0.writeByte(var5 >>> var6 | 128);
-      }
-
-      var0.writeByte(var5 & 127);
-      var0.setPosition(var4);
-   }
-
-   public static final void writeIntegerField(DataBuffer var0, int var1, int var2, boolean var3) {
-      var0.writeByte(var1);
-      if ((var2 & -65536) != 0 || var3) {
-         var0.writeCompressedInt(4);
-         var0.writeInt(var2);
-      } else if ((var2 & 0xFF00) != 0) {
-         var0.writeCompressedInt(2);
-         var0.writeShort(var2);
-      } else {
-         var0.writeCompressedInt(1);
-         var0.writeByte(var2);
-      }
-   }
-
-   public static final void writeStringField(DataBuffer var0, int var1, String var2) {
-      throw new RuntimeException("cod2jar: string-special");
-   }
-
-   public static final void writeStringField(DataBuffer var0, int var1, String var2, boolean var3) {
-      throw new RuntimeException("cod2jar: string-special");
-   }
-
-   public static final void writeStringField(DataBuffer var0, int var1, String var2, int var3, int var4) {
-      writeStringField(var0, var1, var2, var3, var4, false);
-   }
-
-   public static final void writeStringField(DataBuffer var0, int var1, String var2, int var3, int var4, boolean var5) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
-   }
-
-   public static final void writeStringFieldEncoded(DataBuffer var0, int var1, String var2, String var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final boolean findType(DataBuffer var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final void skipField(DataBuffer var0) {
-      var0.skipBytes(1);
-      int var1 = var0.readCompressedInt();
-      var0.skipBytes(var1);
-   }
-
-   public static final int getType(DataBuffer var0) {
-      return getType(var0, false);
-   }
-
-   public static final int getType(DataBuffer var0, boolean var1) {
-      if (var0.available() < 1) {
-         throw new Object();
-      }
-
-      int var2 = var0.getArray()[var0.getArrayPosition()] & 255;
-      return var1 && (var2 & 128) != 0 && (var2 & 240) != 240 ? var2 & -129 : var2;
-   }
-
-   public static final int getIntegerFieldSize(int var0) {
-      if ((var0 & -65536) != 0) {
-         return 6;
-      } else {
-         return (var0 & 0xFF00) != 0 ? 4 : 3;
-      }
-   }
-
-   private static final int getLengthStructureSize(int var0) {
-      int var2 = 5;
-
-      for (byte var1 = 28; var1 > 0; var1 -= 7) {
-         if ((var0 >>> var1 & 127) != 0) {
-            return var2;
+      try {
+         if (encoded && length < 1) {
+            throw new Object();
          }
 
-         var2--;
+         returnedString = UnicodeServiceUtilities.readString(data, offset, length, encoded);
+         buf.skipBytes(length);
+         return returnedString;
+      } catch (UnsupportedEncodingException uee) {
+         buf.setPosition(oldPosition);
+         throw uee;
+      } catch (EOFException e) {
+         buf.setPosition(oldPosition);
+         throw e;
+      }
+   }
+
+   public static final void writeDataField(DataBuffer buf, int type, byte[] data) {
+      int length = data != null ? data.length : 0;
+      writeDataField(buf, type, data, 0, length);
+   }
+
+   public static final void writeDataField(DataBuffer buf, int type, byte[] data, int offset, int length) {
+      buf.writeByte(type);
+      buf.writeCompressedInt(length);
+      if (data != null) {
+         buf.write(data, offset, length);
+      }
+   }
+
+   public static final void writeDataField(DataBuffer buf, int type, String value, int start, int len, boolean addNull) {
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+   }
+
+   public static final void writeField(DataBuffer db, int type, TLEFieldController con) {
+      db.writeByte(type);
+      int sizePos = db.getPosition();
+      db.writeInt(0);
+      db.writeByte(0);
+      con.dumpField(type, db);
+      int curPos = db.getPosition();
+      int size = curPos - sizePos - 5;
+      db.setPosition(sizePos);
+
+      for (int s = 28; s > 0; s -= 7) {
+         db.writeByte(size >>> s | 128);
       }
 
-      return var2;
+      db.writeByte(size & 127);
+      db.setPosition(curPos);
    }
 
-   public static final int getFieldSize(int var0) {
-      return getLengthStructureSize(var0) + 1 + var0;
+   public static final void writeIntegerField(DataBuffer buf, int type, int value, boolean fixed) {
+      buf.writeByte(type);
+      if ((value & -65536) != 0 || fixed) {
+         buf.writeCompressedInt(4);
+         buf.writeInt(value);
+      } else if ((value & 0xFF00) != 0) {
+         buf.writeCompressedInt(2);
+         buf.writeShort(value);
+      } else {
+         buf.writeCompressedInt(1);
+         buf.writeByte(value);
+      }
    }
 
-   public static final String getStringFromBuffer(DataBuffer var0, int var1) {
-      String var2 = StringUtilities.cStr2String(var0.getArray(), var0.getArrayPosition(), var1);
-      var0.skipBytes(var1);
-      return var2;
+   public static final void writeStringField(DataBuffer buf, int type, String value) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   public static final void writeStringField(DataBuffer buf, int type, String value, boolean addNull) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   public static final void writeStringField(DataBuffer buf, int type, String value, int offset, int length) {
+      writeStringField(buf, type, value, offset, length, false);
+   }
+
+   public static final void writeStringField(DataBuffer buf, int type, String value, int offset, int len, boolean addNull) {
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+   }
+
+   public static final void writeStringFieldEncoded(DataBuffer buf, int type, String value, String encodingName) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   public static final boolean findType(DataBuffer buffer, int type) {
+      try {
+         while (true) {
+            int thisType = getType(buffer);
+            if (thisType == type) {
+               return true;
+            }
+
+            skipField(buffer);
+         }
+      } catch (EOFException var3) {
+         return false;
+      }
+   }
+
+   public static final void skipField(DataBuffer buffer) {
+      buffer.skipBytes(1);
+      int length = buffer.readCompressedInt();
+      buffer.skipBytes(length);
+   }
+
+   public static final int getType(DataBuffer buffer) {
+      return getType(buffer, false);
+   }
+
+   public static final int getType(DataBuffer buffer, boolean convertTag) {
+      if (buffer.available() < 1) {
+         throw new Object();
+      }
+
+      int type = buffer.getArray()[buffer.getArrayPosition()] & 255;
+      return convertTag && (type & 128) != 0 && (type & 240) != 240 ? type & -129 : type;
+   }
+
+   public static final int getIntegerFieldSize(int i) {
+      if ((i & -65536) != 0) {
+         return 6;
+      } else {
+         return (i & 0xFF00) != 0 ? 4 : 3;
+      }
+   }
+
+   private static final int getLengthStructureSize(int length) {
+      int num = 5;
+
+      for (int s = 28; s > 0; s -= 7) {
+         if ((length >>> s & 127) != 0) {
+            return num;
+         }
+
+         num--;
+      }
+
+      return num;
+   }
+
+   public static final int getFieldSize(int dataSize) {
+      return getLengthStructureSize(dataSize) + 1 + dataSize;
+   }
+
+   public static final String getStringFromBuffer(DataBuffer buf, int length) {
+      String str = StringUtilities.cStr2String(buf.getArray(), buf.getArrayPosition(), length);
+      buf.skipBytes(length);
+      return str;
    }
 }

@@ -1,47 +1,47 @@
 package net.rim.device.internal.system;
 
 public class DebugUtilities {
-   public static void printArrayContents(byte[] var0) {
-      printArrayContents(var0, 0, var0 == null ? 0 : var0.length);
+   public static void printArrayContents(byte[] array) {
+      printArrayContents(array, 0, array == null ? 0 : array.length);
    }
 
-   public static void printArrayContents(byte[] var0, int var1, int var2) {
+   public static void printArrayContents(byte[] array, int offset, int length) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static long logStart(String var0, String var1) {
-      long var2 = System.currentTimeMillis();
-      Object var4 = new Object(var0);
-      ((StringBuffer)var4).append(' ');
-      ((StringBuffer)var4).append(var1);
-      ((StringBuffer)var4).append(' ');
-      ((StringBuffer)var4).append('S');
-      ((StringBuffer)var4).append(' ');
-      ((StringBuffer)var4).append(var2);
-      ((StringBuffer)var4).append(' ');
-      System.out.println(((StringBuffer)var4).toString());
-      return var2;
+   public static long logStart(String className, String m) {
+      long start = System.currentTimeMillis();
+      StringBuffer buffer = (StringBuffer)(new Object(className));
+      buffer.append(' ');
+      buffer.append(m);
+      buffer.append(' ');
+      buffer.append('S');
+      buffer.append(' ');
+      buffer.append(start);
+      buffer.append(' ');
+      System.out.println(buffer.toString());
+      return start;
    }
 
-   public static void logFinish(String var0, String var1, long var2) {
-      long var4 = System.currentTimeMillis();
-      Object var6 = new Object(var0);
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append(var1);
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append('F');
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append(var4);
-      ((StringBuffer)var6).append(' ');
-      System.out.println(((StringBuffer)var6).toString());
-      ((StringBuffer)var6).setLength(0);
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append(var1);
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append('D');
-      ((StringBuffer)var6).append(' ');
-      ((StringBuffer)var6).append(var4 - var2);
-      ((StringBuffer)var6).append(' ');
-      System.out.println(((StringBuffer)var6).toString());
+   public static void logFinish(String className, String m, long start) {
+      long end = System.currentTimeMillis();
+      StringBuffer buffer = (StringBuffer)(new Object(className));
+      buffer.append(' ');
+      buffer.append(m);
+      buffer.append(' ');
+      buffer.append('F');
+      buffer.append(' ');
+      buffer.append(end);
+      buffer.append(' ');
+      System.out.println(buffer.toString());
+      buffer.setLength(0);
+      buffer.append(' ');
+      buffer.append(m);
+      buffer.append(' ');
+      buffer.append('D');
+      buffer.append(' ');
+      buffer.append(end - start);
+      buffer.append(' ');
+      System.out.println(buffer.toString());
    }
 }

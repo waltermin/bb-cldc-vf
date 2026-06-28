@@ -1,6 +1,7 @@
 package com.sun.cldc.i18n.j2me;
 
 import java.io.DataInputStream;
+import java.io.IOException;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.util.StringUtilities;
@@ -20,113 +21,126 @@ final class ConversionDataRegistryHelper {
       return this._availableEncodings;
    }
 
-   final synchronized boolean loadConversionData(String var1, int var2, int var3, String var4, byte[][][] var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   final synchronized boolean loadConversionData(String encodingName, int encodingID, int locale, String typeface, byte[][][] bData) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   final boolean isSupported(String var1) {
-      ConversionDataRegistryHelper$EncodingMappingData var2 = this.runOverTheData(var1);
-      return var2 != null && (this.isAlgorithmicallySupported(var2._id) || var2._binaryData != null);
+   final boolean isSupported(String encoding) {
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(encoding);
+      return eData != null && (this.isAlgorithmicallySupported(eData._id) || eData._binaryData != null);
    }
 
-   final int getSuggestedLocale(String var1) {
-      ConversionDataRegistryHelper$EncodingMappingData var2 = this.runOverTheData(var1);
-      return var2 != null ? var2._locale : -1;
+   final int getSuggestedLocale(String encoding) {
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(encoding);
+      return eData != null ? eData._locale : -1;
    }
 
-   final String getSuggestedTypeface(String var1) {
-      ConversionDataRegistryHelper$EncodingMappingData var2 = this.runOverTheData(var1);
-      if (var2 != null) {
-         return var2._typeface;
+   final String getSuggestedTypeface(String encoding) {
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(encoding);
+      if (eData != null) {
+         return eData._typeface;
       }
 
-      Font var3 = FontRegistry.getDefaultFont();
-      return var3 != null ? var3.getFontFamily().getName() : FontRegistry.DEFAULT_FAMILY;
+      Font f = FontRegistry.getDefaultFont();
+      return f != null ? f.getFontFamily().getName() : FontRegistry.DEFAULT_FAMILY;
    }
 
-   final String getSuggestedTypeface(int var1) {
-      ConversionDataRegistryHelper$EncodingMappingData var2 = this.runOverTheData(var1);
-      if (var2 != null) {
-         return var2._typeface;
+   final String getSuggestedTypeface(int localeCode) {
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(localeCode);
+      if (eData != null) {
+         return eData._typeface;
       }
 
-      Font var3 = FontRegistry.getDefaultFont();
-      return var3 != null ? var3.getFontFamily().getName() : FontRegistry.DEFAULT_FAMILY;
+      Font f = FontRegistry.getDefaultFont();
+      return f != null ? f.getFontFamily().getName() : FontRegistry.DEFAULT_FAMILY;
    }
 
-   final String getSuggestedEncoding(int var1) {
+   final String getSuggestedEncoding(int localeCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final synchronized byte[][][] getConversionData(int var1, int[] var2) {
+   final synchronized byte[][][] getConversionData(int id, int[] dataOffset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final int getEncodingIDLocal(String var1) {
+   final int getEncodingIDLocal(String encoding) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   final int getEncodingID(String var1) {
+   final int getEncodingID(String encoding) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final synchronized ConversionDataRegistryHelper$EncodingMappingData runOverTheData(String var1) {
-      int var3 = this._encodingMappingTable.length;
+   private final synchronized ConversionDataRegistryHelper$EncodingMappingData runOverTheData(String encoding) {
+      int length = this._encodingMappingTable.length;
 
-      for (int var4 = 0; var4 < var3; var4++) {
-         ConversionDataRegistryHelper$EncodingMappingData var2 = this._encodingMappingTable[var4];
-         if (var2 != null && StringUtilities.startsWithIgnoreCase(var1, var2._encoding, 1701707776)) {
-            return var2;
+      for (int i = 0; i < length; i++) {
+         ConversionDataRegistryHelper$EncodingMappingData eData = this._encodingMappingTable[i];
+         if (eData != null && StringUtilities.startsWithIgnoreCase(encoding, eData._encoding, 1701707776)) {
+            return eData;
          }
       }
 
       return null;
    }
 
-   private final synchronized ConversionDataRegistryHelper$EncodingMappingData runOverTheData(int var1) {
-      int var3 = this._encodingMappingTable.length;
+   private final synchronized ConversionDataRegistryHelper$EncodingMappingData runOverTheData(int locale) {
+      int length = this._encodingMappingTable.length;
 
-      for (int var4 = 0; var4 < var3; var4++) {
-         ConversionDataRegistryHelper$EncodingMappingData var2 = this._encodingMappingTable[var4];
-         if (var2 != null && var2._locale == var1) {
-            return var2;
+      for (int i = 0; i < length; i++) {
+         ConversionDataRegistryHelper$EncodingMappingData eData = this._encodingMappingTable[i];
+         if (eData != null && eData._locale == locale) {
+            return eData;
          }
       }
 
       return null;
    }
 
-   private final int readHeader(DataInputStream var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int readHeader(DataInputStream stream) {
+      try {
+         int signature = this.readLEValue(stream, 4);
+         stream.skip(2);
+         int versionMajor = this.readLEValue(stream, 2);
+         int versionMinor = this.readLEValue(stream, 2);
+         if (signature == 1717724259 && versionMajor <= 1 && (versionMajor != 1 || versionMinor <= 0)) {
+            stream.skip(2);
+            return 12;
+         } else {
+            return 0;
+         }
+      } catch (IOException ioe) {
+         return 0;
+      }
    }
 
-   private final int readLEValue(DataInputStream var1, int var2) {
-      int var3 = 0;
+   private final int readLEValue(DataInputStream stream, int length) {
+      int value = 0;
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         var3 |= var1.readUnsignedByte() << var4 * 8;
+      for (int i = 0; i < length; i++) {
+         value |= stream.readUnsignedByte() << i * 8;
       }
 
-      return var3;
+      return value;
    }
 
    private final void updateAvailableEncodings() {
-      String[] var1 = new String[this._supportedEncodingsNum];
-      int var3 = this._encodingMappingTable.length;
-      int var4 = 0;
+      String[] swap = new String[this._supportedEncodingsNum];
+      int length = this._encodingMappingTable.length;
+      int i = 0;
 
-      for (int var5 = 0; var4 < var1.length && var5 < var3; var5++) {
-         ConversionDataRegistryHelper$EncodingMappingData var2 = this._encodingMappingTable[var4];
-         if (var2 != null && (this.isAlgorithmicallySupported(var2._id) || var2._binaryData != null)) {
-            var1[var4++] = var2._encoding;
+      for (int j = 0; i < swap.length && j < length; j++) {
+         ConversionDataRegistryHelper$EncodingMappingData eData = this._encodingMappingTable[i];
+         if (eData != null && (this.isAlgorithmicallySupported(eData._id) || eData._binaryData != null)) {
+            swap[i++] = eData._encoding;
          }
       }
 
-      this._availableEncodings = var1;
+      this._availableEncodings = swap;
    }
 
-   private final boolean isAlgorithmicallySupported(int var1) {
-      switch (var1) {
+   private final boolean isAlgorithmicallySupported(int id) {
+      switch (id) {
          case 0:
          case 1:
          case 18:

@@ -6,17 +6,17 @@ class InvocationQueue extends Vector {
    public InvocationQueue() {
    }
 
-   synchronized void addInvocation(Invocation var1) {
-      this.addElement(var1);
+   synchronized void addInvocation(Invocation invocation) {
+      this.addElement(invocation);
    }
 
    synchronized Invocation nextInvocation() {
-      Invocation var1 = null;
+      Invocation next = null;
       if (this.size() > 0) {
-         var1 = (Invocation)this.elementAt(0);
+         next = (Invocation)this.elementAt(0);
          this.removeElementAt(0);
       }
 
-      return var1;
+      return next;
    }
 }

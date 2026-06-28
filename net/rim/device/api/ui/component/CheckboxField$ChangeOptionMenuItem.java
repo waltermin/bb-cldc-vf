@@ -8,14 +8,14 @@ class CheckboxField$ChangeOptionMenuItem extends MenuItem {
       super(CommonResource.getBundle(), 1, 30270, 10);
    }
 
-   CheckboxField$ChangeOptionMenuItem(String var1) {
-      super(var1, 30270, 10);
+   CheckboxField$ChangeOptionMenuItem(String text) {
+      super(text, 30270, 10);
    }
 
    @Override
    public void run() {
-      CheckboxField var1 = (CheckboxField)this.getTarget();
-      var1.keyChar(' ', 0, 0);
+      CheckboxField cbf = (CheckboxField)this.getTarget();
+      cbf.keyChar(' ', 0, 0);
    }
 
    @Override

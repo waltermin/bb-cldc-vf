@@ -1,5 +1,6 @@
 package net.rim.device.internal.ui;
 
+import java.io.EOFException;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.synchronization.OTASyncCapableSyncItem;
 import net.rim.device.api.system.PersistentObject;
@@ -29,7 +30,7 @@ public final class IMSwitcherOption extends OTASyncCapableSyncItem {
    }
 
    @Override
-   public final String getSyncName(Locale var1) {
+   public final String getSyncName(Locale locale) {
       return null;
    }
 
@@ -39,21 +40,28 @@ public final class IMSwitcherOption extends OTASyncCapableSyncItem {
    }
 
    @Override
-   public final synchronized boolean setSyncData(DataBuffer var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized boolean setSyncData(DataBuffer buffer, int version) {
+      try {
+         buffer.readShort();
+         buffer.readByte();
+         this._state = buffer.readByte();
+         return true;
+      } catch (EOFException var4) {
+         return true;
+      }
    }
 
    @Override
-   public final synchronized boolean getSyncData(DataBuffer var1, int var2) {
-      var1.writeShort(1);
-      var1.writeByte(0);
-      var1.writeByte(this._state);
+   public final synchronized boolean getSyncData(DataBuffer buffer, int version) {
+      buffer.writeShort(1);
+      buffer.writeByte(0);
+      buffer.writeByte(this._state);
       return true;
    }
 
-   public final void setState(byte var1) {
-      if (this._state != var1 && var1 != 0) {
-         this._state = var1;
+   public final void setState(byte state) {
+      if (this._state != state && state != 0) {
+         this._state = state;
          this._store.setContents(new Object(this._state), 51);
          this._store.commit();
          this.fireSyncItemUpdated();

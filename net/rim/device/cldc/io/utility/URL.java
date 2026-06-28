@@ -12,19 +12,19 @@ public class URL {
    private static final String[] RIM_PARAMETERS;
    private static final String STRING_NetPart;
 
-   public URL(String var1) {
-      this.initialize(var1);
+   public URL(String url) {
+      this.initialize(url);
    }
 
-   public URL(String var1, String var2) {
+   public URL(String scheme, String restOfUrl) {
    }
 
-   private void initialize(String var1) {
-      if (var1 == null) {
+   private void initialize(String url) {
+      if (url == null) {
          throw new Object();
       }
 
-      this.parseUrlString(var1);
+      this.parseUrlString(url);
    }
 
    @Override
@@ -36,7 +36,7 @@ public class URL {
       return this._scheme;
    }
 
-   public void setScheme(String var1) {
+   public void setScheme(String scheme) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -68,7 +68,7 @@ public class URL {
       return this._urlWithoutRIMParams;
    }
 
-   private void parseUrlString(String var1) {
+   private void parseUrlString(String url) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -76,11 +76,11 @@ public class URL {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void parseSchemeSpecificPart(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void parseSchemeSpecificPart(String url) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setRIMParameters(URLParameters var1) {
+   public void setRIMParameters(URLParameters params) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

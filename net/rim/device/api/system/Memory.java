@@ -5,39 +5,39 @@ public final class Memory {
    }
 
    public static final MemoryStats getRAMStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getRAMStats(var0);
-      return var0;
+      MemoryStats ram = new MemoryStats();
+      net.rim.vm.Memory.getRAMStats(ram);
+      return ram;
    }
 
    public static final MemoryStats getFlashStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getFlashStats(var0);
-      return var0;
+      MemoryStats flash = new MemoryStats();
+      net.rim.vm.Memory.getFlashStats(flash);
+      return flash;
    }
 
    public static final MemoryStats getTransientStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getTransientStats(var0);
-      return var0;
+      MemoryStats flash = new MemoryStats();
+      net.rim.vm.Memory.getTransientStats(flash);
+      return flash;
    }
 
    public static final MemoryStats getPersistentStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getPersistentStats(var0);
-      return var0;
+      MemoryStats flash = new MemoryStats();
+      net.rim.vm.Memory.getPersistentStats(flash);
+      return flash;
    }
 
    public static final MemoryStats getObjectStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getObjectStats(var0);
-      return var0;
+      MemoryStats objects = new MemoryStats();
+      net.rim.vm.Memory.getObjectStats(objects);
+      return objects;
    }
 
    public static final MemoryStats getCodeStats() {
-      MemoryStats var0 = new MemoryStats();
-      net.rim.vm.Memory.getCodeStats(var0);
-      return var0;
+      MemoryStats code = new MemoryStats();
+      net.rim.vm.Memory.getCodeStats(code);
+      return code;
    }
 
    public static final int getMemoryNeeded() {

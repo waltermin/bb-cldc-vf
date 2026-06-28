@@ -21,55 +21,84 @@ final class UserPermissions {
    private static final int BACKUP_DEFAULTS_HANDLE;
    private static final long USER_SETTINGS_SYNC_KEY;
 
-   public final void load(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void load(long defaultPermissions) {
+      this._lookupTable.clear();
+      if (this._storage == null) {
+         synchronized (this._persistentStorage) {
+            this._storage = (Vector)this._persistentStorage.getContents();
+            if (this._storage == null) {
+               this._storage = (Vector)(new Object());
+               UserSetting defaults = (UserSetting)(new Object(ApplicationControlConstants.EMPTY_HASH, defaultPermissions));
+               this._storage.addElement(defaults);
+               this._sync.settingAdded(defaults);
+               this._persistentStorage.setContents(this._storage, 51);
+               this._persistentStorage.commit();
+            }
+         }
+      }
+
+      Enumeration userSettingEnum = this._storage.elements();
+
+      while (userSettingEnum.hasMoreElements()) {
+         UserSetting userSetting = (UserSetting)userSettingEnum.nextElement();
+         if (userSetting.hashEquals(ApplicationControlConstants.EMPTY_HASH)) {
+            this.putDefaultSetting(userSetting, false);
+         } else if (userSetting.hashEquals(ApplicationControlConstants.FILLED_HASH)) {
+            this.putBackedUpDefaultSetting(userSetting, false);
+         } else {
+            int currHandle = CodeModuleManager.getModuleHandle(userSetting.getHash());
+            if (currHandle != 0 && !this.containsSetting(currHandle)) {
+               this.putSetting(currHandle, userSetting, false);
+            }
+         }
+      }
    }
 
-   public final void clear(long var1) {
+   public final void clear(long defaultPermissions) {
       this._sync.reset();
       this._storage = null;
       this._persistentStorage.setContents(null, 51);
-      this.load(var1);
+      this.load(defaultPermissions);
    }
 
-   final void putDefaultSetting(UserSetting var1) {
-      this.putDefaultSetting(var1, true);
+   final void putDefaultSetting(UserSetting userSetting) {
+      this.putDefaultSetting(userSetting, true);
    }
 
-   final void putDefaultSetting(UserSetting var1, boolean var2) {
-      this._defaults = var1;
-      this.putSetting(0, this._defaults, var2);
+   final void putDefaultSetting(UserSetting userSetting, boolean commit) {
+      this._defaults = userSetting;
+      this.putSetting(0, this._defaults, commit);
    }
 
-   final void putBackedUpDefaultSetting(UserSetting var1) {
-      this.putBackedUpDefaultSetting(var1, true);
+   final void putBackedUpDefaultSetting(UserSetting userSetting) {
+      this.putBackedUpDefaultSetting(userSetting, true);
    }
 
-   final void putBackedUpDefaultSetting(UserSetting var1, boolean var2) {
-      this._backedUpDefaults = var1;
-      this.putSetting(-1, this._backedUpDefaults, var2);
+   final void putBackedUpDefaultSetting(UserSetting userSetting, boolean commit) {
+      this._backedUpDefaults = userSetting;
+      this.putSetting(-1, this._backedUpDefaults, commit);
    }
 
-   final void putSetting(int var1, UserSetting var2) {
-      this.putSetting(var1, var2, true);
+   final void putSetting(int handle, UserSetting userSetting) {
+      this.putSetting(handle, userSetting, true);
    }
 
-   final void putSetting(int var1, UserSetting var2, boolean var3) {
-      this.putSetting(var1, var2, var3, true);
+   final void putSetting(int handle, UserSetting userSetting, boolean commit) {
+      this.putSetting(handle, userSetting, commit, true);
    }
 
-   final void putSetting(int var1, UserSetting var2, boolean var3, boolean var4) {
-      this._lookupTable.put(var1, var2);
-      if (!this._storage.contains(var2)) {
-         this._storage.addElement(var2);
-         this._sync.settingAdded(var2);
+   final void putSetting(int handle, UserSetting userSetting, boolean commit, boolean applyToSiblings) {
+      this._lookupTable.put(handle, userSetting);
+      if (!this._storage.contains(userSetting)) {
+         this._storage.addElement(userSetting);
+         this._sync.settingAdded(userSetting);
       }
 
-      if (var4) {
-         this.applyToSiblings(var1, var2);
+      if (applyToSiblings) {
+         this.applyToSiblings(handle, userSetting);
       }
 
-      if (var3) {
+      if (commit) {
          this.commit();
       }
    }
@@ -82,17 +111,17 @@ final class UserPermissions {
       return this._defaults;
    }
 
-   final UserSetting getSetting(int var1) {
-      return (UserSetting)this._lookupTable.get(var1);
+   final UserSetting getSetting(int handle) {
+      return (UserSetting)this._lookupTable.get(handle);
    }
 
-   final UserSetting getSetting(byte[] var1) {
-      Enumeration var2 = this._storage.elements();
+   final UserSetting getSetting(byte[] hash) {
+      Enumeration elements = this._storage.elements();
 
-      while (var2.hasMoreElements()) {
-         Object var3 = var2.nextElement();
-         if (((UserSetting)var3).hashEquals(var1)) {
-            return (UserSetting)var3;
+      while (elements.hasMoreElements()) {
+         UserSetting cur = (UserSetting)elements.nextElement();
+         if (cur.hashEquals(hash)) {
+            return cur;
          }
       }
 
@@ -100,19 +129,19 @@ final class UserPermissions {
    }
 
    final int[] getLoadedHandles() {
-      int[] var1 = new int[this._lookupTable.size()];
-      IntEnumeration var2 = this._lookupTable.keys();
-      int var3 = 0;
+      int[] keys = new int[this._lookupTable.size()];
+      IntEnumeration keysEnum = this._lookupTable.keys();
+      int loc = 0;
 
-      while (var2.hasMoreElements()) {
-         int var4 = var2.nextElement();
-         if (var4 != 0 && var4 != -1) {
-            var1[var3++] = var4;
+      while (keysEnum.hasMoreElements()) {
+         int currKey = keysEnum.nextElement();
+         if (currKey != 0 && currKey != -1) {
+            keys[loc++] = currKey;
          }
       }
 
-      Array.resize(var1, var3);
-      return var1;
+      Array.resize(keys, loc);
+      return keys;
    }
 
    final void removeBackedUpDefaultSetting() {
@@ -126,36 +155,36 @@ final class UserPermissions {
       this._backedUpDefaults = null;
    }
 
-   final void removeSetting(int var1) {
-      this.removeSetting(var1, null);
+   final void removeSetting(int handle) {
+      this.removeSetting(handle, null);
    }
 
-   final void removeSetting(UserSetting var1) {
-      this._lookupTable.removeValue(var1);
-      if (var1 != null) {
-         this._sync.settingRemoved(var1);
-         this._storage.removeElement(var1);
-         this.removeSiblings(var1);
+   final void removeSetting(UserSetting userSetting) {
+      this._lookupTable.removeValue(userSetting);
+      if (userSetting != null) {
+         this._sync.settingRemoved(userSetting);
+         this._storage.removeElement(userSetting);
+         this.removeSiblings(userSetting);
          this.commit();
       }
    }
 
-   final void removeSetting(int var1, UserSetting var2) {
-      this._lookupTable.remove(var1);
-      if (var2 != null) {
-         this._sync.settingRemoved(var2);
-         this._storage.removeElement(var2);
-         this.removeSiblings(var1, var2);
+   final void removeSetting(int handle, UserSetting userSetting) {
+      this._lookupTable.remove(handle);
+      if (userSetting != null) {
+         this._sync.settingRemoved(userSetting);
+         this._storage.removeElement(userSetting);
+         this.removeSiblings(handle, userSetting);
          this.commit();
       }
    }
 
-   final boolean containsSetting(UserSetting var1) {
-      return this._lookupTable.contains(var1);
+   final boolean containsSetting(UserSetting value) {
+      return this._lookupTable.contains(value);
    }
 
-   final boolean containsSetting(int var1) {
-      return this._lookupTable.containsKey(var1);
+   final boolean containsSetting(int handle) {
+      return this._lookupTable.containsKey(handle);
    }
 
    final int numberOfSettings() {
@@ -170,141 +199,141 @@ final class UserPermissions {
       return this._storage;
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2) {
-      this.setPermissions(null, var1, var2, true, true);
+   final void setPermissions(UserSetting target, UserSetting source) {
+      this.setPermissions(null, target, source, true, true);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, boolean var3) {
-      this.setPermissions(null, var1, var2, var3, true);
+   final void setPermissions(UserSetting target, UserSetting source, boolean commit) {
+      this.setPermissions(null, target, source, commit, true);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, UserSetting var3) {
-      this.setPermissions(var1, var2, var3, true, true);
+   final void setPermissions(UserSetting old, UserSetting target, UserSetting source) {
+      this.setPermissions(old, target, source, true, true);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, UserSetting var3, boolean var4) {
-      this.setPermissions(var1, var2, var3, var4, true);
+   final void setPermissions(UserSetting old, UserSetting target, UserSetting source, boolean commit) {
+      this.setPermissions(old, target, source, commit, true);
    }
 
-   private final void setPermissions(UserSetting var1, UserSetting var2, UserSetting var3, boolean var4, boolean var5) {
-      var2.setPermissions(var3);
-      if (var1 != null) {
-         this._sync.settingUpdated(var1, var2);
+   private final void setPermissions(UserSetting old, UserSetting target, UserSetting source, boolean commit, boolean applyToSiblings) {
+      target.setPermissions(source);
+      if (old != null) {
+         this._sync.settingUpdated(old, target);
       }
 
-      if (var5) {
-         this.applyToSiblings(var2);
+      if (applyToSiblings) {
+         this.applyToSiblings(target);
       }
 
-      if (var4) {
+      if (commit) {
          this.commit();
       }
    }
 
-   final void setPermissions(UserSetting var1, long var2) {
-      this.setPermissions(null, var1, var2);
+   final void setPermissions(UserSetting us, long perms) {
+      this.setPermissions(null, us, perms);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, long var3) {
-      var2.setPermissions(var3);
-      if (var1 != null) {
-         this._sync.settingUpdated(var1, var2);
+   final void setPermissions(UserSetting old, UserSetting us, long perms) {
+      us.setPermissions(perms);
+      if (old != null) {
+         this._sync.settingUpdated(old, us);
       }
 
-      this.applyToSiblings(var2);
+      this.applyToSiblings(us);
       this.commit();
    }
 
-   final void setPermissions(UserSetting var1, long var2, long var4, long var6) {
-      this.setPermissions(null, var1, var2, var4, var6);
+   final void setPermissions(UserSetting us, long permissions, long dontPrompt, long isSet) {
+      this.setPermissions(null, us, permissions, dontPrompt, isSet);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, long var3, long var5, long var7) {
-      this.setPermissions(var1, var2, var3, var5, var7, true);
+   final void setPermissions(UserSetting old, UserSetting us, long permissions, long dontPrompt, long isSet) {
+      this.setPermissions(old, us, permissions, dontPrompt, isSet, true);
    }
 
-   final void setPermissions(UserSetting var1, UserSetting var2, long var3, long var5, long var7, boolean var9) {
-      var2.setPermissions(var3, var5, var7);
-      if (var1 != null) {
-         this._sync.settingUpdated(var1, var2);
+   final void setPermissions(UserSetting old, UserSetting us, long permissions, long dontPrompt, long isSet, boolean commit) {
+      us.setPermissions(permissions, dontPrompt, isSet);
+      if (old != null) {
+         this._sync.settingUpdated(old, us);
       }
 
-      this.applyToSiblings(var2);
-      if (var9) {
+      this.applyToSiblings(us);
+      if (commit) {
          this.commit();
       }
    }
 
-   final void resetPrompt(UserSetting var1, UserSetting var2, long var3) {
-      this.resetPrompt(var1, var2, var3, true);
+   final void resetPrompt(UserSetting old, UserSetting us, long mask) {
+      this.resetPrompt(old, us, mask, true);
    }
 
-   final void resetPrompt(UserSetting var1, UserSetting var2, long var3, boolean var5) {
-      var2.resetPrompt(var3);
-      if (var1 != null) {
-         this._sync.settingUpdated(var1, var2);
+   final void resetPrompt(UserSetting old, UserSetting us, long mask, boolean commit) {
+      us.resetPrompt(mask);
+      if (old != null) {
+         this._sync.settingUpdated(old, us);
       }
 
-      this.applyToSiblings(var2);
-      if (var5) {
+      this.applyToSiblings(us);
+      if (commit) {
          this.commit();
       }
    }
 
-   final void resetPrompts(UserSetting var1, UserSetting var2) {
-      this.resetPrompts(var1, var2, true);
+   final void resetPrompts(UserSetting old, UserSetting us) {
+      this.resetPrompts(old, us, true);
    }
 
-   final void resetPrompts(UserSetting var1, UserSetting var2, boolean var3) {
-      var2.resetPrompts();
-      if (var1 != null) {
-         this._sync.settingUpdated(var1, var2);
+   final void resetPrompts(UserSetting old, UserSetting us, boolean commit) {
+      us.resetPrompts();
+      if (old != null) {
+         this._sync.settingUpdated(old, us);
       }
 
-      this.applyToSiblings(var2);
-      if (var3) {
+      this.applyToSiblings(us);
+      if (commit) {
          this.commit();
       }
    }
 
-   private final void applyToSiblings(UserSetting var1) {
-      int var2 = CodeModuleManager.getModuleHandle(var1.getHash());
-      this.applyToSiblings(var2, var1);
+   private final void applyToSiblings(UserSetting us) {
+      int handle = CodeModuleManager.getModuleHandle(us.getHash());
+      this.applyToSiblings(handle, us);
    }
 
-   private final void applyToSiblings(int var1, UserSetting var2) {
-      this.applyToSiblings(var1, var2, false);
+   private final void applyToSiblings(int handle, UserSetting us) {
+      this.applyToSiblings(handle, us, false);
    }
 
-   private final void removeSiblings(UserSetting var1) {
-      int var2 = CodeModuleManager.getModuleHandle(var1.getHash());
-      this.removeSiblings(var2, var1);
+   private final void removeSiblings(UserSetting us) {
+      int handle = CodeModuleManager.getModuleHandle(us.getHash());
+      this.removeSiblings(handle, us);
    }
 
-   private final void removeSiblings(int var1, UserSetting var2) {
-      this.applyToSiblings(var1, var2, true);
+   private final void removeSiblings(int handle, UserSetting us) {
+      this.applyToSiblings(handle, us, true);
    }
 
-   private final void applyToSiblings(int var1, UserSetting var2, boolean var3) {
-      if (var1 != 0 && var1 != -1) {
-         boolean var4 = var3 | var2.getIsSet() == 0;
-         int[] var5 = CodeStore.getSiblingHandles(var1);
-         byte[] var6 = new byte[20];
-         int var7 = var5 == null ? 0 : var5.length;
-         if (var7 > 1) {
-            for (int var9 = 0; var9 < var7; var9++) {
-               int var8 = var5[var9];
-               UserSetting var10 = this.getSetting(var8);
-               if (var10 == null) {
-                  if (CodeModuleManager.getModuleHash(var8, var6) && !var4 && this.getSetting(var6) == null) {
-                     var10 = (UserSetting)(new Object(var6, var2.getPermissions(), var2.getDontPrompt(), var2.getIsSet()));
-                     this.putSetting(var8, var10, false, false);
+   private final void applyToSiblings(int handle, UserSetting us, boolean doRemove) {
+      if (handle != 0 && handle != -1) {
+         boolean remove = doRemove | us.getIsSet() == 0;
+         int[] handles = CodeStore.getSiblingHandles(handle);
+         byte[] hash = new byte[20];
+         int count = handles == null ? 0 : handles.length;
+         if (count > 1) {
+            for (int i = 0; i < count; i++) {
+               int sibling = handles[i];
+               UserSetting sus = this.getSetting(sibling);
+               if (sus == null) {
+                  if (CodeModuleManager.getModuleHash(sibling, hash) && !remove && this.getSetting(hash) == null) {
+                     sus = (UserSetting)(new Object(hash, us.getPermissions(), us.getDontPrompt(), us.getIsSet()));
+                     this.putSetting(sibling, sus, false, false);
                   }
-               } else if (var4) {
-                  ApplicationControlImpl.removeUserSetting(var8);
+               } else if (remove) {
+                  ApplicationControlImpl.removeUserSetting(sibling);
                } else {
-                  Object var11 = new Object(var10);
-                  this.setPermissions((UserSetting)var11, var10, var2, false, false);
+                  UserSetting oldUS = (UserSetting)(new Object(sus));
+                  this.setPermissions(oldUS, sus, us, false, false);
                }
             }
          }

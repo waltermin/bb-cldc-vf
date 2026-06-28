@@ -37,8 +37,8 @@ public class FileIOException extends IOException {
    public static final int FILE_TOO_LARGE;
    private static ResourceBundle _rb;
 
-   public FileIOException(int var1) {
-      this._errorCode = var1;
+   public FileIOException(int errorCode) {
+      this._errorCode = errorCode;
    }
 
    public int getErrorCode() {
@@ -47,53 +47,53 @@ public class FileIOException extends IOException {
 
    @Override
    public String getMessage() {
-      byte var1;
+      int resCode;
       switch (this._errorCode) {
          case 4:
          case 5:
          case 18:
          case 19:
          case 21:
-            var1 = 7;
+            resCode = 7;
             break;
          case 7:
-            var1 = 1;
+            resCode = 1;
             break;
          case 8:
-            var1 = 3;
+            resCode = 3;
             break;
          case 9:
-            var1 = 0;
+            resCode = 0;
             break;
          case 10:
-            var1 = 4;
+            resCode = 4;
             break;
          case 11:
          case 20:
-            var1 = 6;
+            resCode = 6;
             break;
          case 13:
-            var1 = 5;
+            resCode = 5;
             break;
          case 14:
-            var1 = 8;
+            resCode = 8;
             break;
          case 15:
-            var1 = 9;
+            resCode = 9;
             break;
          case 16:
-            var1 = 10;
+            resCode = 10;
             break;
          case 17:
-            var1 = 11;
+            resCode = 11;
             break;
          case 1008:
-            var1 = 12;
+            resCode = 12;
             break;
          default:
-            var1 = 2;
+            resCode = 2;
       }
 
-      return _rb.getString(var1);
+      return _rb.getString(resCode);
    }
 }

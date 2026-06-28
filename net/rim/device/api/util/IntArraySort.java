@@ -4,83 +4,83 @@ final class IntArraySort {
    private IntArraySort() {
    }
 
-   private static final int rangeCheck(int var0, int var1, int var2) {
-      if (var1 > var2) {
+   private static final int rangeCheck(int arrayLen, int from, int to) {
+      if (from > to) {
          throw new Object();
-      } else if (var1 < 0) {
-         throw new Object(var1);
-      } else if (var2 > var0) {
-         throw new Object(var2);
+      } else if (from < 0) {
+         throw new Object(from);
+      } else if (to > arrayLen) {
+         throw new Object(to);
       } else {
-         return var2 - var1;
+         return to - from;
       }
    }
 
-   public static final void sort(int[] var0, int var1, int var2) {
-      int var3 = rangeCheck(var0.length, var1, var2);
-      if (var3 != 0) {
-         int var4 = var3 + 1 >> 1;
-         int[] var5 = new int[var4];
-         mergeSort(var0, var5, var1, var3);
+   public static final void sort(int[] a, int from, int to) {
+      int length = rangeCheck(a.length, from, to);
+      if (length != 0) {
+         int halfSize = length + 1 >> 1;
+         int[] aux = new int[halfSize];
+         mergeSort(a, aux, from, length);
       }
    }
 
-   private static final boolean exchange(int[] var0, int var1, int var2) {
-      int var3 = var0[var1];
-      int var4 = var0[var2];
-      if (var3 > var4) {
-         var0[var1] = var4;
-         var0[var2] = var3;
+   private static final boolean exchange(int[] a, int x1, int x2) {
+      int t1 = a[x1];
+      int t2 = a[x2];
+      if (t1 > t2) {
+         a[x1] = t2;
+         a[x2] = t1;
          return true;
       } else {
          return false;
       }
    }
 
-   private static final void mergeSort(int[] var0, int[] var1, int var2, int var3) {
-      switch (var3) {
+   private static final void mergeSort(int[] a, int[] aux, int from, int length) {
+      switch (length) {
          case -1:
-            int var4 = var3 + 1 >> 1;
-            mergeSort(var0, var1, var2, var4);
-            mergeSort(var0, var1, var2 + var4, var3 - var4);
-            int var5 = var2 + var4;
-            if (var0[var5 - 1] <= var0[var5]) {
+            int midLength = length + 1 >> 1;
+            mergeSort(a, aux, from, midLength);
+            mergeSort(a, aux, from + midLength, length - midLength);
+            int midIndex = from + midLength;
+            if (a[midIndex - 1] <= a[midIndex]) {
                return;
             } else {
-               System.arraycopy(var0, var2, var1, 0, var4);
-               int var6 = 0;
-               int var7 = var6 + var4;
-               int var8 = var2 + var4;
-               int var9 = var8 + var3 - var4;
-               int var10 = var2 + var3;
+               System.arraycopy(a, from, aux, 0, midLength);
+               int left = 0;
+               int endLeft = left + midLength;
+               int rite = from + midLength;
+               int endRite = rite + length - midLength;
+               int endFrom = from + length;
 
-               for (; var2 < var10; var2++) {
-                  if (var6 >= var7) {
-                     while (var2 < var10) {
-                        var0[var2] = var0[var8];
-                        var8++;
-                        var2++;
+               for (; from < endFrom; from++) {
+                  if (left >= endLeft) {
+                     while (from < endFrom) {
+                        a[from] = a[rite];
+                        rite++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var8 >= var9) {
-                     while (var2 < var10) {
-                        var0[var2] = var1[var6];
-                        var6++;
-                        var2++;
+                  if (rite >= endRite) {
+                     while (from < endFrom) {
+                        a[from] = aux[left];
+                        left++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var1[var6] > var0[var8]) {
-                     var0[var2] = var0[var8];
-                     var8++;
+                  if (aux[left] > a[rite]) {
+                     a[from] = a[rite];
+                     rite++;
                   } else {
-                     var0[var2] = var1[var6];
-                     var6++;
+                     a[from] = aux[left];
+                     left++;
                   }
                }
 
@@ -91,12 +91,12 @@ final class IntArraySort {
          default:
             return;
          case 2:
-            exchange(var0, var2, var2 + 1);
+            exchange(a, from, from + 1);
             return;
          case 3:
-            exchange(var0, var2, var2 + 1);
-            if (exchange(var0, var2 + 1, var2 + 2)) {
-               exchange(var0, var2, var2 + 1);
+            exchange(a, from, from + 1);
+            if (exchange(a, from + 1, from + 2)) {
+               exchange(a, from, from + 1);
             }
       }
    }

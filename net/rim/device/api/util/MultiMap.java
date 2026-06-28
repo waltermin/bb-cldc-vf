@@ -8,13 +8,13 @@ public class MultiMap implements Persistable {
    private Hashtable _hashtable;
    private int _initialVectorCapacity;
 
-   public MultiMap(int var1, int var2) {
-      if (var2 < 0) {
+   public MultiMap(int initialHashtableCapacity, int initialVectorCapacity) {
+      if (initialVectorCapacity < 0) {
          throw new Object();
       }
 
-      this._hashtable = new Hashtable(var1);
-      this._initialVectorCapacity = var2;
+      this._hashtable = new Hashtable(initialHashtableCapacity);
+      this._initialVectorCapacity = initialVectorCapacity;
    }
 
    public MultiMap() {
@@ -29,107 +29,107 @@ public class MultiMap implements Persistable {
       this._hashtable.clear();
    }
 
-   public boolean add(Object var1, Object var2) {
-      Vector var3 = (Vector)this._hashtable.get(var1);
-      if (var3 == null) {
-         var3 = new Vector(this._initialVectorCapacity);
-         this._hashtable.put(var1, var3);
+   public boolean add(Object key, Object value) {
+      Vector vector = (Vector)this._hashtable.get(key);
+      if (vector == null) {
+         vector = new Vector(this._initialVectorCapacity);
+         this._hashtable.put(key, vector);
       }
 
-      if (var3.contains(var2)) {
+      if (vector.contains(value)) {
          return false;
       }
 
-      var3.addElement(var2);
+      vector.addElement(value);
       return true;
    }
 
-   public boolean removeKey(Object var1) {
-      return this._hashtable.remove(var1) != null;
+   public boolean removeKey(Object key) {
+      return this._hashtable.remove(key) != null;
    }
 
-   public boolean removeValue(Object var1, Object var2) {
-      Vector var3 = (Vector)this._hashtable.get(var1);
-      if (var3 == null) {
+   public boolean removeValue(Object key, Object value) {
+      Vector vector = (Vector)this._hashtable.get(key);
+      if (vector == null) {
          return false;
       }
 
-      if (!var3.removeElement(var2)) {
+      if (!vector.removeElement(value)) {
          return false;
       }
 
-      if (var3.size() == 0) {
-         this._hashtable.remove(var1);
+      if (vector.size() == 0) {
+         this._hashtable.remove(key);
       }
 
       return true;
    }
 
-   public boolean removeValue(Object var1) {
-      boolean var2 = false;
-      Enumeration var3 = this._hashtable.keys();
+   public boolean removeValue(Object value) {
+      boolean result = false;
+      Enumeration keys = this._hashtable.keys();
 
-      while (var3.hasMoreElements()) {
-         Object var4 = var3.nextElement();
-         if (this.removeValue(var4, var1)) {
-            var2 = true;
+      while (keys.hasMoreElements()) {
+         Object key = keys.nextElement();
+         if (this.removeValue(key, value)) {
+            result = true;
          }
       }
 
-      return var2;
+      return result;
    }
 
-   public boolean containsKey(Object var1) {
-      return this._hashtable.containsKey(var1);
+   public boolean containsKey(Object key) {
+      return this._hashtable.containsKey(key);
    }
 
-   public boolean containsValue(Object var1, Object var2) {
-      Vector var3 = (Vector)this._hashtable.get(var1);
-      return var3 == null ? false : var3.contains(var2);
+   public boolean containsValue(Object key, Object value) {
+      Vector vector = (Vector)this._hashtable.get(key);
+      return vector == null ? false : vector.contains(value);
    }
 
    public Enumeration keys() {
       return this._hashtable.keys();
    }
 
-   public Enumeration elements(Object var1) {
-      Vector var2 = (Vector)this._hashtable.get(var1);
-      return (Enumeration)(var2 == null ? new Object() : var2.elements());
+   public Enumeration elements(Object key) {
+      Vector vector = (Vector)this._hashtable.get(key);
+      return (Enumeration)(vector == null ? new Object() : vector.elements());
    }
 
    public Enumeration elements() {
-      Vector var1 = new Vector();
-      Enumeration var2 = this._hashtable.keys();
+      Vector vector = new Vector();
+      Enumeration keys = this._hashtable.keys();
 
-      while (var2.hasMoreElements()) {
-         Enumeration var3 = this.elements(var2.nextElement());
+      while (keys.hasMoreElements()) {
+         Enumeration elements = this.elements(keys.nextElement());
 
-         while (var3.hasMoreElements()) {
-            Object var4 = var3.nextElement();
-            var1.addElement(var4);
+         while (elements.hasMoreElements()) {
+            Object element = elements.nextElement();
+            vector.addElement(element);
          }
       }
 
-      return var1.elements();
+      return vector.elements();
    }
 
    public int size() {
-      int var1 = 0;
-      Enumeration var2 = this._hashtable.keys();
+      int size = 0;
+      Enumeration keys = this._hashtable.keys();
 
-      while (var2.hasMoreElements()) {
-         Vector var3 = (Vector)this._hashtable.get(var2.nextElement());
-         if (var3 != null) {
-            var1 += var3.size();
+      while (keys.hasMoreElements()) {
+         Vector vector = (Vector)this._hashtable.get(keys.nextElement());
+         if (vector != null) {
+            size += vector.size();
          }
       }
 
-      return var1;
+      return size;
    }
 
-   public int size(Object var1) {
-      Vector var2 = (Vector)this._hashtable.get(var1);
-      return var2 == null ? 0 : var2.size();
+   public int size(Object key) {
+      Vector vector = (Vector)this._hashtable.get(key);
+      return vector == null ? 0 : vector.size();
    }
 
    @Override

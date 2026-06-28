@@ -16,7 +16,7 @@ public class PropertyField extends Field implements FieldLabelProvider {
    private static Tag TAG_LABEL;
    private static final int PADDING;
 
-   public void setValue(Object var1) {
+   public void setValue(Object value) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -29,13 +29,13 @@ public class PropertyField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   public void setLabel(String var1) {
-      this._label.setText(var1);
+   public void setLabel(String label) {
+      this._label.setText(label);
       this.updateLayout();
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -44,32 +44,32 @@ public class PropertyField extends Field implements FieldLabelProvider {
       return (String)this._label.getText();
    }
 
-   public PropertyField(String var1, String var2, long var3) {
-      super(var3);
+   public PropertyField(String label, String value, long style) {
+      super(style);
       this.setTag(TAG);
       this._label.setTag(TAG_LABEL);
-      this._label.setText(var1);
-      this.setValue(var2);
+      this._label.setText(label);
+      this.setValue(value);
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      this._label.layout(var1, var2);
+   protected void layout(int width, int height) {
+      this._label.layout(width, height);
       this._label.setPosition(0, 0);
-      this._text.layout(var1, var2);
-      if (!ThemeManager.getActiveTheme().isLabelOnOwnLine() && this._label.getWidth() + this._text.getWidth() <= var1) {
-         this._text.setPosition(var1 - this._text.getWidth(), 0);
+      this._text.layout(width, height);
+      if (!ThemeManager.getActiveTheme().isLabelOnOwnLine() && this._label.getWidth() + this._text.getWidth() <= width) {
+         this._text.setPosition(width - this._text.getWidth(), 0);
       } else {
          this._text.setPosition(0, this._label.getHeight());
       }
 
-      this.setExtent(var1, this._text.getExtent().Y2());
+      this.setExtent(width, this._text.getExtent().Y2());
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      this._label.paintSelf(var1);
-      this._text.paintSelf(var1);
+   protected void paint(Graphics graphics) {
+      this._label.paintSelf(graphics);
+      this._text.paintSelf(graphics);
    }
 
    @Override
@@ -79,8 +79,8 @@ public class PropertyField extends Field implements FieldLabelProvider {
       this._text.applyTheme();
    }
 
-   public PropertyField(String var1, String var2) {
-      this(var1, var2, 18014398509481984L);
+   public PropertyField(String label, String value) {
+      this(label, value, 18014398509481984L);
    }
 
    public PropertyField() {

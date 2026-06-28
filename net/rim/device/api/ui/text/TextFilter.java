@@ -43,9 +43,9 @@ public class TextFilter {
    private static TextFilter _filename;
    private static TextFilter _ip;
 
-   public static boolean isNumericFilter(int var0) {
-      boolean var1 = false;
-      switch (var0) {
+   public static boolean isNumericFilter(int aStyle) {
+      boolean ret = false;
+      switch (aStyle) {
          case 1:
          case 4:
          case 5:
@@ -59,30 +59,30 @@ public class TextFilter {
          case 15:
          case 17:
          default:
-            var1 = true;
+            ret = true;
          case 0:
          case 2:
          case 3:
          case 7:
          case 8:
          case 16:
-            return var1;
+            return ret;
       }
    }
 
    protected TextFilter() {
    }
 
-   public char convert(char var1, int var2) {
+   public char convert(char _1, int _2) {
       throw null;
    }
 
-   public char convert(char var1, AbstractString var2, int var3, int var4) {
-      return this.convert(var1, var4);
+   public char convert(char character, AbstractString text, int position, int status) {
+      return this.convert(character, status);
    }
 
-   public static final TextFilter get(int var0) {
-      switch (var0) {
+   public static final TextFilter get(int type) {
+      switch (type) {
          case -1:
             return null;
          case 0:
@@ -197,24 +197,24 @@ public class TextFilter {
       return this._maxLength;
    }
 
-   protected void setMaxLength(int var1) {
+   protected void setMaxLength(int maxLength) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public boolean validate(char var1) {
+   public boolean validate(char _1) {
       throw null;
    }
 
-   public boolean validate(char var1, AbstractString var2, int var3) {
-      return this.validate(var1);
+   public boolean validate(char character, AbstractString text, int position) {
+      return this.validate(character);
    }
 
-   public boolean validate(AbstractString var1) {
-      if (var1 != null) {
-         int var2 = var1.length();
+   public boolean validate(AbstractString text) {
+      if (text != null) {
+         int textLength = text.length();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            if (!this.validate(var1.charAt(var3))) {
+         for (int lv = 0; lv < textLength; lv++) {
+            if (!this.validate(text.charAt(lv))) {
                return false;
             }
          }

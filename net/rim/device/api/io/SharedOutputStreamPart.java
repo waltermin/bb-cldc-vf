@@ -9,33 +9,33 @@ class SharedOutputStreamPart extends OutputStream {
    private NoCopyByteArrayOutputStream _stream;
    private boolean _writable;
 
-   public SharedOutputStreamPart(SharedOutputStream var1, int var2) {
-      this._index = var2;
-      this._sink = var1;
+   public SharedOutputStreamPart(SharedOutputStream sink, int index) {
+      this._index = index;
+      this._sink = sink;
       this._buffer = null;
       this._stream = new NoCopyByteArrayOutputStream();
       this._writable = true;
    }
 
    @Override
-   public void write(int var1) {
+   public void write(int data) {
       if (this._buffer == null) {
          this._buffer = new byte[1];
       }
 
-      this._buffer[0] = (byte)var1;
+      this._buffer[0] = (byte)data;
       this.write(this._buffer, 0, 1);
    }
 
    @Override
-   public void write(byte[] var1) {
-      this.write(var1, 0, var1.length);
+   public void write(byte[] data) {
+      this.write(data, 0, data.length);
    }
 
    @Override
-   public void write(byte[] var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         this._sink.write(this._index, var1, var2, var3);
+   public void write(byte[] data, int offset, int length) {
+      if (offset >= 0 && length >= 0 && data.length - length >= offset) {
+         this._sink.write(this._index, data, offset, length);
       } else {
          throw new Object();
       }
@@ -55,7 +55,7 @@ class SharedOutputStreamPart extends OutputStream {
       return this._stream;
    }
 
-   public void setStream(NoCopyByteArrayOutputStream var1) {
+   public void setStream(NoCopyByteArrayOutputStream stream) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -63,7 +63,7 @@ class SharedOutputStreamPart extends OutputStream {
       return this._writable;
    }
 
-   public void setIsWritable(boolean var1) {
+   public void setIsWritable(boolean writable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

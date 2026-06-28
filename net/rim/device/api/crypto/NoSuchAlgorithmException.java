@@ -4,6 +4,6 @@ public class NoSuchAlgorithmException extends CryptoException {
    public NoSuchAlgorithmException() {
    }
 
-   public NoSuchAlgorithmException(String var1) {
+   public NoSuchAlgorithmException(String msg) {
    }
 }

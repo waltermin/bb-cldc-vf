@@ -5,13 +5,13 @@ final class GPSRegistry$PDEInfoStatus {
    boolean _pdeStatus;
    boolean _credentialStatus;
 
-   private GPSRegistry$PDEInfoStatus(GPS$GPSPDEInfo var1, boolean var2, boolean var3) {
-      this._pdeInfo = var1;
-      this._pdeStatus = var2;
-      this._credentialStatus = var3;
+   private GPSRegistry$PDEInfoStatus(GPS$GPSPDEInfo info, boolean pStatus, boolean credStatus) {
+      this._pdeInfo = info;
+      this._pdeStatus = pStatus;
+      this._credentialStatus = credStatus;
    }
 
-   public final void setCredStatus(boolean var1) {
+   public final void setCredStatus(boolean status) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -27,7 +27,7 @@ final class GPSRegistry$PDEInfoStatus {
       return this._pdeInfo;
    }
 
-   GPSRegistry$PDEInfoStatus(GPS$GPSPDEInfo var1, boolean var2, boolean var3, GPSRegistry$1 var4) {
-      this(var1, var2, var3);
+   GPSRegistry$PDEInfoStatus(GPS$GPSPDEInfo x0, boolean x1, boolean x2, GPSRegistry$1 x3) {
+      this(x0, x1, x2);
    }
 }

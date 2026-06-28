@@ -37,15 +37,15 @@ public class MenuItem implements Runnable, AccessibleContext {
    public static final int FULL_MENU;
    public static final Comparator ORDINAL_COMPARATOR;
 
-   public MenuItem(ResourceBundle var1, int var2, int var3, int var4) {
-      if (var4 >= 0 && var3 >= 0) {
-         this._bundle = var1;
-         this._id = var2;
-         this._ordinal = var3;
-         this._priority = var4;
-         if (var1 != null) {
+   public MenuItem(ResourceBundle bundle, int id, int ordinal, int priority) {
+      if (priority >= 0 && ordinal >= 0) {
+         this._bundle = bundle;
+         this._id = id;
+         this._ordinal = ordinal;
+         this._priority = priority;
+         if (bundle != null) {
             this._locale = Locale.getDefault();
-            this._text = this._bundle.getString(var2);
+            this._text = this._bundle.getString(id);
          }
 
          this._icon = null;
@@ -54,16 +54,16 @@ public class MenuItem implements Runnable, AccessibleContext {
       }
    }
 
-   public MenuItem(String var1, int var2, int var3) {
-      this(var1, var2, var3, null);
+   public MenuItem(String text, int ordinal, int priority) {
+      this(text, ordinal, priority, null);
    }
 
-   public MenuItem(String var1, int var2, int var3, Image var4) {
-      if (var3 >= 0 && var2 >= 0) {
-         this._text = var1;
-         this._ordinal = var2;
-         this._priority = var3;
-         this._icon = var4;
+   public MenuItem(String text, int ordinal, int priority, Image icon) {
+      if (priority >= 0 && ordinal >= 0) {
+         this._text = text;
+         this._ordinal = ordinal;
+         this._priority = priority;
+         this._icon = icon;
       } else {
          throw new Object();
       }
@@ -89,8 +89,8 @@ public class MenuItem implements Runnable, AccessibleContext {
       return this._ordinal;
    }
 
-   public static MenuItem getPrefab(int var0) {
-      return MenuItemPrefab.get(var0);
+   public static MenuItem getPrefab(int id) {
+      return MenuItemPrefab.get(id);
    }
 
    public int getPriority() {
@@ -105,23 +105,23 @@ public class MenuItem implements Runnable, AccessibleContext {
       return this._bundle == null && this._id == -1 || SEPARATOR_STRING.equals(this._text);
    }
 
-   public static MenuItem separator(int var0) {
-      return new MenuItem$2(SEPARATOR_STRING, var0, Integer.MAX_VALUE);
+   public static MenuItem separator(int ordinal) {
+      return new MenuItem$2(SEPARATOR_STRING, ordinal, Integer.MAX_VALUE);
    }
 
-   public void setIcon(Image var1) {
+   public void setIcon(Image icon) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setOrdinal(int var1) {
+   public void setOrdinal(int ordinal) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setPriority(int var1) {
+   public void setPriority(int priority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setText(String var1) {
+   public void setText(String text) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -135,7 +135,7 @@ public class MenuItem implements Runnable, AccessibleContext {
       return this._text;
    }
 
-   public boolean isGroupItem(byte var1) {
+   public boolean isGroupItem(byte groupID) {
       return false;
    }
 
@@ -165,7 +165,7 @@ public class MenuItem implements Runnable, AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       return null;
    }
 
@@ -175,7 +175,7 @@ public class MenuItem implements Runnable, AccessibleContext {
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
+   public boolean isAccessibleStateSet(int state) {
       return false;
    }
 
@@ -200,12 +200,12 @@ public class MenuItem implements Runnable, AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       return null;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
+   public boolean isAccessibleChildSelected(int index) {
       return false;
    }
 

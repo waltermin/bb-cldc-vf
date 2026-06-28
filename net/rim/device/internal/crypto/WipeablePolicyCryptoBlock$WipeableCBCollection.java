@@ -19,13 +19,13 @@ public final class WipeablePolicyCryptoBlock$WipeableCBCollection implements Syn
    }
 
    @Override
-   public final boolean addSyncObject(SyncObject var1) {
-      this._keySyncObject = var1;
+   public final boolean addSyncObject(SyncObject object) {
+      this._keySyncObject = object;
       return true;
    }
 
    @Override
-   public final boolean removeSyncObject(SyncObject var1) {
+   public final boolean removeSyncObject(SyncObject object) {
       return true;
    }
 
@@ -50,7 +50,7 @@ public final class WipeablePolicyCryptoBlock$WipeableCBCollection implements Syn
    }
 
    @Override
-   public final String getSyncName(Locale var1) {
+   public final String getSyncName(Locale locale) {
       return this.getSyncName();
    }
 
@@ -70,35 +70,35 @@ public final class WipeablePolicyCryptoBlock$WipeableCBCollection implements Syn
    }
 
    @Override
-   public final boolean isSyncObjectDirty(SyncObject var1) {
+   public final boolean isSyncObjectDirty(SyncObject object) {
       return true;
    }
 
    @Override
-   public final void setSyncObjectDirty(SyncObject var1) {
+   public final void setSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public final void clearSyncObjectDirty(SyncObject var1) {
+   public final void clearSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public final SyncObject getSyncObject(int var1) {
+   public final SyncObject getSyncObject(int uid) {
       return null;
    }
 
    @Override
-   public final boolean updateSyncObject(SyncObject var1, SyncObject var2) {
+   public final boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
       return false;
    }
 
    @Override
-   public final boolean convert(SyncObject var1, DataBuffer var2, int var3) {
-      return var3 != 1 ? false : WipeablePolicyCryptoBlock$WipeableCBSyncObject.convert(var1, var2);
+   public final boolean convert(SyncObject object, DataBuffer buffer, int version) {
+      return version != 1 ? false : WipeablePolicyCryptoBlock$WipeableCBSyncObject.convert(object, buffer);
    }
 
    @Override
-   public final SyncObject convert(DataBuffer var1, int var2, int var3) {
-      return var2 != 1 ? null : WipeablePolicyCryptoBlock$WipeableCBSyncObject.convert(var1, var3);
+   public final SyncObject convert(DataBuffer data, int version, int UID) {
+      return version != 1 ? null : WipeablePolicyCryptoBlock$WipeableCBSyncObject.convert(data, UID);
    }
 }

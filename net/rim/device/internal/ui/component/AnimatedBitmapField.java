@@ -39,45 +39,45 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
       this((Bitmap)((Object)null), 0);
    }
 
-   public AnimatedBitmapField(Bitmap var1) {
-      this(var1, 0);
+   public AnimatedBitmapField(Bitmap bitmap) {
+      this(bitmap, 0);
    }
 
-   public AnimatedBitmapField(Bitmap var1, long var2) {
-      super(var1, var2);
+   public AnimatedBitmapField(Bitmap image, long style) {
+      super(image, style);
    }
 
-   public AnimatedBitmapField(EncodedImage var1, int var2, long var3) {
-      super((Bitmap)((Object)null), var3);
-      this.setImage(var1);
-      this._maxIterations = var2;
+   public AnimatedBitmapField(EncodedImage image, int maxLoopIterations, long style) {
+      super((Bitmap)((Object)null), style);
+      this.setImage(image);
+      this._maxIterations = maxLoopIterations;
       this._iterationsLeft = this._maxIterations;
       this.startAnimation();
    }
 
    @Override
-   public void setBitmap(Bitmap var1) {
-      super.setBitmap(var1);
+   public void setBitmap(Bitmap bitmap) {
+      super.setBitmap(bitmap);
       AnimationThread.removeAnimation(this);
       this._frameCount = 1;
       this._image = null;
    }
 
    @Override
-   public void setImage(EncodedImage var1) {
-      super.setImage(var1);
+   public void setImage(EncodedImage image) {
+      super.setImage(image);
       this._image = null;
       this._backgroundColour = -1;
-      if (var1 != null) {
-         this._frameCount = var1.getFrameCount();
+      if (image != null) {
+         this._frameCount = image.getFrameCount();
          if (this._frameCount >= 2) {
-            this._image = var1;
-            int var2 = var1.getImageType();
-            switch (var2) {
+            this._image = image;
+            int imageType = image.getImageType();
+            switch (imageType) {
                case 1:
-                  Object var3 = var1;
-                  this._backgroundColour = ((GIFEncodedImage)var3).getBackgroundColor();
-                  this._maxImageIterations = ((GIFEncodedImage)var3).getIterations();
+                  GIFEncodedImage gif = (GIFEncodedImage)image;
+                  this._backgroundColour = gif.getBackgroundColor();
+                  this._maxImageIterations = gif.getIterations();
                   if (this._maxImageIterations == 0) {
                      this._maxImageIterations = Integer.MAX_VALUE;
                   }
@@ -95,13 +95,13 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
       }
    }
 
-   public void setMaximumLoopIterations(int var1) {
+   public void setMaximumLoopIterations(int iterations) {
       if (this._image != null) {
-         this._maxIterations = Math.min(this._maxImageIterations, var1);
+         this._maxIterations = Math.min(this._maxImageIterations, iterations);
       }
    }
 
-   public void setUnderlyingBackgroundColor(int var1) {
+   public void setUnderlyingBackgroundColor(int color) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -156,152 +156,152 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
       }
    }
 
-   private int pushContext(Screen var1, Graphics var2, Manager var3) {
-      if (var3 == var1) {
+   private int pushContext(Screen screen, Graphics g, Manager mgr) {
+      if (mgr == screen) {
          return 0;
       }
 
-      int var4 = this.pushContext(var1, var2, var3.getManager());
-      var2.pushRegion(var3.getExtent(), -var3.getHorizontalScroll(), -var3.getVerticalScroll());
-      return var4 + 1;
+      int count = this.pushContext(screen, g, mgr.getManager());
+      g.pushRegion(mgr.getExtent(), -mgr.getHorizontalScroll(), -mgr.getVerticalScroll());
+      return count + 1;
    }
 
    private boolean paintFrame() {
-      boolean var1 = false;
+      boolean result = false;
       if (this._currentFrame < this._frameCount) {
-         int var2 = this._currentFrame;
-         if (var2 == -1) {
-            var2 = 0;
+         int frame = this._currentFrame;
+         if (frame == -1) {
+            frame = 0;
          }
 
          if (this._image.getImageType() == 1) {
-            Object var3 = this._image;
+            GIFEncodedImage gif = (GIFEncodedImage)this._image;
             if (this._backgroundColourBelow == -1
-               && ((GIFEncodedImage)var3).isBackgroundTransparent()
-               && (((GIFEncodedImage)var3).getFrameTransition((var2 + this._frameCount - 1) % this._frameCount) == 2 || var2 == 0)) {
+               && gif.isBackgroundTransparent()
+               && (gif.getFrameTransition((frame + this._frameCount - 1) % this._frameCount) == 2 || frame == 0)) {
                this.invalidate();
                return true;
             }
          }
 
-         Screen var7 = this.getScreen();
-         if (var7 != null) {
-            Graphics var4 = var7.getGraphics();
-            int var5 = this.pushContext(var7, var4, this.getManager());
-            if (var4.pushRegion(this.getContentRect())) {
-               this.paintFrame(var2, var4);
-               var7.updateDisplay();
-               var1 = true;
+         Screen screen = this.getScreen();
+         if (screen != null) {
+            Graphics graphics = screen.getGraphics();
+            int numToPop = this.pushContext(screen, graphics, this.getManager());
+            if (graphics.pushRegion(this.getContentRect())) {
+               this.paintFrame(frame, graphics);
+               screen.updateDisplay();
+               result = true;
             }
 
-            for (int var6 = 0; var6 <= var5; var6++) {
-               var4.popContext();
+            for (int i = 0; i <= numToPop; i++) {
+               graphics.popContext();
             }
          }
       }
 
-      return var1;
+      return result;
    }
 
-   private void paintFrame(int var1, Graphics var2) {
-      int var3 = 2;
-      int var4 = 0;
-      int var5 = 0;
-      int var6 = this.getXPos();
-      int var7 = this.getYPos();
-      boolean var8 = false;
+   private void paintFrame(int frame, Graphics graphics) {
+      int transition = 2;
+      int left = 0;
+      int top = 0;
+      int xPos = this.getXPos();
+      int yPos = this.getYPos();
+      boolean trans = false;
       if (this._image.getImageType() == 1) {
-         Object var9 = this._image;
-         var3 = ((GIFEncodedImage)var9).getFrameTransition((var1 + this._frameCount - 1) % this._frameCount);
-         var4 = ((GIFEncodedImage)var9).getScaledFrameLeft(var1);
-         var5 = ((GIFEncodedImage)var9).getScaledFrameTop(var1);
-         var8 = ((GIFEncodedImage)var9).isBackgroundTransparent();
+         GIFEncodedImage gif = (GIFEncodedImage)this._image;
+         transition = gif.getFrameTransition((frame + this._frameCount - 1) % this._frameCount);
+         left = gif.getScaledFrameLeft(frame);
+         top = gif.getScaledFrameTop(frame);
+         trans = gif.isBackgroundTransparent();
       }
 
-      if (var1 == 0 || var3 == 2) {
-         int var11 = var8 ? this._backgroundColourBelow : this._backgroundColour;
-         if (var11 != -1) {
-            var2.setColor(var11);
-            var2.fillRect(var6, var7, this._image.getScaledWidth(), this._image.getScaledHeight());
+      if (frame == 0 || transition == 2) {
+         int colour = trans ? this._backgroundColourBelow : this._backgroundColour;
+         if (colour != -1) {
+            graphics.setColor(colour);
+            graphics.fillRect(xPos, yPos, this._image.getScaledWidth(), this._image.getScaledHeight());
          }
       }
 
-      int var12 = this._image.getScaledFrameHeight(var1);
-      if (var12 > 0) {
-         int var10 = this._image.getScaledFrameWidth(var1);
-         if (var10 > 0) {
-            this.paintImage(var2, var4 + var6, var5 + var7, var10, var12, this._image, var1, 0, 0);
+      int scaledHeight = this._image.getScaledFrameHeight(frame);
+      if (scaledHeight > 0) {
+         int scaledWidth = this._image.getScaledFrameWidth(frame);
+         if (scaledWidth > 0) {
+            this.paintImage(graphics, left + xPos, top + yPos, scaledWidth, scaledHeight, this._image, frame, 0, 0);
          }
       }
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       if (this._image == null) {
-         super.paint(var1);
+         super.paint(graphics);
       } else {
          if (this._visible && !this._addedToQueue && this._running) {
             this.toggleAnimation(true);
          }
 
          if (this._currentFrame >= this._frameCount) {
-            boolean var5 = true;
+            boolean paintFirst = true;
             if (this._frameCount >= 2 && this._image.getImageType() == 1) {
-               Object var6 = this._image;
-               if (((GIFEncodedImage)var6).getFrameTransition(this._frameCount - 2) == 2) {
-                  var5 = false;
+               GIFEncodedImage gif = (GIFEncodedImage)this._image;
+               if (gif.getFrameTransition(this._frameCount - 2) == 2) {
+                  paintFirst = false;
                }
             }
 
-            if (var5) {
-               this.paintFrame(0, var1);
+            if (paintFirst) {
+               this.paintFrame(0, graphics);
                if (this._frameCount > 20) {
-                  int var7 = this._frameCount / 10;
-                  var7 -= 2;
+                  int numFrames = this._frameCount / 10;
+                  numFrames -= 2;
 
-                  for (int var10 = 1; var10 < var7; var10++) {
-                     this.paintFrame(var10, var1);
+                  for (int i = 1; i < numFrames; i++) {
+                     this.paintFrame(i, graphics);
                   }
 
-                  for (int var11 = var7; var11 > 1; var11--) {
-                     this.paintFrame(this._frameCount - var11, var1);
+                  for (int i = numFrames; i > 1; i--) {
+                     this.paintFrame(this._frameCount - i, graphics);
                   }
                } else {
-                  for (int var9 = 1; var9 < this._frameCount - 1; var9++) {
-                     this.paintFrame(var9, var1);
+                  for (int i = 1; i < this._frameCount - 1; i++) {
+                     this.paintFrame(i, graphics);
                   }
                }
             }
 
-            this.paintFrame(this._frameCount - 1, var1);
+            this.paintFrame(this._frameCount - 1, graphics);
             return;
          }
 
-         int var2 = this._currentFrame;
-         if (var2 == -1) {
-            var2 = 0;
+         int endFrame = this._currentFrame;
+         if (endFrame == -1) {
+            endFrame = 0;
          }
 
-         int var3 = 0;
-         if (var2 > 0 && this._image.getImageType() == 1) {
-            Object var4 = this._image;
-            if (((GIFEncodedImage)var4).getFrameTransition((var2 + this._frameCount - 1) % this._frameCount) == 2) {
-               var3 = var2;
+         int i = 0;
+         if (endFrame > 0 && this._image.getImageType() == 1) {
+            GIFEncodedImage gif = (GIFEncodedImage)this._image;
+            if (gif.getFrameTransition((endFrame + this._frameCount - 1) % this._frameCount) == 2) {
+               i = endFrame;
             }
          }
 
-         while (var3 <= var2) {
-            this.paintFrame(var3, var1);
-            var3++;
+         while (i <= endFrame) {
+            this.paintFrame(i, graphics);
+            i++;
          }
       }
    }
 
    @Override
-   protected void onVisibilityChange(boolean var1) {
-      super.onVisibilityChange(var1);
-      this.toggleAnimation(var1);
-      this._visible = var1;
+   protected void onVisibilityChange(boolean visible) {
+      super.onVisibilityChange(visible);
+      this.toggleAnimation(visible);
+      this._visible = visible;
    }
 
    @Override
@@ -325,8 +325,8 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
       this._visible = false;
    }
 
-   private void toggleAnimation(boolean var1) {
-      if (var1 && this._running) {
+   private void toggleAnimation(boolean on) {
+      if (on && this._running) {
          AnimationThread.addAnimation(this);
          this._addedToQueue = true;
       } else {
@@ -337,7 +337,7 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
 
    @Override
    public boolean animate() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -346,27 +346,27 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
    }
 
    @Override
-   public void addAnimationListener(AnimationListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addAnimationListener(AnimationListener listener) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void removeAnimationListener(AnimationListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void removeAnimationListener(AnimationListener listener) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private int findListener(Object var1, WeakReference[] var2) {
-      for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-         Object var4 = var2[var3].get();
-         if (var4 == var1) {
-            return var3;
+   private int findListener(Object search, WeakReference[] listenerList) {
+      for (int lv = listenerList.length - 1; lv >= 0; lv--) {
+         Object listener = listenerList[lv].get();
+         if (listener == search) {
+            return lv;
          }
       }
 
       return -1;
    }
 
-   private void notify(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void notify(int message) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

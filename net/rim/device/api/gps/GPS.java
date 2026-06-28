@@ -3,10 +3,15 @@ package net.rim.device.api.gps;
 import net.rim.device.api.bluetooth.BluetoothSerialPort;
 import net.rim.device.api.bluetooth.BluetoothSerialPortInfo;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.internal.bluetooth.BluetoothME;
+import net.rim.device.internal.system.ApplicationManagerInternal;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.vm.Message;
 
 public final class GPS {
    public static final int GPS_MODE_EMERGENCY_ONLY;
@@ -66,17 +71,47 @@ public final class GPS {
       return InternalServices.getHardwareID() == 67112452 && (RadioInfo.getActiveWAFs() & 1) == 1 ? false : isSupported();
    }
 
-   public static final void setLAPIDataSource(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setLAPIDataSource(String name) {
+      PersistentObject gpsDataSourceStore = PersistentStore.getPersistentObject(GPS_DATA_SOURCE_KEY);
+      synchronized (gpsDataSourceStore) {
+         gpsDataSourceStore.setContents(name, 51);
+         gpsDataSourceStore.commit();
+      }
    }
 
    public static final String getLAPIDataSource() {
-      throw new RuntimeException("cod2jar: exception table");
+      String source = null;
+      PersistentObject gpsDataSourceStore = PersistentStore.getPersistentObject(GPS_DATA_SOURCE_KEY);
+      synchronized (gpsDataSourceStore) {
+         source = (String)gpsDataSourceStore.getContents();
+      }
+
+      if (source == null) {
+         return isSupportedOnCurrentNetwork() ? GPS_SOURCE_DEVICE : null;
+      }
+
+      if (source.equals(GPS_SOURCE_DEVICE)) {
+         return source;
+      }
+
+      if (BluetoothSerialPort.isSupported()) {
+         BluetoothSerialPortInfo[] portInfo = BluetoothSerialPort.getSerialPortInfo();
+         if (portInfo != null) {
+            for (int port = 0; port < portInfo.length; port++) {
+               String deviceName = portInfo[port].getDeviceName();
+               if (deviceName != null && deviceName.equals(source)) {
+                  return source;
+               }
+            }
+         }
+      }
+
+      return isSupportedOnCurrentNetwork() ? GPS_SOURCE_DEVICE : null;
    }
 
    public static final boolean isLAPIDataSourceInternalGPS() {
-      String var0 = getLAPIDataSource();
-      return var0 == null ? isSupported() : var0.equals(GPS_SOURCE_DEVICE);
+      String name = getLAPIDataSource();
+      return name == null ? isSupported() : name.equals(GPS_SOURCE_DEVICE);
    }
 
    public static final boolean isLAPISupported() {
@@ -85,8 +120,8 @@ public final class GPS {
       }
 
       if (BluetoothME.isSupported()) {
-         BluetoothSerialPortInfo[] var0 = BluetoothSerialPort.getSerialPortInfo();
-         if (var0 != null && var0.length > 0) {
+         BluetoothSerialPortInfo[] btDevices = BluetoothSerialPort.getSerialPortInfo();
+         if (btDevices != null && btDevices.length > 0) {
             return true;
          }
       }
@@ -98,28 +133,57 @@ public final class GPS {
 
    public static final native boolean nativeRequestModeChange(int var0);
 
-   public static final boolean requestModeChange(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean requestModeChange(int mode) {
+      if (mode != 1 && mode != 2) {
+         return false;
+      }
+
+      synchronized (_gpsModeStore) {
+         _gpsModeStore.setContents(new Object(mode), 51);
+         _gpsModeStore.commit();
+      }
+
+      if (isSupported()) {
+         nativeRequestModeChange(mode);
+      }
+
+      Message message = (Message)(new Object(23, 5889, 1, mode, 0));
+      ApplicationManagerInternal ami = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      ami.postMessage(message);
+      return true;
    }
 
    public static final native int nativeGetMode();
 
    public static final int getMode() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_gpsModeStore) {
+         Integer modeInt = (Integer)_gpsModeStore.getContents();
+         if (modeInt != null) {
+            return modeInt;
+         } else {
+            return isSupported() ? nativeGetMode() : 2;
+         }
+      }
    }
 
    public static final native int getMaxFixPeriod();
 
    public static final native boolean startLocationUpdate(int var0, int var1, int var2, GPS$AppCriteria var3);
 
-   public static final boolean startUpdate(int var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean startUpdate(int aidMode, int frequency) {
+      GPSRegistry gpsRegistry = GPSRegistry.getInstance();
+      synchronized (gpsRegistry) {
+         return gpsRegistry.startLocationUpdate(frequency, aidMode, null);
+      }
    }
 
    public static final native boolean stopLocationUpdate(int var0);
 
-   public static final boolean stopUpdate(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean stopUpdate(int aidMode) {
+      GPSRegistry gpsRegistry = GPSRegistry.getInstance();
+      synchronized (gpsRegistry) {
+         return gpsRegistry.stopLocationUpdate(aidMode);
+      }
    }
 
    public static final native int getLocation(GPSLocation var0, int var1);
@@ -134,18 +198,25 @@ public final class GPS {
 
    public static final native int requestChangePIN(byte[] var0, byte[] var1);
 
-   public static final void addListener(Application var0, GPSListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, GPSListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(23) == null) {
+            dispatchManager.setDispatcher(23, new GPSEventDispatcher());
+         }
+      }
+
+      app.addListener(23, listener);
    }
 
-   public static final void removeListener(Application var0, GPSListener var1) {
-      var0.removeListener(23, var1);
+   public static final void removeListener(Application app, GPSListener listener) {
+      app.removeListener(23, listener);
    }
 
    public static final GPS$GPSPDEInfo getPDEInfo() {
-      GPS$GPSPDEInfo var0 = new GPS$GPSPDEInfo();
-      getPDEInfo(var0);
-      return var0;
+      GPS$GPSPDEInfo info = new GPS$GPSPDEInfo();
+      getPDEInfo(info);
+      return info;
    }
 
    private static final native void getPDEInfo(GPS$GPSPDEInfo var0);

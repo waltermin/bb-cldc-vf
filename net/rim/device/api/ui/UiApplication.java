@@ -10,17 +10,17 @@ public class UiApplication extends Application implements UiEngine {
    private int _stylusY = -1;
    public static final int STYLE_NO_SCREEN_CAPABLE;
 
-   public final void publicProcessMessage(Message var1) {
-      this._uiEngine.processMessage(this.getAppEventLock(), var1, false);
+   public final void publicProcessMessage(Message message) {
+      this._uiEngine.processMessage(this.getAppEventLock(), message, false);
    }
 
    public final void popScreen() {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setStyle(int var1) {
-      this._style &= ~var1;
-      this._style |= var1;
+   public void setStyle(int style) {
+      this._style &= ~style;
+      this._style |= style;
    }
 
    public int getStyle() {
@@ -37,8 +37,8 @@ public class UiApplication extends Application implements UiEngine {
    }
 
    @Override
-   public final void suspendPainting(boolean var1) {
-      this._uiEngine.suspendPainting(var1);
+   public final void suspendPainting(boolean suspend) {
+      this._uiEngine.suspendPainting(suspend);
    }
 
    @Override
@@ -57,28 +57,28 @@ public class UiApplication extends Application implements UiEngine {
    }
 
    @Override
-   public int getGlobalPriority(Screen var1) {
-      return this._uiEngine.getGlobalPriority(var1);
+   public int getGlobalPriority(Screen screen) {
+      return this._uiEngine.getGlobalPriority(screen);
    }
 
    @Override
-   public final void popScreen(Screen var1) {
-      this._uiEngine.popScreen(var1);
+   public final void popScreen(Screen screen) {
+      this._uiEngine.popScreen(screen);
    }
 
    @Override
-   public final void pushGlobalScreen(Screen var1, int var2, int var3) {
-      this._uiEngine.pushGlobalScreen(var1, var2, var3);
+   public final void pushGlobalScreen(Screen screen, int priority, int flags) {
+      this._uiEngine.pushGlobalScreen(screen, priority, flags);
    }
 
    @Override
-   public final void pushScreen(Screen var1) {
-      this._uiEngine.pushScreen(var1);
+   public final void pushScreen(Screen screen) {
+      this._uiEngine.pushScreen(screen);
    }
 
    @Override
-   public final void pushModalScreen(Screen var1) {
-      this._uiEngine.pushModalScreen(var1);
+   public final void pushModalScreen(Screen screen) {
+      this._uiEngine.pushModalScreen(screen);
    }
 
    @Override
@@ -102,23 +102,23 @@ public class UiApplication extends Application implements UiEngine {
    }
 
    @Override
-   public final void queueStatus(Screen var1, int var2, boolean var3) {
-      this._uiEngine.queueStatus(var1, var2, var3);
+   public final void queueStatus(Screen screen, int priority, boolean inputRequired) {
+      this._uiEngine.queueStatus(screen, priority, inputRequired);
    }
 
    @Override
-   public final void pushGlobalScreen(Screen var1, int var2, boolean var3) {
-      this._uiEngine.pushGlobalScreen(var1, var2, var3);
+   public final void pushGlobalScreen(Screen screen, int priority, boolean inputRequired) {
+      this._uiEngine.pushGlobalScreen(screen, priority, inputRequired);
    }
 
    @Override
-   public final void dismissStatus(Screen var1) {
-      this._uiEngine.dismissStatus(var1);
+   public final void dismissStatus(Screen screen) {
+      this._uiEngine.dismissStatus(screen);
    }
 
    @Override
-   public void addUserInputEventListener(UserInputEventListener var1) {
-      this._uiEngine.addUserInputEventListener(var1);
+   public void addUserInputEventListener(UserInputEventListener listener) {
+      this._uiEngine.addUserInputEventListener(listener);
    }
 
    @Override
@@ -127,14 +127,14 @@ public class UiApplication extends Application implements UiEngine {
    }
 
    @Override
-   public void removeUserInputEventListener(UserInputEventListener var1) {
-      this._uiEngine.removeUserInputEventListener(var1);
+   public void removeUserInputEventListener(UserInputEventListener listener) {
+      this._uiEngine.removeUserInputEventListener(listener);
    }
 
    @Override
-   public void setStylusPos(int var1, int var2) {
-      this._stylusX = var1;
-      this._stylusY = var2;
+   public void setStylusPos(int x, int y) {
+      this._stylusX = x;
+      this._stylusY = y;
    }
 
    @Override

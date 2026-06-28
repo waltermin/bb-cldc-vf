@@ -1,6 +1,7 @@
 package net.rim.device.api.i18n;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 import net.rim.device.cldc.util.CalendarExtensions;
 
 public class DateFormat extends Format {
@@ -36,32 +37,53 @@ public class DateFormat extends Format {
    protected DateFormat() {
    }
 
-   public StringBuffer format(Calendar var1, StringBuffer var2, FieldPosition var3) {
+   public StringBuffer format(Calendar _1, StringBuffer _2, FieldPosition _3) {
       throw null;
    }
 
    @Override
-   public StringBuffer format(Object var1, StringBuffer var2, FieldPosition var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public StringBuffer format(Object obj, StringBuffer toAppendTo_o, FieldPosition pos_io) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final DateFormat getInstance(int var0) {
-      return new SimpleDateFormat(var0);
+   public static final DateFormat getInstance(int style) {
+      return new SimpleDateFormat(style);
    }
 
-   public static long alignToMidnight(long var0) {
-      return alignToHourMinute(var0, 23, 59);
+   public static long alignToMidnight(long date) {
+      return alignToHourMinute(date, 23, 59);
    }
 
-   public static long alignToHourMinute(long var0, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static long alignToHourMinute(long date, int hour, int minute) {
+      synchronized (_cal) {
+         _cal.setTimeZone(TimeZone.getDefault());
+         _calEx.setTimeLong(date);
+         _cal.set(11, hour);
+         _cal.set(12, minute);
+         _cal.set(13, 0);
+         _cal.set(14, 0);
+         return _calEx.getTimeLong();
+      }
    }
 
-   public final StringBuffer formatLocal(StringBuffer var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final StringBuffer formatLocal(StringBuffer sb, long date) {
+      if (sb == null) {
+         sb = (StringBuffer)(new Object(32));
+      }
+
+      synchronized (_cal) {
+         _cal.setTimeZone(TimeZone.getDefault());
+         _calEx.setTimeLong(date);
+         this.format(_cal, sb, null);
+         return sb;
+      }
    }
 
-   public final String formatLocal(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final String formatLocal(long date) {
+      synchronized (_cal) {
+         _cal.setTimeZone(TimeZone.getDefault());
+         _calEx.setTimeLong(date);
+         return this.format(_cal);
+      }
    }
 }

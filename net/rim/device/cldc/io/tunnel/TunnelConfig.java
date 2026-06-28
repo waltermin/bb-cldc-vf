@@ -32,76 +32,76 @@ public final class TunnelConfig {
    public static final int DEF_UPDATE_TIMEOUT;
    public static final int DEF_LINGER_TIMEOUT;
 
-   public TunnelConfig(String var1, String var2, TunnelListener var3) {
+   public TunnelConfig(String name, String description, TunnelListener listener) {
       this._delayTmo = DEF_DELAY_TIMEOUT;
       this._shortDelayTmo = 10000;
       this._updateTmo = 0;
       this._lingerTmo = 300;
-      this._name = var1;
-      this._description = var2;
+      this._name = name;
+      this._description = description;
       this._qos = null;
       this._username = null;
       this._password = null;
       this._priority = 5;
-      this._listener = var3;
+      this._listener = listener;
    }
 
-   public TunnelConfig(String var1, String var2, QOSInfo var3, String var4, String var5, TunnelListener var6) {
+   public TunnelConfig(String name, String description, QOSInfo qos, String username, String password, TunnelListener listener) {
       this._delayTmo = DEF_DELAY_TIMEOUT;
       this._shortDelayTmo = 10000;
       this._updateTmo = 0;
       this._lingerTmo = 300;
-      this._name = var1;
-      this._description = var2;
-      this._qos = var3;
-      this._username = var4;
-      this._password = var5;
+      this._name = name;
+      this._description = description;
+      this._qos = qos;
+      this._username = username;
+      this._password = password;
       this._priority = 5;
-      this._listener = var6;
+      this._listener = listener;
    }
 
    public TunnelConfig(
-      String var1,
-      String var2,
-      QOSInfo var3,
-      String var4,
-      String var5,
-      TunnelListener var6,
-      int var7,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      int var14
+      String name,
+      String description,
+      QOSInfo qos,
+      String username,
+      String password,
+      TunnelListener listener,
+      int maxAttempts,
+      int startBackoff,
+      int maxBackoff,
+      int activateTmo,
+      int deactivateTmo,
+      int delayTmo,
+      int shortDelayTmo,
+      int updateTmo
    ) {
       this._delayTmo = DEF_DELAY_TIMEOUT;
       this._shortDelayTmo = 10000;
       this._updateTmo = 0;
       this._lingerTmo = 300;
-      this._name = var1;
-      this._description = var2;
-      this._qos = var3;
-      this._username = var4;
-      this._password = var5;
+      this._name = name;
+      this._description = description;
+      this._qos = qos;
+      this._username = username;
+      this._password = password;
       this._priority = 5;
-      this._listener = var6;
-      this._maxAttempts = var7;
-      this._startBackoff = var8;
-      this._maxBackoff = var9;
-      this._activateTmo = var10;
-      this._deactivateTmo = var11;
-      this._delayTmo = var12;
-      this._shortDelayTmo = var13;
-      this._updateTmo = var14;
+      this._listener = listener;
+      this._maxAttempts = maxAttempts;
+      this._startBackoff = startBackoff;
+      this._maxBackoff = maxBackoff;
+      this._activateTmo = activateTmo;
+      this._deactivateTmo = deactivateTmo;
+      this._delayTmo = delayTmo;
+      this._shortDelayTmo = shortDelayTmo;
+      this._updateTmo = updateTmo;
    }
 
    public final String getName() {
       return this._name;
    }
 
-   public final void setName(String var1) {
+   public final void setName(String name) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -125,7 +125,7 @@ public final class TunnelConfig {
       return this._priority;
    }
 
-   public final void setPriority(int var1) {
+   public final void setPriority(int priority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -133,15 +133,15 @@ public final class TunnelConfig {
       return this._listener;
    }
 
-   public final boolean equivalent(Object var1) {
+   public final boolean equivalent(Object object) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final boolean equivalentQos(QOSInfo var1) {
+   private final boolean equivalentQos(QOSInfo qos) {
       if (this._qos == null) {
-         return var1 == null ? true : var1.isDefaultQos();
+         return qos == null ? true : qos.isDefaultQos();
       } else {
-         return var1 == null ? this._qos.isDefaultQos() : this._qos.equals(var1);
+         return qos == null ? this._qos.isDefaultQos() : this._qos.equals(qos);
       }
    }
 
@@ -149,17 +149,17 @@ public final class TunnelConfig {
       return this._maxAttempts;
    }
 
-   public final void setMaxAttempts(int var1) {
+   public final void setMaxAttempts(int maxAttempts) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final int getBackoff(int var1) {
-      if (var1 > 31) {
+   public final int getBackoff(int index) {
+      if (index > 31) {
          return this._maxBackoff;
       }
 
-      long var2 = ((long)1 << var1) * this._startBackoff;
-      return var2 > this._maxBackoff ? this._maxBackoff : (int)var2;
+      long ret = ((long)1 << index) * this._startBackoff;
+      return ret > this._maxBackoff ? this._maxBackoff : (int)ret;
    }
 
    public final int getActivateTimeout() {
@@ -186,7 +186,7 @@ public final class TunnelConfig {
       return this._lingerTmo;
    }
 
-   public final void setLingerTimeout(int var1) {
-      this._lingerTmo = Math.min(var1, 1800);
+   public final void setLingerTimeout(int lingerTimeout) {
+      this._lingerTmo = Math.min(lingerTimeout, 1800);
    }
 }

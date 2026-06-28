@@ -1,5 +1,6 @@
 package net.rim.device.internal.browser.util;
 
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Persistable;
 import net.rim.vm.Array;
@@ -19,41 +20,41 @@ public final class Pipe implements Persistable {
    public Pipe() {
    }
 
-   public Pipe(byte[] var1, int var2) {
-      this(var1, var2, !Memory.isPlaintext(var1));
+   public Pipe(byte[] data, int length) {
+      this(data, length, !Memory.isPlaintext(data));
    }
 
-   public Pipe(byte[] var1, int var2, boolean var3) {
+   public Pipe(byte[] data, int length, boolean groupData) {
    }
 
-   public Pipe(byte[][][] var1) {
-      this(var1, true);
+   public Pipe(byte[][][] data) {
+      this(data, true);
    }
 
-   public Pipe(byte[][][] var1, boolean var2) {
+   public Pipe(byte[][][] data, boolean groupData) {
    }
 
-   public final synchronized void write(byte[] var1, int var2, int var3, int var4) {
-      if (!this._writeClosed && var3 != 0) {
-         if (var2 != 0 || var3 != var1.length) {
-            var1 = Arrays.copy(var1, var2, var3);
+   public final synchronized void write(byte[] bytes, int off, int length, int packetNo) {
+      if (!this._writeClosed && length != 0) {
+         if (off != 0 || length != bytes.length) {
+            bytes = Arrays.copy(bytes, off, length);
          }
 
-         if (var4 >= this._window.length) {
-            if (var4 != this._window.length) {
+         if (packetNo >= this._window.length) {
+            if (packetNo != this._window.length) {
                this._notifyOnWrite = false;
             }
 
-            Array.resize(this._window, var4 + 1);
+            Array.resize(this._window, packetNo + 1);
          }
 
-         this._window[var4] = (byte[][])var1;
-         this._totalLength += var1.length;
+         this._window[packetNo] = (byte[][])bytes;
+         this._totalLength += bytes.length;
          if (!this._notifyOnWrite) {
             this._notifyOnWrite = true;
 
-            for (int var5 = 0; var5 < var4; var5++) {
-               if (this._window[var5] == null) {
+            for (int i = 0; i < packetNo; i++) {
+               if (this._window[i] == null) {
                   this._notifyOnWrite = false;
                   break;
                }
@@ -66,124 +67,124 @@ public final class Pipe implements Persistable {
       }
    }
 
-   public final synchronized int read(PipeContext var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized int read(PipeContext position) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final synchronized int removeSections(int[] var1, int[] var2) {
+   public final synchronized int removeSections(int[] offsets, int[] lengths) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized void removeSection(int var1, int var2) {
+   public final synchronized void removeSection(int offset, int length) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized int read(byte[] var1, int var2, int var3, PipeContext var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized int read(byte[] bytes, int offset, int length, PipeContext position) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final synchronized long skip(PipeContext var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized long skip(PipeContext position, long length) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final int fastRead(PipeContext var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int fastRead(PipeContext position) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final synchronized int readCompressedInt(PipeContext var1) {
-      if (var1._readClosed) {
+   public final synchronized int readCompressedInt(PipeContext position) {
+      if (position._readClosed) {
          throw new Object();
       }
 
-      int var2 = 0;
-      int var3 = 0;
+      int i = 0;
+      int result = 0;
 
       do {
-         var2 = this.read(var1);
-         if (var2 == -1) {
+         i = this.read(position);
+         if (i == -1) {
             throw new Object();
          }
 
-         var3 = var3 << 7 | var2 & 127;
-      } while ((var2 & 128) != 0);
+         result = result << 7 | i & 127;
+      } while ((i & 128) != 0);
 
-      return var3;
+      return result;
    }
 
-   public final synchronized boolean skipInlineString(PipeContext var1) {
-      boolean var2 = false;
-      int var3 = 0;
+   public final synchronized boolean skipInlineString(PipeContext position) {
+      boolean result = false;
+      int i = 0;
 
       while (true) {
-         var3 = this.read(var1);
-         switch (var3) {
+         i = this.read(position);
+         switch (i) {
             case -1:
                throw new Object();
             case 13:
-               var2 = true;
+               result = true;
             default:
-               if (var3 == 0) {
-                  return var2;
+               if (i == 0) {
+                  return result;
                }
          }
       }
    }
 
-   public final synchronized String readInlineString(PipeContext var1, String var2) {
-      if (var1._readClosed) {
+   public final synchronized String readInlineString(PipeContext position, String encoding) {
+      if (position._readClosed) {
          throw new Object();
       }
 
-      int var3 = var1._currentPacket;
-      int var4 = var1._currentReadPos;
-      boolean var5 = this.skipInlineString(var1);
-      if (!var5 && var1._currentPacket == var3) {
-         return new String((byte[])this._window[var3], var4, var1._currentReadPos - var4 - 1, var2);
+      int packet = position._currentPacket;
+      int pos = position._currentReadPos;
+      boolean crlfEncountered = this.skipInlineString(position);
+      if (!crlfEncountered && position._currentPacket == packet) {
+         return new String((byte[])this._window[packet], pos, position._currentReadPos - pos - 1, encoding);
       }
 
-      int var6 = 0;
+      int size = 0;
 
-      for (int var7 = var3; var7 <= var1._currentPacket; var7++) {
-         var6 += this._window[var7].length;
+      for (int i = packet; i <= position._currentPacket; i++) {
+         size += this._window[i].length;
       }
 
-      var6 -= var4;
-      var6 -= this._window[var1._currentPacket].length - var1._currentReadPos;
-      byte[] var15 = new byte[var6];
-      var1._currentPacket = var3;
-      var1._currentReadPos = var4;
-      int var8 = this.read(var15, 0, var6, var1);
-      if (var8 != var6) {
+      size -= pos;
+      size -= this._window[position._currentPacket].length - position._currentReadPos;
+      byte[] tmpArray = new byte[size];
+      position._currentPacket = packet;
+      position._currentReadPos = pos;
+      int readSize = this.read(tmpArray, 0, size, position);
+      if (readSize != size) {
          throw new Object();
       }
 
-      var6--;
-      boolean var9 = false;
-      int var10 = 0;
+      size--;
+      boolean carriageReturn = false;
+      int j = 0;
 
-      for (int var11 = 0; var11 < var6; var11++) {
-         if (var15[var11] == 10 && var9) {
-            var9 = false;
+      for (int i = 0; i < size; i++) {
+         if (tmpArray[i] == 10 && carriageReturn) {
+            carriageReturn = false;
          } else {
-            if (var15[var11] == 13) {
-               var9 = true;
-               var15[var11] = 10;
+            if (tmpArray[i] == 13) {
+               carriageReturn = true;
+               tmpArray[i] = 10;
             } else {
-               var9 = false;
+               carriageReturn = false;
             }
 
-            var15[var10++] = var15[var11];
+            tmpArray[j++] = tmpArray[i];
          }
       }
 
-      return new String(var15, 0, var10, var2);
+      return new String(tmpArray, 0, j, encoding);
    }
 
-   public final synchronized byte[] readPacket(int var1) {
-      if (var1 < 0) {
+   public final synchronized byte[] readPacket(int packetNo) {
+      if (packetNo < 0) {
          return null;
       } else {
-         return (byte[])(var1 >= this._window.length ? null : this._window[var1]);
+         return (byte[])(packetNo >= this._window.length ? null : this._window[packetNo]);
       }
    }
 
@@ -192,44 +193,65 @@ public final class Pipe implements Persistable {
       super.notify();
    }
 
-   public final synchronized void closeRead(PipeContext var1) {
-      var1._readClosed = true;
+   public final synchronized void closeRead(PipeContext position) {
+      position._readClosed = true;
       super.notify();
    }
 
-   final synchronized boolean isPacketIncluded(int var1) {
-      if (var1 < 0) {
+   final synchronized boolean isPacketIncluded(int packetNo) {
+      if (packetNo < 0) {
          return true;
-      } else if (var1 >= this._window.length) {
+      } else if (packetNo >= this._window.length) {
          return false;
       } else {
-         return this._window[var1] == null ? false : var1 != 0 || this._window[0].length != 0;
+         return this._window[packetNo] == null ? false : packetNo != 0 || this._window[0].length != 0;
       }
    }
 
-   public final synchronized int available(PipeContext var1) {
-      if (var1._availableBytes != Integer.MAX_VALUE) {
-         return var1._availableBytes;
+   public final synchronized int available(PipeContext context) {
+      if (context._availableBytes != Integer.MAX_VALUE) {
+         return context._availableBytes;
       }
 
-      int var2 = 0;
+      int count = 0;
 
-      for (int var3 = var1._currentPacket; var3 < this._window.length; var3++) {
-         if (this._window[var3] != null) {
-            var2 += this._window[var3].length;
+      for (int i = context._currentPacket; i < this._window.length; i++) {
+         if (this._window[i] != null) {
+            count += this._window[i].length;
          }
       }
 
-      var2 -= var1._currentReadPos;
-      if (var2 > 0) {
-         return var2;
+      count -= context._currentReadPos;
+      if (count > 0) {
+         return count;
       } else {
          return this._writeClosed ? -1 : 0;
       }
    }
 
    public final synchronized void waitUntilClosed() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (!this._writeClosed) {
+         try {
+            long timeBefore = System.currentTimeMillis();
+            if (TimeLogger._loggingEnabled) {
+               TimeLogger.getInstance().startTimer(13, (int)timeBefore);
+            }
+
+            EventLogger.logEvent(1907089860548946979L, 1114666867, 5);
+            super.wait(this._timeout);
+            EventLogger.logEvent(1907089860548946979L, 1114666854, 5);
+            if (TimeLogger._loggingEnabled) {
+               TimeLogger.getInstance().stopTimer(13, (int)timeBefore);
+            }
+
+            if (this._readKicked) {
+               this._readKicked = false;
+            } else if (System.currentTimeMillis() > timeBefore + this._timeout) {
+               return;
+            }
+         } catch (InterruptedException var3) {
+         }
+      }
    }
 
    public final boolean isAborted() {
@@ -246,17 +268,17 @@ public final class Pipe implements Persistable {
 
    public final synchronized byte[] toArray() {
       if (this._window.length > 1) {
-         byte[] var1 = new byte[this._totalLength];
-         int var2 = 0;
+         byte[] data = new byte[this._totalLength];
+         int offset = 0;
 
-         for (int var3 = 0; var3 < this._window.length; var3++) {
-            if (this._window[var3] != null) {
-               System.arraycopy(this._window[var3], 0, var1, var2, this._window[var3].length);
-               var2 += this._window[var3].length;
+         for (int i = 0; i < this._window.length; i++) {
+            if (this._window[i] != null) {
+               System.arraycopy(this._window[i], 0, data, offset, this._window[i].length);
+               offset += this._window[i].length;
             }
          }
 
-         return var1;
+         return data;
       } else {
          return (byte[])this._window[0];
       }
@@ -266,25 +288,25 @@ public final class Pipe implements Persistable {
       return this._window;
    }
 
-   public final synchronized void setCacheStart(int var1, int var2) {
-      if (this._window[var1] != null) {
-         this._totalLength -= var2;
-         int var3 = this._window[var1].length - var2;
-         if (var3 >= 0) {
-            System.arraycopy(this._window[var1], var2, this._window[var1], 0, var3);
-            Array.resize(this._window[var1], var3);
+   public final synchronized void setCacheStart(int packet, int start) {
+      if (this._window[packet] != null) {
+         this._totalLength -= start;
+         int length = this._window[packet].length - start;
+         if (length >= 0) {
+            System.arraycopy(this._window[packet], start, this._window[packet], 0, length);
+            Array.resize(this._window[packet], length);
          }
 
-         int var4 = 0;
+         int i = 0;
 
-         for (int var5 = var1; var5 < this._window.length; var5++) {
-            this._window[var4] = this._window[var5];
-            var4++;
+         for (int j = packet; j < this._window.length; j++) {
+            this._window[i] = this._window[j];
+            i++;
          }
 
-         while (var4 < this._window.length) {
-            this._window[var4] = null;
-            var4++;
+         while (i < this._window.length) {
+            this._window[i] = null;
+            i++;
          }
       }
    }
@@ -293,11 +315,11 @@ public final class Pipe implements Persistable {
       return Math.max(this._estimatedSize, this._totalLength);
    }
 
-   public final void setEstimatedSize(int var1) {
+   public final void setEstimatedSize(int size) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final synchronized int readByteArray(PipePtr var1, int var2, PipeContext var3) {
+   public final synchronized int readByteArray(PipePtr ptr, int length, PipeContext position) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -305,15 +327,15 @@ public final class Pipe implements Persistable {
       return (PipeInputStream)(this._writeClosed ? new Object(this) : new Object(this));
    }
 
-   public final synchronized PipeInputStream getInputStream(int var1, int var2, int var3) {
-      return (PipeInputStream)(this._writeClosed ? new Object(this, var1, var2, var3) : new Object(this, var1, var2, var3));
+   public final synchronized PipeInputStream getInputStream(int packet, int offset, int length) {
+      return (PipeInputStream)(this._writeClosed ? new Object(this, packet, offset, length) : new Object(this, packet, offset, length));
    }
 
    public final PipeOutputStream getOutputStream() {
       return (PipeOutputStream)(new Object(this));
    }
 
-   public final void setTimeout(int var1) {
+   public final void setTimeout(int timeout) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

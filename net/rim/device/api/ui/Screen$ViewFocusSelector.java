@@ -17,11 +17,11 @@ class Screen$ViewFocusSelector implements Screen$FocusSelector {
       return this._success;
    }
 
-   public static Screen$ViewFocusSelector getSelector(Screen var0, int var1, int var2, int var3) {
-      _selector._screen = var0;
-      _selector._amount = var1;
-      _selector._status = var2;
-      _selector._time = var3;
+   public static Screen$ViewFocusSelector getSelector(Screen screen, int amount, int status, int time) {
+      _selector._screen = screen;
+      _selector._amount = amount;
+      _selector._status = status;
+      _selector._time = time;
       _selector._success = false;
       return _selector;
    }

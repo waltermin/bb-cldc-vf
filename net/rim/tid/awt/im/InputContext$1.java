@@ -8,10 +8,10 @@ class InputContext$1 implements Runnable {
    private final Font val$newFont;
    private final InputContext this$0;
 
-   InputContext$1(InputContext var1, IComponent var2, Font var3) {
-      this.this$0 = var1;
-      this.val$comp = var2;
-      this.val$newFont = var3;
+   InputContext$1(InputContext _1, IComponent _2, Font _3) {
+      this.this$0 = _1;
+      this.val$comp = _2;
+      this.val$newFont = _3;
    }
 
    @Override

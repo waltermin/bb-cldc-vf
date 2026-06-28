@@ -34,81 +34,81 @@ public final class ApplicationPermissions {
    public static final int VALUE_DENY;
    public static final int VALUE_NOT_SET;
 
-   public final void addPermission(int var1) {
-      this.addPermission(var1, 999);
+   public final void addPermission(int permission) {
+      this.addPermission(permission, 999);
    }
 
-   public final void addPermission(int var1, int var2) {
-      if (!this.isValidPermission(var1)) {
+   public final void addPermission(int permission, int value) {
+      if (!this.isValidPermission(permission)) {
          throw new Object();
       }
 
-      this._permissions.put(var1, var2);
+      this._permissions.put(permission, value);
    }
 
-   public final int getPermission(int var1) {
-      if (!this.isValidPermission(var1)) {
+   public final int getPermission(int permission) {
+      if (!this.isValidPermission(permission)) {
          throw new Object();
       } else {
-         int var2 = this._permissions.get(var1);
-         if (var2 != -1) {
-            return var2;
+         int result = this._permissions.get(permission);
+         if (result != -1) {
+            return result;
          } else {
             throw new Object();
          }
       }
    }
 
-   public final int getPermissionInternal(int var1) {
-      if (!this.isValidPermission(var1)) {
+   public final int getPermissionInternal(int permission) {
+      if (!this.isValidPermission(permission)) {
          throw new Object();
       }
 
-      int var2 = this._permissions.get(var1);
-      return var2 != -1 ? var2 : 997;
+      int result = this._permissions.get(permission);
+      return result != -1 ? result : 997;
    }
 
-   public final int[] difference(ApplicationPermissions var1) {
-      if (var1 == null) {
+   public final int[] difference(ApplicationPermissions other) {
+      if (other == null) {
          throw new Object();
       }
 
-      int[] var2 = new int[0];
-      IntIntHashtable var3 = var1._permissions;
-      int[] var4 = this.getPermissionKeys();
-      int var5 = -1;
+      int[] differenceSet = new int[0];
+      IntIntHashtable otherPerms = other._permissions;
+      int[] permissionKeys = this.getPermissionKeys();
+      int currPermToCheck = -1;
 
-      for (int var6 = 0; var6 < var4.length; var6++) {
-         var5 = var4[var6];
-         if (this._permissions.get(var5) != var3.get(var5) && var3.get(var5) != -1) {
-            Arrays.add(var2, var5);
+      for (int i = 0; i < permissionKeys.length; i++) {
+         currPermToCheck = permissionKeys[i];
+         if (this._permissions.get(currPermToCheck) != otherPerms.get(currPermToCheck) && otherPerms.get(currPermToCheck) != -1) {
+            Arrays.add(differenceSet, currPermToCheck);
          }
       }
 
-      return var2;
+      return differenceSet;
    }
 
    public final int[] getPermissionKeys() {
-      int[] var1 = new int[0];
-      IntEnumeration var2 = this._permissions.keys();
+      int[] keys = new int[0];
+      IntEnumeration keysEnum = this._permissions.keys();
 
-      while (var2.hasMoreElements()) {
-         Arrays.add(var1, var2.nextElement());
+      while (keysEnum.hasMoreElements()) {
+         Arrays.add(keys, keysEnum.nextElement());
       }
 
-      return var1;
+      return keys;
    }
 
-   public final boolean containsPermissionKey(int var1) {
-      if (!this.isValidPermission(var1)) {
+   public final boolean containsPermissionKey(int permission) {
+      if (!this.isValidPermission(permission)) {
          throw new Object();
       } else {
-         return this._permissions.containsKey(var1);
+         return this._permissions.containsKey(permission);
       }
    }
 
-   private final boolean isValidPermission(int var1) {
-      switch (var1) {
+   private final boolean isValidPermission(int permission) {
+      switch (permission) {
          case -1:
             return false;
          case 0:

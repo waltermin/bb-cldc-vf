@@ -5,8 +5,8 @@ import net.rim.device.api.ui.Field;
 class SymbolScreen$1 implements Runnable {
    private final Field val$field;
 
-   SymbolScreen$1(Field var1) {
-      this.val$field = var1;
+   SymbolScreen$1(Field _1) {
+      this.val$field = _1;
    }
 
    @Override

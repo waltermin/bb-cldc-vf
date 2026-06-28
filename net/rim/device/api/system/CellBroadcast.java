@@ -1,5 +1,7 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.util.Arrays;
+
 public final class CellBroadcast {
    private static final long CHANNEL_INFOS_GUID;
    private static final int[] langPrefTable;
@@ -13,32 +15,118 @@ public final class CellBroadcast {
    public static final native void enableCellBroadcast(boolean var0);
 
    public static final CellBroadcast$ChannelInfo[] getChannelInfos() {
-      throw new RuntimeException("cod2jar: exception table");
+      CellBroadcast$ChannelInfo[] internalInfos = getInternalChannelInfos();
+      synchronized (internalInfos) {
+         boolean first = true;
+         boolean commit = false;
+         boolean[] found = new boolean[internalInfos.length];
+
+         int id;
+         while ((id = getNextChannelIdInternal(first)) != -1) {
+            first = false;
+
+            int i;
+            for (i = internalInfos.length - 1; i >= 0; i--) {
+               if (internalInfos[i].getId() == id) {
+                  if (i < found.length) {
+                     found[i] = true;
+                  }
+                  break;
+               }
+            }
+
+            if (i < 0) {
+               Arrays.add(internalInfos, new Object(id));
+               commit = true;
+            }
+         }
+
+         for (int i = found.length - 1; i >= 0; i--) {
+            if (internalInfos[i].isEnabled() && !found[i]) {
+               internalInfos[i].setEnabled(false);
+               commit = true;
+            }
+         }
+
+         if (commit) {
+            PersistentObject.commit(internalInfos);
+         }
+
+         CellBroadcast$ChannelInfo[] infos = new CellBroadcast$ChannelInfo[internalInfos.length];
+
+         for (int i = infos.length - 1; i >= 0; i--) {
+            infos[i] = internalInfos[i].clone();
+         }
+
+         return infos;
+      }
    }
 
-   public static final boolean addChannelInfo(CellBroadcast$ChannelInfo var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean addChannelInfo(CellBroadcast$ChannelInfo ci) {
+      CellBroadcast$ChannelInfo[] infos = getInternalChannelInfos();
+      synchronized (infos) {
+         int id = ci.getId();
+
+         for (int i = infos.length - 1; i >= 0; i--) {
+            if (infos[i].getId() == id) {
+               return false;
+            }
+         }
+
+         Arrays.add(infos, ci);
+         PersistentObject.commit(infos);
+         writeChannelInfoInternal(id, ci.isEnabled());
+         return true;
+      }
    }
 
-   public static final boolean deleteChannelInfo(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean deleteChannelInfo(int channelId) {
+      CellBroadcast$ChannelInfo[] infos = getInternalChannelInfos();
+      synchronized (infos) {
+         for (int i = infos.length - 1; i >= 0; i--) {
+            if (infos[i].getId() == channelId) {
+               Arrays.removeAt(infos, i);
+               PersistentObject.commit(infos);
+               writeChannelInfoInternal(channelId, false);
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
-   public static final boolean setChannelInfo(CellBroadcast$ChannelInfo var0) {
-      return setChannelInfo(var0.getId(), var0.isEnabled(), var0.getNickname());
+   public static final boolean setChannelInfo(CellBroadcast$ChannelInfo info) {
+      return setChannelInfo(info.getId(), info.isEnabled(), info.getNickname());
    }
 
-   public static final boolean setChannelInfo(int var0, boolean var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean setChannelInfo(int channelId, boolean enabled, String nickname) {
+      CellBroadcast$ChannelInfo[] infos = getInternalChannelInfos();
+      synchronized (infos) {
+         for (int i = infos.length - 1; i >= 0; i--) {
+            if (infos[i].getId() == channelId) {
+               infos[i].setEnabled(enabled);
+               infos[i].setNickname(nickname);
+               PersistentObject.commit(infos);
+               if (enabled ^ channelExistsInternally(channelId)) {
+                  writeChannelInfoInternal(channelId, enabled);
+               }
+
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
-   private static final boolean channelExistsInternally(int var0) {
-      boolean var1 = true;
+   private static final boolean channelExistsInternally(int channelId) {
+      boolean first = true;
 
-      int var2;
-      while ((var2 = getNextChannelIdInternal(var1)) != -1) {
-         var1 = false;
-         if (var2 == var0) {
+      int id;
+      while ((id = getNextChannelIdInternal(first)) != -1) {
+         first = false;
+         if (id == channelId) {
             return true;
          }
       }
@@ -46,14 +134,14 @@ public final class CellBroadcast {
       return false;
    }
 
-   private static final void fillLP_TableWithDefaults(CellBroadcast$LanguagePreference[] var0, int var1) {
-      for (int var2 = 0; var2 < var0.length; var2++) {
-         if (var0[var2] == null) {
-            for (int var3 = 0; var3 < MAX_LANG_PREFS; var3++) {
-               if ((var1 & 1 << var3) == 0) {
-                  var0[var2] = (CellBroadcast$LanguagePreference)(new Object(getLanguagePrefEntry(var3)));
-                  var0[var2].setPriority(var2);
-                  var1 |= 1 << var3;
+   private static final void fillLP_TableWithDefaults(CellBroadcast$LanguagePreference[] prefs, int seenLangs) {
+      for (int i = 0; i < prefs.length; i++) {
+         if (prefs[i] == null) {
+            for (int bit = 0; bit < MAX_LANG_PREFS; bit++) {
+               if ((seenLangs & 1 << bit) == 0) {
+                  prefs[i] = (CellBroadcast$LanguagePreference)(new Object(getLanguagePrefEntry(bit)));
+                  prefs[i].setPriority(i);
+                  seenLangs |= 1 << bit;
                   break;
                }
             }
@@ -62,50 +150,53 @@ public final class CellBroadcast {
    }
 
    public static final CellBroadcast$LanguagePreference[] getLanguagePreferences() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final CellBroadcast$LanguagePreference[] removeUnspecifiedFromLangPrefs(CellBroadcast$LanguagePreference[] var0) {
-      CellBroadcast$LanguagePreference[] var1 = new CellBroadcast$LanguagePreference[var0.length - 1];
-      boolean var2 = false;
-      int var3 = 0;
-
-      for (int var4 = 0; var4 < var0.length; var4++) {
-         if (var0[var4].getId() == 15) {
-            var2 = true;
-         } else {
-            var1[var3] = var0[var4];
-            var3++;
-         }
-      }
-
-      return var2 ? var1 : var0;
-   }
-
-   public static final boolean setLanguagePreference(CellBroadcast$LanguagePreference var0) {
-      return setLanguagePreference(var0.getId(), var0.isEnabled(), var0.getPriority());
-   }
-
-   public static final boolean setLanguagePreference(int var0, boolean var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final boolean setLanguageIndication(CellBroadcast$LanguagePreference[] var0) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final int getLanguagePrefIndex(int var0) {
-      for (int var1 = MAX_LANG_PREFS - 1; var1 >= 0; var1--) {
-         if (langPrefTable[var1] == var0) {
-            return var1;
+   public static final CellBroadcast$LanguagePreference[] removeUnspecifiedFromLangPrefs(CellBroadcast$LanguagePreference[] prefs) {
+      CellBroadcast$LanguagePreference[] newPrefs = new CellBroadcast$LanguagePreference[prefs.length - 1];
+      boolean foundPrefs = false;
+      int posInNewPrefs = 0;
+
+      for (int i = 0; i < prefs.length; i++) {
+         if (prefs[i].getId() == 15) {
+            foundPrefs = true;
+         } else {
+            newPrefs[posInNewPrefs] = prefs[i];
+            posInNewPrefs++;
+         }
+      }
+
+      return foundPrefs ? newPrefs : prefs;
+   }
+
+   public static final boolean setLanguagePreference(CellBroadcast$LanguagePreference pref) {
+      return setLanguagePreference(pref.getId(), pref.isEnabled(), pref.getPriority());
+   }
+
+   public static final boolean setLanguagePreference(int id, boolean enabled, int priority) {
+      synchronized (getInternalChannelInfos()) {
+         writeLanguagePrefInternal(id, enabled, priority);
+         return true;
+      }
+   }
+
+   public static final boolean setLanguageIndication(CellBroadcast$LanguagePreference[] langPrefs) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+   }
+
+   public static final int getLanguagePrefIndex(int langPref) {
+      for (int index = MAX_LANG_PREFS - 1; index >= 0; index--) {
+         if (langPrefTable[index] == langPref) {
+            return index;
          }
       }
 
       return MAX_LANG_PREFS;
    }
 
-   public static final int getLanguagePrefEntry(int var0) {
-      return langPrefTable[var0];
+   public static final int getLanguagePrefEntry(int index) {
+      return langPrefTable[index];
    }
 
    private static final native int getNextChannelIdInternal(boolean var0);
@@ -117,6 +208,6 @@ public final class CellBroadcast {
    private static final native void writeLanguagePrefInternal(int var0, boolean var1, int var2);
 
    private static final CellBroadcast$ChannelInfo[] getInternalChannelInfos() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 }

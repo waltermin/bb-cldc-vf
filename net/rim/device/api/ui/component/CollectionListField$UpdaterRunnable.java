@@ -7,16 +7,26 @@ final class CollectionListField$UpdaterRunnable implements Runnable {
    Application _application;
    private final CollectionListField this$0;
 
-   final void requeue(Application var1) {
+   final void requeue(Application application) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         if (this._application != null) {
+            this._application.invokeLater(this);
+            this._application = null;
+            return;
+         }
+
+         this._isQueued = false;
+      }
+
+      this.this$0.doUpdateList();
    }
 
-   CollectionListField$UpdaterRunnable(CollectionListField var1) {
-      this.this$0 = var1;
+   CollectionListField$UpdaterRunnable(CollectionListField _1) {
+      this.this$0 = _1;
    }
 }

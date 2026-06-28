@@ -3,8 +3,8 @@ package net.rim.device.api.ui;
 class BooleanRunnable implements Runnable {
    protected boolean _flag;
 
-   public BooleanRunnable(boolean var1) {
-      this._flag = var1;
+   public BooleanRunnable(boolean flag) {
+      this._flag = flag;
    }
 
    @Override

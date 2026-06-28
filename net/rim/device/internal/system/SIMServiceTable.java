@@ -95,21 +95,21 @@ public class SIMServiceTable {
 
    public static SIMServiceTable getInstance() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (SIMServiceTable)var0.get(SIM_SERVICE_TABLE_SINGLETON_GUID);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _instance = (SIMServiceTable)ar.get(SIM_SERVICE_TABLE_SINGLETON_GUID);
       }
 
       return _instance;
    }
 
-   private boolean isEnabled(int var1) {
-      int var2 = 1 << var1 % 8;
-      return (this._mappedSST[var1 / 8] & var2) == var2;
+   private boolean isEnabled(int identifier) {
+      int mask = 1 << identifier % 8;
+      return (this._mappedSST[identifier / 8] & mask) == mask;
    }
 
-   public static boolean isServiceEnabled(int var0) {
-      SIMServiceTable var1 = getInstance();
-      return var1 != null ? var1.isEnabled(var0) : false;
+   public static boolean isServiceEnabled(int identifier) {
+      SIMServiceTable instance = getInstance();
+      return instance != null ? instance.isEnabled(identifier) : false;
    }
 
    public static boolean isPNNEnabled() {

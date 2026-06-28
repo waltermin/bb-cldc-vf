@@ -8,7 +8,37 @@ final class SoftwareHMACCryptoToken$HMACContext implements CryptoTokenMACContext
    private static final byte IPAD_BYTE;
    private static final byte OPAD_BYTE;
 
-   public SoftwareHMACCryptoToken$HMACContext(SoftwareHMACCryptoToken$HMACKeyData var1, Digest var2) {
+   public SoftwareHMACCryptoToken$HMACContext(SoftwareHMACCryptoToken$HMACKeyData key, Digest digest) {
+      if (key != null && digest != null && digest.getBlockLength() >= 0) {
+         this._digest = digest;
+
+         try {
+            this._digest2 = DigestFactory.getInstance(this._digest.getAlgorithm());
+         } catch (NoSuchAlgorithmException e) {
+            throw new Object();
+         }
+
+         int digestBlockLength = this._digest.getBlockLength();
+         this._ipad = new byte[digestBlockLength];
+         this._opad = new byte[digestBlockLength];
+         byte[] keyData = key.getData();
+         if (keyData.length > digestBlockLength) {
+            digest.update(keyData);
+            keyData = digest.getDigest();
+         }
+
+         System.arraycopy(keyData, 0, this._ipad, 0, keyData.length);
+         System.arraycopy(keyData, 0, this._opad, 0, keyData.length);
+
+         for (int i = 0; i < digestBlockLength; i++) {
+            this._ipad[i] = (byte)(this._ipad[i] ^ 54);
+            this._opad[i] = (byte)(this._opad[i] ^ 92);
+         }
+
+         this._digest.update(this._ipad);
+      } else {
+         throw new Object();
+      }
    }
 
    public final void reset() {
@@ -16,17 +46,17 @@ final class SoftwareHMACCryptoToken$HMACContext implements CryptoTokenMACContext
       this._digest.update(this._ipad);
    }
 
-   public final int getMAC(byte[] var1, int var2, boolean var3) {
-      if (var1 != null && var2 >= 0 && var1.length - this._digest.getDigestLength() >= var2) {
-         byte[] var4 = this._digest.getDigest(var3);
+   public final int getMAC(byte[] buffer, int offset, boolean reset) {
+      if (buffer != null && offset >= 0 && buffer.length - this._digest.getDigestLength() >= offset) {
+         byte[] h = this._digest.getDigest(reset);
          this._digest2.update(this._opad);
-         this._digest2.update(var4);
-         int var5 = this._digest2.getDigest(var1, var2);
-         if (var3) {
+         this._digest2.update(h);
+         int numBytes = this._digest2.getDigest(buffer, offset);
+         if (reset) {
             this.reset();
          }
 
-         return var5;
+         return numBytes;
       } else {
          throw new Object();
       }

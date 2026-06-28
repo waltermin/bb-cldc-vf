@@ -5,11 +5,11 @@ public final class HMAC extends AbstractMAC implements MAC {
    private HMACCryptoToken _cryptoToken;
    private CryptoTokenMACContext _context;
 
-   public HMAC(HMACKey var1, Digest var2) {
-      if (var1 != null && var2 != null) {
-         this._digest = var2;
-         this._cryptoToken = var1.getHMACCryptoToken();
-         this._context = this._cryptoToken.initialize(var1.getCryptoTokenData(), this._digest);
+   public HMAC(HMACKey key, Digest digest) {
+      if (key != null && digest != null) {
+         this._digest = digest;
+         this._cryptoToken = key.getHMACCryptoToken();
+         this._context = this._cryptoToken.initialize(key.getCryptoTokenData(), this._digest);
       } else {
          throw new Object();
       }
@@ -31,17 +31,17 @@ public final class HMAC extends AbstractMAC implements MAC {
    }
 
    @Override
-   public final void update(int var1) {
-      this._digest.update(var1);
+   public final void update(int data) {
+      this._digest.update(data);
    }
 
    @Override
-   public final void update(byte[] var1, int var2, int var3) {
-      this._digest.update(var1, var2, var3);
+   public final void update(byte[] data, int offset, int length) {
+      this._digest.update(data, offset, length);
    }
 
    @Override
-   public final int getMAC(byte[] var1, int var2, boolean var3) {
-      return this._cryptoToken.getMAC(this._context, var1, var2, var3);
+   public final int getMAC(byte[] buffer, int offset, boolean reset) {
+      return this._cryptoToken.getMAC(this._context, buffer, offset, reset);
    }
 }

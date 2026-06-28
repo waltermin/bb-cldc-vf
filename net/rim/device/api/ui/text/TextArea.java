@@ -64,15 +64,15 @@ public class TextArea implements Formatter$TextRenderer {
       return this._lineCount;
    }
 
-   public int getLineHeight(int var1) {
-      int var2 = 0;
-      Object var3 = null;
+   public int getLineHeight(int lineId) {
+      int id = 0;
+      ArticInterface$Line line = null;
 
-      for (var3 = this._lineList; var3 != null && var2 < var1; var3 = ((ArticInterface$Line)var3)._next) {
-         var2++;
+      for (line = this._lineList; line != null && id < lineId; line = line._next) {
+         id++;
       }
 
-      return var3 == null ? 0 : ((ArticInterface$Line)var3)._boundsBottom - ((ArticInterface$Line)var3)._boundsTop;
+      return line == null ? 0 : line._boundsBottom - line._boundsTop;
    }
 
    public Object getText() {
@@ -97,60 +97,89 @@ public class TextArea implements Formatter$TextRenderer {
       this._layoutValid = false;
    }
 
-   public synchronized void layout(int var1, int var2) {
+   public synchronized void layout(int width, int height) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setSelection(int var1, int var2) {
-      this._lineList = Formatter.setSelection(this._lineList, this._anchor, this._cursor, var1, var2, true, this._width, this._text, this._formatParams);
-      this._anchor = var1;
-      this._cursor = var2;
+   public void setSelection(int selStart, int selEnd) {
+      this._lineList = Formatter.setSelection(this._lineList, this._anchor, this._cursor, selStart, selEnd, true, this._width, this._text, this._formatParams);
+      this._anchor = selStart;
+      this._cursor = selEnd;
       if (this._removeLastLine) {
          this.removeLastLine();
       }
    }
 
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics _1) {
       throw null;
    }
 
-   public void paintSelf(Graphics var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public void paintSelf(Graphics graphics) {
+      boolean notEmpty = graphics.pushRegion(this.getExtent());
+      boolean var4 = false /* VF: Semaphore variable */;
+
+      try {
+         var4 = true;
+         if (notEmpty) {
+            if (this._tas != null) {
+               this._field.setThemeAttributesSpecial(this._tas, graphics);
+            }
+
+            graphics.setStipple(-1);
+            this.paint(graphics);
+            if (this._tas != null) {
+               this._field.setThemeAttributesSpecial(null, graphics);
+               var4 = false;
+            } else {
+               var4 = false;
+            }
+         } else {
+            var4 = false;
+         }
+      } finally {
+         if (var4) {
+            graphics.popContext();
+         }
+      }
+
+      graphics.popContext();
    }
 
-   protected final void setExtent(int var1, int var2) {
-      this._extent.width = var1;
-      this._extent.height = var2;
+   protected final void setExtent(int width, int height) {
+      this._extent.width = width;
+      this._extent.height = height;
       this._layoutValid = true;
    }
 
-   public boolean reduceWidthToFit(int var1) {
+   public boolean reduceWidthToFit(int width) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setId(String var1) {
+   public void setId(String id) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setPosition(int var1, int var2) {
-      this._extent.x = var1;
-      this._extent.y = var2;
+   public final void setPosition(int x, int y) {
+      this._extent.x = x;
+      this._extent.y = y;
    }
 
-   public void setTag(Tag var1) {
+   public void setTag(Tag tag) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setText(Object var1) {
+   public void setText(Object text) {
       this._rbId = 0;
       this._rbName = null;
-      this.setTextInternal(var1);
+      this.setTextInternal(text);
    }
 
-   public void setText(ResourceBundleFamily var1, int var2) {
-      this._rbId = var1.getId();
-      this._rbName = var1.getName();
-      this._rbKey = var2;
+   public void setText(ResourceBundleFamily family, int id) {
+      this._rbId = family.getId();
+      this._rbName = family.getName();
+      this._rbKey = id;
       this._cachedLocaleCode = 0;
       this.checkLocale();
    }
@@ -159,35 +188,35 @@ public class TextArea implements Formatter$TextRenderer {
       return this._style;
    }
 
-   public void setStyle(int var1) {
+   public void setStyle(int style) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public XYRect[] getTextBounds(int var1, int var2) {
+   public XYRect[] getTextBounds(int start, int end) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public ArticInterface$LineInfo getLineInfoForYPos(int var1) {
+   public ArticInterface$LineInfo getLineInfoForYPos(int aY) {
       this._tempLineInfo._start = 0;
       this._tempLineInfo._top = 0;
       this._tempLineInfo._line = this._lineList;
-      Formatter.getLineInfoForYPos(var1, this._tempLineInfo);
+      Formatter.getLineInfoForYPos(aY, this._tempLineInfo);
       return this._tempLineInfo;
    }
 
-   public ArticInterface$LineInfo getLineInfoForDocPos(int var1, boolean var2) {
+   public ArticInterface$LineInfo getLineInfoForDocPos(int aDocPos, boolean aLeadingEdge) {
       this._tempLineInfo._start = 0;
       this._tempLineInfo._top = 0;
       this._tempLineInfo._line = this._lineList;
-      Formatter.getLineInfoForDocPos(var1, var2, this._lineList, this._tempLineInfo, true);
+      Formatter.getLineInfoForDocPos(aDocPos, aLeadingEdge, this._lineList, this._tempLineInfo, true);
       return this._tempLineInfo;
    }
 
-   public synchronized void getSelectionRect(XYRect var1) {
+   public synchronized void getSelectionRect(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void getTextBounds(XYRect var1) {
+   public void getTextBounds(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -195,24 +224,24 @@ public class TextArea implements Formatter$TextRenderer {
       return this._field;
    }
 
-   protected void setDrawTextParamFromStyle(DrawTextParam var1) {
-      int var2 = this.getStyle();
-      var1.iAlignment = 8;
+   protected void setDrawTextParamFromStyle(DrawTextParam drawTextParam) {
+      int drawStyle = this.getStyle();
+      drawTextParam.iAlignment = 8;
       if (this._width > 0) {
-         var1.iMaxAdvance = this._width;
+         drawTextParam.iMaxAdvance = this._width;
       }
 
-      if ((var2 & 64) != 0) {
-         if ((var2 & 128) != 0) {
-            var1.iTruncateWithEllipsis = 1;
+      if ((drawStyle & 64) != 0) {
+         if ((drawStyle & 128) != 0) {
+            drawTextParam.iTruncateWithEllipsis = 1;
          } else {
-            var1.iTruncateWithEllipsis = 2;
+            drawTextParam.iTruncateWithEllipsis = 2;
          }
 
-         var1.iMaxAdvance = this._widthForPaintWithEllipsis;
+         drawTextParam.iMaxAdvance = this._widthForPaintWithEllipsis;
       } else {
-         if ((var2 & 128) != 0) {
-            var1.iTruncateWithEllipsis = 3;
+         if ((drawStyle & 128) != 0) {
+            drawTextParam.iTruncateWithEllipsis = 3;
          }
       }
    }
@@ -222,8 +251,8 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    @Override
-   public int drawText(Graphics var1, int var2, int var3, int var4, int var5, DrawTextParam var6) {
-      return var1.drawText(this._text.getText(), var2, var3, var4, var5, var6, null);
+   public int drawText(Graphics aGraphics, int aOffset, int aLength, int aX, int aY, DrawTextParam aDrawTextParam) {
+      return aGraphics.drawText(this._text.getText(), aOffset, aLength, aX, aY, aDrawTextParam, null);
    }
 
    @Override
@@ -231,73 +260,73 @@ public class TextArea implements Formatter$TextRenderer {
       return this._field.getFont();
    }
 
-   private XYRect getTruncatedTextBounds(int var1, int var2) {
+   private XYRect getTruncatedTextBounds(int start, int end) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   protected TextArea(Field var1) {
-      this(var1, 0);
+   protected TextArea(Field field) {
+      this(field, 0);
    }
 
-   private synchronized void setTextInternal(Object var1) {
+   private synchronized void setTextInternal(Object text) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private void setAttributesFromFont() {
-      Font var1 = null;
+      Font font = null;
       if (this._tas != null) {
-         var1 = this._tas.getFont();
+         font = this._tas.getFont();
       }
 
-      if (var1 == null) {
-         var1 = this._field.getFont();
+      if (font == null) {
+         font = this._field.getFont();
       }
 
-      if (var1 != null) {
-         long var2 = Ui.getAttributesFromFont(var1) | Ui.DEFAULT_COLOR_ATTRIBS;
-         int var4 = this._style & 7;
-         if (var4 == 5) {
-            var2 |= 4194304;
-         } else if (var4 == 4) {
-            var2 |= 12582912;
+      if (font != null) {
+         long attrib = Ui.getAttributesFromFont(font) | Ui.DEFAULT_COLOR_ATTRIBS;
+         int halign = this._style & 7;
+         if (halign == 5) {
+            attrib |= 4194304;
+         } else if (halign == 4) {
+            attrib |= 12582912;
          }
 
-         this._text.setAttrib(0, this._text.length(), var2, -1);
-         long var5 = 0;
-         switch (var1.getStyle() & 7168) {
+         this._text.setAttrib(0, this._text.length(), attrib, -1);
+         long hanStyle = 0;
+         switch (font.getStyle() & 7168) {
             case 1024:
-               var5 = 1;
+               hanStyle = 1;
                break;
             case 2048:
-               var5 = 2;
+               hanStyle = 2;
                break;
             case 3072:
-               var5 = 3;
+               hanStyle = 3;
                break;
             case 4096:
-               var5 = 4;
+               hanStyle = 4;
          }
 
-         this._text.setGlobalAttrib(var5, 7);
+         this._text.setGlobalAttrib(hanStyle, 7);
       }
    }
 
-   private void update(int var1) {
+   private void update(int width) {
       this._formatParams.init(0, this._lastFormatLength, this._text.length(), 0, false, this._lineList);
       this._formatParams.computeParamsAfterTextChanged(false, Integer.MAX_VALUE);
       this._formatParams.initCursorLine(this._lineList, 0, this._lineList._boundsTop);
       this._lastFormatLength = this._text.length();
-      this._lineList = Formatter.incrementalFormat(this._formatParams, this._field, var1, this._text, 0, true, 0, false);
+      this._lineList = Formatter.incrementalFormat(this._formatParams, this._field, width, this._text, 0, true, 0, false);
       this._lineCount = this._formatParams._lineCount;
       this._layoutWidth = this._formatParams._layoutWidth;
-      this._width = var1;
+      this._width = width;
       this._layoutOffsetX = Integer.MAX_VALUE;
       this._removeLastLine = false;
 
-      for (ArticInterface$Line var2 = this._lineList; var2 != null; var2 = var2._next) {
-         int var3 = var2._boundsLeft < 0 ? var2._originX + var2._boundsLeft : var2._originX;
-         this._layoutOffsetX = Math.min(this._layoutOffsetX, var3);
-         if (var2._next == null && this._lineCount > 1 && var2._textLength + var2._skippedCharacters == 0) {
+      for (ArticInterface$Line line = this._lineList; line != null; line = line._next) {
+         int offsetX = line._boundsLeft < 0 ? line._originX + line._boundsLeft : line._originX;
+         this._layoutOffsetX = Math.min(this._layoutOffsetX, offsetX);
+         if (line._next == null && this._lineCount > 1 && line._textLength + line._skippedCharacters == 0) {
             this._removeLastLine = true;
          }
       }
@@ -309,39 +338,39 @@ public class TextArea implements Formatter$TextRenderer {
 
    private void checkLocale() {
       if (this._rbId != 0) {
-         int var1 = Locale.getDefault().getCode();
-         if (this._cachedLocaleCode != var1) {
-            this._cachedLocaleCode = var1;
-            ResourceBundleFamily var2 = ResourceBundle.getBundle(this._rbId, this._rbName);
-            String var3 = var2.getString(this._rbKey);
-            this.setTextInternal(var3);
+         int currentCode = Locale.getDefault().getCode();
+         if (this._cachedLocaleCode != currentCode) {
+            this._cachedLocaleCode = currentCode;
+            ResourceBundleFamily family = ResourceBundle.getBundle(this._rbId, this._rbName);
+            String translated = family.getString(this._rbKey);
+            this.setTextInternal(translated);
          }
       }
    }
 
-   private void invertForR2L(XYRect var1) {
+   private void invertForR2L(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private int getLineTop(int var1) {
-      int var2 = 0;
-      if (var1 >= 0 && var1 <= this._lineCount) {
-         int var3 = 0;
+   private int getLineTop(int aIndex) {
+      int y = 0;
+      if (aIndex >= 0 && aIndex <= this._lineCount) {
+         int i = 0;
 
-         for (ArticInterface$Line var4 = this._lineList; var4 != null && var3 < var1; var3++) {
-            var2 += var4._boundsBottom - var4._boundsTop;
-            var4 = var4._next;
+         for (ArticInterface$Line currentLine = this._lineList; currentLine != null && i < aIndex; i++) {
+            y += currentLine._boundsBottom - currentLine._boundsTop;
+            currentLine = currentLine._next;
          }
 
-         return var2;
+         return y;
       } else {
          throw new Object();
       }
    }
 
-   protected TextArea(Field var1, int var2) {
-      this._field = var1;
-      this._style = var2;
+   protected TextArea(Field field, int style) {
+      this._field = field;
+      this._style = style;
       this._text = (AttributedString)(new Object());
       this._lineList = (ArticInterface$Line)(new Object());
       this._lineList._flags = 3;
@@ -349,18 +378,18 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    private void removeLastLine() {
-      ArticInterface$Line var1 = null;
+      ArticInterface$Line prev = null;
 
-      for (ArticInterface$Line var2 = this._lineList; var2 != null; var2 = var2._next) {
-         int var3 = var2._boundsLeft < 0 ? var2._originX + var2._boundsLeft : var2._originX;
-         this._layoutOffsetX = Math.min(this._layoutOffsetX, var3);
-         if (var2._next == null && var2._textLength + var2._skippedCharacters == 0 && var1 != null) {
+      for (ArticInterface$Line line = this._lineList; line != null; line = line._next) {
+         int offsetX = line._boundsLeft < 0 ? line._originX + line._boundsLeft : line._originX;
+         this._layoutOffsetX = Math.min(this._layoutOffsetX, offsetX);
+         if (line._next == null && line._textLength + line._skippedCharacters == 0 && prev != null) {
             this._removeLastLine = true;
-            var1._next = null;
+            prev._next = null;
             this._lineCount--;
          }
 
-         var1 = var2;
+         prev = line;
       }
    }
 }

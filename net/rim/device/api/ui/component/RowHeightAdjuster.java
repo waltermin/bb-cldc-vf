@@ -29,231 +29,231 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
       this._rowHeightExceptionsSum = 0;
    }
 
-   public final int getRowForY(int var1) {
+   public final int getRowForY(int y) {
       if (!this.hasVariableLineHeights()) {
-         return Math.max(0, var1 / this._rowHeight);
+         return Math.max(0, y / this._rowHeight);
       }
 
-      int var2 = 0;
-      int var3 = Math.abs(this._lastStartNodeYPos - var1);
-      if (var1 <= var3) {
-         int var4 = this.getRowHeight(0);
+      int row = 0;
+      int distance = Math.abs(this._lastStartNodeYPos - y);
+      if (y <= distance) {
+         int currY = this.getRowHeight(0);
 
-         while (var4 < var1) {
-            var4 += this.getRowHeight(++var2);
+         while (currY < y) {
+            currY += this.getRowHeight(++row);
          }
-      } else if (this.getHeight() - this.getRowHeight(this._size - 1) - var1 <= var3) {
-         var2 = this._size;
+      } else if (this.getHeight() - this.getRowHeight(this._size - 1) - y <= distance) {
+         row = this._size;
 
-         for (int var5 = this.getHeight(); var5 >= var1; var5 -= this.getRowHeight(var2)) {
-            var2--;
+         for (int currY = this.getHeight(); currY >= y; currY -= this.getRowHeight(row)) {
+            row--;
          }
       } else {
-         var2 = this._lastStartNodeIndex;
-         if (this._lastStartNodeYPos < var1) {
-            int var6 = this._lastStartNodeYPos + this.getRowHeight(var2);
+         row = this._lastStartNodeIndex;
+         if (this._lastStartNodeYPos < y) {
+            int currY = this._lastStartNodeYPos + this.getRowHeight(row);
 
-            while (var6 < var1) {
-               var6 += this.getRowHeight(++var2);
+            while (currY < y) {
+               currY += this.getRowHeight(++row);
             }
          } else {
-            for (int var7 = this._lastStartNodeYPos; var7 > var1; var7 -= this.getRowHeight(var2)) {
-               var2--;
+            for (int currY = this._lastStartNodeYPos; currY > y; currY -= this.getRowHeight(row)) {
+               row--;
             }
          }
       }
 
-      return var2;
+      return row;
    }
 
-   public final int getYForRow(int var1) {
-      int var2 = 0;
-      if (var1 < 0) {
+   public final int getYForRow(int row) {
+      int y = 0;
+      if (row < 0) {
          return 0;
       }
 
       if (!this.hasVariableLineHeights()) {
-         var2 = var1 * this._rowHeight;
+         y = row * this._rowHeight;
       } else {
-         int var3 = Math.abs(this._lastStartNodeIndex - var1);
-         if (var1 <= var3) {
-            for (int var4 = 0; var4 < var1; var4++) {
-               var2 += this.getRowHeight(var4);
+         int distance = Math.abs(this._lastStartNodeIndex - row);
+         if (row <= distance) {
+            for (int currRow = 0; currRow < row; currRow++) {
+               y += this.getRowHeight(currRow);
             }
-         } else if (this._size - var1 <= var3) {
-            var2 = this.getHeight();
+         } else if (this._size - row <= distance) {
+            y = this.getHeight();
 
-            for (int var5 = this._size - 1; var5 >= var1; var5--) {
-               var2 -= this.getRowHeight(var5);
+            for (int currRow = this._size - 1; currRow >= row; currRow--) {
+               y -= this.getRowHeight(currRow);
             }
          } else {
-            var2 = this._lastStartNodeYPos;
-            if (this._lastStartNodeIndex < var1) {
-               for (int var6 = this._lastStartNodeIndex; var6 < var1; var6++) {
-                  var2 += this.getRowHeight(var6);
+            y = this._lastStartNodeYPos;
+            if (this._lastStartNodeIndex < row) {
+               for (int currRow = this._lastStartNodeIndex; currRow < row; currRow++) {
+                  y += this.getRowHeight(currRow);
                }
             } else {
-               for (int var7 = this._lastStartNodeIndex - 1; var7 >= var1; var7--) {
-                  var2 -= this.getRowHeight(var7);
+               for (int currRow = this._lastStartNodeIndex - 1; currRow >= row; currRow--) {
+                  y -= this.getRowHeight(currRow);
                }
             }
          }
       }
 
-      this._lastStartNodeIndex = var1;
-      this._lastStartNodeYPos = var2;
-      return var2;
+      this._lastStartNodeIndex = row;
+      this._lastStartNodeYPos = y;
+      return y;
    }
 
-   public final int getRowHeight(int var1) {
-      int var2 = this._rowHeightExceptions.get(var1);
-      if (var2 < 0) {
-         var2 = this._rowHeight;
+   public final int getRowHeight(int row) {
+      int height = this._rowHeightExceptions.get(row);
+      if (height < 0) {
+         height = this._rowHeight;
       }
 
-      return var2 & 0xFF;
+      return height & 0xFF;
    }
 
-   public final void setRowHeight(int var1) {
-      if (var1 != this._rowHeight) {
-         this._rowHeight = var1;
+   public final void setRowHeight(int height) {
+      if (height != this._rowHeight) {
+         this._rowHeight = height;
       }
    }
 
-   public final void setSize(int var1) {
-      if (var1 != this._size) {
-         this._size = var1;
+   public final void setSize(int size) {
+      if (size != this._size) {
+         this._size = size;
          this._rowHeightExceptions.clear();
          this._rowHeightExceptionsSum = 0;
       }
    }
 
-   public final boolean setRowHeight(int var1, int var2) {
-      if (var2 > this._maxHeight) {
-         this._maxHeight = var2;
+   public final boolean setRowHeight(int row, int rowHeight) {
+      if (rowHeight > this._maxHeight) {
+         this._maxHeight = rowHeight;
       }
 
-      return this.finish(var1);
+      return this.finish(row);
    }
 
    public final boolean hasVariableLineHeights() {
       return this._rowHeightExceptions.size() != 0;
    }
 
-   public final void insertedRow(int var1) {
+   public final void insertedRow(int addedRowNumber) {
       if (this.hasVariableLineHeights()) {
-         Object var2 = new Object(this._rowHeightExceptions.size());
-         IntEnumeration var3 = this._rowHeightExceptions.keys();
+         IntIntHashtable newRowHeightExceptions = (IntIntHashtable)(new Object(this._rowHeightExceptions.size()));
+         IntEnumeration enumeration = this._rowHeightExceptions.keys();
 
-         while (var3.hasMoreElements()) {
-            int var4 = var3.nextElement();
-            int var5 = this._rowHeightExceptions.get(var4);
-            if (var4 >= var1) {
-               var4++;
+         while (enumeration.hasMoreElements()) {
+            int rowNumber = enumeration.nextElement();
+            int height = this._rowHeightExceptions.get(rowNumber);
+            if (rowNumber >= addedRowNumber) {
+               rowNumber++;
             }
 
-            ((IntIntHashtable)var2).put(var4, var5);
+            newRowHeightExceptions.put(rowNumber, height);
          }
 
-         this._rowHeightExceptions = (IntIntHashtable)var2;
+         this._rowHeightExceptions = newRowHeightExceptions;
       }
 
       this._size++;
    }
 
-   public final void deletedRow(int var1) {
+   public final void deletedRow(int deletedRowNumber) {
       if (this.hasVariableLineHeights()) {
-         Object var2 = new Object(this._rowHeightExceptions.size());
-         IntEnumeration var3 = this._rowHeightExceptions.keys();
+         IntIntHashtable newRowHeightExceptions = (IntIntHashtable)(new Object(this._rowHeightExceptions.size()));
+         IntEnumeration enumeration = this._rowHeightExceptions.keys();
 
-         while (var3.hasMoreElements()) {
-            int var4 = var3.nextElement();
-            int var5 = this._rowHeightExceptions.get(var4);
-            if (var4 > var1) {
-               var4--;
-            } else if (var4 == var1) {
+         while (enumeration.hasMoreElements()) {
+            int rowNumber = enumeration.nextElement();
+            int height = this._rowHeightExceptions.get(rowNumber);
+            if (rowNumber > deletedRowNumber) {
+               rowNumber--;
+            } else if (rowNumber == deletedRowNumber) {
                continue;
             }
 
-            ((IntIntHashtable)var2).put(var4, var5);
+            newRowHeightExceptions.put(rowNumber, height);
          }
 
-         this._rowHeightExceptions = (IntIntHashtable)var2;
+         this._rowHeightExceptions = newRowHeightExceptions;
       }
 
       this._size--;
    }
 
-   public final void start(int var1, int var2) {
+   public final void start(int row, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final boolean finish(int var1) {
+   public final boolean finish(int row) {
       this.checkReduceHeight();
       this._initialized = false;
       this._maxHeight = 0;
-      return this.setRowHeight(var1, this._currentHeight, this._currentAdjustment);
+      return this.setRowHeight(row, this._currentHeight, this._currentAdjustment);
    }
 
    @Override
-   public final int getAdjustedY(Font var1, StringBuffer var2, int var3, int var4, int var5) {
+   public final int getAdjustedY(Font font, StringBuffer text, int offset, int len, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final int getAdjustedY(Font var1, String var2, int var3) {
+   public final int getAdjustedY(Font font, String text, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final int getAdjustedY(int var1) {
+   public final int getAdjustedY(int currentY) {
       return this._currentY;
    }
 
-   private final int getRowInfo(int var1) {
-      int var2 = this._rowHeightExceptions.get(var1);
-      if (var2 < 0) {
-         var2 = this._rowHeight;
+   private final int getRowInfo(int row) {
+      int height = this._rowHeightExceptions.get(row);
+      if (height < 0) {
+         height = this._rowHeight;
       }
 
-      return var2;
+      return height;
    }
 
    public RowHeightAdjuster() {
    }
 
-   private final int calculateYValue(Font var1, int var2) {
-      int var3 = var1.getBaseline();
-      int var4 = Math.max(-this._metrics.iBoundsTlY, var3);
-      int var5 = Math.max(this._metrics.iBoundsBrY, var1.getDescent());
-      int var6 = Math.max(var1.getHeight(), var4 + var5);
-      int var7 = var4 - var3;
-      if (var6 > this._maxHeight) {
-         this._maxHeight = var6;
+   private final int calculateYValue(Font font, int y) {
+      int baseline = font.getBaseline();
+      int above = Math.max(-this._metrics.iBoundsTlY, baseline);
+      int below = Math.max(this._metrics.iBoundsBrY, font.getDescent());
+      int height = Math.max(font.getHeight(), above + below);
+      int adjustment = above - baseline;
+      if (height > this._maxHeight) {
+         this._maxHeight = height;
       }
 
       if (this._maxHeight > this._currentHeight) {
          this._currentHeight = this._maxHeight;
       }
 
-      if (var7 > this._maxAdjustment) {
-         this._maxAdjustment = var7;
+      if (adjustment > this._maxAdjustment) {
+         this._maxAdjustment = adjustment;
       }
 
       if (this._maxAdjustment > this._currentAdjustment) {
          this._currentAdjustment = this._maxAdjustment;
       }
 
-      this._currentY = var2 + this._currentAdjustment;
+      this._currentY = y + this._currentAdjustment;
       return this._currentY;
    }
 
-   public RowHeightAdjuster(int var1, int var2) {
-      this._rowHeight = var1;
-      this._size = var2;
+   public RowHeightAdjuster(int height, int size) {
+      this._rowHeight = height;
+      this._size = size;
    }
 
-   private final boolean setRowHeight(int var1, int var2, int var3) {
+   private final boolean setRowHeight(int row, int rowHeight, int yAdjustment) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

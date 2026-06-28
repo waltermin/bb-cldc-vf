@@ -1,7 +1,9 @@
 package net.rim.device.internal.callcontrol;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.DirectConnect;
 import net.rim.device.api.system.Phone;
+import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.internal.system.PhoneFirmwareImpl;
 
@@ -17,59 +19,59 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
       this._eventHandler = new RadioEventHandler();
    }
 
-   public final void startListening(Application var1) {
-      this._eventHandler.startListening(var1);
+   public final void startListening(Application app) {
+      this._eventHandler.startListening(app);
    }
 
    @Override
-   public final boolean canInvokeCallTransferAction(int var1, int var2) {
+   public final boolean canInvokeCallTransferAction(int callId, int action) {
       return false;
    }
 
    @Override
-   public final boolean canHold(int var1) {
-      int var2 = Phone.getInstance().getNetworkFeatures();
-      return (var2 & 4) != 0;
+   public final boolean canHold(int callId) {
+      int networkFeatures = Phone.getInstance().getNetworkFeatures();
+      return (networkFeatures & 4) != 0;
    }
 
    @Override
-   public final boolean canSwap(int var1) {
-      return this.canHold(var1);
+   public final boolean canSwap(int callId) {
+      return this.canHold(callId);
    }
 
    @Override
-   public final boolean canJoin(int var1) {
+   public final boolean canJoin(int callId) {
       return true;
    }
 
    @Override
-   public final boolean canPark(int var1) {
+   public final boolean canPark(int callId) {
       return false;
    }
 
    @Override
-   public final boolean canSendToVoicemail(int var1) {
+   public final boolean canSendToVoicemail(int callId) {
       return false;
    }
 
    @Override
-   public final String getAlternateLineLabel(int var1) {
+   public final String getAlternateLineLabel(int line) {
       return null;
    }
 
    @Override
-   public final boolean isAlternateLineAvailable(int var1) {
-      int var2 = this.getActiveCallId();
-      return var2 == 0 ? true : var1 == this.getAlternateLine(var2);
+   public final boolean isAlternateLineAvailable(int line) {
+      int callId = this.getActiveCallId();
+      return callId == 0 ? true : line == this.getAlternateLine(callId);
    }
 
    @Override
-   public final void setAlternateLineLabel(int var1, String var2) {
+   public final void setAlternateLineLabel(int line, String description) {
    }
 
    @Override
-   public final String getAlternateLineNumber(int var1) {
-      switch (var1) {
+   public final String getAlternateLineNumber(int line) {
+      switch (line) {
          case 0:
             return null;
          case 1:
@@ -86,53 +88,53 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final int getCallTransferState(int var1) {
+   public final int getCallTransferState(int callId) {
       return 1;
    }
 
    @Override
-   public final String getVoiceMailNumber(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final String getVoiceMailNumber(int line) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public final int getVoiceMailCount(int var1) {
+   public final int getVoiceMailCount(int line) {
       return 0;
    }
 
    @Override
-   public final int getWAFs(int var1) {
+   public final int getWAFs(int line) {
       return CELL_WAFS;
    }
 
    @Override
-   public final boolean invokeCallTransferAction(int var1, int var2, Object var3) {
+   public final boolean invokeCallTransferAction(int callId, int action, Object param) {
       return false;
    }
 
    @Override
-   public final void parkCall(int var1) {
-      this._eventHandler.callManipulateFailed(var1, 0);
+   public final void parkCall(int callId) {
+      this._eventHandler.callManipulateFailed(callId, 0);
    }
 
    @Override
-   public final void sendToVoicemail(int var1) {
-      this._eventHandler.callManipulateFailed(var1, 0);
+   public final void sendToVoicemail(int callId) {
+      this._eventHandler.callManipulateFailed(callId, 0);
    }
 
    @Override
-   public final boolean supportsCorporateExtensions(int var1) {
+   public final boolean supportsCorporateExtensions(int callId) {
       return false;
    }
 
    @Override
-   public final void activateCallBarring(boolean var1, int var2, String var3) {
-      PhoneFirmwareImpl.activateCallBarring(var1, var2, var3);
+   public final void activateCallBarring(boolean activate, int type, String password) {
+      PhoneFirmwareImpl.activateCallBarring(activate, type, password);
    }
 
    @Override
-   public final void activateCallWaiting(boolean var1) {
-      PhoneFirmwareImpl.activateCallWaiting(var1);
+   public final void activateCallWaiting(boolean activate) {
+      PhoneFirmwareImpl.activateCallWaiting(activate);
    }
 
    @Override
@@ -141,8 +143,8 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final void answerCall(int var1) {
-      PhoneFirmwareImpl.answerCall(var1);
+   public final void answerCall(int callId) {
+      PhoneFirmwareImpl.answerCall(callId);
    }
 
    @Override
@@ -151,8 +153,8 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final void disableDTMFEcho(boolean var1) {
-      PhoneFirmwareImpl.disableDTMFEcho(var1);
+   public final void disableDTMFEcho(boolean disable) {
+      PhoneFirmwareImpl.disableDTMFEcho(disable);
    }
 
    @Override
@@ -161,8 +163,8 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final void flash(String var1) {
-      PhoneFirmwareImpl.flash(var1);
+   public final void flash(String number) {
+      PhoneFirmwareImpl.flash(number);
    }
 
    @Override
@@ -171,38 +173,38 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final int getAlternateLine(int var1) {
-      return (2097152 & this.getNetworkFeatures()) != 0 ? PhoneFirmwareImpl.getAlternateLine(var1) : 1;
+   public final int getAlternateLine(int callID) {
+      return (2097152 & this.getNetworkFeatures()) != 0 ? PhoneFirmwareImpl.getAlternateLine(callID) : 1;
    }
 
    @Override
-   public final int getCallDuration(int var1) {
-      return PhoneFirmwareImpl.getCallDuration(var1);
+   public final int getCallDuration(int callId) {
+      return PhoneFirmwareImpl.getCallDuration(callId);
    }
 
    @Override
-   public final String getCallForwardingNumber(int var1) {
-      return PhoneFirmwareImpl.getCallForwardingNumber(var1);
+   public final String getCallForwardingNumber(int type) {
+      return PhoneFirmwareImpl.getCallForwardingNumber(type);
    }
 
    @Override
-   public final String getCallName(int var1, boolean var2) {
-      return PhoneFirmwareImpl.getCallName(var1, var2);
+   public final String getCallName(int callId, boolean original) {
+      return PhoneFirmwareImpl.getCallName(callId, original);
    }
 
    @Override
-   public final String getCallPhoneNumber(int var1, boolean var2) {
-      return PhoneFirmwareImpl.getCallPhoneNumber(var1, var2);
+   public final String getCallPhoneNumber(int callId, boolean original) {
+      return PhoneFirmwareImpl.getCallPhoneNumber(callId, original);
    }
 
    @Override
-   public final int getCallState(int var1) {
-      return PhoneFirmwareImpl.getCallState(var1);
+   public final int getCallState(int callId) {
+      return PhoneFirmwareImpl.getCallState(callId);
    }
 
    @Override
-   public final int getCLIPDisplayMode(int var1) {
-      return PhoneFirmwareImpl.getCLIPDisplayMode(var1);
+   public final int getCLIPDisplayMode(int callId) {
+      return PhoneFirmwareImpl.getCLIPDisplayMode(callId);
    }
 
    @Override
@@ -216,8 +218,8 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final String getForwardingNumberForService(int var1, int var2) {
-      return PhoneFirmwareImpl.getForwardingNumberForService(var1, var2);
+   public final String getForwardingNumberForService(int ssOption, int bearerService) {
+      return PhoneFirmwareImpl.getForwardingNumberForService(ssOption, bearerService);
    }
 
    @Override
@@ -241,8 +243,8 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final String getNumber(int var1) {
-      return PhoneFirmwareImpl.getNumber(var1);
+   public final String getNumber(int index) {
+      return PhoneFirmwareImpl.getNumber(index);
    }
 
    @Override
@@ -251,28 +253,39 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final boolean inCallDTMFDigitsEntered(String var1) {
-      return PhoneFirmwareImpl.inCallDTMFDigitsEntered(var1);
+   public final boolean inCallDTMFDigitsEntered(String digits) {
+      return PhoneFirmwareImpl.inCallDTMFDigitsEntered(digits);
    }
 
    @Override
    public final boolean isActive() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         if (this.getActiveCallId() != 0 || this.getHeldCallId() != 0 || this.getIncomingCallId() != 0) {
+            return true;
+         }
+
+         if (DirectConnect.isSupported() && DirectConnect.getActiveCallType() != 0) {
+            return true;
+         }
+      } catch (RadioException var2) {
+      }
+
+      return false;
    }
 
    @Override
-   public final boolean isCallForwardUnconditionalActive(int var1) {
-      return PhoneFirmwareImpl.isCallForwardUnconditionalActive(var1);
+   public final boolean isCallForwardUnconditionalActive(int line) {
+      return PhoneFirmwareImpl.isCallForwardUnconditionalActive(line);
    }
 
    @Override
-   public final boolean isCallRedirected(int var1) {
-      return PhoneFirmwareImpl.isCallRedirected(var1);
+   public final boolean isCallRedirected(int callId) {
+      return PhoneFirmwareImpl.isCallRedirected(callId);
    }
 
    @Override
-   public final boolean isEmergencyNumber(String var1) {
-      return PhoneFirmwareImpl.isEmergencyNumber(var1);
+   public final boolean isEmergencyNumber(String number) {
+      return PhoneFirmwareImpl.isEmergencyNumber(number);
    }
 
    @Override
@@ -286,28 +299,28 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final void querySSOption(int var1) {
-      PhoneFirmwareImpl.querySSOption(var1);
+   public final void querySSOption(int ssOption) {
+      PhoneFirmwareImpl.querySSOption(ssOption);
    }
 
    @Override
-   public final int querySSOptionResult(int var1, int var2) {
-      return PhoneFirmwareImpl.querySSOptionResult(var1, var2);
+   public final int querySSOptionResult(int ssOption, int bearerService) {
+      return PhoneFirmwareImpl.querySSOptionResult(ssOption, bearerService);
    }
 
    @Override
-   public final void removeCallFromConference(int var1) {
-      PhoneFirmwareImpl.removeCallFromConference(var1);
+   public final void removeCallFromConference(int callId) {
+      PhoneFirmwareImpl.removeCallFromConference(callId);
    }
 
    @Override
-   public final void rejectCall(int var1) {
-      PhoneFirmwareImpl.rejectCall(var1);
+   public final void rejectCall(int callId) {
+      PhoneFirmwareImpl.rejectCall(callId);
    }
 
    @Override
-   public final void requestEnableFDN(boolean var1) {
-      PhoneFirmwareImpl.requestEnableFDN(var1);
+   public final void requestEnableFDN(boolean enable) {
+      PhoneFirmwareImpl.requestEnableFDN(enable);
    }
 
    @Override
@@ -316,62 +329,62 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
    }
 
    @Override
-   public final void sendSSPasswordResponse(String var1) {
-      PhoneFirmwareImpl.sendSSPasswordResponse(var1);
+   public final void sendSSPasswordResponse(String password) {
+      PhoneFirmwareImpl.sendSSPasswordResponse(password);
    }
 
    @Override
-   public final boolean setAlternateLine(int var1) {
+   public final boolean setAlternateLine(int line) {
       if (RadioInfo.getNetworkType() == 3) {
          PhoneFirmwareImpl.setSSBasicService(2);
       }
 
-      return PhoneFirmwareImpl.setAlternateLine(var1);
+      return PhoneFirmwareImpl.setAlternateLine(line);
    }
 
    @Override
-   public final void setCallBarringPassword(String var1, String var2) {
-      PhoneFirmwareImpl.setCallBarringPassword(var1, var2);
+   public final void setCallBarringPassword(String oldPassword, String newPassword) {
+      PhoneFirmwareImpl.setCallBarringPassword(oldPassword, newPassword);
    }
 
    @Override
-   public final void setCallForwardingNumber(int var1, String var2) {
-      PhoneFirmwareImpl.setCallForwardingNumber(var1, var2);
+   public final void setCallForwardingNumber(int type, String number) {
+      PhoneFirmwareImpl.setCallForwardingNumber(type, number);
    }
 
    @Override
-   public final void setSSBasicService(int var1) {
-      PhoneFirmwareImpl.setSSBasicService(var1);
+   public final void setSSBasicService(int bearerService) {
+      PhoneFirmwareImpl.setSSBasicService(bearerService);
    }
 
    @Override
-   public final void setUSSDResponse(byte[] var1) {
-      PhoneFirmwareImpl.setUSSDResponse(var1);
+   public final void setUSSDResponse(byte[] data) {
+      PhoneFirmwareImpl.setUSSDResponse(data);
    }
 
    @Override
-   public final int startCall(String var1, int var2) {
-      return PhoneFirmwareImpl.startCall(var1, var2);
+   public final int startCall(String number, int clir) {
+      return PhoneFirmwareImpl.startCall(number, clir);
    }
 
    @Override
-   public final void startDTMF(int var1, byte var2) {
-      PhoneFirmwareImpl.startDTMF(var1, var2);
+   public final void startDTMF(int callId, byte character) {
+      PhoneFirmwareImpl.startDTMF(callId, character);
    }
 
    @Override
-   public final void stopAllCalls(boolean var1) {
-      PhoneFirmwareImpl.stopAllCalls(var1);
+   public final void stopAllCalls(boolean unconditional) {
+      PhoneFirmwareImpl.stopAllCalls(unconditional);
    }
 
    @Override
-   public final void stopCall(int var1) {
-      PhoneFirmwareImpl.stopCall(var1);
+   public final void stopCall(int callId) {
+      PhoneFirmwareImpl.stopCall(callId);
    }
 
    @Override
-   public final void stopDTMF(int var1) {
-      PhoneFirmwareImpl.stopDTMF(var1);
+   public final void stopDTMF(int callId) {
+      PhoneFirmwareImpl.stopDTMF(callId);
    }
 
    @Override

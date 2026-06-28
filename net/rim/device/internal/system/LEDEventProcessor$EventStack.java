@@ -8,39 +8,39 @@ final class LEDEventProcessor$EventStack {
    private int[] _groupInfos = new int[10];
    private int _count;
 
-   public final void pushEvent(long var1, boolean var3, int var4) {
+   public final void pushEvent(long sourceIdLong, boolean holsteredBoolean, int groupInfo) {
       if (this._count == this._sourceIds.length) {
-         int var5 = this._sourceIds.length + 10;
-         Array.resize(this._sourceIds, var5);
-         Array.resize(this._expirationDates, var5);
-         Array.resize(this._groupInfos, var5);
+         int newLength = this._sourceIds.length + 10;
+         Array.resize(this._sourceIds, newLength);
+         Array.resize(this._expirationDates, newLength);
+         Array.resize(this._groupInfos, newLength);
       }
 
-      this._sourceIds[this._count] = var1;
+      this._sourceIds[this._count] = sourceIdLong;
       this._expirationDates[this._count] = System.currentTimeMillis() + 900000;
-      this._groupInfos[this._count] = var4;
+      this._groupInfos[this._count] = groupInfo;
       this._count++;
    }
 
-   public final void expireEvents(long var1, int var3) {
-      if (var3 != -1) {
-         for (int var4 = 0; var4 < this._count; var4++) {
-            if (this._groupInfos[var4] == var3) {
-               this._expirationDates[var4] = 0;
+   public final void expireEvents(long sourceIdLong, int groupInfo) {
+      if (groupInfo != -1) {
+         for (int index = 0; index < this._count; index++) {
+            if (this._groupInfos[index] == groupInfo) {
+               this._expirationDates[index] = 0;
             }
          }
       } else {
-         for (int var5 = 0; var5 < this._count; var5++) {
-            if (this._sourceIds[var5] == var1) {
-               this._expirationDates[var5] = 0;
+         for (int index = 0; index < this._count; index++) {
+            if (this._sourceIds[index] == sourceIdLong) {
+               this._expirationDates[index] = 0;
             }
          }
       }
    }
 
-   public final boolean contains(long var1) {
-      for (int var3 = 0; var3 < this._count; var3++) {
-         if (this._sourceIds[var3] == var1) {
+   public final boolean contains(long sourceIdLong) {
+      for (int index = 0; index < this._count; index++) {
+         if (this._sourceIds[index] == sourceIdLong) {
             return true;
          }
       }
@@ -52,13 +52,13 @@ final class LEDEventProcessor$EventStack {
       this._count--;
    }
 
-   public final void peekEvent(LEDEventProcessor$EventHolder var1) {
+   public final void peekEvent(LEDEventProcessor$EventHolder anEventHolder) {
       if (this._count == 0) {
          throw new Object();
       }
 
-      int var2 = this._count - 1;
-      var1.fill(this._sourceIds[var2], this._expirationDates[var2]);
+      int index = this._count - 1;
+      anEventHolder.fill(this._sourceIds[index], this._expirationDates[index]);
    }
 
    public final boolean isEmpty() {

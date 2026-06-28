@@ -6,6 +6,6 @@ public class IONotRoutableException extends IOException {
    public IONotRoutableException() {
    }
 
-   public IONotRoutableException(String var1) {
+   public IONotRoutableException(String msg) {
    }
 }

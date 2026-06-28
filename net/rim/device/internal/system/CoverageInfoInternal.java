@@ -11,20 +11,20 @@ public class CoverageInfoInternal {
    protected static final long ID;
 
    public static CoverageInfoInternal getInstance() {
-      CoverageInfoInternal var0 = (CoverageInfoInternal)ApplicationRegistry.getApplicationRegistry().waitFor(-809192429028495755L);
-      var0.ensureInitialized();
-      return var0;
+      CoverageInfoInternal info = (CoverageInfoInternal)ApplicationRegistry.getApplicationRegistry().waitFor(-809192429028495755L);
+      info.ensureInitialized();
+      return info;
    }
 
    protected void ensureInitialized() {
       throw null;
    }
 
-   public int getCoverage(int var1, boolean var2) {
+   public int getCoverage(int _1, boolean _2) {
       throw null;
    }
 
-   public boolean isCoverageSufficient(int var1, int var2, boolean var3) {
+   public boolean isCoverageSufficient(int _1, int _2, boolean _3) {
       throw null;
    }
 }

@@ -5,37 +5,37 @@ import net.rim.vm.Message;
 
 final class SIMCardStatusEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      SIMCardStatusListener var3 = (SIMCardStatusListener)var2;
-      int var4 = var1.getEvent();
-      int var5 = var1.getSubMessage();
-      int var6 = var1.getData0();
-      switch (var4) {
+   public final void dispatch(Message message, Object listener) {
+      SIMCardStatusListener statusListener = (SIMCardStatusListener)listener;
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      int data0 = message.getData0();
+      switch (event) {
          case 2304:
-            if (var5 == 0) {
-               var3.cardInserted();
+            if (subMessage == 0) {
+               statusListener.cardInserted();
                return;
             }
 
-            var3.cardReady();
+            statusListener.cardReady();
             return;
          case 2305:
-            var3.cardInvalid(var5, var6);
+            statusListener.cardInvalid(subMessage, data0);
             return;
          case 2307:
-            var3.cardFault(var5);
+            statusListener.cardFault(subMessage);
             return;
          case 2315:
-            var3.smsEFFull();
+            statusListener.smsEFFull();
             return;
          case 2323:
-            var3.cardUpdated();
+            statusListener.cardUpdated();
             return;
          case 2324:
-            var3.responseDeleteSMS(var5, var6);
+            statusListener.responseDeleteSMS(subMessage, data0);
             return;
          case 2342:
-            var3.responseMarkSMSAsRead(var5, var6);
+            statusListener.responseMarkSMSAsRead(subMessage, data0);
       }
    }
 }

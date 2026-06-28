@@ -12,27 +12,27 @@ class Helper$LocalStrongReferences {
       _referenceCleaner.addLocalStrongReferences(this);
    }
 
-   public void storeUniversalReaderStrongReference(Object var1) {
+   public void storeUniversalReaderStrongReference(Object reference) {
       if (_referenceCleaner.keepStrongReferences()) {
-         this._universalReaderReference = var1;
+         this._universalReaderReference = reference;
       } else {
-         PersistentContent.markAsPlaintext(var1);
+         PersistentContent.markAsPlaintext(reference);
       }
    }
 
-   public void storeLastReaderStrongReference(Object var1) {
+   public void storeLastReaderStrongReference(Object reference) {
       if (_referenceCleaner.keepStrongReferences()) {
-         this._lastReaderReference = var1;
+         this._lastReaderReference = reference;
       } else {
-         PersistentContent.markAsPlaintext(var1);
+         PersistentContent.markAsPlaintext(reference);
       }
    }
 
-   public void storeLastWriterStrongReference(Object var1) {
+   public void storeLastWriterStrongReference(Object reference) {
       if (_referenceCleaner.keepStrongReferences()) {
-         this._lastWriterReference = var1;
+         this._lastWriterReference = reference;
       } else {
-         PersistentContent.markAsPlaintext(var1);
+         PersistentContent.markAsPlaintext(reference);
       }
    }
 
@@ -44,19 +44,19 @@ class Helper$LocalStrongReferences {
 
    @Override
    public int hashCode() {
-      int var1 = 0;
+      int hashCode = 0;
       if (this._universalReaderReference != null) {
-         var1 ^= this._universalReaderReference.hashCode();
+         hashCode ^= this._universalReaderReference.hashCode();
       }
 
       if (this._lastReaderReference != null) {
-         var1 ^= this._lastReaderReference.hashCode();
+         hashCode ^= this._lastReaderReference.hashCode();
       }
 
       if (this._lastWriterReference != null) {
-         var1 ^= this._lastWriterReference.hashCode();
+         hashCode ^= this._lastWriterReference.hashCode();
       }
 
-      return var1;
+      return hashCode;
    }
 }

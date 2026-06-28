@@ -1,12 +1,18 @@
 package net.rim.device.api.ui.theme;
 
+import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
+import net.rim.device.api.ui.FontLogicHelper;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYEdges;
 import net.rim.device.api.ui.XYRect;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.Background;
 import net.rim.device.internal.ui.Border;
 
@@ -84,90 +90,143 @@ public final class ThemeAttributeSet {
       this._border = this._border;
    }
 
-   public ThemeAttributeSet(String var1) {
-      this._element = var1;
+   public ThemeAttributeSet(String element) {
+      this._element = element;
    }
 
-   public ThemeAttributeSet(ThemeAttributeSet var1) {
-      if (var1 == null) {
+   public ThemeAttributeSet(ThemeAttributeSet themeAttributes) {
+      if (themeAttributes == null) {
          throw new Object();
       }
 
-      this.clone(var1);
+      this.clone(themeAttributes);
    }
 
-   private final void clone(ThemeAttributeSet var1) {
-      this._element = var1._element;
-      this._set = var1._set;
-      System.arraycopy(var1._colors, 0, this._colors, 0, this._colors.length);
-      System.arraycopy(var1._palettedColors, 0, this._palettedColors, 0, this._palettedColors.length);
-      this._focusStyle = var1._focusStyle;
-      this._fontFamily = var1._fontFamily;
-      this._altFontFamily = var1._altFontFamily;
-      this._fontStyle = var1._fontStyle;
-      this._fontSize = var1._fontSize;
-      this._fontSizeUnits = var1._fontSizeUnits;
-      this._fontStrokeOpacity = var1._fontStrokeOpacity;
-      this._fontAntialiasMode = var1._fontAntialiasMode;
-      this._font = var1._font;
-      this._textAlign = var1._textAlign;
-      if (var1._scrollArrowName != null) {
-         this._scrollArrowName = new String[var1._scrollArrowName.length];
-         System.arraycopy(var1._scrollArrowName, 0, this._scrollArrowName, 0, this._scrollArrowName.length);
+   private final void clone(ThemeAttributeSet ta) {
+      this._element = ta._element;
+      this._set = ta._set;
+      System.arraycopy(ta._colors, 0, this._colors, 0, this._colors.length);
+      System.arraycopy(ta._palettedColors, 0, this._palettedColors, 0, this._palettedColors.length);
+      this._focusStyle = ta._focusStyle;
+      this._fontFamily = ta._fontFamily;
+      this._altFontFamily = ta._altFontFamily;
+      this._fontStyle = ta._fontStyle;
+      this._fontSize = ta._fontSize;
+      this._fontSizeUnits = ta._fontSizeUnits;
+      this._fontStrokeOpacity = ta._fontStrokeOpacity;
+      this._fontAntialiasMode = ta._fontAntialiasMode;
+      this._font = ta._font;
+      this._textAlign = ta._textAlign;
+      if (ta._scrollArrowName != null) {
+         this._scrollArrowName = new String[ta._scrollArrowName.length];
+         System.arraycopy(ta._scrollArrowName, 0, this._scrollArrowName, 0, this._scrollArrowName.length);
       }
 
-      if (var1._scrollArrow != null) {
-         this._scrollArrow = new Bitmap[var1._scrollArrow.length];
-         System.arraycopy(var1._scrollArrow, 0, this._scrollArrow, 0, this._scrollArrow.length);
+      if (ta._scrollArrow != null) {
+         this._scrollArrow = new Bitmap[ta._scrollArrow.length];
+         System.arraycopy(ta._scrollArrow, 0, this._scrollArrow, 0, this._scrollArrow.length);
       }
 
-      this._borderName = var1._borderName;
-      this._padding = var1._padding;
-      this._border = var1._border;
-      this._margin = var1._margin;
-      this._scrollbarName = var1._scrollbarName;
-      this._scrollbarImages = var1._scrollbarImages;
-      this._position = var1._position;
-      this._layout = var1._layout;
-      this._layoutParams = var1._layoutParams;
+      this._borderName = ta._borderName;
+      this._padding = ta._padding;
+      this._border = ta._border;
+      this._margin = ta._margin;
+      this._scrollbarName = ta._scrollbarName;
+      this._scrollbarImages = ta._scrollbarImages;
+      this._position = ta._position;
+      this._layout = ta._layout;
+      this._layoutParams = ta._layoutParams;
    }
 
    public final void apply() {
-      throw new RuntimeException("cod2jar: exception table");
+      Theme theme = this.getTheme();
+      this.calculateRelativeFontSize();
+      if (this._fontFamily != null || (this._fontSize | this._fontStyle | this._fontAntialiasMode) != 0) {
+         Font defaultFont = Font.getDefault();
+         FontFamily family = null;
+         int localeCode = Locale.getDefaultForSystem().getCode();
+         if (FontLogicHelper.useAltFont(localeCode)) {
+            family = FontLogicHelper.getAltFontFamily(localeCode);
+         } else if (this._fontFamily != null) {
+            try {
+               family = FontFamily.forName(theme.getRegisteredFontNameHack(this._fontFamily));
+            } catch (ClassNotFoundException var13) {
+            }
+         } else {
+            family = defaultFont.getFontFamily();
+         }
+
+         int fontStyle = this._fontStyle != 0 ? this._fontStyle & -1073741825 : defaultFont.getStyle();
+         int fontSize = this._fontSize != 0 ? this._fontSize : defaultFont.getHeight();
+         int fontSizeUnits = this._fontSizeUnits != 0 ? this._fontSizeUnits : 0;
+         int fontSizePx = Ui.convertSize(fontSize, this._fontSizeUnits, 0);
+         int fontAntialiasMode = this._fontAntialiasMode != 0 ? this._fontAntialiasMode : defaultFont.getAntialiasMode();
+         if (!family.isHeightSupported(fontSizePx)) {
+            int[] heights = family.getHeights();
+            int heightIndex = MathUtilities.clamp(0, -Arrays.binarySearch(heights, fontSizePx) - 2, heights.length - 1);
+            fontSize = heights[heightIndex];
+            fontSizeUnits = 0;
+         }
+
+         int effects = 0;
+         int strokeColor = this.getColor(6);
+         int fillColor = this.getColor(7);
+         if ((this._set & 64) != 0) {
+            effects = 768;
+            strokeColor |= ~this._fontStrokeOpacity << 24;
+         }
+
+         this._font = family.getFont(fontStyle, fontSize, fontSizeUnits, fontAntialiasMode, effects, 65536, 0, 0, 65536, 0, 0, strokeColor, fillColor);
+         this._set |= 512;
+      }
+
+      if (this._borderName != null) {
+         this._border = theme.getBorder(this._borderName);
+         if (this._background == null && this._border != null) {
+            this._background = this._border.getBackground();
+            this._set |= 524288;
+         }
+      }
+
+      for (int lv = this._palettedColors.length - 1; lv >= 0; lv--) {
+         if (this._palettedColors[lv] != null) {
+            this._colors[lv] = theme.getColor(this._palettedColors[lv]);
+         }
+      }
    }
 
    private final void calculateRelativeFontSize() {
-      Font var1 = Font.getDefault();
+      Font defaultFont = Font.getDefault();
       if (this._fontRelativeChange != 0) {
-         this._fontSize = var1.getHeight(this._fontSizeUnits) + this._fontRelativeChange;
+         this._fontSize = defaultFont.getHeight(this._fontSizeUnits) + this._fontRelativeChange;
       } else {
          if (this._fontRelativePercent > 0) {
-            this._fontSize = (int)(var1.getHeight() * this._fontRelativePercent);
+            this._fontSize = (int)(defaultFont.getHeight() * this._fontRelativePercent);
             this._fontSizeUnits = 0;
          }
       }
    }
 
-   public final void applyToGraphics(Graphics var1) {
+   public final void applyToGraphics(Graphics graphics) {
       if ((this._set & 2) != 0) {
-         var1.setColor(this._colors[1]);
+         graphics.setColor(this._colors[1]);
       }
 
       if ((this._set & 512) != 0) {
          if (this._font == null) {
-            var1.setFont(Font.getDefault());
+            graphics.setFont(Font.getDefault());
          } else {
-            var1.setFont(this._font);
+            graphics.setFont(this._font);
          }
       }
 
       if ((this._set & 1) != 0) {
-         var1.setBackgroundImage(null, 0, 0);
-         var1.setBackgroundColor(this._colors[0]);
+         graphics.setBackgroundImage(null, 0, 0);
+         graphics.setBackgroundColor(this._colors[0]);
       }
    }
 
-   final boolean freeStaleObject(int var1) {
+   final boolean freeStaleObject(int priority) {
       return false;
    }
 
@@ -175,9 +234,9 @@ public final class ThemeAttributeSet {
       return this._background;
    }
 
-   public static final Background getBackground(Field var0) {
-      ThemeAttributeSet var1 = getInheritedAttribute(var0, 524288);
-      return var1 == null ? null : var1._background;
+   public static final Background getBackground(Field field) {
+      ThemeAttributeSet ta = getInheritedAttribute(field, 524288);
+      return ta == null ? null : ta._background;
    }
 
    public final int getBackgroundOpacity() {
@@ -192,8 +251,8 @@ public final class ThemeAttributeSet {
       return this._altFontFamily;
    }
 
-   public final int getColor(int var1) {
-      return this._colors[var1];
+   public final int getColor(int colorType) {
+      return this._colors[colorType];
    }
 
    public final String getElement() {
@@ -204,51 +263,51 @@ public final class ThemeAttributeSet {
       return this._maxLineWrap;
    }
 
-   private static final ThemeAttributeSet getInheritedAttribute(Field var0, int var1) {
-      if (var0 != null) {
-         ThemeAttributeSet var2 = var0.getThemeAttributeSetSpecial();
-         if (var2 != null && (var2._set & var1) != 0) {
-            return var2;
+   private static final ThemeAttributeSet getInheritedAttribute(Field field, int flags) {
+      if (field != null) {
+         ThemeAttributeSet ta = field.getThemeAttributeSetSpecial();
+         if (ta != null && (ta._set & flags) != 0) {
+            return ta;
          }
       }
 
-      while (var0 != null) {
-         ThemeAttributeSet var3 = var0.getThemeAttributeSet();
-         if (var3 != null && (var3._set & var1) != 0) {
-            return var3;
+      while (field != null) {
+         ThemeAttributeSet ta = field.getThemeAttributeSet();
+         if (ta != null && (ta._set & flags) != 0) {
+            return ta;
          }
 
-         var0 = var0.getManager();
-      }
-
-      return null;
-   }
-
-   private static final ThemeAttributeSet getNonInheritedAttribute(Field var0, int var1) {
-      if (var0 != null) {
-         ThemeAttributeSet var2 = var0.getThemeAttributeSetSpecial();
-         if (var2 != null && (var2._set & var1) != 0) {
-            return var2;
-         }
-
-         var2 = var0.getThemeAttributeSet();
-         if (var2 != null && (var2._set & var1) != 0) {
-            return var2;
-         }
+         field = field.getManager();
       }
 
       return null;
    }
 
-   public static final Border getBorder(Field var0) {
-      ThemeAttributeSet var1 = getNonInheritedAttribute(var0, 2048);
-      return var1 == null ? null : var1._border;
+   private static final ThemeAttributeSet getNonInheritedAttribute(Field field, int flags) {
+      if (field != null) {
+         ThemeAttributeSet ta = field.getThemeAttributeSetSpecial();
+         if (ta != null && (ta._set & flags) != 0) {
+            return ta;
+         }
+
+         ta = field.getThemeAttributeSet();
+         if (ta != null && (ta._set & flags) != 0) {
+            return ta;
+         }
+      }
+
+      return null;
    }
 
-   public static final int getColor(Field var0, int var1) {
-      ThemeAttributeSet var2 = getInheritedAttribute(var0, 1 << 0 + var1);
-      if (var2 == null) {
-         switch (var1) {
+   public static final Border getBorder(Field field) {
+      ThemeAttributeSet ta = getNonInheritedAttribute(field, 2048);
+      return ta == null ? null : ta._border;
+   }
+
+   public static final int getColor(Field field, int colorType) {
+      ThemeAttributeSet ta = getInheritedAttribute(field, 1 << 0 + colorType);
+      if (ta == null) {
+         switch (colorType) {
             case -1:
                throw new Object();
             case 0:
@@ -270,27 +329,27 @@ public final class ThemeAttributeSet {
                return 0;
          }
       } else {
-         return var2._colors[var1];
+         return ta._colors[colorType];
       }
    }
 
-   public static final XYEdges getEdges(Field var0, int var1) {
-      ThemeAttributeSet var2 = getNonInheritedAttribute(var0, 1 << 12 + var1);
-      if (var2 != null) {
-         switch (var1) {
+   public static final XYEdges getEdges(Field field, int edgeType) {
+      ThemeAttributeSet ta = getNonInheritedAttribute(field, 1 << 12 + edgeType);
+      if (ta != null) {
+         switch (edgeType) {
             case -1:
                break;
             case 0:
             default:
-               return var2._padding;
+               return ta._padding;
             case 1:
-               if (var2._border != null) {
-                  return var2._border.getEdges();
+               if (ta._border != null) {
+                  return ta._border.getEdges();
                }
 
                return null;
             case 2:
-               return var2._margin;
+               return ta._margin;
          }
       }
 
@@ -301,17 +360,17 @@ public final class ThemeAttributeSet {
       return this._position;
    }
 
-   public static final Bitmap getScrollArrow(Field var0, int var1) {
-      ThemeAttributeSet var2 = getInheritedAttribute(var0, 1 << 15 + var1);
-      if (var2 != null) {
-         if (var2._scrollArrow[var1] == null) {
-            var2._scrollArrow[var1] = ThemeManager.getActiveTheme().getBitmap(var2._scrollArrowName[var1]);
-            var2._scrollArrowName[var1] = null;
+   public static final Bitmap getScrollArrow(Field field, int arrowType) {
+      ThemeAttributeSet ta = getInheritedAttribute(field, 1 << 15 + arrowType);
+      if (ta != null) {
+         if (ta._scrollArrow[arrowType] == null) {
+            ta._scrollArrow[arrowType] = ThemeManager.getActiveTheme().getBitmap(ta._scrollArrowName[arrowType]);
+            ta._scrollArrowName[arrowType] = null;
          }
 
-         return var2._scrollArrow[var1];
+         return ta._scrollArrow[arrowType];
       } else {
-         switch (var1) {
+         switch (arrowType) {
             case -1:
                return null;
             case 0:
@@ -323,12 +382,12 @@ public final class ThemeAttributeSet {
       }
    }
 
-   public static final int getFocusStyle(Field var0) {
-      ThemeAttributeSet var1 = getInheritedAttribute(var0, 256);
-      if (var1 == null) {
+   public static final int getFocusStyle(Field field) {
+      ThemeAttributeSet ta = getInheritedAttribute(field, 256);
+      if (ta == null) {
          return Graphics.isColor() ? 3 : 0;
       } else {
-         return var1._focusStyle;
+         return ta._focusStyle;
       }
    }
 
@@ -336,8 +395,8 @@ public final class ThemeAttributeSet {
       return this._font;
    }
 
-   public final Manager getLayout(Object var1) {
-      return this._layout != null ? this.getTheme().getLayout(this._layout, var1) : null;
+   public final Manager getLayout(Object context) {
+      return this._layout != null ? this.getTheme().getLayout(this._layout, context) : null;
    }
 
    public final String getLayoutName() {
@@ -348,13 +407,13 @@ public final class ThemeAttributeSet {
       return this._layoutParams;
    }
 
-   public static final int getTextAlignAsDrawStyle(Field var0) {
-      ThemeAttributeSet var1 = getInheritedAttribute(var0, 2097152);
-      if (var1 == null) {
+   public static final int getTextAlignAsDrawStyle(Field field) {
+      ThemeAttributeSet ta = getInheritedAttribute(field, 2097152);
+      if (ta == null) {
          return 0;
       }
 
-      switch (var1._textAlign) {
+      switch (ta._textAlign) {
          case 0:
             return 0;
          case 1:
@@ -381,8 +440,8 @@ public final class ThemeAttributeSet {
       return this.getWriterInternal((ResourceFetcher)(new Object()));
    }
 
-   public final ThemeAttributeSet$Writer getWriterInternal(ResourceFetcher var1) {
-      return new ThemeAttributeSet$Writer(this, var1);
+   public final ThemeAttributeSet$Writer getWriterInternal(ResourceFetcher resourceFetcher) {
+      return new ThemeAttributeSet$Writer(this, resourceFetcher);
    }
 
    public final boolean isBackgroundDefined() {

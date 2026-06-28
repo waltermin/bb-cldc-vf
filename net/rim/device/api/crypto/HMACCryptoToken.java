@@ -16,35 +16,35 @@ public class HMACCryptoToken implements SymmetricCryptoToken, Persistable {
       return false;
    }
 
-   public int extractKeyLength(CryptoTokenMACKeyData var1) {
+   public int extractKeyLength(CryptoTokenMACKeyData cryptoTokenData) {
       throw new Object();
    }
 
-   public byte[] extractKeyData(CryptoTokenMACKeyData var1) {
+   public byte[] extractKeyData(CryptoTokenMACKeyData cryptoTokenData) {
       throw new Object();
    }
 
-   public CryptoTokenMACContext initialize(CryptoTokenMACKeyData var1, Digest var2) {
+   public CryptoTokenMACContext initialize(CryptoTokenMACKeyData keyData, Digest digest) {
       throw new Object();
    }
 
-   public void reset(CryptoTokenMACContext var1) {
+   public void reset(CryptoTokenMACContext context) {
       throw new Object();
    }
 
-   public int getMAC(CryptoTokenMACContext var1, byte[] var2, int var3, boolean var4) {
+   public int getMAC(CryptoTokenMACContext context, byte[] buffer, int offset, boolean reset) {
       throw new Object();
    }
 
-   public CryptoTokenMACKeyData createKey(int var1) {
+   public CryptoTokenMACKeyData createKey(int length) {
       throw new Object();
    }
 
-   public CryptoTokenMACKeyData injectKey(byte[] var1, int var2, int var3) {
+   public CryptoTokenMACKeyData injectKey(byte[] key, int offset, int length) {
       throw new Object();
    }
 
-   public void deleteKey(CryptoTokenMACKeyData var1) {
+   public void deleteKey(CryptoTokenMACKeyData data) {
       throw new Object();
    }
 }

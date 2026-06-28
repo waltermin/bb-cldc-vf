@@ -31,22 +31,22 @@ public class LinguisticData {
    public static final int LINGDATA_UNLOAD_ERROR;
    public static final int LINGDATA_UNLOAD_NOT_FOUND;
 
-   public LinguisticData(String var1, int var2, int var3, byte[][][] var4) {
-      this(var1, var2, var3, var4, null);
+   public LinguisticData(String name, int type, int version, byte[][][] data) {
+      this(name, type, version, data, null);
    }
 
-   public LinguisticData(String var1, int var2, int var3, byte[][][] var4, String var5) {
-      this(var1, var2, var3, var4, null, null);
+   public LinguisticData(String name, int type, int version, byte[][][] data, String diagnosticMessage) {
+      this(name, type, version, data, null, null);
    }
 
-   public LinguisticData(String var1, int var2, int var3, byte[][][] var4, String var5, String var6) {
-      if (var1 != null && var4 != null) {
-         this._name = var1;
-         this._data = var4;
-         this._type = var2;
-         this._version = var3;
-         this._diagnosticMessage = var5;
-         this._codFile = var6;
+   public LinguisticData(String name, int type, int version, byte[][][] data, String diagnosticMessage, String codFileName) {
+      if (name != null && data != null) {
+         this._name = name;
+         this._data = data;
+         this._type = type;
+         this._version = version;
+         this._diagnosticMessage = diagnosticMessage;
+         this._codFile = codFileName;
       } else {
          throw new Object();
       }
@@ -68,7 +68,7 @@ public class LinguisticData {
       return this._name;
    }
 
-   void setID(int var1) {
+   void setID(int aID) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -76,11 +76,11 @@ public class LinguisticData {
       return this._id;
    }
 
-   void addToChain(LinguisticData var1) {
+   void addToChain(LinguisticData data) {
       if (this._next != null) {
-         this._next.addToChain(var1);
+         this._next.addToChain(data);
       } else {
-         this._next = var1;
+         this._next = data;
       }
    }
 

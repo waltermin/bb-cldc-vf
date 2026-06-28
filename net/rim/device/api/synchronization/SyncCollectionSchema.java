@@ -11,7 +11,7 @@ public final class SyncCollectionSchema {
       return this._recordTypeTag;
    }
 
-   public final void setRecordTypeTag(int var1) {
+   public final void setRecordTypeTag(int recordTypeTag) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -19,38 +19,38 @@ public final class SyncCollectionSchema {
       return this._defaultRecordType;
    }
 
-   public final void setDefaultRecordType(int var1) {
-      if (var1 == 0) {
+   public final void setDefaultRecordType(int defaultRecordType) {
+      if (defaultRecordType == 0) {
          throw new Object();
       }
 
-      this._defaultRecordType = var1;
+      this._defaultRecordType = defaultRecordType;
    }
 
    public final int[] getRecordTypes() {
-      int var1 = this._keyFieldIds.size();
-      if (var1 <= 0) {
+      int numRecordTypes = this._keyFieldIds.size();
+      if (numRecordTypes <= 0) {
          return new int[0];
       }
 
-      int[] var2 = new int[var1];
-      this._keyFieldIds.keysToArray(var2);
-      return var2;
+      int[] recordTypes = new int[numRecordTypes];
+      this._keyFieldIds.keysToArray(recordTypes);
+      return recordTypes;
    }
 
-   public final int[] getKeyFieldIds(int var1) {
+   public final int[] getKeyFieldIds(int recordType) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void setKeyFieldIds(int var1, int[] var2) {
-      if (var1 == 0) {
+   public final void setKeyFieldIds(int recordType, int[] keyFieldIds) {
+      if (recordType == 0) {
          throw new Object();
       }
 
-      if (var2 != null && var2.length != 0) {
-         this._keyFieldIds.put(var1, var2);
+      if (keyFieldIds != null && keyFieldIds.length != 0) {
+         this._keyFieldIds.put(recordType, keyFieldIds);
       } else {
-         this._keyFieldIds.remove(var1);
+         this._keyFieldIds.remove(recordType);
       }
    }
 }

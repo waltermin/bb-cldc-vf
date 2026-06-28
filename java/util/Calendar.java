@@ -48,11 +48,11 @@ public class Calendar {
       }
    }
 
-   public boolean before(Object var1) {
+   public boolean before(Object when) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public boolean after(Object var1) {
+   public boolean after(Object when) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -60,10 +60,10 @@ public class Calendar {
       return (Calendar)(new Object());
    }
 
-   public static Calendar getInstance(TimeZone var0) {
-      Object var1 = new Object();
-      ((Calendar)var1).setTimeZone(var0);
-      return (Calendar)var1;
+   public static Calendar getInstance(TimeZone zone) {
+      Calendar cal = (Calendar)(new Object());
+      cal.setTimeZone(zone);
+      return cal;
    }
 
    public final Date getTime() {
@@ -74,23 +74,23 @@ public class Calendar {
       return this.time;
    }
 
-   public final int get(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int get(int field) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public final void set(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void set(int field, int value) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public final void setTime(Date var1) {
-      this.setTimeInMillis(var1.getTime());
+   public final void setTime(Date date) {
+      this.setTimeInMillis(date.getTime());
    }
 
-   protected void setTimeInMillis(long var1) {
-      this.time = var1;
+   protected void setTimeInMillis(long millis) {
+      this.time = millis;
    }
 
-   public void setTimeZone(TimeZone var1) {
+   public void setTimeZone(TimeZone value) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -99,7 +99,7 @@ public class Calendar {
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 

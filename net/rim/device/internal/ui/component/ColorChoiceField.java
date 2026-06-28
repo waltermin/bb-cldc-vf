@@ -11,30 +11,30 @@ public class ColorChoiceField extends ObjectChoiceField {
    }
 
    @Override
-   protected void drawChoice(int var1, Graphics var2, int var3, int var4, int var5, int var6) {
-      int var7 = this.getHeightOfChoices();
-      int var8 = ((ColorChoiceField$NamedColor)this.getChoice(var1)).getColor();
-      if (var8 >= 0) {
-         int var9 = var2.getColor();
-         var2.setColor(var8);
-         var2.fillRect(var3 + 1, var4 + 1, var7 - 2, var7 - 2);
-         var2.setColor(var9);
-         var2.drawRect(var3 + 1, var4 + 1, var7 - 2, var7 - 2);
-         var6 -= var7;
-         var3 += var7;
+   protected void drawChoice(int index, Graphics graphics, int x, int y, int flags, int width) {
+      int heightOfChoices = this.getHeightOfChoices();
+      int color = ((ColorChoiceField$NamedColor)this.getChoice(index)).getColor();
+      if (color >= 0) {
+         int oldColor = graphics.getColor();
+         graphics.setColor(color);
+         graphics.fillRect(x + 1, y + 1, heightOfChoices - 2, heightOfChoices - 2);
+         graphics.setColor(oldColor);
+         graphics.drawRect(x + 1, y + 1, heightOfChoices - 2, heightOfChoices - 2);
+         width -= heightOfChoices;
+         x += heightOfChoices;
       }
 
-      super.drawChoice(var1, var2, var3, var4, var5, var6);
+      super.drawChoice(index, graphics, x, y, flags, width);
    }
 
    @Override
-   protected int getWidthOfChoice(int var1) {
-      int var2 = super.getWidthOfChoice(var1);
-      if (((ColorChoiceField$NamedColor)this.getChoice(var1)).getColor() >= 0) {
-         var2 += this.getHeightOfChoices();
+   protected int getWidthOfChoice(int index) {
+      int width = super.getWidthOfChoice(index);
+      if (((ColorChoiceField$NamedColor)this.getChoice(index)).getColor() >= 0) {
+         width += this.getHeightOfChoices();
       }
 
-      return var2;
+      return width;
    }
 
    public int getSelectedColor() {

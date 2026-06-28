@@ -4,6 +4,6 @@ public class InstantiationException extends Exception {
    public InstantiationException() {
    }
 
-   public InstantiationException(String var1) {
+   public InstantiationException(String s) {
    }
 }

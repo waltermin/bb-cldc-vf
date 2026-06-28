@@ -5,10 +5,10 @@ final class PersistentContent$Listeners$ModeChangeThread extends Thread {
    private int _modeGeneration;
    private Object _ticket;
 
-   PersistentContent$Listeners$ModeChangeThread(PersistentContentListener var1, int var2, Object var3) {
-      this._listener = var1;
-      this._modeGeneration = var2;
-      this._ticket = var3;
+   PersistentContent$Listeners$ModeChangeThread(PersistentContentListener listener, int modeGeneration, Object ticket) {
+      this._listener = listener;
+      this._modeGeneration = modeGeneration;
+      this._ticket = ticket;
       if (this._ticket != null) {
          this._ticket.hashCode();
       }
@@ -16,6 +16,13 @@ final class PersistentContent$Listeners$ModeChangeThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         if (PersistentContent.getModeGeneration() == this._modeGeneration) {
+            this._listener.persistentContentModeChanged(this._modeGeneration);
+         }
+      } catch (Throwable var2) {
+      }
+
+      this._ticket = null;
    }
 }

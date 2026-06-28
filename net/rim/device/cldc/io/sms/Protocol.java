@@ -42,11 +42,11 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    public final Message receiveInternal() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final int numberOfSegments(Message var1) {
+   public final int numberOfSegments(Message msg) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -56,22 +56,22 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    @Override
-   public final Message newMessage(String var1, String var2) {
+   public final Message newMessage(String type, String address) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void send(Message var1) {
+   public final void send(Message msg) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void setMessageListener(MessageListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setMessageListener(MessageListener l) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final Message newMessage(String var1) {
+   public final Message newMessage(String type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -96,7 +96,7 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    @Override
-   public final void send(Datagram var1) {
+   public final void send(Datagram datagram) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -106,15 +106,15 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    @Override
-   public final boolean isAddressed(DatagramAddressBase var1) {
+   public final boolean isAddressed(DatagramAddressBase addressBase) {
       if (this._port == 0) {
          return true;
       }
 
-      Object var2 = var1;
-      SMSPacketHeader var3 = ((SmsAddress)var2).getHeader();
-      int[] var4 = ((SmsAddress)var2).getPorts();
-      return var4 == null || var4.length < 1 ? var3.getProtocolMeaning() == 255 : var4[0] == this._port;
+      SmsAddress a = (SmsAddress)addressBase;
+      SMSPacketHeader header = a.getHeader();
+      int[] ports = a.getPorts();
+      return ports == null || ports.length < 1 ? header.getProtocolMeaning() == 255 : ports[0] == this._port;
    }
 
    @Override
@@ -124,23 +124,53 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
 
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._wlt != null) {
+         synchronized (this) {
+            this._stop = true;
+         }
+      }
+
+      super.close();
    }
 
-   private final boolean hasStoreMessage(DatagramBase var1) {
+   private final boolean hasStoreMessage(DatagramBase d) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private final Message storeMessage(DatagramBase var1) {
+   private final Message storeMessage(DatagramBase d) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   static final Message makeMessage(DatagramBase var0) {
+   static final Message makeMessage(DatagramBase datagram) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    private final Message doReceive() {
-      throw new RuntimeException("cod2jar: exception table");
+      DatagramBase d = (DatagramBase)(new Object());
+
+      while (true) {
+         synchronized (this) {
+            if (this._stop) {
+               return null;
+            }
+         }
+
+         this.receive(d);
+         SmsAddress a = (SmsAddress)d.getAddressBase();
+         SMSPacketHeader header = a.getHeader();
+         Integer numSegments = (Integer)d.getProperty(SmsUtil.PROPERTY_TOTAL_SEGMENTS);
+         Integer segId = (Integer)d.getProperty(SmsUtil.PROPERTY_SEGMENT_NUMBER);
+         if (numSegments == null || numSegments == 1) {
+            return makeMessage(d);
+         }
+
+         if (segId == null || segId <= 1 || header.getProtocolMeaning() != 255 || this.hasStoreMessage(d)) {
+            Message msg = this.storeMessage(d);
+            if (msg != null) {
+               return msg;
+            }
+         }
+      }
    }
 
    @Override
@@ -149,16 +179,16 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    @Override
-   public final void receive(Datagram var1) {
+   public final void receive(Datagram datagram) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final boolean validateString(String var1) {
+   private final boolean validateString(String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public final Connection openPrim(String var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Connection openPrim(String name, int mode, boolean timeouts) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

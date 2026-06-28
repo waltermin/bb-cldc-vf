@@ -7,33 +7,33 @@ public class Date {
       this(System.currentTimeMillis());
    }
 
-   public Date(long var1) {
-      this.millis = var1;
+   public Date(long date) {
+      this.millis = date;
    }
 
    public long getTime() {
       return this.millis;
    }
 
-   public void setTime(long var1) {
-      this.millis = var1;
+   public void setTime(long time) {
+      this.millis = time;
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public int hashCode() {
-      long var1 = this.getTime();
-      return (int)var1 ^ (int)(var1 >> 32);
+      long ht = this.getTime();
+      return (int)ht ^ (int)(ht >> 32);
    }
 
    @Override
    public String toString() {
-      Calendar var1 = Calendar.getInstance();
-      var1.setTime(this);
-      return net.rim.device.cldc.util.GregorianCalendar.toString(var1);
+      Calendar c = Calendar.getInstance();
+      c.setTime(this);
+      return net.rim.device.cldc.util.GregorianCalendar.toString(c);
    }
 }

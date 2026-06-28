@@ -4,8 +4,8 @@ final class IntMultiMap$KeysEnumeration implements IntEnumeration {
    private IntMultiMap _map;
    private int _i;
 
-   IntMultiMap$KeysEnumeration(IntMultiMap var1) {
-      this._map = var1;
+   IntMultiMap$KeysEnumeration(IntMultiMap map) {
+      this._map = map;
       this._i = 0;
    }
 
@@ -20,12 +20,12 @@ final class IntMultiMap$KeysEnumeration implements IntEnumeration {
          throw new Object();
       }
 
-      int var1 = this._map._ints[this._i];
+      int key = this._map._ints[this._i];
 
       do {
          this._i++;
-      } while (this._i < this._map._num && var1 == this._map._ints[this._i]);
+      } while (this._i < this._map._num && key == this._map._ints[this._i]);
 
-      return var1;
+      return key;
    }
 }

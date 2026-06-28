@@ -5,7 +5,7 @@ final class Display$SwitchDisplayablesRunnable implements Runnable {
    private Displayable _newD;
    private final Display this$0;
 
-   public final void setNewDisplayable(Displayable var1) {
+   public final void setNewDisplayable(Displayable newD) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -15,9 +15,9 @@ final class Display$SwitchDisplayablesRunnable implements Runnable {
       this.this$0.switchDisplayables(this._oldD, this._newD);
    }
 
-   public Display$SwitchDisplayablesRunnable(Display var1, Displayable var2, Displayable var3) {
-      this.this$0 = var1;
-      this._oldD = var2;
-      this._newD = var3;
+   public Display$SwitchDisplayablesRunnable(Display _1, Displayable oldD, Displayable newD) {
+      this.this$0 = _1;
+      this._oldD = oldD;
+      this._newD = newD;
    }
 }

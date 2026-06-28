@@ -6,6 +6,7 @@ import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
@@ -83,27 +84,27 @@ public final class Keypad {
       commit(false, false);
    }
 
-   private static final void commit(boolean var0, boolean var1) {
+   private static final void commit(boolean notifyOfOptionsChanges, boolean notifyOfLocaleChanges) {
       _persistentKeypadData.commit();
-      if (var0) {
+      if (notifyOfOptionsChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(6498096261923284925L);
       }
 
-      if (var1) {
+      if (notifyOfLocaleChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(-3769281743063593175L);
       }
    }
 
-   public static final char getAltedChar(char var0) {
-      SLKeyLayout var1 = getLayout();
-      return var1 == null ? '\u0000' : var1.getAltedChar(var0);
+   public static final char getAltedChar(char ch) {
+      SLKeyLayout layout = getLayout();
+      return layout == null ? '\u0000' : layout.getAltedChar(ch);
    }
 
    public static final Locale[] getAvailableLocales() {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void addLocaleTo(Locale[] var0, Locale var1) {
+   private static final void addLocaleTo(Locale[] array, Locale locale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -111,86 +112,86 @@ public final class Keypad {
       return _keypadData.getLocale();
    }
 
-   public static final char getUnaltedChar(char var0) {
-      SLKeyLayout var1 = getLayout();
-      return var1 == null ? '\u0000' : Character.toUpperCase(var1.getUnaltedChar(var0));
+   public static final char getUnaltedChar(char ch) {
+      SLKeyLayout layout = getLayout();
+      return layout == null ? '\u0000' : Character.toUpperCase(layout.getUnaltedChar(ch));
    }
 
    public static final SLKeyLayout getLayout() {
-      Object var0 = InputContext.getInstance().getInputMethodControlObject();
-      return var0 == null ? null : ((SLControlObject)var0).getKeyLayout();
+      SLControlObject obj = (SLControlObject)InputContext.getInstance().getInputMethodControlObject();
+      return obj == null ? null : obj.getKeyLayout();
    }
 
    public static final boolean isKeyToneSupported() {
       return !InternalServices.isSoftwareCapable(4);
    }
 
-   public static final char map(int var0) {
-      return map(key(var0), status(var0));
+   public static final char map(int keycode) {
+      return map(key(keycode), status(keycode));
    }
 
-   public static final char map(int var0, int var1) {
-      var1 &= 28695;
-      if ((var1 & 4) != 0 && (var1 & 16) != 0) {
-         var1 &= -7;
+   public static final char map(int key, int status) {
+      status &= 28695;
+      if ((status & 4) != 0 && (status & 16) != 0) {
+         status &= -7;
       }
 
-      if ((var1 & 4) != 0) {
-         var1 &= -3;
-         if ((var1 & 1) != 0) {
-            var1 &= -5;
+      if ((status & 4) != 0) {
+         status &= -3;
+         if ((status & 1) != 0) {
+            status &= -5;
          }
       }
 
-      if ((var1 & 16) != 0) {
-         var1 &= -2;
-         if ((var1 & 2) != 0) {
-            var1 &= -17;
+      if ((status & 16) != 0) {
+         status &= -2;
+         if ((status & 2) != 0) {
+            status &= -17;
          }
       }
 
-      SLKeyLayout var2 = getLayout();
-      return var2 == null ? '\u0000' : var2.getKeyChars(var0, SLKeyLayout.convertStatusToModifiers(var1), false).charAt(0);
+      SLKeyLayout layout = getLayout();
+      return layout == null ? '\u0000' : layout.getKeyChars(key, SLKeyLayout.convertStatusToModifiers(status), false).charAt(0);
    }
 
-   public static final int key(int var0) {
-      return var0 >>> 16;
+   public static final int key(int keycode) {
+      return keycode >>> 16;
    }
 
    public static final native int getHardwareMap();
 
    public static final native int getHardwareLayout();
 
-   public static final int getKeyCode(char var0, int var1) {
-      SLKeyLayout var2 = getLayout();
-      return var2 == null ? 0 : getLayout().getOriginalKeyCode(var0, SLKeyLayout.convertStatusToModifiers(var1));
+   public static final int getKeyCode(char ch, int status) {
+      SLKeyLayout layout = getLayout();
+      return layout == null ? 0 : getLayout().getOriginalKeyCode(ch, SLKeyLayout.convertStatusToModifiers(status));
    }
 
-   public static final int status(int var0) {
-      return var0 & 65535;
+   public static final int status(int keycode) {
+      return keycode & 65535;
    }
 
    public static final void updateKeyTone() {
       if (isKeyToneSupported()) {
-         boolean var0 = UiSettings.getKeypadToneEnabled();
-         if (var0 != isKeyToneEnabled()) {
-            AudioRouter.getInstance().enableInputFeedback(1, var0);
+         boolean uiKeyToneSetting = UiSettings.getKeypadToneEnabled();
+         if (uiKeyToneSetting != isKeyToneEnabled()) {
+            AudioRouter.getInstance().enableInputFeedback(1, uiKeyToneSetting);
          }
       }
    }
 
-   public static final boolean isOnKeypad(char var0) {
-      SLKeyLayout var1 = getLayout();
-      return var1.contains(var0);
+   public static final boolean isOnKeypad(char ch) {
+      SLKeyLayout layout = getLayout();
+      return layout.contains(ch);
    }
 
-   public static final boolean isValidKeyCode(int var0) {
-      int var1 = key(var0);
-      return isValidScanCode(var1);
+   public static final boolean isValidKeyCode(int keycode) {
+      int scancode = key(keycode);
+      return isValidScanCode(scancode);
    }
 
-   private static final boolean isValidScanCode(int var0) {
-      switch (var0) {
+   private static final boolean isValidScanCode(int scancode) {
+      switch (scancode) {
          case 0:
          case 8:
          case 10:
@@ -212,45 +213,64 @@ public final class Keypad {
          case 4098:
             return true;
          default:
-            return var0 >= 65 && var0 <= 90;
+            return scancode >= 65 && scancode <= 90;
       }
    }
 
-   public static final int keycode(char var0, int var1) {
-      if ((var1 & 12288) == 0 && !isValidScanCode(var0)) {
+   public static final int keycode(char scancode, int status) {
+      if ((status & 12288) == 0 && !isValidScanCode(scancode)) {
          return 0;
       }
 
-      if (var0 < 127) {
-         var0 = CharacterUtilities.toUpperCase(var0, 1701707776);
+      if (scancode < 127) {
+         scancode = CharacterUtilities.toUpperCase(scancode, 1701707776);
       }
 
-      return var0 << 16 | var1 & 65535;
+      return scancode << 16 | status & 65535;
    }
 
    private static final void loadKeypadData() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (_keypadData == null) {
+         _persistentKeypadData = RIMPersistentStore.getPersistentObject(-6609599810714651977L);
+         synchronized (_persistentKeypadData) {
+            Keypad$KeypadData keyPadData = (Keypad$KeypadData)_persistentKeypadData.getContents();
+            if (keyPadData == null) {
+               keyPadData = (Keypad$KeypadData)(new Object());
+               _persistentKeypadData.setContents(keyPadData, 51, false);
+               commit(false, false);
+            } else {
+               Locale oslocale = Locale.getDefaultForKeyboard();
+               if (!keyPadData.getOSLocale().equals(oslocale)) {
+                  keyPadData.setLocale(oslocale);
+                  _keypadData = keyPadData;
+                  commit(false, true);
+               }
+            }
+
+            _keypadData = keyPadData;
+         }
+      }
    }
 
-   public static final boolean setKeypadLocale(Locale var0) {
+   public static final boolean setKeypadLocale(Locale locale) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      _keypadData.setLocale(var0);
+      _keypadData.setLocale(locale);
       commit(false, true);
       return true;
    }
 
    private static final native void changeShiftState0(int var0);
 
-   public static final void changeShiftState(int var0) {
+   public static final void changeShiftState(int event) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      changeShiftState0(var0);
+      changeShiftState0(event);
    }
 
    private static final native void enableStandbyMode0(boolean var0);
 
-   public static final void enableStandbyMode(boolean var0) {
+   public static final void enableStandbyMode(boolean enabled) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      enableStandbyMode0(var0);
+      enableStandbyMode0(enabled);
    }
 
    public static final boolean hasSendEndKeys() {
@@ -334,36 +354,36 @@ public final class Keypad {
       return InternalServices.getHardwareID() == 67111173;
    }
 
-   public static final void setMode(int var0) {
+   public static final void setMode(int mode) {
       if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
          ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
       }
 
-      setModeImpl(var0);
+      setModeImpl(mode);
    }
 
    private static final native void setModeImpl(int var0);
 
-   public static final void setMode(int var0, String var1) {
+   public static final void setMode(int mode, String iconName) {
       if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
          ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
       }
 
-      if ((var1 != null || var0 != 2) && (var1 == null || var0 == 2)) {
-         if (var1 != null) {
-            EncodedImage var2 = ThemeManager.getActiveTheme().getImage(var1, true);
-            if (var2 != null) {
-               UiInternal.setThemeIcon(8, var2);
+      if ((iconName != null || mode != 2) && (iconName == null || mode == 2)) {
+         if (iconName != null) {
+            EncodedImage image = ThemeManager.getActiveTheme().getImage(iconName, true);
+            if (image != null) {
+               UiInternal.setThemeIcon(8, image);
             }
          }
 
-         setModeImpl(var0);
+         setModeImpl(mode);
       }
    }
 
-   public static final void setKeyTone(boolean var0) {
+   public static final void setKeyTone(boolean enable) {
       if (isKeyToneSupported()) {
-         AudioRouter.getInstance().enableInputFeedback(1, var0);
+         AudioRouter.getInstance().enableInputFeedback(1, enable);
       }
    }
 

@@ -9,15 +9,15 @@ public class DatagramAddressBase {
    public DatagramAddressBase() {
    }
 
-   public DatagramAddressBase(DatagramAddressBase var1) {
-      this.setAddress(var1.getAddress());
+   public DatagramAddressBase(DatagramAddressBase addressBase) {
+      this.setAddress(addressBase.getAddress());
    }
 
-   public DatagramAddressBase(String var1) {
-      this.setAddress(var1);
+   public DatagramAddressBase(String address) {
+      this.setAddress(address);
    }
 
-   public void setAddress(String var1) {
+   public void setAddress(String address) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -41,7 +41,7 @@ public class DatagramAddressBase {
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object addressBase) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -50,95 +50,95 @@ public class DatagramAddressBase {
       return this._address == null ? 7 : this._address.hashCode();
    }
 
-   public static int indexOfNextDelim(String var0, int var1) {
+   public static int indexOfNextDelim(String str, int start) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static short readShort(byte[] var0, int var1) {
-      short var2 = 0;
-      var2 = (short)(var2 | var0[var1] & 0xFF);
-      var1++;
-      var2 = (short)(var2 << 8);
-      return (short)(var2 | var0[var1] & 0xFF);
+   public static short readShort(byte[] buf, int offset) {
+      short ret = 0;
+      ret = (short)(ret | buf[offset] & 0xFF);
+      offset++;
+      ret = (short)(ret << 8);
+      return (short)(ret | buf[offset] & 0xFF);
    }
 
-   public static int readInt(byte[] var0, int var1) {
-      int var2 = 0;
-      var2 |= var0[var1] & 255;
-      var1++;
-      var2 <<= 8;
-      var2 |= var0[var1] & 255;
-      var1++;
-      var2 <<= 8;
-      var2 |= var0[var1] & 255;
-      var1++;
-      var2 <<= 8;
-      return var2 | var0[var1] & 0xFF;
+   public static int readInt(byte[] buf, int offset) {
+      int ret = 0;
+      ret |= buf[offset] & 255;
+      offset++;
+      ret <<= 8;
+      ret |= buf[offset] & 255;
+      offset++;
+      ret <<= 8;
+      ret |= buf[offset] & 255;
+      offset++;
+      ret <<= 8;
+      return ret | buf[offset] & 0xFF;
    }
 
-   public static void writeInt(byte[] var0, int var1, int var2) {
-      var1 += 3;
-      var0[var1] = (byte)var2;
-      var1--;
-      var2 >>>= 8;
-      var0[var1] = (byte)var2;
-      var1--;
-      var2 >>>= 8;
-      var0[var1] = (byte)var2;
-      var1--;
-      var2 >>>= 8;
-      var0[var1] = (byte)var2;
+   public static void writeInt(byte[] buf, int offset, int value) {
+      offset += 3;
+      buf[offset] = (byte)value;
+      offset--;
+      value >>>= 8;
+      buf[offset] = (byte)value;
+      offset--;
+      value >>>= 8;
+      buf[offset] = (byte)value;
+      offset--;
+      value >>>= 8;
+      buf[offset] = (byte)value;
    }
 
-   public static void writeShort(byte[] var0, int var1, int var2) {
-      var0[++var1] = (byte)var2;
-      var1--;
-      var2 >>>= 8;
-      var0[var1] = (byte)var2;
+   public static void writeShort(byte[] buf, int offset, int value) {
+      buf[++offset] = (byte)value;
+      offset--;
+      value >>>= 8;
+      buf[offset] = (byte)value;
    }
 
-   public static int parseInt(String var0, int var1, int var2, int var3) {
+   public static int parseInt(String buf, int start, int end, int radix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int parseInt(byte[] var0, int var1, int var2, int var3) {
+   public static int parseInt(byte[] buf, int start, int end, int radix) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static long parseLong(String var0, int var1, int var2, int var3) {
+   public static long parseLong(String buf, int start, int end, int radix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static void appendHex(StringBuffer var0, int var1, int var2, int var3) {
-      int var4 = var1 + 8;
-      var0.setLength(var4);
+   public static void appendHex(StringBuffer buf, int offset, int value, int length) {
+      int index = offset + 8;
+      buf.setLength(index);
 
       do {
-         var0.setCharAt(--var4, (char)DIGITS[var2 & 15]);
-         var2 >>>= 4;
-         var3--;
-      } while (var2 != 0 || var3 > 0);
+         buf.setCharAt(--index, (char)DIGITS[value & 15]);
+         value >>>= 4;
+         length--;
+      } while (value != 0 || length > 0);
 
-      var0.delete(var1, var4);
+      buf.delete(offset, index);
    }
 
-   public static void appendHex(byte[] var0, int var1, int var2, int var3) {
-      int var4 = var1 + 8;
+   public static void appendHex(byte[] buf, int offset, int value, int length) {
+      int index = offset + 8;
 
       do {
-         var0[--var4] = DIGITS[var2 & 15];
-         var2 >>>= 4;
-         var3--;
-      } while (var2 != 0 || var3 > 0);
+         buf[--index] = DIGITS[value & 15];
+         value >>>= 4;
+         length--;
+      } while (value != 0 || length > 0);
 
-      System.arraycopy(var0, var4, var0, var1, var1 + 8 - var4);
+      System.arraycopy(buf, index, buf, offset, offset + 8 - index);
    }
 
-   public static int parseIpAddressInt(String var0, int var1) {
+   public static int parseIpAddressInt(String address, int offset) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected static boolean isDomainName(String var0, int var1, int var2) {
+   protected static boolean isDomainName(String address, int startIndex, int endIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

@@ -1,14 +1,206 @@
 package javax.microedition.lcdui;
 
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.RuntimeException: Constructor javax/microedition/lcdui/Displayable.<init>()V not found
-//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:49)
-//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:35)
-//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.hideEmptySuper(InitializerProcessor.java:111)
-//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.extractInitializers(InitializerProcessor.java:52)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:128)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:379)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:521)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:200)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:221)
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.Trackball;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.XYRect;
+import net.rim.device.internal.system.InternalServices;
+
+public class Canvas extends Displayable {
+   public static final int UP;
+   public static final int DOWN;
+   public static final int LEFT;
+   public static final int RIGHT;
+   public static final int FIRE;
+   public static final int GAME_A;
+   public static final int GAME_B;
+   public static final int GAME_C;
+   public static final int GAME_D;
+   public static final int KEY_NUM0;
+   public static final int KEY_NUM1;
+   public static final int KEY_NUM2;
+   public static final int KEY_NUM3;
+   public static final int KEY_NUM4;
+   public static final int KEY_NUM5;
+   public static final int KEY_NUM6;
+   public static final int KEY_NUM7;
+   public static final int KEY_NUM8;
+   public static final int KEY_NUM9;
+   public static final int KEY_STAR;
+   public static final int KEY_POUND;
+   static final int KEYCODE_UP;
+   static final int KEYCODE_RIGHT;
+   static final int KEYCODE_DOWN;
+   static final int KEYCODE_LEFT;
+   static final int KEYCODE_TB;
+   static final int KEYCODE_VOLUME_UP;
+   static final int KEYCODE_VOLUME_DOWN;
+   static final int KEYCODE_CONVENIENCE_KEY_1;
+   static final int KEYCODE_CONVENIENCE_KEY_2;
+
+   protected Canvas() {
+      super(new CanvasScreen());
+      ((CanvasScreen)this.getPeer()).setCanvas(this);
+      synchronized (Application.getEventLock()) {
+         this.getPeer().doLayout();
+      }
+   }
+
+   public boolean isDoubleBuffered() {
+      return true;
+   }
+
+   public boolean hasPointerEvents() {
+      return false;
+   }
+
+   public boolean hasPointerMotionEvents() {
+      return false;
+   }
+
+   public boolean hasRepeatEvents() {
+      return false;
+   }
+
+   public int getKeyCode(int gameAction) {
+      switch (gameAction) {
+         case 0:
+         case 3:
+         case 4:
+         case 7:
+            int id = Keypad.getHardwareLayout();
+            int hwid = InternalServices.getHardwareID();
+            if (!InternalServices.isReducedFormFactor() && id != 1364669234 && hwid != -1677720317 && hwid != 469763332 && hwid != 469763334) {
+               switch (gameAction) {
+                  case 8:
+                     break;
+                  case 9:
+                  default:
+                     return 113;
+                  case 10:
+                     return 119;
+                  case 11:
+                     return 111;
+                  case 12:
+                     return 112;
+               }
+            } else {
+               switch (gameAction) {
+                  case 8:
+                     break;
+                  case 9:
+                  default:
+                     return 113;
+                  case 10:
+                     return 97;
+                  case 11:
+                     return 111;
+                  case 12:
+                     return 108;
+               }
+            }
+
+            throw new Object();
+         case 1:
+         default:
+            return 1;
+         case 2:
+            return 2;
+         case 5:
+            return 5;
+         case 6:
+            return 6;
+         case 8:
+            if (!InternalServices.isReducedFormFactor()) {
+               return 32;
+            } else {
+               return Trackball.isSupported() ? -8 : 48;
+            }
+      }
+   }
+
+   public String getKeyName(int keyCode) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public int getGameAction(int keyCode) {
+      return Display.getGameAction(keyCode);
+   }
+
+   public void setFullScreenMode(boolean mode) {
+      synchronized (Application.getEventLock()) {
+         int oldHeight = this.getPeer().getDisplayableAreaExtent().height;
+         this.getPeer().setFullScreenMode(mode);
+         int newHeight = this.getPeer().getDisplayableAreaExtent().height;
+         if (oldHeight != newHeight) {
+            this.sizeChanged(newHeight, this.getWidth());
+         }
+      }
+   }
+
+   protected void keyPressed(int keyCode) {
+   }
+
+   protected void keyRepeated(int keyCode) {
+   }
+
+   protected void keyReleased(int keyCode) {
+   }
+
+   protected void pointerPressed(int x, int y) {
+   }
+
+   protected void pointerReleased(int x, int y) {
+   }
+
+   protected void pointerDragged(int x, int y) {
+   }
+
+   public final void repaint(int x, int y, int width, int height) {
+      synchronized (Application.getEventLock()) {
+         this.getPeer().invalidate(x, y + this.getPeer().getDisplayableAreaExtent().y, width, height);
+         ((CanvasScreen)this.getPeer()).setDirty();
+      }
+   }
+
+   public final void repaint() {
+      synchronized (Application.getEventLock()) {
+         XYRect areaExtent = this.getPeer().getDisplayableAreaExtent();
+         this.getPeer().invalidate(areaExtent.x, areaExtent.y, areaExtent.width, areaExtent.height);
+         ((CanvasScreen)this.getPeer()).setDirty();
+      }
+   }
+
+   public final void serviceRepaints() {
+      boolean displayed = false;
+      net.rim.device.api.ui.Screen scr;
+      synchronized (Application.getEventLock()) {
+         scr = UiApplication.getUiApplication().getActiveScreen();
+         if (this.getPeer() == scr) {
+            displayed = true;
+         }
+      }
+
+      if (displayed) {
+         scr.updateDisplay();
+         if (((CanvasScreen)scr).isDirty()) {
+            Application.getApplication().invokeAndWait(new Canvas$1(this));
+         }
+      }
+   }
+
+   protected void showNotify() {
+   }
+
+   protected void hideNotify() {
+   }
+
+   protected void paint(Graphics _1) {
+      throw null;
+   }
+
+   @Override
+   protected void sizeChanged(int w, int h) {
+   }
+}

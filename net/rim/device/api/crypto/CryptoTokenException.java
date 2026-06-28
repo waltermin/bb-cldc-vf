@@ -4,6 +4,6 @@ public class CryptoTokenException extends CryptoException {
    public CryptoTokenException() {
    }
 
-   public CryptoTokenException(String var1) {
+   public CryptoTokenException(String msg) {
    }
 }

@@ -14,45 +14,45 @@ final class SoftwareHMACCryptoToken extends HMACCryptoToken implements Persistab
    }
 
    @Override
-   public final CryptoTokenMACKeyData createKey(int var1) {
-      return new SoftwareHMACCryptoToken$HMACKeyData(var1);
+   public final CryptoTokenMACKeyData createKey(int length) {
+      return new SoftwareHMACCryptoToken$HMACKeyData(length);
    }
 
    @Override
-   public final CryptoTokenMACKeyData injectKey(byte[] var1, int var2, int var3) {
-      return new SoftwareHMACCryptoToken$HMACKeyData(var1, var2, var3);
+   public final CryptoTokenMACKeyData injectKey(byte[] data, int offset, int length) {
+      return new SoftwareHMACCryptoToken$HMACKeyData(data, offset, length);
    }
 
    @Override
-   public final void deleteKey(CryptoTokenMACKeyData var1) {
+   public final void deleteKey(CryptoTokenMACKeyData data) {
    }
 
    @Override
-   public final int extractKeyLength(CryptoTokenMACKeyData var1) {
+   public final int extractKeyLength(CryptoTokenMACKeyData cryptoTokenData) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final byte[] extractKeyData(CryptoTokenMACKeyData var1) {
+   public final byte[] extractKeyData(CryptoTokenMACKeyData cryptoTokenData) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final CryptoTokenMACContext initialize(CryptoTokenMACKeyData var1, Digest var2) {
+   public final CryptoTokenMACContext initialize(CryptoTokenMACKeyData keyData, Digest digest) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final void reset(CryptoTokenMACContext var1) {
+   public final void reset(CryptoTokenMACContext context) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final int getMAC(CryptoTokenMACContext var1, byte[] var2, int var3, boolean var4) {
+   public final int getMAC(CryptoTokenMACContext context, byte[] buffer, int offset, boolean reset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    public static final void selfTest() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: array init");
    }
 }

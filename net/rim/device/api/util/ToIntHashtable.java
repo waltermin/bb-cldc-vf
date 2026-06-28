@@ -12,20 +12,20 @@ public class ToIntHashtable implements Persistable {
    private static final int _loadFactorMul;
    private static final int _loadFactorRShift;
 
-   public ToIntHashtable(int var1) {
-      if (var1 < 0) {
+   public ToIntHashtable(int initialCapacity) {
+      if (initialCapacity < 0) {
          throw new Object();
       }
 
-      if (var1 < 1) {
-         var1 = 1;
+      if (initialCapacity < 1) {
+         initialCapacity = 1;
       }
 
-      this._key = new Object[var1];
-      this._hash = new int[var1];
-      this._value = new int[var1];
+      this._key = new Object[initialCapacity];
+      this._hash = new int[initialCapacity];
+      this._value = new int[initialCapacity];
       this._empty = new Object();
-      this._threshold = var1 * 3 >> 2;
+      this._threshold = initialCapacity * 3 >> 2;
    }
 
    public ToIntHashtable() {
@@ -48,14 +48,14 @@ public class ToIntHashtable implements Persistable {
       return (IntEnumeration)(new Object(this._value, this._key, this._empty));
    }
 
-   public synchronized boolean contains(int var1) {
-      Object var2 = this._empty;
-      Object[] var3 = this._key;
-      int[] var4 = this._value;
-      int var5 = var4.length;
+   public synchronized boolean contains(int value) {
+      Object empty = this._empty;
+      Object[] keys = this._key;
+      int[] values = this._value;
+      int len = values.length;
 
-      while (--var5 >= 0) {
-         if (var3[var5] != null && var3[var5] != var2 && var4[var5] == var1) {
+      while (--len >= 0) {
+         if (keys[len] != null && keys[len] != empty && values[len] == value) {
             return true;
          }
       }
@@ -63,151 +63,151 @@ public class ToIntHashtable implements Persistable {
       return false;
    }
 
-   public synchronized boolean containsKey(Object var1) {
-      int var2 = this.find(var1, var1.hashCode());
-      return this._key[var2] != null && this._key[var2] != this._empty;
+   public synchronized boolean containsKey(Object key) {
+      int index = this.find(key, key.hashCode());
+      return this._key[index] != null && this._key[index] != this._empty;
    }
 
    public synchronized void clear() {
-      int var1 = this._key.length;
+      int len = this._key.length;
 
-      while (--var1 >= 0) {
-         this._key[var1] = null;
+      while (--len >= 0) {
+         this._key[len] = null;
       }
 
       this._numberOfKeys = 0;
    }
 
-   public synchronized int remove(Object var1) {
-      int var2 = this.find(var1, var1.hashCode());
-      if (this._key[var2] != null && this._key[var2] != this._empty) {
-         int var3 = this._value[var2];
+   public synchronized int remove(Object key) {
+      int index = this.find(key, key.hashCode());
+      if (this._key[index] != null && this._key[index] != this._empty) {
+         int result = this._value[index];
          this._numberOfKeys--;
          if (this._numberOfKeys == 0) {
-            this._key[var2] = null;
-            return var3;
+            this._key[index] = null;
+            return result;
          } else {
-            this._key[var2] = this._empty;
-            return var3;
+            this._key[index] = this._empty;
+            return result;
          }
       } else {
          return -1;
       }
    }
 
-   public synchronized int get(Object var1) {
-      int var2 = this.find(var1, var1.hashCode());
-      return this._key[var2] != null && this._key[var2] != this._empty ? this._value[var2] : -1;
+   public synchronized int get(Object key) {
+      int index = this.find(key, key.hashCode());
+      return this._key[index] != null && this._key[index] != this._empty ? this._value[index] : -1;
    }
 
    protected void rehash() {
-      Object[] var1 = this._key;
-      int var2 = var1.length;
-      int var3 = (var2 << 1) + 1;
-      int[] var4 = this._value;
-      int[] var5 = this._hash;
-      int[] var6 = new int[var3];
-      Object[] var7 = new Object[var3];
-      int[] var8 = new int[var3];
-      Object var9 = this._empty;
-      this._key = var7;
-      this._hash = var6;
-      this._value = var8;
-      this._threshold = var3 * 3 >> 2;
+      Object[] keys = this._key;
+      int len = keys.length;
+      int newlen = (len << 1) + 1;
+      int[] values = this._value;
+      int[] hashes = this._hash;
+      int[] newhash = new int[newlen];
+      Object[] newkey = new Object[newlen];
+      int[] newvalue = new int[newlen];
+      Object empty = this._empty;
+      this._key = newkey;
+      this._hash = newhash;
+      this._value = newvalue;
+      this._threshold = newlen * 3 >> 2;
 
-      while (--var2 >= 0) {
-         if (var1[var2] != null && var1[var2] != var9) {
-            Object var10 = var1[var2];
-            int var11 = var5[var2];
-            int var12 = this.find(var10, var11);
-            var6[var12] = var11;
-            var7[var12] = var10;
-            var8[var12] = var4[var2];
-            var1[var2] = null;
+      while (--len >= 0) {
+         if (keys[len] != null && keys[len] != empty) {
+            Object key = keys[len];
+            int hashcode = hashes[len];
+            int index = this.find(key, hashcode);
+            newhash[index] = hashcode;
+            newkey[index] = key;
+            newvalue[index] = values[len];
+            keys[len] = null;
          }
       }
    }
 
-   public synchronized int put(Object var1, int var2) {
+   public synchronized int put(Object key, int value) {
       if (this._numberOfKeys + 1 > this._threshold) {
          this.rehash();
       }
 
-      int var3 = var1.hashCode();
-      int var4 = this.find(var1, var3);
-      int var5;
-      if (this._key[var4] != null && this._key[var4] != this._empty) {
-         var5 = this._value[var4];
+      int hashcode = key.hashCode();
+      int index = this.find(key, hashcode);
+      int result;
+      if (this._key[index] != null && this._key[index] != this._empty) {
+         result = this._value[index];
       } else {
          this._numberOfKeys++;
-         var5 = -1;
+         result = -1;
       }
 
-      this._key[var4] = var1;
-      this._hash[var4] = var3;
-      this._value[var4] = var2;
-      return var5;
+      this._key[index] = key;
+      this._hash[index] = hashcode;
+      this._value[index] = value;
+      return result;
    }
 
-   private int find(Object var1, int var2) {
-      Object var3 = this._empty;
-      int[] var4 = this._hash;
-      Object[] var5 = this._key;
-      int var6 = var5.length;
-      int var7 = (var2 & 2147483647) % var6;
-      int var8 = var6;
-      int var9 = -1;
-      int var10 = 0;
+   private int find(Object key, int hashcode) {
+      Object empty = this._empty;
+      int[] hashes = this._hash;
+      Object[] keys = this._key;
+      int modulus = keys.length;
+      int h1 = (hashcode & 2147483647) % modulus;
+      int h2 = modulus;
+      int foundgap = -1;
+      int count = 0;
 
       label55:
       while (true) {
-         int var11 = var7;
+         int i = h1;
 
-         while (var5[var11] != null) {
-            if (var5[var11] != var3) {
-               if (var4[var11] == var2 && var5[var11].equals(var1)) {
-                  return var11;
+         while (keys[i] != null) {
+            if (keys[i] != empty) {
+               if (hashes[i] == hashcode && keys[i].equals(key)) {
+                  return i;
                }
-            } else if (var9 == -1) {
-               var9 = var11;
+            } else if (foundgap == -1) {
+               foundgap = i;
             }
 
-            var11 += var8;
-            if (var11 >= var6) {
-               if (var8 >= var6) {
-                  if (var6 > 3) {
-                     var8 = (var2 >>> 1) % (var6 - 1) + 1;
+            i += h2;
+            if (i >= modulus) {
+               if (h2 >= modulus) {
+                  if (modulus > 3) {
+                     h2 = (hashcode >>> 1) % (modulus - 1) + 1;
                   } else {
-                     var8 = (var2 >>> 1) % var6;
+                     h2 = (hashcode >>> 1) % modulus;
                   }
 
-                  var11 = var11 - var6 + var8;
-                  if (var11 < var6) {
-                     var11 += var6;
+                  i = i - modulus + h2;
+                  if (i < modulus) {
+                     i += modulus;
                   }
                }
 
-               var11 -= var6;
+               i -= modulus;
             }
 
-            var10++;
-            if (var11 == var7) {
-               if (++var7 >= var6) {
-                  var7 = 0;
+            count++;
+            if (i == h1) {
+               if (++h1 >= modulus) {
+                  h1 = 0;
                }
 
-               if (var10 >= var6) {
-                  return var9;
+               if (count >= modulus) {
+                  return foundgap;
                }
                continue label55;
             }
          }
 
-         if (var9 != -1) {
-            return var9;
+         if (foundgap != -1) {
+            return foundgap;
          }
 
-         return var11;
+         return i;
       }
    }
 }

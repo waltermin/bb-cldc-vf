@@ -4,7 +4,7 @@ import net.rim.device.api.util.Comparator;
 
 class Alert$CommandComparator implements Comparator {
    @Override
-   public int compare(Object var1, Object var2) {
-      return ((Command)var1).getPriority() - ((Command)var2).getPriority();
+   public int compare(Object o1, Object o2) {
+      return ((Command)o1).getPriority() - ((Command)o2).getPriority();
    }
 }

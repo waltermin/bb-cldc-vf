@@ -1,7 +1,12 @@
 package javax.microedition.content;
 
 import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationManagerException;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.system.ApplicationManagerInternal;
+import net.rim.vm.Message;
+import net.rim.vm.Process;
 
 class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHandlerServer {
    private String[] _accessAllowed;
@@ -10,11 +15,11 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    private ApplicationDescriptor _application;
    private int _numStaleInvocations;
 
-   void init(String[] var1, String[] var2, String[] var3, ActionNameMap[] var4, String var5, String[] var6) {
+   void init(String[] types, String[] suffixes, String[] actions, ActionNameMap[] actionnames, String ID, String[] accessAllowed) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   void setApplicationDescriptor(ApplicationDescriptor var1) {
+   void setApplicationDescriptor(ApplicationDescriptor application) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -23,10 +28,10 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    }
 
    void cancelOldInvocations() {
-      for (int var1 = 0; var1 < this._numStaleInvocations; var1++) {
-         Invocation var2 = this._queue.nextInvocation();
-         if (var2 != null) {
-            RegistryImpl.invocationFinished(var2, 7);
+      for (int i = 0; i < this._numStaleInvocations; i++) {
+         Invocation next = this._queue.nextInvocation();
+         if (next != null) {
+            RegistryImpl.invocationFinished(next, 7);
          }
       }
    }
@@ -36,42 +41,90 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    }
 
    void start() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._queue) {
+         int pid = this.wakeAppAndNotifyListener(true);
+         if (pid == -1) {
+            int numInvocations = this._queue.size();
+
+            for (int i = 0; i < numInvocations; i++) {
+               RegistryImpl.invocationFinished(this._queue.nextInvocation(), 7);
+            }
+         } else {
+            boolean firstRun = InvocationCleanupManager.getInstance().requestHandlerStarted(pid, this);
+            if (firstRun) {
+               this._numStaleInvocations = this._queue.size();
+            }
+
+            this._queue.notifyAll();
+         }
+      }
    }
 
-   void start(Invocation var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void start(Invocation invocation) {
+      synchronized (this._queue) {
+         this._queue.addInvocation(invocation);
+         this.start();
+      }
    }
 
    @Override
-   public Invocation getRequest(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Invocation getRequest(boolean wait) {
+      this.assertPermission();
+      synchronized (this._queue) {
+         Invocation next = this._queue.nextInvocation();
+         if (next == null && wait) {
+            try {
+               this._queue.wait();
+            } catch (InterruptedException var6) {
+            }
+
+            next = this._queue.nextInvocation();
+         }
+
+         if (next != null) {
+            InvocationCleanupManager icm = InvocationCleanupManager.getInstance();
+            int pid = Process.currentProcess().getProcessId();
+            icm.addActiveInvocation(pid, next);
+            icm.requestRetreived(pid);
+         }
+
+         return next;
+      }
    }
 
    @Override
    public void cancelGetRequest() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.assertPermission();
+      synchronized (this._queue) {
+         this._queue.notifyAll();
+      }
    }
 
    @Override
-   public void setListener(RequestListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setListener(RequestListener listener) {
+      this.assertPermission();
+      this._listener = listener;
+      synchronized (this._queue) {
+         if (this._queue.size() > 0) {
+            this.wakeAppAndNotifyListener(false);
+         }
+      }
    }
 
    @Override
-   public boolean isAccessAllowed(String var1) {
+   public boolean isAccessAllowed(String ID) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public boolean finish(Invocation var1, int var2) {
+   public boolean finish(Invocation invocation, int status) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public String getAccessAllowed(int var1) {
-      if (var1 >= 0 && var1 < this.accessAllowedCount()) {
-         return this._accessAllowed[var1];
+   public String getAccessAllowed(int index) {
+      if (index >= 0 && index < this.accessAllowedCount()) {
+         return this._accessAllowed[index];
       } else {
          throw new IndexOutOfBoundsException();
       }
@@ -82,15 +135,32 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
       return this._accessAllowed == null ? 0 : this._accessAllowed.length;
    }
 
-   private int wakeAppAndNotifyListener(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private int wakeAppAndNotifyListener(boolean grabForeground) {
+      int pid = -1;
+      ApplicationManager am = ApplicationManager.getApplicationManager();
+
+      try {
+         pid = am.runApplication(this._application, grabForeground);
+      } catch (ApplicationManagerException var7) {
+      } finally {
+         if (pid == -1) {
+            return pid;
+         }
+      }
+
+      if (this._listener != null) {
+         Message invokeLaterMessage = (Message)(new Object(0, 2, new ContentHandlerServerImpl$1(this), null));
+         ((ApplicationManagerInternal)am).postMessage(pid, invokeLaterMessage);
+      }
+
+      return pid;
    }
 
-   private void checkActionNameMapArrayValues(ActionNameMap[] var1) {
+   private void checkActionNameMapArrayValues(ActionNameMap[] actionnames) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void checkID(String var1) {
+   private void checkID(String ID) {
       throw new RuntimeException("cod2jar: string-special");
    }
 

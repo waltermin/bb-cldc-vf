@@ -11,27 +11,27 @@ public class NetworkInfo {
    public NetworkInfo() {
    }
 
-   public NetworkInfo(String var1, int var2) {
-      this._name = var1;
-      this._networkId = var2;
+   public NetworkInfo(String name, int networkId) {
+      this._name = name;
+      this._networkId = networkId;
    }
 
-   public NetworkInfo(int var1, int var2) {
-      this._networkId = var1;
-      this._category = var2;
+   public NetworkInfo(int networkId, int category) {
+      this._networkId = networkId;
+      this._category = category;
    }
 
-   public NetworkInfo(int var1, int var2, int var3) {
-      this._networkId = var1;
-      this._category = var2;
-      this._accessTechnology = var3;
+   public NetworkInfo(int networkId, int category, int accessTechnology) {
+      this._networkId = networkId;
+      this._category = category;
+      this._accessTechnology = accessTechnology;
    }
 
    public String getName() {
       return this._name;
    }
 
-   public void setName(String var1) {
+   public void setName(String name) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -39,7 +39,7 @@ public class NetworkInfo {
       return this._networkId;
    }
 
-   public void setNetworkId(int var1) {
+   public void setNetworkId(int id) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -47,7 +47,7 @@ public class NetworkInfo {
       return this._lac;
    }
 
-   public void setLAC(int var1) {
+   public void setLAC(int lac) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -59,7 +59,7 @@ public class NetworkInfo {
       return this._category;
    }
 
-   public void setCategory(int var1) {
+   public void setCategory(int category) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -67,7 +67,7 @@ public class NetworkInfo {
       return this._countryCode;
    }
 
-   public void setCountryCode(String var1) {
+   public void setCountryCode(String countryCode) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -79,11 +79,11 @@ public class NetworkInfo {
       return (this._networkId & -65536) >> 16;
    }
 
-   public void setMcc(int var1) {
-      this._networkId = (this._networkId & -65536) + (var1 & 65535);
+   public void setMcc(int mcc) {
+      this._networkId = (this._networkId & -65536) + (mcc & 65535);
    }
 
-   public void setMnc(int var1) {
-      this._networkId = (this._networkId & 65535) + ((var1 & 65535) << 16);
+   public void setMnc(int mnc) {
+      this._networkId = (this._networkId & 65535) + ((mnc & 65535) << 16);
    }
 }

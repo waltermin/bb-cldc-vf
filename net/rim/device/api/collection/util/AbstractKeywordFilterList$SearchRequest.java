@@ -7,9 +7,9 @@ final class AbstractKeywordFilterList$SearchRequest {
    FilterStatusListener _listener = null;
    boolean _empty = true;
 
-   final void setup(Object var1, FilterStatusListener var2) {
-      this._searchCriteria = var1;
-      this._listener = var2;
+   final void setup(Object searchCriteria, FilterStatusListener listener) {
+      this._searchCriteria = searchCriteria;
+      this._listener = listener;
       this._empty = false;
    }
 

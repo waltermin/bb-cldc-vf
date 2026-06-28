@@ -4,9 +4,9 @@ class USBPasswordRedirectManager$ConnectionAuthenticationRunnable implements Run
    int _channel;
    private final USBPasswordRedirectManager this$0;
 
-   USBPasswordRedirectManager$ConnectionAuthenticationRunnable(USBPasswordRedirectManager var1, int var2) {
-      this.this$0 = var1;
-      this._channel = var2;
+   USBPasswordRedirectManager$ConnectionAuthenticationRunnable(USBPasswordRedirectManager _1, int channel) {
+      this.this$0 = _1;
+      this._channel = channel;
    }
 
    @Override

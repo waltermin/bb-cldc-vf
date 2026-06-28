@@ -13,23 +13,23 @@ public final class AttribRunList {
       this(10);
    }
 
-   public AttribRunList(int var1) {
-      this.iOffsets = new int[var1];
-      this.iAttributes = new int[var1];
+   public AttribRunList(int aSize) {
+      this.iOffsets = new int[aSize];
+      this.iAttributes = new int[aSize];
    }
 
-   public AttribRunList(AttribRunList var1) {
-      this(var1.iOffsets.length);
-      int var2 = var1.iOffsets.length;
-      System.arraycopy(var1.iOffsets, 0, this.iOffsets, 0, var2);
-      System.arraycopy(var1.iAttributes, 0, this.iAttributes, 0, var2 - 1);
-      this.iOffsetNo = var1.iOffsetNo;
+   public AttribRunList(AttribRunList aList) {
+      this(aList.iOffsets.length);
+      int len = aList.iOffsets.length;
+      System.arraycopy(aList.iOffsets, 0, this.iOffsets, 0, len);
+      System.arraycopy(aList.iAttributes, 0, this.iAttributes, 0, len - 1);
+      this.iOffsetNo = aList.iOffsetNo;
    }
 
-   private AttribRunList(AttribRunList var1, int var2, int var3) {
+   private AttribRunList(AttribRunList aList, int start, int end) {
    }
 
-   public final void init(int var1, int var2) {
+   public final void init(int aSet, int aLength) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -37,131 +37,131 @@ public final class AttribRunList {
       return this.iOffsetNo - 1;
    }
 
-   public final void insertAttrib(int var1, int var2, int var3) {
-      iTempList.init(var1, var3);
-      this.replace(var2, var2, iTempList);
+   public final void insertAttrib(int aSet, int aPos, int aLength) {
+      iTempList.init(aSet, aLength);
+      this.replace(aPos, aPos, iTempList);
    }
 
-   public final void replace(int var1, int var2, AttribRunList var3) {
-      if (var3 == null || var3.iOffsetNo == 0) {
-         if (var1 == var2) {
+   public final void replace(int aStart, int aEnd, AttribRunList aList) {
+      if (aList == null || aList.iOffsetNo == 0) {
+         if (aStart == aEnd) {
             return;
          }
 
-         var3 = null;
+         aList = null;
       }
 
       if (this.iOffsetNo == 0) {
-         this.insertOffsets(0, var1, var3);
+         this.insertOffsets(0, aStart, aList);
       } else {
-         int var4 = -1;
-         int var5 = -1;
-         int var6 = this.iOffsetNo;
+         int start_id = -1;
+         int end_id = -1;
+         int len = this.iOffsetNo;
 
-         for (int var7 = 0; var7 < var6; var7++) {
-            if (var4 == -1 && this.iOffsets[var7] >= var1) {
-               var4 = var7;
+         for (int i = 0; i < len; i++) {
+            if (start_id == -1 && this.iOffsets[i] >= aStart) {
+               start_id = i;
             }
 
-            if (this.iOffsets[var7] > var2) {
-               var5 = var7 - 1;
+            if (this.iOffsets[i] > aEnd) {
+               end_id = i - 1;
                break;
             }
 
-            if (this.iOffsets[var7] == var2) {
-               var5 = var7;
+            if (this.iOffsets[i] == aEnd) {
+               end_id = i;
                break;
             }
          }
 
-         int var11 = var5 - var4;
-         int var8;
-         int var9;
-         switch (var11) {
+         int id_dif = end_id - start_id;
+         int start;
+         int end;
+         switch (id_dif) {
             case -2:
-               var8 = var4 + 1;
-               var9 = var5 + 1;
-               this.iOffsets[var4] = var1;
-               this.iAttributes[var4] = this.iAttributes[var5];
+               start = start_id + 1;
+               end = end_id + 1;
+               this.iOffsets[start_id] = aStart;
+               this.iAttributes[start_id] = this.iAttributes[end_id];
                break;
             case -1:
             default:
-               var9 = var4;
-               var8 = var4;
+               end = start_id;
+               start = start_id;
                break;
             case 0:
-               var8 = var9 = var5 + 1;
-               this.iOffsets[var5] = var1;
+               start = end = end_id + 1;
+               this.iOffsets[end_id] = aStart;
          }
 
-         int var10 = var2 - var1;
+         int dif = aEnd - aStart;
 
-         while (var9 < this.iOffsetNo) {
-            this.iOffsets[var8] = this.iOffsets[var9] - var10;
-            this.iAttributes[var8 - 1] = this.iAttributes[var9 - 1];
-            var9++;
-            var8++;
+         while (end < this.iOffsetNo) {
+            this.iOffsets[start] = this.iOffsets[end] - dif;
+            this.iAttributes[start - 1] = this.iAttributes[end - 1];
+            end++;
+            start++;
          }
 
-         if (var11 >= 0) {
-            this.iOffsetNo -= var5 - var4;
+         if (id_dif >= 0) {
+            this.iOffsetNo -= end_id - start_id;
          }
 
          if (this.iOffsetNo < 2) {
             this.iOffsetNo = 0;
          }
 
-         this.insertOffsets(var4, var1, var3);
+         this.insertOffsets(start_id, aStart, aList);
          this.combineRuns();
       }
    }
 
-   private final void insertOffsets(int var1, int var2, AttribRunList var3) {
+   private final void insertOffsets(int pos, int aStart, AttribRunList aList) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   private final void insertOffset(int var1, int var2) {
-      int var3 = this.iOffsetNo;
-      this.iOffsetNo += var1;
+   private final void insertOffset(int aNo, int aPos) {
+      int old_offset_no = this.iOffsetNo;
+      this.iOffsetNo += aNo;
       this.insureSize(this.iOffsetNo);
-      if (var1 != 0 && var2 >= 0 && var2 < var3) {
-         int var4 = var2 == 0 ? var2 : var2 - 1;
-         int var5 = var3 - var4 - 1;
-         System.arraycopy(this.iOffsets, var4 + 1, this.iOffsets, var4 + var1 + 1, var5);
-         System.arraycopy(this.iAttributes, var4, this.iAttributes, var4 + var1, var5);
+      if (aNo != 0 && aPos >= 0 && aPos < old_offset_no) {
+         int from = aPos == 0 ? aPos : aPos - 1;
+         int no = old_offset_no - from - 1;
+         System.arraycopy(this.iOffsets, from + 1, this.iOffsets, from + aNo + 1, no);
+         System.arraycopy(this.iAttributes, from, this.iAttributes, from + aNo, no);
       }
    }
 
-   private final void insureSize(int var1) {
-      if (var1 > this.iOffsets.length) {
+   private final void insureSize(int size) {
+      if (size > this.iOffsets.length) {
          Array.resize(this.iOffsets, this.iOffsetNo + 10);
          Array.resize(this.iAttributes, this.iOffsetNo + 10);
       }
    }
 
    private final void combineRuns() {
-      int var1 = 0;
-      int var2 = this.iOffsetNo - 1;
+      int last_unique = 0;
+      int to = this.iOffsetNo - 1;
 
-      for (int var3 = 1; var3 < var2; var3++) {
-         if (this.iAttributes[var3 - 1] == this.iAttributes[var3]) {
+      for (int i = 1; i < to; i++) {
+         if (this.iAttributes[i - 1] == this.iAttributes[i]) {
             this.iOffsetNo--;
          } else {
-            var1++;
+            last_unique++;
          }
 
-         if (var1 != var3) {
-            this.iOffsets[var1 + 1] = this.iOffsets[var3 + 1];
-            this.iAttributes[var1] = this.iAttributes[var3];
+         if (last_unique != i) {
+            this.iOffsets[last_unique + 1] = this.iOffsets[i + 1];
+            this.iAttributes[last_unique] = this.iAttributes[i];
          }
       }
    }
 
-   final void setAttrib(int var1, int var2, int var3, int var4) {
+   final void setAttrib(int aValsMask, int aVals, int aStart, int aEnd) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final AttribRunList sublist(int var1, int var2) {
-      return new AttribRunList(this, var1, var2);
+   public final AttribRunList sublist(int start, int end) {
+      return new AttribRunList(this, start, end);
    }
 }

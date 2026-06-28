@@ -3,10 +3,15 @@ package net.rim.device.internal.io;
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntIntHashtable;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.io.tunnel.TunnelCredentialsProvider;
+import net.rim.device.internal.system.RadioInternal;
+import net.rim.vm.DebugSupport;
+import net.rim.vm.WeakReference;
 
 public final class PortAssigner {
    private Hashtable _apnPortMap;
@@ -40,18 +45,18 @@ public final class PortAssigner {
    private static Connection _mockConnection;
    private static String EMPTY_APN;
 
-   public PortAssigner(int var1) {
-      String var2 = null;
-      switch (var1) {
+   public PortAssigner(int protocol) {
+      String str = null;
+      switch (protocol) {
          case 6:
-            var2 = STR_TCP;
+            str = STR_TCP;
             this._id = -1053140461870259212L;
-            this._protocolType = var1;
+            this._protocolType = protocol;
             break;
          case 17:
-            var2 = STR_UDP;
+            str = STR_UDP;
             this._id = -7261558872584336485L;
-            this._protocolType = var1;
+            this._protocolType = protocol;
             break;
          default:
             throw new Object();
@@ -61,77 +66,114 @@ public final class PortAssigner {
       this._apnPortMapAux = (Hashtable)(new Object(2));
       this._apnName = TunnelCredentialsProvider.getInstance().getApn();
       this._promiscuousApnPortHolder = new PortAssigner$PromiscuousApnPortHolder(this, null);
-      EventLogger.register(this._id, var2, 2);
+      EventLogger.register(this._id, str, 2);
    }
 
-   public static final PortAssigner getInstance(int var0) {
-      long var1 = 0;
-      switch (var0) {
+   public static final PortAssigner getInstance(int protType) {
+      long id = 0;
+      switch (protType) {
          case 6:
-            var1 = -1053140461870259212L;
+            id = -1053140461870259212L;
             break;
          case 17:
-            var1 = -7261558872584336485L;
+            id = -7261558872584336485L;
             break;
          default:
             throw new Object();
       }
 
-      ApplicationRegistry var3 = ApplicationRegistry.getApplicationRegistry();
-      PortAssigner var4 = (PortAssigner)var3.getOrWaitFor(var1);
-      if (var4 == null) {
-         var4 = new PortAssigner(var0);
-         var3.put(var1, var4);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      PortAssigner hpa = (PortAssigner)ar.getOrWaitFor(id);
+      if (hpa == null) {
+         hpa = new PortAssigner(protType);
+         ar.put(id, hpa);
       }
 
-      return var4;
+      return hpa;
    }
 
-   public final PortAssigner$PortAssignedConnectionString checkPorts(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final PortAssigner$PortAssignedConnectionString checkPorts(String name) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public final void registerConnection(int var1, Object var2) {
-      this.registerConnection(var1, var2, null, true);
+   public final void registerConnection(int port, Object connection) {
+      this.registerConnection(port, connection, null, true);
    }
 
-   public final void registerConnection(int var1, String var2) {
-      this.registerConnection(var1, _mockConnection, var2, false);
+   public final void registerConnection(int port, String apn) {
+      this.registerConnection(port, _mockConnection, apn, false);
    }
 
-   public final void registerConnection(int var1, Object var2, String var3) {
-      this.registerConnection(var1, var2, var3, false);
+   public final void registerConnection(int port, Object connection, String apn) {
+      this.registerConnection(port, connection, apn, false);
    }
 
-   private final boolean registerConnection(int var1, Object var2, String var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final boolean registerConnection(int port, Object connection, String apn, boolean promiscuousMode) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final void deregisterConnection(int var1, Object var2) {
-      this.deregisterConnection(var1, var2, null, true);
+   public final void deregisterConnection(int port, Object connection) {
+      this.deregisterConnection(port, connection, null, true);
    }
 
-   public final void deregisterConnection(int var1, String var2) {
-      this.deregisterConnection(var1, _mockConnection, var2, false);
+   public final void deregisterConnection(int port, String apn) {
+      this.deregisterConnection(port, _mockConnection, apn, false);
    }
 
-   public final void deregisterConnection(int var1, Object var2, String var3) {
-      this.deregisterConnection(var1, var2, var3, false);
+   public final void deregisterConnection(int port, Object connection, String apn) {
+      this.deregisterConnection(port, connection, apn, false);
    }
 
-   public final void deregisterConnection(int var1, Object var2, String var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void deregisterConnection(int port, Object connection, String apn, boolean promiscuousMode) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final boolean isPortBound(int var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean isPortBound(int port, String apn) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final boolean isPortBoundInternal(int var1, IntHashtable var2, IntIntHashtable var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final boolean isPortBoundInternal(int port, IntHashtable portMap, IntIntHashtable portMapAux, int apnId) {
+      boolean retval = true;
+      WeakReference wr = (WeakReference)portMap.get(port);
+      if (wr == null) {
+         if (portMapAux.get(port) <= 0) {
+            retval = false;
+         }
+      } else if (wr.get() == null && portMapAux.get(port) <= 0) {
+         retval = false;
+         portMap.remove(port);
+      }
+
+      int code = 0;
+
+      try {
+         code = RadioInternal.registerPort(this._protocolType, 2, port, apnId);
+      } catch (Exception re) {
+         EventLogger.logEvent(this._id, 1347580261, 3);
+      }
+
+      switch (code) {
+         case -101:
+            if (!retval) {
+               return retval;
+            }
+         case -103:
+         case -102:
+            retval = true;
+            break;
+         case 0:
+            if (this._protocolType == 6
+               && DeviceInfo.isSimulator()
+               && StringUtilities.strEqualIgnoreCase(DebugSupport.getenv(RAW_TCP), TRUE, 1701707776)
+               && (port < 19700 || port > 19799)) {
+               retval = true;
+            }
+      }
+
+      return retval;
    }
 
-   public final int getUnusedPort(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int getUnusedPort(String apn) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

@@ -23,30 +23,46 @@ public class ResourceBundleFamily extends ResourceBundle {
    private Locale _localeApp;
    private IntHashtable _cache = new ResourceBundleFamily$MyIntHashtable(this, 37);
 
-   ResourceBundleFamily(long var1, String var3, CodeSigningKey var4) {
+   ResourceBundleFamily(long id, String name, CodeSigningKey key) {
       super(null);
-      this._id = var1;
-      this._name = var3;
-      this._key = var4;
+      this._id = id;
+      this._name = name;
+      this._key = key;
       this.setFamily(this);
       this.setFallbackLocale();
    }
 
    private final void setFallbackLocale() {
-      Locale var1 = Locale.get(1701729619);
-      this._bundleFallback = this.getBundle(var1);
+      Locale localeFallback = Locale.get(1701729619);
+      this._bundleFallback = this.getBundle(localeFallback);
    }
 
    private void checkLocale() {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void clearEntry(int var1) {
-      this._cache.remove(var1);
+   final void clearEntry(int key) {
+      this._cache.remove(key);
    }
 
-   public synchronized ResourceBundle getBundle(Locale var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized ResourceBundle getBundle(Locale locale) {
+      if (locale == null) {
+         return null;
+      }
+
+      ResourceBundle bundle = null;
+
+      try {
+         bundle = this.getInstance(locale);
+      } catch (MissingResourceException var4) {
+      }
+
+      if (bundle == null) {
+         Locale parent = locale.getParent();
+         bundle = this.getBundle(parent);
+      }
+
+      return bundle;
    }
 
    @Override
@@ -59,51 +75,51 @@ public class ResourceBundleFamily extends ResourceBundle {
    }
 
    @Override
-   protected Object handleGetObject(int var1) {
+   protected Object handleGetObject(int key) {
       this.checkLocale();
-      Object var2 = this._cache.get(var1);
-      if (var2 == null) {
-         var2 = this._bundleApp.getObject(var1, true);
-         if (var2 == null) {
-            var2 = this._bundleSystem.getObject(var1, true);
-            if (var2 == null) {
-               var2 = this._bundleFallback.getObject(var1, true);
+      Object result = this._cache.get(key);
+      if (result == null) {
+         result = this._bundleApp.getObject(key, true);
+         if (result == null) {
+            result = this._bundleSystem.getObject(key, true);
+            if (result == null) {
+               result = this._bundleFallback.getObject(key, true);
             }
          }
 
-         if (var2 != null) {
-            this._cache.put(var1, var2);
+         if (result != null) {
+            this._cache.put(key, result);
          }
       }
 
-      return var2;
+      return result;
    }
 
    public boolean isEmpty() {
-      boolean var1 = true;
-      Enumeration var2 = this._table.elements();
+      boolean result = true;
+      Enumeration enumeration = this._table.elements();
 
-      while (var2.hasMoreElements()) {
-         ResourceBundle var3 = (ResourceBundle)var2.nextElement();
-         if (!(var3 instanceof EmptyResourceBundle)) {
+      while (enumeration.hasMoreElements()) {
+         ResourceBundle bundle = (ResourceBundle)enumeration.nextElement();
+         if (!(bundle instanceof EmptyResourceBundle)) {
             return false;
          }
       }
 
-      return var1;
+      return result;
    }
 
-   private synchronized ResourceBundle getInstance(Locale var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private synchronized ResourceBundle getInstance(Locale locale) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    void onModuleLoad() {
-      IntEnumeration var1 = this._cache.keys();
+      IntEnumeration keys = this._cache.keys();
 
-      while (var1.hasMoreElements()) {
-         int var2 = var1.nextElement();
-         if (this._cache.get(var2) instanceof EmptyResourceBundle) {
-            this._cache.remove(var2);
+      while (keys.hasMoreElements()) {
+         int key = keys.nextElement();
+         if (this._cache.get(key) instanceof EmptyResourceBundle) {
+            this._cache.remove(key);
          }
       }
 
@@ -112,7 +128,7 @@ public class ResourceBundleFamily extends ResourceBundle {
       this.checkLocale();
    }
 
-   public synchronized void put(Locale var1, ResourceBundle var2) {
+   public synchronized void put(Locale locale, ResourceBundle bundle) {
       if (this._key != null && !ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), this._key)) {
          throw new Object();
       }
@@ -123,47 +139,47 @@ public class ResourceBundleFamily extends ResourceBundle {
          throw new Object();
       }
 
-      Locale var3 = var1.getParent();
-      if (var3 != null) {
-         ResourceBundle var4 = this.getInstance(var3);
-         var2.setParent(var4);
+      Locale localeParent = locale.getParent();
+      if (localeParent != null) {
+         ResourceBundle parent = this.getInstance(localeParent);
+         bundle.setParent(parent);
       }
 
       if (this._id == 8736789735327653723L) {
-         Locale.addLocaleInternal(var1);
+         Locale.addLocaleInternal(locale);
       }
 
-      ResourceBundle var5 = (ResourceBundle)this._table.get(var1);
-      if (var5 == null || var5 instanceof EmptyResourceBundle) {
-         var2.setFamily(this);
-         this._table.put(var1, var2);
+      ResourceBundle oldBundle = (ResourceBundle)this._table.get(locale);
+      if (oldBundle == null || oldBundle instanceof EmptyResourceBundle) {
+         bundle.setFamily(this);
+         this._table.put(locale, bundle);
       }
    }
 
-   private synchronized void setModule(String var1) {
+   private synchronized void setModule(String module) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean verify(CodeSigningKey var1) {
-      if (var1 == null) {
+   public boolean verify(CodeSigningKey key) {
+      if (key == null) {
          return true;
       }
 
       if (this._key != null) {
-         return var1.equals(this._key);
+         return key.equals(this._key);
       }
 
-      Enumeration var2 = this._table.elements();
+      Enumeration enumeration = this._table.elements();
 
-      while (var2.hasMoreElements()) {
-         Object var3 = var2.nextElement();
-         int var4 = CodeModuleManager.getModuleHandleForObject(var3);
-         if (!ControlledAccess.verifyCodeModuleSignature(var4, var1)) {
+      while (enumeration.hasMoreElements()) {
+         Object bundle = enumeration.nextElement();
+         int module = CodeModuleManager.getModuleHandleForObject(bundle);
+         if (!ControlledAccess.verifyCodeModuleSignature(module, key)) {
             return false;
          }
       }
 
-      this._key = var1;
+      this._key = key;
       return true;
    }
 }

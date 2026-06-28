@@ -7,24 +7,24 @@ public final class XYDimension {
    public XYDimension() {
    }
 
-   public XYDimension(int var1, int var2) {
-      this.width = var1;
-      this.height = var2;
+   public XYDimension(int width, int height) {
+      this.width = width;
+      this.height = height;
    }
 
-   public XYDimension(XYDimension var1) {
-      this.width = var1.width;
-      this.height = var1.height;
+   public XYDimension(XYDimension dimension) {
+      this.width = dimension.width;
+      this.height = dimension.height;
    }
 
-   public final void set(int var1, int var2) {
-      this.width = var1;
-      this.height = var2;
+   public final void set(int width, int height) {
+      this.width = width;
+      this.height = height;
    }
 
-   public final void set(XYDimension var1) {
-      this.width = var1.width;
-      this.height = var1.height;
+   public final void set(XYDimension dimension) {
+      this.width = dimension.width;
+      this.height = dimension.height;
    }
 
    @Override

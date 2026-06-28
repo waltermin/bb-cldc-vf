@@ -11,15 +11,15 @@ public class ZLibInputStream extends InputStream {
    private Inflater _inflater;
    private boolean _isClosed;
 
-   public ZLibInputStream(InputStream var1) {
-      this(var1, false);
+   public ZLibInputStream(InputStream inputStream) {
+      this(inputStream, false);
    }
 
-   public ZLibInputStream(InputStream var1, boolean var2) {
-      this(var1, var2, 5120);
+   public ZLibInputStream(InputStream inputStream, boolean noWrap) {
+      this(inputStream, noWrap, 5120);
    }
 
-   public ZLibInputStream(InputStream var1, boolean var2, int var3) {
+   public ZLibInputStream(InputStream inputStream, boolean noWrap, int workingBufferSize) {
    }
 
    @Override
@@ -28,40 +28,40 @@ public class ZLibInputStream extends InputStream {
    }
 
    @Override
-   public synchronized int read(byte[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
+      if (buffer == null) {
          throw new Object();
       }
 
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
+      if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
             throw new Object();
          }
 
-         if (var3 == 0) {
+         if (bufferLength == 0) {
             return 0;
          }
 
-         int var4 = 0;
+         int numRead = 0;
 
-         while (var3 > 0) {
+         while (bufferLength > 0) {
             if (this._currentChunk != null && this._currentOffset < this._currentChunk.length) {
-               int var5 = Math.min(this._currentChunk.length - this._currentOffset, var3);
-               System.arraycopy(this._currentChunk, this._currentOffset, var1, var2, var5);
-               this._currentOffset += var5;
-               var2 += var5;
-               var4 += var5;
-               var3 -= var5;
+               int numToWrite = Math.min(this._currentChunk.length - this._currentOffset, bufferLength);
+               System.arraycopy(this._currentChunk, this._currentOffset, buffer, bufferOffset, numToWrite);
+               this._currentOffset += numToWrite;
+               bufferOffset += numToWrite;
+               numRead += numToWrite;
+               bufferLength -= numToWrite;
             } else if (!this.readNextChunk()) {
-               if (var4 > 0) {
-                  return var4;
+               if (numRead > 0) {
+                  return numRead;
                }
 
                return -1;
             }
          }
 
-         return var4 > 0 ? var4 : -1;
+         return numRead > 0 ? numRead : -1;
       } else {
          throw new Object();
       }
@@ -87,12 +87,12 @@ public class ZLibInputStream extends InputStream {
          throw new Object();
       }
 
-      int var1 = this._inputStream.read(this._tempBuffer);
-      if (var1 < 0) {
+      int numRead = this._inputStream.read(this._tempBuffer);
+      if (numRead < 0) {
          return false;
       }
 
-      this._currentChunk = this._inflater.decompress(this._tempBuffer, 0, var1);
+      this._currentChunk = this._inflater.decompress(this._tempBuffer, 0, numRead);
       this._currentOffset = 0;
       return true;
    }

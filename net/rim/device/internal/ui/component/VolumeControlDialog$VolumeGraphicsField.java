@@ -11,15 +11,15 @@ class VolumeControlDialog$VolumeGraphicsField extends Field {
    private static final int DEFAULT_WIDTH;
    private static final int DEFAULT_HEIGHT;
 
-   public void changeIndex(int var1) {
-      if (this._index != var1) {
-         this._index = var1;
+   public void changeIndex(int index) {
+      if (this._index != index) {
+         this._index = index;
          this.invalidate();
       }
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(this.getIconWidth(), this.getIconHeight());
    }
 
@@ -32,7 +32,7 @@ class VolumeControlDialog$VolumeGraphicsField extends Field {
    }
 
    @Override
-   public void paint(Graphics var1) {
-      this._icons.paint(var1, 0, 0, this.getIconWidth(), this.getIconHeight(), 0, this._index);
+   public void paint(Graphics graphics) {
+      this._icons.paint(graphics, 0, 0, this.getIconWidth(), this.getIconHeight(), 0, this._index);
    }
 }

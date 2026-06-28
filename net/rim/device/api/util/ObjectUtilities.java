@@ -4,33 +4,33 @@ public final class ObjectUtilities {
    private ObjectUtilities() {
    }
 
-   public static final boolean objEqual(Object var0, Object var1) {
-      if (var0 != null) {
-         if (var1 != null) {
-            return var0.equals(var1);
+   public static final boolean objEqual(Object o1, Object o2) {
+      if (o1 != null) {
+         if (o2 != null) {
+            return o1.equals(o2);
          }
-      } else if (var1 == null) {
+      } else if (o2 == null) {
          return true;
       }
 
       return false;
    }
 
-   public static final boolean classesEqual(Object var0, Object var1) {
-      if (var0 == var1) {
+   public static final boolean classesEqual(Object o1, Object o2) {
+      if (o1 == o2) {
          return true;
       }
 
-      if (var0 != null && var1 != null) {
-         Class var2 = var0.getClass();
-         Class var3 = var1.getClass();
-         if (var2 == var3) {
+      if (o1 != null && o2 != null) {
+         Class c1 = o1.getClass();
+         Class c2 = o2.getClass();
+         if (c1 == c2) {
             return true;
          }
 
-         String var4 = var2.getName();
-         String var5 = var3.getName();
-         return var4.equals(var5);
+         String n1 = c1.getName();
+         String n2 = c2.getName();
+         return n1.equals(n2);
       } else {
          return false;
       }

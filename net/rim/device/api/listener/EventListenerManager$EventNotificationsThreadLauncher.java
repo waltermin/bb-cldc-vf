@@ -5,8 +5,8 @@ import net.rim.vm.Process;
 class EventListenerManager$EventNotificationsThreadLauncher implements Runnable {
    private final EventListenerManager this$0;
 
-   private EventListenerManager$EventNotificationsThreadLauncher(EventListenerManager var1) {
-      this.this$0 = var1;
+   private EventListenerManager$EventNotificationsThreadLauncher(EventListenerManager _1) {
+      this.this$0 = _1;
    }
 
    @Override
@@ -19,7 +19,7 @@ class EventListenerManager$EventNotificationsThreadLauncher implements Runnable 
       }
    }
 
-   EventListenerManager$EventNotificationsThreadLauncher(EventListenerManager var1, EventListenerManager$1 var2) {
-      this(var1);
+   EventListenerManager$EventNotificationsThreadLauncher(EventListenerManager x0, EventListenerManager$1 x1) {
+      this(x0);
    }
 }

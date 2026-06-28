@@ -3,8 +3,8 @@ package net.rim.device.internal.media;
 class HTTPBufferingManager$UpdateBufferRunner implements Runnable {
    private final HTTPBufferingManager this$0;
 
-   HTTPBufferingManager$UpdateBufferRunner(HTTPBufferingManager var1) {
-      this.this$0 = var1;
+   HTTPBufferingManager$UpdateBufferRunner(HTTPBufferingManager _1) {
+      this.this$0 = _1;
    }
 
    @Override

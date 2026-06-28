@@ -1,8 +1,8 @@
 package net.rim.device.internal.crypto.vpn;
 
 public class VPNSystem {
-   public synchronized int connect(int var1) {
-      return this.connectVPN(this.getActiveProfileSet(), var1);
+   public synchronized int connect(int policyId) {
+      return this.connectVPN(this.getActiveProfileSet(), policyId);
    }
 
    public int disconnect() {
@@ -47,7 +47,7 @@ public class VPNSystem {
       throw null;
    }
 
-   protected int setActiveProfileSet(int var1) {
+   protected int setActiveProfileSet(int _1) {
       throw null;
    }
 
@@ -55,7 +55,7 @@ public class VPNSystem {
       throw null;
    }
 
-   public boolean isIPSecRequiredForNetwork(String var1, int var2) {
+   public boolean isIPSecRequiredForNetwork(String _1, int _2) {
       throw null;
    }
 
@@ -71,26 +71,26 @@ public class VPNSystem {
       throw null;
    }
 
-   protected VPNProfile createVPNProfile(VPNPolicy var1) {
+   protected VPNProfile createVPNProfile(VPNPolicy _1) {
       throw null;
    }
 
-   public int addPolicy(VPNPolicy var1) {
-      return this.addVPNProfile(this.createVPNProfile(var1));
+   public int addPolicy(VPNPolicy policy) {
+      return this.addVPNProfile(this.createVPNProfile(policy));
    }
 
-   public void removePolicy(int var1) {
-      this.removeVPNProfile(var1);
+   public void removePolicy(int policyId) {
+      this.removeVPNProfile(policyId);
    }
 
-   public String getChallenge(int[] var1) {
+   public String getChallenge(int[] flags) {
       this.checkSession();
-      return VPN.getChallenge(this.getActiveProfileSet(), var1);
+      return VPN.getChallenge(this.getActiveProfileSet(), flags);
    }
 
-   public int setResponse(String var1, String var2, int var3) {
+   public int setResponse(String username, String password, int flags) {
       this.checkSession();
-      return VPN.setResponse(this.getActiveProfileSet(), var1, var2, var3);
+      return VPN.setResponse(this.getActiveProfileSet(), username, password, flags);
    }
 
    public int getSessionLifetime() {
@@ -108,9 +108,9 @@ public class VPNSystem {
       return VPN.getCertificate(this.getActiveProfileSet());
    }
 
-   public int acceptCertificate(boolean var1) {
+   public int acceptCertificate(boolean accept) {
       this.checkSession();
-      return VPN.acceptCertificate(this.getActiveProfileSet(), var1);
+      return VPN.acceptCertificate(this.getActiveProfileSet(), accept);
    }
 
    protected final int createVPNProfileSet() {
@@ -121,36 +121,36 @@ public class VPNSystem {
       }
    }
 
-   protected final int destroyVPNProfileSet(int var1) {
+   protected final int destroyVPNProfileSet(int handle) {
       this.checkSession();
-      return destroyProfileSet(var1);
+      return destroyProfileSet(handle);
    }
 
-   protected final int addVPNProfile(VPNProfile var1) {
-      return addProfile(var1);
+   protected final int addVPNProfile(VPNProfile profile) {
+      return addProfile(profile);
    }
 
-   protected final int removeVPNProfile(int var1) {
-      return removeProfile(var1);
+   protected final int removeVPNProfile(int profileID) {
+      return removeProfile(profileID);
    }
 
-   protected final int connectVPN(int var1, int var2) {
+   protected final int connectVPN(int handle, int profileID) {
       this.checkSession();
-      return connect(var1, var2);
+      return connect(handle, profileID);
    }
 
-   protected final int disconnectVPN(int var1) {
+   protected final int disconnectVPN(int handle) {
       this.checkSession();
-      return disconnect(var1);
+      return disconnect(handle);
    }
 
-   protected final int abortVPN(int var1) {
+   protected final int abortVPN(int handle) {
       this.checkSession();
-      return abort(var1);
+      return abort(handle);
    }
 
-   protected final int getVPNStatus(int var1) {
-      return getStatus(var1);
+   protected final int getVPNStatus(int handle) {
+      return getStatus(handle);
    }
 
    private static native int createProfileSet();

@@ -4,6 +4,6 @@ public class RecordStoreFullException extends RecordStoreException {
    public RecordStoreFullException() {
    }
 
-   public RecordStoreFullException(String var1) {
+   public RecordStoreFullException(String s) {
    }
 }

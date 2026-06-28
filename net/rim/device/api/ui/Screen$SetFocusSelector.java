@@ -5,9 +5,9 @@ class Screen$SetFocusSelector implements Screen$FocusSelector {
    private Screen _screen;
    private static Screen$SetFocusSelector _selector;
 
-   public static Screen$FocusSelector getSelector(Screen var0, Field var1) {
-      _selector._screen = var0;
-      _selector._field = var1;
+   public static Screen$FocusSelector getSelector(Screen screen, Field field) {
+      _selector._screen = screen;
+      _selector._field = field;
       return _selector;
    }
 

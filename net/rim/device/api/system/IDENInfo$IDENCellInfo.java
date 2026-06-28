@@ -30,7 +30,7 @@ public class IDENInfo$IDENCellInfo {
       return this._saId;
    }
 
-   IDENInfo$IDENCellInfo(IDENInfo$1 var1) {
+   IDENInfo$IDENCellInfo(IDENInfo$1 x0) {
       this();
    }
 }

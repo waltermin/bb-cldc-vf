@@ -20,12 +20,12 @@ class EventListenerManager$EventNotification implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   EventListenerManager$EventNotification(WeakReference var1, Object var2, Event var3) {
-      this._applicationWR = var1;
-      this._listener = var2;
-      this._event = var3;
+   EventListenerManager$EventNotification(WeakReference applicationWR, Object listener, Event event) {
+      this._applicationWR = applicationWR;
+      this._listener = listener;
+      this._event = event;
    }
 }

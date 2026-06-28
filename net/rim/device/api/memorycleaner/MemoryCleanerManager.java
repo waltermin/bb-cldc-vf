@@ -9,9 +9,11 @@ import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RealtimeClockListener;
 import net.rim.device.api.system.SystemListener;
 import net.rim.device.api.util.Comparator;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.vm.Memory;
 
@@ -38,37 +40,37 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    private static final int[] EVENT_LOGGER_CODES;
 
    public final void registerWithSyncManager() {
-      SyncManager var1 = SyncManager.getInstance();
-      if (var1 != null) {
-         var1.enableSynchronization(this._syncItem);
+      SyncManager syncManager = SyncManager.getInstance();
+      if (syncManager != null) {
+         syncManager.enableSynchronization(this._syncItem);
       }
    }
 
-   public final synchronized void setMemoryCleanerSecureOldObjects(boolean var1) {
-      this._memoryCleanerSecureOldObjects |= var1;
+   public final synchronized void setMemoryCleanerSecureOldObjects(boolean flag) {
+      this._memoryCleanerSecureOldObjects |= flag;
       this.setSecureOldObjects();
    }
 
-   public final synchronized void setPersistentContentSecureOldObjects(boolean var1) {
-      this._persistentContentSecureOldObjects = var1;
+   public final synchronized void setPersistentContentSecureOldObjects(boolean flag) {
+      this._persistentContentSecureOldObjects = flag;
       this.setSecureOldObjects();
    }
 
-   public final synchronized void setCryptoAPISecureOldObjects(boolean var1) {
-      byte var2 = ITPolicy.getByte(24, 39, (byte)1);
-      if (var2 > 1) {
-         this._cryptoAPISecureOldObjects |= var1;
+   public final synchronized void setCryptoAPISecureOldObjects(boolean flag) {
+      byte fipsLevel = ITPolicy.getByte(24, 39, (byte)1);
+      if (fipsLevel > 1) {
+         this._cryptoAPISecureOldObjects |= flag;
          this.setSecureOldObjects();
       }
    }
 
-   public final synchronized void setSMIMESecureOldObjects(boolean var1) {
-      this._SMIMESecureOldObjects = var1;
+   public final synchronized void setSMIMESecureOldObjects(boolean flag) {
+      this._SMIMESecureOldObjects = flag;
       this.setSecureOldObjects();
    }
 
-   public final synchronized void setPGPSecureOldObjects(boolean var1) {
-      this._PGPSecureOldObjects = var1;
+   public final synchronized void setPGPSecureOldObjects(boolean flag) {
+      this._PGPSecureOldObjects = flag;
       this.setSecureOldObjects();
    }
 
@@ -90,53 +92,86 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
          || this._PGPSecureOldObjects;
    }
 
-   public final synchronized void addListener(MemoryCleanerListener var1, boolean var2, boolean var3) {
-      if (var1 == null) {
+   public final synchronized void addListener(MemoryCleanerListener listener, boolean weak, boolean enable) {
+      if (listener == null) {
          throw new Object();
       }
 
-      this._listeners.add(var1, var2);
-      this.setMemoryCleanerSecureOldObjects(var3);
+      this._listeners.add(listener, weak);
+      this.setMemoryCleanerSecureOldObjects(enable);
    }
 
-   public final synchronized void removeListener(MemoryCleanerListener var1) {
-      this._listeners.remove(var1);
+   public final synchronized void removeListener(MemoryCleanerListener listener) {
+      this._listeners.remove(listener);
    }
 
-   public final void setUserCleanEnabled(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setUserCleanEnabled(boolean setting) {
+      synchronized (this) {
+         this._settings._userCleanEnabled = setting;
+         this._settingsHolder.commit();
+      }
+
+      this.setUserEnabledSecureOldObjects(setting);
+      this._syncItem.fireSyncItemUpdated();
    }
 
    public final synchronized boolean getUserCleanEnabled() {
       return this._settings._userCleanEnabled;
    }
 
-   public final void setCleanWhenHolstered(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setCleanWhenHolstered(boolean setting) {
+      synchronized (this) {
+         setting |= ITPolicy.getBoolean(27, 3, false);
+         this._settings._cleanWhenHolstered = setting;
+         this._settingsHolder.commit();
+      }
+
+      this._syncItem.fireSyncItemUpdated();
    }
 
    public final synchronized boolean getCleanWhenHolstered() {
       return this._settings._cleanWhenHolstered;
    }
 
-   public final void setShowAppOnRibbon(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setShowAppOnRibbon(boolean setting) {
+      synchronized (this) {
+         this._settings._showAppOnRibbon = setting;
+         this._settingsHolder.commit();
+      }
+
+      this._syncItem.fireSyncItemUpdated();
+      RIMGlobalMessagePoster.postGlobalEvent(5924166216341050021L);
    }
 
    public final synchronized boolean getShowAppOnRibbon() {
       return this._settings._showAppOnRibbon;
    }
 
-   public final void setCleanWhenIdle(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setCleanWhenIdle(boolean setting) {
+      synchronized (this) {
+         setting |= ITPolicy.getBoolean(27, 2, false);
+         this._settings._cleanWhenIdle = setting;
+         this._settingsHolder.commit();
+      }
+
+      this._syncItem.fireSyncItemUpdated();
    }
 
    public final synchronized boolean getCleanWhenIdle() {
       return this._settings._cleanWhenIdle;
    }
 
-   public final void setIdleTimeout(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void setIdleTimeout(long millis) {
+      synchronized (this) {
+         long seconds = millis / 1000;
+         long maxTimeoutSeconds = ITPolicy.getInteger(27, 1, 60) * 60;
+         seconds = Math.min(seconds, maxTimeoutSeconds);
+         seconds = Math.max(seconds, 60);
+         this._settings._idleTimeoutSeconds = seconds;
+         this._settingsHolder.commit();
+      }
+
+      this._syncItem.fireSyncItemUpdated();
    }
 
    public final synchronized long getIdleTimeout() {
@@ -160,8 +195,28 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    @Override
-   public final int compare(Object var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int compare(Object o1, Object o2) {
+      String s1;
+      try {
+         s1 = ((MemoryCleanerListener)o1).getDescription();
+      } catch (Throwable t) {
+         s1 = null;
+      }
+
+      String s2;
+      try {
+         s2 = ((MemoryCleanerListener)o2).getDescription();
+      } catch (Throwable t) {
+         s2 = null;
+      }
+
+      if (s1 == s2) {
+         return 0;
+      } else if (s1 == null) {
+         return 1;
+      } else {
+         return s2 == null ? -1 : StringUtilities.compareToIgnoreCase(s1, s2, 1701707776);
+      }
    }
 
    @Override
@@ -178,12 +233,12 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    @Override
    public final void clockUpdated() {
       if (this._settings._cleanWhenIdle) {
-         long var1 = DeviceInfo.getIdleTime();
-         if (var1 > this._settings._idleTimeoutSeconds - 60) {
-            long var3 = System.currentTimeMillis();
-            long var5 = var3 - var1 * 1000;
-            if (var5 > this._lastProcessedUserAction) {
-               this._lastProcessedUserAction = var5 + 1000;
+         long idleTimeSeconds = DeviceInfo.getIdleTime();
+         if (idleTimeSeconds > this._settings._idleTimeoutSeconds - 60) {
+            long currentTimeMillis = System.currentTimeMillis();
+            long lastUserAction = currentTimeMillis - idleTimeSeconds * 1000;
+            if (lastUserAction > this._lastProcessedUserAction) {
+               this._lastProcessedUserAction = lastUserAction + 1000;
                this.notifyAllListeners(1);
             }
          }
@@ -196,14 +251,14 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == 8877632280522743328L || var1 == 3596208183088439728L) {
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 8877632280522743328L || guid == 3596208183088439728L) {
          this.notifyAllListeners(5);
          this._lastProcessedUserAction = 0;
-      } else if (var1 == -7131874474196788121L) {
+      } else if (guid == -7131874474196788121L) {
          this.notifyAllListeners(6);
       } else {
-         if (var1 == 8508406279413621091L || var1 == -594020114676189989L) {
+         if (guid == 8508406279413621091L || guid == -594020114676189989L) {
             this.setCleanWhenHolstered(this.getCleanWhenHolstered());
             this.setCleanWhenIdle(this.getCleanWhenIdle());
             this.setIdleTimeout(this.getIdleTimeout());
@@ -213,8 +268,8 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    @Override
-   public final void syncEventOccurred(int var1, Object var2) {
-      switch (var1) {
+   public final void syncEventOccurred(int eventId, Object object) {
+      switch (eventId) {
          case 1:
          default:
             this.notifyAllListeners(2);
@@ -247,23 +302,23 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    @Override
-   public final void batteryStatusChange(int var1) {
+   public final void batteryStatusChange(int status) {
    }
 
-   private final synchronized void setUserEnabledSecureOldObjects(boolean var1) {
-      this._userEnabledSecureOldObjects = var1;
+   private final synchronized void setUserEnabledSecureOldObjects(boolean flag) {
+      this._userEnabledSecureOldObjects = flag;
       this.setSecureOldObjects();
    }
 
    public static final MemoryCleanerManager getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      MemoryCleanerManager var1 = (MemoryCleanerManager)var0.getOrWaitFor(-63698109761663168L);
-      if (var1 == null) {
-         var1 = new MemoryCleanerManager();
-         var0.put(-63698109761663168L, var1);
+      ApplicationRegistry registry = ApplicationRegistry.getApplicationRegistry();
+      MemoryCleanerManager manager = (MemoryCleanerManager)registry.getOrWaitFor(-63698109761663168L);
+      if (manager == null) {
+         manager = new MemoryCleanerManager();
+         registry.put(-63698109761663168L, manager);
       }
 
-      return var1;
+      return manager;
    }
 
    private final void resetOptions() {
@@ -277,9 +332,9 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    private MemoryCleanerManager() {
    }
 
-   private final void notifyAllListeners(int var1) {
+   private final void notifyAllListeners(int event) {
       if (this.enabled()) {
-         this._listeners.update(new MemoryCleanerManager$MemoryCleanerEvent(var1));
+         this._listeners.update(new MemoryCleanerManager$MemoryCleanerEvent(event));
       }
    }
 

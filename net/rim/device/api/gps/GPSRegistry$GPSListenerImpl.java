@@ -6,64 +6,89 @@ class GPSRegistry$GPSListenerImpl implements GPSListener {
    int _errorCount;
    private final GPSRegistry this$0;
 
-   GPSRegistry$GPSListenerImpl(GPSRegistry var1) {
-      this.this$0 = var1;
+   GPSRegistry$GPSListenerImpl(GPSRegistry _1) {
+      this.this$0 = _1;
    }
 
    @Override
-   public void gpsModeChangeComplete(boolean var1, int var2) {
+   public void gpsModeChangeComplete(boolean success, int mode) {
    }
 
    @Override
-   public void gpsPDEChangeComplete(boolean var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void gpsPDEChangeComplete(boolean success, int ip, int port) {
+      synchronized (GPSRegistry._pdeLock) {
+         this.this$0._pdeRequestSuccess = success;
+         GPSRegistry._pdeLock.notifyAll();
+      }
    }
 
    @Override
-   public void gpsLocationUpdated(int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void gpsLocationUpdated(int error, int type, int modeAvailable) {
+      int code = -1;
+      int eCount = this._errorCount;
+      synchronized (this.this$0._locationLock) {
+         this.this$0._locationLock.notifyAll();
+      }
+
+      if (error == 0) {
+         if (type == 0) {
+            code = this.this$0.gpsGetLocation(this.this$0._standardLocation, modeAvailable);
+         } else if (type == 3) {
+            code = this.this$0.gpsGetLocation(this.this$0._extendedLocation, modeAvailable);
+         }
+      }
+
+      if (error == 0 && code == 0) {
+         this._errorCount = 0;
+         this.this$0.notifyListeners(modeAvailable, 5678354684824604352L);
+      } else if (eCount >= 3) {
+         this.this$0.notifyListeners(modeAvailable, -7999774137434187609L);
+      } else {
+         this.this$0.restartLocationUpdate(modeAvailable);
+         this._errorCount = eCount + 1;
+      }
    }
 
    @Override
-   public void gpsResponseGetLPS(int var1) {
+   public void gpsResponseGetLPS(int result) {
    }
 
    @Override
-   public void gpsResponseSetLPS(int var1) {
+   public void gpsResponseSetLPS(int result) {
    }
 
    @Override
-   public void gpsResponseEnablePIN(int var1) {
+   public void gpsResponseEnablePIN(int result) {
    }
 
    @Override
-   public void gpsResponseChangePIN(int var1) {
+   public void gpsResponseChangePIN(int result) {
    }
 
    @Override
-   public void gpsEphemerisDataRequired(int var1) {
+   public void gpsEphemerisDataRequired(int format) {
    }
 
    @Override
-   public void gpsCredentialChangeComplete(boolean var1, int var2) {
-      IntEnumeration var3 = this.this$0._pdeTable.keys();
+   public void gpsCredentialChangeComplete(boolean success, int clientId) {
+      IntEnumeration en = this.this$0._pdeTable.keys();
 
-      while (var3.hasMoreElements()) {
-         int var4 = var3.nextElement();
-         GPSRegistry$PDEInfoStatus var5 = (GPSRegistry$PDEInfoStatus)this.this$0._pdeTable.get(var4);
-         if (var5 != null) {
-            GPS$GPSPDEInfo var6 = var5.getPDEInfo();
-            if (var6 != null && var6.getCredential() != null && var6.getCredential().getAppId() == var2) {
-               var5.setCredStatus(var1);
-               if (!var1) {
-                  this.this$0._criteriaTable.remove(var4);
-                  this.this$0._assistFixConsumers.remove(var4);
+      while (en.hasMoreElements()) {
+         int pid = en.nextElement();
+         GPSRegistry$PDEInfoStatus pdeInfoStatus = (GPSRegistry$PDEInfoStatus)this.this$0._pdeTable.get(pid);
+         if (pdeInfoStatus != null) {
+            GPS$GPSPDEInfo pdeInfo = pdeInfoStatus.getPDEInfo();
+            if (pdeInfo != null && pdeInfo.getCredential() != null && pdeInfo.getCredential().getAppId() == clientId) {
+               pdeInfoStatus.setCredStatus(success);
+               if (!success) {
+                  this.this$0._criteriaTable.remove(pid);
+                  this.this$0._assistFixConsumers.remove(pid);
                }
             }
          }
       }
 
-      if (!var1) {
+      if (!success) {
          this.this$0.restartCDMAAssistedLocationUpdate();
       }
    }

@@ -9,7 +9,7 @@ public final class CodeModuleDeletionListener {
 
    public static final void CodeModuleDeletionListenerMain() {
       CodeModuleGroupManager.deleteEmptyGroups();
-      Proxy var0 = Proxy.getInstance();
-      var0.addGlobalEventListener(new CodeModuleDeletionListener$CodeModuleDeletionListenerInternal(null));
+      Proxy proxy = Proxy.getInstance();
+      proxy.addGlobalEventListener(new CodeModuleDeletionListener$CodeModuleDeletionListenerInternal(null));
    }
 }

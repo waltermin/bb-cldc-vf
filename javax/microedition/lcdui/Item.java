@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.util.SimpleSortingVector;
@@ -34,103 +35,115 @@ public class Item {
    static final int DRAW_STYLE_LAYOUT;
    static final int RICH_TEXT_FIELD_LAYOUT;
 
-   static final long getFieldLayoutStyle(int var0, int var1) {
-      long var2;
-      int var5;
-      int var6;
-      int var7;
-      var2 = 0;
-      int var4 = var0 & 15;
-      var5 = var0 & 240;
-      var6 = var0 & 3840;
-      var7 = var0 & 61440;
+   static final long getFieldLayoutStyle(int midpLayoutStyle, int layout) {
+      long result;
+      int verticalLayout;
+      int horizontalExpandLayout;
+      int verticalExpandLayout;
+      result = 0;
+      int horizontalLayout = midpLayoutStyle & 15;
+      verticalLayout = midpLayoutStyle & 240;
+      horizontalExpandLayout = midpLayoutStyle & 3840;
+      verticalExpandLayout = midpLayoutStyle & 61440;
       label51:
-      switch (var4) {
+      switch (horizontalLayout) {
          case 0:
             break;
          case 1:
-            switch (var1) {
+            switch (layout) {
                case 0:
-                  var2 |= 4294967296L;
+                  result |= 4294967296L;
                   break label51;
                case 1:
                default:
-                  var2 |= 6;
+                  result |= 6;
                   break label51;
                case 2:
-                  var2 |= 0;
+                  result |= 0;
                   break label51;
             }
          case 2:
-            switch (var1) {
+            switch (layout) {
                case 0:
-                  var2 |= 8589934592L;
+                  result |= 8589934592L;
                   break label51;
                case 1:
                default:
-                  var2 |= 5;
+                  result |= 5;
                   break label51;
                case 2:
-                  var2 |= 524288;
+                  result |= 524288;
                   break label51;
             }
          case 3:
          default:
-            switch (var1) {
+            switch (layout) {
                case 0:
-                  var2 |= 12884901888L;
+                  result |= 12884901888L;
                   break;
                case 1:
                default:
-                  var2 |= 4;
+                  result |= 4;
                   break;
                case 2:
-                  var2 |= 262144;
+                  result |= 262144;
             }
       }
 
-      switch (var5) {
+      switch (verticalLayout) {
          case 16:
-            var2 |= var1 == 1 ? 48 : 17179869184L;
+            result |= layout == 1 ? 48 : 17179869184L;
             break;
          case 32:
-            var2 |= var1 == 1 ? 40 : 34359738368L;
+            result |= layout == 1 ? 40 : 34359738368L;
             break;
          case 48:
-            var2 |= var1 == 1 ? 32 : 51539607552L;
+            result |= layout == 1 ? 32 : 51539607552L;
       }
 
-      if (var6 == 2048) {
-         var2 |= 1152921504606846976L;
+      if (horizontalExpandLayout == 2048) {
+         result |= 1152921504606846976L;
       }
 
-      if (var7 == 8192) {
-         var2 |= 2305843009213693952L;
+      if (verticalExpandLayout == 8192) {
+         result |= 2305843009213693952L;
       }
 
-      return var2;
+      return result;
    }
 
    final Screen getOwner() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._owner;
+      }
    }
 
-   void setOwner(Screen var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void setOwner(Screen owner) {
+      synchronized (Application.getEventLock()) {
+         if (this._owner != null && owner != null) {
+            throw new Object();
+         }
+
+         this._owner = owner;
+      }
    }
 
-   void setPeer(Field var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void setPeer(Field peer) {
+      synchronized (Application.getEventLock()) {
+         this._peer = peer;
+      }
    }
 
    Field getPeer() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._peer;
+      }
    }
 
    Item() {
    }
 
-   public void setLabel(String var1) {
+   public void setLabel(String label) {
    }
 
    public String getLabel() {
@@ -138,62 +151,117 @@ public class Item {
    }
 
    public int getLayout() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._layoutMode;
+      }
    }
 
-   public void setLayout(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setLayout(int layout) {
+      synchronized (Application.getEventLock()) {
+         if ((layout & ~VALID_LAYOUT) != 0) {
+            throw new Object();
+         }
+
+         if (this._owner instanceof Alert) {
+            throw new Object();
+         }
+
+         this._layoutMode = layout;
+      }
    }
 
-   public void addCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addCommand(Command cmd) {
+      synchronized (Application.getEventLock()) {
+         cmd.getPriority();
+         if (this._owner != null && this._owner instanceof Alert) {
+            throw new Object();
+         }
+
+         this._commands.addCommand(cmd);
+      }
    }
 
-   public void removeCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void removeCommand(Command cmd) {
+      synchronized (Application.getEventLock()) {
+         this._commands.removeCommand(cmd);
+      }
    }
 
-   public void setItemCommandListener(ItemCommandListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setItemCommandListener(ItemCommandListener l) {
+      synchronized (Application.getEventLock()) {
+         if (this._owner != null && this._owner instanceof Alert) {
+            throw new Object();
+         }
+
+         this._itemCommandListener = l;
+      }
    }
 
    ItemCommandListener getItemCommandListener() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._itemCommandListener;
+      }
    }
 
    public int getPreferredWidth() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._preferredWidth < 0 ? this.getMinimumWidth() : this._preferredWidth;
+      }
    }
 
    public int getPreferredHeight() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._preferredHeight < 0 ? this.getMinimumHeight() : this._preferredHeight;
+      }
    }
 
-   public void setPreferredSize(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setPreferredSize(int width, int height) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public int getMinimumWidth() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._peer.getPreferredWidth();
+      }
    }
 
    public int getMinimumHeight() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._peer.getPreferredHeight();
+      }
    }
 
-   public void setDefaultCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setDefaultCommand(Command cmd) {
+      synchronized (Application.getEventLock()) {
+         if (this._owner != null && this._owner instanceof Alert) {
+            throw new Object();
+         }
+
+         this._commands.setDefaultCommand(cmd);
+      }
    }
 
    public void notifyStateChanged() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         Form ownerForm = (Form)this._owner;
+         if (ownerForm == null) {
+            throw new Object();
+         }
+
+         ItemStateListener ownerFormISL = ownerForm.getItemStateListener();
+         if (ownerFormISL != null) {
+            ownerFormISL.itemStateChanged(this);
+         }
+      }
    }
 
    SimpleSortingVector getCommands() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._commands.getCommands();
+      }
    }
 
-   Field addToForm(FieldChangeListener var1) {
+   Field addToForm(FieldChangeListener _1) {
       throw null;
    }
 }

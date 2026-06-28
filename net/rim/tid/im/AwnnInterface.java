@@ -21,10 +21,10 @@ public class AwnnInterface {
    private static AwnnInterface _instance;
    private static boolean _dicErrorReported;
 
-   private AwnnInterface(int var1, byte[] var2, int var3) {
-      this._encoding = var1;
-      this._encodingData = var2;
-      this._encodingDataOffset = var3;
+   private AwnnInterface(int encoding, byte[] data, int dataOffset) {
+      this._encoding = encoding;
+      this._encodingData = data;
+      this._encodingDataOffset = dataOffset;
    }
 
    private int getEncoding() {
@@ -47,26 +47,49 @@ public class AwnnInterface {
       return initialize();
    }
 
-   public static int convert(StringBuffer var0, int var1, int var2, int var3, int var4, int[] var5, char[] var6, int[] var7, byte[] var8) {
-      if (var0 != null
-         && var2 <= var0.length()
-         && var2 >= 0
-         && var1 >= 0
-         && var4 >= 0
-         && var2 >= var1 + var4
-         && var2 <= getMaxInputLength() / 2
-         && var3 >= 0
-         && var3 < getMaxSegmentNumber()
-         && var5 != null
-         && var6 != null
-         && var7 != null
-         && var8 != null) {
-         AwnnInterface var9 = getInstance();
-         if (var9 != null) {
-            byte[] var10 = var9.getEncodingData();
-            int var11 = var9.getEncoding();
-            if (var10 != null && var11 != 0) {
-               return convertWithEncoding(var0, var1, var2, var3, var4, var5, var6, var7, var8, var11, var10, var9.getEncodingDataOffset());
+   public static int convert(
+      StringBuffer text,
+      int offset,
+      int length,
+      int segmentIndex,
+      int segmentLength,
+      int[] readingLengths,
+      char[] convertedText,
+      int[] segmentLengths,
+      byte[] aWnnConvResultArray
+   ) {
+      if (text != null
+         && length <= text.length()
+         && length >= 0
+         && offset >= 0
+         && segmentLength >= 0
+         && length >= offset + segmentLength
+         && length <= getMaxInputLength() / 2
+         && segmentIndex >= 0
+         && segmentIndex < getMaxSegmentNumber()
+         && readingLengths != null
+         && convertedText != null
+         && segmentLengths != null
+         && aWnnConvResultArray != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               return convertWithEncoding(
+                  text,
+                  offset,
+                  length,
+                  segmentIndex,
+                  segmentLength,
+                  readingLengths,
+                  convertedText,
+                  segmentLengths,
+                  aWnnConvResultArray,
+                  encodingType,
+                  encodingData,
+                  instance.getEncodingDataOffset()
+               );
             }
          }
 
@@ -76,21 +99,23 @@ public class AwnnInterface {
       }
    }
 
-   public static int getPredictions(StringBuffer var0, int var1, int var2, char[] var3, byte[] var4, byte[] var5, boolean var6) {
-      if (var0 != null
-         && var2 >= 0
-         && var1 >= 0
-         && var0.length() >= var1 + var2
-         && var2 <= getMaxInputLength() / 2
-         && var3 != null
-         && var4 != null
-         && var5 != null) {
-         AwnnInterface var7 = getInstance();
-         if (var7 != null) {
-            byte[] var8 = var7.getEncodingData();
-            int var9 = var7.getEncoding();
-            if (var8 != null && var9 != 0) {
-               return getPredictionsWithEncoding(var0, var1, var2, var3, var4, var5, var6, var9, var8, var7.getEncodingDataOffset());
+   public static int getPredictions(StringBuffer text, int offset, int length, char[] variants, byte[] varLengths, byte[] aWnnCandidateData, boolean flexSearch) {
+      if (text != null
+         && length >= 0
+         && offset >= 0
+         && text.length() >= offset + length
+         && length <= getMaxInputLength() / 2
+         && variants != null
+         && varLengths != null
+         && aWnnCandidateData != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               return getPredictionsWithEncoding(
+                  text, offset, length, variants, varLengths, aWnnCandidateData, flexSearch, encodingType, encodingData, instance.getEncodingDataOffset()
+               );
             }
          }
 
@@ -100,14 +125,21 @@ public class AwnnInterface {
       }
    }
 
-   public static int getVariants(byte[] var0, int var1, char[] var2, byte[] var3, byte[] var4) {
-      if (var0 != null && var1 >= 0 && var1 < getMaxSegmentNumber() && var2 != null && var3 != null && var4 != null) {
-         AwnnInterface var5 = getInstance();
-         if (var5 != null) {
-            byte[] var6 = var5.getEncodingData();
-            int var7 = var5.getEncoding();
-            if (var6 != null && var7 != 0) {
-               return getVariantsWithEncoding(var0, var1, var2, var3, var4, var7, var6, var5.getEncodingDataOffset());
+   public static int getVariants(byte[] aWnnConvResultArray, int segmentIndex, char[] words, byte[] lengths, byte[] aWnnCandidateData) {
+      if (aWnnConvResultArray != null
+         && segmentIndex >= 0
+         && segmentIndex < getMaxSegmentNumber()
+         && words != null
+         && lengths != null
+         && aWnnCandidateData != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               return getVariantsWithEncoding(
+                  aWnnConvResultArray, segmentIndex, words, lengths, aWnnCandidateData, encodingType, encodingData, instance.getEncodingDataOffset()
+               );
             }
          }
 
@@ -117,14 +149,16 @@ public class AwnnInterface {
       }
    }
 
-   public static int getDicWords(int var0, int var1, char[] var2, byte[] var3, char[] var4, byte[] var5) {
-      if (var1 > 0 && var2 != null && var3 != null && var4 != null && var5 != null) {
-         AwnnInterface var6 = getInstance();
-         if (var6 != null) {
-            byte[] var7 = var6.getEncodingData();
-            int var8 = var6.getEncoding();
-            if (var7 != null && var8 != 0) {
-               return getDicWordsWithEncoding(var0, var1, var2, var3, var4, var5, var8, var7, var6.getEncodingDataOffset());
+   public static int getDicWords(int dictType, int maxAmount, char[] readings, byte[] readingLengths, char[] kanjis, byte[] kanjiLengths) {
+      if (maxAmount > 0 && readings != null && readingLengths != null && kanjis != null && kanjiLengths != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               return getDicWordsWithEncoding(
+                  dictType, maxAmount, readings, readingLengths, kanjis, kanjiLengths, encodingType, encodingData, instance.getEncodingDataOffset()
+               );
             }
          }
 
@@ -134,14 +168,14 @@ public class AwnnInterface {
       }
    }
 
-   public static int getWordFrom_NJ_RESULT(byte[] var0, char[] var1, char[] var2) {
-      if (var0 != null && var1 != null && var2 != null) {
-         AwnnInterface var3 = getInstance();
-         if (var3 != null) {
-            byte[] var4 = var3.getEncodingData();
-            int var5 = var3.getEncoding();
-            if (var4 != null && var5 != 0) {
-               return getWordFromNjResultWithEncoding(var0, var1, var2, var5, var4, var3.getEncodingDataOffset());
+   public static int getWordFrom_NJ_RESULT(byte[] nj_result, char[] reading, char[] kanji) {
+      if (nj_result != null && reading != null && kanji != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               return getWordFromNjResultWithEncoding(nj_result, reading, kanji, encodingType, encodingData, instance.getEncodingDataOffset());
             }
          }
 
@@ -159,19 +193,19 @@ public class AwnnInterface {
 
    public static native int getAddrBookLearnDic(byte[] var0);
 
-   public static int addCustomWord(String var0, String var1, int var2) {
-      if (var0 != null && var1 != null && var2 >= 0 && var2 <= 3) {
-         AwnnInterface var3 = getInstance();
-         if (var3 != null) {
-            byte[] var4 = var3.getEncodingData();
-            int var5 = var3.getEncoding();
-            if (var4 != null && var5 != 0) {
-               int var6 = addCustomWordWithEncoding(var0, var1, var2, var5, var4, var3.getEncodingDataOffset());
-               if (var6 < 0) {
+   public static int addCustomWord(String reading, String kanji, int aPOS) {
+      if (reading != null && kanji != null && aPOS >= 0 && aPOS <= 3) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               int result = addCustomWordWithEncoding(reading, kanji, aPOS, encodingType, encodingData, instance.getEncodingDataOffset());
+               if (result < 0) {
                   handleAwnnDicError(getLearningDictionaryId());
                }
 
-               return var6;
+               return result;
             }
          }
 
@@ -181,19 +215,19 @@ public class AwnnInterface {
       }
    }
 
-   public static int addAddrWord(String var0, String var1, int var2) {
-      if (var0 != null && var1 != null) {
-         AwnnInterface var3 = getInstance();
-         if (var3 != null) {
-            byte[] var4 = var3.getEncodingData();
-            int var5 = var3.getEncoding();
-            if (var4 != null && var5 != 0) {
-               int var6 = addAddrWordWithEncoding(var0, var1, var2, var5, var4, var3.getEncodingDataOffset());
-               if (var6 < 0) {
+   public static int addAddrWord(String reading, String kanji, int pos) {
+      if (reading != null && kanji != null) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               int result = addAddrWordWithEncoding(reading, kanji, pos, encodingType, encodingData, instance.getEncodingDataOffset());
+               if (result < 0) {
                   handleAwnnDicError(getLearningDictionaryId());
                }
 
-               return var6;
+               return result;
             }
          }
 
@@ -203,19 +237,19 @@ public class AwnnInterface {
       }
    }
 
-   public static int addLearnedWord(StringBuffer var0, StringBuffer var1, int var2, int var3) {
-      if (var0 != null && var1 != null && var2 >= 0 && var2 <= 3) {
-         AwnnInterface var4 = getInstance();
-         if (var4 != null) {
-            byte[] var5 = var4.getEncodingData();
-            int var6 = var4.getEncoding();
-            if (var5 != null && var6 != 0) {
-               int var7 = addLearnedWordWithEncoding(var0, var1, var2, var3, var6, var5, var4.getEncodingDataOffset());
-               if (var7 < 0) {
+   public static int addLearnedWord(StringBuffer reading, StringBuffer kanji, int aPOS, int connection) {
+      if (reading != null && kanji != null && aPOS >= 0 && aPOS <= 3) {
+         AwnnInterface instance = getInstance();
+         if (instance != null) {
+            byte[] encodingData = instance.getEncodingData();
+            int encodingType = instance.getEncoding();
+            if (encodingData != null && encodingType != 0) {
+               int result = addLearnedWordWithEncoding(reading, kanji, aPOS, connection, encodingType, encodingData, instance.getEncodingDataOffset());
+               if (result < 0) {
                   handleAwnnDicError(getLearningDictionaryId());
                }
 
-               return var7;
+               return result;
             }
          }
 
@@ -225,39 +259,39 @@ public class AwnnInterface {
       }
    }
 
-   public static int handleAwnnDicError(int var0) {
+   public static int handleAwnnDicError(int dicID) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static int deleteWord(String var0, String var1, int var2) {
-      if (var0 == null) {
+   public static int deleteWord(String reading, String kanji, int dictionaryId) {
+      if (reading == null) {
          return 1048576;
       }
 
-      AwnnInterface var3 = getInstance();
-      if (var3 != null) {
-         byte[] var4 = var3.getEncodingData();
-         int var5 = var3.getEncoding();
-         if (var4 != null && var5 != 0) {
-            int var6 = deleteWordWithEncoding(var0, var1, var5, var4, var3.getEncodingDataOffset(), var2);
-            if (var6 < 0) {
+      AwnnInterface instance = getInstance();
+      if (instance != null) {
+         byte[] encodingData = instance.getEncodingData();
+         int encodingType = instance.getEncoding();
+         if (encodingData != null && encodingType != 0) {
+            int result = deleteWordWithEncoding(reading, kanji, encodingType, encodingData, instance.getEncodingDataOffset(), dictionaryId);
+            if (result < 0) {
                handleAwnnDicError(getLearningDictionaryId());
             }
 
-            return var6;
+            return result;
          }
       }
 
       return 4194304;
    }
 
-   public static int njlearn(byte[] var0, int var1, int var2) {
-      int var3 = learn(var0, var1, var2);
-      if (var3 < 0) {
-         var3 = handleAwnnDicError(getLearningDictionaryId());
+   public static int njlearn(byte[] njResultArray, int index, int connection) {
+      int error = learn(njResultArray, index, connection);
+      if (error < 0) {
+         error = handleAwnnDicError(getLearningDictionaryId());
       }
 
-      return var3;
+      return error;
    }
 
    private static native int learn(byte[] var0, int var1, int var2);

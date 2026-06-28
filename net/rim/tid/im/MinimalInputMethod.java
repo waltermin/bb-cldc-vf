@@ -43,8 +43,8 @@ public class MinimalInputMethod implements InputMethod {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean setFilter(TextFilter var1) {
-      this._filter = var1;
+   public boolean setFilter(TextFilter filter) {
+      this._filter = filter;
       return true;
    }
 
@@ -56,98 +56,98 @@ public class MinimalInputMethod implements InputMethod {
       return this._rollerCharacterIndex != -1;
    }
 
-   protected synchronized void processRollEvent(KeyEvent var1) {
+   protected synchronized void processRollEvent(KeyEvent evt) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   protected void sendComposedText(StringBuffer var1) {
-      this._buffer.set(var1);
-      this._iContext.dispatchInputMethodEvent(1100, this._buffer, 0, var1.length(), 0, TextHitInfo.leading(0), null);
+   protected void sendComposedText(StringBuffer text) {
+      this._buffer.set(text);
+      this._iContext.dispatchInputMethodEvent(1100, this._buffer, 0, text.length(), 0, TextHitInfo.leading(0), null);
    }
 
-   public boolean setKeyLayoutLocale(Locale var1) {
+   public boolean setKeyLayoutLocale(Locale aLocale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   void setLayout(SLKeyLayout var1) {
-      if (var1 != null) {
-         this._lnkLayout = var1;
+   void setLayout(SLKeyLayout aLayout) {
+      if (aLayout != null) {
+         this._lnkLayout = aLayout;
       }
    }
 
-   void sendComposedText(AttributedString var1) {
-      this._iContext.dispatchInputMethodEvent(1100, var1, 0, var1.length(), 0, TextHitInfo.leading(0), null);
+   void sendComposedText(AttributedString text) {
+      this._iContext.dispatchInputMethodEvent(1100, text, 0, text.length(), 0, TextHitInfo.leading(0), null);
    }
 
    public SLKeyLayout getKeyLayout() {
       return this._lnkLayout;
    }
 
-   protected synchronized void processKeyRepeate(KeyEvent var1) {
-      int var2 = var1.getKeyCode();
-      StringBuffer var3 = this._lnkLayout.getKeyChars(var2, var1.getModifiers(), false);
-      char var4 = var3.charAt(0);
-      var1.setKeyChar(var4);
-      if (!this.isControl(var4)) {
+   protected synchronized void processKeyRepeate(KeyEvent evt) {
+      int code = evt.getKeyCode();
+      StringBuffer keyChars = this._lnkLayout.getKeyChars(code, evt.getModifiers(), false);
+      char keyChar = keyChars.charAt(0);
+      evt.setKeyChar(keyChar);
+      if (!this.isControl(keyChar)) {
          if (this.iNotFromKeypad) {
-            int var9 = this._iContext.getComposedTextStart() - this._iContext.getLabelLength();
-            if (var9 >= 1) {
-               AttributedString var10 = this._iContext.getAttributedText();
-               if (var10 != null && var10.length() != 0) {
-                  char var11 = var10.getText().charAt(var9 - 1);
-                  var1.setKeyChar(var11);
+            int position = this._iContext.getComposedTextStart() - this._iContext.getLabelLength();
+            if (position >= 1) {
+               AttributedString res = this._iContext.getAttributedText();
+               if (res != null && res.length() != 0) {
+                  char ch = res.getText().charAt(position - 1);
+                  evt.setKeyChar(ch);
                   this._buffer.delete(this._buffer.length());
-                  this._buffer.insert(var11);
+                  this._buffer.insert(ch);
                   this.sendComposedText(this._buffer);
-                  var1.consume();
+                  evt.consume();
                }
             }
          } else {
             if (!this.iKeyRepeateProcessed && !this.isEnteringRollerCharacter()) {
-               if (CharacterUtilities.isUpperCase(var4) || CharacterUtilities.isLowerCase(var4)) {
+               if (CharacterUtilities.isUpperCase(keyChar) || CharacterUtilities.isLowerCase(keyChar)) {
                   this.iKeyRepeateProcessed = true;
-                  int var5 = this._iContext.getComposedTextStart();
-                  int var6 = var5 - this._iContext.getLabelLength();
+                  int startPos = this._iContext.getComposedTextStart();
+                  int position = startPos - this._iContext.getLabelLength();
 
-                  for (int var7 = 0; var7 < var3.length(); var7++) {
-                     char var8 = Utils.toUpperCase(var3.charAt(var7));
-                     if (this._filter != null && !this._filter.validate(var8, null, var6 - 1)) {
-                        var3.delete(var7, var7 + 1);
-                        var7--;
+                  for (int i = 0; i < keyChars.length(); i++) {
+                     char upCasedChar = Utils.toUpperCase(keyChars.charAt(i));
+                     if (this._filter != null && !this._filter.validate(upCasedChar, null, position - 1)) {
+                        keyChars.delete(i, i + 1);
+                        i--;
                      } else {
-                        var3.setCharAt(var7, var8);
+                        keyChars.setCharAt(i, upCasedChar);
                      }
                   }
 
-                  if (var3.length() == 0) {
-                     var1.consume();
+                  if (keyChars.length() == 0) {
+                     evt.consume();
                      return;
                   }
 
-                  var1.setKeyChar(var3.charAt(0));
-                  if (var3.length() > 0 && this._iContext.getComposedTextStart() == this._priorInserPosition + 1 && var6 > 0) {
-                     this._iContext.setComposedText(var5 - 1, var5);
+                  evt.setKeyChar(keyChars.charAt(0));
+                  if (keyChars.length() > 0 && this._iContext.getComposedTextStart() == this._priorInserPosition + 1 && position > 0) {
+                     this._iContext.setComposedText(startPos - 1, startPos);
                   }
 
-                  this.sendComposedText(var3);
-                  var1.consume();
+                  this.sendComposedText(keyChars);
+                  evt.consume();
                   return;
                }
 
-               if (CharacterUtilities.isLetter(var4)) {
+               if (CharacterUtilities.isLetter(keyChar)) {
                   this.iKeyRepeateProcessed = true;
-                  var1.consume();
+                  evt.consume();
                   return;
                }
             } else {
-               var1.consume();
+               evt.consume();
             }
          }
       }
    }
 
-   protected boolean isControl(char var1) {
-      return Arrays.binarySearch(this._iControl, var1 & 65535) >= 0;
+   protected boolean isControl(char ch) {
+      return Arrays.binarySearch(this._iControl, ch & 65535) >= 0;
    }
 
    @Override
@@ -155,7 +155,7 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public void dispatchEvent(Event var1) {
+   public void dispatchEvent(Event event) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -165,12 +165,12 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public int setTextInputStyle(int var1) {
+   public int setTextInputStyle(int style) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void setCompositionEnabled(boolean var1) {
+   public void setCompositionEnabled(boolean enable) {
    }
 
    @Override
@@ -179,16 +179,16 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public boolean setLocale(Locale var1, int var2) {
-      if (this._iLocale != null && this._iLocale.equals(var1) && this._iLocale.getKeyboardID() == var1.getKeyboardID()) {
+   public boolean setLocale(Locale aLocale, int state) {
+      if (this._iLocale != null && this._iLocale.equals(aLocale) && this._iLocale.getKeyboardID() == aLocale.getKeyboardID()) {
          return true;
       }
 
-      for (int var3 = 0; var3 < this._iAvailableLocale.length; var3++) {
-         if (this._iAvailableLocale[var3].equals(var1)) {
-            if (this.setKeyLayoutLocale(var1)) {
-               this._iLocale = var1;
-               Keypad.setKeypadLocale(var1);
+      for (int i = 0; i < this._iAvailableLocale.length; i++) {
+         if (this._iAvailableLocale[i].equals(aLocale)) {
+            if (this.setKeyLayoutLocale(aLocale)) {
+               this._iLocale = aLocale;
+               Keypad.setKeypadLocale(aLocale);
                return true;
             }
 
@@ -200,17 +200,17 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public boolean setLocale(Locale var1) {
-      return this.setLocale(var1, 0);
+   public boolean setLocale(Locale aLocale) {
+      return this.setLocale(aLocale, 0);
    }
 
    @Override
-   public void setInputMethodContext(InputMethodContext var1) {
+   public void setInputMethodContext(InputMethodContext context) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void notifyClientWindowChange(XYRect var1) {
+   public void notifyClientWindowChange(XYRect bounds) {
    }
 
    @Override
@@ -218,7 +218,7 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public void deactivate(boolean var1) {
+   public void deactivate(boolean isTemporary) {
    }
 
    @Override
@@ -234,7 +234,7 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public void reset(int var1) {
+   public void reset(int type) {
    }
 
    @Override
@@ -251,26 +251,26 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public int loadLinguisticData(LinguisticData var1) {
+   public int loadLinguisticData(LinguisticData aData) {
       return 1;
    }
 
    @Override
-   public int unloadLinguisticData(int var1) {
+   public int unloadLinguisticData(int id) {
       return 1;
    }
 
    @Override
-   public void setIMProperties(byte var1, byte[] var2) {
-      switch (var1) {
+   public void setIMProperties(byte propID, byte[] IMProperties) {
+      switch (propID) {
          case 1:
-            this._IMProp = var2;
+            this._IMProp = IMProperties;
       }
    }
 
    @Override
-   public byte[] getIMProperties(byte var1) {
-      switch (var1) {
+   public byte[] getIMProperties(byte propID) {
+      switch (propID) {
          case 1:
             return this._IMProp;
          default:
@@ -279,17 +279,17 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public boolean isCorrectWord(StringBufferGap var1, int var2, int var3) {
+   public boolean isCorrectWord(StringBufferGap sbg, int startIndex, int length) {
       return true;
    }
 
    @Override
-   public int actionPerformed(Object var1, int var2, Object var3) {
+   public int actionPerformed(Object src, int action, Object parameter) {
       return 0;
    }
 
    @Override
-   public int setListener(InputModeChangeListener var1) {
+   public int setListener(InputModeChangeListener listener) {
       return 3;
    }
 
@@ -299,23 +299,23 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    @Override
-   public CustomWordsRepository getRepository(int var1) {
+   public CustomWordsRepository getRepository(int type) {
       return null;
    }
 
    @Override
-   public CustomDictionary getCustomDictionary(int var1) {
+   public CustomDictionary getCustomDictionary(int type) {
       return null;
    }
 
-   private boolean isKeyUpProcessOnly(KeyEvent var1) {
-      return this._keyUpProcessOnly && var1.isInputEvent();
+   private boolean isKeyUpProcessOnly(KeyEvent event) {
+      return this._keyUpProcessOnly && event.isInputEvent();
    }
 
-   public MinimalInputMethod(Locale[] var1) {
+   public MinimalInputMethod(Locale[] aAvailableLocale) {
    }
 
-   private String getKeyboardType(int var1) {
+   private String getKeyboardType(int aLocaleCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -45,7 +45,7 @@ public class GPRSInfo$GPRSCellInfo {
       return this._rssi;
    }
 
-   GPRSInfo$GPRSCellInfo(GPRSInfo$1 var1) {
+   GPRSInfo$GPRSCellInfo(GPRSInfo$1 x0) {
       this();
    }
 }

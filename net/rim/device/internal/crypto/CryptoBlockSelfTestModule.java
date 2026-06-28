@@ -5,13 +5,13 @@ import net.rim.device.internal.i18n.CommonResource;
 
 public final class CryptoBlockSelfTestModule implements SelfTestModule {
    @Override
-   public final int getNumTests(boolean var1) {
+   public final int getNumTests(boolean startupTests) {
       return 1;
    }
 
    @Override
-   public final void test(int var1) {
-      switch (var1) {
+   public final void test(int testIndex) {
+      switch (testIndex) {
          case 0:
             CryptoBlock.selfTest();
             return;
@@ -21,7 +21,7 @@ public final class CryptoBlockSelfTestModule implements SelfTestModule {
    }
 
    @Override
-   public final String[] getTestNames(boolean var1) {
+   public final String[] getTestNames(boolean startupTests) {
       return CommonResource.getStringArray(10019);
    }
 }

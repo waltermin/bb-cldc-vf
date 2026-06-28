@@ -14,13 +14,13 @@ class SMSSegmentListener implements DatagramStatusListener {
    }
 
    @Override
-   public void updateDatagramStatus(int var1, int var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void updateDatagramStatus(int dgId, int code, Object context) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   SMSSegmentListener(DatagramStatusListener var1, int var2, int var3) {
-      this._listener = var1;
-      this._totalSegments = var2;
-      this._dgramId = var3;
+   SMSSegmentListener(DatagramStatusListener listener, int totalSegments, int dgramId) {
+      this._listener = listener;
+      this._totalSegments = totalSegments;
+      this._dgramId = dgramId;
    }
 }

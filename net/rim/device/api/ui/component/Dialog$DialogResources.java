@@ -4,8 +4,8 @@ class Dialog$DialogResources {
    int[] _responses;
    int _defaultResponse;
 
-   Dialog$DialogResources(int[] var1, int var2) {
-      this._responses = var1;
-      this._defaultResponse = var2;
+   Dialog$DialogResources(int[] responses, int defaultResponse) {
+      this._responses = responses;
+      this._defaultResponse = defaultResponse;
    }
 }

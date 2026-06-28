@@ -4,6 +4,6 @@ public class ArrayStoreException extends RuntimeException {
    public ArrayStoreException() {
    }
 
-   public ArrayStoreException(String var1) {
+   public ArrayStoreException(String s) {
    }
 }

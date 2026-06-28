@@ -10,11 +10,11 @@ public class GPS$AppCriteria {
    public GPS$AppCriteria() {
    }
 
-   public GPS$AppCriteria(int var1, int var2, int var3, boolean var4, int var5) {
-      this._prefRespTime = var1;
-      this._verticalAccuracy = var2;
-      this._horizontalAccuracy = var3;
-      this._costAllowed = var4;
-      this._powerUsage = var5;
+   public GPS$AppCriteria(int respTime, int vacc, int hacc, boolean cost, int power) {
+      this._prefRespTime = respTime;
+      this._verticalAccuracy = vacc;
+      this._horizontalAccuracy = hacc;
+      this._costAllowed = cost;
+      this._powerUsage = power;
    }
 }

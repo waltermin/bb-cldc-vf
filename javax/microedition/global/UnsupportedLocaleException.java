@@ -4,6 +4,6 @@ public final class UnsupportedLocaleException extends RuntimeException {
    public UnsupportedLocaleException() {
    }
 
-   public UnsupportedLocaleException(String var1) {
+   public UnsupportedLocaleException(String message) {
    }
 }

@@ -6,15 +6,15 @@ public class IOUtilities {
    private IOUtilities() {
    }
 
-   public static String getBindName(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static String getBindName(String name) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static byte[] streamToBytes(InputStream var0) {
-      return streamToBytes(var0, 1024);
+   public static byte[] streamToBytes(InputStream stream) {
+      return streamToBytes(stream, 1024);
    }
 
-   public static byte[] streamToBytes(InputStream var0, int var1) {
+   public static byte[] streamToBytes(InputStream stream, int increment) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -21,11 +21,11 @@ public final class LockEventLogger {
    public static final int ITADMIN_SET_PASSWORD;
    public static final int SMARTCARD_REMOVED;
 
-   public static final void logLockEvent(int var0) {
-      logLockEvent(var0, 0);
+   public static final void logLockEvent(int code) {
+      logLockEvent(code, 0);
    }
 
-   public static final void logLockEvent(int var0, int var1) {
+   public static final void logLockEvent(int code, int level) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

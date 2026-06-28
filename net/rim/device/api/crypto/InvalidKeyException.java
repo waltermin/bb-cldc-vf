@@ -4,6 +4,6 @@ public class InvalidKeyException extends CryptoException {
    public InvalidKeyException() {
    }
 
-   public InvalidKeyException(String var1) {
+   public InvalidKeyException(String msg) {
    }
 }

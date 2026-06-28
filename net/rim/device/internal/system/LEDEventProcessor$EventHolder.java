@@ -4,9 +4,9 @@ final class LEDEventProcessor$EventHolder {
    private long _sourceId;
    private long _expirationDate;
 
-   public final void fill(long var1, long var3) {
-      this._sourceId = var1;
-      this._expirationDate = var3;
+   public final void fill(long sourceIdLong, long expirationDateLong) {
+      this._sourceId = sourceIdLong;
+      this._expirationDate = expirationDateLong;
    }
 
    public final long getExpirationDate() {

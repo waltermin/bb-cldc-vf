@@ -6,13 +6,13 @@ public class PrintStream extends OutputStream {
    private OutputStream byteOut;
    private boolean closing = false;
 
-   public PrintStream(OutputStream var1) {
-      if (var1 == null) {
+   public PrintStream(OutputStream out) {
+      if (out == null) {
          throw new NullPointerException();
       }
 
-      this.byteOut = var1;
-      this.charOut = new OutputStreamWriter(var1);
+      this.byteOut = out;
+      this.charOut = new OutputStreamWriter(out);
    }
 
    private void ensureOpen() {
@@ -21,12 +21,32 @@ public class PrintStream extends OutputStream {
 
    @Override
    public void flush() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         try {
+            this.ensureOpen();
+            this.charOut.flush();
+         } catch (IOException x) {
+            this.trouble = true;
+         }
+      }
    }
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         if (!this.closing) {
+            this.closing = true;
+
+            try {
+               this.charOut.close();
+            } catch (IOException x) {
+               this.trouble = true;
+            }
+
+            this.charOut = null;
+            this.byteOut = null;
+         }
+      }
    }
 
    public boolean checkError() {
@@ -42,100 +62,162 @@ public class PrintStream extends OutputStream {
    }
 
    @Override
-   public void write(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void write(int b) {
+      try {
+         synchronized (this) {
+            this.ensureOpen();
+            this.byteOut.write(b);
+         }
+      } catch (IOException x) {
+         this.trouble = true;
+      }
    }
 
    @Override
-   public void write(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void write(byte[] buf, int off, int len) {
+      try {
+         synchronized (this) {
+            this.ensureOpen();
+            this.byteOut.write(buf, off, len);
+         }
+      } catch (IOException x) {
+         this.trouble = true;
+      }
    }
 
-   private void write(char[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void write(char[] buf) {
+      try {
+         synchronized (this) {
+            this.ensureOpen();
+            this.charOut.write(buf);
+         }
+      } catch (IOException x) {
+         this.trouble = true;
+      }
    }
 
-   private void write(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void write(String s) {
+      try {
+         synchronized (this) {
+            this.ensureOpen();
+            this.charOut.write(s);
+         }
+      } catch (IOException x) {
+         this.trouble = true;
+      }
    }
 
    private void newLine() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         synchronized (this) {
+            this.ensureOpen();
+            this.charOut.write(10);
+         }
+      } catch (IOException x) {
+         this.trouble = true;
+      }
    }
 
-   public void print(boolean var1) {
+   public void print(boolean b) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void print(char var1) {
-      this.write(String.valueOf(var1));
+   public void print(char c) {
+      this.write(String.valueOf(c));
    }
 
-   public void print(int var1) {
-      this.write(String.valueOf(var1));
+   public void print(int i) {
+      this.write(String.valueOf(i));
    }
 
-   public void print(long var1) {
-      this.write(String.valueOf(var1));
+   public void print(long l) {
+      this.write(String.valueOf(l));
    }
 
-   public void print(float var1) {
-      this.write(String.valueOf(var1));
+   public void print(float f) {
+      this.write(String.valueOf(f));
    }
 
-   public void print(double var1) {
-      this.write(String.valueOf(var1));
+   public void print(double d) {
+      this.write(String.valueOf(d));
    }
 
-   public void print(char[] var1) {
+   public void print(char[] s) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public void print(String var1) {
+   public void print(String s) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void print(Object var1) {
-      this.write(String.valueOf(var1));
+   public void print(Object obj) {
+      this.write(String.valueOf(obj));
    }
 
    public void println() {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public void println(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(boolean x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(char var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(char x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(int x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(long x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(float var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(float x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(double var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(double x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(char[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(char[] x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(String x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 
-   public void println(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void println(Object x) {
+      synchronized (this) {
+         this.print(x);
+         this.newLine();
+      }
    }
 }

@@ -5,7 +5,7 @@ import net.rim.vm.Message;
 
 final class BluetoothAVRCPEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
+   public final void dispatch(Message message, Object listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

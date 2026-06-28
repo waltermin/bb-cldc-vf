@@ -6,8 +6,8 @@ final class BackgroundDialog$DialogDisplayRunnable$WaitForRunnableModalEventThre
    private Runnable _runnable;
    private boolean _runnableFinished;
 
-   public BackgroundDialog$DialogDisplayRunnable$WaitForRunnableModalEventThread(Runnable var1) {
-      this._runnable = var1;
+   public BackgroundDialog$DialogDisplayRunnable$WaitForRunnableModalEventThread(Runnable runnable) {
+      this._runnable = runnable;
    }
 
    @Override

@@ -4,6 +4,6 @@ public class UTFDataFormatException extends IOException {
    public UTFDataFormatException() {
    }
 
-   public UTFDataFormatException(String var1) {
+   public UTFDataFormatException(String s) {
    }
 }

@@ -7,12 +7,12 @@ public class FileSystemRegistry {
    FileSystemRegistry() {
    }
 
-   public static boolean addFileSystemListener(FileSystemListener var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean addFileSystemListener(FileSystemListener listener) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static boolean removeFileSystemListener(FileSystemListener var0) {
-      return FileSystem.removeFileSystemListener(var0);
+   public static boolean removeFileSystemListener(FileSystemListener listener) {
+      return FileSystem.removeFileSystemListener(listener);
    }
 
    public static Enumeration listRoots() {

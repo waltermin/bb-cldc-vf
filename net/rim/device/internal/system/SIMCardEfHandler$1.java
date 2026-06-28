@@ -6,9 +6,9 @@ class SIMCardEfHandler$1 implements Runnable {
    private final Application val$app;
    private final SIMCardEfHandler this$0;
 
-   SIMCardEfHandler$1(SIMCardEfHandler var1, Application var2) {
-      this.this$0 = var1;
-      this.val$app = var2;
+   SIMCardEfHandler$1(SIMCardEfHandler _1, Application _2) {
+      this.this$0 = _1;
+      this.val$app = _2;
    }
 
    @Override

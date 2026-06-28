@@ -9,7 +9,7 @@ class PersistentContent$CheckSecureThread extends Thread {
       PersistentContent._instance.checkSecureLoop();
    }
 
-   PersistentContent$CheckSecureThread(PersistentContent$1 var1) {
+   PersistentContent$CheckSecureThread(PersistentContent$1 x0) {
       this();
    }
 }

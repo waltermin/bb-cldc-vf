@@ -6,17 +6,17 @@ import net.rim.device.api.ui.Graphics;
 public class VerticalSpacerField extends Field {
    private int _height;
 
-   public VerticalSpacerField(int var1) {
+   public VerticalSpacerField(int height) {
       super(36028797018963968L);
-      this._height = var1;
+      this._height = height;
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(0, this._height);
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics g) {
    }
 }

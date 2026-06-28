@@ -15,8 +15,8 @@ public final class LocaleInternal {
    private static ResourceBundle _resources;
 
    public static final void addLocale() {
-      String var0 = ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
-      if (var0.startsWith(RUNTIME_RESOURCES)) {
+      String module = ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
+      if (module.startsWith(RUNTIME_RESOURCES)) {
          throw new Object();
       }
 
@@ -27,11 +27,11 @@ public final class LocaleInternal {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Locale getLocaleFromModuleName(String var0) {
+   public static final Locale getLocaleFromModuleName(String module) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final Locale getLocaleFromModuleName(String var0, String var1) {
+   private static final Locale getLocaleFromModuleName(String module, String separator) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -39,7 +39,7 @@ public final class LocaleInternal {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String getString(int var0) {
+   public static final String getString(int id) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

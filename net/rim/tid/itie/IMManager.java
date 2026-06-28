@@ -16,41 +16,85 @@ public final class IMManager {
    IMManager() {
    }
 
-   public final InputMethod getInputMethod(Locale var1) {
-      return this.getInputMethod(var1, null);
+   public final InputMethod getInputMethod(Locale locale) {
+      return this.getInputMethod(locale, null);
    }
 
-   private final InputMethodDescriptor getDescriptorForLocale(Locale var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final InputMethodDescriptor getDescriptorForLocale(Locale locale) {
+      InputMethodDescriptor descript = null;
+      int size = this._descriptors.size();
+
+      for (int i = 0; i < size; i++) {
+         InputMethodDescriptor descriptor = (InputMethodDescriptor)this._descriptors.elementAt(i);
+
+         try {
+            Locale[] lc = descriptor.getAvailableLocales();
+            int len = lc.length;
+
+            for (int j = 0; j < len; j++) {
+               if (lc[j].equals(locale)) {
+                  descript = descriptor;
+                  break;
+               }
+            }
+
+            if (descript != null) {
+               return descript;
+            }
+         } catch (Exception var9) {
+         }
+      }
+
+      return descript;
    }
 
-   public final synchronized InputMethod getInputMethod(Locale var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized InputMethod getInputMethod(Locale locale, String name) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void forceLocaleReRegister(Locale var1) {
-      Locale[] var2 = Locale.getAvailableInputLocales();
-      if (Arrays.getIndex(var2, var1) == -1) {
-         int var3 = this._descriptors.size();
+   final void forceLocaleReRegister(Locale locale) {
+      Locale[] dispLocales = Locale.getAvailableInputLocales();
+      if (Arrays.getIndex(dispLocales, locale) == -1) {
+         int descNo = this._descriptors.size();
 
-         for (int var4 = 0; var4 < var3; var4++) {
-            InputMethodDescriptor var5 = (InputMethodDescriptor)this._descriptors.elementAt(var4);
-            var2 = var5.getDisplayLocales();
-            if (var2 != null) {
-               for (int var6 = 0; var6 < var2.length; var6++) {
-                  Locale.addInputLocaleInternal(var2[var6]);
+         for (int i = 0; i < descNo; i++) {
+            InputMethodDescriptor imd = (InputMethodDescriptor)this._descriptors.elementAt(i);
+            dispLocales = imd.getDisplayLocales();
+            if (dispLocales != null) {
+               for (int j = 0; j < dispLocales.length; j++) {
+                  Locale.addInputLocaleInternal(dispLocales[j]);
                }
             }
          }
       }
    }
 
-   public final synchronized boolean addIMDescriptor(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized boolean addIMDescriptor(String imName, String className) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public final void dispose() {
-      throw new RuntimeException("cod2jar: exception table");
+      int size = this._imethods.size();
+
+      for (int i = 0; i < size; i++) {
+         InputMethodDescriptor desc = (InputMethodDescriptor)this._descriptors.elementAt(i);
+
+         try {
+            desc.disposeCache();
+         } catch (Exception var7) {
+         }
+
+         InputMethod im = (InputMethod)this._imethods.elementAt(i);
+
+         try {
+            if (im != null) {
+               im.dispose();
+            }
+         } catch (Throwable var6) {
+         }
+
+         this._imethods.setElementAt(null, i);
+      }
    }
 
    public final long getAvailableInputMethodIDs() {
@@ -61,13 +105,13 @@ public final class IMManager {
       return this._latestIMID;
    }
 
-   public final long getInputMethodIDForLocale(Locale var1) {
-      InputMethodDescriptor var2 = this.getDescriptorForLocale(var1);
-      return var2 == null ? 0 : var2.getInputMethodID();
+   public final long getInputMethodIDForLocale(Locale locale) {
+      InputMethodDescriptor desc = this.getDescriptorForLocale(locale);
+      return desc == null ? 0 : desc.getInputMethodID();
    }
 
-   public final CustomWordsRepository getRepository(int var1) {
-      switch (var1) {
+   public final CustomWordsRepository getRepository(int type) {
+      switch (type) {
          case 1:
             return this.findAddressBookRepository();
          case 6:
@@ -78,13 +122,13 @@ public final class IMManager {
    }
 
    private final CustomWordsRepository findAddressBookRepository() {
-      int var1 = this._imethods.size();
+      int size = this._imethods.size();
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         InputMethodDescriptor var3 = (InputMethodDescriptor)this._descriptors.elementAt(var2);
-         long var4 = var3.getInputMethodID();
-         if (var4 == 4096 || var4 == 8192) {
-            return var3.getRepository(1);
+      for (int i = 0; i < size; i++) {
+         InputMethodDescriptor desc = (InputMethodDescriptor)this._descriptors.elementAt(i);
+         long id = desc.getInputMethodID();
+         if (id == 4096 || id == 8192) {
+            return desc.getRepository(1);
          }
       }
 
@@ -92,12 +136,12 @@ public final class IMManager {
    }
 
    private final CustomWordsRepository findYOMIAddressBookRepository() {
-      int var1 = this._imethods.size();
+      int size = this._imethods.size();
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         InputMethodDescriptor var3 = (InputMethodDescriptor)this._descriptors.elementAt(var2);
-         if (var3.getInputMethodID() == 512) {
-            return var3.getRepository(6);
+      for (int i = 0; i < size; i++) {
+         InputMethodDescriptor desc = (InputMethodDescriptor)this._descriptors.elementAt(i);
+         if (desc.getInputMethodID() == 512) {
+            return desc.getRepository(6);
          }
       }
 

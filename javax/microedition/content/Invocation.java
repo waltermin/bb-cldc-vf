@@ -37,34 +37,34 @@ public final class Invocation {
       this(null, null, null, true, null);
    }
 
-   public Invocation(String var1, String var2, String var3) {
-      this(var1, var2, var3, true, null);
+   public Invocation(String url, String type, String ID) {
+      this(url, type, ID, true, null);
    }
 
-   public Invocation(String var1, String var2) {
-      this(var1, var2, null, true, null);
+   public Invocation(String url, String type) {
+      this(url, type, null, true, null);
    }
 
-   public Invocation(String var1) {
-      this(var1, null, null, true, null);
+   public Invocation(String url) {
+      this(url, null, null, true, null);
    }
 
-   public Invocation(String var1, String var2, String var3, boolean var4, String var5) {
-      this._url = var1;
-      this._type = var2;
-      this._ID = var3;
-      this._responseRequired = var4;
-      this._action = var5;
+   public Invocation(String url, String type, String ID, boolean responseRequired, String action) {
+      this._url = url;
+      this._type = type;
+      this._ID = ID;
+      this._responseRequired = responseRequired;
+      this._action = action;
       this._status = 1;
       this._args = new String[0];
       this._data = new byte[0];
       this._previous = null;
    }
 
-   Invocation(Invocation var1) {
+   Invocation(Invocation invocation) {
    }
 
-   public final void setArgs(String[] var1) {
+   public final void setArgs(String[] args) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -72,7 +72,7 @@ public final class Invocation {
       return this._args;
    }
 
-   public final void setData(byte[] var1) {
+   public final void setData(byte[] data) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -84,7 +84,7 @@ public final class Invocation {
       return this._url;
    }
 
-   public final void setURL(String var1) {
+   public final void setURL(String url) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -92,7 +92,7 @@ public final class Invocation {
       return this._type;
    }
 
-   public final void setType(String var1) {
+   public final void setType(String type) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -100,7 +100,7 @@ public final class Invocation {
       return this._action;
    }
 
-   public final void setAction(String var1) {
+   public final void setAction(String action) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -108,7 +108,7 @@ public final class Invocation {
       return this._responseRequired;
    }
 
-   public final void setResponseRequired(boolean var1) {
+   public final void setResponseRequired(boolean responseRequired) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -116,7 +116,7 @@ public final class Invocation {
       return this._status;
    }
 
-   final void setStatus(int var1) {
+   final void setStatus(int status) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -124,7 +124,7 @@ public final class Invocation {
       return this._ID;
    }
 
-   public final void setID(String var1) {
+   public final void setID(String ID) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -136,10 +136,10 @@ public final class Invocation {
       return this._original;
    }
 
-   final void setInvokerInfo(String var1, String var2, String var3) {
-      this._invokingAuthority = var1;
-      this._invokingID = var2;
-      this._invokingAppName = var3;
+   final void setInvokerInfo(String invokingAuthority, String invokingID, String invokingAppName) {
+      this._invokingAuthority = invokingAuthority;
+      this._invokingID = invokingID;
+      this._invokingAppName = invokingAppName;
    }
 
    public final String getInvokingAuthority() {
@@ -155,16 +155,16 @@ public final class Invocation {
    }
 
    public final String findType() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public final Connection open(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Connection open(boolean timeouts) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setCredentials(String var1, char[] var2) {
-      this._username = var1;
-      this._password = var2;
+   public final void setCredentials(String username, char[] password) {
+      this._username = username;
+      this._password = password;
    }
 
    final String getUsername() {
@@ -175,18 +175,18 @@ public final class Invocation {
       return this._password;
    }
 
-   final void setPrevious(Invocation var1) {
+   final void setPrevious(Invocation invocation) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   final void setInvokerStack(int[] var1) {
+   final void setInvokerStack(int[] stack) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._invokerStack = var1;
+      this._invokerStack = stack;
    }
 
-   final void setInvokerDescriptor(ApplicationDescriptor var1) {
+   final void setInvokerDescriptor(ApplicationDescriptor descriptor) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._invokerDescriptor = var1;
+      this._invokerDescriptor = descriptor;
    }
 
    final void populateStackAndDescriptor() {

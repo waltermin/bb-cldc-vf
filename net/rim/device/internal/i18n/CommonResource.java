@@ -1,6 +1,8 @@
 package net.rim.device.internal.i18n;
 
+import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.i18n.ResourceBundleFamily;
+import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.vm.WeakReference;
 
 public final class CommonResource implements net.rim.device.internal.resource.CommonResource {
@@ -22,19 +24,32 @@ public final class CommonResource implements net.rim.device.internal.resource.Co
       return _bundle;
    }
 
-   public static final String format(int var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String format(int key, String param) {
+      synchronized (_params) {
+         _params[0] = param;
+         String result = format(key, _params);
+         _params[0] = null;
+         return result;
+      }
    }
 
-   public static final String format(int var0, Object[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String format(int key, Object[] params) {
+      String message = _bundle.getString(key);
+      MessageFormat format = (MessageFormat)(new Object(message));
+      StringBuffer _buffer = WeakReferenceUtilities.getStringBuffer(_bufferWR);
+      synchronized (_buffer) {
+         format.format(params, _buffer, null);
+         String result = _buffer.toString();
+         _buffer.setLength(0);
+         return result;
+      }
    }
 
-   public static final String getString(int var0) {
-      return _bundle.getString(var0);
+   public static final String getString(int key) {
+      return _bundle.getString(key);
    }
 
-   public static final String[] getStringArray(int var0) {
-      return _bundle.getStringArray(var0);
+   public static final String[] getStringArray(int key) {
+      return _bundle.getStringArray(key);
    }
 }

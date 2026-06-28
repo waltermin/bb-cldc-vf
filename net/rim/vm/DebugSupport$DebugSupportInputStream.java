@@ -6,8 +6,8 @@ class DebugSupport$DebugSupportInputStream extends InputStream {
    private int _fileno;
    private byte[] _byteBuf = new byte[1];
 
-   DebugSupport$DebugSupportInputStream(int var1) {
-      this._fileno = var1;
+   DebugSupport$DebugSupportInputStream(int fileno) {
+      this._fileno = fileno;
    }
 
    @Override
@@ -16,8 +16,8 @@ class DebugSupport$DebugSupportInputStream extends InputStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      return DebugSupport.read(this._fileno, var1, var2, var3);
+   public int read(byte[] b, int off, int len) {
+      return DebugSupport.read(this._fileno, b, off, len);
    }
 
    @Override

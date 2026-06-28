@@ -4,6 +4,6 @@ public class MediaException extends Exception {
    public MediaException() {
    }
 
-   public MediaException(String var1) {
+   public MediaException(String message) {
    }
 }

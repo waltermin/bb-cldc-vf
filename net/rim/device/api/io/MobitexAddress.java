@@ -12,19 +12,19 @@ public final class MobitexAddress extends DatagramAddressBase {
       throw new Object();
    }
 
-   public MobitexAddress(int var1, int var2, int var3) {
+   public MobitexAddress(int man, int type, int hpid) {
       this();
    }
 
-   public MobitexAddress(int var1, int var2, int var3, MobitexPacketHeader var4) {
+   public MobitexAddress(int man, int type, int hpid, MobitexPacketHeader header) {
       this();
    }
 
-   public MobitexAddress(DatagramAddressBase var1) {
+   public MobitexAddress(DatagramAddressBase addressBase) {
       this();
    }
 
-   public MobitexAddress(String var1) {
+   public MobitexAddress(String address) {
       this();
    }
 
@@ -32,7 +32,7 @@ public final class MobitexAddress extends DatagramAddressBase {
       return null;
    }
 
-   public final void setPacketHeader(MobitexPacketHeader var1) {
+   public final void setPacketHeader(MobitexPacketHeader mph) {
    }
 
    public final int getMan() {
@@ -48,7 +48,7 @@ public final class MobitexAddress extends DatagramAddressBase {
    }
 
    @Override
-   public final void setAddress(String var1) {
+   public final void setAddress(String address) {
    }
 
    @Override
@@ -57,7 +57,7 @@ public final class MobitexAddress extends DatagramAddressBase {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object addressBase) {
       return false;
    }
 
@@ -66,11 +66,11 @@ public final class MobitexAddress extends DatagramAddressBase {
       return 0;
    }
 
-   public static final String makeAddress(boolean var0, int var1, int var2, int var3) {
+   public static final String makeAddress(boolean open, int man, int type, int hpid) {
       throw new Object();
    }
 
-   public static final void appendAddress(StringBuffer var0, boolean var1, int var2, int var3, int var4) {
+   public static final void appendAddress(StringBuffer buf, boolean open, int man, int type, int hpid) {
       throw new Object();
    }
 }

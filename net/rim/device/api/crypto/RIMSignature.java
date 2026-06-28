@@ -1,5 +1,6 @@
 package net.rim.device.api.crypto;
 
+import java.io.IOException;
 import net.rim.device.api.util.Arrays;
 
 public final class RIMSignature {
@@ -10,180 +11,208 @@ public final class RIMSignature {
    private RIMSignature() {
    }
 
-   public static final long verify(byte[] var0, int var1, int var2, byte[] var3, int var4, byte[] var5) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public static final long verify(byte[] dataBytes, int dataOffset, int dataLength, byte[] signatureBytes, int signatureOffset, byte[] publicKeyBytes) {
+      if (dataBytes != null
+         && dataOffset >= 0
+         && dataBytes.length - dataLength >= dataOffset
+         && signatureBytes != null
+         && signatureOffset >= 0
+         && signatureOffset <= signatureBytes.length
+         && publicKeyBytes != null) {
+         try {
+            return verifyRIMFileSignerSignature(dataBytes, dataOffset, dataLength, signatureBytes, signatureOffset, publicKeyBytes);
+         } catch (IOException var9) {
+         } catch (ArrayIndexOutOfBoundsException var10) {
+         }
 
-   private static final long verifyRIMFileSignerSignature(byte[] var0, int var1, int var2, byte[] var3, int var4, byte[] var5) {
-      assertByte(var3, var4++, 31);
-      assertByte(var3, var4++, 45);
-      assertByte(var3, var4++, 200);
-      assertByte(var3, var4++, 215);
-      var4 += 4;
-      int var6 = var4;
-      long var7 = var3[var4++] & 0xFF;
-      var7 |= (var3[var4++] & 255) << 8;
-      var7 |= (var3[var4++] & 255) << 16;
-      var7 |= (var3[var4++] & 255) << 24;
-      int var9 = var3[var4++] & 255;
-      var9 |= (var3[var4++] & 255) << 8;
-      var9 |= (var3[var4++] & 255) << 16;
-      var9 |= (var3[var4++] & 255) << 24;
-      byte[] var10 = DEFAULT_RSA_E;
-      byte[] var11 = var5;
-      byte[] var12 = getBytes(var3, var4, var9, var11.length);
-      SHA1Digest var13 = new SHA1Digest();
-      var13.update(var0, var1, var2);
-      var13.update(var3, var6, 4);
-      return !verifyRSASignature(var10, var11, var12, var13, RSA_PKCS1_SHA1_DIGEST_PREFIX) ? 0 : var7 * 1000;
-   }
+         try {
+            return verifyPGPSignature(dataBytes, dataOffset, dataLength, signatureBytes, signatureOffset, publicKeyBytes);
+         } catch (IOException var7) {
+         } catch (ArrayIndexOutOfBoundsException var8) {
+         }
 
-   private static final int checkPGPPacketHeader(byte[] var0, int var1, int var2) {
-      int var3 = var0[var1] & 255;
-      int var4 = 128 | var2 << 2;
-      int var5 = var3 ^ var4;
-      if (var5 >= 3) {
-         throw new Object();
+         return -1;
       } else {
-         return 1 + (1 << var5);
+         throw new Object();
       }
    }
 
-   private static final long verifyPGPSignature(byte[] var0, int var1, int var2, byte[] var3, int var4, byte[] var5) {
-      var4 += checkPGPPacketHeader(var3, var4, 2);
-      assertByte(var3, var4++, 3);
-      assertByte(var3, var4++, 5);
-      int var6 = var4;
-      assertByte(var3, var4++, 0);
-      long var7 = getInteger(var3, var4, 4) & -1;
-      var4 += 12;
-      byte var9 = var3[var4++];
-      byte var10 = var3[var4++];
-      AbstractDigest var11;
-      byte[] var12;
-      switch (var10) {
+   private static final long verifyRIMFileSignerSignature(
+      byte[] dataBytes, int dataOffset, int dataLength, byte[] signatureBytes, int signatureOffset, byte[] publicKeyBytes
+   ) {
+      assertByte(signatureBytes, signatureOffset++, 31);
+      assertByte(signatureBytes, signatureOffset++, 45);
+      assertByte(signatureBytes, signatureOffset++, 200);
+      assertByte(signatureBytes, signatureOffset++, 215);
+      signatureOffset += 4;
+      int timeOffset = signatureOffset;
+      long signingTime = signatureBytes[signatureOffset++] & 0xFF;
+      signingTime |= (signatureBytes[signatureOffset++] & 255) << 8;
+      signingTime |= (signatureBytes[signatureOffset++] & 255) << 16;
+      signingTime |= (signatureBytes[signatureOffset++] & 255) << 24;
+      int encodedSignatureLength = signatureBytes[signatureOffset++] & 255;
+      encodedSignatureLength |= (signatureBytes[signatureOffset++] & 255) << 8;
+      encodedSignatureLength |= (signatureBytes[signatureOffset++] & 255) << 16;
+      encodedSignatureLength |= (signatureBytes[signatureOffset++] & 255) << 24;
+      byte[] e = DEFAULT_RSA_E;
+      byte[] n = publicKeyBytes;
+      byte[] signature = getBytes(signatureBytes, signatureOffset, encodedSignatureLength, n.length);
+      Digest digest = new SHA1Digest();
+      digest.update(dataBytes, dataOffset, dataLength);
+      digest.update(signatureBytes, timeOffset, 4);
+      return !verifyRSASignature(e, n, signature, digest, RSA_PKCS1_SHA1_DIGEST_PREFIX) ? 0 : signingTime * 1000;
+   }
+
+   private static final int checkPGPPacketHeader(byte[] data, int offset, int expectedPacketType) {
+      int headerByte = data[offset] & 255;
+      int expectedHeaderByte = 128 | expectedPacketType << 2;
+      int lengthType = headerByte ^ expectedHeaderByte;
+      if (lengthType >= 3) {
+         throw new Object();
+      } else {
+         return 1 + (1 << lengthType);
+      }
+   }
+
+   private static final long verifyPGPSignature(
+      byte[] dataBytes, int dataOffset, int dataLength, byte[] signatureBytes, int signatureOffset, byte[] publicKeyBytes
+   ) {
+      signatureOffset += checkPGPPacketHeader(signatureBytes, signatureOffset, 2);
+      assertByte(signatureBytes, signatureOffset++, 3);
+      assertByte(signatureBytes, signatureOffset++, 5);
+      int additionalHashDataOffset = signatureOffset;
+      assertByte(signatureBytes, signatureOffset++, 0);
+      long signingTimeInSeconds = getInteger(signatureBytes, signatureOffset, 4) & -1;
+      signatureOffset += 12;
+      byte signingAlgorithm = signatureBytes[signatureOffset++];
+      byte hashAlgorithm = signatureBytes[signatureOffset++];
+      Digest digest;
+      byte[] digestPrefix;
+      switch (hashAlgorithm) {
          case 0:
             throw new Object();
          case 1:
          default:
-            var11 = new MD5Digest();
-            var12 = RSA_PKCS1_MD5_DIGEST_PREFIX;
+            digest = new MD5Digest();
+            digestPrefix = RSA_PKCS1_MD5_DIGEST_PREFIX;
             break;
          case 2:
-            var11 = new SHA1Digest();
-            var12 = RSA_PKCS1_SHA1_DIGEST_PREFIX;
+            digest = new SHA1Digest();
+            digestPrefix = RSA_PKCS1_SHA1_DIGEST_PREFIX;
       }
 
-      var11.update(var0, var1, var2);
-      var11.update(var3, var6, 5);
-      var4 += 2;
-      int var13 = checkPGPPacketHeader(var5, 0, 6);
-      byte var14 = var5[var13++];
-      switch (var14) {
+      digest.update(dataBytes, dataOffset, dataLength);
+      digest.update(signatureBytes, additionalHashDataOffset, 5);
+      signatureOffset += 2;
+      int publicKeyOffset = checkPGPPacketHeader(publicKeyBytes, 0, 6);
+      byte publicKeyVersion = publicKeyBytes[publicKeyOffset++];
+      switch (publicKeyVersion) {
          case 2:
             throw new Object();
          case 3:
          default:
-            var13 += 6;
+            publicKeyOffset += 6;
             break;
          case 4:
-            var13 += 4;
+            publicKeyOffset += 4;
       }
 
-      boolean var15;
-      switch (var9) {
+      boolean verified;
+      switch (signingAlgorithm) {
          case 1:
          case 3:
-            var15 = verifyPGPRSASignature(var11, var12, var3, var4, var5, var13);
+            verified = verifyPGPRSASignature(digest, digestPrefix, signatureBytes, signatureOffset, publicKeyBytes, publicKeyOffset);
             break;
          case 17:
-            var15 = verifyPGPDSASignature(var11.getDigest(), var3, var4, var5, var13);
+            verified = verifyPGPDSASignature(digest.getDigest(), signatureBytes, signatureOffset, publicKeyBytes, publicKeyOffset);
             break;
          default:
             throw new Object();
       }
 
-      return !var15 ? 0 : var7 * 1000;
+      return !verified ? 0 : signingTimeInSeconds * 1000;
    }
 
-   private static final boolean verifyPGPRSASignature(Digest var0, byte[] var1, byte[] var2, int var3, byte[] var4, int var5) {
-      assertByte(var4, var5++, 1);
-      byte[] var6 = getMPI(var4, var5);
-      var5 += 2 + var6.length;
-      byte[] var7 = getMPI(var4, var5);
-      byte[] var8 = new byte[var6.length];
-      var3 += getMPI(var2, var3, var8);
-      return verifyRSASignature(var7, var6, var8, var0, var1);
+   private static final boolean verifyPGPRSASignature(
+      Digest digest, byte[] digestPrefix, byte[] signatureBytes, int signatureOffset, byte[] publicKeyBytes, int publicKeyOffset
+   ) {
+      assertByte(publicKeyBytes, publicKeyOffset++, 1);
+      byte[] n = getMPI(publicKeyBytes, publicKeyOffset);
+      publicKeyOffset += 2 + n.length;
+      byte[] e = getMPI(publicKeyBytes, publicKeyOffset);
+      byte[] signature = new byte[n.length];
+      signatureOffset += getMPI(signatureBytes, signatureOffset, signature);
+      return verifyRSASignature(e, n, signature, digest, digestPrefix);
    }
 
-   private static final boolean verifyRSASignature(byte[] var0, byte[] var1, byte[] var2, Digest var3, byte[] var4) {
-      int var5 = var1.length;
-      byte[] var6 = new byte[var5];
-      NativeRSA.publicKeyOperation(var1.length << 3, var0, var1, var2, 0, var6, 0);
-      int var7 = var3.getDigestLength();
-      int var8 = var4.length;
-      byte[] var9 = new byte[var5];
-      var9[1] = 1;
-      Arrays.fill(var9, (byte)-1, 2, var5 - var7 - var8 - 1 - 2);
-      System.arraycopy(var4, 0, var9, var5 - var7 - var8, var8);
-      var3.getDigest(var9, var5 - var7);
-      return Arrays.equals(var9, var6);
+   private static final boolean verifyRSASignature(byte[] e, byte[] n, byte[] signature, Digest digest, byte[] digestPrefix) {
+      int modulusLength = n.length;
+      byte[] remoteBuffer = new byte[modulusLength];
+      NativeRSA.publicKeyOperation(n.length << 3, e, n, signature, 0, remoteBuffer, 0);
+      int digestLength = digest.getDigestLength();
+      int digestPrefixLength = digestPrefix.length;
+      byte[] localBuffer = new byte[modulusLength];
+      localBuffer[1] = 1;
+      Arrays.fill(localBuffer, (byte)-1, 2, modulusLength - digestLength - digestPrefixLength - 1 - 2);
+      System.arraycopy(digestPrefix, 0, localBuffer, modulusLength - digestLength - digestPrefixLength, digestPrefixLength);
+      digest.getDigest(localBuffer, modulusLength - digestLength);
+      return Arrays.equals(localBuffer, remoteBuffer);
    }
 
-   private static final boolean verifyPGPDSASignature(byte[] var0, byte[] var1, int var2, byte[] var3, int var4) {
-      assertByte(var3, var4++, 17);
-      byte[] var5 = getMPI(var3, var4);
-      var4 += 2 + var5.length;
-      byte[] var6 = new byte[20];
-      byte[] var7 = new byte[var5.length];
-      byte[] var8 = new byte[var5.length];
-      var4 += getMPI(var3, var4, var6);
-      var4 += getMPI(var3, var4, var7);
-      var4 += getMPI(var3, var4, var8);
-      byte[] var9 = new byte[var6.length];
-      byte[] var10 = new byte[var6.length];
-      var2 += getMPI(var1, var2, var9);
-      var2 += getMPI(var1, var2, var10);
-      return NativeDL.verifyDSA(var5, var6, var7, var8, var0, var9, var10);
+   private static final boolean verifyPGPDSASignature(byte[] digest, byte[] signatureBytes, int signatureOffset, byte[] publicKeyBytes, int publicKeyOffset) {
+      assertByte(publicKeyBytes, publicKeyOffset++, 17);
+      byte[] p = getMPI(publicKeyBytes, publicKeyOffset);
+      publicKeyOffset += 2 + p.length;
+      byte[] q = new byte[20];
+      byte[] g = new byte[p.length];
+      byte[] y = new byte[p.length];
+      publicKeyOffset += getMPI(publicKeyBytes, publicKeyOffset, q);
+      publicKeyOffset += getMPI(publicKeyBytes, publicKeyOffset, g);
+      publicKeyOffset += getMPI(publicKeyBytes, publicKeyOffset, y);
+      byte[] r = new byte[q.length];
+      byte[] s = new byte[q.length];
+      signatureOffset += getMPI(signatureBytes, signatureOffset, r);
+      signatureOffset += getMPI(signatureBytes, signatureOffset, s);
+      return NativeDL.verifyDSA(p, q, g, y, digest, r, s);
    }
 
-   private static final void assertByte(byte[] var0, int var1, int var2) {
-      if (var2 != (var0[var1++] & 255)) {
+   private static final void assertByte(byte[] bytes, int offset, int value) {
+      if (value != (bytes[offset++] & 255)) {
          throw new Object();
       }
    }
 
-   private static final int getInteger(byte[] var0, int var1, int var2) {
-      int var3 = var0[var1++] & 255;
+   private static final int getInteger(byte[] bytes, int offset, int length) {
+      int i = bytes[offset++] & 255;
 
-      while (--var2 > 0) {
-         var3 <<= 8;
-         var3 |= var0[var1++] & 255;
+      while (--length > 0) {
+         i <<= 8;
+         i |= bytes[offset++] & 255;
       }
 
-      return var3;
+      return i;
    }
 
-   private static final byte[] getBytes(byte[] var0, int var1, int var2, int var3) {
-      byte[] var4 = new byte[var3];
-      System.arraycopy(var0, var1, var4, var3 - var2, var2);
-      return var4;
+   private static final byte[] getBytes(byte[] data, int offset, int length, int paddedLength) {
+      byte[] buffer = new byte[paddedLength];
+      System.arraycopy(data, offset, buffer, paddedLength - length, length);
+      return buffer;
    }
 
-   private static final int getMPILength(byte[] var0, int var1) {
-      return getInteger(var0, var1, 2) + 7 >> 3;
+   private static final int getMPILength(byte[] data, int offset) {
+      return getInteger(data, offset, 2) + 7 >> 3;
    }
 
-   private static final byte[] getMPI(byte[] var0, int var1) {
-      int var2 = getMPILength(var0, var1);
-      byte[] var3 = new byte[var2];
-      getMPI(var0, var1, var3);
-      return var3;
+   private static final byte[] getMPI(byte[] data, int offset) {
+      int length = getMPILength(data, offset);
+      byte[] mpi = new byte[length];
+      getMPI(data, offset, mpi);
+      return mpi;
    }
 
-   private static final int getMPI(byte[] var0, int var1, byte[] var2) {
-      int var3 = getMPILength(var0, var1);
-      System.arraycopy(var0, var1 + 2, var2, var2.length - var3, var3);
-      return 2 + var3;
+   private static final int getMPI(byte[] data, int offset, byte[] mpi) {
+      int length = getMPILength(data, offset);
+      System.arraycopy(data, offset + 2, mpi, mpi.length - length, length);
+      return 2 + length;
    }
 }

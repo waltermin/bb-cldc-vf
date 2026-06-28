@@ -27,50 +27,50 @@ public final class Fixed32 {
 
    public static final native int degToRad(int var0);
 
-   public static final int abs(int var0) {
-      if (var0 < 0) {
-         if (var0 == Integer.MIN_VALUE) {
+   public static final int abs(int a) {
+      if (a < 0) {
+         if (a == Integer.MIN_VALUE) {
             return Integer.MAX_VALUE;
          }
 
-         var0 = -var0;
+         a = -a;
       }
 
-      return var0;
+      return a;
    }
 
    public static final native int mul(int var0, int var1);
 
    public static final native int div(int var0, int var1);
 
-   public static final int toInt(int var0) {
-      return var0 >> 16;
+   public static final int toInt(int fp) {
+      return fp >> 16;
    }
 
-   public static final int toRoundedInt(int var0) {
-      if ((var0 & 32768) != 0) {
-         var0 += 65536;
+   public static final int toRoundedInt(int value) {
+      if ((value & 32768) != 0) {
+         value += 65536;
       }
 
-      return var0 >> 16;
+      return value >> 16;
    }
 
-   public static final int toIntTenThou(int var0) {
-      long var1 = (long)var0 * 10000;
-      if ((var1 & 32768) != 0) {
-         var1 += 65536;
+   public static final int toIntTenThou(int fp) {
+      long value = (long)fp * 10000;
+      if ((value & 32768) != 0) {
+         value += 65536;
       }
 
-      return (int)(var1 >> 16);
+      return (int)(value >> 16);
    }
 
-   public static final int toFP(int var0) {
-      return var0 << 16;
+   public static final int toFP(int i) {
+      return i << 16;
    }
 
-   public static final int tenThouToFP(int var0) {
-      int var1 = var0 < 0 ? -5000 : 5000;
-      return (int)((((long)var0 << 16) + var1) / 10000);
+   public static final int tenThouToFP(int tenThou) {
+      int rounder = tenThou < 0 ? -5000 : 5000;
+      return (int)((((long)tenThou << 16) + rounder) / 10000);
    }
 
    public static final native int sqrt(int var0);
@@ -83,8 +83,8 @@ public final class Fixed32 {
 
    public static final native int atand2(int var0, int var1);
 
-   public static final int ceil(int var0) {
-      return -floor(-var0);
+   public static final int ceil(int val) {
+      return -floor(-val);
    }
 
    public static final native int floor(int var0);
@@ -101,15 +101,15 @@ public final class Fixed32 {
 
    public static final native int ArcCos(int var0);
 
-   public static final int parseFixed32(String var0) {
+   public static final int parseFixed32(String value) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final int divtoInt(int var0, int var1) {
-      long var2 = var0;
-      long var4 = var1;
-      long var6 = (var2 << 32) / var4;
-      var6 += 2147483648L;
-      return (int)(var6 >> 32);
+   public static final int divtoInt(int n, int m) {
+      long ln = n;
+      long lm = m;
+      long ret = (ln << 32) / lm;
+      ret += 2147483648L;
+      return (int)(ret >> 32);
    }
 }

@@ -11,30 +11,30 @@ public class ThreadSpecificData {
 
    private static native void setData(Thread var0, ThreadSpecificData var1);
 
-   private static ThreadSpecificData get(Thread var0) {
-      ThreadSpecificData var1 = getData(var0);
-      if (var1 == null) {
-         var1 = new ThreadSpecificData();
-         setData(var0, var1);
+   private static ThreadSpecificData get(Thread thread) {
+      ThreadSpecificData tsd = getData(thread);
+      if (tsd == null) {
+         tsd = new ThreadSpecificData();
+         setData(thread, tsd);
       }
 
-      return var1;
+      return tsd;
    }
 
-   public static Object get(Thread var0, int var1) {
-      ThreadSpecificData var2 = get(var0);
-      WeakReference var3 = var2.data[var1];
-      return var3 == null ? null : var3.get();
+   public static Object get(Thread thread, int index) {
+      ThreadSpecificData tsd = get(thread);
+      WeakReference wr = tsd.data[index];
+      return wr == null ? null : wr.get();
    }
 
-   public static void set(Thread var0, int var1, Object var2) {
-      ThreadSpecificData var3 = get(var0);
-      WeakReference var4 = var3.data[var1];
-      if (var4 == null) {
-         var4 = new WeakReference(var2);
-         var3.data[var1] = var4;
+   public static void set(Thread thread, int index, Object obj) {
+      ThreadSpecificData tsd = get(thread);
+      WeakReference wr = tsd.data[index];
+      if (wr == null) {
+         wr = new WeakReference(obj);
+         tsd.data[index] = wr;
       } else {
-         var4.set(var2);
+         wr.set(obj);
       }
    }
 }

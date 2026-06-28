@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import net.rim.vm.Message;
 import net.rim.vm.MessageQueue;
 
 class ApplicationManagerImpl$StartupGetMessageThread extends Thread {
@@ -8,10 +9,18 @@ class ApplicationManagerImpl$StartupGetMessageThread extends Thread {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private synchronized MessageQueue getMessages() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._done = true;
+      Message.abortGet(this);
+
+      try {
+         super.wait();
+      } catch (InterruptedException var2) {
+      }
+
+      return this._messageQueue;
    }
 }

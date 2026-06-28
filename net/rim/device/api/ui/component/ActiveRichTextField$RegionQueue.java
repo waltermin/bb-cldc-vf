@@ -18,16 +18,16 @@ public class ActiveRichTextField$RegionQueue {
    private static final int REGION_ARRAY_INCR;
    private static final int FONT_ARRAY_INCR;
 
-   public ActiveRichTextField$RegionQueue(int var1, int var2) {
-      if (var1 > 0) {
-         this.resizeBuffers(var1);
+   public ActiveRichTextField$RegionQueue(int initMaxRegions, int initMaxFonts) {
+      if (initMaxRegions > 0) {
+         this.resizeBuffers(initMaxRegions);
       }
 
-      if (var2 > 0) {
-         this.fonts = new Font[var2];
-         this.foregroundColors = new int[var2];
-         this.backgroundColors = new int[var2];
-         this._maxfonts = var2;
+      if (initMaxFonts > 0) {
+         this.fonts = new Font[initMaxFonts];
+         this.foregroundColors = new int[initMaxFonts];
+         this.backgroundColors = new int[initMaxFonts];
+         this._maxfonts = initMaxFonts;
       }
    }
 
@@ -41,11 +41,11 @@ public class ActiveRichTextField$RegionQueue {
       }
    }
 
-   public final byte appendFont(Font var1) {
-      return this.appendFont(var1, -1, -1);
+   public final byte appendFont(Font font) {
+      return this.appendFont(font, -1, -1);
    }
 
-   public final byte appendFont(Font var1, int var2, int var3) {
+   public final byte appendFont(Font font, int foregroundColor, int backgroundColor) {
       if (this._numfonts == this._maxfonts) {
          if (this.fonts == null) {
             this.fonts = new Font[this._maxfonts + 2];
@@ -60,38 +60,38 @@ public class ActiveRichTextField$RegionQueue {
          this._maxfonts += 2;
       }
 
-      this.fonts[this._numfonts] = var1;
-      this.foregroundColors[this._numfonts] = var2;
-      this.backgroundColors[this._numfonts] = var3;
+      this.fonts[this._numfonts] = font;
+      this.foregroundColors[this._numfonts] = foregroundColor;
+      this.backgroundColors[this._numfonts] = backgroundColor;
       this._numfonts++;
       return (byte)(this._numfonts - 1);
    }
 
-   protected void resizeBuffers(int var1) {
-      if (this._maxregions != var1) {
-         if (var1 == 0) {
+   protected void resizeBuffers(int newCapacity) {
+      if (this._maxregions != newCapacity) {
+         if (newCapacity == 0) {
             this.offsets = null;
             this.attributes = null;
             this.cookieID = null;
          } else if (this._maxregions == 0) {
-            this.offsets = new int[var1 + 1];
-            this.attributes = new byte[var1];
-            this.cookieID = (IntHashtable)(new Object(var1));
+            this.offsets = new int[newCapacity + 1];
+            this.attributes = new byte[newCapacity];
+            this.cookieID = (IntHashtable)(new Object(newCapacity));
             this.offsets[0] = 0;
          } else {
-            Array.resize(this.offsets, var1 + 1);
-            Array.resize(this.attributes, var1);
+            Array.resize(this.offsets, newCapacity + 1);
+            Array.resize(this.attributes, newCapacity);
          }
 
-         this._maxregions = var1;
+         this._maxregions = newCapacity;
       }
    }
 
-   public boolean appendRegion(int var1, byte var2, long var3) {
+   public boolean appendRegion(int offset, byte attribute, long id) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
-   public void appendCookieID(long var1) {
+   public void appendCookieID(long id) {
       throw new RuntimeException("cod2jar: type check");
    }
 

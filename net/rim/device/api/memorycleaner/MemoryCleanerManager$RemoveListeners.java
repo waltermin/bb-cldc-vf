@@ -7,25 +7,25 @@ import net.rim.device.internal.proxy.Proxy;
 class MemoryCleanerManager$RemoveListeners implements Runnable {
    private final MemoryCleanerManager this$0;
 
-   private MemoryCleanerManager$RemoveListeners(MemoryCleanerManager var1) {
-      this.this$0 = var1;
+   private MemoryCleanerManager$RemoveListeners(MemoryCleanerManager _1) {
+      this.this$0 = _1;
    }
 
    @Override
    public void run() {
-      Proxy var1 = Proxy.getInstance();
-      var1.removeHolsterListener(this.this$0);
-      var1.removeRealtimeClockListener(this.this$0);
-      var1.removeGlobalEventListener(this.this$0);
-      var1.removeSystemListener(this.this$0);
+      Proxy proxy = Proxy.getInstance();
+      proxy.removeHolsterListener(this.this$0);
+      proxy.removeRealtimeClockListener(this.this$0);
+      proxy.removeGlobalEventListener(this.this$0);
+      proxy.removeSystemListener(this.this$0);
       RIMGlobalMessagePoster.postGlobalEvent(5924166216341050021L);
-      SyncManager var2 = SyncManager.getInstance();
-      if (var2 != null) {
-         var2.removeSyncEventListener(this.this$0);
+      SyncManager syncManager = SyncManager.getInstance();
+      if (syncManager != null) {
+         syncManager.removeSyncEventListener(this.this$0);
       }
    }
 
-   MemoryCleanerManager$RemoveListeners(MemoryCleanerManager var1, MemoryCleanerManager$1 var2) {
-      this(var1);
+   MemoryCleanerManager$RemoveListeners(MemoryCleanerManager x0, MemoryCleanerManager$1 x1) {
+      this(x0);
    }
 }

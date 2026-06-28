@@ -36,14 +36,14 @@ public final class TimeService {
       this.intializeTimeZones();
       this._defaultTimeZoneID = this.internalGetDefaultTimeZoneID();
       this._persistableBitfieldSettings = RIMPersistentStore.getPersistentObject(987576202591045751L);
-      Object var1 = this._persistableBitfieldSettings.getContents();
-      if (var1 == null) {
+      Integer i = (Integer)this._persistableBitfieldSettings.getContents();
+      if (i == null) {
          this._timeServiceSettings = this.TIME_SERVICE_SETTINGS_AUTO_ADJUST_FOR_DST;
-         var1 = new Object(this._timeServiceSettings);
-         this._persistableBitfieldSettings.setContents(var1, 51, false);
+         i = (Integer)(new Object(this._timeServiceSettings));
+         this._persistableBitfieldSettings.setContents(i, 51, false);
          this._persistableBitfieldSettings.commit();
       } else {
-         this._timeServiceSettings = var1;
+         this._timeServiceSettings = i;
          if ((this._timeServiceSettings & this.TIME_SERVICE_SETTINGS_AUTO_ADJUST_FOR_DST) == 0) {
             this._automaticallyAdjustClockForDSTTime = false;
          }
@@ -52,8 +52,8 @@ public final class TimeService {
       this.updateTimeZoneOffset();
    }
 
-   public final synchronized void setAutomaticClockAdjustmentForDST(boolean var1) {
-      this._automaticallyAdjustClockForDSTTime = var1;
+   public final synchronized void setAutomaticClockAdjustmentForDST(boolean automaticallyAdjustClockForDSTTime) {
+      this._automaticallyAdjustClockForDSTTime = automaticallyAdjustClockForDSTTime;
       this._timeServiceSettings = this._timeServiceSettings | this.TIME_SERVICE_SETTINGS_AUTO_ADJUST_FOR_DST;
       this._persistableBitfieldSettings.setContents(new Object(this._timeServiceSettings), 51, false);
       this._persistableBitfieldSettings.commit();
@@ -63,36 +63,36 @@ public final class TimeService {
       return this._automaticallyAdjustClockForDSTTime;
    }
 
-   public final synchronized void setLocalizer(TimeZoneDataLocalizer var1) {
-      this._localizer = var1;
+   public final synchronized void setLocalizer(TimeZoneDataLocalizer localizer) {
+      this._localizer = localizer;
    }
 
    private final void intializeTimeZones() {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final int getTimeZoneBuiltInIndex(int var1) {
-      byte var2 = -1;
+   private final int getTimeZoneBuiltInIndex(int tzid) {
+      int result = -1;
 
-      for (int var3 = 0; var3 < 88; var3++) {
-         int var4 = var3 * 9;
-         if (var1 == TimeZoneData.ZONE_DATA[var4]) {
-            return var3;
+      for (int i = 0; i < 88; i++) {
+         int dataOffset = i * 9;
+         if (tzid == TimeZoneData.ZONE_DATA[dataOffset]) {
+            return i;
          }
       }
 
-      return var2;
+      return result;
    }
 
-   private final synchronized String[] getTimeZoneNames(int var1) {
-      int var2 = this._indexMap.length;
-      String[] var3 = new String[var2];
+   private final synchronized String[] getTimeZoneNames(int type) {
+      int size = this._indexMap.length;
+      String[] result = new String[size];
 
-      for (int var4 = 0; var4 < var2; var4++) {
-         var3[var4] = this.getTimeZoneDescriptionByIndex(var4, var1);
+      for (int i = 0; i < size; i++) {
+         result[i] = this.getTimeZoneDescriptionByIndex(i, type);
       }
 
-      return var3;
+      return result;
    }
 
    public final synchronized String[] getTimeZoneNamesLong() {
@@ -104,99 +104,99 @@ public final class TimeService {
    }
 
    public final synchronized String[] getTimeZoneIDs() {
-      int var1 = this._indexMap.length;
-      String[] var2 = new String[var1];
+      int size = this._indexMap.length;
+      String[] result = new String[size];
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2[var3] = this._sortedTimeZoneDataObjectList[this._indexMap[var3]].getTimeZoneStringID();
+      for (int i = 0; i < size; i++) {
+         result[i] = this._sortedTimeZoneDataObjectList[this._indexMap[i]].getTimeZoneStringID();
       }
 
-      return var2;
+      return result;
    }
 
    public final synchronized int[] getTimeZoneUIDs() {
-      int var1 = this._sortedTimeZoneDataObjectList.length;
-      int[] var2 = new int[var1];
+      int size = this._sortedTimeZoneDataObjectList.length;
+      int[] result = new int[size];
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2[var3] = this._sortedTimeZoneDataObjectList[var3].getTimeZoneID();
+      for (int i = 0; i < size; i++) {
+         result[i] = this._sortedTimeZoneDataObjectList[i].getTimeZoneID();
       }
 
-      return var2;
+      return result;
    }
 
    public final synchronized TimeZone[] getTimeZones() {
-      int var1 = this._sortedTimeZoneDataObjectList.length;
-      TimeZone[] var2 = new TimeZone[var1];
+      int size = this._sortedTimeZoneDataObjectList.length;
+      TimeZone[] result = new TimeZone[size];
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2[var3] = this.getZone(this.getTimeZoneID(this._sortedTimeZoneDataObjectList[var3]));
+      for (int i = 0; i < size; i++) {
+         result[i] = this.getZone(this.getTimeZoneID(this._sortedTimeZoneDataObjectList[i]));
       }
 
-      return var2;
+      return result;
    }
 
    public final synchronized TimeZoneDataObject[] getTimeZoneDataObjects() {
       return this._sortedTimeZoneDataObjectList;
    }
 
-   public final synchronized String getTimeZoneIDFromIndex(int var1) {
-      String var2 = null;
-      if (var1 >= 0 && var1 < this._indexMap.length) {
-         var2 = this._sortedTimeZoneDataObjectList[this._indexMap[var1]].getTimeZoneStringID();
+   public final synchronized String getTimeZoneIDFromIndex(int index) {
+      String result = null;
+      if (index >= 0 && index < this._indexMap.length) {
+         result = this._sortedTimeZoneDataObjectList[this._indexMap[index]].getTimeZoneStringID();
       }
 
-      return var2;
+      return result;
    }
 
-   public final synchronized int getTimeZoneUIDFromIndex(int var1) {
-      int var2 = -1;
-      if (var1 >= 0 && var1 < this._indexMap.length) {
-         var2 = this._sortedTimeZoneDataObjectList[this._indexMap[var1]].getTimeZoneID();
+   public final synchronized int getTimeZoneUIDFromIndex(int index) {
+      int result = -1;
+      if (index >= 0 && index < this._indexMap.length) {
+         result = this._sortedTimeZoneDataObjectList[this._indexMap[index]].getTimeZoneID();
       }
 
-      return var2;
+      return result;
    }
 
-   public final synchronized TimeZone getTimeZone(String var1) {
-      if (this._tzObject != null && var1.equals(this._tzObject.getID())) {
+   public final synchronized TimeZone getTimeZone(String ID) {
+      if (this._tzObject != null && ID.equals(this._tzObject.getID())) {
          return this._tzObject;
       }
 
-      TimeZoneImpl var2 = this.getZone(this.getTimeZoneID(var1));
-      if (var2 != null) {
-         this._tzObject = var2;
-         return var2;
+      TimeZone tzObject = this.getZone(this.getTimeZoneID(ID));
+      if (tzObject != null) {
+         this._tzObject = tzObject;
+         return tzObject;
       }
 
-      CustomTimeZoneImpl var3 = this.getCustomZone(var1);
-      if (var3 != null) {
-         this._tzObject = var3;
+      tzObject = this.getCustomZone(ID);
+      if (tzObject != null) {
+         this._tzObject = tzObject;
       }
 
-      return var3;
+      return tzObject;
    }
 
-   public final int getTimeZoneID(TimeZoneDataObject var1) {
-      int var2 = var1.getMappedTZID();
-      return var2 == -1 ? var1.getTimeZoneID() : var2;
+   public final int getTimeZoneID(TimeZoneDataObject tzdo) {
+      int result = tzdo.getMappedTZID();
+      return result == -1 ? tzdo.getTimeZoneID() : result;
    }
 
-   public final int getTimeZoneID(String var1) {
-      int var2 = -1;
+   public final int getTimeZoneID(String timeZoneName) {
+      int result = -1;
 
-      for (int var3 = 0; var1 != null && var3 < this._sortedTimeZoneDataObjectList.length; var3++) {
-         TimeZoneDataObject var4 = this._sortedTimeZoneDataObjectList[var3];
-         if (var1.equalsIgnoreCase(var4.getTimeZoneStringID())) {
-            var2 = var4.getMappedTZID();
-            if (var2 == -1) {
-               return var4.getTimeZoneID();
+      for (int i = 0; timeZoneName != null && i < this._sortedTimeZoneDataObjectList.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[i];
+         if (timeZoneName.equalsIgnoreCase(tzdo.getTimeZoneStringID())) {
+            result = tzdo.getMappedTZID();
+            if (result == -1) {
+               return tzdo.getTimeZoneID();
             }
             break;
          }
       }
 
-      return var2;
+      return result;
    }
 
    public final boolean isTimeZoneConfigured() {
@@ -204,209 +204,209 @@ public final class TimeService {
    }
 
    private final void updateTimeZoneOffset() {
-      TimeZone var1 = this.getTimeZone(this.getDefaultTimeZoneID());
-      if (var1 != null) {
-         InternalServices.setTimeZoneOffset(var1.getRawOffset());
+      TimeZone tz = this.getTimeZone(this.getDefaultTimeZoneID());
+      if (tz != null) {
+         InternalServices.setTimeZoneOffset(tz.getRawOffset());
       }
    }
 
    private final String internalGetDefaultTimeZoneID() {
-      PersistentObject var1 = RIMPersistentStore.getPersistentObject(2989539104253779367L);
-      return (String)var1.getContents();
+      PersistentObject po = RIMPersistentStore.getPersistentObject(2989539104253779367L);
+      return (String)po.getContents();
    }
 
-   private final void internalSetDefaultTimeZoneID(String var1) {
-      PersistentObject var2 = RIMPersistentStore.getPersistentObject(2989539104253779367L);
-      this._defaultTimeZoneID = var1;
-      var2.setContents(var1, 51, false);
+   private final void internalSetDefaultTimeZoneID(String timeZoneID) {
+      PersistentObject po = RIMPersistentStore.getPersistentObject(2989539104253779367L);
+      this._defaultTimeZoneID = timeZoneID;
+      po.setContents(timeZoneID, 51, false);
       this.updateTimeZoneOffset();
-      var2.commit();
+      po.commit();
    }
 
    public final String getDefaultTimeZoneID() {
-      String var1 = this._defaultTimeZoneID;
-      if (var1 == null) {
-         var1 = DateTimeUtilities.GMT;
+      String timeZoneID = this._defaultTimeZoneID;
+      if (timeZoneID == null) {
+         timeZoneID = DateTimeUtilities.GMT;
       }
 
-      return var1;
+      return timeZoneID;
    }
 
-   public final synchronized void setDefaultTimeZone(String var1) {
-      if (var1 != null && this.getTimeZoneID(var1) != -1 && !var1.equals(this._defaultTimeZoneID)) {
-         this._defaultTimeZoneID = this.getTimeZoneInfo(this.getTimeZoneID(var1)).getTimeZoneStringID();
+   public final synchronized void setDefaultTimeZone(String defaultTimeZoneID) {
+      if (defaultTimeZoneID != null && this.getTimeZoneID(defaultTimeZoneID) != -1 && !defaultTimeZoneID.equals(this._defaultTimeZoneID)) {
+         this._defaultTimeZoneID = this.getTimeZoneInfo(this.getTimeZoneID(defaultTimeZoneID)).getTimeZoneStringID();
          this.internalSetDefaultTimeZoneID(this._defaultTimeZoneID);
-         TimeZone var2 = this.getTimeZone(this._defaultTimeZoneID);
-         if (var2 != null) {
-            InternalServices.setTimeZoneOffset(var2.getRawOffset());
+         TimeZone tz = this.getTimeZone(this._defaultTimeZoneID);
+         if (tz != null) {
+            InternalServices.setTimeZoneOffset(tz.getRawOffset());
          }
 
          RIMGlobalMessagePoster.postGlobalEvent(3596208183088439728L);
       }
    }
 
-   public final int getTimeZoneIndex(String var1) {
-      int var2 = -1;
+   public final int getTimeZoneIndex(String timeZoneName) {
+      int result = -1;
 
-      for (int var3 = 0; var1 != null && var3 < this._indexMap.length; var3++) {
-         TimeZoneDataObject var4 = this._sortedTimeZoneDataObjectList[this._indexMap[var3]];
-         if (var1.equalsIgnoreCase(var4.getTimeZoneStringID())) {
-            var2 = var3;
+      for (int i = 0; timeZoneName != null && i < this._indexMap.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[this._indexMap[i]];
+         if (timeZoneName.equalsIgnoreCase(tzdo.getTimeZoneStringID())) {
+            result = i;
             break;
          }
       }
 
-      if (var2 == -1 && (var1 == null || !var1.equalsIgnoreCase(DateTimeUtilities.GMT))) {
-         var2 = this.getTimeZoneIndex(DateTimeUtilities.GMT);
+      if (result == -1 && (timeZoneName == null || !timeZoneName.equalsIgnoreCase(DateTimeUtilities.GMT))) {
+         result = this.getTimeZoneIndex(DateTimeUtilities.GMT);
       }
 
-      return var2;
+      return result;
    }
 
-   public final int getTimeZoneIndexByUID(int var1) {
-      int var2 = -1;
+   public final int getTimeZoneIndexByUID(int uid) {
+      int result = -1;
 
-      for (int var3 = 0; var3 < this._indexMap.length; var3++) {
-         TimeZoneDataObject var4 = this._sortedTimeZoneDataObjectList[this._indexMap[var3]];
-         if (var4.getTimeZoneID() == var1) {
-            var2 = var3;
+      for (int i = 0; i < this._indexMap.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[this._indexMap[i]];
+         if (tzdo.getTimeZoneID() == uid) {
+            result = i;
             break;
          }
       }
 
-      if (var2 == -1) {
-         var2 = this.getTimeZoneIndex(DateTimeUtilities.GMT);
+      if (result == -1) {
+         result = this.getTimeZoneIndex(DateTimeUtilities.GMT);
       }
 
-      return var2;
+      return result;
    }
 
-   public final synchronized TimeZoneDataObject getTimeZoneInfo(int var1) {
-      return (TimeZoneDataObject)this._timeZoneTable.get(var1);
+   public final synchronized TimeZoneDataObject getTimeZoneInfo(int tzid) {
+      return (TimeZoneDataObject)this._timeZoneTable.get(tzid);
    }
 
-   public final synchronized TimeZoneDataObject getTimeZoneByUID(int var1) {
-      for (int var2 = 0; var2 < this._sortedTimeZoneDataObjectList.length; var2++) {
-         TimeZoneDataObject var3 = this._sortedTimeZoneDataObjectList[var2];
-         if (var3.getUID() == var1) {
-            return var3;
+   public final synchronized TimeZoneDataObject getTimeZoneByUID(int uid) {
+      for (int i = 0; i < this._sortedTimeZoneDataObjectList.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[i];
+         if (tzdo.getUID() == uid) {
+            return tzdo;
          }
       }
 
       return null;
    }
 
-   public final synchronized String getTimeZoneIDFromSerialSyncID(int var1) {
-      String var2 = null;
-      Object var3 = this._timeZoneTable.get(var1);
-      if (var3 != null) {
-         var2 = ((TimeZoneDataObject)var3).getTimeZoneStringID();
+   public final synchronized String getTimeZoneIDFromSerialSyncID(int serialSyncID) {
+      String result = null;
+      TimeZoneDataObject tzdo = (TimeZoneDataObject)this._timeZoneTable.get(serialSyncID);
+      if (tzdo != null) {
+         result = tzdo.getTimeZoneStringID();
       }
 
-      return var2;
+      return result;
    }
 
-   public final synchronized int getSerialSyncID(String var1) {
-      byte var2 = -1;
+   public final synchronized int getSerialSyncID(String timeZoneName) {
+      int result = -1;
 
-      for (int var3 = 0; var1 != null && var3 < this._sortedTimeZoneDataObjectList.length; var3++) {
-         TimeZoneDataObject var4 = this._sortedTimeZoneDataObjectList[var3];
-         if (var1.equalsIgnoreCase(var4.getTimeZoneStringID())) {
-            return var4.getTimeZoneID();
+      for (int i = 0; timeZoneName != null && i < this._sortedTimeZoneDataObjectList.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[i];
+         if (timeZoneName.equalsIgnoreCase(tzdo.getTimeZoneStringID())) {
+            return tzdo.getTimeZoneID();
          }
       }
 
-      return var2;
+      return result;
    }
 
-   private final synchronized String getTimeZoneDescription(TimeZoneDataObject var1, int var2) {
+   private final synchronized String getTimeZoneDescription(TimeZoneDataObject tzdo, int descriptionType) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   private final synchronized String getTimeZoneDescriptionByIndex(int var1, int var2) {
-      TimeZoneDataObject var3 = this._sortedTimeZoneDataObjectList[this._indexMap[var1]];
-      return this.getTimeZoneDescription(var3, var2);
+   private final synchronized String getTimeZoneDescriptionByIndex(int index, int descriptionType) {
+      TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[this._indexMap[index]];
+      return this.getTimeZoneDescription(tzdo, descriptionType);
    }
 
-   public final synchronized String getTimeZoneLongDescription(String var1) {
-      return this.getTimeZoneDescriptionByIndex(this.getTimeZoneIndex(var1), 1);
+   public final synchronized String getTimeZoneLongDescription(String id) {
+      return this.getTimeZoneDescriptionByIndex(this.getTimeZoneIndex(id), 1);
    }
 
-   public final synchronized String getTimeZoneShortDescription(String var1) {
-      return this.getTimeZoneDescriptionByIndex(this.getTimeZoneIndex(var1), 0);
+   public final synchronized String getTimeZoneShortDescription(String id) {
+      return this.getTimeZoneDescriptionByIndex(this.getTimeZoneIndex(id), 0);
    }
 
-   private final synchronized String getTimeZoneDescriptionByID(int var1, int var2) {
-      Object var3 = this._timeZoneTable.get(var1);
-      return this.getTimeZoneDescription((TimeZoneDataObject)var3, var2);
+   private final synchronized String getTimeZoneDescriptionByID(int tzid, int descriptionType) {
+      TimeZoneDataObject tzdo = (TimeZoneDataObject)this._timeZoneTable.get(tzid);
+      return this.getTimeZoneDescription(tzdo, descriptionType);
    }
 
-   public final synchronized String getTimeZoneLongDescription(int var1) {
-      return this.getTimeZoneDescriptionByID(var1, 0);
+   public final synchronized String getTimeZoneLongDescription(int tzid) {
+      return this.getTimeZoneDescriptionByID(tzid, 0);
    }
 
-   public final synchronized String getLocalizedTimeZoneShortDescription(int var1) {
-      return this.getTimeZoneDescriptionByID(var1, 0);
+   public final synchronized String getLocalizedTimeZoneShortDescription(int tzid) {
+      return this.getTimeZoneDescriptionByID(tzid, 0);
    }
 
-   public final synchronized String getDefaultTimeZoneDescription(int var1) {
-      return this.getTimeZoneDescriptionByID(var1, 2);
+   public final synchronized String getDefaultTimeZoneDescription(int tzid) {
+      return this.getTimeZoneDescriptionByID(tzid, 2);
    }
 
-   private final TimeZoneImpl getZone(int var1) {
-      TimeZoneImpl var2 = null;
-      Object var3 = this._timeZoneTable.get(var1);
-      if (var3 != null) {
-         var2 = new TimeZoneImpl(
-            ((TimeZoneDataObject)var3).getTimeZoneStringID(),
-            ((TimeZoneDataObject)var3).getGMTOffset(),
-            ((TimeZoneDataObject)var3).getDSTAmount(),
-            ((TimeZoneDataObject)var3).getDSTStartMode(),
-            ((TimeZoneDataObject)var3).getDSTStartMonth(),
-            ((TimeZoneDataObject)var3).getDSTStartDayOfWeek(),
-            ((TimeZoneDataObject)var3).getDSTStartDay(),
-            ((TimeZoneDataObject)var3).getDSTStartTime(),
-            ((TimeZoneDataObject)var3).getDSTEndMode(),
-            ((TimeZoneDataObject)var3).getDSTEndMonth(),
-            ((TimeZoneDataObject)var3).getDSTEndDayOfWeek(),
-            ((TimeZoneDataObject)var3).getDSTEndDay(),
-            ((TimeZoneDataObject)var3).getDSTEndTime(),
-            var1,
+   private final TimeZoneImpl getZone(int tzid) {
+      TimeZoneImpl result = null;
+      TimeZoneDataObject tzdo = (TimeZoneDataObject)this._timeZoneTable.get(tzid);
+      if (tzdo != null) {
+         result = new TimeZoneImpl(
+            tzdo.getTimeZoneStringID(),
+            tzdo.getGMTOffset(),
+            tzdo.getDSTAmount(),
+            tzdo.getDSTStartMode(),
+            tzdo.getDSTStartMonth(),
+            tzdo.getDSTStartDayOfWeek(),
+            tzdo.getDSTStartDay(),
+            tzdo.getDSTStartTime(),
+            tzdo.getDSTEndMode(),
+            tzdo.getDSTEndMonth(),
+            tzdo.getDSTEndDayOfWeek(),
+            tzdo.getDSTEndDay(),
+            tzdo.getDSTEndTime(),
+            tzid,
             this._automaticallyAdjustClockForDSTTime
          );
       }
 
-      return var2;
+      return result;
    }
 
-   private final CustomTimeZoneImpl getCustomZone(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final CustomTimeZoneImpl getCustomZone(String ID) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final synchronized void deleteTimeZone(int var1) {
-      for (int var2 = 0; var2 < this._sortedTimeZoneDataObjectList.length; var2++) {
-         TimeZoneDataObject var3 = this._sortedTimeZoneDataObjectList[var2];
-         if (var3.getTimeZoneID() == var1) {
-            if (var3.getTimeZoneStringID().equalsIgnoreCase(DateTimeUtilities.GMT)) {
+   public final synchronized void deleteTimeZone(int tzid) {
+      for (int i = 0; i < this._sortedTimeZoneDataObjectList.length; i++) {
+         TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[i];
+         if (tzdo.getTimeZoneID() == tzid) {
+            if (tzdo.getTimeZoneStringID().equalsIgnoreCase(DateTimeUtilities.GMT)) {
                return;
             }
 
-            this._sortedTimeZoneDataObjectList[var2] = this._sortedTimeZoneDataObjectList[this._sortedTimeZoneDataObjectList.length - 1];
+            this._sortedTimeZoneDataObjectList[i] = this._sortedTimeZoneDataObjectList[this._sortedTimeZoneDataObjectList.length - 1];
             Array.resize(this._sortedTimeZoneDataObjectList, this._sortedTimeZoneDataObjectList.length - 1);
-            this._timeZoneTable.remove(var1);
+            this._timeZoneTable.remove(tzid);
             Arrays.sort(this._sortedTimeZoneDataObjectList, TimeZoneDataObject.getComparator());
             this._indexMap = new int[this._sortedTimeZoneDataObjectList.length];
-            int var4 = 0;
+            int count = 0;
 
-            for (int var5 = 0; var5 < this._sortedTimeZoneDataObjectList.length; var5++) {
-               if (!this._sortedTimeZoneDataObjectList[var5].isHidden()) {
-                  this._indexMap[var4] = var5;
-                  var4++;
+            for (int j = 0; j < this._sortedTimeZoneDataObjectList.length; j++) {
+               if (!this._sortedTimeZoneDataObjectList[j].isHidden()) {
+                  this._indexMap[count] = j;
+                  count++;
                }
             }
 
-            Array.resize(this._indexMap, var4);
-            if (this._defaultTimeZoneID != null && this._defaultTimeZoneID.equalsIgnoreCase(var3.getTimeZoneStringID())) {
+            Array.resize(this._indexMap, count);
+            if (this._defaultTimeZoneID != null && this._defaultTimeZoneID.equalsIgnoreCase(tzdo.getTimeZoneStringID())) {
                this._tzObject = null;
                this.internalSetDefaultTimeZoneID(null);
             }
@@ -417,76 +417,96 @@ public final class TimeService {
       }
    }
 
-   public final synchronized void addTimeZone(TimeZoneDataObject var1) {
+   public final synchronized void addTimeZone(TimeZoneDataObject tzdo) {
       this.addTimeZone(
-         var1.getUID(),
-         var1.getTimeZoneID(),
-         var1.getTimeZoneStringID(),
-         var1.getDefaultLongDescription(),
-         var1.getDefaultShortDescription(),
-         var1.getMappedTZID(),
-         var1.isHidden(),
-         var1.getGMTOffset(),
-         var1.getDSTAmount(),
-         var1.getDSTStartMode(),
-         var1.getDSTStartMonth(),
-         var1.getDSTStartDayOfWeek(),
-         var1.getDSTStartDay(),
-         var1.getDSTStartTime(),
-         var1.getDSTEndMode(),
-         var1.getDSTEndMonth(),
-         var1.getDSTEndDayOfWeek(),
-         var1.getDSTEndDay(),
-         var1.getDSTEndTime()
+         tzdo.getUID(),
+         tzdo.getTimeZoneID(),
+         tzdo.getTimeZoneStringID(),
+         tzdo.getDefaultLongDescription(),
+         tzdo.getDefaultShortDescription(),
+         tzdo.getMappedTZID(),
+         tzdo.isHidden(),
+         tzdo.getGMTOffset(),
+         tzdo.getDSTAmount(),
+         tzdo.getDSTStartMode(),
+         tzdo.getDSTStartMonth(),
+         tzdo.getDSTStartDayOfWeek(),
+         tzdo.getDSTStartDay(),
+         tzdo.getDSTStartTime(),
+         tzdo.getDSTEndMode(),
+         tzdo.getDSTEndMonth(),
+         tzdo.getDSTEndDayOfWeek(),
+         tzdo.getDSTEndDay(),
+         tzdo.getDSTEndTime()
       );
    }
 
    public final synchronized void addTimeZone(
-      int var1,
-      int var2,
-      String var3,
-      String var4,
-      String var5,
-      int var6,
-      boolean var7,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      int var14,
-      int var15,
-      int var16,
-      int var17,
-      int var18,
-      int var19
+      int uid,
+      int tzid,
+      String stringID,
+      String longName,
+      String shortName,
+      int mappedTZID,
+      boolean hidden,
+      int gmtOffset,
+      int dstAmount,
+      int dstStartMode,
+      int dstStartMonth,
+      int dstStartDayOfWeek,
+      int dstStartDay,
+      int dstStartTime,
+      int dstEndMode,
+      int dstEndMonth,
+      int dstEndDayOfWeek,
+      int dstEndDay,
+      int dstEndTime
    ) {
-      int var20 = this.getTimeZoneBuiltInIndex(var2);
-      boolean var21 = true;
-      Object var22 = null;
-      if (this._timeZoneTable.containsKey(var2)) {
-         var22 = this._timeZoneTable.get(var2);
-         var20 = ((TimeZoneDataObject)var22).getBuiltInIndex();
-         var21 = false;
+      int builtIndex = this.getTimeZoneBuiltInIndex(tzid);
+      boolean add = true;
+      TimeZoneDataObject tzdo = null;
+      if (this._timeZoneTable.containsKey(tzid)) {
+         tzdo = (TimeZoneDataObject)this._timeZoneTable.get(tzid);
+         builtIndex = tzdo.getBuiltInIndex();
+         add = false;
       }
 
-      if (var3.equalsIgnoreCase(DateTimeUtilities.GMT)) {
-         var7 = false;
+      if (stringID.equalsIgnoreCase(DateTimeUtilities.GMT)) {
+         hidden = false;
       }
 
-      var22 = new Object(var1, var2, var3, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18, var19, var4, var5, var6, var7);
-      ((TimeZoneDataObject)var22).setBuiltInIndex(var20);
-      int var23 = this.getSerialSyncID(this.getDefaultTimeZoneID());
-      boolean var24 = var2 == var23;
-      this._timeZoneTable.put(var2, var22);
-      if (var21) {
+      tzdo = (TimeZoneDataObject)(new Object(
+         uid,
+         tzid,
+         stringID,
+         gmtOffset,
+         dstAmount,
+         dstStartMode,
+         dstStartMonth,
+         dstStartDayOfWeek,
+         dstStartDay,
+         dstStartTime,
+         dstEndMode,
+         dstEndMonth,
+         dstEndDayOfWeek,
+         dstEndDay,
+         dstEndTime,
+         longName,
+         shortName,
+         mappedTZID,
+         hidden
+      ));
+      tzdo.setBuiltInIndex(builtIndex);
+      int currentTimeZoneID = this.getSerialSyncID(this.getDefaultTimeZoneID());
+      boolean currentTimeZoneUpdated = tzid == currentTimeZoneID;
+      this._timeZoneTable.put(tzid, tzdo);
+      if (add) {
          Array.resize(this._sortedTimeZoneDataObjectList, this._sortedTimeZoneDataObjectList.length + 1);
-         this._sortedTimeZoneDataObjectList[this._sortedTimeZoneDataObjectList.length - 1] = (TimeZoneDataObject)var22;
+         this._sortedTimeZoneDataObjectList[this._sortedTimeZoneDataObjectList.length - 1] = tzdo;
       } else {
-         for (int var25 = 0; var25 < this._sortedTimeZoneDataObjectList.length; var25++) {
-            if (this._sortedTimeZoneDataObjectList[var25].getTimeZoneID() == var2) {
-               this._sortedTimeZoneDataObjectList[var25] = (TimeZoneDataObject)var22;
+         for (int i = 0; i < this._sortedTimeZoneDataObjectList.length; i++) {
+            if (this._sortedTimeZoneDataObjectList[i].getTimeZoneID() == tzid) {
+               this._sortedTimeZoneDataObjectList[i] = tzdo;
                break;
             }
          }
@@ -494,20 +514,20 @@ public final class TimeService {
 
       Arrays.sort(this._sortedTimeZoneDataObjectList, TimeZoneDataObject.getComparator());
       this._indexMap = new int[this._sortedTimeZoneDataObjectList.length];
-      int var29 = 0;
+      int count = 0;
 
-      for (int var26 = 0; var26 < this._sortedTimeZoneDataObjectList.length; var26++) {
-         if (!this._sortedTimeZoneDataObjectList[var26].isHidden()) {
-            this._indexMap[var29] = var26;
-            var29++;
+      for (int i = 0; i < this._sortedTimeZoneDataObjectList.length; i++) {
+         if (!this._sortedTimeZoneDataObjectList[i].isHidden()) {
+            this._indexMap[count] = i;
+            count++;
          }
       }
 
-      Array.resize(this._indexMap, var29);
+      Array.resize(this._indexMap, count);
       this._persistableTimeZoneData.commit();
-      if (var24) {
+      if (currentTimeZoneUpdated) {
          this._tzObject = null;
-         this.setDefaultTimeZone(((TimeZoneDataObject)var22).getTimeZoneStringID());
+         this.setDefaultTimeZone(tzdo.getTimeZoneStringID());
       }
    }
 
@@ -517,15 +537,15 @@ public final class TimeService {
 
    public static final synchronized TimeService getTimeService() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         if (var0 == null) {
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         if (ar == null) {
             return null;
          }
 
-         _instance = (TimeService)var0.getOrWaitFor(2569363511892233325L);
+         _instance = (TimeService)ar.getOrWaitFor(2569363511892233325L);
          if (_instance == null) {
             _instance = new TimeService();
-            var0.put(2569363511892233325L, _instance);
+            ar.put(2569363511892233325L, _instance);
          }
       }
 

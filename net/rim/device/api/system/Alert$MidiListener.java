@@ -10,9 +10,9 @@ class Alert$MidiListener implements AlertListener2 {
    private Alert$MidiListener() {
    }
 
-   private synchronized int midiStart(AlertListener2 var1, int var2) {
-      Arrays.add(this._midiListeners, var1 == null ? null : new Object(var1));
-      return var2;
+   private synchronized int midiStart(AlertListener2 listener, int ret) {
+      Arrays.add(this._midiListeners, listener == null ? null : new Object(listener));
+      return ret;
    }
 
    private synchronized boolean isStopped() {
@@ -20,23 +20,35 @@ class Alert$MidiListener implements AlertListener2 {
    }
 
    @Override
-   public void midiDone(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void midiDone(int reason) {
+      Reference _midiListener;
+      synchronized (this) {
+         boolean isEmpty = this.isStopped();
+         _midiListener = isEmpty ? null : this._midiListeners[0];
+         if (!isEmpty) {
+            Arrays.removeAt(this._midiListeners, 0);
+         }
+      }
+
+      AlertListener2 listener = _midiListener == null ? null : (AlertListener2)_midiListener.get();
+      if (listener != null) {
+         listener.midiDone(reason);
+      }
    }
 
    @Override
-   public void audioDone(int var1) {
+   public void audioDone(int reason) {
    }
 
    @Override
-   public void buzzerDone(int var1) {
+   public void buzzerDone(int reason) {
    }
 
    @Override
-   public void vibrateDone(int var1) {
+   public void vibrateDone(int reason) {
    }
 
-   Alert$MidiListener(Alert$1 var1) {
+   Alert$MidiListener(Alert$1 x0) {
       this();
    }
 }

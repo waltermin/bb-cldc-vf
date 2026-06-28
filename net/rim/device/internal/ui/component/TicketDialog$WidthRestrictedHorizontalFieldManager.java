@@ -5,12 +5,12 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 class TicketDialog$WidthRestrictedHorizontalFieldManager extends HorizontalFieldManager {
    private int _restrictedWidth;
 
-   public TicketDialog$WidthRestrictedHorizontalFieldManager(int var1) {
-      this._restrictedWidth = var1;
+   public TicketDialog$WidthRestrictedHorizontalFieldManager(int restrictedWidth) {
+      this._restrictedWidth = restrictedWidth;
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      super.sublayout(var1 - this._restrictedWidth, var2);
+   protected void sublayout(int maxWidth, int maxHeight) {
+      super.sublayout(maxWidth - this._restrictedWidth, maxHeight);
    }
 }

@@ -12,10 +12,10 @@ public class Resource {
    private byte[] _icons;
    private String _name;
 
-   protected Resource(Hashtable var1, Hashtable var2, byte[] var3) {
-      this._resources = var1;
-      this._properties = var2;
-      this._icons = var3;
+   protected Resource(Hashtable resources, Hashtable properties, byte[] icons) {
+      this._resources = resources;
+      this._properties = properties;
+      this._icons = icons;
    }
 
    public static Resource getResourceClass() {
@@ -26,58 +26,88 @@ public class Resource {
       return this._resources != null ? this._resources.keys() : null;
    }
 
-   private byte[] findResource(String var1) {
+   private byte[] findResource(String name) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public Vector listResourcesEndingWith(String var1) {
-      Object var2 = new Object();
+   public Vector listResourcesEndingWith(String text) {
+      Vector matches = (Vector)(new Object());
       if (this._resources != null) {
-         Enumeration var3 = this._resources.keys();
+         Enumeration enu = this._resources.keys();
 
-         while (var3.hasMoreElements()) {
-            String var4 = var3.nextElement().toString();
-            if (var4.endsWith(var1)) {
-               ((Vector)var2).addElement(var4);
+         while (enu.hasMoreElements()) {
+            String key = enu.nextElement().toString();
+            if (key.endsWith(text)) {
+               matches.addElement(key);
             }
          }
       }
 
-      return (Vector)var2;
+      return matches;
    }
 
-   public byte[] getResource(String var1) {
-      byte[] var2 = this.findResource(var1);
-      if (var2 == null) {
-         int var3 = Process.getModuleHandle(this._name);
-         int var4 = Process.getModuleHandle(Process.currentProcess().getModuleName());
-         var2 = Resource$Internal.FindResourceInDependencyGraph(var3, var4, var1);
+   public byte[] getResource(String name) {
+      byte[] result = this.findResource(name);
+      if (result == null) {
+         int firstRoot = Process.getModuleHandle(this._name);
+         int secondRoot = Process.getModuleHandle(Process.currentProcess().getModuleName());
+         result = Resource$Internal.FindResourceInDependencyGraph(firstRoot, secondRoot, name);
       }
 
-      return var2;
+      return result;
    }
 
-   public byte[] getProperty(String var1) {
+   public byte[] getProperty(String name) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static int getIconOffset(byte[] var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static int getIconOffset(byte[] icons, int ordinal) {
+      int offset = 0;
+      int length = icons.length;
+      int icon_count = 0;
+
+      try {
+         while (offset < length) {
+            int entrypoint_length = (icons[offset++] & 255) << 8;
+            entrypoint_length += icons[offset++] & 255;
+
+            for (int entrypoint_end = offset + entrypoint_length; offset < entrypoint_end; icon_count++) {
+               int icon_length = (icons[offset++] & 255) << 8;
+               icon_length += icons[offset++] & 255;
+               if (icon_count == ordinal) {
+                  return offset;
+               }
+
+               offset += icon_length;
+            }
+         }
+      } catch (ArrayIndexOutOfBoundsException var8) {
+      }
+
+      throw new Object();
    }
 
-   public static int getIconLength(byte[] var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static int getIconLength(byte[] icons, int offset) {
+      try {
+         int length = ((icons[offset - 2] & 255) << 8) + (icons[offset - 1] & 255);
+         if (offset + length <= icons.length) {
+            return length;
+         }
+      } catch (ArrayIndexOutOfBoundsException var3) {
+      }
+
+      throw new Object();
    }
 
-   public static byte[] getIconBytes(byte[] var0, int var1) {
-      int var2 = getIconOffset(var0, var1);
-      int var3 = getIconLength(var0, var2);
-      byte[] var4 = new byte[var3];
-      System.arraycopy(var0, var2, var4, 0, var3);
-      return var4;
+   public static byte[] getIconBytes(byte[] icons, int ordinal) {
+      int offset = getIconOffset(icons, ordinal);
+      int length = getIconLength(icons, offset);
+      byte[] bytes = new byte[length];
+      System.arraycopy(icons, offset, bytes, 0, length);
+      return bytes;
    }
 
-   public Object instantiateMIDlet(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Object instantiateMIDlet(String name) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

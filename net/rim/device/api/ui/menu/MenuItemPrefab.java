@@ -19,30 +19,30 @@ public class MenuItemPrefab extends MenuItem implements FieldChangeListener {
    private static final int[] DATA;
    private static IntHashtable _itemCache;
 
-   MenuItemPrefab(int var1) {
-      super(CommonResource.getBundle(), DATA[3 * var1 + 0], DATA[3 * var1 + 1], DATA[3 * var1 + 2]);
-      this._id = var1;
+   MenuItemPrefab(int id) {
+      super(CommonResource.getBundle(), DATA[3 * id + 0], DATA[3 * id + 1], DATA[3 * id + 2]);
+      this._id = id;
    }
 
-   public static MenuItemPrefab get(int var0) {
-      MenuItemPrefab var1 = (MenuItemPrefab)_itemCache.get(var0);
-      if (var1 == null) {
-         var1 = new MenuItemPrefab(var0);
-         _itemCache.put(var0, var1);
+   public static MenuItemPrefab get(int id) {
+      MenuItemPrefab item = (MenuItemPrefab)_itemCache.get(id);
+      if (item == null) {
+         item = new MenuItemPrefab(id);
+         _itemCache.put(id, item);
       }
 
-      return var1;
+      return item;
    }
 
-   public static MenuItemPrefab get(InvokableAction var0) {
-      int var1 = var0.getActionId();
-      MenuItemPrefab var2 = (MenuItemPrefab)_itemCache.get(var1);
-      if (var2 == null) {
-         var2 = new MenuItemPrefabInvokableAction(var0);
-         _itemCache.put(var1, var2);
+   public static MenuItemPrefab get(InvokableAction action) {
+      int actionId = action.getActionId();
+      MenuItemPrefab item = (MenuItemPrefab)_itemCache.get(actionId);
+      if (item == null) {
+         item = new MenuItemPrefabInvokableAction(action);
+         _itemCache.put(actionId, item);
       }
 
-      return var2;
+      return item;
    }
 
    @Override
@@ -50,14 +50,14 @@ public class MenuItemPrefab extends MenuItem implements FieldChangeListener {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   static int getDefaultPriority(int var0) {
-      return 3 * var0 < DATA.length ? DATA[3 * var0 + 2] : -1;
+   static int getDefaultPriority(int id) {
+      return 3 * id < DATA.length ? DATA[3 * id + 2] : -1;
    }
 
    @Override
    public void run() {
-      Field var1 = this.getTarget();
-      Screen var2 = Menu.getTargetScreen();
+      Field target = this.getTarget();
+      Screen screen = Menu.getTargetScreen();
       switch (this._id) {
          case 0:
          case 6:
@@ -71,49 +71,49 @@ public class MenuItemPrefab extends MenuItem implements FieldChangeListener {
             break;
          case 1:
          default:
-            var1.selectionCopy(Clipboard.getClipboard());
-            var1.select(false);
+            target.selectionCopy(Clipboard.getClipboard());
+            target.select(false);
             Clipboard.getClipboard().setNotYetPasted(true);
             return;
          case 2:
-            var1.selectionCut(Clipboard.getClipboard());
-            var1.select(false);
+            target.selectionCut(Clipboard.getClipboard());
+            target.select(false);
             Clipboard.getClipboard().setNotYetPasted(true);
             return;
          case 3:
-            var1.paste(Clipboard.getClipboard());
-            var1.select(false);
+            target.paste(Clipboard.getClipboard());
+            target.select(false);
             Clipboard.getClipboard().setNotYetPasted(false);
             return;
          case 4:
-            var1.select(true);
+            target.select(true);
             return;
          case 5:
-            var1.select(false);
+            target.select(false);
             return;
          case 14:
             Clipboard.getClipboard().setNotYetPasted(false);
-            var2.onClose();
+            screen.onClose();
             return;
          case 15:
-            if (var2.doSaveInternal()) {
-               var2.close();
+            if (screen.doSaveInternal()) {
+               screen.close();
                return;
             }
             break;
          case 16:
-            var2.setScrollBehaviourSelect(true);
+            screen.setScrollBehaviourSelect(true);
             return;
          case 17:
-            var2.setScrollBehaviourSelect(false);
+            screen.setScrollBehaviourSelect(false);
             return;
          case 18:
-            var2.onMenu(1073741824);
-            var2.setScrollBehaviourSelect(false);
+            screen.onMenu(1073741824);
+            screen.setScrollBehaviourSelect(false);
       }
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
+   public void fieldChanged(Field field, int context) {
    }
 }

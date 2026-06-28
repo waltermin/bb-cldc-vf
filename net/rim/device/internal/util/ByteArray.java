@@ -6,8 +6,8 @@ import net.rim.device.api.util.Persistable;
 public final class ByteArray implements Persistable {
    private byte[] _array;
 
-   public ByteArray(byte[] var1) {
-      this._array = var1;
+   public ByteArray(byte[] array) {
+      this._array = array;
    }
 
    public final byte[] getArray() {
@@ -20,7 +20,7 @@ public final class ByteArray implements Persistable {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

@@ -1,5 +1,7 @@
 package net.rim.device.api.system;
 
+import net.rim.device.internal.proxy.Proxy;
+
 final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    private String _profileName;
    private String _ssid;
@@ -11,26 +13,31 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    private static WLANInfoImpl _instance;
 
    private WLANInfoImpl() {
+      Proxy proxy = Proxy.getInstance();
+      synchronized (this) {
+         proxy.addRadioListener(4, this);
+         this.updateWLANInfo();
+      }
    }
 
    static final WLANInfoImpl getInstance() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (WLANInfoImpl)var0.getOrWaitFor(7226364515336065262L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _instance = (WLANInfoImpl)ar.getOrWaitFor(7226364515336065262L);
          if (_instance == null) {
             _instance = new WLANInfoImpl();
-            var0.put(7226364515336065262L, _instance);
+            ar.put(7226364515336065262L, _instance);
          }
       }
 
       return _instance;
    }
 
-   final void addListener(WLANListener var1) {
+   final void addListener(WLANListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final void removeListener(WLANListener var1) {
+   final void removeListener(WLANListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -45,14 +52,14 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    private final synchronized void updateWLANInfo() {
-      WLANExtendedNetInfo var1 = WLAN.getExtendedWLANNetworkInfo();
-      if (var1 != null) {
+      WLANExtendedNetInfo netInfo = WLAN.getExtendedWLANNetworkInfo();
+      if (netInfo != null) {
          this._profileName = WLAN.getWLANSystem().getActiveProfileName();
          this._ssid = WLAN.getWLANSystem().getActiveProfileSSID();
          this._bssid = WLAN.bssidToString(WLAN.getBSSID());
-         this._radioBand = var1._band;
-         this._dataRate = var1._dataRateMbps;
-         this._signalLevel = var1._signalRssi;
+         this._radioBand = netInfo._band;
+         this._dataRate = netInfo._dataRateMbps;
+         this._signalLevel = netInfo._signalRssi;
       } else {
          this._profileName = null;
          this._ssid = null;
@@ -63,8 +70,8 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
       }
    }
 
-   private final synchronized void updateSignalLevel(int var1) {
-      this._signalLevel = var1;
+   private final synchronized void updateSignalLevel(int signalLevel) {
+      this._signalLevel = signalLevel;
    }
 
    @Override
@@ -73,7 +80,7 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    @Override
-   public final void radioStatus(boolean var1) {
+   public final void radioStatus(boolean started) {
    }
 
    @Override
@@ -81,11 +88,11 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    @Override
-   public final void networkFail(int var1, int var2, int var3) {
+   public final void networkFail(int status, int error, int extendedInfo) {
    }
 
    @Override
-   public final void networkFound(int var1) {
+   public final void networkFound(int handle) {
    }
 
    @Override
@@ -93,20 +100,20 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    @Override
-   public final void wlanChallengeOccurred(int var1) {
+   public final void wlanChallengeOccurred(int challengeType) {
    }
 
    @Override
-   public final void wlanRecordChangeOccurred(int var1) {
+   public final void wlanRecordChangeOccurred(int recordType) {
    }
 
    @Override
-   public final void signalLevel(int var1) {
+   public final void signalLevel(int level) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public final void networkStarted(int var1, int var2) {
+   public final void networkStarted(int networkId, int service) {
    }
 
    @Override
@@ -118,18 +125,18 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    @Override
-   public final void pdpStateChange(int var1, int var2, int var3) {
+   public final void pdpStateChange(int apn, int state, int cause) {
    }
 
    @Override
-   public final void networkStateChange(int var1) {
+   public final void networkStateChange(int state) {
    }
 
    @Override
-   public final void networkScanComplete(boolean var1) {
+   public final void networkScanComplete(boolean success) {
    }
 
    @Override
-   public final void networkServiceChange(int var1, int var2) {
+   public final void networkServiceChange(int networkId, int service) {
    }
 }

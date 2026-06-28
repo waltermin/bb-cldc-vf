@@ -4,6 +4,6 @@ public class NoSuchElementException extends RuntimeException {
    public NoSuchElementException() {
    }
 
-   public NoSuchElementException(String var1) {
+   public NoSuchElementException(String s) {
    }
 }

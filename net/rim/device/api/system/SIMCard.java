@@ -1,6 +1,8 @@
 package net.rim.device.api.system;
 
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CRC16;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.SE13NetworkTable;
 import net.rim.vm.Process;
 
@@ -221,58 +223,100 @@ public final class SIMCard {
 
    public static final native byte[] getIMSI();
 
-   public static final String imsiToString(byte[] var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String imsiToString(byte[] imsi) {
+      if (imsi == null) {
+         return null;
+      }
+
+      StringBuffer sb = (StringBuffer)(new Object());
+      int mncPoint = 4;
+      int mcc = 0;
+
+      for (int i = 0; i < imsi.length; i++) {
+         sb.append((char)(imsi[i] + 48));
+         mcc *= 10;
+         mcc += imsi[i];
+         if (i == 2) {
+            try {
+               if (is3DigitMNC()) {
+                  mncPoint++;
+               }
+            } catch (SIMCardException var6) {
+            }
+
+            sb.append('.');
+         } else if (i == mncPoint) {
+            sb.append('.');
+         }
+      }
+
+      return sb.toString();
    }
 
    public static final native byte[] getICCID();
 
-   public static final String iccidToString(byte[] var0) {
-      if (var0 == null) {
+   public static final String iccidToString(byte[] iccid) {
+      if (iccid == null) {
          return null;
       }
 
-      Object var1 = new Object();
+      StringBuffer sb = (StringBuffer)(new Object());
 
-      for (int var3 = 0; var3 < var0.length; var3++) {
-         int var2 = var0[var3] & 15;
-         if (var2 > 9) {
+      for (int i = 0; i < iccid.length; i++) {
+         int bcdDigit = iccid[i] & 15;
+         if (bcdDigit > 9) {
             break;
          }
 
-         ((StringBuffer)var1).append((char)(var2 + 48));
-         var2 = var0[var3] >>> 4 & 15;
-         if (var2 > 9) {
+         sb.append((char)(bcdDigit + 48));
+         bcdDigit = iccid[i] >>> 4 & 15;
+         if (bcdDigit > 9) {
             break;
          }
 
-         ((StringBuffer)var1).append((char)(var2 + 48));
+         sb.append((char)(bcdDigit + 48));
       }
 
       if (RadioInfo.areWAFsSupported(8)) {
-         ((StringBuffer)var1).setLength(((StringBuffer)var1).length() - 1);
+         sb.setLength(sb.length() - 1);
       }
 
-      return ((StringBuffer)var1).toString();
+      return sb.toString();
    }
 
-   public static final int getMCCFromIMSI(byte[] var0) {
-      if (var0 != null && var0.length >= 3) {
-         int var1 = 0;
+   public static final int getMCCFromIMSI(byte[] imsi) {
+      if (imsi != null && imsi.length >= 3) {
+         int mcc = 0;
 
-         for (int var2 = 0; var2 < 3; var2++) {
-            var1 *= 10;
-            var1 += var0[var2];
+         for (int i = 0; i < 3; i++) {
+            mcc *= 10;
+            mcc += imsi[i];
          }
 
-         return var1;
+         return mcc;
       } else {
          return -1;
       }
    }
 
-   public static final int getMNCFromIMSI(byte[] var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int getMNCFromIMSI(byte[] imsi) {
+      try {
+         int mncDigitCount = is3DigitMNC() ? 3 : 2;
+         if (imsi != null && imsi.length >= 3 + mncDigitCount) {
+            int mnc = 0;
+
+            for (int i = 3; i < 3 + mncDigitCount; i++) {
+               mnc *= 10;
+               mnc += imsi[i];
+            }
+
+            return mnc;
+         } else {
+            return -1;
+         }
+      } catch (SIMCardException var4) {
+         return -1;
+      }
    }
 
    public static final native boolean isValid();
@@ -325,20 +369,20 @@ public final class SIMCard {
 
    private static final native void requestEFInfo(int var0, int var1);
 
-   public static final void requestEFInfo(int var0) {
-      requestEFInfo(var0, Process.currentProcess().getProcessId());
+   public static final void requestEFInfo(int id) {
+      requestEFInfo(id, Process.currentProcess().getProcessId());
    }
 
    private static final native int requestEFRead(int var0, int var1, int var2, byte[] var3, int var4);
 
-   public static final int requestEFRead(int var0, int var1, int var2, byte[] var3) {
-      return requestEFRead(var0, var1, var2, var3, Process.currentProcess().getProcessId());
+   public static final int requestEFRead(int id, int structure, int record, byte[] data) {
+      return requestEFRead(id, structure, record, data, Process.currentProcess().getProcessId());
    }
 
    private static final native void requestEFWrite(int var0, int var1, int var2, byte[] var3, int var4);
 
-   public static final void requestEFWrite(int var0, int var1, int var2, byte[] var3) {
-      requestEFWrite(var0, var1, var2, var3, Process.currentProcess().getProcessId());
+   public static final void requestEFWrite(int id, int structure, int record, byte[] data) {
+      requestEFWrite(id, structure, record, data, Process.currentProcess().getProcessId());
    }
 
    public static final native void fileUpdated(int var0);
@@ -371,32 +415,32 @@ public final class SIMCard {
 
    public static final native void atSetLocale(int var0);
 
-   public static final String decodeAlphaId(byte[] var0) {
-      return var0 == null ? null : decodeAlphaId(var0, 0, var0.length);
+   public static final String decodeAlphaId(byte[] alphaId) {
+      return alphaId == null ? null : decodeAlphaId(alphaId, 0, alphaId.length);
    }
 
-   private static final String decodeMixedCoding(byte[] var0, int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final String decodeMixedCoding(byte[] alphaId, int offset, int length, int ucs2Base) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String decodeAlphaId(byte[] var0, int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String decodeAlphaId(byte[] alphaId, int offset, int length) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final byte[] encodeAlphaId(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final byte[] encodeAlphaId(String alphaId) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final boolean is3DigitMNC() {
-      byte[] var0 = getIMSI();
-      if (var0 != null) {
-         int var1 = var0[3] << 4;
-         var1 |= var0[4];
-         int var2 = var0[0] << 8;
-         var2 |= var0[1] << 4;
-         var2 |= var0[2];
-         Object var3 = ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
-         if (DeviceInfo.isSimulator() || var3 != null && ((SE13NetworkTable)var3).is3DigitMNC(var1 << 16 | var2)) {
+      byte[] imsi = getIMSI();
+      if (imsi != null) {
+         int mnc = imsi[3] << 4;
+         mnc |= imsi[4];
+         int mcc = imsi[0] << 8;
+         mcc |= imsi[1] << 4;
+         mcc |= imsi[2];
+         SE13NetworkTable se13NetTable = (SE13NetworkTable)ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
+         if (DeviceInfo.isSimulator() || se13NetTable != null && se13NetTable.is3DigitMNC(mnc << 16 | mcc)) {
             return true;
          }
       }
@@ -405,13 +449,19 @@ public final class SIMCard {
    }
 
    public static final int getIMSICRC() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         return CRC16.update(65535, getIMSI());
+      } catch (SIMCardException var1) {
+         return 0;
+      } catch (UnsupportedOperationException var2) {
+         return 0;
+      }
    }
 
-   public static final boolean is3DigitMNC(int var0, int var1) {
-      int var2 = var1 << 16 | var0;
-      Object var3 = ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
-      return ((SE13NetworkTable)var3).is3DigitMNC(var2);
+   public static final boolean is3DigitMNC(int mcc, int mnc) {
+      int networkId = mnc << 16 | mcc;
+      SE13NetworkTable se13NetTable = (SE13NetworkTable)ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
+      return se13NetTable.is3DigitMNC(networkId);
    }
 
    public static final native int requestPhoneBookRead(int var0);
@@ -422,15 +472,15 @@ public final class SIMCard {
 
    public static final native int requestPhoneBookDelete(int var0);
 
-   public static final void openAPDUConnection(byte[] var0, byte var1, byte var2, byte var3, byte var4) {
-      if (var0 == null) {
-         openAPDUConnection(null, var3, var4);
+   public static final void openAPDUConnection(byte[] aid, byte offset, byte aidlen, byte tag, byte fcpResponseType) {
+      if (aid == null) {
+         openAPDUConnection(null, tag, fcpResponseType);
       } else {
-         if (var0.length - var1 < var2) {
+         if (aid.length - offset < aidlen) {
             throw new Object();
          }
 
-         openAPDUConnection(Arrays.copy(var0, var1, var2), var3, var4);
+         openAPDUConnection(Arrays.copy(aid, offset, aidlen), tag, fcpResponseType);
       }
    }
 
@@ -448,16 +498,50 @@ public final class SIMCard {
 
    public static final native boolean isJSR177Supported();
 
-   public static final void addListener(Application var0, SIMCardListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, SIMCardListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(43) == null) {
+            dispatchManager.setDispatcher(43, new SIMCardStatusEventDispatcher());
+            dispatchManager.setDispatcher(44, new SIMCardSecurityEventDispatcher());
+            dispatchManager.setDispatcher(46, new SIMCardEFEventDispatcher());
+            dispatchManager.setDispatcher(45, new SIMCardATEventDispatcher());
+            dispatchManager.setDispatcher(47, new SIMCardPBEventDispatcher());
+            dispatchManager.setDispatcher(50, new SIMCardAPDUEventDispatcher());
+         }
+      }
+
+      if (listener instanceof SIMCardStatusListener) {
+         app.addListener(43, listener);
+      }
+
+      if (listener instanceof SIMCardSecurityListener) {
+         app.addListener(44, listener);
+      }
+
+      if (listener instanceof SIMCardEFListener) {
+         app.addListener(46, listener);
+      }
+
+      if (listener instanceof SIMCardATListener) {
+         app.addListener(45, listener);
+      }
+
+      if (listener instanceof SIMCardPhoneBookListener) {
+         app.addListener(47, listener);
+      }
+
+      if (listener instanceof SIMCardAPDUListener) {
+         app.addListener(50, listener);
+      }
    }
 
-   public static final void removeListener(Application var0, SIMCardListener var1) {
-      var0.removeListener(43, var1);
-      var0.removeListener(44, var1);
-      var0.removeListener(46, var1);
-      var0.removeListener(45, var1);
-      var0.removeListener(47, var1);
-      var0.removeListener(50, var1);
+   public static final void removeListener(Application app, SIMCardListener listener) {
+      app.removeListener(43, listener);
+      app.removeListener(44, listener);
+      app.removeListener(46, listener);
+      app.removeListener(45, listener);
+      app.removeListener(47, listener);
+      app.removeListener(50, listener);
    }
 }

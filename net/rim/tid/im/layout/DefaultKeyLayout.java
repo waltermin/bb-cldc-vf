@@ -16,11 +16,11 @@ public class DefaultKeyLayout {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private InputStream getLayoutData(int var1, String var2, Locale var3, boolean var4) {
-      for (int var5 = 0; var5 < this.MAP_LOCATIONS.length; var5++) {
-         InputStream var6 = SLKeyLayout.getLayoutData(var1, var2, var3, this.MAP_LOCATIONS[var5], var4);
-         if (var6 != null) {
-            return var6;
+   private InputStream getLayoutData(int aKeyboardId, String aKeyboardType, Locale anInputLocale, boolean useDefault) {
+      for (int i = 0; i < this.MAP_LOCATIONS.length; i++) {
+         InputStream is = SLKeyLayout.getLayoutData(aKeyboardId, aKeyboardType, anInputLocale, this.MAP_LOCATIONS[i], useDefault);
+         if (is != null) {
+            return is;
          }
       }
 

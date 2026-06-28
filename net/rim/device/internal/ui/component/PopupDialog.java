@@ -18,18 +18,18 @@ public class PopupDialog extends PopupScreen {
    public static final int CANCEL;
    public static final int CLOSE;
 
-   public PopupDialog(Manager var1) {
-      this(var1, 0);
+   public PopupDialog(Manager manager) {
+      this(manager, 0);
    }
 
-   public PopupDialog(Manager var1, long var2) {
-      super(var1, var2);
-      if ((var2 & 167772160) != 0) {
+   public PopupDialog(Manager manager, long style) {
+      super(manager, style);
+      if ((style & 167772160) != 0) {
          this.setModal(false);
       }
    }
 
-   public void setModal(boolean var1) {
+   public void setModal(boolean modal) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -37,7 +37,7 @@ public class PopupDialog extends PopupScreen {
       return this._modal;
    }
 
-   public void setOwner(UiEngine var1) {
+   public void setOwner(UiEngine owner) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -45,7 +45,7 @@ public class PopupDialog extends PopupScreen {
       return this._owner;
    }
 
-   public void setPopupDialogClosedListener(PopupDialogClosedListener var1) {
+   public void setPopupDialogClosedListener(PopupDialogClosedListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -53,7 +53,7 @@ public class PopupDialog extends PopupScreen {
       return this._dialogClosedListener;
    }
 
-   public void setStatusPriority(int var1) {
+   public void setStatusPriority(int priority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -75,37 +75,37 @@ public class PopupDialog extends PopupScreen {
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
-      if (var1 && !this._open) {
+   protected void onUiEngineAttached(boolean attached) {
+      if (attached && !this._open) {
          Ui.getUiEngine();
          this._open = true;
       }
 
-      super.onUiEngineAttached(var1);
+      super.onUiEngineAttached(attached);
    }
 
    public void show() {
       if (!this._open) {
-         UiEngine var1 = this._owner == null ? Ui.getUiEngine() : this._owner;
+         UiEngine owner = this._owner == null ? Ui.getUiEngine() : this._owner;
          this._open = true;
          if (this._modal) {
-            var1.pushModalScreen(this);
+            owner.pushModalScreen(this);
          } else if (this.isStyle(33554432)) {
-            var1.pushGlobalScreen(this, this._statusPriority, 2);
+            owner.pushGlobalScreen(this, this._statusPriority, 2);
          } else if (this.isStyle(134217728)) {
-            var1.pushGlobalScreen(this, this._statusPriority, 0);
+            owner.pushGlobalScreen(this, this._statusPriority, 0);
          } else {
-            var1.pushScreen(this);
+            owner.pushScreen(this);
          }
       }
    }
 
-   protected void close(int var1) {
+   protected void close(int closeReason) {
       if (this._open) {
-         if (var1 != -1 || this.isCancelAllowed()) {
-            UiEngine var2 = this._owner == null ? Ui.getUiEngine() : this._owner;
-            this._closeReason = var1;
-            var2.popScreen(this);
+         if (closeReason != -1 || this.isCancelAllowed()) {
+            UiEngine owner = this._owner == null ? Ui.getUiEngine() : this._owner;
+            this._closeReason = closeReason;
+            owner.popScreen(this);
             if (this._dialogClosedListener != null) {
                this._dialogClosedListener.dialogClosed(this, this._closeReason);
             }
@@ -115,7 +115,7 @@ public class PopupDialog extends PopupScreen {
       }
    }
 
-   public void setCancelAllowed(boolean var1) {
+   public void setCancelAllowed(boolean cancelAllowed) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -124,7 +124,7 @@ public class PopupDialog extends PopupScreen {
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return super.stylusTap(var1, var2, var3, var4) ? true : this.trackwheelClick(var3, var4);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return super.stylusTap(x, y, status, time) ? true : this.trackwheelClick(status, time);
    }
 }

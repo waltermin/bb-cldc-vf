@@ -11,7 +11,7 @@ public final class FileInputStream extends InputStream {
    private boolean _eof;
    private Runnable _cleanupRunnable;
 
-   public FileInputStream(int var1, String var2) {
+   public FileInputStream(int fs, String fileName) {
    }
 
    @Override
@@ -20,30 +20,30 @@ public final class FileInputStream extends InputStream {
    }
 
    @Override
-   public final synchronized int read(byte[] var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         int var4 = 0;
+   public final synchronized int read(byte[] b, int off, int len) {
+      if (off >= 0 && len >= 0 && b.length - len >= off) {
+         int bytesCopied = 0;
 
-         while (var4 < var3) {
+         while (bytesCopied < len) {
             if (this._available == 0) {
                this.doRead();
                if (this._available == 0) {
-                  if (var4 == 0) {
+                  if (bytesCopied == 0) {
                      return -1;
                   }
 
-                  return var4;
+                  return bytesCopied;
                }
             }
 
-            int var5 = Math.min(this._available, var3 - var4);
-            System.arraycopy(this._buffer, this._offset, var1, var2 + var4, var5);
-            var4 += var5;
-            this._available -= var5;
-            this._offset += var5;
+            int bytesToCopy = Math.min(this._available, len - bytesCopied);
+            System.arraycopy(this._buffer, this._offset, b, off + bytesCopied, bytesToCopy);
+            bytesCopied += bytesToCopy;
+            this._available -= bytesToCopy;
+            this._offset += bytesToCopy;
          }
 
-         return var4;
+         return bytesCopied;
       } else {
          throw new Object();
       }
@@ -55,6 +55,6 @@ public final class FileInputStream extends InputStream {
    }
 
    private final void doRead() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -12,8 +12,8 @@ public class Reference {
       this._referent = null;
    }
 
-   Reference(Object var1) {
-      this._referent = var1;
+   Reference(Object referent) {
+      this._referent = referent;
       this.register();
    }
 

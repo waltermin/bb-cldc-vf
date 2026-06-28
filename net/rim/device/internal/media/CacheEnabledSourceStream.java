@@ -13,13 +13,13 @@ public class CacheEnabledSourceStream implements SourceStream {
    private static final int USE_DEFAULT_VALUE;
    private static final long MAX_CACHE_SIZE;
 
-   public CacheEnabledSourceStream(SourceStream var1) {
-      this._stream = var1;
+   public CacheEnabledSourceStream(SourceStream source) {
+      this._stream = source;
       this._seekType = -1;
       if (this._stream.getSeekType() == 0 || this._stream.getSeekType() == 1) {
-         long var2 = this._stream.getContentLength();
-         if (var2 > 0 && var2 <= 1048576) {
-            this._cache = new byte[(int)var2];
+         long length = this._stream.getContentLength();
+         if (length > 0 && length <= 1048576) {
+            this._cache = new byte[(int)length];
             this._seekType = 2;
             this._position = 0;
             this._streamPosition = 0;
@@ -28,61 +28,61 @@ public class CacheEnabledSourceStream implements SourceStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
+   public int read(byte[] b, int off, int len) {
       if (this._seekType == -1) {
-         return this._stream.read(var1, var2, var3);
+         return this._stream.read(b, off, len);
       }
 
-      int var4 = 0;
+      int bytesRead = 0;
       if (this._position < this._streamPosition) {
-         int var5 = (int)Math.min(this._streamPosition - this._position, var3);
-         System.arraycopy(this._cache, (int)this._position, var1, var2, var5);
-         var4 += var5;
-         this._position += var5;
-         var2 += var5;
+         int toRead = (int)Math.min(this._streamPosition - this._position, len);
+         System.arraycopy(this._cache, (int)this._position, b, off, toRead);
+         bytesRead += toRead;
+         this._position += toRead;
+         off += toRead;
       }
 
-      if (var4 < var3) {
-         int var7 = var3 - var4;
-         int var6 = this._stream.read(var1, var2, var7);
-         if (var6 == -1) {
-            if (var4 == 0) {
-               return var6;
+      if (bytesRead < len) {
+         int toRead = len - bytesRead;
+         int num = this._stream.read(b, off, toRead);
+         if (num == -1) {
+            if (bytesRead == 0) {
+               return num;
             }
 
-            return var4;
+            return bytesRead;
          }
 
-         System.arraycopy(var1, var2, this._cache, (int)this._position, var6);
-         this._position += var6;
-         this._streamPosition += var6;
-         var4 += var6;
+         System.arraycopy(b, off, this._cache, (int)this._position, num);
+         this._position += num;
+         this._streamPosition += num;
+         bytesRead += num;
       }
 
-      return var4;
+      return bytesRead;
    }
 
    @Override
-   public long seek(long var1) {
+   public long seek(long where) {
       if (this._seekType == -1) {
-         return this._stream.seek(var1);
+         return this._stream.seek(where);
       }
 
-      if (var1 < 0) {
-         var1 = 0;
+      if (where < 0) {
+         where = 0;
       }
 
-      if (var1 > this._stream.getContentLength()) {
-         var1 = this._stream.getContentLength();
+      if (where > this._stream.getContentLength()) {
+         where = this._stream.getContentLength();
       }
 
-      if (var1 <= this._streamPosition) {
-         this._position = var1;
+      if (where <= this._streamPosition) {
+         this._position = where;
       } else {
-         int var3 = (int)(var1 - this._streamPosition);
-         int var4 = this._stream.read(this._cache, (int)this._position, var3);
-         this._position += var4;
-         this._streamPosition += var4;
+         int toRead = (int)(where - this._streamPosition);
+         int num = this._stream.read(this._cache, (int)this._position, toRead);
+         this._position += num;
+         this._streamPosition += num;
       }
 
       return this._position;
@@ -114,8 +114,8 @@ public class CacheEnabledSourceStream implements SourceStream {
    }
 
    @Override
-   public Control getControl(String var1) {
-      return this._stream.getControl(var1);
+   public Control getControl(String controlType) {
+      return this._stream.getControl(controlType);
    }
 
    @Override

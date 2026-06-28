@@ -8,9 +8,9 @@ class SmileySymbolScreen extends SymbolScreen {
    private static SymbolScreen _smileyScreen;
    private static EmoticonStringPattern _smileyFacility;
 
-   public static void show(EmoticonStringPattern var0, Field var1) {
-      _smileyFacility = var0;
-      Application.getApplication().invokeLater(new SmileySymbolScreen$1(var1));
+   public static void show(EmoticonStringPattern smileyFacility, Field field) {
+      _smileyFacility = smileyFacility;
+      Application.getApplication().invokeLater(new SmileySymbolScreen$1(field));
    }
 
    private SmileySymbolScreen() {

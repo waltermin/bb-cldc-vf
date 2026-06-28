@@ -9,11 +9,11 @@ class StatusThread$StatusObject {
    protected int _status;
    protected Object _context;
 
-   public StatusThread$StatusObject(boolean var1, DatagramStatusListener var2, int var3, int var4, Object var5) {
-      this._dgramIdFlag = var1;
-      this._listener = var2;
-      this._id = var3;
-      this._status = var4;
-      this._context = var5;
+   public StatusThread$StatusObject(boolean dgramIdFlag, DatagramStatusListener listener, int id, int status, Object context) {
+      this._dgramIdFlag = dgramIdFlag;
+      this._listener = listener;
+      this._id = id;
+      this._status = status;
+      this._context = context;
    }
 }

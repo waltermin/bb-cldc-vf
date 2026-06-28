@@ -25,8 +25,8 @@ final class SystemPermissions implements Persistable {
       return this._handles;
    }
 
-   final boolean areValid(int var1) {
-      return this._crc == var1;
+   final boolean areValid(int crc) {
+      return this._crc == crc;
    }
 
    final void invalidate() {
@@ -54,24 +54,24 @@ final class SystemPermissions implements Persistable {
    }
 
    final int[] loadHandles() {
-      int[] var1 = this._handles;
+      int[] oldHandles = this._handles;
       this._handles = new int[0];
       this._crc = CodeStore.getModuleHandles(this._handles);
-      return var1;
+      return oldHandles;
    }
 
    private final long getDefaults() {
-      byte[] var1;
+      byte[] defaults;
       if (ITPolicyInternal.isITPolicyEnabled()) {
-         var1 = getDefaultPermissionsImpl();
+         defaults = getDefaultPermissionsImpl();
       } else {
-         var1 = getCorporateDefaults();
+         defaults = getCorporateDefaults();
       }
 
-      return this.permsIntoMask(var1);
+      return this.permsIntoMask(defaults);
    }
 
-   private final long permsIntoMask(byte[] var1) {
+   private final long permsIntoMask(byte[] perms) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

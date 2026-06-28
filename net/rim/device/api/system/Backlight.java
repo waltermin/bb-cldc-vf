@@ -16,36 +16,36 @@ public final class Backlight {
 
    private static final native void enable0(boolean var0, int var1);
 
-   public static final void enable(boolean var0) {
+   public static final void enable(boolean enable) {
       assertPermission();
-      if (var0) {
+      if (enable) {
          resetIdleTime(TraceBack.getCallingModule(0));
       }
 
-      enable0(var0, 0);
+      enable0(enable, 0);
       Thread.yield();
    }
 
-   public static final void enable(boolean var0, int var1) {
+   public static final void enable(boolean enable, int seconds) {
       assertPermission();
-      if (var1 < 1) {
+      if (seconds < 1) {
          throw new Object();
       }
 
-      if (var1 > 255) {
-         var1 = 255;
+      if (seconds > 255) {
+         seconds = 255;
       }
 
-      if (var0) {
+      if (enable) {
          resetIdleTime(TraceBack.getCallingModule(0));
       }
 
-      enable0(var0, var1);
+      enable0(enable, seconds);
       Thread.yield();
    }
 
-   private static final void resetIdleTime(int var0) {
-      if (DeviceInfo.canResetIdleTime(var0)) {
+   private static final void resetIdleTime(int callingModule) {
+      if (DeviceInfo.canResetIdleTime(callingModule)) {
          InternalServices.resetIdleTime();
       }
    }
@@ -54,9 +54,9 @@ public final class Backlight {
 
    public static final native int getTimeoutDefault();
 
-   public static final void setTimeout(int var0) {
+   public static final void setTimeout(int seconds) {
       assertPermission();
-      setTimeout0(var0);
+      setTimeout0(seconds);
    }
 
    private static final native void setTimeout0(int var0);
@@ -69,9 +69,9 @@ public final class Backlight {
 
    public static final native int getBrightnessDefault();
 
-   public static final void setBrightness(int var0) {
+   public static final void setBrightness(int brightness) {
       assertPermission();
-      setBrightness0(var0);
+      setBrightness0(brightness);
    }
 
    private static final native void setBrightness0(int var0);
@@ -85,9 +85,9 @@ public final class Backlight {
 
    private static final native void resetElapsedTime0();
 
-   public static final void enable(int var0, boolean var1) {
+   public static final void enable(int backlight, boolean enable) {
       assertPermission();
-      enable0(var0, var1);
+      enable0(backlight, enable);
    }
 
    private static final native void enable0(int var0, boolean var1);

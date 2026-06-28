@@ -10,14 +10,14 @@ public class BBRClientAuth {
    private static final int COMPRESSED_PUBLIC_KEY_LENGTH;
    private static final int PRIVATE_KEY_LENGTH;
 
-   public BBRClientAuth(byte[] var1) {
+   public BBRClientAuth(byte[] secret) {
    }
 
    public byte[] getRD() {
       return this._RD;
    }
 
-   public byte[] getYD(byte[] var1, byte[] var2) {
+   public byte[] getYD(byte[] RB, byte[] eD) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -25,7 +25,7 @@ public class BBRClientAuth {
       return this._eB;
    }
 
-   public boolean verify(byte[] var1) {
+   public boolean verify(byte[] yB) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

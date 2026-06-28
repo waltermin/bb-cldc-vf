@@ -9,11 +9,11 @@ public final class AttributedString$PictureInfo {
    public int _advance;
    public int _lineBreakType;
 
-   public AttributedString$PictureInfo(AttributedString$Picture var1) {
-      if (var1 == null) {
+   public AttributedString$PictureInfo(AttributedString$Picture aPicture) {
+      if (aPicture == null) {
          throw new Object();
       }
 
-      this._picture = var1;
+      this._picture = aPicture;
    }
 }

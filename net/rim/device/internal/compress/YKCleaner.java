@@ -4,8 +4,8 @@ final class YKCleaner implements Runnable {
    private boolean _registered;
    private Object _objToClean;
 
-   public YKCleaner(Object var1) {
-      this._objToClean = var1;
+   public YKCleaner(Object obj) {
+      this._objToClean = obj;
    }
 
    public final void register() {

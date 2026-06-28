@@ -24,7 +24,7 @@ public final class Memory implements VMConstants {
 
    public static final native int getRAMReady();
 
-   public static final void getFlashStats(MemStats var0) {
+   public static final void getFlashStats(MemStats stats) {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
@@ -132,12 +132,12 @@ public final class Memory implements VMConstants {
       maximizeContiguousRAM(1048576);
    }
 
-   public static final void maximizeContiguousRAM(int var0) {
-      if (var0 >= 0 && var0 <= 1073741823) {
-         var0 += var0 >> 2;
-         MemStats var1 = new MemStats();
-         getRAMStats(var1);
-         if (var1.getFree() < var0) {
+   public static final void maximizeContiguousRAM(int sizeEstimate) {
+      if (sizeEstimate >= 0 && sizeEstimate <= 1073741823) {
+         sizeEstimate += sizeEstimate >> 2;
+         MemStats stats = new MemStats();
+         getRAMStats(stats);
+         if (stats.getFree() < sizeEstimate) {
             RAMRecover();
          }
 
@@ -151,18 +151,18 @@ public final class Memory implements VMConstants {
 
    public static final native byte[] allocRAMOnlyBytes(int var0);
 
-   public static final byte[] copyToRAMOnlyBytes(byte[] var0) {
-      return copyToRAMOnlyBytes(var0, 0, var0.length);
+   public static final byte[] copyToRAMOnlyBytes(byte[] data) {
+      return copyToRAMOnlyBytes(data, 0, data.length);
    }
 
-   public static final byte[] copyToRAMOnlyBytes(byte[] var0, int var1, int var2) {
-      setPlaintext(var0);
-      byte[] var3 = allocRAMOnlyBytes(var2);
-      if (var3 != null) {
-         System.arraycopy(var0, var1, var3, 0, var2);
+   public static final byte[] copyToRAMOnlyBytes(byte[] data, int offset, int length) {
+      setPlaintext(data);
+      byte[] buffer = allocRAMOnlyBytes(length);
+      if (buffer != null) {
+         System.arraycopy(data, offset, buffer, 0, length);
       }
 
-      return var3;
+      return buffer;
    }
 
    public static final native Object[] getAllInstances(Class var0);

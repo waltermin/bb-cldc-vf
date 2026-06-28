@@ -4,6 +4,6 @@ public class InputMethodError extends Error {
    public InputMethodError() {
    }
 
-   public InputMethodError(String var1) {
+   public InputMethodError(String s) {
    }
 }

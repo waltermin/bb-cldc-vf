@@ -6,8 +6,8 @@ import net.rim.device.api.system.PersistentContent;
 class ContentProtectedLookup$MyEnumeration implements Enumeration {
    private Enumeration _e;
 
-   ContentProtectedLookup$MyEnumeration(Enumeration var1) {
-      this._e = var1;
+   ContentProtectedLookup$MyEnumeration(Enumeration e) {
+      this._e = e;
    }
 
    @Override

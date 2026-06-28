@@ -8,8 +8,8 @@ public class NullField extends Field {
       this(0);
    }
 
-   public NullField(long var1) {
-      super(validateStyle(var1));
+   public NullField(long style) {
+      super(validateStyle(style));
    }
 
    @Override
@@ -23,19 +23,19 @@ public class NullField extends Field {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(0, 0);
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long validateStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0;
+      return style;
    }
 }

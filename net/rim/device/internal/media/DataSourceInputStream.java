@@ -7,33 +7,41 @@ class DataSourceInputStream extends InputStream {
    private SourceStream _source;
    private static byte[] ONE_BYTE;
 
-   public DataSourceInputStream(SourceStream var1) {
-      this._source = var1;
+   public DataSourceInputStream(SourceStream source) {
+      this._source = source;
    }
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (ONE_BYTE) {
+         if (this._source.read(ONE_BYTE, 0, 1) == 1) {
+            int i = ONE_BYTE[0] & 255;
+            ONE_BYTE[0] = 0;
+            return i;
+         } else {
+            return -1;
+         }
+      }
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      return this._source.read(var1, var2, var3);
+   public int read(byte[] b, int off, int len) {
+      return this._source.read(b, off, len);
    }
 
    @Override
-   public long skip(long var1) {
-      if (var1 <= 0) {
+   public long skip(long n) {
+      if (n <= 0) {
          return 0;
       }
 
       if (this._source.getSeekType() == 2) {
-         long var3 = this._source.tell();
-         if (var3 >= 0) {
-            return this._source.seek(var3 + var1) - var3;
+         long originalPosition = this._source.tell();
+         if (originalPosition >= 0) {
+            return this._source.seek(originalPosition + n) - originalPosition;
          }
       }
 
-      return super.skip(var1);
+      return super.skip(n);
    }
 }

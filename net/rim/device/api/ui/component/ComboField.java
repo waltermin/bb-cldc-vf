@@ -45,39 +45,39 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
       return DROP_MARGIN;
    }
 
-   public void setController(ComboFieldController var1) {
-      this._control = var1;
+   public void setController(ComboFieldController control) {
+      this._control = control;
       this._control.setComboField(this);
    }
 
-   public void setEditable(BasicEditField var1) {
+   public void setEditable(BasicEditField editable) {
       if (this._editable != null) {
-         this.replace(this._editable, var1);
+         this.replace(this._editable, editable);
       } else {
-         this.add(var1);
+         this.add(editable);
       }
 
-      this._editable = var1;
+      this._editable = editable;
       this._editable.setChangeListener(this);
       this._inputText = this._editable.getText();
    }
 
-   public void setList(ListField var1) {
+   public void setList(ListField list) {
       this.hideDropList();
-      this._list = var1;
+      this._list = list;
       this._dropList = new ComboField$DropListScreen(this);
    }
 
-   public void setText(String var1) {
-      this._editable.setText(var1);
+   public void setText(String text) {
+      this._editable.setText(text);
       this._editable.setMuddy(true);
    }
 
    public void showDropList() {
-      XYRect var1 = new XYRect(this._editable.getExtent());
-      this.transformToScreen(var1);
-      XYEdges var2 = this.getDropMargin();
-      this._dropList.setPositionAndWidth(var1.x + var2.left, var1.Y2(), var1.width - (var2.left + var2.right));
+      XYRect rect = new XYRect(this._editable.getExtent());
+      this.transformToScreen(rect);
+      XYEdges dropMargin = this.getDropMargin();
+      this._dropList.setPositionAndWidth(rect.x + dropMargin.left, rect.Y2(), rect.width - (dropMargin.left + dropMargin.right));
       if (this._dropList.isDisplayed()) {
          this._dropList.update();
       } else {
@@ -90,12 +90,12 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 != null && var1.getOriginal() == this._editable && this._control != null) {
-         String var3 = this._editable.getText();
-         if (!var3.equals(this._inputText)) {
-            this._inputText = var3;
-            this._control.textChanged(this._inputText, var2);
+   public void fieldChanged(Field field, int context) {
+      if (field != null && field.getOriginal() == this._editable && this._control != null) {
+         String newText = this._editable.getText();
+         if (!newText.equals(this._inputText)) {
+            this._inputText = newText;
+            this._control.textChanged(this._inputText, context);
          }
       }
    }
@@ -110,14 +110,14 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
       this.$initialize(null, null, null);
    }
 
-   public ComboField(BasicEditField var1, ListField var2, ComboFieldController var3) {
-      this.$initialize(var1, var2, var3);
+   public ComboField(BasicEditField editable, ListField list, ComboFieldController control) {
+      this.$initialize(editable, list, control);
    }
 
-   private void $initialize(BasicEditField var1, ListField var2, ComboFieldController var3) {
-      this._editable = var1;
-      this._list = var2;
-      this._control = var3;
+   private void $initialize(BasicEditField editable, ListField list, ComboFieldController control) {
+      this._editable = editable;
+      this._list = list;
+      this._control = control;
       if (this._list != null) {
          this._dropList = new ComboField$DropListScreen(this);
       }
@@ -158,8 +158,8 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (super.getAccessibleStateSet() & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (super.getAccessibleStateSet() & state) != 0;
    }
 
    @Override
@@ -178,8 +178,8 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      switch (var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
+      switch (index) {
          case -1:
             return null;
          case 0:
@@ -201,11 +201,11 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      if (var1 == 0) {
-         Field var2 = super.getFieldWithFocus();
-         if (var2 instanceof AccessibleContext && (var2 == this._editable || var2 == this._list)) {
-            return var2;
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      if (index == 0) {
+         Field temp = super.getFieldWithFocus();
+         if (temp instanceof AccessibleContext && (temp == this._editable || temp == this._list)) {
+            return temp;
          }
       }
 
@@ -213,9 +213,9 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      AccessibleContext var2 = this.getAccessibleChildAt(var1);
-      AccessibleContext var3 = this.getAccessibleSelectionAt(0);
-      return var2.equals(var3);
+   public boolean isAccessibleChildSelected(int index) {
+      AccessibleContext _child = this.getAccessibleChildAt(index);
+      AccessibleContext _selected = this.getAccessibleSelectionAt(0);
+      return _child.equals(_selected);
    }
 }

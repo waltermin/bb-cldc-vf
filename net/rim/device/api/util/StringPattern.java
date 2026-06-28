@@ -1,15 +1,15 @@
 package net.rim.device.api.util;
 
 public class StringPattern {
-   public boolean findMatch(AbstractString var1, int var2, StringPattern$Match var3) {
-      return var1 == null ? false : this.findMatch(var1, var2, var1.length(), var3);
+   public boolean findMatch(AbstractString str, int beginIndex, StringPattern$Match match) {
+      return str == null ? false : this.findMatch(str, beginIndex, str.length(), match);
    }
 
-   public boolean findMatch(AbstractString var1, int var2, int var3, StringPattern$Match var4) {
+   public boolean findMatch(AbstractString _1, int _2, int _3, StringPattern$Match _4) {
       throw null;
    }
 
-   public boolean findMatch(AbstractString var1, int var2, int var3, int var4, StringPattern$Match var5) {
+   public boolean findMatch(AbstractString str, int beginIndex, int curIndex, int maxIndex, StringPattern$Match match) {
       return false;
    }
 
@@ -17,8 +17,8 @@ public class StringPattern {
       return -1;
    }
 
-   protected static final boolean isWhitespace(char var0) {
-      switch (var0) {
+   protected static final boolean isWhitespace(char c) {
+      switch (c) {
          case '\t':
          case '\n':
          case '\r':

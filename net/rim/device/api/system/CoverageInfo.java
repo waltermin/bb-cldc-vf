@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import net.rim.device.internal.system.CoverageInfoInternal;
+import net.rim.device.internal.system.EventDispatchManager;
 
 public class CoverageInfo {
    public static final int COVERAGE_NONE;
@@ -11,43 +12,51 @@ public class CoverageInfo {
    private CoverageInfo() {
    }
 
-   public static void addListener(CoverageStatusListener var0) {
-      addListener(Application.getApplication(), var0);
+   public static void addListener(CoverageStatusListener listener) {
+      addListener(Application.getApplication(), listener);
    }
 
-   public static void addListener(Application var0, CoverageStatusListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static void addListener(Application app, CoverageStatusListener listener) {
+      CoverageInfoInternal.getInstance();
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(9) == null) {
+            dispatchManager.setDispatcher(9, new CoverageInfo$CoverageInfoEventDispatcher(null));
+         }
+      }
+
+      app.addListener(9, listener);
    }
 
-   public static void removeListener(CoverageStatusListener var0) {
-      removeListener(Application.getApplication(), var0);
+   public static void removeListener(CoverageStatusListener listener) {
+      removeListener(Application.getApplication(), listener);
    }
 
-   public static void removeListener(Application var0, CoverageStatusListener var1) {
-      var0.removeListener(9, var1);
+   public static void removeListener(Application app, CoverageStatusListener listener) {
+      app.removeListener(9, listener);
    }
 
    public static int getCoverageStatus() {
       return getCoverageStatus(RadioInfo.getSupportedWAFs(), true);
    }
 
-   public static int getCoverageStatus(int var0, boolean var1) {
-      return CoverageInfoInternal.getInstance().getCoverage(var0, var1);
+   public static int getCoverageStatus(int wafs, boolean considerSerialBypass) {
+      return CoverageInfoInternal.getInstance().getCoverage(wafs, considerSerialBypass);
    }
 
-   public static boolean isCoverageSufficient(int var0) {
-      return isCoverageSufficient(var0, RadioInfo.getSupportedWAFs(), true);
+   public static boolean isCoverageSufficient(int coverageType) {
+      return isCoverageSufficient(coverageType, RadioInfo.getSupportedWAFs(), true);
    }
 
-   public static boolean isCoverageSufficient(int var0, int var1, boolean var2) {
-      return CoverageInfoInternal.getInstance().isCoverageSufficient(var0, var1, var2);
+   public static boolean isCoverageSufficient(int coverageType, int wafs, boolean considerSerialBypass) {
+      return CoverageInfoInternal.getInstance().isCoverageSufficient(coverageType, wafs, considerSerialBypass);
    }
 
    public static boolean isOutOfCoverage() {
       return isOutOfCoverage(RadioInfo.getSupportedWAFs(), true);
    }
 
-   public static boolean isOutOfCoverage(int var0, boolean var1) {
-      return getCoverageStatus(var0, var1) == 0;
+   public static boolean isOutOfCoverage(int wafs, boolean considerSerialBypass) {
+      return getCoverageStatus(wafs, considerSerialBypass) == 0;
    }
 }

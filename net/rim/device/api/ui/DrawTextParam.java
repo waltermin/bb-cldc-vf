@@ -23,9 +23,9 @@ public final class DrawTextParam {
    public static final int TRUNCATE_WITH_ELLIPSIS_AT_END;
    public static final int TRUNCATE_WITH_NO_ELLIPSIS_AT_START;
 
-   public DrawTextParam(int var1) {
+   public DrawTextParam(int maxAdvance) {
       this.reset();
-      this.iMaxAdvance = var1;
+      this.iMaxAdvance = maxAdvance;
    }
 
    public DrawTextParam() {

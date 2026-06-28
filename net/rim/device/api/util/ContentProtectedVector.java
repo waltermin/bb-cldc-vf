@@ -8,25 +8,25 @@ import net.rim.device.api.system.PersistentContentListener;
 public class ContentProtectedVector extends Vector implements Persistable, PersistentContentListener {
    boolean _protected;
 
-   public ContentProtectedVector(int var1, int var2, boolean var3) {
-      super(var1, var2);
-      if (var3) {
+   public ContentProtectedVector(int initialCapacity, int capacityIncrement, boolean protect) {
+      super(initialCapacity, capacityIncrement);
+      if (protect) {
          this.reCrypt();
       }
    }
 
-   public ContentProtectedVector(int var1, int var2) {
-      super(var1, var2);
+   public ContentProtectedVector(int initialCapacity, int capacityIncrement) {
+      super(initialCapacity, capacityIncrement);
       this.reCrypt();
    }
 
-   public ContentProtectedVector(int var1) {
-      super(var1);
+   public ContentProtectedVector(int initialCapacity) {
+      super(initialCapacity);
       this.reCrypt();
    }
 
-   public ContentProtectedVector(boolean var1) {
-      if (var1) {
+   public ContentProtectedVector(boolean protect) {
+      if (protect) {
          this.reCrypt();
       }
    }
@@ -36,41 +36,41 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
    }
 
    @Override
-   public synchronized void copyInto(Object[] var1) {
-      super.copyInto(var1);
+   public synchronized void copyInto(Object[] anArray) {
+      super.copyInto(anArray);
       if (this._protected) {
-         for (int var2 = super.elementCount - 1; var2 >= 0; var2--) {
-            var1[var2] = PersistentContent.decode(var1[var2]);
+         for (int i = super.elementCount - 1; i >= 0; i--) {
+            anArray[i] = PersistentContent.decode(anArray[i]);
          }
       }
    }
 
    @Override
    public synchronized Enumeration elements() {
-      Object var1 = super.elements();
+      Enumeration enumeration = super.elements();
       if (this._protected) {
-         var1 = new Object((Enumeration)var1);
+         enumeration = (Enumeration)(new Object(enumeration));
       }
 
-      return (Enumeration)var1;
+      return enumeration;
    }
 
    @Override
-   public synchronized int indexOf(Object var1, int var2) {
+   public synchronized int indexOf(Object elem, int index) {
       if (!this._protected) {
-         return super.indexOf(var1, var2);
+         return super.indexOf(elem, index);
       }
 
-      if (var1 == null) {
-         for (int var3 = var2; var3 < super.elementCount; var3++) {
-            if (super.elementData[var3] == null) {
-               return var3;
+      if (elem == null) {
+         for (int i = index; i < super.elementCount; i++) {
+            if (super.elementData[i] == null) {
+               return i;
             }
          }
       } else {
-         for (int var4 = var2; var4 < super.elementCount; var4++) {
-            if (var1.equals(PersistentContent.decode(super.elementData[var4]))) {
-               return var4;
+         for (int i = index; i < super.elementCount; i++) {
+            if (elem.equals(PersistentContent.decode(super.elementData[i]))) {
+               return i;
             }
          }
       }
@@ -79,13 +79,13 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
    }
 
    @Override
-   public synchronized int lastIndexOf(Object var1, int var2) {
+   public synchronized int lastIndexOf(Object elem, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public synchronized Object elementAt(int var1) {
-      return this._protected ? PersistentContent.decode(super.elementAt(var1)) : super.elementAt(var1);
+   public synchronized Object elementAt(int index) {
+      return this._protected ? PersistentContent.decode(super.elementAt(index)) : super.elementAt(index);
    }
 
    @Override
@@ -99,30 +99,30 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
    }
 
    @Override
-   public synchronized void setElementAt(Object var1, int var2) {
+   public synchronized void setElementAt(Object obj, int index) {
       if (this._protected) {
-         var1 = PersistentContent.encodeObject(var1);
+         obj = PersistentContent.encodeObject(obj);
       }
 
-      super.setElementAt(var1, var2);
+      super.setElementAt(obj, index);
    }
 
    @Override
-   public synchronized void insertElementAt(Object var1, int var2) {
+   public synchronized void insertElementAt(Object obj, int index) {
       if (this._protected) {
-         var1 = PersistentContent.encodeObject(var1);
+         obj = PersistentContent.encodeObject(obj);
       }
 
-      super.insertElementAt(var1, var2);
+      super.insertElementAt(obj, index);
    }
 
    @Override
-   public synchronized void addElement(Object var1) {
+   public synchronized void addElement(Object obj) {
       if (this._protected) {
-         var1 = PersistentContent.encodeObject(var1);
+         obj = PersistentContent.encodeObject(obj);
       }
 
-      super.addElement(var1);
+      super.addElement(obj);
    }
 
    public synchronized boolean isProtected() {
@@ -134,8 +134,8 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
          return false;
       }
 
-      for (int var1 = 0; var1 < super.elementCount; var1++) {
-         if (!PersistentContent.checkEncoding(super.elementData[var1])) {
+      for (int i = 0; i < super.elementCount; i++) {
+         if (!PersistentContent.checkEncoding(super.elementData[i])) {
             return false;
          }
       }
@@ -154,25 +154,25 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
    private void transitionToProtected() {
       this._protected = true;
 
-      for (int var1 = 0; var1 < super.elementCount; var1++) {
-         super.elementData[var1] = PersistentContent.encodeObject(super.elementData[var1]);
+      for (int i = 0; i < super.elementCount; i++) {
+         super.elementData[i] = PersistentContent.encodeObject(super.elementData[i]);
       }
 
       PersistentContent.addWeakListener(this);
    }
 
    private void reCrypt2() {
-      for (int var1 = 0; var1 < super.elementCount; var1++) {
-         super.elementData[var1] = PersistentContent.reEncode(super.elementData[var1]);
+      for (int i = 0; i < super.elementCount; i++) {
+         super.elementData[i] = PersistentContent.reEncode(super.elementData[i]);
       }
    }
 
    @Override
-   public synchronized void persistentContentModeChanged(int var1) {
+   public synchronized void persistentContentModeChanged(int generation) {
       this.reCrypt2();
    }
 
    @Override
-   public synchronized void persistentContentStateChanged(int var1) {
+   public synchronized void persistentContentStateChanged(int state) {
    }
 }

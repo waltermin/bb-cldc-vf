@@ -17,8 +17,8 @@ public final class Class {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Class forName(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final Class forName(String className) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private static final native Class forName0(String var0);
@@ -28,7 +28,7 @@ public final class Class {
    private final native Object newInstance0();
 
    public final Object newInstance() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public final native boolean isInstance(Object var1);
@@ -53,11 +53,11 @@ public final class Class {
 
    private final native String getPackageName();
 
-   public final InputStream getResourceAsStream(String var1) {
+   public final InputStream getResourceAsStream(String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final String fixResourceName(String var1) {
+   private final String fixResourceName(String name) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

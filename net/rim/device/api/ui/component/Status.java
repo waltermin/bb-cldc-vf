@@ -24,28 +24,28 @@ public final class Status extends PopupScreen {
    public static final long GLOBAL_STATUS;
    private static final int MIN_DISMISS_TIME;
 
-   private Status(String var1, Bitmap var2, long var3, boolean var5, boolean var6, int var7) {
-      this(var1, ImageBitmap.create(var2), var3, var5, var6, var7);
+   private Status(String message, Bitmap bitmap, long style, boolean allowDismiss, boolean block, int priority) {
+      this(message, ImageBitmap.create(bitmap), style, allowDismiss, block, priority);
    }
 
-   private Status(String var1, Image var2, long var3, boolean var5, boolean var6, int var7) {
-      super((Manager)(new Object()), var3);
-      this.setAcceptsInput(var5);
+   private Status(String message, Image image, long style, boolean allowDismiss, boolean block, int priority) {
+      super((Manager)(new Object()), style);
+      this.setAcceptsInput(allowDismiss);
       this._dfm = (DialogFieldManager)this.getDelegate();
-      this._label = new RichTextField(var1, 36028797018963968L);
+      this._label = new RichTextField(message, 36028797018963968L);
       this._dfm.setMessage(this._label);
-      this._allowDismiss = var5;
-      this._block = var6;
-      this._priority = var7;
-      if (var2 != null) {
-         Object var8 = new Object();
-         ((ImageField)var8).setImage(var2);
-         ((ImageField)var8).setPreferredSize(Display.getWidth() >> 2, Display.getHeight() >> 2);
-         this._dfm.setIcon((ImageField)var8);
+      this._allowDismiss = allowDismiss;
+      this._block = block;
+      this._priority = priority;
+      if (image != null) {
+         ImageField ifield = (ImageField)(new Object());
+         ifield.setImage(image);
+         ifield.setPreferredSize(Display.getWidth() >> 2, Display.getHeight() >> 2);
+         this._dfm.setIcon(ifield);
       }
    }
 
-   private final void show0(int var1) {
+   private final void show0(int time) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -60,8 +60,8 @@ public final class Status extends PopupScreen {
    }
 
    @Override
-   protected final boolean keyChar(char var1, int var2, int var3) {
-      if (super.keyChar(var1, var2, var3) || var1 != ' ' && var1 != 27) {
+   protected final boolean keyChar(char c, int status, int time) {
+      if (super.keyChar(c, status, time) || c != ' ' && c != 27) {
          return false;
       }
 
@@ -70,13 +70,13 @@ public final class Status extends PopupScreen {
    }
 
    @Override
-   protected final boolean keyDown(int var1, int var2) {
-      return Keypad.key(var1) == 261 ? true : super.keyDown(var1, var2);
+   protected final boolean keyDown(int keycode, int time) {
+      return Keypad.key(keycode) == 261 ? true : super.keyDown(keycode, time);
    }
 
    @Override
-   protected final boolean trackwheelClick(int var1, int var2) {
-      if (!super.trackwheelClick(var1, var2)) {
+   protected final boolean trackwheelClick(int status, int time) {
+      if (!super.trackwheelClick(status, time)) {
          this.dismiss();
          return true;
       } else {
@@ -85,29 +85,29 @@ public final class Status extends PopupScreen {
    }
 
    @Override
-   protected final boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return super.stylusTap(var1, var2, var3, var4) ? true : this.trackwheelClick(var3, var4);
+   protected final boolean stylusTap(int x, int y, int status, int time) {
+      return super.stylusTap(x, y, status, time) ? true : this.trackwheelClick(status, time);
    }
 
-   public static final void show(String var0) {
-      show(var0, Bitmap.getPredefinedBitmap(0), 2000);
+   public static final void show(String message) {
+      show(message, Bitmap.getPredefinedBitmap(0), 2000);
    }
 
-   public static final void show(String var0, int var1) {
-      show(var0, Bitmap.getPredefinedBitmap(0), var1);
+   public static final void show(String message, int time) {
+      show(message, Bitmap.getPredefinedBitmap(0), time);
    }
 
-   public static final void show(String var0, Bitmap var1, int var2) {
-      show(var0, var1, var2, 0, true, true, 50);
+   public static final void show(String message, Bitmap bitmap, int time) {
+      show(message, bitmap, time, 0, true, true, 50);
    }
 
-   public static final void show(String var0, Bitmap var1, int var2, long var3, boolean var5, boolean var6, int var7) {
-      Status var8 = new Status(var0, var1, var3, var5, var6, var7);
-      var8.show0(var2);
+   public static final void show(String message, Bitmap bitmap, int time, long style, boolean allowDismiss, boolean block, int priority) {
+      Status status = new Status(message, bitmap, style, allowDismiss, block, priority);
+      status.show0(time);
    }
 
-   public static final void show(String var0, Image var1, int var2, long var3, boolean var5, boolean var6, int var7) {
-      Status var8 = new Status(var0, var1, var3, var5, var6, var7);
-      var8.show0(var2);
+   public static final void show(String message, Image image, int time, long style, boolean allowDismiss, boolean block, int priority) {
+      Status status = new Status(message, image, style, allowDismiss, block, priority);
+      status.show0(time);
    }
 }

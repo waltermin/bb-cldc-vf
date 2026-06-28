@@ -19,12 +19,12 @@ public final class System {
 
    public static final native int identityHashCode(Object var0);
 
-   public static final String getProperty(String var0) {
+   public static final String getProperty(String key) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void exit(int var0) {
-      Runtime.getRuntime().exit(var0);
+   public static final void exit(int status) {
+      Runtime.getRuntime().exit(status);
    }
 
    public static final void gc() {

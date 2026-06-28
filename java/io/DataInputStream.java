@@ -3,8 +3,8 @@ package java.io;
 public class DataInputStream extends InputStream implements DataInput {
    protected InputStream in;
 
-   public DataInputStream(InputStream var1) {
-      this.in = var1;
+   public DataInputStream(InputStream in) {
+      this.in = in;
    }
 
    @Override
@@ -13,77 +13,77 @@ public class DataInputStream extends InputStream implements DataInput {
    }
 
    @Override
-   public final int read(byte[] var1) {
-      return this.in.read(var1, 0, var1.length);
+   public final int read(byte[] b) {
+      return this.in.read(b, 0, b.length);
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
-      return this.in.read(var1, var2, var3);
+   public final int read(byte[] b, int off, int len) {
+      return this.in.read(b, off, len);
    }
 
    @Override
-   public final void readFully(byte[] var1) {
-      this.readFully(var1, 0, var1.length);
+   public final void readFully(byte[] b) {
+      this.readFully(b, 0, b.length);
    }
 
    @Override
-   public final void readFully(byte[] var1, int var2, int var3) {
-      if (var3 < 0) {
+   public final void readFully(byte[] b, int off, int len) {
+      if (len < 0) {
          throw new IndexOutOfBoundsException();
       }
 
-      int var4 = 0;
+      int n = 0;
 
-      while (var4 < var3) {
-         int var5 = this.read(var1, var2 + var4, var3 - var4);
-         if (var5 < 0) {
+      while (n < len) {
+         int count = this.read(b, off + n, len - n);
+         if (count < 0) {
             throw new EOFException();
          }
 
-         var4 += var5;
+         n += count;
       }
    }
 
    @Override
-   public final int skipBytes(int var1) {
-      int var2 = 0;
-      int var3 = 0;
+   public final int skipBytes(int n) {
+      int total = 0;
+      int cur = 0;
 
-      while (var2 < var1 && (var3 = (int)this.skip(var1 - var2)) > 0) {
-         var2 += var3;
+      while (total < n && (cur = (int)this.skip(n - total)) > 0) {
+         total += cur;
       }
 
-      return var2;
+      return total;
    }
 
    @Override
    public final boolean readBoolean() {
-      int var1 = this.read();
-      if (var1 < 0) {
+      int ch = this.read();
+      if (ch < 0) {
          throw new EOFException();
       } else {
-         return var1 != 0;
+         return ch != 0;
       }
    }
 
    @Override
    public final byte readByte() {
-      int var1 = this.read();
-      if (var1 < 0) {
+      int ch = this.read();
+      if (ch < 0) {
          throw new EOFException();
       } else {
-         return (byte)var1;
+         return (byte)ch;
       }
    }
 
    @Override
    public final int readUnsignedByte() {
-      int var1 = this.read();
-      if (var1 < 0) {
+      int ch = this.read();
+      if (ch < 0) {
          throw new EOFException();
       } else {
-         return var1;
+         return ch;
       }
    }
 
@@ -94,12 +94,12 @@ public class DataInputStream extends InputStream implements DataInput {
 
    @Override
    public final int readUnsignedShort() {
-      int var1 = this.read();
-      int var2 = this.read();
-      if ((var1 | var2) < 0) {
+      int ch1 = this.read();
+      int ch2 = this.read();
+      if ((ch1 | ch2) < 0) {
          throw new EOFException();
       } else {
-         return (var1 << 8) + (var2 << 0);
+         return (ch1 << 8) + (ch2 << 0);
       }
    }
 
@@ -110,14 +110,14 @@ public class DataInputStream extends InputStream implements DataInput {
 
    @Override
    public final int readInt() {
-      int var1 = this.read();
-      int var2 = this.read();
-      int var3 = this.read();
-      int var4 = this.read();
-      if ((var1 | var2 | var3 | var4) < 0) {
+      int ch1 = this.read();
+      int ch2 = this.read();
+      int ch3 = this.read();
+      int ch4 = this.read();
+      if ((ch1 | ch2 | ch3 | ch4) < 0) {
          throw new EOFException();
       } else {
-         return (var1 << 24) + (var2 << 16) + (var3 << 8) + (var4 << 0);
+         return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
       }
    }
 
@@ -141,18 +141,18 @@ public class DataInputStream extends InputStream implements DataInput {
       return readUTF(this);
    }
 
-   public static final String readUTF(DataInput var0) {
-      int var1 = var0.readUnsignedByte();
-      int var2 = var0.readUnsignedByte();
-      int var3 = (var1 << 8) + (var2 << 0);
-      StringBuffer var4 = new StringBuffer(var3);
-      byte[] var5 = new byte[var3];
-      int var9 = 0;
-      var0.readFully(var5, 0, var3);
+   public static final String readUTF(DataInput in) {
+      int ch1 = in.readUnsignedByte();
+      int ch2 = in.readUnsignedByte();
+      int utflen = (ch1 << 8) + (ch2 << 0);
+      StringBuffer str = new StringBuffer(utflen);
+      byte[] bytearr = new byte[utflen];
+      int count = 0;
+      in.readFully(bytearr, 0, utflen);
 
-      while (var9 < var3) {
-         int var6 = var5[var9] & 255;
-         switch (var6 >> 4) {
+      while (count < utflen) {
+         int c = bytearr[count] & 255;
+         switch (c >> 4) {
             case -1:
             case 8:
             case 9:
@@ -168,45 +168,45 @@ public class DataInputStream extends InputStream implements DataInput {
             case 6:
             case 7:
             default:
-               var9++;
-               var4.append((char)var6);
+               count++;
+               str.append((char)c);
                break;
             case 12:
             case 13:
-               var9 += 2;
-               if (var9 > var3) {
+               count += 2;
+               if (count > utflen) {
                   throw new UTFDataFormatException();
                }
 
-               byte var10 = var5[var9 - 1];
-               if ((var10 & 192) != 128) {
+               int char2 = bytearr[count - 1];
+               if ((char2 & 192) != 128) {
                   throw new UTFDataFormatException();
                }
 
-               var4.append((char)((var6 & 31) << 6 | var10 & 63));
+               str.append((char)((c & 31) << 6 | char2 & 63));
                break;
             case 14:
-               var9 += 3;
-               if (var9 > var3) {
+               count += 3;
+               if (count > utflen) {
                   throw new UTFDataFormatException();
                }
 
-               byte var7 = var5[var9 - 2];
-               byte var8 = var5[var9 - 1];
-               if ((var7 & 192) != 128 || (var8 & 192) != 128) {
+               int char2 = bytearr[count - 2];
+               int char3 = bytearr[count - 1];
+               if ((char2 & 192) != 128 || (char3 & 192) != 128) {
                   throw new UTFDataFormatException();
                }
 
-               var4.append((char)((var6 & 15) << 12 | (var7 & 63) << 6 | (var8 & 63) << 0));
+               str.append((char)((c & 15) << 12 | (char2 & 63) << 6 | (char3 & 63) << 0));
          }
       }
 
-      return (String)(new Object(var4));
+      return (String)(new Object(str));
    }
 
    @Override
-   public long skip(long var1) {
-      return this.in.skip(var1);
+   public long skip(long n) {
+      return this.in.skip(n);
    }
 
    @Override
@@ -220,8 +220,8 @@ public class DataInputStream extends InputStream implements DataInput {
    }
 
    @Override
-   public synchronized void mark(int var1) {
-      this.in.mark(var1);
+   public synchronized void mark(int readlimit) {
+      this.in.mark(readlimit);
    }
 
    @Override

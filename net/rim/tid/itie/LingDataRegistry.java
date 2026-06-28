@@ -15,32 +15,32 @@ public class LingDataRegistry {
    private IntHashtable _store = (IntHashtable)(new Object());
    private Vector _lingDataRegistryListeners;
 
-   LingDataRegistry(IMContext var1) {
-      this._context = var1;
+   LingDataRegistry(IMContext context) {
+      this._context = context;
    }
 
-   public static int registerLingData(int var0, LinguisticData var1) {
-      LingDataRegistry var2 = InputContext.getInstance(false).getLingDataRegistry();
-      int var3 = var2.addData(var0, var1);
-      if (var3 != -1) {
-         IMManager var4 = InputContext.getInstance(false).getInputMethodsManager();
-         if (var4 != null) {
-            var4.forceLocaleReRegister(Locale.get(var0));
+   public static int registerLingData(int locale, LinguisticData aData) {
+      LingDataRegistry reg = InputContext.getInstance(false).getLingDataRegistry();
+      int result = reg.addData(locale, aData);
+      if (result != -1) {
+         IMManager manager = InputContext.getInstance(false).getInputMethodsManager();
+         if (manager != null) {
+            manager.forceLocaleReRegister(Locale.get(locale));
          }
       }
 
-      return var3;
+      return result;
    }
 
-   private synchronized boolean isValid(int var1, LinguisticData var2, LinguisticData[] var3) {
-      if (var2.getType() >> 4 != 1 && !this.hasDataFor(var1, (byte)1)) {
+   private synchronized boolean isValid(int locale, LinguisticData aData, LinguisticData[] unloadData) {
+      if (aData.getType() >> 4 != 1 && !this.hasDataFor(locale, (byte)1)) {
          return false;
       }
 
-      for (LinguisticData var4 = (LinguisticData)this._store.get(var1); var4 != null; var4 = var4._next) {
-         if (var4.getType() == var2.getType()) {
-            if (var4.getVersion() < var2.getVersion()) {
-               var3[0] = var4;
+      for (LinguisticData data = (LinguisticData)this._store.get(locale); data != null; data = data._next) {
+         if (data.getType() == aData.getType()) {
+            if (data.getVersion() < aData.getVersion()) {
+               unloadData[0] = data;
                return true;
             }
 
@@ -51,77 +51,77 @@ public class LingDataRegistry {
       return true;
    }
 
-   private synchronized int addData(int var1, LinguisticData var2) {
+   private synchronized int addData(int locale, LinguisticData aData) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public synchronized int unloadLingData(int var1, String var2, int var3) {
-      if (var1 != 0) {
-         return this.unload(var1, var2, var3);
+   public synchronized int unloadLingData(int locale, String name, int type) {
+      if (locale != 0) {
+         return this.unload(locale, name, type);
       }
 
-      int var4 = 0;
-      IntEnumeration var5 = this._store.keys();
+      int ret = 0;
+      IntEnumeration e = this._store.keys();
 
-      while (var5.hasMoreElements()) {
-         var1 = var5.nextElement();
-         var4 |= this.unload(var1, var2, var3);
+      while (e.hasMoreElements()) {
+         locale = e.nextElement();
+         ret |= this.unload(locale, name, type);
       }
 
-      return var4;
+      return ret;
    }
 
-   private int unload(int var1, String var2, int var3) {
-      int var4 = 0;
-      if (var2 == null && var3 == 0) {
-         for (LinguisticData var8 = (LinguisticData)this._store.get(var1); var8 != null; var8 = var8._next) {
-            var4 |= this.unload(var8, var1, var3);
+   private int unload(int locale, String name, int type) {
+      int ret = 0;
+      if (name == null && type == 0) {
+         for (LinguisticData data = (LinguisticData)this._store.get(locale); data != null; data = data._next) {
+            ret |= this.unload(data, locale, type);
          }
 
-         this.update(var1, null);
-         return var4;
+         this.update(locale, null);
+         return ret;
       } else {
-         LinguisticData var5 = (LinguisticData)this._store.get(var1);
-         LinguisticData var6 = this.find(var5, var2, var3);
-         var4 = this.unload(var6, var1, var3);
-         this.removeFromStore(var1, var5, var6);
-         return var4;
+         LinguisticData ld = (LinguisticData)this._store.get(locale);
+         LinguisticData toRemove = this.find(ld, name, type);
+         ret = this.unload(toRemove, locale, type);
+         this.removeFromStore(locale, ld, toRemove);
+         return ret;
       }
    }
 
-   private int unload(LinguisticData var1, int var2, int var3) {
-      if (var1 != null && (var3 == 0 || var1.getType() == var3)) {
-         if (var1.getCodFileName() != null) {
-            int var4 = CodeModuleManager.getModuleHandle(var1.getCodFileName());
-            int var5 = CodeModuleManager.deleteModuleEx(var4, true);
-            if (var5 != 0 && var5 != 6) {
+   private int unload(LinguisticData ld, int locale, int type) {
+      if (ld != null && (type == 0 || ld.getType() == type)) {
+         if (ld.getCodFileName() != null) {
+            int handle = CodeModuleManager.getModuleHandle(ld.getCodFileName());
+            int res = CodeModuleManager.deleteModuleEx(handle, true);
+            if (res != 0 && res != 6) {
                return 2;
             }
          }
 
-         return this.unloadFromIM(var1, var2);
+         return this.unloadFromIM(ld, locale);
       } else {
          return 4;
       }
    }
 
-   private int unloadFromIM(LinguisticData var1, int var2) {
-      if (this._context.getLocale().getCode() != var2) {
+   private int unloadFromIM(LinguisticData ld, int locale) {
+      if (this._context.getLocale().getCode() != locale) {
          return 1;
       }
 
-      InputMethod var3 = this._context.getInputMethod();
-      return var3 != null ? var3.unloadLinguisticData(var1.getID()) : 1;
+      InputMethod im = this._context.getInputMethod();
+      return im != null ? im.unloadLinguisticData(ld.getID()) : 1;
    }
 
-   private synchronized void removeFromStore(int var1, LinguisticData var2, LinguisticData var3) {
-      if (var2 != null && var3 != null) {
-         if (var3 == var2) {
-            this.update(var1, var2._next);
+   private synchronized void removeFromStore(int locale, LinguisticData first, LinguisticData toRemove) {
+      if (first != null && toRemove != null) {
+         if (toRemove == first) {
+            this.update(locale, first._next);
          } else {
-            while (var2._next != null) {
-               if (var2._next == var3) {
-                  var2._next = var3._next;
+            while (first._next != null) {
+               if (first._next == toRemove) {
+                  first._next = toRemove._next;
                   return;
                }
             }
@@ -129,77 +129,96 @@ public class LingDataRegistry {
       }
    }
 
-   private LinguisticData find(LinguisticData var1, String var2, int var3) {
-      while (var1 != null) {
-         if (var1.getType() == var3 && (var2 == null || var2.equals(var1.getName()))) {
-            return var1;
+   private LinguisticData find(LinguisticData first, String name, int type) {
+      while (first != null) {
+         if (first.getType() == type && (name == null || name.equals(first.getName()))) {
+            return first;
          }
 
-         var1 = var1._next;
+         first = first._next;
       }
 
       return null;
    }
 
-   synchronized LinguisticData getLingData(int var1) {
-      return (LinguisticData)this._store.get(var1);
+   synchronized LinguisticData getLingData(int locale) {
+      return (LinguisticData)this._store.get(locale);
    }
 
-   synchronized void update(int var1, LinguisticData var2) {
-      if (var2 != null) {
-         this._store.put(var1, var2);
-         this.fireLingDataRegistration(var1, true);
+   synchronized void update(int locale, LinguisticData aData) {
+      if (aData != null) {
+         this._store.put(locale, aData);
+         this.fireLingDataRegistration(locale, true);
       } else {
-         this._store.remove(var1);
-         this.fireLingDataRegistration(var1, false);
+         this._store.remove(locale);
+         this.fireLingDataRegistration(locale, false);
       }
    }
 
    public synchronized int[] getAvailableLocals() {
-      int[] var1 = new int[this._store.size()];
-      this._store.keysToArray(var1);
-      return var1;
+      int[] result = new int[this._store.size()];
+      this._store.keysToArray(result);
+      return result;
    }
 
-   public synchronized String[] getLingDataNames(int var1) {
-      String[] var2 = new String[0];
+   public synchronized String[] getLingDataNames(int locale) {
+      String[] result = new String[0];
 
-      for (LinguisticData var3 = (LinguisticData)this._store.get(var1); var3 != null; var3 = var3._next) {
-         Arrays.add(var2, var3.getName());
+      for (LinguisticData first = (LinguisticData)this._store.get(locale); first != null; first = first._next) {
+         Arrays.add(result, first.getName());
       }
 
-      return var2;
+      return result;
    }
 
-   public boolean hasDataFor(int var1, byte var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean hasDataFor(int locale, byte dataType) {
+      synchronized (this._store) {
+         for (LinguisticData data = (LinguisticData)this._store.get(locale); data != null; data = data._next) {
+            if (data.getType() >> 4 == dataType) {
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
-   public boolean hasDataFor(int var1, byte var2, byte var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean hasDataFor(int locale, byte dataType, byte dataFormat) {
+      synchronized (this._store) {
+         int searchType = (255 & dataType) << 4 | dataFormat;
+
+         for (LinguisticData data = (LinguisticData)this._store.get(locale); data != null; data = data._next) {
+            int type = data.getType();
+            if (data.getType() == searchType) {
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
-   public synchronized void addLingDataRegistryListener(LingDataRegistryListener var1) {
+   public synchronized void addLingDataRegistryListener(LingDataRegistryListener l) {
       if (this._lingDataRegistryListeners == null) {
          this._lingDataRegistryListeners = (Vector)(new Object());
       }
 
-      this._lingDataRegistryListeners.addElement(var1);
+      this._lingDataRegistryListeners.addElement(l);
    }
 
-   public synchronized void removeLingDataRegistryListener(LingDataRegistryListener var1) {
+   public synchronized void removeLingDataRegistryListener(LingDataRegistryListener l) {
       if (this._lingDataRegistryListeners != null) {
-         this._lingDataRegistryListeners.removeElement(var1);
+         this._lingDataRegistryListeners.removeElement(l);
       }
    }
 
-   private synchronized void fireLingDataRegistration(int var1, boolean var2) {
+   private synchronized void fireLingDataRegistration(int locale, boolean register) {
       if (this._lingDataRegistryListeners != null) {
-         int var3 = this._lingDataRegistryListeners.size();
+         int size = this._lingDataRegistryListeners.size();
 
-         for (int var4 = 0; var4 < var3; var4++) {
-            LingDataRegistryListener var5 = (LingDataRegistryListener)this._lingDataRegistryListeners.elementAt(var4);
-            var5.registered(var1, var2);
+         for (int i = 0; i < size; i++) {
+            LingDataRegistryListener l = (LingDataRegistryListener)this._lingDataRegistryListeners.elementAt(i);
+            l.registered(locale, register);
          }
       }
    }

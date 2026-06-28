@@ -4,7 +4,7 @@ public class IllegalArgumentException extends RuntimeException {
    public IllegalArgumentException() {
    }
 
-   public IllegalArgumentException(String var1) {
-      super(var1);
+   public IllegalArgumentException(String s) {
+      super(s);
    }
 }

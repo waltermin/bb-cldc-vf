@@ -7,8 +7,8 @@ public class Throwable {
    public Throwable() {
    }
 
-   public Throwable(String var1) {
-      this.detailMessage = var1;
+   public Throwable(String message) {
+      this.detailMessage = message;
    }
 
    public String getMessage() {

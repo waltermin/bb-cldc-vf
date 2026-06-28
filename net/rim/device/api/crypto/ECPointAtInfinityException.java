@@ -4,7 +4,7 @@ public class ECPointAtInfinityException extends CryptoException {
    public ECPointAtInfinityException() {
    }
 
-   public ECPointAtInfinityException(String var1) {
-      super(var1);
+   public ECPointAtInfinityException(String msg) {
+      super(msg);
    }
 }

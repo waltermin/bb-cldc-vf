@@ -11,11 +11,11 @@ public final class PersistentStore implements Persistable {
       ApplicationControl.assertIPCAllowed(true);
    }
 
-   public static final PersistentObject getPersistentObject(long var0) {
+   public static final PersistentObject getPersistentObject(long key) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void destroyPersistentObject(long var0) {
+   public static final void destroyPersistentObject(long key) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

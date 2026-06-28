@@ -6,17 +6,17 @@ import net.rim.device.api.ui.Graphics;
 public class HorizontalSpacerField extends Field {
    private int _width;
 
-   public HorizontalSpacerField(int var1) {
+   public HorizontalSpacerField(int width) {
       super(36028797018963968L);
-      this._width = var1;
+      this._width = width;
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(this._width, 0);
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics g) {
    }
 }

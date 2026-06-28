@@ -6,12 +6,12 @@ import net.rim.device.api.ui.container.InPlaceScreen;
 class DateInPlaceScreen extends InPlaceScreen {
    private XYRect _rect = (XYRect)(new Object());
 
-   public DateInPlaceScreen(DateField var1, DateField var2, long var3) {
-      super(var1, var2, var3 | 1);
+   public DateInPlaceScreen(DateField original, DateField fake, long style) {
+      super(original, fake, style | 1);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
+   protected void sublayout(int width, int height) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

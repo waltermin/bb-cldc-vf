@@ -9,15 +9,15 @@ public class MIDletApplication extends UiApplication {
       throw null;
    }
 
-   public void addPushRegistry(String var1, String var2) {
+   public void addPushRegistry(String _1, String _2) {
       throw null;
    }
 
-   public void removePushRegistry(String var1, String var2) {
+   public void removePushRegistry(String _1, String _2) {
       throw null;
    }
 
-   public void shutdownWorkerThread(String var1) {
+   public void shutdownWorkerThread(String _1) {
       throw null;
    }
 
@@ -25,7 +25,7 @@ public class MIDletApplication extends UiApplication {
       throw null;
    }
 
-   public void registerAlarm(Runnable var1) {
+   public void registerAlarm(Runnable _1) {
       throw null;
    }
 
@@ -33,20 +33,20 @@ public class MIDletApplication extends UiApplication {
       throw null;
    }
 
-   public void setForegroundable(boolean var1) {
+   public void setForegroundable(boolean _1) {
       throw null;
    }
 
-   public static final String getAppProperty(String var0, String var1, boolean var2) {
-      if (var1 == null) {
+   public static final String getAppProperty(String moduleName, String key, boolean cacheResourceObject) {
+      if (key == null) {
          throw new Object();
       }
 
-      Resource var3 = Resource$Internal.getResourceClass(var0, var2);
-      if (var3 != null) {
-         byte[] var4 = var3.getProperty(var1);
-         if (var4 != null) {
-            return (String)(new Object(var4, 2, var4.length - 2));
+      Resource resource = Resource$Internal.getResourceClass(moduleName, cacheResourceObject);
+      if (resource != null) {
+         byte[] data = resource.getProperty(key);
+         if (data != null) {
+            return (String)(new Object(data, 2, data.length - 2));
          }
       }
 

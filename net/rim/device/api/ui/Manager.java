@@ -78,9 +78,9 @@ public class Manager extends Field {
    private static final int ON_INDICATOR;
    private static final int BELOW_INDICATOR;
 
-   protected Manager(long var1) {
-      super(validateStyle(var1));
-      if (!this.validateFieldStyle(var1)) {
+   protected Manager(long style) {
+      super(validateStyle(style));
+      if (!this.validateFieldStyle(style)) {
          throw new Object();
       }
 
@@ -88,32 +88,32 @@ public class Manager extends Field {
    }
 
    @Override
-   public boolean acceptVisitor(FieldVisitor var1) {
-      if (!var1.visit(this, 1)) {
+   public boolean acceptVisitor(FieldVisitor visitor) {
+      if (!visitor.visit(this, 1)) {
          return false;
       }
 
-      int var2 = this.getFieldCount();
+      int total = this.getFieldCount();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (!this.getField(var3).acceptVisitor(var1)) {
+      for (int i = 0; i < total; i++) {
+         if (!this.getField(i).acceptVisitor(visitor)) {
             return false;
          }
       }
 
-      return var1.visit(this, 2);
+      return visitor.visit(this, 2);
    }
 
-   public void add(Field var1) {
-      this.insertInternal(var1, this._fieldsCount);
+   public void add(Field field) {
+      this.insertInternal(field, this._fieldsCount);
    }
 
    @Override
    protected void applyFont() {
       super.applyFont();
 
-      for (int var1 = this._fieldsCount - 1; var1 >= 0; var1--) {
-         this._fields[var1].applyFont();
+      for (int lv = this._fieldsCount - 1; lv >= 0; lv--) {
+         this._fields[lv].applyFont();
       }
    }
 
@@ -121,71 +121,71 @@ public class Manager extends Field {
    protected void applyTheme() {
       super.applyTheme();
 
-      for (int var1 = this._fieldsCount - 1; var1 >= 0; var1--) {
-         this._fields[var1].applyTheme();
+      for (int lv = this._fieldsCount - 1; lv >= 0; lv--) {
+         this._fields[lv].applyTheme();
       }
    }
 
-   protected int calculateHorizontalScrollAmount(XYRect var1) {
+   protected int calculateHorizontalScrollAmount(XYRect region) {
       if (!this.isStyle(1125899906842624L)) {
          return 0;
       }
 
-      int var2 = this.getContentWidth();
-      int var3 = 0;
-      int var4 = var1.x + var1.width - (this.getHorizontalScroll() + var2);
-      if (var4 > 0) {
-         var3 += var4;
+      int width = this.getContentWidth();
+      int xAmount = 0;
+      int delta = region.x + region.width - (this.getHorizontalScroll() + width);
+      if (delta > 0) {
+         xAmount += delta;
       }
 
-      var4 = var1.x - (this.getHorizontalScroll() + var3);
-      if (var4 < 0) {
-         int var5 = this.getHorizontalScroll() + var3 + var4;
-         if (var5 < 0) {
-            var4 -= var5;
+      delta = region.x - (this.getHorizontalScroll() + xAmount);
+      if (delta < 0) {
+         int deltaDelta = this.getHorizontalScroll() + xAmount + delta;
+         if (deltaDelta < 0) {
+            delta -= deltaDelta;
          }
 
-         var3 += var4;
+         xAmount += delta;
       }
 
-      return var3;
+      return xAmount;
    }
 
-   protected int calculateVerticalScrollAmount(XYRect var1) {
+   protected int calculateVerticalScrollAmount(XYRect region) {
       if (!this.isStyle(281474976710656L)) {
          return 0;
       }
 
-      int var2 = this.getContentHeight();
-      int var3 = 0;
-      int var4 = var1.y + var1.height - (this.getVerticalScroll() + var2);
-      if (var4 > 0) {
-         var3 += var4;
+      int height = this.getContentHeight();
+      int yAmount = 0;
+      int delta = region.y + region.height - (this.getVerticalScroll() + height);
+      if (delta > 0) {
+         yAmount += delta;
       }
 
-      var4 = var1.y - (this.getVerticalScroll() + var3);
-      if (var4 < 0) {
-         int var5 = this.getVerticalScroll() + var3 + var4;
-         if (var5 < 0) {
-            var4 -= var5;
+      delta = region.y - (this.getVerticalScroll() + yAmount);
+      if (delta < 0) {
+         int deltaDelta = this.getVerticalScroll() + yAmount + delta;
+         if (deltaDelta < 0) {
+            delta -= deltaDelta;
          }
 
-         var3 += var4;
+         yAmount += delta;
       }
 
-      return var3;
+      return yAmount;
    }
 
    @Override
-   void callOnDisplayOrUndisplay(boolean var1) {
-      super.callOnDisplayOrUndisplay(var1);
+   void callOnDisplayOrUndisplay(boolean attached) {
+      super.callOnDisplayOrUndisplay(attached);
 
-      for (int var2 = 0; var2 < this._fieldsCount; var2++) {
-         this._fields[var2].callOnDisplayOrUndisplay(var1);
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].callOnDisplayOrUndisplay(attached);
       }
    }
 
-   public void delete(Field var1) {
+   public void delete(Field field) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -193,34 +193,34 @@ public class Manager extends Field {
       this.deleteRange(0, this.getFieldCount());
    }
 
-   public void deleteRange(int var1, int var2) {
+   public void deleteRange(int start, int count) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   void doVisibilityWalk(boolean var1) {
-      this.onVisibilityChange(var1);
+   void doVisibilityWalk(boolean visible) {
+      this.onVisibilityChange(visible);
 
-      for (int var2 = 0; var2 < this._fieldsCount; var2++) {
-         this._fields[var2].doVisibilityWalk(var1);
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].doVisibilityWalk(visible);
       }
    }
 
    private void ensureFieldCapacity() {
-      int var1 = this._fields.length;
-      if (this._fieldsCount == var1) {
-         Array.resize(this._fields, var1 * 2);
+      int capacity = this._fields.length;
+      if (this._fieldsCount == capacity) {
+         Array.resize(this._fields, capacity * 2);
       }
    }
 
    @Override
-   void getDebugTreeHelper(int var1, StringBuffer var2, int var3) {
+   void getDebugTreeHelper(int treeStyle, StringBuffer buffer, int indent) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      return this.getField(var1);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      return this.getField(index);
    }
 
    @Override
@@ -229,96 +229,96 @@ public class Manager extends Field {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      return this.getFieldWithFocus().getAccessibleSelectionAt(var1) != null
-         ? this.getFieldWithFocus().getAccessibleSelectionAt(var1)
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      return this.getFieldWithFocus().getAccessibleSelectionAt(index) != null
+         ? this.getFieldWithFocus().getAccessibleSelectionAt(index)
          : this.getFieldWithFocus();
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
+   public boolean isAccessibleChildSelected(int index) {
       return this.getFieldWithFocus().getAccessibleSelectionAt(0) != null
-         ? this.getFieldWithFocus().isAccessibleChildSelected(var1)
-         : this.getFieldWithFocusIndex() == var1;
+         ? this.getFieldWithFocus().isAccessibleChildSelected(index)
+         : this.getFieldWithFocusIndex() == index;
    }
 
-   public Field getField(int var1) {
-      if (var1 >= this._fieldsCount) {
+   public Field getField(int index) {
+      if (index >= this._fieldsCount) {
          throw new Object();
       } else {
-         return this._fields[var1];
+         return this._fields[index];
       }
    }
 
-   public int getFieldAtLocation(int var1, int var2) {
-      for (int var3 = this._fieldsCount - 1; var3 >= 0; var3--) {
-         Field var4 = this._fields[var3];
-         XYRect var5 = var4.getExtent();
-         if (var5.y <= var2 && var5.x <= var1 && var2 <= var5.y + var5.height && var1 <= var5.x + var5.width) {
-            return var3;
+   public int getFieldAtLocation(int x, int y) {
+      for (int lv = this._fieldsCount - 1; lv >= 0; lv--) {
+         Field field = this._fields[lv];
+         XYRect rect = field.getExtent();
+         if (rect.y <= y && rect.x <= x && y <= rect.y + rect.height && x <= rect.x + rect.width) {
+            return lv;
          }
       }
 
       return -1;
    }
 
-   public int getFieldClosestToLocation(int var1, int var2, int var3) {
-      int var4 = 0;
-      int var5 = this._fieldsCount;
-      byte var6 = 1;
-      byte var7 = 0;
-      if ((var3 & 256) != 0 || (var3 & 1024) != 0) {
-         var4 = this._fieldsCount - 1;
-         var5 = -1;
-         var6 = -1;
-         var7 = -1;
-      } else if ((var3 & 512) != 0 || (var3 & 2048) != 0) {
-         var7 = 1;
+   public int getFieldClosestToLocation(int x, int y, int status) {
+      int start = 0;
+      int end = this._fieldsCount;
+      int increment = 1;
+      int search = 0;
+      if ((status & 256) != 0 || (status & 1024) != 0) {
+         start = this._fieldsCount - 1;
+         end = -1;
+         increment = -1;
+         search = -1;
+      } else if ((status & 512) != 0 || (status & 2048) != 0) {
+         search = 1;
       }
 
-      int var8 = -1;
-      int var9 = Integer.MAX_VALUE;
-      int var10 = Integer.MAX_VALUE;
+      int index = -1;
+      int deltaY = Integer.MAX_VALUE;
+      int deltaX = Integer.MAX_VALUE;
 
-      for (int var11 = var4; var11 != var5; var11 += var6) {
-         Field var12 = this._fields[var11];
-         XYRect var13 = var12.getExtent();
-         if (var13.y <= var2 && var2 <= var13.y + var13.height) {
-            var9 = 0;
-            if (var13.x <= var1 && var1 <= var13.x + var13.width) {
-               return var11;
+      for (int lv = start; lv != end; lv += increment) {
+         Field field = this._fields[lv];
+         XYRect rect = field.getExtent();
+         if (rect.y <= y && y <= rect.y + rect.height) {
+            deltaY = 0;
+            if (rect.x <= x && x <= rect.x + rect.width) {
+               return lv;
             }
 
-            int var16 = Math.abs(var13.x - var1);
-            if (var16 < var10) {
-               var10 = var16;
-               var8 = var11;
+            int deltaXNew = Math.abs(rect.x - x);
+            if (deltaXNew < deltaX) {
+               deltaX = deltaXNew;
+               index = lv;
             }
          } else {
-            int var14;
-            if (var7 == -1) {
-               var14 = var2 - var13.y;
-            } else if (var7 == 1) {
-               var14 = var13.y - var2;
+            int deltaYNew;
+            if (search == -1) {
+               deltaYNew = y - rect.y;
+            } else if (search == 1) {
+               deltaYNew = rect.y - y;
             } else {
-               var14 = Math.abs(var13.y - var2);
+               deltaYNew = Math.abs(rect.y - y);
             }
 
-            if (var14 >= 0 && var14 < var9) {
-               var9 = var14;
-               var10 = Math.abs(var13.x - var1);
-               var8 = var11;
-            } else if (var14 == var9) {
-               int var15 = Math.abs(var13.x - var1);
-               if (var15 < var10) {
-                  var10 = var15;
-                  var8 = var11;
+            if (deltaYNew >= 0 && deltaYNew < deltaY) {
+               deltaY = deltaYNew;
+               deltaX = Math.abs(rect.x - x);
+               index = lv;
+            } else if (deltaYNew == deltaY) {
+               int deltaXNew = Math.abs(rect.x - x);
+               if (deltaXNew < deltaX) {
+                  deltaX = deltaXNew;
+                  index = lv;
                }
             }
          }
       }
 
-      return var8;
+      return index;
    }
 
    public int getFieldCount() {
@@ -334,27 +334,27 @@ public class Manager extends Field {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
+   public void getFocusRect(XYRect rect) {
       if (this._fieldWithFocus != null) {
-         this._fieldWithFocus.getFocusRect(var1);
-         var1.translate(this._fieldWithFocus.getContentLeft() - this.getHorizontalScroll(), this._fieldWithFocus.getContentTop() - this.getVerticalScroll());
+         this._fieldWithFocus.getFocusRect(rect);
+         rect.translate(this._fieldWithFocus.getContentLeft() - this.getHorizontalScroll(), this._fieldWithFocus.getContentTop() - this.getVerticalScroll());
       } else {
-         var1.set(this.getHorizontalScroll(), this.getVerticalScroll(), this.getContentWidth(), this.getContentHeight());
+         rect.set(this.getHorizontalScroll(), this.getVerticalScroll(), this.getContentWidth(), this.getContentHeight());
       }
    }
 
    @Override
-   public void getFocusRectPhantom(XYRect var1) {
+   public void getFocusRectPhantom(XYRect rect) {
       if (this._fieldWithFocus != null) {
-         this._fieldWithFocus.getFocusRectPhantom(var1);
-         var1.translate(this._fieldWithFocus.getContentLeft() - this.getHorizontalScroll(), this._fieldWithFocus.getContentTop() - this.getVerticalScroll());
+         this._fieldWithFocus.getFocusRectPhantom(rect);
+         rect.translate(this._fieldWithFocus.getContentLeft() - this.getHorizontalScroll(), this._fieldWithFocus.getContentTop() - this.getVerticalScroll());
       } else {
-         var1.set(this.getHorizontalScroll(), this.getVerticalScroll(), this.getContentWidth(), this.getContentHeight());
+         rect.set(this.getHorizontalScroll(), this.getVerticalScroll(), this.getContentWidth(), this.getContentHeight());
       }
    }
 
    @Override
-   Graphics getGraphics0(XYRect var1, boolean var2) {
+   Graphics getGraphics0(XYRect clip, boolean drawBackground) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
@@ -371,25 +371,25 @@ public class Manager extends Field {
       return this._fieldWithFocus == null ? null : this._fieldWithFocus.getLeafFieldWithFocus();
    }
 
-   public int getNavigationAxis(int var1) {
-      if ((var1 & 536870912) != 0) {
-         return (var1 & 65536) != 0 ? 1 : 2;
+   public int getNavigationAxis(int status) {
+      if ((status & 536870912) != 0) {
+         return (status & 65536) != 0 ? 1 : 2;
       } else {
-         return (var1 & 1) == 0 ? 0 : 2;
+         return (status & 1) == 0 ? 0 : 2;
       }
    }
 
-   protected final int getPreferredHeightOfChild(Field var1) {
-      return var1.getPreferredHeight() + var1.getPaddingTop() + var1.getPaddingBottom() + var1.getBorderTop() + var1.getBorderBottom();
+   protected final int getPreferredHeightOfChild(Field field) {
+      return field.getPreferredHeight() + field.getPaddingTop() + field.getPaddingBottom() + field.getBorderTop() + field.getBorderBottom();
    }
 
-   protected final int getPreferredWidthOfChild(Field var1) {
-      int var2 = var1.getPreferredWidth() + var1.getPaddingRight() + var1.getPaddingLeft() + var1.getBorderRight() + var1.getBorderLeft();
+   protected final int getPreferredWidthOfChild(Field field) {
+      int preferredWidth = field.getPreferredWidth() + field.getPaddingRight() + field.getPaddingLeft() + field.getBorderRight() + field.getBorderLeft();
       if (this._verticalScrollbar != null) {
-         var2 -= SCROLLBAR_TOTAL_WIDTH;
+         preferredWidth -= SCROLLBAR_TOTAL_WIDTH;
       }
 
-      return var2;
+      return preferredWidth;
    }
 
    public int getVerticalQuantization() {
@@ -412,83 +412,83 @@ public class Manager extends Field {
       return this.getVisibleHeight(Integer.MAX_VALUE, 0);
    }
 
-   int getVisibleHeight(int var1, int var2) {
-      if (0 > var2) {
-         var1 += var2;
-         var2 = 0;
+   int getVisibleHeight(int min, int y) {
+      if (0 > y) {
+         min += y;
+         y = 0;
       }
 
-      if (this.getContentHeight() < var1 + var2) {
-         var1 = this.getContentHeight() - var2;
+      if (this.getContentHeight() < min + y) {
+         min = this.getContentHeight() - y;
       }
 
-      return this.getManager().getVisibleHeight(var1, var2 + this.getContentTop());
+      return this.getManager().getVisibleHeight(min, y + this.getContentTop());
    }
 
    public int getVisibleWidth() {
       return this.getVisibleWidth(Integer.MAX_VALUE, 0);
    }
 
-   int getVisibleWidth(int var1, int var2) {
-      if (0 > var2) {
-         var1 += var2;
-         var2 = 0;
+   int getVisibleWidth(int min, int x) {
+      if (0 > x) {
+         min += x;
+         x = 0;
       }
 
-      if (this.getContentWidth() < var1 + var2) {
-         var1 = this.getContentWidth() - var2;
+      if (this.getContentWidth() < min + x) {
+         min = this.getContentWidth() - x;
       }
 
-      return this.getManager().getVisibleWidth(var1, var2 + this.getContentLeft());
+      return this.getManager().getVisibleWidth(min, x + this.getContentLeft());
    }
 
    private int getXForScrollArrowLeft() {
       return this.getHorizontalScroll() - this.getPaddingLeft();
    }
 
-   private int getXForScrollArrowRight(int var1) {
-      int var2 = this.getHorizontalScroll() + this.getContentWidth() + this.getPaddingRight();
-      return var2 - var1;
+   private int getXForScrollArrowRight(int width) {
+      int xPosition = this.getHorizontalScroll() + this.getContentWidth() + this.getPaddingRight();
+      return xPosition - width;
    }
 
-   protected boolean incrementalLayout(int var1, int var2, int var3) {
+   protected boolean incrementalLayout(int index, int added, int deleted) {
       return false;
    }
 
-   public void insert(Field var1, int var2) {
+   public void insert(Field field, int index) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   private void insertInternal(Field var1, int var2) {
+   private void insertInternal(Field field, int index) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public void invalidate() {
-      int var1 = 0;
-      int var2 = 0;
+      int widthAdjust = 0;
+      int heightAdjust = 0;
       if (this._verticalScrollbar != null) {
-         var1 = SCROLLBAR_TOTAL_WIDTH;
+         widthAdjust = SCROLLBAR_TOTAL_WIDTH;
       }
 
       if (this._horizontalScrollbar != null) {
-         var2 = SCROLLBAR_TOTAL_HEIGHT;
+         heightAdjust = SCROLLBAR_TOTAL_HEIGHT;
       }
 
-      this.invalidate(this.getHorizontalScroll(), this.getVerticalScroll(), this.getWidth() + var1, this.getHeight() + var2);
+      this.invalidate(this.getHorizontalScroll(), this.getVerticalScroll(), this.getWidth() + widthAdjust, this.getHeight() + heightAdjust);
    }
 
    @Override
-   protected void invalidate(int var1, int var2, int var3, int var4) {
-      super.invalidate(var1 - this.getHorizontalScroll(), var2 - this.getVerticalScroll(), var3, var4);
+   protected void invalidate(int x, int y, int width, int height) {
+      super.invalidate(x - this.getHorizontalScroll(), y - this.getVerticalScroll(), width, height);
    }
 
-   protected void invalidateFieldRange(int var1, int var2) {
-      var1 = var1 < 0 ? 0 : var1;
-      var2 = var2 < this._fieldsCount ? var2 + 1 : this._fieldsCount;
+   protected void invalidateFieldRange(int lower, int upper) {
+      lower = lower < 0 ? 0 : lower;
+      upper = upper < this._fieldsCount ? upper + 1 : this._fieldsCount;
 
-      for (int var3 = var1; var3 < var2; var3++) {
-         this._fields[var3].invalidate();
+      for (int i = lower; i < upper; i++) {
+         this._fields[i].invalidate();
       }
    }
 
@@ -496,20 +496,20 @@ public class Manager extends Field {
    void invalidateLayout0() {
       this.setValidLayout(false);
 
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         this._fields[var1].invalidateLayout0();
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].invalidateLayout0();
       }
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.invokeAction(var1) : false;
+   protected boolean invokeAction(int action) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.invokeAction(action) : false;
    }
 
    @Override
    public boolean isDataValid() {
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         if (!this._fields[var1].isDataValid()) {
+      for (int i = 0; i < this._fieldsCount; i++) {
+         if (!this._fields[i].isDataValid()) {
             return false;
          }
       }
@@ -519,8 +519,8 @@ public class Manager extends Field {
 
    @Override
    public boolean isDirty() {
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         if (this._fields[var1].isDirty()) {
+      for (int i = 0; i < this._fieldsCount; i++) {
+         if (this._fields[i].isDirty()) {
             return true;
          }
       }
@@ -534,8 +534,8 @@ public class Manager extends Field {
 
    @Override
    public boolean isFocusable() {
-      for (int var1 = this._fieldsCount - 1; var1 >= 0; var1--) {
-         if (this._fields[var1].isFocusable()) {
+      for (int i = this._fieldsCount - 1; i >= 0; i--) {
+         if (this._fields[i].isFocusable()) {
             return true;
          }
       }
@@ -545,8 +545,8 @@ public class Manager extends Field {
 
    @Override
    public boolean isMuddy() {
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         if (this._fields[var1].isMuddy()) {
+      for (int i = 0; i < this._fieldsCount; i++) {
+         if (this._fields[i].isMuddy()) {
             return true;
          }
       }
@@ -572,75 +572,75 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      boolean var4 = super.keyChar(var1, var2, var3);
-      if (this._fieldWithFocus != null && !var4) {
-         var4 = this._fieldWithFocus.keyChar(var1, var2, var3);
+   protected boolean keyChar(char ch, int status, int time) {
+      boolean handled = super.keyChar(ch, status, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyChar(ch, status, time);
       }
 
-      return var4;
+      return handled;
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      boolean var4 = super.keyControl(var1, var2, var3);
-      if (this._fieldWithFocus != null && !var4) {
-         var4 = this._fieldWithFocus.keyControl(var1, var2, var3);
+   protected boolean keyControl(char ch, int status, int time) {
+      boolean handled = super.keyControl(ch, status, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyControl(ch, status, time);
       }
 
-      return var4;
+      return handled;
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      boolean var3 = super.keyDown(var1, var2);
-      if (this._fieldWithFocus != null && !var3) {
-         var3 = this._fieldWithFocus.keyDown(var1, var2);
+   protected boolean keyDown(int keycode, int time) {
+      boolean handled = super.keyDown(keycode, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyDown(keycode, time);
       }
 
-      return var3;
+      return handled;
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      boolean var3 = super.keyRepeat(var1, var2);
-      if (this._fieldWithFocus != null && !var3) {
-         var3 = this._fieldWithFocus.keyRepeat(var1, var2);
+   protected boolean keyRepeat(int keycode, int time) {
+      boolean handled = super.keyRepeat(keycode, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyRepeat(keycode, time);
       }
 
-      return var3;
+      return handled;
    }
 
    @Override
-   protected boolean keyStatus(int var1, int var2) {
-      boolean var3 = super.keyStatus(var1, var2);
-      if (this._fieldWithFocus != null && !var3) {
-         var3 = this._fieldWithFocus.keyStatus(var1, var2);
+   protected boolean keyStatus(int keycode, int time) {
+      boolean handled = super.keyStatus(keycode, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyStatus(keycode, time);
       }
 
-      return var3;
+      return handled;
    }
 
    @Override
-   protected boolean keyUp(int var1, int var2) {
-      boolean var3 = super.keyUp(var1, var2);
-      if (this._fieldWithFocus != null && !var3) {
-         var3 = this._fieldWithFocus.keyUp(var1, var2);
+   protected boolean keyUp(int keycode, int time) {
+      boolean handled = super.keyUp(keycode, time);
+      if (this._fieldWithFocus != null && !handled) {
+         handled = this._fieldWithFocus.keyUp(keycode, time);
       }
 
-      return var3;
+      return handled;
    }
 
    @Override
-   protected final void layout(int var1, int var2) {
+   protected final void layout(int width, int height) {
       this._virtualHeight = -1;
-      int var3 = 0;
-      int var4 = 0;
-      long var5 = this.getStyle();
-      Theme var7 = ThemeManager.getActiveTheme();
-      if (var7.getAttributeSet(THEME_SCROLLBAR_TAG) != null) {
-         if (this.isStyle(17592186044416L) && (var5 & 281474976710656L) > 0) {
-            var3 = SCROLLBAR_TOTAL_WIDTH;
+      int widthAdjust = 0;
+      int heightAdjust = 0;
+      long temp = this.getStyle();
+      Theme theme = ThemeManager.getActiveTheme();
+      if (theme.getAttributeSet(THEME_SCROLLBAR_TAG) != null) {
+         if (this.isStyle(17592186044416L) && (temp & 281474976710656L) > 0) {
+            widthAdjust = SCROLLBAR_TOTAL_WIDTH;
             this._verticalScrollbar = (Scrollbar)(new Object(true));
             this._verticalScrollbar.setManager(this, 0);
             if (this._scrollListener == null) {
@@ -648,8 +648,8 @@ public class Manager extends Field {
             }
          }
 
-         if (this.isStyle(70368744177664L) && (var5 & 1125899906842624L) > 0) {
-            var4 = SCROLLBAR_TOTAL_HEIGHT;
+         if (this.isStyle(70368744177664L) && (temp & 1125899906842624L) > 0) {
+            heightAdjust = SCROLLBAR_TOTAL_HEIGHT;
             this._horizontalScrollbar = (Scrollbar)(new Object(true, true));
             this._horizontalScrollbar.setManager(this, 0);
             if (this._scrollListener == null) {
@@ -658,27 +658,27 @@ public class Manager extends Field {
          }
       }
 
-      this.sublayout(var1 - var3, var2 - var4);
+      this.sublayout(width - widthAdjust, height - heightAdjust);
       if (this._verticalScrollbar != null) {
-         XYRect var8 = this.getExtent();
-         this.setExtent(var8.width + var3, var8.height);
+         XYRect tmp = this.getExtent();
+         this.setExtent(tmp.width + widthAdjust, tmp.height);
       }
 
       if (this._horizontalScrollbar != null) {
-         XYRect var10 = this.getExtent();
-         this.setExtent(var10.width, var10.height + var4);
+         XYRect tmp = this.getExtent();
+         this.setExtent(tmp.width, tmp.height + heightAdjust);
       }
 
       if (this._verticalQuanta != 1) {
-         int var11 = this._verticalQuanta == -1 ? this.getFont().getHeight() : this._verticalQuanta;
-         int var9 = this.getContentHeight() % var11;
-         this.setExtent(this.getContentWidth(), this.getContentHeight() - var9);
+         int denominator = this._verticalQuanta == -1 ? this.getFont().getHeight() : this._verticalQuanta;
+         int remainder = this.getContentHeight() % denominator;
+         this.setExtent(this.getContentWidth(), this.getContentHeight() - remainder);
       }
 
       if (this._horizontalQuanta != 1) {
-         int var12 = this._horizontalQuanta == -1 ? this.getFont().getHeight() : this._horizontalQuanta;
-         int var13 = this.getContentWidth() % var12;
-         this.setExtent(this.getContentWidth() - var13, this.getContentHeight());
+         int denominator = this._horizontalQuanta == -1 ? this.getFont().getHeight() : this._horizontalQuanta;
+         int remainder = this.getContentWidth() % denominator;
+         this.setExtent(this.getContentWidth() - remainder, this.getContentHeight());
       }
 
       if (this._virtualHeight == -1) {
@@ -689,112 +689,112 @@ public class Manager extends Field {
       this.setValidLayout(true);
    }
 
-   protected final void layoutChild(Field var1, int var2, int var3) {
+   protected final void layoutChild(Field field, int width, int height) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      boolean var4 = false;
-      int var5 = this.getNavigationAxis(var2);
+   protected int moveFocus(int amount, int status, int time) {
+      boolean notify = false;
+      int axis = this.getNavigationAxis(status);
 
       label74:
-      while (var1 != 0) {
+      while (amount != 0) {
          if (this._fieldWithFocus == null) {
-            return var1;
+            return amount;
          }
 
-         int var6 = this._fieldWithFocus.moveFocus(var1, var2, var3);
-         if ((var2 & 8) != 0) {
-            var6 = 0;
+         int remaining = this._fieldWithFocus.moveFocus(amount, status, time);
+         if ((status & 8) != 0) {
+            remaining = 0;
          }
 
-         if (var6 != var1) {
+         if (remaining != amount) {
             if (!(this._fieldWithFocus instanceof Manager)) {
                this._fieldWithFocus.focusChangeNotify(2);
             }
 
-            if (var6 == 0) {
-               var1 = 0;
+            if (remaining == 0) {
+               amount = 0;
                break;
             }
          }
 
-         var1 = var6;
-         int var7 = this._fieldWithFocusIndex;
-         Field var8 = this._fieldWithFocus;
-         int var9 = MathUtilities.clamp(-1, var1, 1);
+         amount = remaining;
+         int oldIndex = this._fieldWithFocusIndex;
+         Field oldFocus = this._fieldWithFocus;
+         int amountSign = MathUtilities.clamp(-1, amount, 1);
 
          do {
-            this._fieldWithFocusIndex = this.nextFocus(var9, var5);
-            if (this._fieldWithFocusIndex == -1 || this._fieldWithFocusIndex == var7) {
-               this._fieldWithFocusIndex = var7;
-               this._fieldWithFocus = var8;
+            this._fieldWithFocusIndex = this.nextFocus(amountSign, axis);
+            if (this._fieldWithFocusIndex == -1 || this._fieldWithFocusIndex == oldIndex) {
+               this._fieldWithFocusIndex = oldIndex;
+               this._fieldWithFocus = oldFocus;
                break label74;
             }
 
             this._fieldWithFocus = this._fields[this._fieldWithFocusIndex];
          } while (!this._fieldWithFocus.isFocusable());
 
-         var8.onUnfocus();
-         var8.focusChangeNotify(3);
-         this._fieldWithFocus.onFocus(var9);
+         oldFocus.onUnfocus();
+         oldFocus.focusChangeNotify(3);
+         this._fieldWithFocus.onFocus(amountSign);
          this._fieldWithFocus.focusChangeNotify(1);
-         var1 -= var9;
-         var4 = true;
+         amount -= amountSign;
+         notify = true;
       }
 
-      if (var4) {
+      if (notify) {
          this.focusChangeNotify(2);
       }
 
-      if (var1 != 0 && !this.isStyle(144115188075855872L)) {
-         if (var1 < 0) {
-            if (this.getVerticalScroll() > 0 && var5 != 1) {
-               XYRect var11 = Ui.getTmpXYRect();
-               var11.set(this.getHorizontalScroll(), 0, 0, 0);
-               this.makeRegionVisible(true, var11, true);
-               Ui.returnTmpXYRect(var11);
-               return var1;
+      if (amount != 0 && !this.isStyle(144115188075855872L)) {
+         if (amount < 0) {
+            if (this.getVerticalScroll() > 0 && axis != 1) {
+               XYRect rect = Ui.getTmpXYRect();
+               rect.set(this.getHorizontalScroll(), 0, 0, 0);
+               this.makeRegionVisible(true, rect, true);
+               Ui.returnTmpXYRect(rect);
+               return amount;
             }
 
-            if (this.getHorizontalScroll() > 0 && var5 == 1) {
-               XYRect var10 = Ui.getTmpXYRect();
-               var10.set(0, this.getVerticalScroll(), 0, 0);
-               this.makeRegionVisible(true, var10, true);
-               Ui.returnTmpXYRect(var10);
-               return var1;
+            if (this.getHorizontalScroll() > 0 && axis == 1) {
+               XYRect rect = Ui.getTmpXYRect();
+               rect.set(0, this.getVerticalScroll(), 0, 0);
+               this.makeRegionVisible(true, rect, true);
+               Ui.returnTmpXYRect(rect);
+               return amount;
             }
-         } else if (this.getVerticalScroll() + this.getContentHeight() < this._virtualHeight && var5 != 1) {
-            XYRect var12 = Ui.getTmpXYRect();
-            var12.set(this.getHorizontalScroll(), this._virtualHeight, 0, 0);
-            this.makeRegionVisible(true, var12, true);
-            Ui.returnTmpXYRect(var12);
+         } else if (this.getVerticalScroll() + this.getContentHeight() < this._virtualHeight && axis != 1) {
+            XYRect rect = Ui.getTmpXYRect();
+            rect.set(this.getHorizontalScroll(), this._virtualHeight, 0, 0);
+            this.makeRegionVisible(true, rect, true);
+            Ui.returnTmpXYRect(rect);
          }
       }
 
-      return var1;
+      return amount;
    }
 
-   private void notifyVisibilityChange(int var1, int var2, boolean var3) {
+   private void notifyVisibilityChange(int start, int count, boolean visible) {
       if (this.isValidLayout()) {
-         Screen var4 = this.getScreen();
-         if (var4 != null) {
-            if (var4.isDisplayed()) {
-               if (var3) {
-                  for (int var6 = var1; var6 < var1 + var2; var6++) {
-                     this._fields[var6].callOnDisplayOrUndisplay(true);
+         Screen scr = this.getScreen();
+         if (scr != null) {
+            if (scr.isDisplayed()) {
+               if (visible) {
+                  for (int i = start; i < start + count; i++) {
+                     this._fields[i].callOnDisplayOrUndisplay(true);
                   }
                } else {
-                  for (int var5 = var1; var5 < var1 + var2; var5++) {
-                     this._fields[var5].callOnDisplayOrUndisplay(false);
+                  for (int i = start; i < start + count; i++) {
+                     this._fields[i].callOnDisplayOrUndisplay(false);
                   }
                }
             }
 
-            if (var4.isVisible()) {
-               for (int var7 = var1; var7 < var1 + var2; var7++) {
-                  this._fields[var7].doVisibilityWalk(var3);
+            if (scr.isVisible()) {
+               for (int i = start; i < start + count; i++) {
+                  this._fields[i].doVisibilityWalk(visible);
                }
             }
          }
@@ -802,46 +802,46 @@ public class Manager extends Field {
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       if (this.isOkayForPainting()) {
-         this.subpaint(var1);
+         this.subpaint(graphics);
          if (this.isOkayForPainting()) {
-            this.paintScrollbars(var1);
+            this.paintScrollbars(graphics);
          }
       }
    }
 
    private boolean isOkayForPainting() {
-      UiEngineImpl var1 = UiEngineImpl.getUiEngine();
-      return var1 == null || var1.getGlobalScreen() != null || var1.getApplication().isForeground();
+      UiEngineImpl engine = UiEngineImpl.getUiEngine();
+      return engine == null || engine.getGlobalScreen() != null || engine.getApplication().isForeground();
    }
 
-   protected final void paintChild(Graphics var1, Field var2) {
-      var2.paintSelf(var1, true, 0, 0);
+   protected final void paintChild(Graphics graphics, Field field) {
+      field.paintSelf(graphics, true, 0, 0);
    }
 
    @Override
-   void paintSelf(Graphics var1, boolean var2, int var3, int var4) {
-      super.paintSelf(var1, var2, -this.getHorizontalScroll(), -this.getVerticalScroll());
+   void paintSelf(Graphics graphics, boolean addExtent, int xContentAdjust, int yContentAdjust) {
+      super.paintSelf(graphics, addExtent, -this.getHorizontalScroll(), -this.getVerticalScroll());
    }
 
    protected final void clearCustomScrollArrows() {
       Graphics.resetOverlays();
    }
 
-   protected boolean drawLeafFocus(boolean var1, boolean var2) {
+   protected boolean drawLeafFocus(boolean drawBackground, boolean drawFocus) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void setNonfocusableOverride(boolean var1) {
+   public void setNonfocusableOverride(boolean override) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private void paintScrollbars(Graphics var1) {
+   private void paintScrollbars(Graphics graphics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void replace(Field var1, Field var2) {
+   public void replace(Field oldField, Field newField) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -867,102 +867,102 @@ public class Manager extends Field {
       }
    }
 
-   private void removeField(int var1, Field var2) {
+   private void removeField(int index, Field field) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void removeFieldHelper(int var1, Field var2) {
-      for (int var3 = var1 + 1; var3 < this._fieldsCount; var3++) {
-         this._fields[var3].setIndex(var3 - 1);
+   private void removeFieldHelper(int index, Field field) {
+      for (int i = index + 1; i < this._fieldsCount; i++) {
+         this._fields[i].setIndex(i - 1);
       }
 
-      System.arraycopy(this._fields, var1 + 1, this._fields, var1, this._fieldsCount - var1 - 1);
+      System.arraycopy(this._fields, index + 1, this._fields, index, this._fieldsCount - index - 1);
       this._fieldsCount--;
       this._fields[this._fieldsCount] = null;
-      if (var1 < this._fieldWithFocusIndex) {
+      if (index < this._fieldWithFocusIndex) {
          this._fieldWithFocusIndex--;
       }
 
-      var2.setManager(null, -1);
+      field.setManager(null, -1);
    }
 
-   final void runLayoutUpdate(int var1, int var2, int var3) {
+   final void runLayoutUpdate(int index, int added, int deleted) {
       if (this.isValidLayout()) {
-         Screen var4 = this.getScreen();
-         if (var4 != null) {
-            this.runLayoutUpdate0(var1, var2, var3);
-            if (var2 > 0 && var4.getFieldWithFocus() == null) {
-               boolean var5 = false;
+         Screen screen = this.getScreen();
+         if (screen != null) {
+            this.runLayoutUpdate0(index, added, deleted);
+            if (added > 0 && screen.getFieldWithFocus() == null) {
+               boolean newfocus = false;
 
-               for (int var6 = 0; var6 < var2; var6++) {
-                  if (this._fields[var1 + var6].isFocusable()) {
-                     var5 = true;
+               for (int i = 0; i < added; i++) {
+                  if (this._fields[index + i].isFocusable()) {
+                     newfocus = true;
                      break;
                   }
                }
 
-               if (var5) {
-                  var4.setFocus();
+               if (newfocus) {
+                  screen.setFocus();
                }
             }
          }
       }
    }
 
-   void runLayoutUpdate0(int var1, int var2, int var3) {
-      if (!this.incrementalLayout(var1, var2, var3)) {
+   void runLayoutUpdate0(int index, int added, int deleted) {
+      if (!this.incrementalLayout(index, added, deleted)) {
          this.getManager().runLayoutUpdate0(this.getIndex(), 1, 1);
       } else {
          this.getScreen().ensureFocusVisible();
       }
    }
 
-   public void setFieldWithFocus(Field var1) {
-      this._fieldWithFocusIndex = var1.getIndex();
-      this._fieldWithFocus = var1;
+   public void setFieldWithFocus(Field child) {
+      this._fieldWithFocusIndex = child.getIndex();
+      this._fieldWithFocus = child;
    }
 
-   final void setValidLayout(boolean var1) {
+   final void setValidLayout(boolean validLayout) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected void sublayout(int var1, int var2) {
+   protected void sublayout(int _1, int _2) {
       throw null;
    }
 
-   protected void subpaint(Graphics var1) {
-      int var2 = this.getFieldCount();
+   protected void subpaint(Graphics graphics) {
+      int numFields = this.getFieldCount();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         Field var4 = this.getField(var3);
-         this.paintChild(var1, var4);
+      for (int i = 0; i < numFields; i++) {
+         Field field = this.getField(i);
+         this.paintChild(graphics, field);
       }
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
-      this._fieldWithFocusIndex = this.firstFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
+      this._fieldWithFocusIndex = this.firstFocus(direction);
       if (this._fieldWithFocusIndex != -1) {
          this._fieldWithFocus = this._fields[this._fieldWithFocusIndex];
-         this._fieldWithFocus.onFocus(var1);
+         this._fieldWithFocus.onFocus(direction);
          this._fieldWithFocus.focusChangeNotify(1);
       }
    }
 
-   protected int firstFocus(int var1) {
-      switch (var1) {
+   protected int firstFocus(int direction) {
+      switch (direction) {
          case -1:
-            for (int var3 = this._fieldsCount - 1; var3 >= 0; var3--) {
-               if (this._fields[var3].isFocusable()) {
-                  return var3;
+            for (int i = this._fieldsCount - 1; i >= 0; i--) {
+               if (this._fields[i].isFocusable()) {
+                  return i;
                }
             }
             break;
          case 1:
-            for (int var2 = 0; var2 < this._fieldsCount; var2++) {
-               if (this._fields[var2].isFocusable()) {
-                  return var2;
+            for (int i = 0; i < this._fieldsCount; i++) {
+               if (this._fields[i].isFocusable()) {
+                  return i;
                }
             }
       }
@@ -982,16 +982,16 @@ public class Manager extends Field {
       super.onUnfocus();
    }
 
-   protected int nextFocus(int var1, boolean var2) {
+   protected int nextFocus(int direction, boolean alt) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   protected int nextFocus(int var1, int var2) {
+   protected int nextFocus(int direction, int axis) {
       if (this._fieldWithFocusIndex <= -1) {
          return -1;
       }
 
-      switch (var1) {
+      switch (direction) {
          case -1:
             return this._fieldWithFocusIndex - 1;
          case 1:
@@ -1006,183 +1006,183 @@ public class Manager extends Field {
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
-      this.moveFocusToPoint(var1, var2, var3, var4, 0, false);
+   protected void moveFocus(int x, int y, int status, int time) {
+      this.moveFocusToPoint(x, y, status, time, 0, false);
    }
 
    @Override
-   boolean moveFocusToPoint(int var1, int var2, int var3, int var4) {
-      int var5 = var3 & 3855;
-      return this.moveFocusToPoint(var1, var2, var3, var4, var5, true);
+   boolean moveFocusToPoint(int x, int y, int status, int time) {
+      int direction = status & 3855;
+      return this.moveFocusToPoint(x, y, status, time, direction, true);
    }
 
-   private boolean moveFocusToPoint(int var1, int var2, int var3, int var4, int var5, boolean var6) {
+   private boolean moveFocusToPoint(int x, int y, int status, int time, int direction, boolean isInManagersCoordinates) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   protected boolean moveFocus(int var1) {
+   protected boolean moveFocus(int where) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public boolean setFocus(int var1, int var2, int var3) {
-      return this.getScreen().setFocus(this, var1, var2, var3, 0);
+   public boolean setFocus(int x, int y, int status) {
+      return this.getScreen().setFocus(this, x, y, status, 0);
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationClick(var1, var2) : super.navigationClick(var1, var2);
+   protected boolean navigationClick(int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationClick(status, time) : super.navigationClick(status, time);
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationMovement(var1, var2, var3, var4) : super.navigationMovement(var1, var2, var3, var4);
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationMovement(dx, dy, status, time) : super.navigationMovement(dx, dy, status, time);
    }
 
    @Override
-   protected boolean navigationUnclick(int var1, int var2) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationUnclick(var1, var2) : super.navigationUnclick(var1, var2);
+   protected boolean navigationUnclick(int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.navigationUnclick(status, time) : super.navigationUnclick(status, time);
    }
 
    @Override
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelRoll(var1, var2, var3) : super.trackwheelRoll(var1, var2, var3);
+   protected boolean trackwheelRoll(int amount, int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelRoll(amount, status, time) : super.trackwheelRoll(amount, status, time);
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.processKeyEvent(var1, var2, var3, var4) : super.processKeyEvent(var1, var2, var3, var4);
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.processKeyEvent(event, key, keycode, time) : super.processKeyEvent(event, key, keycode, time);
    }
 
    @Override
-   public boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
+   public boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
       return this._fieldWithFocus != null
-         ? this._fieldWithFocus.processNavigationEvent(var1, var2, var3, var4, var5)
-         : super.processNavigationEvent(var1, var2, var3, var4, var5);
+         ? this._fieldWithFocus.processNavigationEvent(event, dx, dy, status, time)
+         : super.processNavigationEvent(event, dx, dy, status, time);
    }
 
-   protected void makeFocusVisible(boolean var1, XYRect var2, boolean var3, boolean var4) {
+   protected void makeFocusVisible(boolean immediate, XYRect region, boolean draw, boolean reset) {
       if (this._horizontalScrollbar != null) {
-         var2.height = var2.height + SCROLLBAR_TOTAL_HEIGHT;
+         region.height = region.height + SCROLLBAR_TOTAL_HEIGHT;
       }
 
       if (this._verticalScrollbar != null) {
-         var2.width = var2.width + SCROLLBAR_TOTAL_WIDTH;
+         region.width = region.width + SCROLLBAR_TOTAL_WIDTH;
       }
 
-      this.makeRegionVisible(var1, var2, var3);
+      this.makeRegionVisible(immediate, region, draw);
    }
 
-   private final void makeRegionVisible(boolean var1, XYRect var2, boolean var3) {
-      int var4 = this.calculateVerticalScrollAmount(var2);
-      int var5 = this.calculateHorizontalScrollAmount(var2);
-      this.scroll(var1, var5, var4, var3);
+   private final void makeRegionVisible(boolean immediate, XYRect region, boolean draw) {
+      int yAmount = this.calculateVerticalScrollAmount(region);
+      int xAmount = this.calculateHorizontalScrollAmount(region);
+      this.scroll(immediate, xAmount, yAmount, draw);
    }
 
-   protected final void scroll(boolean var1, int var2, int var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected final void scroll(boolean immediate, int xAmount, int yAmount, boolean draw) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void setDirty(boolean var1) {
-      for (int var2 = 0; var2 < this._fieldsCount; var2++) {
-         this._fields[var2].setDirty(var1);
+   public void setDirty(boolean dirty) {
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].setDirty(dirty);
       }
    }
 
-   public void setHorizontalQuantization(int var1) {
-      if (var1 != -1 && var1 <= 0) {
+   public void setHorizontalQuantization(int horizontalQuanta) {
+      if (horizontalQuanta != -1 && horizontalQuanta <= 0) {
          throw new Object();
       }
 
-      this._horizontalQuanta = var1;
+      this._horizontalQuanta = horizontalQuanta;
    }
 
-   public void setHorizontalScroll(int var1) {
+   public void setHorizontalScroll(int position) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected final void setPositionChild(Field var1, int var2, int var3) {
+   protected final void setPositionChild(Field field, int x, int y) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setScrollListener(ScrollChangeListener var1) {
+   public void setScrollListener(ScrollChangeListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setVerticalQuantization(int var1) {
-      if (var1 != -1 && var1 <= 0) {
+   public void setVerticalQuantization(int verticalQuanta) {
+      if (verticalQuanta != -1 && verticalQuanta <= 0) {
          throw new Object();
       }
 
-      this._verticalQuanta = var1;
+      this._verticalQuanta = verticalQuanta;
    }
 
-   public void setVerticalScroll(int var1) {
+   public void setVerticalScroll(int position) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected final void setVirtualExtent(int var1, int var2) {
-      this._virtualWidth = var1;
-      this._virtualHeight = var2;
+   protected final void setVirtualExtent(int virtualWidth, int virtualHeight) {
+      this._virtualWidth = virtualWidth;
+      this._virtualHeight = virtualHeight;
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelClick(var1, var2) : false;
+   protected boolean trackwheelClick(int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelClick(status, time) : false;
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
+   protected void makeMenu(Menu menu, int instance) {
    }
 
    private int pageSize() {
-      int var1 = this.getContentHeight();
-      int var2 = this.getFont().getHeight();
-      return var1 < 2 * var2 ? var1 : var1 - var2;
+      int pageSize = this.getContentHeight();
+      int fontHeight = this.getFont().getHeight();
+      return pageSize < 2 * fontHeight ? pageSize : pageSize - fontHeight;
    }
 
-   private int getStylusPos(int var1, int var2) {
+   private int getStylusPos(int x, int y) {
       if (this._indicatorHeight == 0) {
          return 0;
       } else {
-         int var3 = Math.min(this._scrollBarX, this._indicatorX) - 2;
-         if (var1 < var3) {
+         int barX = Math.min(this._scrollBarX, this._indicatorX) - 2;
+         if (x < barX) {
             return 0;
-         } else if (var1 > this._scrollBarX + this._scrollBarWidth) {
+         } else if (x > this._scrollBarX + this._scrollBarWidth) {
             return 0;
-         } else if (var2 < this._scrollBarY) {
+         } else if (y < this._scrollBarY) {
             return 0;
-         } else if (var2 > this._scrollBarY + this._scrollBarHeight) {
+         } else if (y > this._scrollBarY + this._scrollBarHeight) {
             return 0;
-         } else if (var2 < this._indicatorY) {
+         } else if (y < this._indicatorY) {
             return 1;
          } else {
-            return var2 > this._indicatorY + this._indicatorHeight ? 3 : 2;
+            return y > this._indicatorY + this._indicatorHeight ? 3 : 2;
          }
       }
    }
 
-   private int mapStylusX(int var1) {
-      return var1 - this._fieldWithFocus.getExtent().x;
+   private int mapStylusX(int x) {
+      return x - this._fieldWithFocus.getExtent().x;
    }
 
-   private int mapStylusY(int var1) {
-      return var1 - this._fieldWithFocus.getExtent().y;
+   private int mapStylusY(int y) {
+      return y - this._fieldWithFocus.getExtent().y;
    }
 
    @Override
-   protected boolean stylusDown(int var1, int var2, int var3, int var4) {
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+   protected boolean stylusDown(int x, int y, int status, int time) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case 0:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusDown(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusDown(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
          case 2:
-            this._stylusDownY = var2 - this.getVerticalScroll();
+            this._stylusDownY = y - this.getVerticalScroll();
             this._stylusDownVerticalScroll = this.getVerticalScroll();
             this._stylusDraggingIndicator = true;
             return true;
@@ -1192,19 +1192,19 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean stylusDrag(int var1, int var2, int var3, int var4) {
+   protected boolean stylusDrag(int x, int y, int status, int time) {
       if (this._stylusDraggingIndicator) {
-         int var5 = this._virtualHeight * (var2 - this._stylusDownY) / this._scrollBarHeight;
-         this.setVerticalScroll(MathUtilities.clamp(0, this._stylusDownVerticalScroll + var5, this._virtualHeight - this.getExtent().height));
+         int delta = this._virtualHeight * (y - this._stylusDownY) / this._scrollBarHeight;
+         this.setVerticalScroll(MathUtilities.clamp(0, this._stylusDownVerticalScroll + delta, this._virtualHeight - this.getExtent().height));
          return true;
       }
 
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case 0:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusDrag(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusDrag(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
@@ -1214,18 +1214,18 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean stylusUp(int var1, int var2, int var3, int var4) {
+   protected boolean stylusUp(int x, int y, int status, int time) {
       if (this._stylusDraggingIndicator) {
          this._stylusDraggingIndicator = false;
          return true;
       }
 
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case 0:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusUp(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusUp(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
@@ -1235,16 +1235,16 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case -1:
             return false;
          case 0:
          default:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusTap(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusTap(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
@@ -1260,13 +1260,13 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean stylusDoubleTap(int var1, int var2, int var3, int var4) {
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+   protected boolean stylusDoubleTap(int x, int y, int status, int time) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case 0:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusDoubleTap(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusDoubleTap(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
@@ -1276,13 +1276,13 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean stylusTapHold(int var1, int var2, int var3, int var4) {
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      switch (this.getStylusPos(var1, var2)) {
+   protected boolean stylusTapHold(int x, int y, int status, int time) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      switch (this.getStylusPos(x, y)) {
          case 0:
             if (this._fieldWithFocus != null) {
-               return this._fieldWithFocus.stylusTapHold(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+               return this._fieldWithFocus.stylusTapHold(this.mapStylusX(x), this.mapStylusY(y), status, time);
             }
 
             return false;
@@ -1292,8 +1292,8 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean onCursorHover(int var1, int var2) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.onCursorHover(this.mapStylusX(var1), this.mapStylusY(var2)) : false;
+   protected boolean onCursorHover(int x, int y) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.onCursorHover(this.mapStylusX(x), this.mapStylusY(y)) : false;
    }
 
    @Override
@@ -1302,40 +1302,40 @@ public class Manager extends Field {
    }
 
    @Override
-   protected boolean trackwheelUnclick(int var1, int var2) {
-      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelUnclick(var1, var2) : false;
+   protected boolean trackwheelUnclick(int status, int time) {
+      return this._fieldWithFocus != null ? this._fieldWithFocus.trackwheelUnclick(status, time) : false;
    }
 
    @Override
-   boolean validateFieldStyle(long var1) {
-      return super.validateFieldStyle(var1 & -5624987138492727297L);
+   boolean validateFieldStyle(long style) {
+      return super.validateFieldStyle(style & -5624987138492727297L);
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 844424930131968L) == 0) {
-         var0 |= 562949953421312L;
+   private static long validateStyle(long style) {
+      if ((style & 844424930131968L) == 0) {
+         style |= 562949953421312L;
       }
 
-      if ((var0 & 844424930131968L) == 562949953421312L) {
-         var0 &= -52776558133249L;
-         var0 |= 35184372088832L;
+      if ((style & 844424930131968L) == 562949953421312L) {
+         style &= -52776558133249L;
+         style |= 35184372088832L;
       }
 
-      if ((var0 & 3377699720527872L) == 0) {
-         var0 |= 2251799813685248L;
+      if ((style & 3377699720527872L) == 0) {
+         style |= 2251799813685248L;
       }
 
-      if ((var0 & 3377699720527872L) == 2251799813685248L) {
-         var0 &= -211106232532993L;
-         var0 |= 140737488355328L;
+      if ((style & 3377699720527872L) == 2251799813685248L) {
+         style &= -211106232532993L;
+         style |= 140737488355328L;
       }
 
-      var0 &= -67553994410557441L;
-      if (haveStylus && (var0 & 1407374883553280L) != 0) {
-         var0 |= 8796093022208L;
+      style &= -67553994410557441L;
+      if (haveStylus && (style & 1407374883553280L) != 0) {
+         style |= 8796093022208L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override
@@ -1350,8 +1350,8 @@ public class Manager extends Field {
    void callOnExposed() {
       this.onExposed();
 
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         this._fields[var1].callOnExposed();
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].callOnExposed();
       }
    }
 
@@ -1359,8 +1359,8 @@ public class Manager extends Field {
    void callOnObscured() {
       this.onObscured();
 
-      for (int var1 = 0; var1 < this._fieldsCount; var1++) {
-         this._fields[var1].callOnObscured();
+      for (int i = 0; i < this._fieldsCount; i++) {
+         this._fields[i].callOnObscured();
       }
    }
 

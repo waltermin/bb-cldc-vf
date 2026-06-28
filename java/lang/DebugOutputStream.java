@@ -8,16 +8,16 @@ final class DebugOutputStream extends OutputStream {
    private static final int BUFF_SIZE;
 
    @Override
-   public final synchronized void write(int var1) {
-      int var2 = this._size;
-      this._c[var2++] = (byte)var1;
-      if (var2 >= 128 || var1 == 10) {
-         this._c[var2] = 0;
+   public final synchronized void write(int c) {
+      int i = this._size;
+      this._c[i++] = (byte)c;
+      if (i >= 128 || c == 10) {
+         this._c[i] = 0;
          printInternal(this._c);
-         var2 = 0;
+         i = 0;
       }
 
-      this._size = var2;
+      this._size = i;
    }
 
    private static final native void printInternal(byte[] var0);

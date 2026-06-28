@@ -6,7 +6,7 @@ class ITPolicyInternal$WipeablePolicyWriter$EncodingContainer {
    public ITPolicyInternal$WipeablePolicyWriter$EncodingContainer() {
    }
 
-   public void setEncoding(Object var1) {
+   public void setEncoding(Object encoding) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

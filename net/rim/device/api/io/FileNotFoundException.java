@@ -6,6 +6,6 @@ public class FileNotFoundException extends IOException {
    public FileNotFoundException() {
    }
 
-   public FileNotFoundException(String var1) {
+   public FileNotFoundException(String message) {
    }
 }

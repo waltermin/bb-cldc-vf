@@ -5,8 +5,8 @@ public class FieldPosition {
    private int _beginindex;
    private int _endindex;
 
-   public FieldPosition(int var1) {
-      this._field = var1;
+   public FieldPosition(int field) {
+      this._field = field;
    }
 
    public int getBeginIndex() {
@@ -21,15 +21,15 @@ public class FieldPosition {
       return this._field;
    }
 
-   public void setField(int var1) {
+   public void setField(int field) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setBeginIndex(int var1) {
+   public void setBeginIndex(int beginindex) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setEndIndex(int var1) {
+   public void setEndIndex(int endindex) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

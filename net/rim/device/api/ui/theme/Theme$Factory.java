@@ -2,6 +2,7 @@ package net.rim.device.api.ui.theme;
 
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.util.StringTokenizer;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.vm.TraceBack;
 
@@ -21,18 +22,18 @@ public class Theme$Factory {
    protected Theme$Factory() {
    }
 
-   protected Theme$Factory(String var1, String var2) {
-      this._name = var1;
-      this._parent = var2;
-      String var3 = TraceBack.getCallingModuleName(0);
-      this._resourceFetcher = new DefaultResourceFetcher(var3);
+   protected Theme$Factory(String name, String parent) {
+      this._name = name;
+      this._parent = parent;
+      String moduleName = TraceBack.getCallingModuleName(0);
+      this._resourceFetcher = new DefaultResourceFetcher(moduleName);
    }
 
    public String getIdExtension() {
       return null;
    }
 
-   public void setAllowUserWallpaper(boolean var1) {
+   public void setAllowUserWallpaper(boolean allow) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -40,19 +41,36 @@ public class Theme$Factory {
       return this._allowUserWallpaper;
    }
 
-   public void setVendorID(String var1) {
+   public void setVendorID(String vendor) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public boolean isVendorIDValid(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean isVendorIDValid(int vendor) {
+      if (this._vendorID == null) {
+         return false;
+      }
+
+      StringTokenizer st = (StringTokenizer)(new Object(this._vendorID));
+
+      while (st.hasMoreTokens()) {
+         String next = st.nextToken();
+
+         try {
+            if (vendor == Integer.parseInt(next)) {
+               return true;
+            }
+         } catch (Exception var5) {
+         }
+      }
+
+      return false;
    }
 
    public String getName() {
       return this._name;
    }
 
-   public String getName(Locale var1) {
+   public String getName(Locale locale) {
       return this.getName();
    }
 
@@ -81,21 +99,21 @@ public class Theme$Factory {
    }
 
    public final boolean isActivatable() {
-      String var1 = this.getIdExtension();
-      int var2 = var1 == null ? 0 : CodeModuleManager.getModuleHandle(var1);
-      return var2 != 0 ? this._isActivatable && ApplicationControl.isThemeDataAllowed(var2) : this._isActivatable;
+      String name = this.getIdExtension();
+      int handle = name == null ? 0 : CodeModuleManager.getModuleHandle(name);
+      return handle != 0 ? this._isActivatable && ApplicationControl.isThemeDataAllowed(handle) : this._isActivatable;
    }
 
    public final boolean isRemovable() {
       return this._isRemovable;
    }
 
-   public void populate(Theme$Writer var1) {
+   public void populate(Theme$Writer theme) {
    }
 
    protected int remove() {
-      int var1 = CodeModuleManager.deleteModuleEx(CodeModuleManager.getModuleHandleForObject(this), true);
-      switch (var1) {
+      int rc = CodeModuleManager.deleteModuleEx(CodeModuleManager.getModuleHandleForObject(this), true);
+      switch (rc) {
          case 0:
             return 0;
          case 6:
@@ -105,25 +123,25 @@ public class Theme$Factory {
       }
    }
 
-   protected final void setActivatable(boolean var1) {
+   protected final void setActivatable(boolean isActivatable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected final void setRemovable(boolean var1) {
+   protected final void setRemovable(boolean isRemovable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setResourceFetcher(ResourceFetcher var1) {
+   public void setResourceFetcher(ResourceFetcher resourceFetcher) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected final void setTargetDisplay(int var1, int var2, int var3) {
-      this._targetDisplayWidth = var1;
-      this._targetDisplayHeight = var2;
-      this._targetDisplayColorDepth = var3;
+   protected final void setTargetDisplay(int width, int height, int colorDepth) {
+      this._targetDisplayWidth = width;
+      this._targetDisplayHeight = height;
+      this._targetDisplayColorDepth = colorDepth;
    }
 
-   public void setSuppressMissedCallDialog(boolean var1) {
+   public void setSuppressMissedCallDialog(boolean suppress) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

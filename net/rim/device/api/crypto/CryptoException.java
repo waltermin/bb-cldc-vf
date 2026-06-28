@@ -4,6 +4,6 @@ public class CryptoException extends Exception {
    public CryptoException() {
    }
 
-   public CryptoException(String var1) {
+   public CryptoException(String msg) {
    }
 }

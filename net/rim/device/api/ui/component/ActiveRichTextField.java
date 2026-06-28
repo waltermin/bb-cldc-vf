@@ -1,5 +1,6 @@
 package net.rim.device.api.ui.component;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.Font;
@@ -8,7 +9,9 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
+import net.rim.device.api.util.AbstractString;
 import net.rim.device.api.util.AbstractStringWrapper;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.StringPatternContainer;
@@ -36,7 +39,7 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
       return null;
    }
 
-   protected int drawText(Graphics var1, String var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+   protected int drawText(Graphics graphics, String text, int offset, int len, int x, int y, int flags, int width) {
       return 0;
    }
 
@@ -44,38 +47,41 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
       return null;
    }
 
-   protected MenuItem addCookieMenuItems(CookieProvider var1, int var2, ContextMenu var3, Object var4) {
+   protected MenuItem addCookieMenuItems(CookieProvider provider, int cookieId, ContextMenu contextMenu, Object context) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   protected MenuItem addCookieMenuItems(CookieProvider var1, Object var2, ContextMenu var3, Object var4) {
-      return ActiveRegionSupport.addCookieMenuItems(var1, var2, var3, var4);
+   protected MenuItem addCookieMenuItems(CookieProvider provider, Object cookie, ContextMenu contextMenu, Object context) {
+      return ActiveRegionSupport.addCookieMenuItems(provider, cookie, contextMenu, context);
    }
 
    public boolean regionHasCookie() {
       return super._arSupport.isInCookieRegion(this.getCursorPosition());
    }
 
-   public boolean regionHasCookie(int var1) {
-      return this._cookieIDs == null ? false : this._cookieIDs.get(var1) != null;
+   public boolean regionHasCookie(int region) {
+      return this._cookieIDs == null ? false : this._cookieIDs.get(region) != null;
    }
 
-   public void setText(String var1, int[] var2, byte[] var3, Font[] var4, int[] var5, int[] var6) {
-      this.setText(var1, scanForActiveRegions(var1, var2, var3, var4, this.getFont(), var5, var6, this.getLabelLength(), this._patterns));
+   public void setText(String text, int[] offsets, byte[] attributes, Font[] fonts, int[] foregroundColors, int[] backgroundColors) {
+      this.setText(
+         text,
+         scanForActiveRegions(text, offsets, attributes, fonts, this.getFont(), foregroundColors, backgroundColors, this.getLabelLength(), this._patterns)
+      );
    }
 
-   protected void setText(String var1, ActiveRichTextField$RegionQueue var2) {
-      this._cookieID = var2.getSingleCookieRegions();
-      this._cookieIDs = var2.cookieID;
-      super.setText(var1, var2.offsets, var2.attributes, var2.fonts, null);
-      this.setAttributes(var2.foregroundColors, var2.backgroundColors);
+   protected void setText(String text, ActiveRichTextField$RegionQueue rq) {
+      this._cookieID = rq.getSingleCookieRegions();
+      this._cookieIDs = rq.cookieID;
+      super.setText(text, rq.offsets, rq.attributes, rq.fonts, null);
+      this.setAttributes(rq.foregroundColors, rq.backgroundColors);
    }
 
-   protected int super_scrollVertically(int var1) {
+   protected int super_scrollVertically(int amount) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public void setText(String var1, String var2, Font[] var3, int[] var4) {
+   public void setText(String name, String text, Font[] fonts, int[] foregroundColors) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
@@ -89,124 +95,132 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1, int var2) {
-      super.makeContextMenu(var1, var2);
-      if (var2 != 65537) {
-         int var3 = super._arSupport.getCookieWithFocusId(this.getCursorPosition());
-         MenuItem var4 = this.addCookieMenuItems(this, var3, var1, this.getContextMenuContext());
-         if (var4 != null) {
-            var1.setDefaultItem(var4);
+   protected void makeContextMenu(ContextMenu contextMenu, int instance) {
+      super.makeContextMenu(contextMenu, instance);
+      if (instance != 65537) {
+         int cookieId = super._arSupport.getCookieWithFocusId(this.getCursorPosition());
+         MenuItem defaultItem = this.addCookieMenuItems(this, cookieId, contextMenu, this.getContextMenuContext());
+         if (defaultItem != null) {
+            contextMenu.setDefaultItem(defaultItem);
             return;
          }
 
-         AbstractStringWrapper var5 = AbstractStringWrapper.createInstance(this.getText());
-         int var6 = this.getCursorPosition();
-         ActiveRegionSupport.addCookieMenuItems(this, var5, 0, var6, var5.length(), this._patterns, var1, null, var2);
+         AbstractString text = AbstractStringWrapper.createInstance(this.getText());
+         int curIndex = this.getCursorPosition();
+         ActiveRegionSupport.addCookieMenuItems(this, text, 0, curIndex, text.length(), this._patterns, contextMenu, null, instance);
       }
    }
 
-   public ActiveRichTextField(String var1) {
-      this(var1, 0);
+   public ActiveRichTextField(String text) {
+      this(text, 0);
    }
 
-   protected ActiveRichTextField(String var1, long var2, StringPatternContainer var4, ActiveRichTextField$RegionQueue var5) {
-      super(var1, var5.offsets, var5.attributes, var5.fonts, null, var2);
+   protected ActiveRichTextField(String text, long style, StringPatternContainer patterns, ActiveRichTextField$RegionQueue rq) {
+      super(text, rq.offsets, rq.attributes, rq.fonts, null, style);
       this._smileySupport = (SmileySupport)(new Object(this));
-      this.setAttributes(var5.foregroundColors, var5.backgroundColors);
-      this._cookieID = var5.getSingleCookieRegions();
-      this._cookieIDs = var5.cookieID;
-      this._patterns = var4;
+      this.setAttributes(rq.foregroundColors, rq.backgroundColors);
+      this._cookieID = rq.getSingleCookieRegions();
+      this._cookieIDs = rq.cookieID;
+      this._patterns = patterns;
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
+   protected void makeMenu(Menu menu, int instance) {
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       if (this.isSelecting()) {
-         XYRect var7 = Ui.getTmpXYRect();
-         super.getFocusRect(var7);
-         var1.pushContext(var7, 0, 0);
-         Ui.returnTmpXYRect(var7);
-         super.drawFocus(var1, var2);
-         var1.popContext();
+         XYRect focusRect = Ui.getTmpXYRect();
+         super.getFocusRect(focusRect);
+         graphics.pushContext(focusRect, 0, 0);
+         Ui.returnTmpXYRect(focusRect);
+         super.drawFocus(graphics, on);
+         graphics.popContext();
       } else if (!this.regionHasCookie()) {
-         XYRect var6 = Ui.getTmpXYRect();
-         super.getFocusRect(var6);
-         var1.pushContext(var6, 0, 0);
-         Ui.returnTmpXYRect(var6);
-         super.drawFocus(var1, var2);
-         var1.popContext();
+         XYRect focusRect = Ui.getTmpXYRect();
+         super.getFocusRect(focusRect);
+         graphics.pushContext(focusRect, 0, 0);
+         Ui.returnTmpXYRect(focusRect);
+         super.drawFocus(graphics, on);
+         graphics.popContext();
       } else {
-         this.highlightSelectedArea(var1, var2, super._arSupport.getSameCookieRunStart(this), super._arSupport.getSameCookieRunEnd(this));
+         this.highlightSelectedArea(graphics, on, super._arSupport.getSameCookieRunStart(this), super._arSupport.getSameCookieRunEnd(this));
          if (!this.getScreen().isScrollBehaviourView()) {
-            XYRect var3 = Ui.getTmpXYRect();
-            super.getFocusRect(var3);
-            int var4 = var3.y;
-            int var5 = var3.height >> 2;
-            var4 += var3.height - var5;
-            this.drawHighlightRegion(var1, 1, var2, var3.x, var4, var3.width, var5);
-            Ui.returnTmpXYRect(var3);
+            XYRect focusRect = Ui.getTmpXYRect();
+            super.getFocusRect(focusRect);
+            int y = focusRect.y;
+            int height = focusRect.height >> 2;
+            y += focusRect.height - height;
+            this.drawHighlightRegion(graphics, 1, on, focusRect.x, y, focusRect.width, height);
+            Ui.returnTmpXYRect(focusRect);
          }
       }
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      super.getFocusRect(var1);
-      super._arSupport.getFocusRect(var1, this);
+   public void getFocusRect(XYRect rect) {
+      super.getFocusRect(rect);
+      super._arSupport.getFocusRect(rect, this);
    }
 
-   private static ActiveRichTextField$RegionQueue scanForActiveRegions(String var0, Font var1, int var2, StringPatternContainer var3) {
+   private static ActiveRichTextField$RegionQueue scanForActiveRegions(String text, Font defaultFont, int labelLength, StringPatternContainer patterns) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private static ActiveRichTextField$RegionQueue scanForActiveRegions(
-      String var0, int[] var1, byte[] var2, Font[] var3, Font var4, int[] var5, int[] var6, int var7, StringPatternContainer var8
+      String text,
+      int[] offsets,
+      byte[] attributes,
+      Font[] fonts,
+      Font defaultFont,
+      int[] foregroundColors,
+      int[] backgroundColors,
+      int labelLength,
+      StringPatternContainer patterns
    ) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   protected int scrollVertically(int var1) {
-      if (var1 == 0) {
+   protected int scrollVertically(int amount) {
+      if (amount == 0) {
          return 0;
       }
 
       if (this.isSelecting()) {
-         return super.scrollVertically(var1);
+         return super.scrollVertically(amount);
       }
 
       if (this.getScreen().isScrollBehaviourView()) {
-         boolean var4;
-         if (var1 < 0) {
-            var4 = super._arSupport.scrollToPrevActiveRegion(this, this.getCursorPosition());
+         boolean hasScrolled;
+         if (amount < 0) {
+            hasScrolled = super._arSupport.scrollToPrevActiveRegion(this, this.getCursorPosition());
          } else {
-            var4 = super._arSupport.scrollToNextActiveRegion(this, this.getCursorPosition());
+            hasScrolled = super._arSupport.scrollToNextActiveRegion(this, this.getCursorPosition());
          }
 
-         if (var4) {
+         if (hasScrolled) {
             this.setCursorPosition(super._arSupport.getRunStart(), 0);
             return 0;
          } else {
-            return var1;
+            return amount;
          }
       } else {
-         var1 = super._arSupport.scrollVertically(var1, this, this.getCursorLine()._line);
-         if (var1 != 0) {
-            return super.scrollVertically(var1 + super._arSupport.getAdjustedAmount());
+         amount = super._arSupport.scrollVertically(amount, this, this.getCursorLine()._line);
+         if (amount != 0) {
+            return super.scrollVertically(amount + super._arSupport.getAdjustedAmount());
          }
 
          super.scrollVertically(super._arSupport.getAdjustedAmount());
          if (super._arSupport.endsOnCookie()) {
-            int var2 = MathUtilities.clamp(super._arSupport.getRunStart(), this.getCaretPosition(), super._arSupport.getRunEnd() - 1);
-            this.setSelection(var2, true, var2);
+            int newPos = MathUtilities.clamp(super._arSupport.getRunStart(), this.getCaretPosition(), super._arSupport.getRunEnd() - 1);
+            this.setSelection(newPos, true, newPos);
          }
 
          return 0;
@@ -214,11 +228,11 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    @Override
-   public void selectionCopy(Clipboard var1) {
+   public void selectionCopy(Clipboard cb) {
       if (!this.isSelecting() && super._arSupport.isInCookieRegion(this.getCaretPosition())) {
-         var1.put(super._arSupport.getCurrentRegionText(this.getCaretPosition(), super._text));
+         cb.put(super._arSupport.getCurrentRegionText(this.getCaretPosition(), super._text));
       } else {
-         super.selectionCopy(var1);
+         super.selectionCopy(cb);
       }
    }
 
@@ -227,22 +241,22 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
       return this.isSelecting() ? super.isSelectionCopyable() : super._arSupport.isInCookieRegion(this.getCaretPosition());
    }
 
-   public static void setScanFlags(int var0) {
-      _scanFlags = var0;
+   public static void setScanFlags(int flags) {
+      _scanFlags = flags;
    }
 
    @Override
-   public void setText(String var1) {
-      this.setText(var1, scanForActiveRegions(var1, this.getFont(), this.getLabelLength(), this._patterns));
+   public void setText(String text) {
+      this.setText(text, scanForActiveRegions(text, this.getFont(), this.getLabelLength(), this._patterns));
    }
 
    @Override
-   public void setText(String var1, int[] var2, byte[] var3, Font[] var4) {
-      this.setText(var1, var2, var3, var4, null, null);
+   public void setText(String text, int[] offsets, byte[] attributes, Font[] fonts) {
+      this.setText(text, offsets, attributes, fonts, null, null);
    }
 
-   public ActiveRichTextField(String var1, long var2) {
-      this(var1, null, null, null, null, null, var2);
+   public ActiveRichTextField(String text, long style) {
+      this(text, null, null, null, null, null, style);
    }
 
    @Override
@@ -250,78 +264,117 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
       return super._arSupport.getCookieWithFocus(this.getCursorPosition());
    }
 
-   private void setText(AttributedString var1, ActiveRichTextField$RegionQueue var2) {
-      this._cookieID = var2.getSingleCookieRegions();
-      this._cookieIDs = var2.cookieID;
-      super.setText(var1, var2.offsets, var2.attributes, var2.fonts, null);
-      this.setAttributes(var2.foregroundColors, var2.backgroundColors);
+   private void setText(AttributedString text, ActiveRichTextField$RegionQueue rq) {
+      this._cookieID = rq.getSingleCookieRegions();
+      this._cookieIDs = rq.cookieID;
+      super.setText(text, rq.offsets, rq.attributes, rq.fonts, null);
+      this.setAttributes(rq.foregroundColors, rq.backgroundColors);
    }
 
-   private void setTextFromBackgroundScanner(String var1, int[] var2, byte[] var3, Font[] var4, int[] var5, int[] var6, ActiveRichTextField$RegionQueue var7) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void setTextFromBackgroundScanner(
+      String text, int[] offsets, byte[] attributes, Font[] fonts, int[] foreColors, int[] bgColors, ActiveRichTextField$RegionQueue rq
+   ) {
+      Object lockObject = this;
+
+      try {
+         lockObject = Application.getEventLock();
+      } catch (IllegalStateException var14) {
+      }
+
+      synchronized (lockObject) {
+         AttributedString attribText = this.getAttributedText();
+         attribText = (AttributedString)(new Object(attribText, this.getLabelLength(), attribText.length()));
+         if (this.getText().equals(text)
+            && Arrays.equals(offsets, this.getOffsets())
+            && Arrays.equals(attributes, this.getAttributes())
+            && Arrays.equals(fonts, this.getFonts(false))
+            && Arrays.equals(foreColors, this.getForegroundColors())
+            && Arrays.equals(bgColors, this.getBackgroundColors())) {
+            int curPos = this.getCursorPosition();
+            int savedScrollPos = 0;
+            Manager scrollableManager = this.getManager();
+
+            while (scrollableManager != null && !scrollableManager.isStyle(281474976710656L)) {
+               scrollableManager = scrollableManager.getManager();
+            }
+
+            if (scrollableManager != null) {
+               savedScrollPos = scrollableManager.getVerticalScroll();
+            }
+
+            attribText.setAttrib(0, attribText.length(), this.getDefaultFontAttributes(), -1, 0, -1);
+            this.setText(attribText, rq);
+            this.setCursorPosition(curPos);
+            if (scrollableManager != null) {
+               scrollableManager.setVerticalScroll(savedScrollPos);
+            }
+         }
+      }
    }
 
    @Override
-   public Object getRegionCookie(int var1) {
-      return super._arSupport.getCookieForRegionIndex(var1);
+   public Object getRegionCookie(int region) {
+      return super._arSupport.getCookieForRegionIndex(region);
    }
 
    @Override
-   public void setAttributes(int[] var1, int[] var2) {
-      if (var1 != null) {
-         this.correctColorArray(var1);
+   public void setAttributes(int[] colorForeground, int[] colorBackground) {
+      if (colorForeground != null) {
+         this.correctColorArray(colorForeground);
       }
 
-      if (var2 != null) {
-         this.correctColorArray(var2);
+      if (colorBackground != null) {
+         this.correctColorArray(colorBackground);
       }
 
-      super.setAttributes(var1, var2);
+      super.setAttributes(colorForeground, colorBackground);
    }
 
-   private void correctColorArray(int[] var1) {
-      Font[] var2 = this.getFonts(false);
-      if (var2.length - var1.length != 1) {
-         Array.resize(var1, var2.length);
+   private void correctColorArray(int[] array) {
+      Font[] fonts = this.getFonts(false);
+      if (fonts.length - array.length != 1) {
+         Array.resize(array, fonts.length);
       } else {
-         Array.resize(var1, var2.length);
-         var1[var2.length - 1] = -1;
+         Array.resize(array, fonts.length);
+         array[fonts.length - 1] = -1;
       }
    }
 
-   public ActiveRichTextField(String var1, int[] var2, byte[] var3, Font[] var4, int[] var5, int[] var6, long var7, StringPatternContainer var9) {
+   public ActiveRichTextField(
+      String text, int[] offsets, byte[] attributes, Font[] fonts, int[] foregroundColors, int[] backgroundColors, long style, StringPatternContainer patterns
+   ) {
    }
 
    @Override
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
-      if (var2) {
-         this._smileySupport.scanForSmileys(var1);
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
+      if (aIsInsertionOrDeletion) {
+         this._smileySupport.scanForSmileys(aParams);
       }
 
-      super.notifyTextChanged(var1, var2);
+      super.notifyTextChanged(aParams, aIsInsertionOrDeletion);
    }
 
    @Override
-   public String getText(int var1, int var2) {
-      return !this._smileySupport.isSmileyAvailable() ? super.getText(var1, var2) : this._smileySupport.getDecodedString(var1, var1 + var2);
+   public String getText(int offset, int length) {
+      return !this._smileySupport.isSmileyAvailable() ? super.getText(offset, length) : this._smileySupport.getDecodedString(offset, offset + length);
    }
 
    @Override
-   public int getDecodedTextLength(int var1, int var2) {
-      return this._smileySupport != null && this._smileySupport.isSmileyAvailable() ? this._smileySupport.getDecodedStringLength(var1, var2) : var2 - var1;
+   public int getDecodedTextLength(int start, int end) {
+      return this._smileySupport != null && this._smileySupport.isSmileyAvailable() ? this._smileySupport.getDecodedStringLength(start, end) : end - start;
    }
 
-   public ActiveRichTextField(String var1, int[] var2, byte[] var3, Font[] var4, int[] var5, int[] var6, long var7) {
-      this(var1, var2, var3, var4, var5, var6, var7, StringPatternRepository$Internal.getStringPatterns());
-   }
-
-   @Override
-   public boolean isCookieValid(int var1) {
-      return this._cookieIDs != null && this._cookieIDs.containsKey(var1) && var1 >= 0 && this._cookieIDs.get(var1) != null;
+   public ActiveRichTextField(String text, int[] offsets, byte[] attributes, Font[] fonts, int[] foregroundColors, int[] backgroundColors, long style) {
+      this(text, offsets, attributes, fonts, foregroundColors, backgroundColors, style, StringPatternRepository$Internal.getStringPatterns());
    }
 
    @Override
-   public Object getCookie(int var1) {
+   public boolean isCookieValid(int id) {
+      return this._cookieIDs != null && this._cookieIDs.containsKey(id) && id >= 0 && this._cookieIDs.get(id) != null;
+   }
+
+   @Override
+   public Object getCookie(int id) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

@@ -12,21 +12,21 @@ public class IPTextFilter extends TextFilter {
    public IPTextFilter() {
    }
 
-   public IPTextFilter(int var1) {
-      this._flags = var1;
+   public IPTextFilter(int flag) {
+      this._flags = flag;
    }
 
    @Override
-   public char convert(char var1, int var2) {
-      if (!this.validate(var1)) {
+   public char convert(char character, int status) {
+      if (!this.validate(character)) {
          if ((this._flags & 2) != 0) {
-            return Keypad.getAltedChar(var1);
+            return Keypad.getAltedChar(character);
          }
 
-         var1 = CharacterUtilities.toLowerCase(var1, 1701707776);
+         character = CharacterUtilities.toLowerCase(character, 1701707776);
       }
 
-      return var1;
+      return character;
    }
 
    @Override
@@ -35,40 +35,40 @@ public class IPTextFilter extends TextFilter {
    }
 
    @Override
-   public boolean validate(AbstractString var1) {
-      if (var1 != null && var1.length() != 0) {
-         int var2 = var1.length();
-         int var3 = 0;
-         int var4 = 0;
-         boolean var5 = false;
+   public boolean validate(AbstractString text) {
+      if (text != null && text.length() != 0) {
+         int textLength = text.length();
+         int pointCounter = 0;
+         int colonCounter = 0;
+         boolean containsLetters = false;
 
-         for (int var6 = 0; var6 < var2; var6++) {
-            char var7 = var1.charAt(var6);
-            if (Character.isLowerCase(var7) || Character.isUpperCase(var7)) {
+         for (int lv = 0; lv < textLength; lv++) {
+            char ch = text.charAt(lv);
+            if (Character.isLowerCase(ch) || Character.isUpperCase(ch)) {
                if ((this._flags & 2) != 0) {
                   return false;
                }
 
-               var5 = true;
-               if (var4 > 0) {
+               containsLetters = true;
+               if (colonCounter > 0) {
                   return false;
                }
             }
 
-            if (!this.validate(var7)) {
+            if (!this.validate(ch)) {
                return false;
             }
 
-            if (var7 == '.') {
-               if (++var3 > 3 && !var5) {
+            if (ch == '.') {
+               if (++pointCounter > 3 && !containsLetters) {
                   return false;
                }
-            } else if (var7 == ':') {
+            } else if (ch == ':') {
                if ((this._flags & 1) != 0) {
                   return false;
                }
 
-               if (++var4 > 2) {
+               if (++colonCounter > 2) {
                   return false;
                }
             }
@@ -79,20 +79,20 @@ public class IPTextFilter extends TextFilter {
    }
 
    @Override
-   public boolean validate(char var1) {
-      if (var1 == ':') {
+   public boolean validate(char character) {
+      if (character == ':') {
          return (this._flags & 1) == 0;
       }
 
-      if (Character.isDigit(var1)) {
+      if (Character.isDigit(character)) {
          return true;
       }
 
       if ((this._flags & 2) != 0) {
-         if (var1 == '.') {
+         if (character == '.') {
             return true;
          }
-      } else if (Character.isLowerCase(var1) || var1 == '-' || var1 == '.') {
+      } else if (Character.isLowerCase(character) || character == '-' || character == '.') {
          return true;
       }
 

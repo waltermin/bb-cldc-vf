@@ -11,11 +11,11 @@ class DefaultResourceFetcher implements ResourceFetcher {
    DefaultResourceFetcher() {
    }
 
-   DefaultResourceFetcher(String var1) {
+   DefaultResourceFetcher(String moduleName) {
    }
 
    @Override
-   public void setResourcesFromModule(String var1) {
+   public void setResourcesFromModule(String moduleName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -27,14 +27,14 @@ class DefaultResourceFetcher implements ResourceFetcher {
    @Override
    public Enumeration listResources() {
       this.checkState();
-      Enumeration var1 = this._resources.getResourceKeys();
-      return (Enumeration)(var1 != null ? var1 : new Object());
+      Enumeration e = this._resources.getResourceKeys();
+      return (Enumeration)(e != null ? e : new Object());
    }
 
    @Override
-   public byte[] fetchResource(String var1) {
+   public byte[] fetchResource(String name) {
       this.checkState();
-      return this._resources.getResource(var1);
+      return this._resources.getResource(name);
    }
 
    @Override

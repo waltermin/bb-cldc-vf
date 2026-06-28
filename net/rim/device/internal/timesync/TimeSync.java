@@ -18,7 +18,7 @@ public class TimeSync {
       throw null;
    }
 
-   public boolean setSource(int var1) {
+   public boolean setSource(int _1) {
       throw null;
    }
 
@@ -30,7 +30,7 @@ public class TimeSync {
       throw null;
    }
 
-   public void synchronize(boolean var1) {
+   public void synchronize(boolean _1) {
       throw null;
    }
 
@@ -38,11 +38,11 @@ public class TimeSync {
       return (TimeSync)ApplicationRegistry.getApplicationRegistry().get(1339175110175922940L);
    }
 
-   public static long ApplyNetworkTimeZone(long var0) {
-      return var0 + InternalServices.getNetworkTimeZoneOffset() + InternalServices.getNetworkDSTOffset();
+   public static long ApplyNetworkTimeZone(long GMTNetworkTime) {
+      return GMTNetworkTime + InternalServices.getNetworkTimeZoneOffset() + InternalServices.getNetworkDSTOffset();
    }
 
-   public static long GetNetworkTime(long var0) {
-      return var0 + InternalServices.getNetworkTimeOffset();
+   public static long GetNetworkTime(long deviceTime) {
+      return deviceTime + InternalServices.getNetworkTimeOffset();
    }
 }

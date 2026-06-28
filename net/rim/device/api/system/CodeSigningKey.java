@@ -21,14 +21,14 @@ public final class CodeSigningKey implements Persistable {
    private CodeSigningKey() {
    }
 
-   public CodeSigningKey(String var1, byte[] var2, String var3) {
-      this(convert(var1), var2, var3);
+   public CodeSigningKey(String signerId, byte[] publicKey, String description) {
+      this(convert(signerId), publicKey, description);
    }
 
-   public CodeSigningKey(int var1, byte[] var2, String var3) {
-      this._signerId = var1;
-      this._publicKey = var2;
-      this._description = var3;
+   public CodeSigningKey(int signerId, byte[] publicKey, String description) {
+      this._signerId = signerId;
+      this._publicKey = publicKey;
+      this._description = description;
    }
 
    public final String getSignerId() {
@@ -52,7 +52,7 @@ public final class CodeSigningKey implements Persistable {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -60,34 +60,34 @@ public final class CodeSigningKey implements Persistable {
 
    public static final native CodeSigningKey get(int var0, int var1);
 
-   public static final CodeSigningKey get(int var0, String var1) {
-      return get(var0, convert(var1));
+   public static final CodeSigningKey get(int moduleHandle, String signerId) {
+      return get(moduleHandle, convert(signerId));
    }
 
-   public static final CodeSigningKey getBuiltInKey(int var0) {
-      CodeSigningKey var1 = (CodeSigningKey)_builtInKeys.get(var0);
-      if (var1 == null) {
-         var1 = getBuiltInKey2(var0);
-         _builtInKeys.put(var0, var1);
+   public static final CodeSigningKey getBuiltInKey(int signerId) {
+      CodeSigningKey key = (CodeSigningKey)_builtInKeys.get(signerId);
+      if (key == null) {
+         key = getBuiltInKey2(signerId);
+         _builtInKeys.put(signerId, key);
       }
 
-      return var1;
+      return key;
    }
 
    private static final native CodeSigningKey getBuiltInKey2(int var0);
 
-   public static final int convert(String var0) {
+   public static final int convert(String s) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String convert(int var0) {
-      byte[] var1 = new byte[]{(byte)var0, (byte)(var0 >> 8), (byte)(var0 >> 16), (byte)(var0 >> 24)};
-      int var2 = 0;
+   public static final String convert(int i) {
+      byte[] b = new byte[]{(byte)i, (byte)(i >> 8), (byte)(i >> 16), (byte)(i >> 24)};
+      int length = 0;
 
-      while (var2 < 4 && var1[var2] != 0) {
-         var2++;
+      while (length < 4 && b[length] != 0) {
+         length++;
       }
 
-      return new String(var1, 0, var2);
+      return new String(b, 0, length);
    }
 }

@@ -23,23 +23,23 @@ public final class SmartCardPort extends IOPort {
    }
 
    public final void reset() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final int write(byte[] var1) {
-      return this.write(var1, 0, var1.length);
+   public final int write(byte[] data) {
+      return this.write(data, 0, data.length);
    }
 
    @Override
-   public final int write(int var1) {
+   public final int write(int b) {
       assertPermission();
-      return this.write((byte)var1);
+      return this.write((byte)b);
    }
 
    @Override
-   public final int read(byte[] var1) {
-      return this.read(var1, 0, var1.length);
+   public final int read(byte[] data) {
+      return this.read(data, 0, data.length);
    }
 
    @Override
@@ -49,13 +49,13 @@ public final class SmartCardPort extends IOPort {
       this._opened = false;
    }
 
-   public final boolean open(int var1) {
+   public final boolean open(int protocol) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final boolean setProtocol(int var1) {
+   public final boolean setProtocol(int protocol) {
       assertPermission();
-      return var1 != this.SC_PROTOCOL_T1 && var1 != this.SC_PROTOCOL_T0 ? false : this.setProtocolImpl(var1);
+      return protocol != this.SC_PROTOCOL_T1 && protocol != this.SC_PROTOCOL_T0 ? false : this.setProtocolImpl(protocol);
    }
 
    private final native boolean setProtocolImpl(int var1);
@@ -68,17 +68,17 @@ public final class SmartCardPort extends IOPort {
    private static final native boolean isCardPresentImpl();
 
    @Override
-   public final int write(byte[] var1, int var2, int var3) {
+   public final int write(byte[] data, int offset, int length) {
       assertPermission();
-      return this.writeImpl(var1, var2, var3);
+      return this.writeImpl(data, offset, length);
    }
 
    private final native int writeImpl(byte[] var1, int var2, int var3);
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] data, int offset, int length) {
       assertPermission();
-      return this.readImpl(var1, var2, var3);
+      return this.readImpl(data, offset, length);
    }
 
    private final native int readImpl(byte[] var1, int var2, int var3);
@@ -106,11 +106,18 @@ public final class SmartCardPort extends IOPort {
 
    private final native int write(byte var1);
 
-   public static final void addListener(Application var0, SmartCardPortListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, SmartCardPortListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(16) == null) {
+            dispatchManager.setDispatcher(16, new SmartCardPortEventDispatcher());
+         }
+      }
+
+      app.addListener(16, listener);
    }
 
-   public static final void removeListener(Application var0, SmartCardPortListener var1) {
-      var0.removeListener(16, var1);
+   public static final void removeListener(Application app, SmartCardPortListener listener) {
+      app.removeListener(16, listener);
    }
 }

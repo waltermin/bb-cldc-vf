@@ -28,136 +28,138 @@ public final class TextFlowNative$Lines {
       this._bidiStateCount = 0;
    }
 
-   private final void grow(int var1, int var2) {
-      if (this._length.length < var1) {
-         int var3 = this._length.length;
-         int var4 = Math.max(var1, this._length.length + Array.getSectionSize(this._length));
-         Array.resize(this._length, var4);
-         Array.resize(this._xOffset, var4);
-         Array.resize(this._width, var4);
-         Array.resize(this._widthNominal, var4);
-         Array.resize(this._flags, var4);
-         Array.resize(this._baseline, var4);
-         Array.resize(this._height, var4);
-         Array.resize(this._cellId, var4);
-         Arrays.fill(this._cellId, (short)0, var3, var4 - var3);
-         Array.resize(this._bidiStateIndex, var4);
+   private final void grow(int aNewCount, int aNewBidiStateCount) {
+      if (this._length.length < aNewCount) {
+         int old_size = this._length.length;
+         int new_size = Math.max(aNewCount, this._length.length + Array.getSectionSize(this._length));
+         Array.resize(this._length, new_size);
+         Array.resize(this._xOffset, new_size);
+         Array.resize(this._width, new_size);
+         Array.resize(this._widthNominal, new_size);
+         Array.resize(this._flags, new_size);
+         Array.resize(this._baseline, new_size);
+         Array.resize(this._height, new_size);
+         Array.resize(this._cellId, new_size);
+         Arrays.fill(this._cellId, (short)0, old_size, new_size - old_size);
+         Array.resize(this._bidiStateIndex, new_size);
       }
 
-      this._count = var1;
-      if (this._bidiState.length < var2) {
-         int var5 = Math.max(var2, this._bidiState.length + Array.getSectionSize(this._bidiState));
-         Array.resize(this._bidiState, var5);
+      this._count = aNewCount;
+      if (this._bidiState.length < aNewBidiStateCount) {
+         int new_size = Math.max(aNewBidiStateCount, this._bidiState.length + Array.getSectionSize(this._bidiState));
+         Array.resize(this._bidiState, new_size);
       }
 
-      this._bidiStateCount = var2;
+      this._bidiStateCount = aNewBidiStateCount;
    }
 
-   public final void append(TextFlowNative$Lines var1, int var2, int var3) {
-      this.replace(this._count, 0, var1, var2, var3);
+   public final void append(TextFlowNative$Lines aSourceLines, int aSourceStart, int aSourceCount) {
+      this.replace(this._count, 0, aSourceLines, aSourceStart, aSourceCount);
    }
 
-   public final void append(TextFlowNative$Lines var1) {
-      this.replace(this._count, 0, var1, 0, var1._count);
+   public final void append(TextFlowNative$Lines aSourceLines) {
+      this.replace(this._count, 0, aSourceLines, 0, aSourceLines._count);
    }
 
-   public final void replace(int var1, int var2, TextFlowNative$Lines var3) {
-      this.replace(var1, var2, var3, 0, var3._count);
+   public final void replace(int aDestStart, int aDestCount, TextFlowNative$Lines aSourceLines) {
+      this.replace(aDestStart, aDestCount, aSourceLines, 0, aSourceLines._count);
    }
 
-   public final void replace(int var1, int var2, TextFlowNative$Lines var3, int var4, int var5) {
-      if (var1 < 0 || var2 < 0 || var1 + var2 > this._count) {
+   public final void replace(int aDestStart, int aDestCount, TextFlowNative$Lines aSourceLines, int aSourceStart, int aSourceCount) {
+      if (aDestStart < 0 || aDestCount < 0 || aDestStart + aDestCount > this._count) {
          throw new Object();
       }
 
-      if (var4 >= 0 && var5 >= 0 && var4 + var5 <= var3._count) {
-         int var6 = this._count;
-         int var7 = this._count + var5 - var2;
-         int var8 = this._bidiStateCount;
-         int var9 = var1 < this._count ? this._bidiStateIndex[var1] : this._bidiStateCount;
-         int var10 = var1 + var2 < this._count ? this._bidiStateIndex[var1 + var2] : this._bidiStateCount;
-         int var11 = var10 - var9;
-         int var12 = var4 < var3._count ? var3._bidiStateIndex[var4] : var3._bidiStateCount;
-         int var13 = var4 + var5 < var3._count ? var3._bidiStateIndex[var4 + var5] : var3._bidiStateCount;
-         int var14 = var13 - var12;
-         int var15 = this._bidiStateCount + var14 - var11;
-         if (var7 != var6 || var15 != var8) {
-            this.grow(var7, var15);
-            int var16 = var1 + var2;
-            int var17 = var1 + var5;
-            int var18 = var6 - var16;
-            if (var18 > 0) {
-               System.arraycopy(this._length, var16, this._length, var17, var18);
-               System.arraycopy(this._xOffset, var16, this._xOffset, var17, var18);
-               System.arraycopy(this._width, var16, this._width, var17, var18);
-               System.arraycopy(this._widthNominal, var16, this._widthNominal, var17, var18);
-               System.arraycopy(this._flags, var16, this._flags, var17, var18);
-               System.arraycopy(this._baseline, var16, this._baseline, var17, var18);
-               System.arraycopy(this._height, var16, this._height, var17, var18);
-               System.arraycopy(this._cellId, var16, this._cellId, var17, var18);
-               System.arraycopy(this._bidiStateIndex, var16, this._bidiStateIndex, var17, var18);
+      if (aSourceStart >= 0 && aSourceCount >= 0 && aSourceStart + aSourceCount <= aSourceLines._count) {
+         int old_count = this._count;
+         int new_count = this._count + aSourceCount - aDestCount;
+         int old_bidi_state_count = this._bidiStateCount;
+         int dest_bidi_state_start = aDestStart < this._count ? this._bidiStateIndex[aDestStart] : this._bidiStateCount;
+         int dest_bidi_state_end = aDestStart + aDestCount < this._count ? this._bidiStateIndex[aDestStart + aDestCount] : this._bidiStateCount;
+         int dest_bidi_state_count = dest_bidi_state_end - dest_bidi_state_start;
+         int source_bidi_state_start = aSourceStart < aSourceLines._count ? aSourceLines._bidiStateIndex[aSourceStart] : aSourceLines._bidiStateCount;
+         int source_bidi_state_end = aSourceStart + aSourceCount < aSourceLines._count
+            ? aSourceLines._bidiStateIndex[aSourceStart + aSourceCount]
+            : aSourceLines._bidiStateCount;
+         int source_bidi_state_count = source_bidi_state_end - source_bidi_state_start;
+         int new_bidi_state_count = this._bidiStateCount + source_bidi_state_count - dest_bidi_state_count;
+         if (new_count != old_count || new_bidi_state_count != old_bidi_state_count) {
+            this.grow(new_count, new_bidi_state_count);
+            int from = aDestStart + aDestCount;
+            int to = aDestStart + aSourceCount;
+            int n = old_count - from;
+            if (n > 0) {
+               System.arraycopy(this._length, from, this._length, to, n);
+               System.arraycopy(this._xOffset, from, this._xOffset, to, n);
+               System.arraycopy(this._width, from, this._width, to, n);
+               System.arraycopy(this._widthNominal, from, this._widthNominal, to, n);
+               System.arraycopy(this._flags, from, this._flags, to, n);
+               System.arraycopy(this._baseline, from, this._baseline, to, n);
+               System.arraycopy(this._height, from, this._height, to, n);
+               System.arraycopy(this._cellId, from, this._cellId, to, n);
+               System.arraycopy(this._bidiStateIndex, from, this._bidiStateIndex, to, n);
             }
 
-            var16 = var9 + var11;
-            var17 = var9 + var14;
-            var18 = var8 - var16;
-            if (var18 > 0) {
-               System.arraycopy(this._bidiState, var16, this._bidiState, var17, var18);
-               int var19 = var17 - var16;
+            from = dest_bidi_state_start + dest_bidi_state_count;
+            to = dest_bidi_state_start + source_bidi_state_count;
+            n = old_bidi_state_count - from;
+            if (n > 0) {
+               System.arraycopy(this._bidiState, from, this._bidiState, to, n);
+               int diff = to - from;
 
-               for (int var20 = var1 + var5; var20 < var7; var20++) {
-                  this._bidiStateIndex[var20] = (short)(this._bidiStateIndex[var20] + var19);
+               for (int i = aDestStart + aSourceCount; i < new_count; i++) {
+                  this._bidiStateIndex[i] = (short)(this._bidiStateIndex[i] + diff);
                }
             }
          }
 
-         if (var5 > 0) {
-            System.arraycopy(var3._length, var4, this._length, var1, var5);
-            System.arraycopy(var3._xOffset, var4, this._xOffset, var1, var5);
-            System.arraycopy(var3._width, var4, this._width, var1, var5);
-            System.arraycopy(var3._widthNominal, var4, this._widthNominal, var1, var5);
-            System.arraycopy(var3._flags, var4, this._flags, var1, var5);
-            System.arraycopy(var3._baseline, var4, this._baseline, var1, var5);
-            System.arraycopy(var3._height, var4, this._height, var1, var5);
-            System.arraycopy(var3._cellId, var4, this._cellId, var1, var5);
-            System.arraycopy(var3._bidiStateIndex, var4, this._bidiStateIndex, var1, var5);
+         if (aSourceCount > 0) {
+            System.arraycopy(aSourceLines._length, aSourceStart, this._length, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._xOffset, aSourceStart, this._xOffset, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._width, aSourceStart, this._width, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._widthNominal, aSourceStart, this._widthNominal, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._flags, aSourceStart, this._flags, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._baseline, aSourceStart, this._baseline, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._height, aSourceStart, this._height, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._cellId, aSourceStart, this._cellId, aDestStart, aSourceCount);
+            System.arraycopy(aSourceLines._bidiStateIndex, aSourceStart, this._bidiStateIndex, aDestStart, aSourceCount);
          }
 
-         if (var14 > 0) {
-            System.arraycopy(var3._bidiState, var12, this._bidiState, var9, var14);
+         if (source_bidi_state_count > 0) {
+            System.arraycopy(aSourceLines._bidiState, source_bidi_state_start, this._bidiState, dest_bidi_state_start, source_bidi_state_count);
          }
 
-         int var22 = var9 - var12;
-         int var24 = var1 + var5;
+         int diff = dest_bidi_state_start - source_bidi_state_start;
+         int end = aDestStart + aSourceCount;
 
-         for (int var26 = var1; var26 < var24; var26++) {
-            this._bidiStateIndex[var26] = (short)(this._bidiStateIndex[var26] + var22);
+         for (int i = aDestStart; i < end; i++) {
+            this._bidiStateIndex[i] = (short)(this._bidiStateIndex[i] + diff);
          }
       } else {
          throw new Object();
       }
    }
 
-   public final void appendVerticalSpace(int var1, short var2, short var3, short var4) {
+   public final void appendVerticalSpace(int aHeight, short aXOffset, short aWidth, short aCellId) {
       throw new RuntimeException("cod2jar: unsupported opcode");
    }
 
-   public final void appendZeroHeightCharacters(int var1, short var2, short var3, short var4) {
+   public final void appendZeroHeightCharacters(int aChars, short aXOffset, short aWidth, short aCellId) {
       throw new RuntimeException("cod2jar: unsupported opcode");
    }
 
-   public final void appendZeroHeightZeroWidthCharacter(short var1, short var2) {
-      int var3 = this._count;
+   public final void appendZeroHeightZeroWidthCharacter(short aXOffset, short aCellId) {
+      int i = this._count;
       this.grow(this._count + 1, this._bidiStateCount);
-      this._length[var3] = 0;
-      this._xOffset[var3] = var1;
-      this._flags[var3] = 3;
-      this._width[var3] = 0;
-      this._widthNominal[var3] = 0;
-      this._baseline[var3] = 0;
-      this._height[var3] = 0;
-      this._cellId[var3] = var2;
-      this._bidiStateIndex[var3] = (short)this._bidiStateCount;
+      this._length[i] = 0;
+      this._xOffset[i] = aXOffset;
+      this._flags[i] = 3;
+      this._width[i] = 0;
+      this._widthNominal[i] = 0;
+      this._baseline[i] = 0;
+      this._height[i] = 0;
+      this._cellId[i] = aCellId;
+      this._bidiStateIndex[i] = (short)this._bidiStateCount;
    }
 
    public final int getCount() {
@@ -196,19 +198,19 @@ public final class TextFlowNative$Lines {
       return this._cellId;
    }
 
-   public final byte[] getBidiState(int var1) {
-      short var2 = this._bidiStateIndex[var1];
-      int var3 = (var1 + 1 < this._count ? this._bidiStateIndex[var1 + 1] : this._bidiStateCount) - var2;
-      if (var3 <= 0) {
+   public final byte[] getBidiState(int aLineIndex) {
+      int start = this._bidiStateIndex[aLineIndex];
+      int length = (aLineIndex + 1 < this._count ? this._bidiStateIndex[aLineIndex + 1] : this._bidiStateCount) - start;
+      if (length <= 0) {
          return null;
       }
 
-      byte[] var4 = new byte[var3];
+      byte[] b = new byte[length];
 
-      for (int var5 = 0; var5 < var3; var5++) {
-         var4[var5] = this._bidiState[var2 + var5];
+      for (int i = 0; i < length; i++) {
+         b[i] = this._bidiState[start + i];
       }
 
-      return var4;
+      return b;
    }
 }

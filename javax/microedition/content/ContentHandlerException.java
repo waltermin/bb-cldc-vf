@@ -8,7 +8,7 @@ public class ContentHandlerException extends IOException {
    public static final int TYPE_UNKNOWN;
    public static final int AMBIGUOUS;
 
-   public ContentHandlerException(String var1, int var2) {
+   public ContentHandlerException(String reason, int errcode) {
    }
 
    public int getErrorCode() {

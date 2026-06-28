@@ -3,9 +3,9 @@ package net.rim.device.internal.ui;
 public class NamedIconCollection extends IconCollection {
    private String _name;
 
-   public NamedIconCollection(String var1, int var2, int var3, String var4) {
-      super(var2, var3, var4);
-      this._name = var1;
+   public NamedIconCollection(String name, int columns, int rows, String moduleName) {
+      super(columns, rows, moduleName);
+      this._name = name;
    }
 
    public String getName() {

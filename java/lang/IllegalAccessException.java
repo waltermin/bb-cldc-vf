@@ -4,6 +4,6 @@ public class IllegalAccessException extends Exception {
    public IllegalAccessException() {
    }
 
-   public IllegalAccessException(String var1) {
+   public IllegalAccessException(String s) {
    }
 }

@@ -1,5 +1,6 @@
 package net.rim.device.internal.media;
 
+import java.io.IOException;
 import javax.microedition.media.Control;
 import javax.microedition.media.protocol.ContentDescriptor;
 import javax.microedition.media.protocol.DataSource;
@@ -20,22 +21,36 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    private static final int MAX_RETRIES;
    private static final int SESSION_TIMEOUT;
 
-   public RTSPDataSource(String var1, String var2, String var3, String var4, String var5) {
-      super(var1);
-      this._userAgent = var2;
-      this._apn = var3;
-      this._apnUsername = var4;
-      this._apnPassword = var5;
+   public RTSPDataSource(String locator, String userAgent, String apn, String apnUsername, String apnPassword) {
+      super(locator);
+      this._userAgent = userAgent;
+      this._apn = apn;
+      this._apnUsername = apnUsername;
+      this._apnPassword = apnPassword;
    }
 
    @Override
    public final void connect() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public final void disconnect() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._connected) {
+         if (this._started) {
+            try {
+               this.stop();
+            } catch (IOException var2) {
+            }
+         }
+
+         if (this._tunnel != null) {
+            this._tunnel.close();
+            this._tunnel = null;
+         }
+
+         this._connected = false;
+      }
    }
 
    @Override
@@ -44,7 +59,10 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         this.stop();
+      } catch (IOException var2) {
+      }
    }
 
    @Override
@@ -60,7 +78,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    public final int getAccessPointNumber() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public final String getUserAgent() {
@@ -83,7 +101,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] b, int off, int len) {
       return 0;
    }
 
@@ -93,7 +111,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    @Override
-   public final long seek(long var1) {
+   public final long seek(long where) {
       return 0;
    }
 
@@ -117,7 +135,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    @Override
-   public final Control getControl(String var1) {
+   public final Control getControl(String controlType) {
       if (!this._connected) {
          throw new Object();
       } else {
@@ -126,7 +144,10 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    @Override
-   public final void statusChanged(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void statusChanged(int status, int code) {
+      synchronized (this._tunnelSyncObject) {
+         this._tunnelStatus = status;
+         this._tunnelSyncObject.notify();
+      }
    }
 }

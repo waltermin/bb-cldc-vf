@@ -5,10 +5,10 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.text.TextRect;
 
 class CodeUpgrade$MyTextRect extends TextRect {
-   CodeUpgrade$MyTextRect(Field var1, String var2, int var3) {
+   CodeUpgrade$MyTextRect(Field f, String s, int style) {
    }
 
-   public void draw(Graphics var1) {
-      this.paint(var1);
+   public void draw(Graphics g) {
+      this.paint(g);
    }
 }

@@ -1,18 +1,27 @@
 package net.rim.device.api.gps;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.internal.system.EventDispatchManager;
+import net.rim.device.internal.system.EventDispatcher;
 
 public final class LCS {
    public static final int LCS_NOTIFICATION_ONLY;
    public static final int LCS_VERIFICATION_DEFAULT_ALLOWED;
    public static final int LCS_VERIFICATION_DEFAULT_NOT_ALLOWED;
 
-   public static final void addListener(Application var0, LCSListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, LCSListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(23) == null) {
+            dispatchManager.setDispatcher(23, (EventDispatcher)(new Object()));
+         }
+      }
+
+      app.addListener(23, listener);
    }
 
-   public static final void removeListener(Application var0, LCSListener var1) {
-      var0.removeListener(23, var1);
+   public static final void removeListener(Application app, LCSListener listener) {
+      app.removeListener(23, listener);
    }
 
    public static final native void assistDataRequestFailed();

@@ -17,23 +17,23 @@ class TitleStatusManager extends Manager {
    private static Tag CLIENT_TAG;
    private static Tag STATUS_TAG;
 
-   public TitleStatusManager(long var1) {
-      super(validateStyle(var1));
-      this._vfm = new VerticalFieldManager(validateStyleVFM(var1));
+   public TitleStatusManager(long style) {
+      super(validateStyle(style));
+      this._vfm = new VerticalFieldManager(validateStyleVFM(style));
       this._vfm.setTag(CLIENT_TAG);
       super.add(this._vfm);
    }
 
    @Override
-   public void setId(String var1) {
-      super.setId(var1);
+   public void setId(String idName) {
+      super.setId(idName);
       if (this._titleManager != null) {
-         this._titleManager.setId(var1);
+         this._titleManager.setId(idName);
       }
 
-      this._vfm.setId(var1);
+      this._vfm.setId(idName);
       if (this._statusManager != null) {
-         this._statusManager.setId(var1);
+         this._statusManager.setId(idName);
       }
    }
 
@@ -42,18 +42,18 @@ class TitleStatusManager extends Manager {
    }
 
    @Override
-   public void add(Field var1) {
-      this.getMainManager().add(var1);
+   public void add(Field field) {
+      this.getMainManager().add(field);
    }
 
    @Override
-   public void delete(Field var1) {
-      this.getMainManager().delete(var1);
+   public void delete(Field field) {
+      this.getMainManager().delete(field);
    }
 
    @Override
-   public void deleteRange(int var1, int var2) {
-      this.getMainManager().deleteRange(var1, var2);
+   public void deleteRange(int start, int count) {
+      this.getMainManager().deleteRange(start, count);
    }
 
    @Override
@@ -62,104 +62,104 @@ class TitleStatusManager extends Manager {
    }
 
    @Override
-   public void insert(Field var1, int var2) {
-      this.getMainManager().insert(var1, var2);
+   public void insert(Field field, int index) {
+      this.getMainManager().insert(field, index);
    }
 
    @Override
-   public void replace(Field var1, Field var2) {
-      this.getMainManager().replace(var1, var2);
+   public void replace(Field oldField, Field newField) {
+      this.getMainManager().replace(oldField, newField);
    }
 
    @Override
-   public void setHorizontalQuantization(int var1) {
-      this.getMainManager().setHorizontalQuantization(var1);
+   public void setHorizontalQuantization(int horizontalQuanta) {
+      this.getMainManager().setHorizontalQuantization(horizontalQuanta);
    }
 
-   public void setBanner(Field var1) {
+   public void setBanner(Field banner) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setStatus(Field var1) {
+   public void setStatus(Field status) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setTitle(Field var1) {
+   public void setTitle(Field title) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setTitle(String var1) {
+   public void setTitle(String text) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void setTitle(ResourceBundleFamily var1, int var2) {
+   public void setTitle(ResourceBundleFamily family, int id) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void setVerticalQuantization(int var1) {
-      this.getMainManager().setVerticalQuantization(var1);
+   public void setVerticalQuantization(int verticalQuanta) {
+      this.getMainManager().setVerticalQuantization(verticalQuanta);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      this.setExtent(var1, var2);
-      int var3 = var2;
-      int var4 = 0;
+   protected void sublayout(int width, int height) {
+      this.setExtent(width, height);
+      int bottom = height;
+      int bfmheight = 0;
       if (this._bannerManager != null) {
-         this.layoutChild(this._bannerManager, var1, var2);
+         this.layoutChild(this._bannerManager, width, height);
          this.setPositionChild(this._bannerManager, 0, 0);
-         var4 = this._bannerManager.getHeight();
+         bfmheight = this._bannerManager.getHeight();
       }
 
-      var2 -= var4;
-      int var5 = 0;
+      height -= bfmheight;
+      int tfmheight = 0;
       if (this._titleManager != null) {
-         this.layoutChild(this._titleManager, var1, var2);
-         this.setPositionChild(this._titleManager, 0, var4);
-         var5 = this._titleManager.getHeight();
+         this.layoutChild(this._titleManager, width, height);
+         this.setPositionChild(this._titleManager, 0, bfmheight);
+         tfmheight = this._titleManager.getHeight();
       }
 
-      var2 -= var5;
-      int var6 = 0;
+      height -= tfmheight;
+      int sfmheight = 0;
       if (this._statusManager != null) {
-         this.layoutChild(this._statusManager, var1, var2);
-         var6 = this._statusManager.getHeight();
-         this.setPositionChild(this._statusManager, 0, var3 - var6);
+         this.layoutChild(this._statusManager, width, height);
+         sfmheight = this._statusManager.getHeight();
+         this.setPositionChild(this._statusManager, 0, bottom - sfmheight);
       }
 
-      var2 -= var6;
-      this.setPositionChild(this._vfm, 0, var5 + var4);
-      this.layoutChild(this._vfm, var1, var2);
+      height -= sfmheight;
+      this.setPositionChild(this._vfm, 0, tfmheight + bfmheight);
+      this.layoutChild(this._vfm, width, height);
    }
 
-   private static long validateStyle(long var0) {
-      var0 &= -4486007441326081L;
+   private static long validateStyle(long style) {
+      style &= -4486007441326081L;
       if (Graphics.isColor()) {
-         var0 |= 3221225472L;
+         style |= 3221225472L;
       }
 
-      return var0;
+      return style;
    }
 
-   private static long validateStyleVFM(long var0) {
-      if ((var0 & 844424930131968L) == 0) {
-         var0 |= 281474976710656L;
+   private static long validateStyleVFM(long style) {
+      if ((style & 844424930131968L) == 0) {
+         style |= 281474976710656L;
       }
 
-      if ((var0 & 52776558133248L) == 0) {
-         var0 |= 17592186044416L;
+      if ((style & 52776558133248L) == 0) {
+         style |= 17592186044416L;
       }
 
-      if ((var0 & 3377699720527872L) == 0) {
-         var0 |= 2251799813685248L;
+      if ((style & 3377699720527872L) == 0) {
+         style |= 2251799813685248L;
       }
 
-      if ((var0 & 211106232532992L) == 0) {
-         var0 |= 140737488355328L;
+      if ((style & 211106232532992L) == 0) {
+         style |= 140737488355328L;
       }
 
-      var0 &= 292716448017547264L;
-      return var0 | 3458764513820540928L;
+      style &= 292716448017547264L;
+      return style | 3458764513820540928L;
    }
 }

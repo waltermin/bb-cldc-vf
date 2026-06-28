@@ -1,5 +1,6 @@
 package net.rim.device.internal.media;
 
+import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.media.Control;
 import javax.microedition.media.protocol.ContentDescriptor;
@@ -16,10 +17,10 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    private String _contentUrl;
    private long _estimatedTime;
 
-   public void setEstimatedTime(long var1) {
-      this._estimatedTime = var1;
+   public void setEstimatedTime(long time) {
+      this._estimatedTime = time;
       if (this._buffer != null) {
-         this._buffer.setEstimatedTime(var1);
+         this._buffer.setEstimatedTime(time);
       }
    }
 
@@ -33,13 +34,13 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      int var4 = this._inputStream.read(var1, var2, var3);
-      if (var4 > 0) {
-         this._pos += var4;
+   public int read(byte[] b, int off, int len) {
+      int numRead = this._inputStream.read(b, off, len);
+      if (numRead > 0) {
+         this._pos += numRead;
       }
 
-      return var4;
+      return numRead;
    }
 
    @Override
@@ -48,8 +49,8 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    }
 
    @Override
-   public long seek(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public long seek(long where) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -69,15 +70,26 @@ public class HTTPDataSource extends DataSource implements SourceStream {
 
    @Override
    public void connect() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public HTTPDataSource(HTTPBufferingCallback var1, HTTPBufferingManager var2, String var3, String var4) {
+   public HTTPDataSource(HTTPBufferingCallback callback, HTTPBufferingManager buffer, String contentUrl, String contentType) {
    }
 
    @Override
    public void disconnect() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._buffer != null) {
+         if (this._started) {
+            try {
+               this.stop();
+            } catch (IOException var2) {
+            }
+         }
+
+         this._pos = 0;
+         this._buffer.shutdown();
+         this._buffer = null;
+      }
    }
 
    @Override
@@ -87,7 +99,17 @@ public class HTTPDataSource extends DataSource implements SourceStream {
 
    @Override
    public void stop() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._started && this._buffer != null) {
+         if (this._inputStream != null) {
+            try {
+               this._inputStream.close();
+            } catch (IOException var2) {
+            }
+         }
+
+         this._inputStream = null;
+         this._started = false;
+      }
    }
 
    @Override
@@ -105,7 +127,7 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    }
 
    @Override
-   public Control getControl(String var1) {
+   public Control getControl(String controlType) {
       if (this._buffer == null) {
          throw new Object();
       } else {

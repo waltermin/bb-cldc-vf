@@ -9,30 +9,30 @@ public class UiInternalListener {
    protected UiInternalListener() {
    }
 
-   public void onFocus(UiEngine var1, Screen var2, Screen var3) {
+   public void onFocus(UiEngine uie, Screen previous, Screen screen) {
    }
 
-   public void onPopScreen(UiEngine var1, Screen var2) {
+   public void onPopScreen(UiEngine uie, Screen screen) {
    }
 
-   public void onPushGlobalScreen(UiEngine var1, Screen var2, int var3, int var4) {
+   public void onPushGlobalScreen(UiEngine uie, Screen screen, int priority, int flags) {
    }
 
-   public void onPushScreen(UiEngine var1, Screen var2) {
+   public void onPushScreen(UiEngine uie, Screen screen) {
    }
 
-   public void onUpdateDisplay(UiEngine var1) {
+   public void onUpdateDisplay(UiEngine uie) {
    }
 
-   public void onUserKey(UiEngine var1, Screen var2, int var3, int var4, int var5, int var6) {
+   public void onUserKey(UiEngine uie, Screen screen, int event, int key, int keycode, int time) {
    }
 
-   public void onUserStylus(UiEngine var1, Screen var2, int var3, int var4, int var5, int var6, int var7) {
+   public void onUserStylus(UiEngine uie, Screen screen, int event, int x, int y, int status, int time) {
    }
 
-   public void onUserTrackball(UiEngine var1, Screen var2, int var3, int var4, int var5, int var6, int var7) {
+   public void onUserTrackball(UiEngine uie, Screen screen, int event, int dx, int dy, int status, int time) {
    }
 
-   public void onUserTrackwheel(UiEngine var1, Screen var2, int var3, int var4, int var5, int var6) {
+   public void onUserTrackwheel(UiEngine uie, Screen screen, int event, int amount, int status, int time) {
    }
 }

@@ -11,14 +11,14 @@ public class GZIPInputStream extends InputStream {
    private Inflater _inflater;
    private boolean _isClosed;
 
-   public GZIPInputStream(InputStream var1) {
-      this(var1, 5120);
+   public GZIPInputStream(InputStream inputStream) {
+      this(inputStream, 5120);
    }
 
-   public GZIPInputStream(InputStream var1, int var2) {
-      if (var1 != null && var2 >= 1024) {
-         this._inputStream = var1;
-         this._tempBuffer = new byte[var2];
+   public GZIPInputStream(InputStream inputStream, int workingBufferSize) {
+      if (inputStream != null && workingBufferSize >= 1024) {
+         this._inputStream = inputStream;
+         this._tempBuffer = new byte[workingBufferSize];
          this._inflater = (Inflater)(new Object(31));
       } else {
          throw new Object();
@@ -31,40 +31,40 @@ public class GZIPInputStream extends InputStream {
    }
 
    @Override
-   public synchronized int read(byte[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
+      if (buffer == null) {
          throw new Object();
       }
 
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
+      if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
             throw new Object();
          }
 
-         if (var3 == 0) {
+         if (bufferLength == 0) {
             return 0;
          }
 
-         int var4 = 0;
+         int numRead = 0;
 
-         while (var3 > 0) {
+         while (bufferLength > 0) {
             if (this._currentChunk != null && this._currentOffset < this._currentChunk.length) {
-               int var5 = Math.min(this._currentChunk.length - this._currentOffset, var3);
-               System.arraycopy(this._currentChunk, this._currentOffset, var1, var2, var5);
-               this._currentOffset += var5;
-               var2 += var5;
-               var4 += var5;
-               var3 -= var5;
+               int numToWrite = Math.min(this._currentChunk.length - this._currentOffset, bufferLength);
+               System.arraycopy(this._currentChunk, this._currentOffset, buffer, bufferOffset, numToWrite);
+               this._currentOffset += numToWrite;
+               bufferOffset += numToWrite;
+               numRead += numToWrite;
+               bufferLength -= numToWrite;
             } else if (!this.readNextChunk()) {
-               if (var4 > 0) {
-                  return var4;
+               if (numRead > 0) {
+                  return numRead;
                }
 
                return -1;
             }
          }
 
-         return var4 > 0 ? var4 : -1;
+         return numRead > 0 ? numRead : -1;
       } else {
          throw new Object();
       }
@@ -90,12 +90,12 @@ public class GZIPInputStream extends InputStream {
          throw new Object();
       }
 
-      int var1 = this._inputStream.read(this._tempBuffer);
-      if (var1 < 0) {
+      int numRead = this._inputStream.read(this._tempBuffer);
+      if (numRead < 0) {
          return false;
       }
 
-      this._currentChunk = this._inflater.decompress(this._tempBuffer, 0, var1);
+      this._currentChunk = this._inflater.decompress(this._tempBuffer, 0, numRead);
       this._currentOffset = 0;
       return true;
    }

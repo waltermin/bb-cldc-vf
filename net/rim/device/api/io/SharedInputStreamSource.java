@@ -1,5 +1,6 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import net.rim.vm.Array;
 
@@ -8,30 +9,30 @@ final class SharedInputStreamSource {
    private InputStream _sourceStream;
    private static final int RESIZE_DELTA;
 
-   public SharedInputStreamSource(byte[] var1) {
-      if (var1 == null) {
+   public SharedInputStreamSource(byte[] data) {
+      if (data == null) {
          throw new Object();
       }
 
-      this._data = var1;
+      this._data = data;
       this._sourceStream = null;
    }
 
-   public SharedInputStreamSource(InputStream var1) {
-      if (var1 == null) {
+   public SharedInputStreamSource(InputStream input) {
+      if (input == null) {
          throw new Object();
       }
 
       this._data = new byte[0];
-      this._sourceStream = var1;
+      this._sourceStream = input;
    }
 
-   public final synchronized int read(int var1) {
-      if (var1 < 0) {
+   public final synchronized int read(int position) {
+      if (position < 0) {
          throw new Object();
       }
 
-      while (var1 >= this._data.length) {
+      while (position >= this._data.length) {
          if (this._sourceStream == null) {
             return -1;
          }
@@ -39,28 +40,28 @@ final class SharedInputStreamSource {
          this.expandData();
       }
 
-      return this._data[var1] & 0xFF;
+      return this._data[position] & 0xFF;
    }
 
-   public final synchronized int read(int var1, byte[] var2) {
-      return this.read(var1, var2, 0, var2 == null ? 0 : var2.length);
+   public final synchronized int read(int position, byte[] buffer) {
+      return this.read(position, buffer, 0, buffer == null ? 0 : buffer.length);
    }
 
-   public final synchronized int read(int var1, byte[] var2, int var3, int var4) {
-      if (var1 < 0 || var2 == null || var3 < 0 || var4 < 0 || var2.length - var4 < var3) {
+   public final synchronized int read(int position, byte[] buffer, int offset, int length) {
+      if (position < 0 || buffer == null || offset < 0 || length < 0 || buffer.length - length < offset) {
          throw new Object();
       }
 
-      if (var4 == 0) {
+      if (length == 0) {
          return 0;
       }
 
-      int var5 = var1 + var4;
+      int endPosition = position + length;
 
-      while (var5 > this._data.length) {
+      while (endPosition > this._data.length) {
          if (this._sourceStream == null) {
-            var4 = this._data.length - var1;
-            if (var4 <= 0) {
+            length = this._data.length - position;
+            if (length <= 0) {
                return -1;
             }
             break;
@@ -69,37 +70,54 @@ final class SharedInputStreamSource {
          this.expandData();
       }
 
-      System.arraycopy(this._data, var1, var2, var3, var4);
-      return var4;
+      System.arraycopy(this._data, position, buffer, offset, length);
+      return length;
    }
 
-   public final synchronized int available(int var1) {
-      if (var1 < 0) {
+   public final synchronized int available(int position) {
+      if (position < 0) {
          throw new Object();
       } else {
-         int var2 = this._data.length - var1;
-         if (var2 <= 0 && this._sourceStream != null) {
+         int available = this._data.length - position;
+         if (available <= 0 && this._sourceStream != null) {
             return Math.max(0, this._sourceStream.available());
          } else {
-            return var2 <= 0 ? 0 : var2;
+            return available <= 0 ? 0 : available;
          }
       }
    }
 
-   public final synchronized long skip(int var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized long skip(int position, long n) {
+      int available = Math.max(this._data.length - position, 0);
+      if (available >= n) {
+         return n;
+      }
+
+      while (this._sourceStream != null) {
+         try {
+            this.expandData();
+            available = Math.max(this._data.length - position, 0);
+            if (available >= n) {
+               return n;
+            }
+         } catch (IOException e) {
+            return Math.max(available, 0);
+         }
+      }
+
+      return Math.max(Math.min(available, n), 0);
    }
 
    private final void expandData() {
-      int var1 = this._data.length;
-      Array.resize(this._data, var1 + 1024);
-      int var2 = this._sourceStream.read(this._data, var1, 1024);
-      if (var2 < 1024) {
-         if (var2 > 0) {
-            var1 += var2;
+      int dataLength = this._data.length;
+      Array.resize(this._data, dataLength + 1024);
+      int readLength = this._sourceStream.read(this._data, dataLength, 1024);
+      if (readLength < 1024) {
+         if (readLength > 0) {
+            dataLength += readLength;
          }
 
-         Array.resize(this._data, var1);
+         Array.resize(this._data, dataLength);
          this._sourceStream = null;
       }
    }

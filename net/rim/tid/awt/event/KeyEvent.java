@@ -32,25 +32,25 @@ public final class KeyEvent extends InputEvent {
    public static final int KEY_ROLLED;
    public static final int THUMB_CLICK;
 
-   public KeyEvent(IComponent var1, int var2, long var3, int var5, int var6, char var7, int var8) {
-      super(var1, var2, var3, var5, var8 | Event.KEY_EVENT_MASK);
-      this._keyCode = var6;
-      this._keyChar = var7;
+   public KeyEvent(IComponent source, int eventID, long when, int modifiers, int kCode, char kChar, int eMask) {
+      super(source, eventID, when, modifiers, eMask | Event.KEY_EVENT_MASK);
+      this._keyCode = kCode;
+      this._keyChar = kChar;
    }
 
-   public final void init(IComponent var1, int var2, long var3, int var5, int var6, char var7) {
-      this.init(var1, var2, var3, var5, var6, var7, true);
+   public final void init(IComponent aSource, int aId, long when, int modifiers, int kCode, char kChar) {
+      this.init(aSource, aId, when, modifiers, kCode, kChar, true);
    }
 
-   public final void init(IComponent var1, int var2, long var3, int var5, int var6, char var7, boolean var8) {
-      super._source = var1;
-      super._ID = var2;
-      super._when = var3;
-      super._modifiers = var5;
-      this._keyCode = var6;
-      this._keyChar = var7;
+   public final void init(IComponent aSource, int aId, long when, int modifiers, int kCode, char kChar, boolean aInputEvent) {
+      super._source = aSource;
+      super._ID = aId;
+      super._when = when;
+      super._modifiers = modifiers;
+      this._keyCode = kCode;
+      this._keyChar = kChar;
       super._consumed = false;
-      this._inputEvent = var8;
+      this._inputEvent = aInputEvent;
       this._componentDispatch = false;
    }
 
@@ -66,15 +66,15 @@ public final class KeyEvent extends InputEvent {
       return this._keyCode;
    }
 
-   public final void setKeyChar(char var1) {
+   public final void setKeyChar(char keyChar) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setKeyCode(int var1) {
+   public final void setKeyCode(int keyCode) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setComponentDispatchEnabled(boolean var1) {
+   public final void setComponentDispatchEnabled(boolean enable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

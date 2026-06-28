@@ -5,39 +5,39 @@ import net.rim.vm.Message;
 
 final class SIMCardAPDUEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      SIMCardAPDUListener var3 = (SIMCardAPDUListener)var2;
-      int var4 = var1.getEvent();
-      int var5 = var1.getSubMessage();
-      int var6 = var1.getData0();
-      int var7 = var1.getData1();
-      int var8 = var1.getDataLength();
-      switch (var4) {
+   public final void dispatch(Message message, Object listener) {
+      SIMCardAPDUListener apduListener = (SIMCardAPDUListener)listener;
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      int data0 = message.getData0();
+      int data1 = message.getData1();
+      int length = message.getDataLength();
+      switch (event) {
          case 2347:
             break;
          case 2348:
          default:
-            switch (var5) {
+            switch (subMessage) {
                case -1:
                   return;
                case 0:
                default:
-                  var3.openSuccessful((byte)var6, (byte)var7);
+                  apduListener.openSuccessful((byte)data0, (byte)data1);
                   return;
                case 1:
                case 2:
                case 3:
                case 4:
-                  var3.openError((byte)var5, (byte)var7);
+                  apduListener.openError((byte)subMessage, (byte)data1);
                   return;
             }
          case 2349:
-            switch (var5) {
+            switch (subMessage) {
                case -1:
                   return;
                case 0:
                default:
-                  var3.exchangeAPDUSuccessful((byte)var6, (byte)var7);
+                  apduListener.exchangeAPDUSuccessful((byte)data0, (byte)data1);
                   return;
                case 1:
                case 2:
@@ -46,30 +46,30 @@ final class SIMCardAPDUEventDispatcher extends EventDispatcher {
                case 5:
                case 6:
                case 7:
-                  var3.exchangeAPDUError((byte)var6, (byte)var5, (byte)var7);
+                  apduListener.exchangeAPDUError((byte)data0, (byte)subMessage, (byte)data1);
                   return;
             }
          case 2350:
-            switch (var5) {
+            switch (subMessage) {
                case -1:
                   return;
                case 0:
                default:
-                  var3.closeSuccessful((byte)var6, (byte)var7);
+                  apduListener.closeSuccessful((byte)data0, (byte)data1);
                   return;
                case 1:
                case 2:
-                  var3.closeError((byte)var6, (byte)var5, (byte)var7);
+                  apduListener.closeError((byte)data0, (byte)subMessage, (byte)data1);
                   return;
             }
          case 2351:
-            switch (var5) {
+            switch (subMessage) {
                case 0:
-                  var3.pinOpeartionSuccessful((byte)var8, var7, (byte)var6);
+                  apduListener.pinOpeartionSuccessful((byte)length, data1, (byte)data0);
                   return;
                case 1:
                case 5:
-                  var3.pinOperationUnSuccessful((byte)var8, var7, (byte)var5, (byte)var6);
+                  apduListener.pinOperationUnSuccessful((byte)length, data1, (byte)subMessage, (byte)data0);
             }
       }
    }

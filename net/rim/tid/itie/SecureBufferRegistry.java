@@ -17,13 +17,13 @@ class SecureBufferRegistry implements MemoryCleanerListener {
       MemoryCleanerManager.getInstance().addListener(this, true, false);
    }
 
-   synchronized void registerBuffer(ISecureInputMethodBuffer var1) {
+   synchronized void registerBuffer(ISecureInputMethodBuffer buffer) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public boolean cleanNow(int var1) {
-      return var1 == 10 ? this.runSecureClean() : false;
+   public boolean cleanNow(int event) {
+      return event == 10 ? this.runSecureClean() : false;
    }
 
    @Override
@@ -32,15 +32,15 @@ class SecureBufferRegistry implements MemoryCleanerListener {
    }
 
    private synchronized boolean runSecureClean() {
-      boolean var1 = false;
+      boolean result = false;
 
-      for (int var2 = 0; var2 < this._firstNullCell; var2++) {
-         Object var3 = this._buffer[var2].get();
-         if (var3 != null) {
-            var1 |= ((ISecureInputMethodBuffer)var3).runSecureClean();
+      for (int i = 0; i < this._firstNullCell; i++) {
+         ISecureInputMethodBuffer buffer = (ISecureInputMethodBuffer)this._buffer[i].get();
+         if (buffer != null) {
+            result |= buffer.runSecureClean();
          }
       }
 
-      return var1;
+      return result;
    }
 }

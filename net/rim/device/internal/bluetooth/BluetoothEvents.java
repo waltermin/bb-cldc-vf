@@ -51,17 +51,17 @@ public final class BluetoothEvents {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void log(int var0) {
+   public static final void log(int id) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void log(String var0) {
+   public static final void log(String s) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void logResult(int var0, int var1) {
-      char var2 = NumberUtilities.intToHexDigit(var1 >> 4);
-      char var3 = NumberUtilities.intToHexDigit(var1);
-      log(var0 | var2 << '\b' | var3);
+   public static final void logResult(int event, int result) {
+      char high = NumberUtilities.intToHexDigit(result >> 4);
+      char low = NumberUtilities.intToHexDigit(result);
+      log(event | high << '\b' | low);
    }
 }

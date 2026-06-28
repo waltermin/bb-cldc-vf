@@ -3,8 +3,8 @@ package net.rim.device.api.ui.component;
 class SymbolScreen$SymbolField$1 implements Runnable {
    private final SymbolScreen$SymbolField this$1;
 
-   SymbolScreen$SymbolField$1(SymbolScreen$SymbolField var1) {
-      this.this$1 = var1;
+   SymbolScreen$SymbolField$1(SymbolScreen$SymbolField _1) {
+      this.this$1 = _1;
    }
 
    @Override

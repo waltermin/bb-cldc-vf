@@ -7,14 +7,14 @@ public final class FactoryUtil {
    private FactoryUtil() {
    }
 
-   public static final Object createInstance(long var0, Object var2) {
-      if (var0 != 0 && var0 != -1 && var0 != Long.MAX_VALUE && var0 != Long.MIN_VALUE) {
-         Factory var3 = (Factory)ApplicationRegistry.getApplicationRegistry().waitFor(var0);
-         if (var3 == null) {
-            var3 = (Factory)RuntimeStore.getRuntimeStore().waitFor(var0);
+   public static final Object createInstance(long guid, Object initialData) {
+      if (guid != 0 && guid != -1 && guid != Long.MAX_VALUE && guid != Long.MIN_VALUE) {
+         Factory f = (Factory)ApplicationRegistry.getApplicationRegistry().waitFor(guid);
+         if (f == null) {
+            f = (Factory)RuntimeStore.getRuntimeStore().waitFor(guid);
          }
 
-         return var3.createInstance(var2);
+         return f.createInstance(initialData);
       } else {
          return null;
       }

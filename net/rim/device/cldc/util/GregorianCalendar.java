@@ -48,19 +48,19 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    private static final int[] MIN_VALUES;
    private static final int[] MAX_VALUES;
 
-   public final int internalGet(int var1, boolean var2) {
-      if (var2) {
+   public final int internalGet(int field, boolean performComplete) {
+      if (performComplete) {
          this.complete();
       }
 
-      switch (var1) {
+      switch (field) {
          case -1:
          case 3:
          case 4:
          case 8:
          case 15:
-            if (var2) {
-               throw new Object(var1);
+            if (performComplete) {
+               throw new Object(field);
             }
 
             return 0;
@@ -94,73 +94,73 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
       }
    }
 
-   public final void internalSet(int var1, int var2) {
+   public final void internalSet(int field, int value) {
       this._isTimeSet = false;
       this._areFieldsSet = false;
-      int var3 = this._nextStamp;
-      switch (var1) {
+      int nextStamp = this._nextStamp;
+      switch (field) {
          case -1:
          case 3:
          case 4:
          case 8:
-            throw new Object(var1);
+            throw new Object(field);
          case 0:
          default:
-            this._eraVal = var2;
-            this._eraStamp = var3;
+            this._eraVal = value;
+            this._eraStamp = nextStamp;
             break;
          case 1:
-            this._yearVal = var2;
-            this._yearStamp = var3;
+            this._yearVal = value;
+            this._yearStamp = nextStamp;
             break;
          case 2:
-            this._monthVal = var2;
-            this._monthStamp = var3;
+            this._monthVal = value;
+            this._monthStamp = nextStamp;
             break;
          case 5:
-            this._dateVal = var2;
-            this._dateStamp = var3;
+            this._dateVal = value;
+            this._dateStamp = nextStamp;
             break;
          case 6:
-            this._doyVal = var2;
-            this._doyStamp = var3;
+            this._doyVal = value;
+            this._doyStamp = nextStamp;
             break;
          case 7:
-            this._dowVal = var2;
-            this._dowStamp = var3;
+            this._dowVal = value;
+            this._dowStamp = nextStamp;
             break;
          case 9:
-            this._ampmVal = var2;
-            this._ampmStamp = var3;
+            this._ampmVal = value;
+            this._ampmStamp = nextStamp;
             break;
          case 10:
-            this._hourVal = var2;
-            this._hourStamp = var3;
+            this._hourVal = value;
+            this._hourStamp = nextStamp;
             break;
          case 11:
-            this._hourOfDayVal = var2;
-            this._hourOfDayStamp = var3;
+            this._hourOfDayVal = value;
+            this._hourOfDayStamp = nextStamp;
             break;
          case 12:
-            this._minVal = var2;
-            this._minStamp = var3;
+            this._minVal = value;
+            this._minStamp = nextStamp;
             break;
          case 13:
-            this._secVal = var2;
-            this._secStamp = var3;
+            this._secVal = value;
+            this._secStamp = nextStamp;
             break;
          case 14:
-            this._milliVal = var2;
-            this._milliStamp = var3;
+            this._milliVal = value;
+            this._milliStamp = nextStamp;
       }
 
-      this._nextStamp = var3 + 1;
+      this._nextStamp = nextStamp + 1;
    }
 
    @Override
-   public final int getActualMaximum(int var1) {
-      short var2 = 0;
-      switch (var1) {
+   public final int getActualMaximum(int field) {
+      int max = 0;
+      switch (field) {
          case 1:
          default:
             return 9999;
@@ -184,111 +184,111 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
          case 13:
             return 59;
          case 14:
-            var2 = 1000;
+            max = 1000;
          case 0:
          case 3:
          case 4:
          case 6:
          case 8:
-            return var2;
+            return max;
       }
    }
 
    @Override
-   public final void add(int var1, int var2) {
-      if (var2 != 0) {
+   public final void add(int field, int amount) {
+      if (amount != 0) {
          this.complete();
-         if (var1 == 1) {
-            int var11 = this._yearVal;
+         if (field == 1) {
+            int year = this._yearVal;
             if (this._eraVal == 1) {
-               var11 += var2;
-               if (var11 > 0) {
-                  this.set(1, var11);
+               year += amount;
+               if (year > 0) {
+                  this.set(1, year);
                } else {
-                  this.set(1, 1 - var11);
+                  this.set(1, 1 - year);
                   this.set(0, 0);
                }
             } else {
-               var11 -= var2;
-               if (var11 > 0) {
-                  this.set(1, var11);
+               year -= amount;
+               if (year > 0) {
+                  this.set(1, year);
                } else {
-                  this.set(1, 1 - var11);
+                  this.set(1, 1 - year);
                   this.set(0, 1);
                }
             }
 
             this.pinDayOfMonth();
-         } else if (var1 == 2) {
-            int var9 = this._monthVal + var2;
-            if (var9 >= 0) {
-               this.set(1, this._yearVal + var9 / 12);
-               this.set(2, var9 % 12);
+         } else if (field == 2) {
+            int month = this._monthVal + amount;
+            if (month >= 0) {
+               this.set(1, this._yearVal + month / 12);
+               this.set(2, month % 12);
             } else {
-               this.set(1, this._yearVal + (var9 + 1) / 12 - 1);
-               var9 %= 12;
-               if (var9 < 0) {
-                  var9 += 12;
+               this.set(1, this._yearVal + (month + 1) / 12 - 1);
+               month %= 12;
+               if (month < 0) {
+                  month += 12;
                }
 
-               this.set(2, 0 + var9);
+               this.set(2, 0 + month);
             }
 
             this.pinDayOfMonth();
-         } else if (var1 == 0) {
-            int var8 = this._eraVal + var2;
-            if (var8 < 0) {
-               var8 = 0;
+         } else if (field == 0) {
+            int era = this._eraVal + amount;
+            if (era < 0) {
+               era = 0;
             }
 
-            if (var8 > 1) {
-               var8 = 1;
+            if (era > 1) {
+               era = 1;
             }
 
-            this.set(0, var8);
+            this.set(0, era);
          } else {
-            long var3 = var2;
-            boolean var5 = true;
-            switch (var1) {
+            long delta = amount;
+            boolean adjustDST = true;
+            switch (field) {
                case 4:
                case 8:
                   throw new Object();
                case 5:
                case 6:
                case 7:
-                  var3 *= 86400000;
+                  delta *= 86400000;
                   break;
                case 9:
                default:
-                  var3 *= 43200000;
+                  delta *= 43200000;
                   break;
                case 10:
                case 11:
-                  var3 *= 3600000;
-                  var5 = false;
+                  delta *= 3600000;
+                  adjustDST = false;
                   break;
                case 12:
-                  var3 *= 60000;
-                  var5 = false;
+                  delta *= 60000;
+                  adjustDST = false;
                   break;
                case 13:
-                  var3 *= 1000;
-                  var5 = false;
+                  delta *= 1000;
+                  adjustDST = false;
                   break;
                case 14:
-                  var5 = false;
+                  adjustDST = false;
             }
 
-            long var6 = 0;
-            if (var5) {
-               var6 = this._dstOffset;
+            long dst = 0;
+            if (adjustDST) {
+               dst = this._dstOffset;
             }
 
-            this.setTimeInMillis(super.time + var3);
-            if (var5) {
-               var6 -= this._dstOffset;
-               if (var6 != 0) {
-                  this.setTimeInMillis(super.time + var6);
+            this.setTimeInMillis(super.time + delta);
+            if (adjustDST) {
+               dst -= this._dstOffset;
+               if (dst != 0) {
+                  this.setTimeInMillis(super.time + dst);
                }
             }
          }
@@ -296,103 +296,103 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    }
 
    @Override
-   public final void roll(int var1, int var2) {
-      if (var2 != 0) {
-         int var3 = 0;
-         int var4 = 0;
-         if (var1 >= 0) {
+   public final void roll(int field, int amount) {
+      if (amount != 0) {
+         int min = 0;
+         int max = 0;
+         if (field >= 0) {
             this.complete();
-            var3 = this.getMinimum(var1);
-            var4 = this.getMaximum(var1);
+            min = this.getMinimum(field);
+            max = this.getMaximum(field);
          }
 
-         switch (var1) {
+         switch (field) {
             case -1:
             case 3:
             case 4:
             case 8:
                throw new Object();
             case 2:
-               int var16 = (this._monthVal + var2) % 12;
-               if (var16 < 0) {
-                  var16 += 12;
+               int mon = (this._monthVal + amount) % 12;
+               if (mon < 0) {
+                  mon += 12;
                }
 
-               this.set(2, var16);
-               int var7 = this.monthLength(var16);
-               int var19 = this._dateVal;
-               if (var19 > var7) {
-                  this.set(5, var7);
+               this.set(2, mon);
+               int monthLen = this.monthLength(mon);
+               int dom = this._dateVal;
+               if (dom > monthLen) {
+                  this.set(5, monthLen);
                }
 
                return;
             case 5:
-               var4 = this.monthLength(this._monthVal);
+               max = this.monthLength(this._monthVal);
             case 0:
             case 1:
             case 9:
             case 12:
             case 13:
             case 14:
-               int var5 = var4 - var3 + 1;
-               int var13 = this.internalGet(var1, false) + var2;
-               var13 = (var13 - var3) % var5;
-               if (var13 < 0) {
-                  var13 += var5;
+               int gap = max - min + 1;
+               int value = this.internalGet(field, false) + amount;
+               value = (value - min) % gap;
+               if (value < 0) {
+                  value += gap;
                }
 
-               var13 += var3;
-               this.set(var1, var13);
+               value += min;
+               this.set(field, value);
                return;
             case 6:
-               long var12 = (long)var2 * 86400000;
-               long var18 = super.time - (long)(this._doyVal - 1) * 86400000;
-               int var10 = this.yearLength();
-               super.time = (super.time + var12 - var18) % ((long)var10 * 86400000);
+               long delta = (long)amount * 86400000;
+               long min2 = super.time - (long)(this._doyVal - 1) * 86400000;
+               int yearLength = this.yearLength();
+               super.time = (super.time + delta - min2) % ((long)yearLength * 86400000);
                if (super.time < 0) {
-                  super.time += (long)var10 * 86400000;
+                  super.time += (long)yearLength * 86400000;
                }
 
-               this.setTimeInMillis(super.time + var18);
+               this.setTimeInMillis(super.time + min2);
                return;
             case 7:
-               long var11 = (long)var2 * 86400000;
-               int var17 = this._dowVal - 1;
-               if (var17 < 0) {
-                  var17 += 7;
+               long delta = (long)amount * 86400000;
+               int leadDays = this._dowVal - 1;
+               if (leadDays < 0) {
+                  leadDays += 7;
                }
 
-               long var20 = super.time - (long)var17 * 86400000;
-               super.time = (super.time + var11 - var20) % 604800000;
+               long min2 = super.time - (long)leadDays * 86400000;
+               super.time = (super.time + delta - min2) % 604800000;
                if (super.time < 0) {
                   super.time += 604800000;
                }
 
-               this.setTimeInMillis(super.time + var20);
+               this.setTimeInMillis(super.time + min2);
                return;
             case 10:
             case 11:
             default:
-               long var6 = this.getTimeInMillis();
-               int var8 = this.internalGet(var1, false);
-               int var9 = (var8 + var2) % (var4 + 1);
-               if (var9 < 0) {
-                  var9 += var4 + 1;
+               long start = this.getTimeInMillis();
+               int oldHour = this.internalGet(field, false);
+               int newHour = (oldHour + amount) % (max + 1);
+               if (newHour < 0) {
+                  newHour += max + 1;
                }
 
-               this.setTimeInMillis(var6 + 3600000 * (var9 - var8));
+               this.setTimeInMillis(start + 3600000 * (newHour - oldHour));
          }
       }
    }
 
    @Override
-   public final int getActualMinimum(int var1) {
-      return 226 >> var1 & 1;
+   public final int getActualMinimum(int field) {
+      return 226 >> field & 1;
    }
 
    @Override
-   public final void setTimeLong(long var1) {
-      this.setTimeInMillis(var1);
+   public final void setTimeLong(long millis) {
+      this.setTimeInMillis(millis);
    }
 
    @Override
@@ -402,44 +402,44 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
 
    @Override
    protected final void computeFields() {
-      TimeZone var1 = this.getTimeZone();
-      int var2 = var1.getRawOffset();
-      long var3 = super.time + var2;
-      if (super.time > 0 && var3 < 0 && var2 > 0) {
-         var3 = Long.MAX_VALUE;
-      } else if (super.time < 0 && var3 > 0 && var2 < 0) {
-         var3 = Long.MIN_VALUE;
+      TimeZone tz = this.getTimeZone();
+      int rawOffset = tz.getRawOffset();
+      long localMillis = super.time + rawOffset;
+      if (super.time > 0 && localMillis < 0 && rawOffset > 0) {
+         localMillis = Long.MAX_VALUE;
+      } else if (super.time < 0 && localMillis > 0 && rawOffset < 0) {
+         localMillis = Long.MIN_VALUE;
       }
 
-      int var5 = this.timeToDateFields(var3);
-      int var6 = var1.getOffset(this.internalGetEra(), this._yearVal, this._monthVal, this._dateVal, this._dowVal, var5) - var2;
-      this._dstOffset = var6;
-      this._zoneOffset = var2;
-      var5 += var6;
-      if (var5 >= 86400000) {
-         long var7 = var3 + var6;
-         if (var3 > 0 && var7 < 0 && var6 > 0) {
-            var7 = Long.MAX_VALUE;
-         } else if (var3 < 0 && var7 > 0 && var6 < 0) {
-            var7 = Long.MIN_VALUE;
+      int millisInDay = this.timeToDateFields(localMillis);
+      int dstOffset = tz.getOffset(this.internalGetEra(), this._yearVal, this._monthVal, this._dateVal, this._dowVal, millisInDay) - rawOffset;
+      this._dstOffset = dstOffset;
+      this._zoneOffset = rawOffset;
+      millisInDay += dstOffset;
+      if (millisInDay >= 86400000) {
+         long dstMillis = localMillis + dstOffset;
+         if (localMillis > 0 && dstMillis < 0 && dstOffset > 0) {
+            dstMillis = Long.MAX_VALUE;
+         } else if (localMillis < 0 && dstMillis > 0 && dstOffset < 0) {
+            dstMillis = Long.MIN_VALUE;
          }
 
-         var5 = this.timeToDateFields(var7);
+         millisInDay = this.timeToDateFields(dstMillis);
       }
 
-      this.timeToRemainingFields(var5);
+      this.timeToRemainingFields(millisInDay);
    }
 
    @Override
    protected final void computeTime() {
-      TimeZone var2 = this.getTimeZone();
-      int var3 = var2.getRawOffset();
-      int var1 = this.fieldsToLocalTime();
-      int var4 = 0;
-      var4 = var2.getOffset(this._eraVal, this._yearVal, this._monthVal, this._dateVal, this._dowVal, var1) - var3;
-      this._dstOffset = var4;
-      this._zoneOffset = var3;
-      super.time = super.time - var3 - var4;
+      TimeZone tz = this.getTimeZone();
+      int zoneOffset = tz.getRawOffset();
+      int normalizedMillisInDay = this.fieldsToLocalTime();
+      int dstOffset = 0;
+      dstOffset = tz.getOffset(this._eraVal, this._yearVal, this._monthVal, this._dateVal, this._dowVal, normalizedMillisInDay) - zoneOffset;
+      this._dstOffset = dstOffset;
+      this._zoneOffset = zoneOffset;
+      super.time = super.time - zoneOffset - dstOffset;
    }
 
    @Override
@@ -452,17 +452,17 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    }
 
    @Override
-   protected final void setTimeInMillis(long var1) {
+   protected final void setTimeInMillis(long millis) {
       this._isTimeSet = true;
-      super.time = var1;
+      super.time = millis;
       this.computeFields();
       this._areFieldsSet = true;
    }
 
    @Override
-   public final void setTimeZone(TimeZone var1) {
-      if (this.getTimeZone() != var1) {
-         super.setTimeZone(var1);
+   public final void setTimeZone(TimeZone value) {
+      if (this.getTimeZone() != value) {
+         super.setTimeZone(value);
          this._areFieldsSet = false;
       }
    }
@@ -473,8 +473,8 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
       this._isTimeSet = true;
    }
 
-   private final boolean isSet(int var1) {
-      switch (var1) {
+   private final boolean isSet(int field) {
+      switch (field) {
          case -1:
          case 3:
          case 4:
@@ -563,21 +563,21 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
       }
    }
 
-   private final boolean isLeapYear(int var1) {
-      return var1 < 1582 ? var1 % 4 == 0 : var1 % 4 == 0 && (var1 % 100 != 0 || var1 % 400 == 0);
+   private final boolean isLeapYear(int year) {
+      return year < 1582 ? year % 4 == 0 : year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
    }
 
-   private final int monthLength(int var1, int var2) {
-      return this.isLeapYear(var2) ? LEAP_MONTH_LENGTH[var1] : MONTH_LENGTH[var1];
+   private final int monthLength(int month, int year) {
+      return this.isLeapYear(year) ? LEAP_MONTH_LENGTH[month] : MONTH_LENGTH[month];
    }
 
-   private final int monthLength(int var1) {
-      int var2 = this._yearVal;
+   private final int monthLength(int month) {
+      int year = this._yearVal;
       if (this.internalGetEra() == 0) {
-         var2 = 1 - var2;
+         year = 1 - year;
       }
 
-      return this.monthLength(var1, var2);
+      return this.monthLength(month, year);
    }
 
    private final int yearLength() {
@@ -585,10 +585,10 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    }
 
    private final void pinDayOfMonth() {
-      int var1 = this.monthLength(this._monthVal);
-      int var2 = this._dateVal;
-      if (var2 > var1) {
-         this.set(5, var1);
+      int monthLen = this.monthLength(this._monthVal);
+      int dom = this._dateVal;
+      if (dom > monthLen) {
+         this.set(5, monthLen);
       }
    }
 
@@ -596,12 +596,12 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
       return this.isSet(0) ? this._eraVal : 1;
    }
 
-   private final int getMinimum(int var1) {
-      return MIN_VALUES[var1];
+   private final int getMinimum(int field) {
+      return MIN_VALUES[field];
    }
 
-   private final int getMaximum(int var1) {
-      return MAX_VALUES[var1];
+   private final int getMaximum(int field) {
+      return MAX_VALUES[field];
    }
 
    private final native int fieldsToLocalTime();
@@ -610,30 +610,30 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
 
    private final native void timeToRemainingFields(int var1);
 
-   public static final String toString(Calendar var0) {
+   public static final String toString(Calendar calendar) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final StringBuffer appendFourDigits(StringBuffer var0, int var1) {
-      if (var1 >= 0 && var1 < 1000) {
-         var0.append('0');
-         if (var1 < 100) {
-            var0.append('0');
+   private static final StringBuffer appendFourDigits(StringBuffer sb, int number) {
+      if (number >= 0 && number < 1000) {
+         sb.append('0');
+         if (number < 100) {
+            sb.append('0');
          }
 
-         if (var1 < 10) {
-            var0.append('0');
+         if (number < 10) {
+            sb.append('0');
          }
       }
 
-      return var0.append(var1);
+      return sb.append(number);
    }
 
-   private static final StringBuffer appendTwoDigits(StringBuffer var0, int var1) {
-      if (var1 < 10) {
-         var0.append('0');
+   private static final StringBuffer appendTwoDigits(StringBuffer sb, int number) {
+      if (number < 10) {
+         sb.append('0');
       }
 
-      return var0.append(var1);
+      return sb.append(number);
    }
 }

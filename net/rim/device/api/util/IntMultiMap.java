@@ -10,14 +10,14 @@ public class IntMultiMap implements Persistable {
    private boolean _sortRequired;
    private boolean _allowDuplicates;
 
-   public IntMultiMap(int var1, boolean var2) {
-      if (var1 < 0) {
+   public IntMultiMap(int initialCapacity, boolean allowDuplicates) {
+      if (initialCapacity < 0) {
          throw new Object();
       }
 
-      this._ints = new int[var1 + 1];
-      this._objects = new Object[var1 + 1];
-      this._allowDuplicates = var2;
+      this._ints = new int[initialCapacity + 1];
+      this._objects = new Object[initialCapacity + 1];
+      this._allowDuplicates = allowDuplicates;
    }
 
    public IntMultiMap() {
@@ -39,7 +39,7 @@ public class IntMultiMap implements Persistable {
       Array.resize(this._objects, this._num + 1);
    }
 
-   public void add(int var1, Object var2) {
+   public void add(int key, Object value) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -49,17 +49,17 @@ public class IntMultiMap implements Persistable {
          Arrays.sort(this._ints, 0, this._num, this._objects);
          this._ints[this._num] = this._ints[this._num - 1] + 1;
          if (!this._allowDuplicates) {
-            for (int var1 = 0; var1 < this._num; var1++) {
-               int var2 = var1 + 1;
+            for (int i = 0; i < this._num; i++) {
+               int j = i + 1;
 
-               while (var2 < this._num && this._ints[var1] == this._ints[var2]) {
-                  if (this._objects[var2].equals(this._objects[var1])) {
-                     int var3 = this._num - var2;
-                     System.arraycopy(this._ints, var2 + 1, this._ints, var2, var3);
-                     System.arraycopy(this._objects, var2 + 1, this._objects, var2, var3);
+               while (j < this._num && this._ints[i] == this._ints[j]) {
+                  if (this._objects[j].equals(this._objects[i])) {
+                     int copyLength = this._num - j;
+                     System.arraycopy(this._ints, j + 1, this._ints, j, copyLength);
+                     System.arraycopy(this._objects, j + 1, this._objects, j, copyLength);
                      this._num--;
                   } else {
-                     var2++;
+                     j++;
                   }
                }
             }
@@ -67,72 +67,72 @@ public class IntMultiMap implements Persistable {
       }
    }
 
-   protected int findKey(int var1) {
+   protected int findKey(int key) {
       this.verifySorted();
-      int var2 = Arrays.binarySearch(this._ints, var1, 0, this._num);
+      int i = Arrays.binarySearch(this._ints, key, 0, this._num);
 
-      while (var2 > 0 && this._ints[var2 - 1] == var1) {
-         var2--;
+      while (i > 0 && this._ints[i - 1] == key) {
+         i--;
       }
 
-      return var2;
+      return i;
    }
 
-   public boolean removeKey(int var1) {
-      int var2 = this.findKey(var1);
-      if (var2 < 0) {
+   public boolean removeKey(int key) {
+      int start = this.findKey(key);
+      if (start < 0) {
          return false;
       }
 
-      int var3 = var2;
+      int end = start;
 
-      while (this._ints[++var3] == var1) {
+      while (this._ints[++end] == key) {
       }
 
-      int var4 = this._num - var3 + 1;
-      System.arraycopy(this._ints, var3, this._ints, var2, var4);
-      System.arraycopy(this._objects, var3, this._objects, var2, var4);
-      this._num -= var3 - var2;
+      int copyLength = this._num - end + 1;
+      System.arraycopy(this._ints, end, this._ints, start, copyLength);
+      System.arraycopy(this._objects, end, this._objects, start, copyLength);
+      this._num -= end - start;
       return true;
    }
 
-   public boolean removeValue(int var1, Object var2) {
-      int var3 = this.findKey(var1);
-      if (var3 < 0) {
+   public boolean removeValue(int key, Object value) {
+      int i = this.findKey(key);
+      if (i < 0) {
          return false;
       }
 
       do {
-         if (this._objects[var3].equals(var2)) {
-            int var4 = var3 + 1;
-            int var5 = this._num - var4 + 1;
-            System.arraycopy(this._ints, var4, this._ints, var3, var5);
-            System.arraycopy(this._objects, var4, this._objects, var3, var5);
+         if (this._objects[i].equals(value)) {
+            int iPlus1 = i + 1;
+            int copy = this._num - iPlus1 + 1;
+            System.arraycopy(this._ints, iPlus1, this._ints, i, copy);
+            System.arraycopy(this._objects, iPlus1, this._objects, i, copy);
             this._num--;
          } else {
-            var3++;
+            i++;
          }
-      } while (this._ints[var3] == var1);
+      } while (this._ints[i] == key);
 
       return true;
    }
 
-   public boolean removeValue(Object var1) {
+   public boolean removeValue(Object value) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public boolean containsKey(int var1) {
-      return this.findKey(var1) >= 0;
+   public boolean containsKey(int key) {
+      return this.findKey(key) >= 0;
    }
 
-   public boolean containsValue(int var1, Object var2) {
-      int var3 = this.findKey(var1);
-      if (var3 < 0) {
+   public boolean containsValue(int key, Object value) {
+      int i = this.findKey(key);
+      if (i < 0) {
          return false;
       }
 
-      while (!this._objects[var3].equals(var2)) {
-         if (this._ints[++var3] != var1) {
+      while (!this._objects[i].equals(value)) {
+         if (this._ints[++i] != key) {
             return false;
          }
       }
@@ -145,9 +145,9 @@ public class IntMultiMap implements Persistable {
       return (IntEnumeration)(new Object(this));
    }
 
-   public Enumeration elements(int var1) {
+   public Enumeration elements(int key) {
       this.verifySorted();
-      return (Enumeration)(new Object(this, var1));
+      return (Enumeration)(new Object(this, key));
    }
 
    public Enumeration elements() {
@@ -161,31 +161,31 @@ public class IntMultiMap implements Persistable {
       }
 
       this.verifySorted();
-      int var1 = 1;
-      int var2 = this._ints[0];
+      int size = 1;
+      int key = this._ints[0];
 
-      for (int var3 = 0; var3 < this._num; var3++) {
-         if (this._ints[var3] != var2) {
-            var2 = this._ints[var3];
-            var1++;
+      for (int i = 0; i < this._num; i++) {
+         if (this._ints[i] != key) {
+            key = this._ints[i];
+            size++;
          }
       }
 
-      return var1;
+      return size;
    }
 
-   public int size(int var1) {
-      int var2 = this.findKey(var1);
-      if (var2 < 0) {
+   public int size(int key) {
+      int i = this.findKey(key);
+      if (i < 0) {
          return 0;
       }
 
-      int var3 = 1;
+      int size = 1;
 
-      while (this._ints[++var2] == var1) {
-         var3++;
+      while (this._ints[++i] == key) {
+         size++;
       }
 
-      return var3;
+      return size;
    }
 }

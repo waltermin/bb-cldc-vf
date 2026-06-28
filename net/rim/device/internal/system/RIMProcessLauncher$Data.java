@@ -9,7 +9,7 @@ public final class RIMProcessLauncher$Data {
    private Runnable _runnable;
    private RIMProcessLauncher$ApplicationCallback _callback;
 
-   public final void setDescriptor(ApplicationDescriptor var1) {
+   public final void setDescriptor(ApplicationDescriptor applicationDescriptor) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -21,7 +21,7 @@ public final class RIMProcessLauncher$Data {
       return this._flags;
    }
 
-   public final void setFlags(int var1) {
+   public final void setFlags(int flags) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -29,11 +29,11 @@ public final class RIMProcessLauncher$Data {
       return this._runnable;
    }
 
-   public final void setRunnable(Runnable var1) {
+   public final void setRunnable(Runnable runnable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setCallBack(RIMProcessLauncher$ApplicationCallback var1) {
+   public final void setCallBack(RIMProcessLauncher$ApplicationCallback callback) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -41,7 +41,7 @@ public final class RIMProcessLauncher$Data {
       return this._callback;
    }
 
-   static final int access$008(RIMProcessLauncher$Data var0) {
+   static final int access$008(RIMProcessLauncher$Data x0) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

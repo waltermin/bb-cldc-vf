@@ -41,8 +41,8 @@ public class GaugeField extends Field implements FieldLabelProvider {
    private static final int BAR_CLEARANCE;
    private static MenuItem _changeOptionsItem;
 
-   public void reset(String var1, int var2, int var3, int var4) {
-      this.$init0(var1, var2, var3, var4);
+   public void reset(String label, int min, int max, int start) {
+      this.$init0(label, min, max, start);
       this.fieldChangeNotify(Integer.MIN_VALUE);
    }
 
@@ -58,42 +58,42 @@ public class GaugeField extends Field implements FieldLabelProvider {
       return this._current;
    }
 
-   public void setValue(int var1) {
-      this.reset(this._label, this._min, this._max, var1);
+   public void setValue(int value) {
+      this.reset(this._label, this._min, this._max, value);
    }
 
    boolean changeOptionDialog() {
       if (this.getOriginal() != this) {
          return false;
       } else {
-         GaugeField var1 = this.getChangeOptionGaugeField(null);
-         GaugeField$GaugeFieldPopupScreen var2 = new GaugeField$GaugeFieldPopupScreen(var1);
-         boolean var3 = var2.doModal();
-         if (var3) {
-            this.setNonProgrammaticValue(var1.getValue());
+         GaugeField fake = this.getChangeOptionGaugeField(null);
+         GaugeField$GaugeFieldPopupScreen dialog = new GaugeField$GaugeFieldPopupScreen(fake);
+         boolean accepted = dialog.doModal();
+         if (accepted) {
+            this.setNonProgrammaticValue(fake.getValue());
             return true;
          } else {
-            var1.setValue(this.getValue());
+            fake.setValue(this.getValue());
             return true;
          }
       }
    }
 
-   protected GaugeField getChangeOptionGaugeField(String var1) {
-      GaugeField var2 = new GaugeField(var1, this._min, this._max, this._current, this.getStyle() | 18014398509481984L | 4503599627370496L);
-      var2.setCookie(this.getCookie());
-      var2.setChangeListener(this.getChangeListener());
-      var2._alt = false;
-      return var2;
+   protected GaugeField getChangeOptionGaugeField(String label) {
+      GaugeField field = new GaugeField(label, this._min, this._max, this._current, this.getStyle() | 18014398509481984L | 4503599627370496L);
+      field.setCookie(this.getCookie());
+      field.setChangeListener(this.getChangeListener());
+      field._alt = false;
+      return field;
    }
 
    @Override
-   public void setLabel(String var1) {
-      this.$init0(var1, this._min, this._max, this._current);
+   public void setLabel(String label) {
+      this.$init0(label, this._min, this._max, this._current);
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -116,20 +116,20 @@ public class GaugeField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setThemeAttributesSpecial(this._tasBar, null);
-      Border var3 = ThemeAttributeSet.getBorder(this);
-      if (var3 != null) {
-         this._barBorderTop = var3.getTop();
-         this._barBorderBottom = var3.getBottom();
-         this._barBorderLeft = var3.getLeft();
-         var2 = this.getFont().getHeight() + this._barBorderTop + this._barBorderBottom;
+      Border barBorder = ThemeAttributeSet.getBorder(this);
+      if (barBorder != null) {
+         this._barBorderTop = barBorder.getTop();
+         this._barBorderBottom = barBorder.getBottom();
+         this._barBorderLeft = barBorder.getLeft();
+         height = this.getFont().getHeight() + this._barBorderTop + this._barBorderBottom;
       } else {
-         var2 = this.getFont().getHeight();
+         height = this.getFont().getHeight();
       }
 
       this.setThemeAttributesSpecial(null, null);
-      this.setExtent(var1, var2);
+      this.setExtent(width, height);
       this.barLayout();
    }
 
@@ -144,40 +144,40 @@ public class GaugeField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
-      super.makeContextMenu(var1);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      super.makeContextMenu(contextMenu);
       if (this.isStyle(4503599627370496L) && Ui.getMode() < 2) {
-         var1.addItem(_changeOptionsItem);
+         contextMenu.addItem(_changeOptionsItem);
       }
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      long var2 = this.getStyle();
-      if ((var2 & 65536) == 0 && this._label != null) {
-         var1.drawText(this._label, 0, 1 + this._barBorderTop);
+   protected void paint(Graphics graphics) {
+      long style = this.getStyle();
+      if ((style & 65536) == 0 && this._label != null) {
+         graphics.drawText(this._label, 0, 1 + this._barBorderTop);
       }
 
-      this.setThemeAttributesSpecial(this._tasBar, var1);
-      var1.setColor(ThemeAttributeSet.getColor(this, 0));
-      var1.fillRect(this._barStart, 1, this._barEnd - this._barStart, this.getHeight() - 2);
+      this.setThemeAttributesSpecial(this._tasBar, graphics);
+      graphics.setColor(ThemeAttributeSet.getColor(this, 0));
+      graphics.fillRect(this._barStart, 1, this._barEnd - this._barStart, this.getHeight() - 2);
       this._borderBar = ThemeAttributeSet.getBorder(this);
       if (this._borderBar != null) {
-         var1.setColor(ThemeAttributeSet.getColor(this, 3));
-         XYRect var4 = Ui.getTmpXYRect();
-         var4.set(this._barStart, 1, this._barEnd - this._barStart, this.getHeight() - 2);
-         this._borderBar.paint(var1, var4);
-         Ui.returnTmpXYRect(var4);
+         graphics.setColor(ThemeAttributeSet.getColor(this, 3));
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(this._barStart, 1, this._barEnd - this._barStart, this.getHeight() - 2);
+         this._borderBar.paint(graphics, rect);
+         Ui.returnTmpXYRect(rect);
       }
 
-      if ((var2 & 2) == 0) {
-         var1.setColor(ThemeAttributeSet.getColor(this, 1));
-         var1.drawText(this._value, 0, this._value.length(), this._barStart, 1 + this._barBorderTop, 52, this._barEnd - this._barStart);
+      if ((style & 2) == 0) {
+         graphics.setColor(ThemeAttributeSet.getColor(this, 1));
+         graphics.drawText(this._value, 0, this._value.length(), this._barStart, 1 + this._barBorderTop, 52, this._barEnd - this._barStart);
       }
 
-      this.setThemeAttributesSpecial(this._tasFill, var1);
+      this.setThemeAttributesSpecial(this._tasFill, graphics);
       this._borderBar = ThemeAttributeSet.getBorder(this);
-      var1.pushRegion(
+      graphics.pushRegion(
          this._barStart + this._barBorderLeft,
          1 + this._barBorderTop,
          this._barCurrent - this._barStart,
@@ -185,36 +185,36 @@ public class GaugeField extends Field implements FieldLabelProvider {
          0,
          0
       );
-      var1.setColor(ThemeAttributeSet.getColor(this, 4));
-      var1.fillRect(0, 0, this._barCurrent - this._barStart, this.getHeight() - 2 - this._barBorderTop - this._barBorderBottom);
+      graphics.setColor(ThemeAttributeSet.getColor(this, 4));
+      graphics.fillRect(0, 0, this._barCurrent - this._barStart, this.getHeight() - 2 - this._barBorderTop - this._barBorderBottom);
       if (this._borderBar != null) {
-         var1.setColor(ThemeAttributeSet.getColor(this, 3));
-         XYRect var5 = Ui.getTmpXYRect();
-         var5.set(0, 0, this._barCurrent - this._barStart, this.getHeight() - 2 - this._barBorderTop - this._barBorderBottom);
-         this._borderBar.paint(var1, var5);
-         Ui.returnTmpXYRect(var5);
+         graphics.setColor(ThemeAttributeSet.getColor(this, 3));
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(0, 0, this._barCurrent - this._barStart, this.getHeight() - 2 - this._barBorderTop - this._barBorderBottom);
+         this._borderBar.paint(graphics, rect);
+         Ui.returnTmpXYRect(rect);
       }
 
-      if ((var2 & 2) == 0) {
-         var1.setColor(ThemeAttributeSet.getColor(this, 5));
-         var1.drawText(this._value, 0, this._value.length(), -this._barBorderLeft, 0, 52, this._barEnd - this._barStart);
+      if ((style & 2) == 0) {
+         graphics.setColor(ThemeAttributeSet.getColor(this, 5));
+         graphics.drawText(this._value, 0, this._value.length(), -this._barBorderLeft, 0, 52, this._barEnd - this._barStart);
       }
 
-      var1.popContext();
-      this.setThemeAttributesSpecial(null, var1);
+      graphics.popContext();
+      this.setThemeAttributesSpecial(null, graphics);
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
+   protected int moveFocus(int amount, int status, int time) {
       if (!this.isEditable()) {
-         return var1;
+         return amount;
       }
 
-      if (this._alt && (var2 & 1) != 1) {
-         return var1;
+      if (this._alt && (status & 1) != 1) {
+         return amount;
       }
 
-      this.$init0(this._label, this._min, this._max, MathUtilities.clamp(this._min, this._current + var1, this._max));
+      this.$init0(this._label, this._min, this._max, MathUtilities.clamp(this._min, this._current + amount, this._max));
       this.fieldChangeNotify(0);
       return 0;
    }
@@ -230,40 +230,40 @@ public class GaugeField extends Field implements FieldLabelProvider {
       if (this._current == this._max) {
          this._barCurrent = this._barEnd;
       } else {
-         long var1 = this._barEnd - this._barStart;
-         long var3 = this._max - this._min;
-         this._barCurrent = (int)((var1 << 32) / var3 * (this._current - this._min) >> 32) + this._barStart;
+         long barWidth = this._barEnd - this._barStart;
+         long rangeWidth = this._max - this._min;
+         this._barCurrent = (int)((barWidth << 32) / rangeWidth * (this._current - this._min) >> 32) + this._barStart;
       }
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       if (this._borderBar != null) {
-         if (var2) {
-            var1.setColor(ThemeAttributeSet.getColor(this, 1));
+         if (on) {
+            graphics.setColor(ThemeAttributeSet.getColor(this, 1));
          } else {
-            var1.setColor(ThemeAttributeSet.getColor(this, 0));
+            graphics.setColor(ThemeAttributeSet.getColor(this, 0));
          }
 
-         XYRect var3 = Ui.getTmpXYRect();
-         var3.set(this._barStart - 1, 0, this._barEnd - this._barStart + 1, this.getHeight());
-         this._borderBar.paint(var1, var3);
-         Ui.returnTmpXYRect(var3);
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(this._barStart - 1, 0, this._barEnd - this._barStart + 1, this.getHeight());
+         this._borderBar.paint(graphics, rect);
+         Ui.returnTmpXYRect(rect);
       } else {
-         if (var2) {
-            var1.setColor(ThemeAttributeSet.getColor(this, 1));
-            var1.drawRect(this._barStart - 1, 0, this._barEnd - this._barStart + 1, this.getHeight());
+         if (on) {
+            graphics.setColor(ThemeAttributeSet.getColor(this, 1));
+            graphics.drawRect(this._barStart - 1, 0, this._barEnd - this._barStart + 1, this.getHeight());
          }
       }
    }
 
-   public GaugeField(String var1, int var2, int var3, int var4, long var5) {
-      super(var5);
+   public GaugeField(String label, int min, int max, int start, long style) {
+      super(style);
       this.setTag(TAG);
-      this.$init0(var1, var2, var3, var4);
+      this.$init0(label, min, max, start);
    }
 
-   private void $init0(String var1, int var2, int var3, int var4) {
+   private void $init0(String label, int min, int max, int start) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -271,8 +271,8 @@ public class GaugeField extends Field implements FieldLabelProvider {
       this(null, 0, 100, 0, 4);
    }
 
-   private void setNonProgrammaticValue(int var1) {
-      this.$init0(this._label, this._min, this._max, var1);
+   private void setNonProgrammaticValue(int value) {
+      this.$init0(this._label, this._min, this._max, value);
       this.fieldChangeNotify(0);
    }
 }

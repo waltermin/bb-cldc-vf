@@ -28,17 +28,17 @@ public class Firewall implements FirewallInterface {
    public static final byte MAX_DROPPINGS;
 
    public static final Firewall getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      return (Firewall)var0.waitFor(6444309033832430955L);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      return (Firewall)ar.waitFor(6444309033832430955L);
    }
 
    @Override
-   public void removeBlockedCountListener(BlockedCountListener var1) {
+   public void removeBlockedCountListener(BlockedCountListener _1) {
       throw null;
    }
 
    @Override
-   public void addBlockedCountListener(BlockedCountListener var1) {
+   public void addBlockedCountListener(BlockedCountListener _1) {
       throw null;
    }
 
@@ -48,37 +48,37 @@ public class Firewall implements FirewallInterface {
    }
 
    @Override
-   public void resetBlockedCount(byte var1) {
+   public void resetBlockedCount(byte _1) {
       throw null;
    }
 
    @Override
-   public int getBlockedCount(byte var1) {
+   public int getBlockedCount(byte _1) {
       throw null;
    }
 
    @Override
-   public void incrementBlockedCount(byte var1) {
+   public void incrementBlockedCount(byte _1) {
       throw null;
    }
 
    @Override
-   public boolean setBlocking(byte var1, boolean var2) {
+   public boolean setBlocking(byte _1, boolean _2) {
       throw null;
    }
 
    @Override
-   public boolean isBlockingEnabledByItPolicy(byte var1) {
+   public boolean isBlockingEnabledByItPolicy(byte _1) {
       throw null;
    }
 
    @Override
-   public boolean isBlockingEnabled(byte var1) {
+   public boolean isBlockingEnabled(byte _1) {
       throw null;
    }
 
    @Override
-   public void setEnabled(boolean var1) {
+   public void setEnabled(boolean _1) {
       throw null;
    }
 
@@ -88,7 +88,7 @@ public class Firewall implements FirewallInterface {
    }
 
    @Override
-   public void reset(int var1) {
+   public void reset(int _1) {
       throw null;
    }
 
@@ -98,17 +98,17 @@ public class Firewall implements FirewallInterface {
    }
 
    @Override
-   public boolean allowConnection(String var1, String var2, int var3, FirewallContext var4) {
+   public boolean allowConnection(String _1, String _2, int _3, FirewallContext _4) {
       throw null;
    }
 
    @Override
-   public boolean allowConnection(String var1, String var2, int var3) {
+   public boolean allowConnection(String _1, String _2, int _3) {
       throw null;
    }
 
    @Override
-   public boolean allowConnection(String var1, String var2, boolean var3) {
+   public boolean allowConnection(String _1, String _2, boolean _3) {
       throw null;
    }
 }

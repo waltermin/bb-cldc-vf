@@ -8,8 +8,8 @@ class ChoiceField$ChangeOptionMenuItem extends MenuItem {
       super(CommonResource.getBundle(), 1, 30270, 10);
    }
 
-   ChoiceField$ChangeOptionMenuItem(String var1) {
-      super(var1, 30270, 10);
+   ChoiceField$ChangeOptionMenuItem(String text) {
+      super(text, 30270, 10);
    }
 
    @Override

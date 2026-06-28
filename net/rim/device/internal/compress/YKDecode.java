@@ -5,30 +5,30 @@ public final class YKDecode {
    private boolean yk_mixedMode;
    private byte[] yk_context;
 
-   public YKDecode(boolean var1) {
-      this.yk_mixedMode = var1;
+   public YKDecode(boolean mixed) {
+      this.yk_mixedMode = mixed;
       this._cleaningHelper = new YKCleaner(this);
    }
 
    public static final native int yk_get_codec_version();
 
-   public final byte[] yk_decode(byte[] var1, int var2, int var3) {
+   public final byte[] yk_decode(byte[] input, int inputOffset, int inputSize) {
       this._cleaningHelper.register();
-      return this.yk_decode0(var1, var2, var3);
+      return this.yk_decode0(input, inputOffset, inputSize);
    }
 
    private final native byte[] yk_decode0(byte[] var1, int var2, int var3);
 
-   public final void yk_load_side_data(byte[] var1, int var2, int var3) {
+   public final void yk_load_side_data(byte[] input, int inputOffset, int inputSize) {
       this._cleaningHelper.register();
-      this.yk_load_side_data0(var1, var2, var3);
+      this.yk_load_side_data0(input, inputOffset, inputSize);
    }
 
    private final native void yk_load_side_data0(byte[] var1, int var2, int var3);
 
-   public final void loadContextMap(byte[] var1) {
+   public final void loadContextMap(byte[] contextMap) {
       this._cleaningHelper.register();
-      this.loadContextMap0(var1);
+      this.loadContextMap0(contextMap);
    }
 
    public final native void loadContextMap0(byte[] var1);

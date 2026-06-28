@@ -4,8 +4,8 @@ final class StringBufferWrapper extends AbstractStringWrapper {
    private StringBuffer _stringBuffer;
    private char[] _buffer = new char[64];
 
-   public StringBufferWrapper(StringBuffer var1) {
-      this._stringBuffer = var1;
+   public StringBufferWrapper(StringBuffer str) {
+      this._stringBuffer = str;
    }
 
    @Override
@@ -19,28 +19,28 @@ final class StringBufferWrapper extends AbstractStringWrapper {
    }
 
    @Override
-   public final char charAt(int var1) {
-      return this._stringBuffer.charAt(var1);
+   public final char charAt(int index) {
+      return this._stringBuffer.charAt(index);
    }
 
    @Override
-   public final void getChars(int var1, int var2, char[] var3, int var4) {
-      this._stringBuffer.getChars(var1, var2, var3, var4);
+   public final void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+      this._stringBuffer.getChars(srcBegin, srcEnd, dst, dstBegin);
    }
 
    @Override
-   public final int indexOf(char var1, int var2, int var3) {
-      for (int var4 = var2; var4 < var3; var4 += 64) {
-         int var5 = var3 - var4;
-         if (var5 > 64) {
-            var5 = 64;
+   public final int indexOf(char c, int beginIndex, int endIndex) {
+      for (int index = beginIndex; index < endIndex; index += 64) {
+         int count = endIndex - index;
+         if (count > 64) {
+            count = 64;
          }
 
-         this._stringBuffer.getChars(var4, var4 + var5, this._buffer, 0);
+         this._stringBuffer.getChars(index, index + count, this._buffer, 0);
 
-         for (int var6 = 0; var6 < var5; var6++) {
-            if (this._buffer[var6] == var1) {
-               return var4 + var6;
+         for (int idx = 0; idx < count; idx++) {
+            if (this._buffer[idx] == c) {
+               return index + idx;
             }
          }
       }
@@ -49,7 +49,7 @@ final class StringBufferWrapper extends AbstractStringWrapper {
    }
 
    @Override
-   public final void reset(Object var1) {
+   public final void reset(Object string) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

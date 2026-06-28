@@ -30,16 +30,16 @@ public class BasicEditField extends TextField {
       super(null, null, 1000000, 0);
    }
 
-   public BasicEditField(long var1) {
-      super(null, null, 1000000, var1);
+   public BasicEditField(long style) {
+      super(null, null, 1000000, style);
    }
 
-   public BasicEditField(String var1, String var2) {
-      super(var1, var2, 1000000, 0);
+   public BasicEditField(String label, String initialValue) {
+      super(label, initialValue, 1000000, 0);
    }
 
-   public BasicEditField(String var1, String var2, int var3, long var4) {
-      super(var1, var2, var3, var4);
+   public BasicEditField(String label, String initialValue, int maxNumChars, long style) {
+      super(label, initialValue, maxNumChars, style);
    }
 
    @Override
@@ -48,12 +48,12 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   TextFilter getFilterFromStyle(long var1) {
-      if ((var1 & 117440512) != 0) {
+   TextFilter getFilterFromStyle(long style) {
+      if ((style & 117440512) != 0) {
          this.setAllowUnicodeInput(false);
       }
 
-      return TextFilter.get((int)(var1 >> 24 & 31));
+      return TextFilter.get((int)(style >> 24 & 31));
    }
 
    @Override
@@ -62,16 +62,16 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
-      super.makeContextMenu(var1);
-      Object var2 = _changeInputLanguageItem.get();
-      if (var2 == null) {
-         var2 = new BasicEditField$1(this, CommonResource.getBundle(), 10089, 50680656, Integer.MAX_VALUE);
-         _changeInputLanguageItem.set(var2);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      super.makeContextMenu(contextMenu);
+      Object changeL = _changeInputLanguageItem.get();
+      if (changeL == null) {
+         changeL = new BasicEditField$1(this, CommonResource.getBundle(), 10089, 50680656, Integer.MAX_VALUE);
+         _changeInputLanguageItem.set(changeL);
       }
 
       if (Utils.getAvailableInputLocales(false).length > 1 && (this.getStyle() & 117440512) == 0) {
-         var1.addItem((MenuItem)var2);
+         contextMenu.addItem((MenuItem)changeL);
       }
    }
 
@@ -81,22 +81,22 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   public int backspace(int var1) {
+   public int backspace(int count) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected int backspace(int var1, int var2) {
+   protected int backspace(int count, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public char charAt(int var1) {
+   public char charAt(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void clear(int var1) {
+   public void clear(int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -146,12 +146,12 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   public String getText(int var1, int var2) {
+   public String getText(int offset, int length) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void getText(int var1, int var2, char[] var3, int var4) {
+   public void getText(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -166,12 +166,12 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   public int insert(String var1) {
+   public int insert(String text) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected int insert(String var1, int var2) {
+   protected int insert(String text, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -181,52 +181,52 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setLabel(String var1) {
+   public void setLabel(String newLabel) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
+   protected boolean keyControl(char key, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void update(int var1) {
+   protected void update(int delta) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setMaxSize(int var1) {
+   public void setMaxSize(int maxSize) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setCursorPosition(int var1) {
+   public void setCursorPosition(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void setCursorPosition(int var1, int var2) {
+   protected void setCursorPosition(int offset, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -236,27 +236,27 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
+   protected int moveFocus(int amount, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
+   protected void moveFocus(int x, int y, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setFilter(TextFilter var1) {
+   public void setFilter(TextFilter filter) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -266,17 +266,17 @@ public class BasicEditField extends TextField {
    }
 
    @Override
-   public void setText(String var1) {
+   public void setText(String text) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void setText(String var1, int var2) {
+   protected void setText(String text, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setFont(Font var1) {
+   public void setFont(Font font) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 }

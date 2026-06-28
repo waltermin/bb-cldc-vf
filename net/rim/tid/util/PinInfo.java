@@ -11,10 +11,10 @@ public class PinInfo {
    public PinInfo() {
    }
 
-   public PinInfo(PinInfo var1) {
+   public PinInfo(PinInfo info) {
    }
 
-   public void getRecord(StringBuffer var1) {
+   public void getRecord(StringBuffer result) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -22,7 +22,7 @@ public class PinInfo {
       return this._length;
    }
 
-   public void setWord(String var1) {
+   public void setWord(String word) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -42,37 +42,37 @@ public class PinInfo {
       return this._indexes;
    }
 
-   public void set(PinInfo var1) {
-      this._word = var1._word;
-      this._length = var1._length;
-      System.arraycopy(var1._syllables, 0, this._syllables, 0, this._length);
-      System.arraycopy(var1._tones, 0, this._tones, 0, this._length);
-      System.arraycopy(var1._indexes, 0, this._indexes, 0, this._length);
+   public void set(PinInfo info) {
+      this._word = info._word;
+      this._length = info._length;
+      System.arraycopy(info._syllables, 0, this._syllables, 0, this._length);
+      System.arraycopy(info._tones, 0, this._tones, 0, this._length);
+      System.arraycopy(info._indexes, 0, this._indexes, 0, this._length);
    }
 
-   public void setSingle(PinInfo var1, int var2) {
+   public void setSingle(PinInfo info, int position) {
       this._length = 1;
-      System.arraycopy(var1._syllables, var2, this._syllables, 0, this._length);
-      System.arraycopy(var1._tones, var2, this._tones, 0, this._length);
-      System.arraycopy(var1._indexes, var2, this._indexes, 0, this._length);
+      System.arraycopy(info._syllables, position, this._syllables, 0, this._length);
+      System.arraycopy(info._tones, position, this._tones, 0, this._length);
+      System.arraycopy(info._indexes, position, this._indexes, 0, this._length);
    }
 
-   public void set(char[] var1, byte[] var2, byte[] var3, int var4) {
-      this._length = var4;
-      System.arraycopy(var1, 0, this._syllables, 0, this._length);
-      System.arraycopy(var2, 0, this._tones, 0, this._length);
-      System.arraycopy(var3, 0, this._indexes, 0, this._length);
+   public void set(char[] syllables, byte[] tones, byte[] indexes, int length) {
+      this._length = length;
+      System.arraycopy(syllables, 0, this._syllables, 0, this._length);
+      System.arraycopy(tones, 0, this._tones, 0, this._length);
+      System.arraycopy(indexes, 0, this._indexes, 0, this._length);
    }
 
-   public void setFR(char[] var1, byte[] var2, byte[] var3, int var4) {
-      System.arraycopy(var1, 0, this._syllables, this._length, var4);
-      System.arraycopy(var2, 0, this._tones, this._length, var4);
-      System.arraycopy(var3, 0, this._indexes, this._length, var4);
-      this._length += var4;
+   public void setFR(char[] syllables, byte[] tones, byte[] indexes, int length) {
+      System.arraycopy(syllables, 0, this._syllables, this._length, length);
+      System.arraycopy(tones, 0, this._tones, this._length, length);
+      System.arraycopy(indexes, 0, this._indexes, this._length, length);
+      this._length += length;
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

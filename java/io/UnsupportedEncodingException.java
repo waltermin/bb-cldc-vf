@@ -4,6 +4,6 @@ public class UnsupportedEncodingException extends IOException {
    public UnsupportedEncodingException() {
    }
 
-   public UnsupportedEncodingException(String var1) {
+   public UnsupportedEncodingException(String s) {
    }
 }

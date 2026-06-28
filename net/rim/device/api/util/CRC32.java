@@ -8,8 +8,8 @@ public final class CRC32 {
 
    public static final native int update(int var0, int var1);
 
-   public static final int update(int var0, byte[] var1) {
-      return update(var0, var1, 0, var1.length);
+   public static final int update(int crc, byte[] b) {
+      return update(crc, b, 0, b.length);
    }
 
    public static final native int update(int var0, byte[] var1, int var2, int var3);

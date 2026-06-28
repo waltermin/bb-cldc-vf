@@ -15,26 +15,26 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    private int _length;
    private boolean _useBigEndianFlag;
 
-   public void setData(byte[] var1, int var2, int var3) {
-      this.setData(var1, var2, var3, this._useBigEndianFlag);
+   public void setData(byte[] contents, int offset, int numBytes) {
+      this.setData(contents, offset, numBytes, this._useBigEndianFlag);
    }
 
-   public void setData(byte[] var1, int var2, int var3, boolean var4) {
-      if (var2 >= 0 && var3 >= 0) {
-         if (var1 != null) {
-            this._buffer = var1;
-            this._length = Math.min(this._buffer.length, var2 + var3);
-         } else if (var3 != 0) {
-            this._buffer = new byte[var3];
+   public void setData(byte[] contents, int offset, int numBytes, boolean bigEndianFlag) {
+      if (offset >= 0 && numBytes >= 0) {
+         if (contents != null) {
+            this._buffer = contents;
+            this._length = Math.min(this._buffer.length, offset + numBytes);
+         } else if (numBytes != 0) {
+            this._buffer = new byte[numBytes];
             this._length = 0;
          } else {
             this._buffer = null;
             this._length = 0;
          }
 
-         this._start = Math.min(this._length, var2);
+         this._start = Math.min(this._length, offset);
          this._position = this._start;
-         this._useBigEndianFlag = var4;
+         this._useBigEndianFlag = bigEndianFlag;
       } else {
          throw new Object();
       }
@@ -51,8 +51,8 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
       return this._position - this._start;
    }
 
-   public void setPosition(int var1) {
-      this._position = MathUtilities.clamp(this._start, this._start + var1, this._length);
+   public void setPosition(int newPosition) {
+      this._position = MathUtilities.clamp(this._start, this._start + newPosition, this._length);
    }
 
    public void zero() {
@@ -65,35 +65,35 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
       return this._length - this._start;
    }
 
-   public void setLength(int var1) {
-      if (var1 < 0) {
+   public void setLength(int newLength) {
+      if (newLength < 0) {
          throw new Object();
       }
 
-      var1 += this._start;
-      this.ensureBuffer(var1);
-      this._length = var1;
+      newLength += this._start;
+      this.ensureBuffer(newLength);
+      this._length = newLength;
       this._position = Math.min(this._length, this._position);
    }
 
-   public void ensureLength(int var1) {
-      this.ensureBuffer(this._start + var1);
+   public void ensureLength(int newLength) {
+      this.ensureBuffer(this._start + newLength);
    }
 
-   public void ensureCapacity(int var1) {
-      this.ensureBuffer(this._position + var1);
+   public void ensureCapacity(int dataLength) {
+      this.ensureBuffer(this._position + dataLength);
    }
 
-   protected void ensureBuffer(int var1) {
-      if (var1 >= this._length) {
+   protected void ensureBuffer(int newLength) {
+      if (newLength >= this._length) {
          if (this._buffer == null) {
-            this._buffer = new byte[var1];
-         } else if (var1 > this._buffer.length) {
-            int var2 = var1 - this._buffer.length;
-            Array.extend(this._buffer, var2);
+            this._buffer = new byte[newLength];
+         } else if (newLength > this._buffer.length) {
+            int incSize = newLength - this._buffer.length;
+            Array.extend(this._buffer, incSize);
          }
 
-         this._length = var1;
+         this._length = newLength;
       }
    }
 
@@ -101,22 +101,22 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
       this.trim(true);
    }
 
-   public void trim(boolean var1) {
+   public void trim(boolean resize) {
       if (this._buffer != null) {
          this._length = this._position;
-         if (var1) {
+         if (resize) {
             Array.resize(this._buffer, this._length);
          }
       }
    }
 
-   public void trimHead(boolean var1) {
+   public void trimHead(boolean resize) {
       if (this._buffer != null && this._position > 0) {
-         int var2 = this._length - this._position;
-         System.arraycopy(this._buffer, this._position, this._buffer, 0, var2);
-         this._length = var2;
+         int size = this._length - this._position;
+         System.arraycopy(this._buffer, this._position, this._buffer, 0, size);
+         this._length = size;
          this._position = 0;
-         if (var1) {
+         if (resize) {
             Array.resize(this._buffer, this._length);
          }
       }
@@ -138,15 +138,15 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
       return this._useBigEndianFlag;
    }
 
-   public void setBigEndian(boolean var1) {
+   public void setBigEndian(boolean flag) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    public byte[] toArray() {
       if (this._buffer != null) {
-         byte[] var1 = new byte[this._length - this._start];
-         System.arraycopy(this._buffer, this._start, var1, 0, var1.length);
-         return var1;
+         byte[] copy = new byte[this._length - this._start];
+         System.arraycopy(this._buffer, this._start, copy, 0, copy.length);
+         return copy;
       } else {
          return new byte[0];
       }
@@ -168,162 +168,162 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
       return this._length;
    }
 
-   public void writeCompressedLong(long var1) {
-      byte var3 = 63;
+   public void writeCompressedLong(long i) {
+      int s = 63;
 
-      int var4;
-      for (var4 = 10; var3 > 0 && ((int)(var1 >>> var3) & 127) == 0; var4--) {
-         var3 -= 7;
+      int n;
+      for (n = 10; s > 0 && ((int)(i >>> s) & 127) == 0; n--) {
+         s -= 7;
       }
 
-      this.ensureBuffer(this._position + var4);
+      this.ensureBuffer(this._position + n);
 
-      while (var3 > 0) {
-         this.nextByte(128 | (int)(var1 >>> var3));
-         var3 -= 7;
+      while (s > 0) {
+         this.nextByte(128 | (int)(i >>> s));
+         s -= 7;
       }
 
-      this.nextByte((int)(var1 & 127));
+      this.nextByte((int)(i & 127));
    }
 
-   public void writeCompressedInt(int var1) {
-      byte var2 = 28;
+   public void writeCompressedInt(int i) {
+      int s = 28;
 
-      int var3;
-      for (var3 = 5; var2 > 0 && (var1 >>> var2 & 127) == 0; var3--) {
-         var2 -= 7;
+      int n;
+      for (n = 5; s > 0 && (i >>> s & 127) == 0; n--) {
+         s -= 7;
       }
 
-      this.ensureBuffer(this._position + var3);
+      this.ensureBuffer(this._position + n);
 
-      while (var2 > 0) {
-         this.nextByte(128 | var1 >>> var2);
-         var2 -= 7;
+      while (s > 0) {
+         this.nextByte(128 | i >>> s);
+         s -= 7;
       }
 
-      this.nextByte(var1 & 127);
+      this.nextByte(i & 127);
    }
 
-   public void writeByteArray(byte[] var1, int var2, int var3, boolean var4) {
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
-         if (var4) {
-            this.writeCompressedInt(var3);
+   public void writeByteArray(byte[] b, int offset, int length, boolean writeLength) {
+      if (offset >= 0 && length >= 0 && offset + length <= b.length) {
+         if (writeLength) {
+            this.writeCompressedInt(length);
          }
 
-         this.ensureBuffer(this._position + var3);
-         System.arraycopy(var1, var2, this._buffer, this._position, var3);
-         this._position += var3;
+         this.ensureBuffer(this._position + length);
+         System.arraycopy(b, offset, this._buffer, this._position, length);
+         this._position += length;
       } else {
          throw new Object();
       }
    }
 
-   public void writeByteArray(byte[] var1, int var2, int var3) {
-      this.writeByteArray(var1, var2, var3, true);
+   public void writeByteArray(byte[] b, int offset, int length) {
+      this.writeByteArray(b, offset, length, true);
    }
 
-   public void writeByteArray(byte[] var1) {
-      this.writeByteArray(var1, 0, var1.length);
+   public void writeByteArray(byte[] b) {
+      this.writeByteArray(b, 0, b.length);
    }
 
-   public int read(byte[] var1) {
-      return this.read(var1, 0, var1.length);
+   public int read(byte[] outputBuffer) {
+      return this.read(outputBuffer, 0, outputBuffer.length);
    }
 
-   public int read(byte[] var1, int var2, int var3) {
-      int var4 = Math.min(var3, this._length - this._position);
-      if (var4 != 0) {
-         System.arraycopy(this._buffer, this._position, var1, var2, var4);
+   public int read(byte[] outputBuffer, int outputBufferOffset, int outputBufferLength) {
+      int copyLength = Math.min(outputBufferLength, this._length - this._position);
+      if (copyLength != 0) {
+         System.arraycopy(this._buffer, this._position, outputBuffer, outputBufferOffset, copyLength);
       }
 
-      this._position += var4;
-      return var4;
+      this._position += copyLength;
+      return copyLength;
    }
 
-   public int read(OutputStream var1) {
-      return this.read(var1, this._length - this._position);
+   public int read(OutputStream outputStream) {
+      return this.read(outputStream, this._length - this._position);
    }
 
-   public int read(OutputStream var1, int var2) {
-      if (var1 != null && var2 >= 0) {
-         int var3 = Math.min(var2, this._length - this._position);
-         if (var3 != 0) {
-            var1.write(this._buffer, this._position, var3);
-            this._position += var3;
+   public int read(OutputStream outputStream, int length) {
+      if (outputStream != null && length >= 0) {
+         int bytesToWrite = Math.min(length, this._length - this._position);
+         if (bytesToWrite != 0) {
+            outputStream.write(this._buffer, this._position, bytesToWrite);
+            this._position += bytesToWrite;
          }
 
-         return var3;
+         return bytesToWrite;
       } else {
          throw new Object();
       }
    }
 
    public byte[] readByteArray() {
-      int var1 = this.readCompressedInt();
-      if (this._position + var1 > this._length) {
+      int size = this.readCompressedInt();
+      if (this._position + size > this._length) {
          throw new Object();
       }
 
-      byte[] var2 = new byte[var1];
-      System.arraycopy(this._buffer, this._position, var2, 0, var1);
-      this._position += var1;
-      return var2;
+      byte[] data = new byte[size];
+      System.arraycopy(this._buffer, this._position, data, 0, size);
+      this._position += size;
+      return data;
    }
 
-   public void write(DataInput var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void write(DataInput input, int length) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void write(InputStream var1, int var2) {
-      var2 = Math.min(var2, var1.available());
-      this.ensureCapacity(var2);
-      this._position = this._position + var1.read(this._buffer, this._position, var2);
+   public void write(InputStream input, int length) {
+      length = Math.min(length, input.available());
+      this.ensureCapacity(length);
+      this._position = this._position + input.read(this._buffer, this._position, length);
    }
 
-   public void write(InputStream var1) {
-      this.write(var1, var1.available());
+   public void write(InputStream input) {
+      this.write(input, input.available());
    }
 
-   public void write(DataBuffer var1, int var2) {
-      this.write(var1.getArray(), var1.getArrayPosition(), var2);
+   public void write(DataBuffer dataBuffer, int length) {
+      this.write(dataBuffer.getArray(), dataBuffer.getArrayPosition(), length);
    }
 
    public long readCompressedLong() {
-      long var1 = 0;
-      int var3 = 0;
+      long i = 0;
+      int used = 0;
 
       while (true) {
-         byte var4 = this.readByte();
-         var1 |= var4 & 127;
-         if ((var4 & 128) == 0) {
-            return var1;
+         byte b = this.readByte();
+         i |= b & 127;
+         if ((b & 128) == 0) {
+            return i;
          }
 
-         if (++var3 > 9) {
+         if (++used > 9) {
             throw new Object();
          }
 
-         var1 <<= 7;
+         i <<= 7;
       }
    }
 
    public int readCompressedInt() {
-      int var1 = 0;
-      int var2 = 0;
+      int i = 0;
+      int used = 0;
 
       while (true) {
-         byte var3 = this.readByte();
-         var1 |= var3 & 127;
-         if ((var3 & 128) == 0) {
-            return var1;
+         byte b = this.readByte();
+         i |= b & 127;
+         if ((b & 128) == 0) {
+            return i;
          }
 
-         var2++;
-         if (var2 > 4 || var2 == 4 && (var1 & 234881024) != 0) {
+         used++;
+         if (used > 4 || used == 4 && (i & 234881024) != 0) {
             throw new Object();
          }
 
-         var1 <<= 7;
+         i <<= 7;
       }
    }
 
@@ -348,30 +348,30 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          throw new Object();
       }
 
-      int var1;
-      int var2;
+      int b1;
+      int b2;
       if (this._useBigEndianFlag) {
-         var1 = this.nextByte();
-         var2 = this.nextByte();
+         b1 = this.nextByte();
+         b2 = this.nextByte();
       } else {
-         var2 = this.nextByte();
-         var1 = this.nextByte();
+         b2 = this.nextByte();
+         b1 = this.nextByte();
       }
 
-      return (short)(var1 << 8 | var2);
+      return (short)(b1 << 8 | b2);
    }
 
    @Override
-   public void write(byte[] var1) {
-      this.write(var1, 0, var1.length);
+   public void write(byte[] b) {
+      this.write(b, 0, b.length);
    }
 
    @Override
-   public void write(byte[] var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
-         this.ensureBuffer(this._position + var3);
-         System.arraycopy(var1, var2, this._buffer, this._position, var3);
-         this._position += var3;
+   public void write(byte[] b, int off, int len) {
+      if (off >= 0 && len >= 0 && off + len <= b.length) {
+         this.ensureBuffer(this._position + len);
+         System.arraycopy(b, off, this._buffer, this._position, len);
+         this._position += len;
       } else {
          throw new Object();
       }
@@ -393,35 +393,35 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          throw new Object();
       }
 
-      long var1;
-      long var3;
-      long var5;
-      long var7;
-      long var9;
-      long var11;
-      long var13;
-      long var15;
+      long b1;
+      long b2;
+      long b3;
+      long b4;
+      long b5;
+      long b6;
+      long b7;
+      long b8;
       if (this._useBigEndianFlag) {
-         var1 = this.nextByte();
-         var3 = this.nextByte();
-         var5 = this.nextByte();
-         var7 = this.nextByte();
-         var9 = this.nextByte();
-         var11 = this.nextByte();
-         var13 = this.nextByte();
-         var15 = this.nextByte();
+         b1 = this.nextByte();
+         b2 = this.nextByte();
+         b3 = this.nextByte();
+         b4 = this.nextByte();
+         b5 = this.nextByte();
+         b6 = this.nextByte();
+         b7 = this.nextByte();
+         b8 = this.nextByte();
       } else {
-         var15 = this.nextByte();
-         var13 = this.nextByte();
-         var11 = this.nextByte();
-         var9 = this.nextByte();
-         var7 = this.nextByte();
-         var5 = this.nextByte();
-         var3 = this.nextByte();
-         var1 = this.nextByte();
+         b8 = this.nextByte();
+         b7 = this.nextByte();
+         b6 = this.nextByte();
+         b5 = this.nextByte();
+         b4 = this.nextByte();
+         b3 = this.nextByte();
+         b2 = this.nextByte();
+         b1 = this.nextByte();
       }
 
-      return var1 << 56 | var3 << 48 | var5 << 40 | var7 << 32 | var9 << 24 | var11 << 16 | var13 << 8 | var15;
+      return b1 << 56 | b2 << 48 | b3 << 40 | b4 << 32 | b5 << 24 | b6 << 16 | b7 << 8 | b8;
    }
 
    @Override
@@ -430,82 +430,82 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          throw new Object();
       }
 
-      int var1;
-      int var2;
-      int var3;
-      int var4;
+      int b1;
+      int b2;
+      int b3;
+      int b4;
       if (this._useBigEndianFlag) {
-         var1 = this.nextByte();
-         var2 = this.nextByte();
-         var3 = this.nextByte();
-         var4 = this.nextByte();
+         b1 = this.nextByte();
+         b2 = this.nextByte();
+         b3 = this.nextByte();
+         b4 = this.nextByte();
       } else {
-         var4 = this.nextByte();
-         var3 = this.nextByte();
-         var2 = this.nextByte();
-         var1 = this.nextByte();
+         b4 = this.nextByte();
+         b3 = this.nextByte();
+         b2 = this.nextByte();
+         b1 = this.nextByte();
       }
 
-      return var1 << 24 | var2 << 16 | var3 << 8 | var4;
+      return b1 << 24 | b2 << 16 | b3 << 8 | b4;
    }
 
    @Override
-   public void write(int var1) {
-      int var2 = this._position;
-      int var3 = var2 + 1;
-      this.ensureBuffer(var3);
-      this._buffer[var2] = (byte)var1;
-      this._position = var3;
+   public void write(int b) {
+      int old = this._position;
+      int curr = old + 1;
+      this.ensureBuffer(curr);
+      this._buffer[old] = (byte)b;
+      this._position = curr;
    }
 
    @Override
-   public void writeBoolean(boolean var1) {
+   public void writeBoolean(boolean v) {
       this.ensureBuffer(this._position + 1);
-      this.nextByte(var1 ? 1 : 0);
+      this.nextByte(v ? 1 : 0);
    }
 
    @Override
-   public void writeByte(int var1) {
-      int var2 = this._position;
-      int var3 = var2 + 1;
-      this.ensureBuffer(var3);
-      this._buffer[var2] = (byte)var1;
-      this._position = var3;
+   public void writeByte(int v) {
+      int old = this._position;
+      int curr = old + 1;
+      this.ensureBuffer(curr);
+      this._buffer[old] = (byte)v;
+      this._position = curr;
    }
 
    @Override
-   public void writeChar(int var1) {
+   public void writeChar(int v) {
       this.ensureBuffer(this._position + 2);
       if (this._useBigEndianFlag) {
-         this.nextByte(var1 >>> 8);
-         this.nextByte(var1);
+         this.nextByte(v >>> 8);
+         this.nextByte(v);
       } else {
-         this.nextByte(var1);
-         this.nextByte(var1 >>> 8);
+         this.nextByte(v);
+         this.nextByte(v >>> 8);
       }
    }
 
    @Override
-   public void writeChars(String var1) {
+   public void writeChars(String s) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public void readFully(byte[] var1, int var2, int var3) {
-      if (var3 > this._length - this._position) {
+   public void readFully(byte[] outputBuffer, int outputBufferOffset, int outputBufferLength) {
+      if (outputBufferLength > this._length - this._position) {
          throw new Object();
       }
 
-      if (var3 != 0) {
-         System.arraycopy(this._buffer, this._position, var1, var2, var3);
+      if (outputBufferLength != 0) {
+         System.arraycopy(this._buffer, this._position, outputBuffer, outputBufferOffset, outputBufferLength);
       }
 
-      this._position += var3;
+      this._position += outputBufferLength;
    }
 
    @Override
-   public void readFully(byte[] var1) {
-      this.readFully(var1, 0, var1.length);
+   public void readFully(byte[] outputBuffer) {
+      this.readFully(outputBuffer, 0, outputBuffer.length);
    }
 
    @Override
@@ -514,84 +514,84 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          throw new Object();
       }
 
-      int var1;
-      int var2;
+      int b1;
+      int b2;
       if (this._useBigEndianFlag) {
-         var1 = this.nextByte();
-         var2 = this.nextByte();
+         b1 = this.nextByte();
+         b2 = this.nextByte();
       } else {
-         var2 = this.nextByte();
-         var1 = this.nextByte();
+         b2 = this.nextByte();
+         b1 = this.nextByte();
       }
 
-      return (char)(var1 << 8 | var2);
+      return (char)(b1 << 8 | b2);
    }
 
    @Override
-   public void writeInt(int var1) {
+   public void writeInt(int i) {
       this.ensureBuffer(this._position + 4);
       if (this._useBigEndianFlag) {
-         this.nextByte(var1 >>> 24);
-         this.nextByte(var1 >>> 16);
-         this.nextByte(var1 >>> 8);
-         this.nextByte(var1);
+         this.nextByte(i >>> 24);
+         this.nextByte(i >>> 16);
+         this.nextByte(i >>> 8);
+         this.nextByte(i);
       } else {
-         this.nextByte(var1);
-         this.nextByte(var1 >>> 8);
-         this.nextByte(var1 >>> 16);
-         this.nextByte(var1 >>> 24);
+         this.nextByte(i);
+         this.nextByte(i >>> 8);
+         this.nextByte(i >>> 16);
+         this.nextByte(i >>> 24);
       }
    }
 
    @Override
-   public void writeLong(long var1) {
+   public void writeLong(long v) {
       this.ensureBuffer(this._position + 8);
       if (this._useBigEndianFlag) {
-         this.nextByte((int)(var1 >>> 56));
-         this.nextByte((int)(var1 >>> 48));
-         this.nextByte((int)(var1 >>> 40));
-         this.nextByte((int)(var1 >>> 32));
-         this.nextByte((int)(var1 >>> 24));
-         this.nextByte((int)(var1 >>> 16));
-         this.nextByte((int)(var1 >>> 8));
-         this.nextByte((int)var1);
+         this.nextByte((int)(v >>> 56));
+         this.nextByte((int)(v >>> 48));
+         this.nextByte((int)(v >>> 40));
+         this.nextByte((int)(v >>> 32));
+         this.nextByte((int)(v >>> 24));
+         this.nextByte((int)(v >>> 16));
+         this.nextByte((int)(v >>> 8));
+         this.nextByte((int)v);
       } else {
-         this.nextByte((int)var1);
-         this.nextByte((int)(var1 >>> 8));
-         this.nextByte((int)(var1 >>> 16));
-         this.nextByte((int)(var1 >>> 24));
-         this.nextByte((int)(var1 >>> 32));
-         this.nextByte((int)(var1 >>> 40));
-         this.nextByte((int)(var1 >>> 48));
-         this.nextByte((int)(var1 >>> 56));
+         this.nextByte((int)v);
+         this.nextByte((int)(v >>> 8));
+         this.nextByte((int)(v >>> 16));
+         this.nextByte((int)(v >>> 24));
+         this.nextByte((int)(v >>> 32));
+         this.nextByte((int)(v >>> 40));
+         this.nextByte((int)(v >>> 48));
+         this.nextByte((int)(v >>> 56));
       }
    }
 
    @Override
-   public final void writeFloat(float var1) {
-      this.writeInt(Float.floatToIntBits(var1));
+   public final void writeFloat(float v) {
+      this.writeInt(Float.floatToIntBits(v));
    }
 
    @Override
-   public final void writeDouble(double var1) {
-      this.writeLong(Double.doubleToLongBits(var1));
+   public final void writeDouble(double v) {
+      this.writeLong(Double.doubleToLongBits(v));
    }
 
    @Override
-   public void writeShort(int var1) {
+   public void writeShort(int v) {
       this.ensureBuffer(this._position + 2);
       if (this._useBigEndianFlag) {
-         this.nextByte(var1 >>> 8);
-         this.nextByte(var1);
+         this.nextByte(v >>> 8);
+         this.nextByte(v);
       } else {
-         this.nextByte(var1);
-         this.nextByte(var1 >>> 8);
+         this.nextByte(v);
+         this.nextByte(v >>> 8);
       }
    }
 
    @Override
-   public void writeUTF(String var1) {
-      StringUtilities.writeUTF(var1, this);
+   public void writeUTF(String str) {
+      StringUtilities.writeUTF(str, this);
    }
 
    @Override
@@ -605,54 +605,54 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    }
 
    @Override
-   public int skipBytes(int var1) {
-      if (var1 <= 0) {
+   public int skipBytes(int n) {
+      if (n <= 0) {
          return 0;
       }
 
-      int var2 = Math.min(this._length - this._position, var1);
-      this._position += var2;
-      return var2;
+      int skipped = Math.min(this._length - this._position, n);
+      this._position += skipped;
+      return skipped;
    }
 
-   public DataBuffer(boolean var1) {
-      this.setData(null, 0, 0, var1);
+   public DataBuffer(boolean bigEndianFlag) {
+      this.setData(null, 0, 0, bigEndianFlag);
    }
 
-   private final void nextByte(int var1) {
+   private final void nextByte(int i) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public DataBuffer(byte[] var1, int var2, int var3, boolean var4) {
-      this.setData(var1, var2, var3, var4);
+   public DataBuffer(byte[] contents, int offset, int numBytes, boolean bigEndianFlag) {
+      this.setData(contents, offset, numBytes, bigEndianFlag);
    }
 
-   public DataBuffer(int var1, boolean var2) {
-      this.setData(null, 0, var1, var2);
+   public DataBuffer(int bufferSize, boolean bigEndianFlag) {
+      this.setData(null, 0, bufferSize, bigEndianFlag);
    }
 
    private final int nextByte() {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public static int getCompressedIntSize(int var0) {
-      byte var1 = 28;
+   public static int getCompressedIntSize(int i) {
+      int s = 28;
 
-      int var2;
-      for (var2 = 5; var1 > 0; var2--) {
-         if ((var0 >>> var1 & 127) != 0) {
-            return var2;
+      int n;
+      for (n = 5; s > 0; n--) {
+         if ((i >>> s & 127) != 0) {
+            return n;
          }
 
-         var1 -= 7;
+         s -= 7;
       }
 
-      return var2;
+      return n;
    }
 
-   public DataBuffer(DataBuffer var1, int var2) {
-      this.setData(var1.getArray(), var1.getArrayPosition(), var2, var1._useBigEndianFlag);
-      var1.skipBytes(var2);
+   public DataBuffer(DataBuffer contentBuffer, int numBytes) {
+      this.setData(contentBuffer.getArray(), contentBuffer.getArrayPosition(), numBytes, contentBuffer._useBigEndianFlag);
+      contentBuffer.skipBytes(numBytes);
    }
 
    public DataBuffer() {

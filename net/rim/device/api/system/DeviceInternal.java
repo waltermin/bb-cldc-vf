@@ -6,7 +6,7 @@ public class DeviceInternal {
 
    private static native boolean requestPowerOff0(boolean var0);
 
-   public static boolean requestPowerOff(boolean var0) {
+   public static boolean requestPowerOff(boolean allowAutoOn) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

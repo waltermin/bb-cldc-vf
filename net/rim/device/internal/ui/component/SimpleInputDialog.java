@@ -30,59 +30,59 @@ public class SimpleInputDialog extends PopupDialog {
    private static final byte UNICODE_INPUT_ALLOWED;
    private static final byte UNICODE_INPUT_FORBIDDEN;
 
-   public SimpleInputDialog(int var1, String var2) {
-      this(var1, var2, 0, 1000000, 0);
+   public SimpleInputDialog(int type, String prompt) {
+      this(type, prompt, 0, 1000000, 0);
    }
 
-   public SimpleInputDialog(int var1, String var2, int var3, int var4, long var5) {
+   public SimpleInputDialog(int type, String prompt, int minLength, int maxLength, long style) {
    }
 
-   public void setIcon(Image var1) {
-      ImageField var2 = null;
-      if (var1 != null) {
-         var2 = new ImageField();
-         var2.setImage(var1);
+   public void setIcon(Image image) {
+      ImageField field = null;
+      if (image != null) {
+         field = new ImageField();
+         field.setImage(image);
       }
 
-      this._dfm.setIcon(var2);
+      this._dfm.setIcon(field);
    }
 
    public BasicEditField getEditField() {
       return this._editField;
    }
 
-   public void setEditField(BasicEditField var1) {
+   public void setEditField(BasicEditField field) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   public void setPrompt(String var1) {
-      this._promptField.setText(var1);
+   public void setPrompt(String prompt) {
+      this._promptField.setText(prompt);
    }
 
-   public void setType(int var1) {
+   public void setType(int type) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public void add(Field var1) {
-      this._dfm.addCustomField(var1);
+   public void add(Field field) {
+      this._dfm.addCustomField(field);
    }
 
    public String getText() {
       return this._editField.getText();
    }
 
-   public void setText(String var1) {
+   public void setText(String text) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void show(String var1) {
-      this.setPrompt(var1);
+   public void show(String prompt) {
+      this.setPrompt(prompt);
       this.show();
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
+   protected void onUiEngineAttached(boolean attached) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -94,7 +94,7 @@ public class SimpleInputDialog extends PopupDialog {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void setMinLength(int var1) {
+   public void setMinLength(int minLength) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -102,8 +102,8 @@ public class SimpleInputDialog extends PopupDialog {
       return this._minLength;
    }
 
-   public void setMaxLength(int var1) {
-      this._maxLength = var1;
+   public void setMaxLength(int maxLength) {
+      this._maxLength = maxLength;
       this._editField.setMaxSize(this._maxLength);
    }
 
@@ -112,20 +112,20 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      return super.navigationClick(var1, var2) ? true : this.accept();
+   protected boolean navigationClick(int status, int time) {
+      return super.navigationClick(status, time) ? true : this.accept();
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == 27) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == 27) {
          return this.cancel();
       } else {
-         return var1 == '\n' ? this.accept() : super.keyChar(var1, var2, var3);
+         return key == '\n' ? this.accept() : super.keyChar(key, status, time);
       }
    }
 
-   public void setAllowUnicodeInput(boolean var1) {
+   public void setAllowUnicodeInput(boolean allow) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 

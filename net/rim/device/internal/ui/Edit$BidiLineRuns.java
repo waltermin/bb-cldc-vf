@@ -16,13 +16,13 @@ public class Edit$BidiLineRuns {
       this._bidiState = new byte[0];
    }
 
-   private Edit$BidiLineRuns(int[] var1, byte[] var2) {
-      this._runs = var1;
-      this._bidiState = var2;
+   private Edit$BidiLineRuns(int[] runs, byte[] bidiState) {
+      this._runs = runs;
+      this._bidiState = bidiState;
       this._ignoreState = false;
    }
 
-   public void ignore(boolean var1) {
+   public void ignore(boolean state) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -41,15 +41,15 @@ public class Edit$BidiLineRuns {
          return this._runs[2] == 0;
       }
 
-      int var1 = 0;
+      int nextPos = 0;
 
-      for (int var2 = 0; var2 < this._runs.length; var2++) {
-         if (this._runs[var2++] != var1) {
+      for (int i = 0; i < this._runs.length; i++) {
+         if (this._runs[i++] != nextPos) {
             return false;
          }
 
-         var1 += this._runs[var2++];
-         if (this._runs[var2] != 0) {
+         nextPos += this._runs[i++];
+         if (this._runs[i] != 0) {
             return false;
          }
       }

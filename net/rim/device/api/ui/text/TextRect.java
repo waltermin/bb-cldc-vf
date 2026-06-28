@@ -12,32 +12,32 @@ import net.rim.tid.text.AttributedString$Iterator;
 public class TextRect extends TextArea {
    private AttributedString$Iterator _iterator;
 
-   public TextRect(Field var1) {
-      this(var1, null, 6);
+   public TextRect(Field field) {
+      this(field, null, 6);
    }
 
-   public TextRect(Field var1, int var2) {
-      this(var1, null, var2);
+   public TextRect(Field field, int style) {
+      this(field, null, style);
    }
 
-   public TextRect(Field var1, Object var2, int var3) {
-      super(var1, var3 != 0 ? var3 | 8 : 14);
-      this.setText(var2);
+   public TextRect(Field field, Object text, int style) {
+      super(field, style != 0 ? style | 8 : 14);
+      this.setText(text);
       this._iterator = this.getTextIterator();
    }
 
    @Override
-   public void layout(int var1, int var2) {
+   public void layout(int width, int height) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      XYRect var2 = var1.getClippingRect();
-      DrawTextParam var3 = Ui.getTmpDrawTextParam();
-      this.setDrawTextParamFromStyle(var3);
-      ArticInterface$LineInfo var4 = this.getLineInfoForYPos(var2.y);
-      Formatter.paint(var1, var3, var4, this._iterator, this.getField(), this);
-      Ui.returnTmpDrawTextParam(var3);
+   protected void paint(Graphics graphics) {
+      XYRect clip = graphics.getClippingRect();
+      DrawTextParam drawTextParam = Ui.getTmpDrawTextParam();
+      this.setDrawTextParamFromStyle(drawTextParam);
+      ArticInterface$LineInfo info = this.getLineInfoForYPos(clip.y);
+      Formatter.paint(graphics, drawTextParam, info, this._iterator, this.getField(), this);
+      Ui.returnTmpDrawTextParam(drawTextParam);
    }
 }

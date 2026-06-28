@@ -77,31 +77,31 @@ public final class Display {
 
    public static final native boolean isRowwise();
 
-   public static final void setContrast(int var0) {
+   public static final void setContrast(int contrast) {
       assertPermission();
-      setContrastImpl(var0);
+      setContrastImpl(contrast);
    }
 
    private static final native void setContrastImpl(int var0);
 
-   public static final void screenshot(Bitmap var0) {
-      if (var0 != null && var0.getWidth() == getWidth() && var0.getHeight() == getHeight()) {
-         screenshot(var0, 0, 0, getWidth(), getHeight());
+   public static final void screenshot(Bitmap bitmap) {
+      if (bitmap != null && bitmap.getWidth() == getWidth() && bitmap.getHeight() == getHeight()) {
+         screenshot(bitmap, 0, 0, getWidth(), getHeight());
       } else {
          throw new Object();
       }
    }
 
-   public static final void screenshot(Bitmap var0, int var1, int var2, int var3, int var4) {
-      if (var0 == null
-         || var0.getWidth() < var3
-         || var0.getHeight() < var4
-         || var1 + var3 > getWidth()
-         || var2 + var4 > getHeight()
-         || var1 < 0
-         || var2 < 0
-         || var3 < 0
-         || var4 < 0) {
+   public static final void screenshot(Bitmap bitmap, int x, int y, int width, int height) {
+      if (bitmap == null
+         || bitmap.getWidth() < width
+         || bitmap.getHeight() < height
+         || x + width > getWidth()
+         || y + height > getHeight()
+         || x < 0
+         || y < 0
+         || width < 0
+         || height < 0) {
          throw new Object();
       }
 
@@ -109,20 +109,20 @@ public final class Display {
          throw new ControlledAccessException();
       }
 
-      Bitmap var5 = var0;
-      int var6 = ApplicationControl.isScreenCaptureAllowed(true);
-      switch (var6) {
+      Bitmap tempBitmap = bitmap;
+      int isAllowedTernary = ApplicationControl.isScreenCaptureAllowed(true);
+      switch (isAllowedTernary) {
          case 1:
          default:
             throw new ControlledAccessException();
          case 2:
-            var5 = new Bitmap(var3, var4);
+            tempBitmap = new Bitmap(width, height);
          case 0:
-            screenshot0(var0, var1, var2, var3, var4);
-            if (var5 != var0) {
-               ApplicationControl.doPromptWork(var6, CommonResource.getBundle(), 10162, 25, 26);
-               Object var7 = new Object(var0);
-               ((Graphics)var7).drawBitmap(0, 0, var3, var4, var5, 0, 0);
+            screenshot0(bitmap, x, y, width, height);
+            if (tempBitmap != bitmap) {
+               ApplicationControl.doPromptWork(isAllowedTernary, CommonResource.getBundle(), 10162, 25, 26);
+               Graphics graphics = (Graphics)(new Object(bitmap));
+               graphics.drawBitmap(0, 0, width, height, tempBitmap, 0, 0);
             }
       }
    }

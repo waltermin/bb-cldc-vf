@@ -5,12 +5,12 @@ import com.sun.cldc.i18n.Helper;
 public class OutputStreamWriter extends Writer {
    private Writer out;
 
-   public OutputStreamWriter(OutputStream var1) {
-      this.out = Helper.getStreamWriter(var1);
+   public OutputStreamWriter(OutputStream os) {
+      this.out = Helper.getStreamWriter(os);
    }
 
-   public OutputStreamWriter(OutputStream var1, String var2) {
-      this.out = Helper.getStreamWriter(var1, var2);
+   public OutputStreamWriter(OutputStream os, String enc) {
+      this.out = Helper.getStreamWriter(os, enc);
    }
 
    private void ensureOpen() {
@@ -18,25 +18,25 @@ public class OutputStreamWriter extends Writer {
    }
 
    @Override
-   public void write(int var1) {
+   public void write(int c) {
       this.ensureOpen();
-      this.out.write(var1);
+      this.out.write(c);
    }
 
    @Override
-   public void write(char[] var1, int var2, int var3) {
+   public void write(char[] cbuf, int off, int len) {
       this.ensureOpen();
-      if (var2 < 0 || var2 > var1.length || var3 < 0 || var2 + var3 > var1.length || var2 + var3 < 0) {
+      if (off < 0 || off > cbuf.length || len < 0 || off + len > cbuf.length || off + len < 0) {
          throw new IndexOutOfBoundsException();
       }
 
-      if (var3 != 0) {
-         this.out.write(var1, var2, var3);
+      if (len != 0) {
+         this.out.write(cbuf, off, len);
       }
    }
 
    @Override
-   public void write(String var1, int var2, int var3) {
+   public void write(String str, int off, int len) {
       throw new RuntimeException("cod2jar: string-special");
    }
 

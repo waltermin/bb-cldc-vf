@@ -2,6 +2,7 @@ package net.rim.device.internal.bluetooth;
 
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 
 public final class BluetoothME {
@@ -138,8 +139,8 @@ public final class BluetoothME {
 
    public static final native int disconnectDevice(int var0);
 
-   public static final int disconnectDevice(byte[] var0) {
-      return forceDisconnectDevice(var0);
+   public static final int disconnectDevice(byte[] address) {
+      return forceDisconnectDevice(address);
    }
 
    public static final native int forceDisconnectDevice(byte[] var0);
@@ -164,8 +165,8 @@ public final class BluetoothME {
 
    public static final native int getDeviceState(byte[] var0);
 
-   public static final int setDiscoverable(boolean var0) {
-      return setAccessibleMode(var0 ? 3 : 2);
+   public static final int setDiscoverable(boolean on) {
+      return setAccessibleMode(on ? 3 : 2);
    }
 
    public static final native int setAccessibleMode(int var0);
@@ -182,15 +183,15 @@ public final class BluetoothME {
 
    public static final native int setClassOfDevice(int var0);
 
-   public static final String deviceAddressToString(byte[] var0) {
-      return deviceAddressToString(var0, false);
+   public static final String deviceAddressToString(byte[] address) {
+      return deviceAddressToString(address, false);
    }
 
-   public static final String deviceAddressToString(byte[] var0, boolean var1) {
+   public static final String deviceAddressToString(byte[] address, boolean addColons) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte[] stringToDeviceAddress(String var0) {
+   public static final byte[] stringToDeviceAddress(String string) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -216,11 +217,18 @@ public final class BluetoothME {
 
    public static final native int changeConnectionLinkKey(byte[] var0);
 
-   public static final void addListener(Application var0, BluetoothMEListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, BluetoothMEListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(39) == null) {
+            dispatchManager.setDispatcher(39, new BluetoothMEEventDispatcher());
+         }
+      }
+
+      app.addListener(39, listener);
    }
 
-   public static final void removeListener(Application var0, BluetoothMEListener var1) {
-      var0.removeListener(39, var1);
+   public static final void removeListener(Application app, BluetoothMEListener listener) {
+      app.removeListener(39, listener);
    }
 }

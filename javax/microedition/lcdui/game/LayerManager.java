@@ -14,23 +14,23 @@ public class LayerManager {
       this.setViewWindow(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
    }
 
-   public void append(Layer var1) {
-      this.removeImpl(var1);
-      this.addImpl(var1, this.nlayers);
+   public void append(Layer l) {
+      this.removeImpl(l);
+      this.addImpl(l, this.nlayers);
    }
 
-   public void insert(Layer var1, int var2) {
-      if (var2 >= 0 && var2 <= this.nlayers) {
-         this.removeImpl(var1);
-         this.addImpl(var1, var2);
+   public void insert(Layer l, int index) {
+      if (index >= 0 && index <= this.nlayers) {
+         this.removeImpl(l);
+         this.addImpl(l, index);
       } else {
          throw new Object();
       }
    }
 
-   public Layer getLayerAt(int var1) {
-      if (var1 >= 0 && var1 < this.nlayers) {
-         return this.component[var1];
+   public Layer getLayerAt(int index) {
+      if (index >= 0 && index < this.nlayers) {
+         return this.component[index];
       } else {
          throw new Object();
       }
@@ -40,70 +40,70 @@ public class LayerManager {
       return this.nlayers;
    }
 
-   public void remove(Layer var1) {
+   public void remove(Layer l) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public void paint(Graphics var1, int var2, int var3) {
-      int var4 = var1.getClipX();
-      int var5 = var1.getClipY();
-      int var6 = var1.getClipWidth();
-      int var7 = var1.getClipHeight();
-      var1.translate(var2 - this.viewX, var3 - this.viewY);
-      var1.clipRect(this.viewX, this.viewY, this.viewWidth, this.viewHeight);
-      int var8 = this.nlayers;
+   public void paint(Graphics g, int x, int y) {
+      int clipX = g.getClipX();
+      int clipY = g.getClipY();
+      int clipW = g.getClipWidth();
+      int clipH = g.getClipHeight();
+      g.translate(x - this.viewX, y - this.viewY);
+      g.clipRect(this.viewX, this.viewY, this.viewWidth, this.viewHeight);
+      int i = this.nlayers;
 
-      while (--var8 >= 0) {
-         Layer var9 = this.component[var8];
-         if (var9.visible) {
-            var9.paint(var1);
+      while (--i >= 0) {
+         Layer comp = this.component[i];
+         if (comp.visible) {
+            comp.paint(g);
          }
       }
 
-      var1.translate(-var2 + this.viewX, -var3 + this.viewY);
-      var1.setClip(var4, var5, var6, var7);
+      g.translate(-x + this.viewX, -y + this.viewY);
+      g.setClip(clipX, clipY, clipW, clipH);
    }
 
-   public void setViewWindow(int var1, int var2, int var3, int var4) {
-      if (var3 >= 0 && var4 >= 0) {
-         this.viewX = var1;
-         this.viewY = var2;
-         this.viewWidth = var3;
-         this.viewHeight = var4;
+   public void setViewWindow(int x, int y, int width, int height) {
+      if (width >= 0 && height >= 0) {
+         this.viewX = x;
+         this.viewY = y;
+         this.viewWidth = width;
+         this.viewHeight = height;
       } else {
          throw new Object();
       }
    }
 
-   private void addImpl(Layer var1, int var2) {
+   private void addImpl(Layer layer, int index) {
       if (this.nlayers == this.component.length) {
-         Layer[] var3 = new Layer[this.nlayers + 4];
-         System.arraycopy(this.component, 0, var3, 0, this.nlayers);
-         System.arraycopy(this.component, var2, var3, var2 + 1, this.nlayers - var2);
-         this.component = var3;
+         Layer[] newcomponents = new Layer[this.nlayers + 4];
+         System.arraycopy(this.component, 0, newcomponents, 0, this.nlayers);
+         System.arraycopy(this.component, index, newcomponents, index + 1, this.nlayers - index);
+         this.component = newcomponents;
       } else {
-         System.arraycopy(this.component, var2, this.component, var2 + 1, this.nlayers - var2);
+         System.arraycopy(this.component, index, this.component, index + 1, this.nlayers - index);
       }
 
-      this.component[var2] = var1;
+      this.component[index] = layer;
       this.nlayers++;
    }
 
-   private void removeImpl(Layer var1) {
-      if (var1 == null) {
+   private void removeImpl(Layer l) {
+      if (l == null) {
          throw new Object();
       }
 
-      int var2 = this.nlayers;
+      int i = this.nlayers;
 
-      while (--var2 >= 0) {
-         if (this.component[var2] == var1) {
-            this.remove(var2);
+      while (--i >= 0) {
+         if (this.component[i] == l) {
+            this.remove(i);
          }
       }
    }
 
-   private void remove(int var1) {
+   private void remove(int index) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

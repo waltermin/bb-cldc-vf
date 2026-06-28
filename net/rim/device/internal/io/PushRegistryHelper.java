@@ -2,7 +2,13 @@ package net.rim.device.internal.io;
 
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringTokenizer;
+import net.rim.device.cldc.io.utility.MalformedURLException;
+import net.rim.device.cldc.io.utility.URL;
+import net.rim.device.internal.midlet.MIDPSupport;
 import net.rim.device.resources.Resource;
 import net.rim.device.resources.Resource$Internal;
 import net.rim.vm.Process;
@@ -25,24 +31,33 @@ public class PushRegistryHelper {
    private static final String[] PUSH_TRANSPORT_PERMISSIONS;
 
    public static PushRegistryHelper getInstance() {
-      throw new RuntimeException("cod2jar: exception table");
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      synchronized (ar) {
+         PushRegistryHelper prh = (PushRegistryHelper)ar.get(8840121830482700777L);
+         if (prh == null) {
+            prh = new PushRegistryHelper();
+            ar.put(8840121830482700777L, prh);
+         }
+
+         return prh;
+      }
    }
 
    public static String getCallingMidletName() {
-      String var0 = null;
+      String name = null;
       if (CodeModuleManager.isMidlet()) {
-         var0 = Process.currentProcess().getModuleName();
+         name = Process.currentProcess().getModuleName();
       }
 
-      return var0;
+      return name;
    }
 
-   public static String getMidletProperty(String var0) {
-      Resource var1 = Resource$Internal.getResourceClass(Process.currentProcess().getModuleName());
-      if (var1 != null) {
-         byte[] var2 = var1.getProperty(var0);
-         if (var2 != null) {
-            return (String)(new Object(var2, 2, var2.length - 2));
+   public static String getMidletProperty(String key) {
+      Resource resource = Resource$Internal.getResourceClass(Process.currentProcess().getModuleName());
+      if (resource != null) {
+         byte[] data = resource.getProperty(key);
+         if (data != null) {
+            return (String)(new Object(data, 2, data.length - 2));
          }
       }
 
@@ -52,42 +67,78 @@ public class PushRegistryHelper {
    private PushRegistryHelper() {
    }
 
-   public void put(String var1, Connection var2) {
-      this._pushRegsitryConnections.put(var1, var2);
+   public void put(String connectionString, Connection connection) {
+      this._pushRegsitryConnections.put(connectionString, connection);
    }
 
-   public Connection get(String var1) {
-      return (Connection)this._pushRegsitryConnections.get(var1);
+   public Connection get(String connectionString) {
+      return (Connection)this._pushRegsitryConnections.get(connectionString);
    }
 
-   public Connection remove(String var1) {
-      return (Connection)this._pushRegsitryConnections.remove(var1);
+   public Connection remove(String connectionString) {
+      return (Connection)this._pushRegsitryConnections.remove(connectionString);
    }
 
-   public static String[] getPushPropertyValues(String var0) {
-      String var1 = var0;
-      int var2 = var1.indexOf(44, 0);
-      String var3 = var1.substring(0, var2);
-      var3 = var3.trim();
-      int var4 = var2 + 1;
-      var2 = var1.indexOf(44, var4);
-      String var5 = var1.substring(var4, var2);
-      var5 = var5.trim();
-      var4 = var2 + 1;
-      String var6 = var1.substring(var4);
-      var6 = var6.trim();
-      return new String[]{var3, var5, var6};
+   public static String[] getPushPropertyValues(String rawProperty) {
+      String s = rawProperty;
+      int comma = s.indexOf(44, 0);
+      String connectionUrl = s.substring(0, comma);
+      connectionUrl = connectionUrl.trim();
+      int index = comma + 1;
+      comma = s.indexOf(44, index);
+      String midletClassName = s.substring(index, comma);
+      midletClassName = midletClassName.trim();
+      index = comma + 1;
+      String filter = s.substring(index);
+      filter = filter.trim();
+      return new String[]{connectionUrl, midletClassName, filter};
    }
 
-   public static boolean isConnectionSupported(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean isConnectionSupported(String connection) {
+      try {
+         boolean connectionSchemeAcceptableForPush = false;
+
+         for (int i = 0; i < PUSH_TRANSPORTS.length; i++) {
+            if (connection.startsWith(PUSH_TRANSPORTS[i])) {
+               connectionSchemeAcceptableForPush = true;
+               break;
+            }
+         }
+
+         return !MIDPSupport.connectionNotSupported(connection) && connectionSchemeAcceptableForPush;
+      } catch (MalformedURLException e) {
+         return false;
+      }
    }
 
-   public static boolean isPushTransportPermissionRequested(String var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean isPushTransportPermissionRequested(String pushURL, String permissions) {
+      if (permissions != null) {
+         URL url;
+         try {
+            url = (URL)(new Object(pushURL));
+         } catch (MalformedURLException e) {
+            return false;
+         }
+
+         String scheme = url.getScheme();
+         int index = Arrays.getIndex(PUSH_TRANSPORTS, scheme);
+         if (index > 0) {
+            String permission = PUSH_TRANSPORT_PERMISSIONS[index];
+            StringTokenizer stringTokenizer = (StringTokenizer)(new Object(permissions, ','));
+
+            while (stringTokenizer.hasMoreTokens()) {
+               String token = stringTokenizer.nextToken().trim();
+               if (token.equals(permission)) {
+                  return true;
+               }
+            }
+         }
+      }
+
+      return false;
    }
 
-   public static Connection checkConnection(String var0) {
+   public static Connection checkConnection(String connection) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

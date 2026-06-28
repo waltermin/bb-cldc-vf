@@ -6,15 +6,15 @@ class SymbolScreen$Encoding extends LabelField {
    private String[] _encodingStrings;
    private final SymbolScreen this$0;
 
-   public SymbolScreen$Encoding(SymbolScreen var1, long var2, int var4, SymbolScreen$Header var5) {
+   public SymbolScreen$Encoding(SymbolScreen _1, long style, int encoding, SymbolScreen$Header parent) {
    }
 
-   public void setEncoding(int var1) {
-      if (var1 < 0 || var1 >= this._encodingStrings.length) {
-         var1 = 0;
+   public void setEncoding(int encodingType) {
+      if (encodingType < 0 || encodingType >= this._encodingStrings.length) {
+         encodingType = 0;
       }
 
-      this._encodingType = var1;
+      this._encodingType = encodingType;
       this.setText(this._encodingStrings[this._encodingType]);
       if (this._parent._code != null) {
          this._parent._code.setType(this._encodingType);
@@ -26,12 +26,12 @@ class SymbolScreen$Encoding extends LabelField {
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
+   public int processKeyEvent(int event, char key, int keycode, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

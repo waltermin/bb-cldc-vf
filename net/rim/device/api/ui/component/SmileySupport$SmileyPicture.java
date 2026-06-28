@@ -14,8 +14,8 @@ class SmileySupport$SmileyPicture implements AttributedString$Picture {
    }
 
    @Override
-   public void draw(Graphics var1, int var2, int var3) {
-      this.this$0._smileyFacility.drawEmoticon(var1, this._id, var2, var3);
+   public void draw(Graphics graphics, int x, int y) {
+      this.this$0._smileyFacility.drawEmoticon(graphics, this._id, x, y);
    }
 
    @Override
@@ -23,14 +23,14 @@ class SmileySupport$SmileyPicture implements AttributedString$Picture {
       return this._info;
    }
 
-   SmileySupport$SmileyPicture(SmileySupport var1, int var2) {
-      this.this$0 = var1;
-      this._id = var2;
+   SmileySupport$SmileyPicture(SmileySupport _1, int id) {
+      this.this$0 = _1;
+      this._id = id;
       this._info = (AttributedString$PictureInfo)(new Object(this));
       this._info._width = SmileySupport._size;
       this._info._height = SmileySupport._size;
       this._info._advance = SmileySupport._size + 1;
-      int var3 = SmileySupport._size >= 20 ? 3 : (SmileySupport._size >= 10 ? 2 : 1);
-      this._info._y = -SmileySupport._size + var3;
+      int leading = SmileySupport._size >= 20 ? 3 : (SmileySupport._size >= 10 ? 2 : 1);
+      this._info._y = -SmileySupport._size + leading;
    }
 }

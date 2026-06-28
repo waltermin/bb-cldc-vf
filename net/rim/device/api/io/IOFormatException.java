@@ -6,6 +6,6 @@ public class IOFormatException extends IOException {
    public IOFormatException() {
    }
 
-   public IOFormatException(String var1) {
+   public IOFormatException(String msg) {
    }
 }

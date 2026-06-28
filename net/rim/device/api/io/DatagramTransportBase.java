@@ -3,6 +3,8 @@ package net.rim.device.api.io;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
 import net.rim.device.api.system.GlobalEventListener;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.cldc.io.daemon.ProtocolDaemon;
 import net.rim.device.internal.io.TrafficLogger;
 import net.rim.vm.Array;
@@ -32,20 +34,32 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
       throw null;
    }
 
-   public void init(DatagramConnection var1) {
+   public void init(DatagramConnection subConnection) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void addConnection(DatagramConnection var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addConnection(DatagramConnection connection) {
+      synchronized (this._superConnections) {
+         this._superConnectionsPurge = WeakReferenceUtilities.incrementalWRArrayPurge(this._superConnectionsPurge, this._superConnections);
+         ((DatagramConnectionBase)connection).setTrafficLogger(super._tLogger);
+         Arrays.add(this._superConnections, new Object(connection));
+      }
    }
 
-   public void addSubConnection(DatagramConnectionBase var1) {
-      DatagramReceiveThread.getInstance().addConnection(var1, this);
+   public void addSubConnection(DatagramConnectionBase connection) {
+      DatagramReceiveThread.getInstance().addConnection(connection, this);
    }
 
-   public void close(DatagramConnection var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void close(DatagramConnection connection) {
+      synchronized (this._superConnections) {
+         for (int i = this._superConnections.length - 1; i >= 0; i--) {
+            WeakReference w = this._superConnections[i];
+            DatagramConnection c;
+            if (w == null || (c = (DatagramConnection)w.get()) == null || c == connection) {
+               Arrays.removeAt(this._superConnections, i);
+            }
+         }
+      }
    }
 
    public int getMaximumLength() {
@@ -56,37 +70,37 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
       return this.getMaximumLength();
    }
 
-   protected void superSend(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void superSend(Datagram datagram) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private void addDatagramForSend(Datagram var1, Thread var2) {
-      int var3 = this._sendDatagramList.length;
-      if (this._sendListCount >= var3) {
-         var3 *= 2;
-         Array.resize(this._sendDatagramList, var3);
-         Array.resize(this._sendThreadList, var3);
+   private void addDatagramForSend(Datagram datagram, Thread thread) {
+      int length = this._sendDatagramList.length;
+      if (this._sendListCount >= length) {
+         length *= 2;
+         Array.resize(this._sendDatagramList, length);
+         Array.resize(this._sendThreadList, length);
       }
 
-      this._sendDatagramList[this._sendListCount] = var1;
-      this._sendThreadList[this._sendListCount] = var2;
+      this._sendDatagramList[this._sendListCount] = datagram;
+      this._sendThreadList[this._sendListCount] = thread;
       this._sendListCount++;
    }
 
-   private int findDatagramForSend(Datagram var1, Thread var2) {
-      for (int var3 = this._sendListCount - 1; var3 >= 0; var3--) {
-         if (this._sendThreadList[var3] == var2 && this._sendDatagramList[var3] == var1) {
-            return var3;
+   private int findDatagramForSend(Datagram datagram, Thread thread) {
+      for (int i = this._sendListCount - 1; i >= 0; i--) {
+         if (this._sendThreadList[i] == thread && this._sendDatagramList[i] == datagram) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   private void removeDatagramForSend(int var1) {
+   private void removeDatagramForSend(int index) {
       this._sendListCount--;
-      System.arraycopy(this._sendDatagramList, var1 + 1, this._sendDatagramList, var1, this._sendListCount - var1);
-      System.arraycopy(this._sendThreadList, var1 + 1, this._sendThreadList, var1, this._sendListCount - var1);
+      System.arraycopy(this._sendDatagramList, index + 1, this._sendDatagramList, index, this._sendListCount - index);
+      System.arraycopy(this._sendThreadList, index + 1, this._sendThreadList, index, this._sendListCount - index);
       this._sendDatagramList[this._sendListCount] = null;
       this._sendThreadList[this._sendListCount] = null;
       if (this._sendListCount <= 0 && this._sendDatagramList.length > 4) {
@@ -97,141 +111,253 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
    }
 
    protected final void kickSend() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendDatagramList) {
+         for (int i = this._sendListCount - 1; i >= 0; i--) {
+            if (!this._sendThreadList[i].isAlive()) {
+               this.removeDatagramForSend(i);
+            }
+         }
+
+         if (this._sendCurrentDatagram != null && !this._sendCurrentThread.isAlive()) {
+            this._sendCurrentDatagram = null;
+            this._sendCurrentThread = null;
+            this._sendDatagramList.notify();
+         }
+      }
    }
 
-   protected void send(Datagram var1, DatagramAddressBase var2, IOProperties var3, DatagramStatusListener var4, int var5) {
-      this.send(var1);
+   protected void send(Datagram datagram, DatagramAddressBase addressBase, IOProperties properties, DatagramStatusListener listener, int dgramId) {
+      this.send(datagram);
    }
 
-   public void send(Datagram var1) {
+   public void send(Datagram _1) {
       throw null;
    }
 
-   protected void subSend(Datagram var1, DatagramStatusListener var2, int var3, Datagram var4) {
-      if (var3 != 0) {
-         int var5 = this._subConnection.allocateDatagramId(var1);
-         if (var5 != 0) {
-            this.addDgramId(var2, var3, var5);
+   protected void subSend(Datagram datagram, DatagramStatusListener listener, int datagramId, Datagram superDatagram) {
+      if (datagramId != 0) {
+         int subId = this._subConnection.allocateDatagramId(datagram);
+         if (subId != 0) {
+            this.addDgramId(listener, datagramId, subId);
          }
       }
 
-      if (var4 instanceof DatagramBase && var1 instanceof DatagramBase) {
-         ((DatagramBase)var4).copyFlagsInto((DatagramBase)var1);
+      if (superDatagram instanceof DatagramBase && datagram instanceof DatagramBase) {
+         ((DatagramBase)superDatagram).copyFlagsInto((DatagramBase)datagram);
       }
 
-      this._subConnection.send(var1);
+      this._subConnection.send(datagram);
    }
 
-   public void superCancel(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public void superCancel(Datagram datagram) {
+      boolean cancelFlag;
+      synchronized (this._sendDatagramList) {
+         for (int i = this._sendListCount - 1; i >= 0; i--) {
+            if (this._sendDatagramList[i] == datagram) {
+               this.removeDatagramForSend(i);
+            }
+         }
 
-   public void cancel(Datagram var1) {
-   }
-
-   protected void addDgramId(DatagramStatusListener var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public Datagram newDatagram(byte[] var1, int var2, int var3, String var4) {
-      return new DatagramBase(var1, var2, var3, var4);
-   }
-
-   public DatagramAddressBase newDatagramAddressBase(String var1, boolean var2) {
-      DatagramAddressBase var3 = new DatagramAddressBase(var1);
-      if (var2) {
-         var3.swap();
+         cancelFlag = this._sendCurrentDatagram == datagram;
       }
 
-      return var3;
+      if (cancelFlag) {
+         this.cancel(datagram);
+      }
    }
 
-   public DatagramAddressBase newDatagramAddressBase(DatagramAddressBase var1, boolean var2) {
-      DatagramAddressBase var3 = new DatagramAddressBase(var1);
-      if (var2) {
-         var3.swap();
+   public void cancel(Datagram datagram) {
+   }
+
+   protected void addDgramId(DatagramStatusListener listener, int datagramId, int subId) {
+      if (listener != null) {
+         synchronized (this._dgsls) {
+            this._dgsls[this._nextIdIndex] = (WeakReference)(new Object(listener));
+            this._datagramIds[this._nextIdIndex] = datagramId;
+            this._subIds[this._nextIdIndex] = subId;
+            this._nextIdIndex++;
+            this._nextIdIndex &= 15;
+         }
+      }
+   }
+
+   public Datagram newDatagram(byte[] buffer, int offset, int length, String address) {
+      return new DatagramBase(buffer, offset, length, address);
+   }
+
+   public DatagramAddressBase newDatagramAddressBase(String address, boolean swap) {
+      DatagramAddressBase ret = new DatagramAddressBase(address);
+      if (swap) {
+         ret.swap();
       }
 
-      return var3;
+      return ret;
    }
 
-   protected boolean passUpDatagram(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   protected void processReceivedDatagram(Datagram var1) {
-      throw null;
-   }
-
-   public void superProcessReceivedDatagram(Datagram var1) {
-      if (super._tLogger != null) {
-         super._tLogger.bytesReceived(this, 1, var1.getAddress(), var1.getLength(), var1.getData());
+   public DatagramAddressBase newDatagramAddressBase(DatagramAddressBase addressBase, boolean swap) {
+      DatagramAddressBase ret = new DatagramAddressBase(addressBase);
+      if (swap) {
+         ret.swap();
       }
 
-      this.processReceivedDatagram(var1);
+      return ret;
    }
 
-   protected int getNextDatagramId(DatagramBase var1) {
-      return 0;
-   }
-
-   public int allocateDatagramId(Datagram var1) {
+   protected boolean passUpDatagram(Datagram datagram) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   protected void forwardDgslEvent(int var1, int var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void processReceivedDatagram(Datagram _1) {
+      throw null;
    }
 
-   public void passDgslEvent(int var1, int var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void superProcessReceivedDatagram(Datagram datagram) {
+      if (super._tLogger != null) {
+         super._tLogger.bytesReceived(this, 1, datagram.getAddress(), datagram.getLength(), datagram.getData());
+      }
+
+      this.processReceivedDatagram(datagram);
    }
 
-   public void xmitDgslEvent(DatagramStatusListener var1, int var2, int var3, Object var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected int getNextDatagramId(DatagramBase dgram) {
+      return 0;
    }
 
-   protected int lookupDgramIndexFromSubId(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int allocateDatagramId(Datagram datagram) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   protected int lookupDgramIndexFromDgramId(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void forwardDgslEvent(int index, int event, Object context) {
+      DatagramStatusListener listener = null;
+      int datagramId;
+      synchronized (this._dgsls) {
+         if (this._dgsls[index] != null) {
+            listener = (DatagramStatusListener)this._dgsls[index].get();
+         }
+
+         datagramId = this._datagramIds[index];
+      }
+
+      this.xmitDgslEvent(listener, datagramId, event, context);
    }
 
-   protected int getDgramIdByIndex(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void passDgslEvent(int subId, int event, Object context) {
+      DatagramStatusListener listener = null;
+      int datagramId;
+      synchronized (this._dgsls) {
+         int index = this.lookupDgramIndexFromSubId(subId);
+         if (index < 0) {
+            return;
+         }
+
+         if (this._dgsls[index] != null) {
+            listener = (DatagramStatusListener)this._dgsls[index].get();
+         }
+
+         datagramId = this._datagramIds[index];
+      }
+
+      this.xmitDgslEvent(listener, datagramId, event, context);
    }
 
-   protected void addSendRequest(Object var1, Datagram var2) {
+   public void xmitDgslEvent(DatagramStatusListener listener, int datagramId, int event, Object context) {
+      if (datagramId != 0) {
+         try {
+            if (listener != null) {
+               listener.updateDatagramStatus(datagramId, event, context);
+            } else {
+               for (int i = this._superConnections.length - 1; i >= 0; i--) {
+                  WeakReference w = this._superConnections[i];
+                  DatagramConnectionBase c;
+                  if (w != null && (c = (DatagramConnectionBase)w.get()) != null) {
+                     c.handleDatagramStatus(datagramId, event, context);
+                  } else {
+                     Arrays.removeAt(this._superConnections, i);
+                  }
+               }
+            }
+         } catch (Throwable var8) {
+         }
+      }
+   }
+
+   protected int lookupDgramIndexFromSubId(int subId) {
+      synchronized (this._dgsls) {
+         int index = this._nextIdIndex - 1 & 15;
+
+         for (int i = 0; i < 16; i++) {
+            if (this._subIds[index] == subId) {
+               return index;
+            }
+
+            index = --index & 15;
+         }
+
+         return -1;
+      }
+   }
+
+   protected int lookupDgramIndexFromDgramId(int datagramId) {
+      synchronized (this._dgsls) {
+         int index = this._nextIdIndex - 1 & 15;
+
+         for (int i = 0; i < 16; i++) {
+            if (this._datagramIds[index] == datagramId) {
+               return index;
+            }
+
+            index = --index & 15;
+         }
+
+         return -1;
+      }
+   }
+
+   protected int getDgramIdByIndex(int index) {
+      synchronized (this._dgsls) {
+         return this._datagramIds[index];
+      }
+   }
+
+   protected void addSendRequest(Object sendObj, Datagram datagram) {
       if (this._sendThread == null) {
          this._sendThread = new SendPacketThread();
          ProtocolDaemon.getInstance().startThread(this._sendThread);
       }
 
-      this._sendThread.addRequest(var1, var2);
+      this._sendThread.addRequest(sendObj, datagram);
    }
 
-   protected byte[] setup(int var1, Object var2) {
-      return this._subConnection != null ? this._subConnection.setup(var1, var2) : null;
+   protected byte[] setup(int callType, Object context) {
+      return this._subConnection != null ? this._subConnection.setup(callType, context) : null;
    }
 
-   public void datagramProcessed(int var1) {
+   public void datagramProcessed(int datagramId) {
       if (this._subConnection != null) {
-         this._subConnection.datagramProcessed(var1);
+         this._subConnection.datagramProcessed(datagramId);
       }
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == -1270659756336956134L) {
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == -1270659756336956134L) {
          this.kickSend();
       }
    }
 
    @Override
-   public void setTrafficLogger(TrafficLogger var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setTrafficLogger(TrafficLogger tLogger) {
+      super.setTrafficLogger(tLogger);
+      synchronized (this._superConnections) {
+         for (int i = this._superConnections.length - 1; i >= 0; i--) {
+            WeakReference w = this._superConnections[i];
+            DatagramConnectionBase c;
+            if (w != null && (c = (DatagramConnectionBase)w.get()) != null) {
+               c.setTrafficLogger(tLogger);
+            } else {
+               Arrays.removeAt(this._superConnections, i);
+            }
+         }
+      }
    }
 }

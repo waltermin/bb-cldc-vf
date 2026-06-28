@@ -6,6 +6,6 @@ public class IODatagramLengthException extends IOException {
    public IODatagramLengthException() {
    }
 
-   public IODatagramLengthException(String var1) {
+   public IODatagramLengthException(String msg) {
    }
 }

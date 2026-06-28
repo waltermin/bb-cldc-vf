@@ -7,130 +7,130 @@ public final class ListenerUtilities {
    private ListenerUtilities() {
    }
 
-   public static final Vector addListener(Vector var0, Object var1) {
-      if (var1 == null) {
+   public static final Vector addListener(Vector listeners, Object listener) {
+      if (listener == null) {
          throw new Object();
       }
 
-      Vector var2;
-      if (var0 != null) {
-         if (var0.contains(var1)) {
-            return var0;
+      Vector newVector;
+      if (listeners != null) {
+         if (listeners.contains(listener)) {
+            return listeners;
          }
 
-         var2 = CloneableVector.clone(var0);
+         newVector = CloneableVector.clone(listeners);
       } else {
-         var2 = new CloneableVector(1, 2);
+         newVector = new CloneableVector(1, 2);
       }
 
-      var2.addElement(var1);
-      return var2;
+      newVector.addElement(listener);
+      return newVector;
    }
 
-   public static final Vector fastAddListener(Vector var0, Object var1) {
-      if (var1 == null) {
+   public static final Vector fastAddListener(Vector listeners, Object listener) {
+      if (listener == null) {
          throw new Object();
       }
 
-      Vector var2;
-      if (var0 != null) {
-         if (var0.contains(var1)) {
-            return var0;
+      Vector newVector;
+      if (listeners != null) {
+         if (listeners.contains(listener)) {
+            return listeners;
          }
 
-         var2 = var0;
+         newVector = listeners;
       } else {
-         var2 = new CloneableVector(1, 2);
+         newVector = new CloneableVector(1, 2);
       }
 
-      var2.addElement(var1);
-      return var2;
+      newVector.addElement(listener);
+      return newVector;
    }
 
-   public static final Vector removeListener(Vector var0, Object var1) {
-      if (var0 != null && var0.contains(var1)) {
-         if (var0.size() == 1) {
+   public static final Vector removeListener(Vector listeners, Object listener) {
+      if (listeners != null && listeners.contains(listener)) {
+         if (listeners.size() == 1) {
             return null;
          }
 
-         Vector var2 = CloneableVector.clone(var0);
-         var2.removeElement(var1);
-         return var2;
+         Vector newVector = CloneableVector.clone(listeners);
+         newVector.removeElement(listener);
+         return newVector;
       } else {
-         return var0;
+         return listeners;
       }
    }
 
-   public static final Object[] addListener(Object[] var0, Object var1) {
-      if (var1 == null) {
+   public static final Object[] addListener(Object[] listeners, Object listener) {
+      if (listener == null) {
          throw new Object();
       }
 
-      Object[] var2;
-      int var3;
-      if (var0 != null) {
-         if (Arrays.contains(var0, var1)) {
-            return var0;
+      Object[] newArray;
+      int index;
+      if (listeners != null) {
+         if (Arrays.contains(listeners, listener)) {
+            return listeners;
          }
 
-         var3 = var0.length;
-         var2 = new Object[var3 + 1];
-         System.arraycopy(var0, 0, var2, 0, var3);
+         index = listeners.length;
+         newArray = new Object[index + 1];
+         System.arraycopy(listeners, 0, newArray, 0, index);
       } else {
-         var3 = 0;
-         var2 = new Object[1];
+         index = 0;
+         newArray = new Object[1];
       }
 
-      var2[var3] = var1;
-      return var2;
+      newArray[index] = listener;
+      return newArray;
    }
 
-   public static final Object[] fastAddListener(Object[] var0, Object var1) {
-      if (var1 == null) {
+   public static final Object[] fastAddListener(Object[] listeners, Object listener) {
+      if (listener == null) {
          throw new Object();
       }
 
-      Object[] var2;
-      int var3;
-      if (var0 != null) {
-         if (Arrays.contains(var0, var1)) {
-            return var0;
+      Object[] newArray;
+      int index;
+      if (listeners != null) {
+         if (Arrays.contains(listeners, listener)) {
+            return listeners;
          }
 
-         var3 = var0.length;
-         Array.resize(var0, var3 + 1);
-         var2 = var0;
+         index = listeners.length;
+         Array.resize(listeners, index + 1);
+         newArray = listeners;
       } else {
-         var3 = 0;
-         var2 = new Object[1];
+         index = 0;
+         newArray = new Object[1];
       }
 
-      var2[var3] = var1;
-      return var2;
+      newArray[index] = listener;
+      return newArray;
    }
 
-   public static final Object[] removeListener(Object[] var0, Object var1) {
-      if (var0 == null) {
-         return var0;
+   public static final Object[] removeListener(Object[] listeners, Object listener) {
+      if (listeners == null) {
+         return listeners;
       }
 
-      int var2 = Arrays.getIndex(var0, var1);
-      if (var2 == -1) {
-         return var0;
+      int index = Arrays.getIndex(listeners, listener);
+      if (index == -1) {
+         return listeners;
       }
 
-      int var3 = var0.length;
-      if (var3 == 1) {
+      int length = listeners.length;
+      if (length == 1) {
          return null;
       }
 
-      Object[] var4 = new Object[--var3];
-      System.arraycopy(var0, 0, var4, 0, var2);
-      System.arraycopy(var0, var2 + 1, var4, var2, var3 - var2);
-      return var4;
+      Object[] newArray = new Object[--length];
+      System.arraycopy(listeners, 0, newArray, 0, index);
+      System.arraycopy(listeners, index + 1, newArray, index, length - index);
+      return newArray;
    }
 
-   public static final boolean containsListener(Object[] var0, Object var1) {
-      return var0 == null ? false : Arrays.getIndex(var0, var1) != -1;
+   public static final boolean containsListener(Object[] listeners, Object listener) {
+      return listeners == null ? false : Arrays.getIndex(listeners, listener) != -1;
    }
 }

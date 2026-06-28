@@ -13,9 +13,9 @@ public final class Device {
       ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
    }
 
-   public static final boolean requestPowerOff(boolean var0) {
+   public static final boolean requestPowerOff(boolean allowAutoOn) {
       assertPermission();
-      return DeviceInternal.requestPowerOff(var0);
+      return DeviceInternal.requestPowerOff(allowAutoOn);
    }
 
    public static final boolean requestStorageMode() {
@@ -23,8 +23,8 @@ public final class Device {
       return DeviceInternal.requestStorageMode();
    }
 
-   public static final boolean setDateTime(long var0) {
+   public static final boolean setDateTime(long dateTimeMillis) {
       assertPermission();
-      return DeviceInternal.setDateTime(var0);
+      return DeviceInternal.setDateTime(dateTimeMillis);
    }
 }

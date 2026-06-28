@@ -9,7 +9,7 @@ public final class OptionsRegistry$DoubleParameter implements Persistable {
       return this._value;
    }
 
-   final void setValue(double var1) {
-      this._value = var1;
+   final void setValue(double value) {
+      this._value = value;
    }
 }

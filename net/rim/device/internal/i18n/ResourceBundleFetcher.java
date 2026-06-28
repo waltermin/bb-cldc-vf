@@ -1,11 +1,13 @@
 package net.rim.device.internal.i18n;
 
+import net.rim.device.api.i18n.CompressedResourceBundle;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.internal.system.RIMProcessLauncher;
 import net.rim.device.internal.system.RIMProcessLauncher$ApplicationCallback;
+import net.rim.device.resources.Resource$Internal;
 
 public final class ResourceBundleFetcher implements RIMProcessLauncher$ApplicationCallback {
    private final ResourceBundleFetcher$CompressedResourceHashtable _bundleCache;
@@ -21,8 +23,8 @@ public final class ResourceBundleFetcher implements RIMProcessLauncher$Applicati
 
    private static final ResourceBundleFetcher getInstance() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (ResourceBundleFetcher)var0.waitFor(3190551698550597928L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _instance = (ResourceBundleFetcher)ar.waitFor(3190551698550597928L);
       }
 
       return _instance;
@@ -36,27 +38,61 @@ public final class ResourceBundleFetcher implements RIMProcessLauncher$Applicati
    }
 
    public static final void flushRequestData() {
-      throw new RuntimeException("cod2jar: exception table");
+      ResourceBundleFetcher fetcher = getInstance();
+      synchronized (fetcher._requestLock) {
+         Application app = fetcher._fetcherAppRef;
+         fetcher._fetcherAppRef = null;
+         app.invokeLater(new ResourceBundleFetcher$RequestFlushRunnable(null));
+      }
+
+      launchRequestProcess();
    }
 
-   public static final ResourceBundle fetch(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final ResourceBundle fetch(String name) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final boolean verifyCompressedResourcePresent(String var0) {
-      return getInstance()._bundleCache.isLoaded(var0);
+   public static final boolean verifyCompressedResourcePresent(String name) {
+      return getInstance()._bundleCache.isLoaded(name);
    }
 
    @Override
-   public final void applicationStarted(Application var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void applicationStarted(Application application) {
+      if (this._fetcherAppRef == null) {
+         this._fetcherAppRef = application;
+         synchronized (this._requestLock) {
+            this._requestLock.notifyAll();
+         }
+      }
    }
 
    private static final void launchRequestProcess() {
       RIMProcessLauncher.launchApplication(_instance);
    }
 
-   private static final ResourceBundle fetchResourceBundleInternal(String var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final ResourceBundle fetchResourceBundleInternal(String name, int module) {
+      if (name == null) {
+         throw new Object();
+      }
+
+      byte[] data = null;
+      if (module != 0) {
+         data = Resource$Internal.getResource(name, module);
+         if (data != null) {
+            return CompressedResourceBundle.getResourceBundle(data);
+         }
+      }
+
+      try {
+         Class c = Class.forName(name);
+         Object o = c.newInstance();
+         return (ResourceBundle)o;
+      } catch (ClassNotFoundException var6) {
+         return null;
+      } catch (IllegalAccessException var7) {
+         return null;
+      } catch (InstantiationException var8) {
+         return null;
+      }
    }
 }

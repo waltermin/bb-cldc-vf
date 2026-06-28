@@ -13,33 +13,33 @@ public final class StringMatch implements Persistable {
 
    private final native int KMPMatch(StringBuffer var1, int var2);
 
-   public StringMatch(String var1, boolean var2) {
-      this(var1, var2, true);
+   public StringMatch(String patternToMatch, boolean caseSensitivity) {
+      this(patternToMatch, caseSensitivity, true);
    }
 
-   public StringMatch(String var1, boolean var2, boolean var3) {
-      this(var1, var2, var3, true);
+   public StringMatch(String patternToMatch, boolean caseSensitivity, boolean spaceDelimitsNewPattern) {
+      this(patternToMatch, caseSensitivity, spaceDelimitsNewPattern, true);
    }
 
-   public StringMatch(String var1, boolean var2, boolean var3, boolean var4) {
+   public StringMatch(String patternToMatch, boolean caseSensitivity, boolean spaceDelimitsNewPattern, boolean allMatch) {
    }
 
-   public StringMatch(String[] var1, boolean var2, boolean var3) {
+   public StringMatch(String[] patterns, boolean caseSensitivity, boolean allMatch) {
    }
 
-   public StringMatch(String var1) {
-      this(var1, true);
+   public StringMatch(String pattern) {
+      this(pattern, true);
    }
 
-   public final int indexOf(String var1) {
-      return this.KMPMatch(var1, 0);
+   public final int indexOf(String text) {
+      return this.KMPMatch(text, 0);
    }
 
-   public final int indexOf(String var1, int var2) {
+   public final int indexOf(String text, int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public final int indexOf(StringBuffer var1, int var2) {
+   public final int indexOf(StringBuffer text, int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 

@@ -3,20 +3,28 @@ package net.rim.device.internal.media;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.internal.system.ApplicationManagerInternal;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.vm.Message;
 
 public class MediaRemoteControl {
-   public static void addListener(Application var0, MediaRemoteControlListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static void addListener(Application app, MediaRemoteControlListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(28) == null) {
+            dispatchManager.setDispatcher(28, new MediaRemoteControlDispatcher());
+         }
+      }
+
+      app.addListener(28, listener);
    }
 
-   public static void removeListener(Application var0, MediaRemoteControlListener var1) {
-      var0.removeListener(28, var1);
+   public static void removeListener(Application app, MediaRemoteControlListener listener) {
+      app.removeListener(28, listener);
    }
 
-   public static void postPanelEvent(int var0, int var1) {
-      Object var2 = new Object(28, var0, var1);
-      ApplicationManagerInternal var3 = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
-      var3.postMessage((Message)var2);
+   public static void postPanelEvent(int operation, int action) {
+      Message msg = (Message)(new Object(28, operation, action));
+      ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      appManager.postMessage(msg);
    }
 }

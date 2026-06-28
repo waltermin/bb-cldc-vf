@@ -6,14 +6,14 @@ import net.rim.device.api.util.StringUtilities;
 class ThemeManager$2 implements Comparator {
    private final ThemeManager this$0;
 
-   ThemeManager$2(ThemeManager var1) {
-      this.this$0 = var1;
+   ThemeManager$2(ThemeManager _1) {
+      this.this$0 = _1;
    }
 
    @Override
-   public int compare(Object var1, Object var2) {
-      Object var3 = var1;
-      Object var4 = var2;
-      return StringUtilities.compareToIgnoreCase((String)var3, ((Theme$Factory)var4).getName(), 1701707776);
+   public int compare(Object o1, Object o2) {
+      String l1 = (String)o1;
+      Theme$Factory l2 = (Theme$Factory)o2;
+      return StringUtilities.compareToIgnoreCase(l1, l2.getName(), 1701707776);
    }
 }

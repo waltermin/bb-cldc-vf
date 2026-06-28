@@ -3,29 +3,29 @@ package net.rim.device.api.collection.util;
 import net.rim.device.api.collection.ReadableList;
 
 public class ReadableListUtil {
-   public static int getAt(int var0, int var1, Object[] var2, int var3, ReadableList var4) {
-      int var5 = var4.size();
-      if (var1 < 0) {
-         var1 = 0;
-      } else if (var0 >= var5) {
-         var1 = 0;
-      } else if (var0 + var1 > var5) {
-         var1 = var5 - var0;
+   public static int getAt(int start, int count, Object[] dest, int destIndex, ReadableList list) {
+      int n = list.size();
+      if (count < 0) {
+         count = 0;
+      } else if (start >= n) {
+         count = 0;
+      } else if (start + count > n) {
+         count = n - start;
       }
 
-      for (int var6 = var1; var6 != 0; var6--) {
-         var2[var3++] = var4.getAt(var0++);
+      for (int i = count; i != 0; i--) {
+         dest[destIndex++] = list.getAt(start++);
       }
 
-      return var1;
+      return count;
    }
 
-   public static int getIndex(Object var0, ReadableList var1) {
-      int var2 = var1.size();
+   public static int getIndex(Object element, ReadableList list) {
+      int n = list.size();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (var1.getAt(var3) == var0) {
-            return var3;
+      for (int i = 0; i < n; i++) {
+         if (list.getAt(i) == element) {
+            return i;
          }
       }
 

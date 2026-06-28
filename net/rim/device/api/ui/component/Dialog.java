@@ -75,16 +75,16 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       this.show(50);
    }
 
-   public void show(int var1) {
+   public void show(int priority) {
       this._isModal = false;
       if (this.isStyle(33554432)) {
-         Ui.getUiEngine().pushGlobalScreen(this, var1, 2);
+         Ui.getUiEngine().pushGlobalScreen(this, priority, 2);
       } else {
          Ui.getUiEngine().pushScreen(this);
       }
    }
 
-   public void setDialogClosedListener(DialogClosedListener var1) {
+   public void setDialogClosedListener(DialogClosedListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -92,49 +92,49 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       return this._list;
    }
 
-   public void setIcon(Image var1) {
-      Object var2 = null;
-      if (var1 != null) {
-         var2 = new Object();
-         ((ImageField)var2).setImage(var1);
+   public void setIcon(Image image) {
+      ImageField field = null;
+      if (image != null) {
+         field = (ImageField)(new Object());
+         field.setImage(image);
       }
 
-      this._dfm.setIcon((ImageField)var2);
+      this._dfm.setIcon(field);
    }
 
    public boolean isDontAskAgainChecked() {
       return this._dontAskAgainCheckbox == null ? false : this._dontAskAgainCheckbox.getChecked();
    }
 
-   protected void onHotkeySelected(char var1) {
+   protected void onHotkeySelected(char key) {
    }
 
-   public void setIcon(EncodedImage var1) {
-      Object var2 = null;
-      if (var1 != null) {
-         var2 = new Object(null, 65568);
-         ((BitmapField)var2).setImage(var1);
+   public void setIcon(EncodedImage image) {
+      BitmapField field = null;
+      if (image != null) {
+         field = (BitmapField)(new Object(null, 65568));
+         field.setImage(image);
       }
 
-      this._dfm.setIcon((BitmapField)var2);
+      this._dfm.setIcon(field);
    }
 
    protected void select() {
-      int var1 = this._list != null && this.isStyle(1) ? this._list.getSelectedIndex() : this.getLeafFieldWithFocus().getIndex();
-      this.selectOrdinal(var1);
+      int selection = this._list != null && this.isStyle(1) ? this._list.getSelectedIndex() : this.getLeafFieldWithFocus().getIndex();
+      this.selectOrdinal(selection);
    }
 
-   public void select(int var1) {
-      this.selectOrdinal(this.ordinalOfValue(var1));
+   public void select(int value) {
+      this.selectOrdinal(this.ordinalOfValue(value));
    }
 
-   public final void setDefault(int var1) {
+   public final void setDefault(int defaultChoice) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setDontAskAgainPrompt(boolean var1) {
-      if (this._dontAskAgainCheckbox != null != var1) {
-         if (var1) {
+   public void setDontAskAgainPrompt(boolean prompt) {
+      if (this._dontAskAgainCheckbox != null != prompt) {
+         if (prompt) {
             this._dontAskAgainCheckbox = (CheckboxField)(new Object(CommonResource.getString(10094), false, 1073741824));
             this._dfm.getBottomManager().add(this._dontAskAgainCheckbox);
             return;
@@ -145,7 +145,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       }
    }
 
-   public final void setEscapeEnabled(boolean var1) {
+   public final void setEscapeEnabled(boolean escapeEnabled) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -161,15 +161,15 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 instanceof Object) {
+   public void fieldChanged(Field field, int context) {
+      if (field instanceof Object) {
          this.select();
       }
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      return this._dfm.getAccessibleSelectionAt(var1);
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      return this._dfm.getAccessibleSelectionAt(index);
    }
 
    @Override
@@ -177,15 +177,15 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       return this._dfm.getAccessibleSelectionCount();
    }
 
-   public Dialog(String var1, Object[] var2, int[] var3, int var4, Bitmap var5, long var6, DialogFieldManager var8) {
-      super(var8, var6);
-      this.setup(var1, var2, var3, var4, var5);
+   public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap, long style, DialogFieldManager dialogFieldManager) {
+      super(dialogFieldManager, style);
+      this.setup(message, choices, values, defaultChoice, bitmap);
    }
 
-   public Dialog(String var1, Object[] var2, int[] var3, int var4, Bitmap var5, long var6, long var8) {
-      super((Manager)(new Object()), var6);
-      this._drawStyle = var8;
-      this.setup(var1, var2, var3, var4, var5);
+   public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap, long style, long drawStyle) {
+      super((Manager)(new Object()), style);
+      this._drawStyle = drawStyle;
+      this.setup(message, choices, values, defaultChoice, bitmap);
    }
 
    @Override
@@ -193,41 +193,41 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       return this._preferredWidth;
    }
 
-   protected static String[] getResourceChoices(int var0) {
-      return CommonResource.getStringArray(_resources[var0]);
+   protected static String[] getResourceChoices(int type) {
+      return CommonResource.getStringArray(_resources[type]);
    }
 
-   protected static String getResourceMessage(int var0) {
-      return (String)CommonResource.getBundle().getObject(_resources[var0] + 3, true);
+   protected static String getResourceMessage(int type) {
+      return (String)CommonResource.getBundle().getObject(_resources[type] + 3, true);
    }
 
-   protected static int[] getResourceValues(int var0) {
-      return ((Dialog$DialogResources)_globalResources.get(_resources[var0]))._responses;
+   protected static int[] getResourceValues(int type) {
+      return ((Dialog$DialogResources)_globalResources.get(_resources[type]))._responses;
    }
 
-   protected static int getResourceDefaultValue(int var0) {
-      return ((Dialog$DialogResources)_globalResources.get(_resources[var0]))._defaultResponse;
+   protected static int getResourceDefaultValue(int type) {
+      return ((Dialog$DialogResources)_globalResources.get(_resources[type]))._defaultResponse;
    }
 
-   public Dialog(int var1, String var2, int var3, Bitmap var4, long var5) {
-      super((Manager)(new Object()), var5);
-      if (var2 == null) {
-         var2 = getResourceMessage(var1);
+   public Dialog(int type, String message, int defaultChoice, Bitmap bitmap, long style) {
+      super((Manager)(new Object()), style);
+      if (message == null) {
+         message = getResourceMessage(type);
       }
 
-      String[] var7 = getResourceChoices(var1);
-      int[] var8 = getResourceValues(var1);
+      String[] choices = getResourceChoices(type);
+      int[] values = getResourceValues(type);
       this.setEscapeEnabled(true);
-      this.setup(var2, var7, var8, var3, var4);
+      this.setup(message, choices, values, defaultChoice, bitmap);
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      if (super.invokeAction(var1)) {
+   protected boolean invokeAction(int action) {
+      if (super.invokeAction(action)) {
          return true;
       }
 
-      switch (var1) {
+      switch (action) {
          case 1:
             if (this.isStyle(1)) {
                this.select();
@@ -239,23 +239,23 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      return this._dfm.isAccessibleChildSelected(var1);
+   public boolean isAccessibleChildSelected(int index) {
+      return this._dfm.isAccessibleChildSelected(index);
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      boolean var3 = super.navigationClick(var1, var2);
-      if (!var3 && this.isStyle(1)) {
+   protected boolean navigationClick(int status, int time) {
+      boolean result = super.navigationClick(status, time);
+      if (!result && this.isStyle(1)) {
          this.select();
          return true;
       } else {
-         return var3;
+         return result;
       }
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
+   protected void onUiEngineAttached(boolean attached) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -269,26 +269,26 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public Dialog(int var1, String var2, int var3, Bitmap var4, long var5, boolean var7) {
-      super((Manager)(new Object()), var5);
-      if (var2 == null) {
-         var2 = getResourceMessage(var1);
+   public Dialog(int type, String message, int defaultChoice, Bitmap bitmap, long style, boolean dontAskAgain) {
+      super((Manager)(new Object()), style);
+      if (message == null) {
+         message = getResourceMessage(type);
       }
 
-      String[] var8 = getResourceChoices(var1);
-      int[] var9 = getResourceValues(var1);
+      String[] choices = getResourceChoices(type);
+      int[] values = getResourceValues(type);
       this.setEscapeEnabled(true);
-      this.setup(var2, var8, var9, var3, var4);
-      this.setDontAskAgainPrompt(var7);
+      this.setup(message, choices, values, defaultChoice, bitmap);
+      this.setDontAskAgainPrompt(dontAskAgain);
    }
 
-   private void setup(String var1, Object[] var2, int[] var3, int var4, Bitmap var5) {
+   private void setup(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void add(Field var1) {
-      this._dfm.addCustomField(var1);
+   public void add(Field field) {
+      this._dfm.addCustomField(field);
    }
 
    @Override
@@ -301,36 +301,36 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       return this.getLabel().getText();
    }
 
-   public static void inform(String var0) {
+   public static void inform(String message) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static int ask(int var0) {
-      return ask(var0, null);
+   public static int ask(int type) {
+      return ask(type, null);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static int ask(int var0, String var1) {
-      return ask(var0, var1, getResourceDefaultValue(var0));
+   public static int ask(int type, String message) {
+      return ask(type, message, getResourceDefaultValue(type));
    }
 
-   private int ordinalOfValue(int var1) {
-      int var2 = var1;
+   private int ordinalOfValue(int value) {
+      int choiceindex = value;
       if (this._values != null) {
-         var2 = -1;
+         choiceindex = -1;
 
-         for (int var3 = 0; var3 < this._values.length; var3++) {
-            if (this._values[var3] == var1) {
-               var2 = var3;
+         for (int lv = 0; lv < this._values.length; lv++) {
+            if (this._values[lv] == value) {
+               choiceindex = lv;
             }
          }
       }
 
-      return var2;
+      return choiceindex;
    }
 
    @Override
@@ -338,23 +338,23 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       return this._dfm.getAccessibleChildCount();
    }
 
-   public static int ask(String var0, Object[] var1, int var2) {
-      return ask(var0, var1, null, var2);
+   public static int ask(String message, Object[] choices, int defaultChoice) {
+      return ask(message, choices, null, defaultChoice);
    }
 
-   public static int ask(String var0, Object[] var1, int[] var2, int var3) {
+   public static int ask(String message, Object[] choices, int[] values, int defaultChoice) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void selectOrdinal(int var1) {
+   private void selectOrdinal(int selection) {
       if (this._values != null) {
-         this._returnValue = this._values[var1];
+         this._returnValue = this._values[selection];
       } else {
-         this._returnValue = var1;
+         this._returnValue = selection;
       }
 
-      if (this._dfm.hasButtons() && var1 < this._dfm.getButtonManager().getFieldCount()) {
-         this._dfm.getButtonField(var1).setFocus();
+      if (this._dfm.hasButtons() && selection < this._dfm.getButtonManager().getFieldCount()) {
+         this._dfm.getButtonField(selection).setFocus();
       }
 
       this.doPaint();
@@ -363,48 +363,48 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void setChoices(Object[] var1, int[] var2) {
+   private void setChoices(Object[] choices, int[] values) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public Dialog(String var1, Object[] var2, int[] var3, int var4, Bitmap var5) {
-      this(var1, var2, var3, var4, var5, 0);
+   public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap) {
+      this(message, choices, values, defaultChoice, bitmap, 0);
    }
 
-   public Dialog(String var1, Object[] var2, int[] var3, int var4, Bitmap var5, long var6) {
-      super((Manager)(new Object()), var6);
-      this.setup(var1, var2, var3, var4, var5);
+   public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap, long style) {
+      super((Manager)(new Object()), style);
+      this.setup(message, choices, values, defaultChoice, bitmap);
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      return this._dfm.getAccessibleChildAt(var1);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      return this._dfm.getAccessibleChildAt(index);
    }
 
-   public static int ask(int var0, String var1, int var2) {
+   public static int ask(int type, String message, int defaultChoice) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static void alert(String var0) {
+   public static void alert(String message) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return super.stylusTap(var1, var2, var3, var4) ? true : this.trackwheelClick(var3, var4);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return super.stylusTap(x, y, status, time) ? true : this.trackwheelClick(status, time);
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      boolean var3 = super.trackwheelClick(var1, var2);
-      if (!var3 && this.isStyle(1)) {
+   protected boolean trackwheelClick(int status, int time) {
+      boolean result = super.trackwheelClick(status, time);
+      if (!result && this.isStyle(1)) {
          this.select();
          return true;
       } else {
-         return var3;
+         return result;
       }
    }
 
@@ -419,7 +419,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   private void addChoice(String var1) {
+   private void addChoice(String choice) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

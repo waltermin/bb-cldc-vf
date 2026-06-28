@@ -13,10 +13,10 @@ public class InputEvent extends ComponentEvent {
    public static final int RIGHT_MASK;
    public static final int NOT_FROM_KEYPAD_MASK;
 
-   public InputEvent(IComponent var1, int var2, long var3, int var5, int var6) {
-      super(var1, var2, var6 | Event.INPUT_EVENT_MASK);
-      this._when = var3;
-      this._modifiers = var5;
+   public InputEvent(IComponent source, int eventID, long aWhen, int modif, int eMask) {
+      super(source, eventID, eMask | Event.INPUT_EVENT_MASK);
+      this._when = aWhen;
+      this._modifiers = modif;
    }
 
    public int getModifiers() {
@@ -27,7 +27,7 @@ public class InputEvent extends ComponentEvent {
       return this._when;
    }
 
-   public void setModifiers(int var1) {
+   public void setModifiers(int aModif) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

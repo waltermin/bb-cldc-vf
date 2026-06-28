@@ -1,8 +1,10 @@
 package net.rim.device.cldc.io.daemon;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import net.rim.device.api.io.TransportBase;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.io.TrafficLogger;
 
 public final class TransportRegistry extends Thread {
@@ -16,34 +18,108 @@ public final class TransportRegistry extends Thread {
    private TransportRegistry() {
    }
 
-   private final TransportBase getSingleton(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final TransportBase getSingleton(String transportName) {
+      TransportBase transport = (TransportBase)this._instances.get(transportName);
+      if (transport != null) {
+         return transport;
+      }
+
+      if (Thread.currentThread() == this) {
+         try {
+            Class transportClass = Class.forName(transportName);
+            transport = (TransportBase)transportClass.newInstance();
+         } catch (InstantiationException var8) {
+         } catch (ClassNotFoundException var9) {
+         } catch (IllegalAccessException var10) {
+         } catch (ClassCastException var11) {
+         }
+
+         if (transport != null) {
+            try {
+               transport.init();
+            } catch (IOException var7) {
+            }
+
+            synchronized (this) {
+               transport.setTrafficLogger(this._tLogger);
+               this._instances.put(transportName, transport);
+               return transport;
+            }
+         } else {
+            return transport;
+         }
+      } else {
+         TransportRegistry$Request request = new TransportRegistry$Request();
+         request._transportName = transportName;
+         synchronized (this._requests) {
+            Arrays.add(this._requests, request);
+            this._requests.notify();
+         }
+
+         synchronized (request) {
+            while (!request._done) {
+               try {
+                  request.wait();
+               } catch (InterruptedException var12) {
+               }
+            }
+
+            return request._transportBase;
+         }
+      }
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (true) {
+         TransportRegistry$Request request;
+         synchronized (this._requests) {
+            while (this._requests.length == 0) {
+               try {
+                  request = null;
+                  this._requests.wait();
+               } catch (InterruptedException var6) {
+               }
+            }
+
+            request = this._requests[0];
+            Arrays.removeAt(this._requests, 0);
+         }
+
+         TransportBase transport = null;
+
+         try {
+            transport = this.getSingleton(request._transportName);
+         } catch (IOException var5) {
+         }
+
+         synchronized (request) {
+            request._transportBase = transport;
+            request._done = true;
+            request.notify();
+         }
+      }
    }
 
    private static final TransportRegistry getRegistry() {
       return (TransportRegistry)ApplicationRegistry.getApplicationRegistry().waitFor(-3443331856084987690L);
    }
 
-   public static final TransportBase get(String var0) {
-      return getRegistry().getSingleton(var0);
+   public static final TransportBase get(String transportName) {
+      return getRegistry().getSingleton(transportName);
    }
 
    static final void init() {
-      TransportRegistry var0 = new TransportRegistry();
-      ApplicationRegistry.getApplicationRegistry().put(-3443331856084987690L, var0);
-      var0.start();
+      TransportRegistry transportRegistry = new TransportRegistry();
+      ApplicationRegistry.getApplicationRegistry().put(-3443331856084987690L, transportRegistry);
+      transportRegistry.start();
    }
 
-   public static final void setTrafficLogger(TrafficLogger var0) {
-      getRegistry().setTrafficLoggerInternal(var0);
+   public static final void setTrafficLogger(TrafficLogger logger) {
+      getRegistry().setTrafficLoggerInternal(logger);
    }
 
-   private final synchronized void setTrafficLoggerInternal(TrafficLogger var1) {
+   private final synchronized void setTrafficLoggerInternal(TrafficLogger logger) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 }

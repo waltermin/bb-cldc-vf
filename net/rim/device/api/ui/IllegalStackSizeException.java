@@ -4,14 +4,14 @@ public class IllegalStackSizeException extends RuntimeException {
    public IllegalStackSizeException() {
    }
 
-   public IllegalStackSizeException(String var1) {
+   public IllegalStackSizeException(String message) {
    }
 
-   public IllegalStackSizeException(String var1, Class var2, Graphics var3, int var4) {
-      super(unpairedMessage(var1, var2, var3, var4));
+   public IllegalStackSizeException(String type, Class clazz, Graphics graphics, int depthExpected) {
+      super(unpairedMessage(type, clazz, graphics, depthExpected));
    }
 
-   private static String unpairedMessage(String var0, Class var1, Graphics var2, int var3) {
+   private static String unpairedMessage(String type, Class clazz, Graphics graphics, int depthExpected) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

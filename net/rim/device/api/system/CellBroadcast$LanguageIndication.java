@@ -17,39 +17,39 @@ class CellBroadcast$LanguageIndication implements SIMCardEfTask {
    }
 
    @Override
-   public void doWork(SIMCardEfHandler var1) {
-      int var2 = 0;
-      int var3 = 0;
+   public void doWork(SIMCardEfHandler efHandler) {
+      int seenLangs = 0;
+      int curPriority = 0;
       this._prefs = new CellBroadcast$LanguagePreference[CellBroadcast.MAX_LANG_PREFS];
-      int var4 = var1.infoRequest(102);
-      if (var4 == 0) {
-         this._buffer = new byte[var1.getFileSize()];
-         var4 = var1.readRequest(0, this._buffer);
+      int result = efHandler.infoRequest(102);
+      if (result == 0) {
+         this._buffer = new byte[efHandler.getFileSize()];
+         result = efHandler.readRequest(0, this._buffer);
       }
 
-      if (var4 == 0 && this._buffer.length >= 1) {
+      if (result == 0 && this._buffer.length >= 1) {
          if (this._buffer[0] == 255 && this._buffer[1] == 255) {
-            CellBroadcast.fillLP_TableWithDefaults(this._prefs, var2);
+            CellBroadcast.fillLP_TableWithDefaults(this._prefs, seenLangs);
          } else {
-            for (byte var6 = 0; var6 < this._buffer.length - 1; var6 += 2) {
-               for (int var7 = 0; var7 < CellBroadcast.MAX_LANG_PREFS; var7++) {
-                  int var5 = this._buffer[var6] << 8;
-                  var5 |= this._buffer[var6 + 1];
-                  if (var5 == CellBroadcast.ISO639_TO_DEFAULTS[var7] && var3 < CellBroadcast.MAX_LANG_PREFS) {
-                     Object var8 = new Object(CellBroadcast.langPrefTable[var7]);
-                     ((CellBroadcast$LanguagePreference)var8).setPriority(var3);
-                     ((CellBroadcast$LanguagePreference)var8).setEnabled(true);
-                     this._prefs[var3] = (CellBroadcast$LanguagePreference)var8;
-                     var2 |= 1 << CellBroadcast.langPrefTable[var7];
-                     var3++;
+            for (int i = 0; i < this._buffer.length - 1; i += 2) {
+               for (int j = 0; j < CellBroadcast.MAX_LANG_PREFS; j++) {
+                  int temp = this._buffer[i] << 8;
+                  temp |= this._buffer[i + 1];
+                  if (temp == CellBroadcast.ISO639_TO_DEFAULTS[j] && curPriority < CellBroadcast.MAX_LANG_PREFS) {
+                     CellBroadcast$LanguagePreference tempPref = (CellBroadcast$LanguagePreference)(new Object(CellBroadcast.langPrefTable[j]));
+                     tempPref.setPriority(curPriority);
+                     tempPref.setEnabled(true);
+                     this._prefs[curPriority] = tempPref;
+                     seenLangs |= 1 << CellBroadcast.langPrefTable[j];
+                     curPriority++;
                   }
                }
             }
 
-            CellBroadcast.fillLP_TableWithDefaults(this._prefs, var2);
+            CellBroadcast.fillLP_TableWithDefaults(this._prefs, seenLangs);
          }
       } else {
-         CellBroadcast.fillLP_TableWithDefaults(this._prefs, var2);
+         CellBroadcast.fillLP_TableWithDefaults(this._prefs, seenLangs);
       }
    }
 

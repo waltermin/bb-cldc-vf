@@ -9,35 +9,35 @@ class Screen$LocationFocusSelector implements Screen$FocusSelector {
    private boolean _success;
    private static Screen$LocationFocusSelector _selector;
 
-   public static Screen$LocationFocusSelector getSelector(Field var0, int var1, int var2, int var3, int var4) {
-      _selector._field = var0;
-      _selector._x = var1;
-      _selector._y = var2;
-      _selector._status = var3;
-      _selector._time = var4;
+   public static Screen$LocationFocusSelector getSelector(Field field, int x, int y, int status, int time) {
+      _selector._field = field;
+      _selector._x = x;
+      _selector._y = y;
+      _selector._status = status;
+      _selector._time = time;
       return _selector;
    }
 
    @Override
    public void select() {
-      Field var1 = this._field;
-      if (var1 == null) {
+      Field field = this._field;
+      if (field == null) {
          this._success = false;
       } else {
-         Screen var2 = var1.getScreen();
-         Field var3 = var2.getLeafFieldWithFocus();
-         var2.onUnfocus();
-         this._success = var1.moveFocusToPoint(this._x, this._y, this._status, this._time);
+         Screen screen = field.getScreen();
+         Field original = screen.getLeafFieldWithFocus();
+         screen.onUnfocus();
+         this._success = field.moveFocusToPoint(this._x, this._y, this._status, this._time);
          if (this._success) {
-            var1.focusChangeNotify(1);
+            field.focusChangeNotify(1);
 
-            for (Manager var4 = var1.getManager(); var4 != var2; var4 = var4.getManager()) {
-               var4.focusChangeNotify(1);
-               var4.setFieldWithFocus(var1);
-               var1 = var4;
+            for (Manager manager = field.getManager(); manager != screen; manager = manager.getManager()) {
+               manager.focusChangeNotify(1);
+               manager.setFieldWithFocus(field);
+               field = manager;
             }
-         } else if (var3 != null) {
-            var3.setFocus();
+         } else if (original != null) {
+            original.setFocus();
          }
 
          this._field = null;

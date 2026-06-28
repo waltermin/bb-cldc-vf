@@ -38,48 +38,63 @@ public final class DeviceOptions implements GlobalEventListener {
       return _instance;
    }
 
-   public static final void addLegacyDeviceOptionsListener(LegacyDeviceOptionsListener var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addLegacyDeviceOptionsListener(LegacyDeviceOptionsListener listener) {
+      DeviceOptions instance = getInstance();
+      synchronized (instance._legacyListeners) {
+         instance._legacyListeners.addElement(listener);
+      }
    }
 
-   public static final void removeLegacyDeviceOptionsListener(LegacyDeviceOptionsListener var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void removeLegacyDeviceOptionsListener(LegacyDeviceOptionsListener listener) {
+      DeviceOptions instance = getInstance();
+      synchronized (instance._legacyListeners) {
+         instance._legacyListeners.removeElement(listener);
+      }
    }
 
-   public static final void addOptionsProvider(OptionsProvider var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addOptionsProvider(OptionsProvider provider) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void removeOptionsProvider(OptionsProvider var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void removeOptionsProvider(OptionsProvider provider) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final Vector getOptionsProviders() {
       return this._providers;
    }
 
-   public final synchronized void setLegacyDeviceOptions(DataBuffer var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public final synchronized void setLegacyDeviceOptions(DataBuffer buffer) {
+      Vector listeners = this._legacyListeners;
+      synchronized (listeners) {
+         int size = listeners.size();
+         int position = buffer.getPosition();
 
-   public static final long readTime(DataBuffer var0) {
-      long var1 = var0.readUnsignedByte();
-      var1 += var0.readUnsignedByte() * 60;
-      var1 += var0.readUnsignedByte() * 3600;
-      var1 *= 1000;
-      var0.skipBytes(7);
-      return var1;
-   }
-
-   @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      Object var7 = this._globalEventListeners.get(var1);
-      if (var7 != null) {
-         ((GlobalEventListener)var7).eventOccurred(var1, var3, var4, var5, var6);
+         for (int i = 0; i < size; i++) {
+            ((LegacyDeviceOptionsListener)listeners.elementAt(i)).setLegacyDeviceOptions(buffer);
+            buffer.setPosition(position);
+         }
       }
    }
 
-   public static final void setListener(OptionsProviderChangeListener var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final long readTime(DataBuffer buffer) {
+      long result = buffer.readUnsignedByte();
+      result += buffer.readUnsignedByte() * 60;
+      result += buffer.readUnsignedByte() * 3600;
+      result *= 1000;
+      buffer.skipBytes(7);
+      return result;
+   }
+
+   @Override
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      GlobalEventListener globalEventListener = (GlobalEventListener)this._globalEventListeners.get(guid);
+      if (globalEventListener != null) {
+         globalEventListener.eventOccurred(guid, data0, data1, object0, object1);
+      }
+   }
+
+   public static final void setListener(OptionsProviderChangeListener listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 }

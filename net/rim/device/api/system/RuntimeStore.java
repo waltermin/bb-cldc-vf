@@ -7,79 +7,79 @@ public final class RuntimeStore {
    private ApplicationRegistry _ar;
    private static final long GUID;
 
-   private RuntimeStore(ApplicationRegistry var1) {
-      this._ar = var1;
+   private RuntimeStore(ApplicationRegistry ar) {
+      this._ar = ar;
    }
 
-   public final Object get(long var1) {
+   public final Object get(long id) {
       assertPermission();
-      int var3 = TraceBack.getCallingModule(0);
-      return this._ar.get(var3, var1, false, null, null);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.get(caller, id, false, null, null);
    }
 
-   public final Object get(long var1, CodeSigningKey var3) {
+   public final Object get(long id, CodeSigningKey readAndReplaceKey) {
       assertPermission();
-      int var4 = TraceBack.getCallingModule(0);
-      return this._ar.get(var4, var1, false, var3, var3);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.get(caller, id, false, readAndReplaceKey, readAndReplaceKey);
    }
 
-   public final Object get(long var1, CodeSigningKey var3, CodeSigningKey var4) {
+   public final Object get(long id, CodeSigningKey readKey, CodeSigningKey replaceKey) {
       assertPermission();
-      int var5 = TraceBack.getCallingModule(0);
-      return this._ar.get(var5, var1, false, var3, var4);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.get(caller, id, false, readKey, replaceKey);
    }
 
-   public final ControlledAccess getControlledAccess(long var1) {
+   public final ControlledAccess getControlledAccess(long id) {
       assertPermission();
-      return this._ar.getControlledAccess(var1, false);
+      return this._ar.getControlledAccess(id, false);
    }
 
-   public final void put(long var1, Object var3) {
+   public final void put(long id, Object value) {
       assertPermission();
-      int var4 = TraceBack.getCallingModule(0);
-      this._ar.put(var4, var1, false, var3, false);
+      int caller = TraceBack.getCallingModule(0);
+      this._ar.put(caller, id, false, value, false);
    }
 
-   public final Object replace(long var1, Object var3) {
+   public final Object replace(long id, Object value) {
       assertPermission();
-      int var4 = TraceBack.getCallingModule(0);
-      return this._ar.put(var4, var1, false, var3, true);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.put(caller, id, false, value, true);
    }
 
-   public final Object remove(long var1) {
+   public final Object remove(long id) {
       assertPermission();
-      int var3 = TraceBack.getCallingModule(0);
-      return this._ar.remove(var3, var1, false, null, null);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.remove(caller, id, false, null, null);
    }
 
-   public final Object remove(long var1, CodeSigningKey var3) {
+   public final Object remove(long id, CodeSigningKey readAndReplaceKey) {
       assertPermission();
-      int var4 = TraceBack.getCallingModule(0);
-      return this._ar.remove(var4, var1, false, var3, var3);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.remove(caller, id, false, readAndReplaceKey, readAndReplaceKey);
    }
 
-   public final Object remove(long var1, CodeSigningKey var3, CodeSigningKey var4) {
+   public final Object remove(long id, CodeSigningKey readKey, CodeSigningKey replaceKey) {
       assertPermission();
-      int var5 = TraceBack.getCallingModule(0);
-      return this._ar.remove(var5, var1, false, var3, var4);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.remove(caller, id, false, readKey, replaceKey);
    }
 
-   public final Object waitFor(long var1) {
+   public final Object waitFor(long id) {
       assertPermission();
-      int var3 = TraceBack.getCallingModule(0);
-      return this._ar.waitFor(var3, var1, false, null, null, false);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.waitFor(caller, id, false, null, null, false);
    }
 
-   public final Object waitFor(long var1, CodeSigningKey var3) {
+   public final Object waitFor(long id, CodeSigningKey readAndReplaceKey) {
       assertPermission();
-      int var4 = TraceBack.getCallingModule(0);
-      return this._ar.waitFor(var4, var1, false, var3, var3, false);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.waitFor(caller, id, false, readAndReplaceKey, readAndReplaceKey, false);
    }
 
-   public final Object waitFor(long var1, CodeSigningKey var3, CodeSigningKey var4) {
+   public final Object waitFor(long id, CodeSigningKey readKey, CodeSigningKey replaceKey) {
       assertPermission();
-      int var5 = TraceBack.getCallingModule(0);
-      return this._ar.waitFor(var5, var1, false, var3, var4, false);
+      int caller = TraceBack.getCallingModule(0);
+      return this._ar.waitFor(caller, id, false, readKey, replaceKey, false);
    }
 
    private static final void assertPermission() {
@@ -88,13 +88,13 @@ public final class RuntimeStore {
 
    public static final RuntimeStore getRuntimeStore() {
       assertPermission();
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      RuntimeStore var1 = (RuntimeStore)var0.getOrWaitFor(-4040261540098774066L);
-      if (var1 == null) {
-         var1 = new RuntimeStore(var0);
-         var0.put(-4040261540098774066L, var1);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      RuntimeStore store = (RuntimeStore)ar.getOrWaitFor(-4040261540098774066L);
+      if (store == null) {
+         store = new RuntimeStore(ar);
+         ar.put(-4040261540098774066L, store);
       }
 
-      return var1;
+      return store;
    }
 }

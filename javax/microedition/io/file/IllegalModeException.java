@@ -4,6 +4,6 @@ public class IllegalModeException extends RuntimeException {
    public IllegalModeException() {
    }
 
-   public IllegalModeException(String var1) {
+   public IllegalModeException(String detailMessage) {
    }
 }

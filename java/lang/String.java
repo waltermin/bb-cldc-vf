@@ -19,82 +19,82 @@ public final class String {
 
    private final native Object getSubArray(int var1, int var2);
 
-   private String(Object var1) {
-      this.arrayToThisString(var1);
+   private String(Object array) {
+      this.arrayToThisString(array);
    }
 
-   private static final String arrayToString(Object var0) {
-      return new String(var0);
+   private static final String arrayToString(Object array) {
+      return new String(array);
    }
 
    public String() {
       this.arrayToThisString(new byte[0]);
    }
 
-   public String(String var1) {
-      this.arrayToThisString(var1.getCopyAsArray());
+   public String(String other) {
+      this.arrayToThisString(other.getCopyAsArray());
    }
 
-   public String(char[] var1) {
-      this(var1, 0, var1.length);
+   public String(char[] value) {
+      this(value, 0, value.length);
    }
 
-   public String(char[] var1, int var2, int var3) {
-      if (var2 < 0) {
-         throw new Object(var2);
+   public String(char[] value, int offset, int length) {
+      if (offset < 0) {
+         throw new Object(offset);
       }
 
-      if (var3 < 0) {
-         throw new Object(var3);
+      if (length < 0) {
+         throw new Object(length);
       }
 
-      if (var2 > var1.length - var3) {
-         throw new Object(var2 + var3);
+      if (offset > value.length - length) {
+         throw new Object(offset + length);
       }
 
-      this.arrayToThisString(newArrayWithPossibleDemotion(var1, var2, var3));
+      this.arrayToThisString(newArrayWithPossibleDemotion(value, offset, length));
    }
 
-   public String(byte[] var1, int var2, int var3, String var4) {
-      if (var2 < 0) {
-         throw new Object(var2);
+   public String(byte[] value, int offset, int length, String enc) {
+      if (offset < 0) {
+         throw new Object(offset);
       }
 
-      if (var3 < 0) {
-         throw new Object(var3);
+      if (length < 0) {
+         throw new Object(length);
       }
 
-      if (var2 > var1.length - var3) {
-         throw new Object(var2 + var3);
+      if (offset > value.length - length) {
+         throw new Object(offset + length);
       }
 
-      this.arrayToThisString(Helper.byteToCharArray(var1, var2, var3, var4));
+      this.arrayToThisString(Helper.byteToCharArray(value, offset, length, enc));
    }
 
-   public String(byte[] var1, String var2) {
-      this(var1, 0, var1.length, var2);
+   public String(byte[] bytes, String enc) {
+      this(bytes, 0, bytes.length, enc);
    }
 
-   public String(byte[] var1, int var2, int var3) {
-      if (var2 >= 0 && var2 <= var1.length && var3 >= 0 && var3 <= var1.length && var2 + var3 <= var1.length) {
-         byte[] var4 = new byte[var3];
-         System.arraycopy(var1, var2, var4, 0, var3);
-         this.arrayToThisString(var4);
+   public String(byte[] bytes, int off, int len) {
+      if (off >= 0 && off <= bytes.length && len >= 0 && len <= bytes.length && off + len <= bytes.length) {
+         byte[] newValue = new byte[len];
+         System.arraycopy(bytes, off, newValue, 0, len);
+         this.arrayToThisString(newValue);
       } else {
-         throw new Object(var3);
+         throw new Object(len);
       }
    }
 
-   public String(byte[] var1) {
-      this(var1, 0, var1.length);
+   public String(byte[] bytes) {
+      this(bytes, 0, bytes.length);
    }
 
-   public String(StringBuffer var1) {
+   public String(StringBuffer buffer) {
    }
 
    public final native void getChars(int var1, int var2, char[] var3, int var4);
 
-   public final byte[] getBytes(String var1) {
+   public final byte[] getBytes(String enc) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -113,52 +113,52 @@ public final class String {
 
    public final native boolean startsWith(String var1, int var2);
 
-   public final boolean startsWith(String var1) {
-      return this.startsWith(var1, 0);
+   public final boolean startsWith(String prefix) {
+      return this.startsWith(prefix, 0);
    }
 
-   public final boolean endsWith(String var1) {
+   public final boolean endsWith(String suffix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
    public final native int hashCode();
 
-   public final int indexOf(int var1) {
-      return this.indexOf(var1, 0);
+   public final int indexOf(int ch) {
+      return this.indexOf(ch, 0);
    }
 
-   public final int indexOf(int var1, int var2) {
-      return StringUtilities.indexOf(this, var1, var2, Integer.MAX_VALUE);
+   public final int indexOf(int ch, int fromIndex) {
+      return StringUtilities.indexOf(this, ch, fromIndex, Integer.MAX_VALUE);
    }
 
-   public final int lastIndexOf(int var1) {
+   public final int lastIndexOf(int ch) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public final native int lastIndexOf(int var1, int var2);
 
-   public final int indexOf(String var1) {
-      return this.indexOf(var1, 0);
+   public final int indexOf(String str) {
+      return this.indexOf(str, 0);
    }
 
    public final native int indexOf(String var1, int var2);
 
-   public final String substring(int var1) {
+   public final String substring(int beginIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final String substring(int var1, int var2) {
+   public final String substring(int beginIndex, int endIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private final native void concatBytes(byte[] var1, String var2);
 
-   public final String concat(String var1) {
+   public final String concat(String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final String replace(char var1, char var2) {
+   public final String replace(char oldChar, char newChar) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -181,54 +181,54 @@ public final class String {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String valueOf(Object var0) {
+   public static final String valueOf(Object obj) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String valueOf(char[] var0) {
-      return new String(var0);
+   public static final String valueOf(char[] data) {
+      return new String(data);
    }
 
-   public static final String valueOf(char[] var0, int var1, int var2) {
-      return new String(var0, var1, var2);
+   public static final String valueOf(char[] data, int offset, int count) {
+      return new String(data, offset, count);
    }
 
-   public static final String valueOf(boolean var0) {
+   public static final String valueOf(boolean b) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String valueOf(char var0) {
-      if (var0 <= 255) {
-         byte[] var2 = new byte[]{(byte)var0};
-         return arrayToString(var2);
+   public static final String valueOf(char c) {
+      if (c <= 255) {
+         byte[] data = new byte[]{(byte)c};
+         return arrayToString(data);
       } else {
-         char[] var1 = new char[]{var0};
-         return arrayToString(var1);
+         char[] data = new char[]{c};
+         return arrayToString(data);
       }
    }
 
-   public static final String valueOf(int var0) {
-      return Integer.toString(var0, 10);
+   public static final String valueOf(int i) {
+      return Integer.toString(i, 10);
    }
 
-   public static final String valueOf(long var0) {
-      return Long.toString(var0, 10);
+   public static final String valueOf(long l) {
+      return Long.toString(l, 10);
    }
 
-   final boolean copyInto(Object var1, int var2) {
+   final boolean copyInto(Object dst, int dstOffset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final boolean equalsIgnoreCase(String var1) {
+   public final boolean equalsIgnoreCase(String anotherString) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String valueOf(float var0) {
-      return Float.toString(var0);
+   public static final String valueOf(float f) {
+      return Float.toString(f);
    }
 
-   public static final String valueOf(double var0) {
-      return Double.toString(var0);
+   public static final String valueOf(double d) {
+      return Double.toString(d);
    }
 
    public final String intern() {

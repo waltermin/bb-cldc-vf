@@ -5,8 +5,8 @@ import net.rim.vm.Message;
 
 final class VADUserEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      VADUserEventListener var3 = (VADUserEventListener)var2;
-      var3.vadEvent(var1.getEvent(), var1.getSubMessage());
+   public final void dispatch(Message message, Object listener) {
+      VADUserEventListener vadListener = (VADUserEventListener)listener;
+      vadListener.vadEvent(message.getEvent(), message.getSubMessage());
    }
 }

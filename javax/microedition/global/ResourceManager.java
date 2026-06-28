@@ -10,57 +10,57 @@ public class ResourceManager {
    private static final String ROOT_DIRECTORY;
    private static String EMPTY;
 
-   private String getResourceFilename(String var1, String var2) {
+   private String getResourceFilename(String baseName, String locale) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   ResourceManager(String var1, String var2) {
+   ResourceManager(String baseName, String locale) {
    }
 
-   public static final ResourceManager getManager(String var0) {
+   public static final ResourceManager getManager(String baseName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final ResourceManager getManager(String var0, String var1) {
-      if (var0 != null && var1 != null) {
-         String var2 = GlobalUtilities.convertUnderscoreToHyphens(var1);
-         if (!GlobalUtilities.isValidLocale(var2)) {
+   public static final ResourceManager getManager(String baseName, String locale) {
+      if (baseName != null && locale != null) {
+         String nextLocale = GlobalUtilities.convertUnderscoreToHyphens(locale);
+         if (!GlobalUtilities.isValidLocale(nextLocale)) {
             throw new Object();
          }
 
-         while (!isSupportedLocale(var2, var0)) {
-            if (var2.equals(EMPTY)) {
+         while (!isSupportedLocale(nextLocale, baseName)) {
+            if (nextLocale.equals(EMPTY)) {
                throw new UnsupportedLocaleException();
             }
 
-            var2 = getParentLocale(var2);
+            nextLocale = getParentLocale(nextLocale);
          }
 
-         return new ResourceManager(var0, var2);
+         return new ResourceManager(baseName, nextLocale);
       } else {
          throw new Object();
       }
    }
 
-   public static final ResourceManager getManager(String var0, String[] var1) {
-      if (var0 != null && var1 != null) {
-         int var2 = var1.length;
-         if (var2 == 0) {
+   public static final ResourceManager getManager(String baseName, String[] locales) {
+      if (baseName != null && locales != null) {
+         int numLocales = locales.length;
+         if (numLocales == 0) {
             throw new Object();
          }
 
-         String[] var3 = new String[var2];
+         String[] updatedLocales = new String[numLocales];
 
-         for (int var4 = 0; var4 < var2; var4++) {
-            var3[var4] = GlobalUtilities.convertUnderscoreToHyphens(var1[var4]);
-            if (!GlobalUtilities.isValidLocale(var3[var4])) {
+         for (int i = 0; i < numLocales; i++) {
+            updatedLocales[i] = GlobalUtilities.convertUnderscoreToHyphens(locales[i]);
+            if (!GlobalUtilities.isValidLocale(updatedLocales[i])) {
                throw new Object();
             }
          }
 
-         for (int var5 = 0; var5 < var2; var5++) {
-            if (isSupportedLocale(var3[var5], var0)) {
-               return new ResourceManager(var0, var3[var5]);
+         for (int i = 0; i < numLocales; i++) {
+            if (isSupportedLocale(updatedLocales[i], baseName)) {
+               return new ResourceManager(baseName, updatedLocales[i]);
             }
          }
 
@@ -70,16 +70,16 @@ public class ResourceManager {
       }
    }
 
-   private static String getParentLocale(String var0) {
-      int var1 = var0.lastIndexOf(45);
-      return var1 < 0 ? EMPTY : var0.substring(0, var1);
+   private static String getParentLocale(String locale) {
+      int lastHyphen = locale.lastIndexOf(45);
+      return lastHyphen < 0 ? EMPTY : locale.substring(0, lastHyphen);
    }
 
-   private int firstIndexContainingId(int var1) {
-      if (var1 >= 0 && var1 <= Integer.MAX_VALUE) {
-         for (int var2 = 0; var2 < this._resourceFile.length; var2++) {
-            if (this._resourceFile[var2].isValidId(var1)) {
-               return var2;
+   private int firstIndexContainingId(int id) {
+      if (id >= 0 && id <= Integer.MAX_VALUE) {
+         for (int i = 0; i < this._resourceFile.length; i++) {
+            if (this._resourceFile[i].isValidId(id)) {
+               return i;
             }
          }
 
@@ -97,44 +97,44 @@ public class ResourceManager {
       return this._locale;
    }
 
-   public boolean isValidResourceID(int var1) {
-      return this.firstIndexContainingId(var1) != -1;
+   public boolean isValidResourceID(int id) {
+      return this.firstIndexContainingId(id) != -1;
    }
 
-   public byte[] getData(int var1) {
+   public byte[] getData(int id) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public Object getResource(int var1) {
-      int var2 = this.firstIndexContainingId(var1);
-      if (var2 < 0) {
+   public Object getResource(int id) {
+      int index = this.firstIndexContainingId(id);
+      if (index < 0) {
          throw new ResourceException(1, EMPTY);
       } else {
-         return this._resourceFile[var2].getData(var1);
+         return this._resourceFile[index].getData(id);
       }
    }
 
-   public String getString(int var1) {
-      int var2 = this.firstIndexContainingId(var1);
-      if (var2 < 0) {
+   public String getString(int id) {
+      int index = this.firstIndexContainingId(id);
+      if (index < 0) {
          throw new ResourceException(1, EMPTY);
-      } else if (this._resourceFile[var2].getType(var1) != 1) {
+      } else if (this._resourceFile[index].getType(id) != 1) {
          throw new ResourceException(2, EMPTY);
       } else {
-         return (String)this._resourceFile[var2].getData(var1);
+         return (String)this._resourceFile[index].getData(id);
       }
    }
 
-   public static String[] getSupportedLocales(String var0) {
+   public static String[] getSupportedLocales(String baseName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static String removeQuotes(String var0) {
+   private static String removeQuotes(String locale) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static boolean isSupportedLocale(String var0, String var1) {
-      return Arrays.contains(getSupportedLocales(var1), var0);
+   private static boolean isSupportedLocale(String locale, String baseName) {
+      return Arrays.contains(getSupportedLocales(baseName), locale);
    }
 
    public boolean isCaching() {

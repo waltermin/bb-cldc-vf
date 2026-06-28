@@ -15,43 +15,43 @@ public class SyncManager {
       return (SyncManager)ApplicationRegistry.getApplicationRegistry().waitForStartup(8853100293560663175L);
    }
 
-   public void enableSynchronization(SyncCollection var1) {
+   public void enableSynchronization(SyncCollection _1) {
       throw null;
    }
 
-   public void enableSynchronization(SyncCollection var1, boolean var2) {
+   public void enableSynchronization(SyncCollection _1, boolean _2) {
       throw null;
    }
 
-   public void enableSynchronization(SyncCollection var1, boolean var2, int var3) {
+   public void enableSynchronization(SyncCollection _1, boolean _2, int _3) {
       throw null;
    }
 
-   public void disableSynchronization(SyncCollection var1) {
+   public void disableSynchronization(SyncCollection _1) {
       throw null;
    }
 
-   public void allowOTASync(SyncCollection var1, boolean var2) {
+   public void allowOTASync(SyncCollection _1, boolean _2) {
       throw null;
    }
 
-   public boolean isOTASyncAvailable(SyncCollection var1, boolean var2) {
+   public boolean isOTASyncAvailable(SyncCollection _1, boolean _2) {
       throw null;
    }
 
-   public void enableOTASync(boolean var1) {
+   public void enableOTASync(boolean _1) {
       throw null;
    }
 
-   public void addSyncEventListener(SyncEventListener var1) {
+   public void addSyncEventListener(SyncEventListener _1) {
       throw null;
    }
 
-   public void removeSyncEventListener(SyncEventListener var1) {
+   public void removeSyncEventListener(SyncEventListener _1) {
       throw null;
    }
 
-   public void syncImmediately(SyncCollection var1) {
+   public void syncImmediately(SyncCollection _1) {
       throw null;
    }
 
@@ -59,11 +59,11 @@ public class SyncManager {
       throw null;
    }
 
-   public boolean isSyncCompleted(SyncCollection var1) {
+   public boolean isSyncCompleted(SyncCollection _1) {
       throw null;
    }
 
-   public void triggerSlowSync(SyncCollection var1) {
+   public void triggerSlowSync(SyncCollection _1) {
       throw null;
    }
 
@@ -71,11 +71,11 @@ public class SyncManager {
       throw null;
    }
 
-   public void setSerialSyncStatusMessage(String var1) {
+   public void setSerialSyncStatusMessage(String _1) {
       throw null;
    }
 
-   public String getLocalizedCollectionName(long var1, String var3, Locale var4) {
+   public String getLocalizedCollectionName(long _1, String _3, Locale _4) {
       throw null;
    }
 }

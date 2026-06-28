@@ -13,12 +13,12 @@ final class CustomTimeZoneImpl extends TimeZone {
    private static final int millisPerDay;
    private static final byte[] staticMonthLength;
 
-   CustomTimeZoneImpl(char var1, int var2, int var3) {
+   CustomTimeZoneImpl(char sign, int hours, int minutes) {
    }
 
    @Override
-   public final int getOffset(int var1, int var2, int var3, int var4, int var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -42,7 +42,7 @@ final class CustomTimeZoneImpl extends TimeZone {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object o) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

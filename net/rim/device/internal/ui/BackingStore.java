@@ -13,52 +13,82 @@ public class BackingStore {
    private XYRect _dirty = (XYRect)(new Object(0, 0, 0, 0));
    private XYRect _totalDirty = (XYRect)(new Object(0, 0, 0, 0));
 
-   public BackingStore(int var1, int var2, boolean var3) {
-      this._width = var1;
-      this._height = var2;
-      this._transparency = var3;
+   public BackingStore(int width, int height, boolean transparency) {
+      this._width = width;
+      this._height = height;
+      this._transparency = transparency;
    }
 
    public void cleanBackingStore() {
       if (this._backBuffer != null) {
-         Object var1 = new Object(this._backBuffer);
-         ((Graphics)var1).setGlobalAlpha(0);
-         ((Graphics)var1).setBackgroundColor(0);
-         ((Graphics)var1).clear();
+         Graphics cleanGraphics = (Graphics)(new Object(this._backBuffer));
+         cleanGraphics.setGlobalAlpha(0);
+         cleanGraphics.setBackgroundColor(0);
+         cleanGraphics.clear();
       }
 
       if (this._frontBuffer != null) {
-         Object var2 = new Object(this._frontBuffer);
-         ((Graphics)var2).setGlobalAlpha(0);
-         ((Graphics)var2).setBackgroundColor(0);
-         ((Graphics)var2).clear();
+         Graphics cleanGraphics = (Graphics)(new Object(this._frontBuffer));
+         cleanGraphics.setGlobalAlpha(0);
+         cleanGraphics.setBackgroundColor(0);
+         cleanGraphics.clear();
       }
    }
 
-   private static Bitmap createBitmap(int var0, int var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public synchronized Graphics getGraphics(XYRect var1) {
+   private static Bitmap createBitmap(int width, int height, boolean transparency) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void getTotalDirty(XYRect var1) {
-      var1.set(this._totalDirty);
+   public synchronized Graphics getGraphics(XYRect dirty) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public synchronized void getTotalDirty(XYRect totalDirty) {
+      totalDirty.set(this._totalDirty);
       this._totalDirty.set(0, 0, 0, 0);
    }
 
-   public synchronized void paint(Graphics var1, int var2, int var3) {
+   public synchronized void paint(Graphics graphics, int x, int y) {
       if (this._frontBuffer != null) {
-         int var4 = this._frontBuffer.getWidth();
-         int var5 = this._frontBuffer.getHeight();
-         if (var4 != 0 && var5 != 0) {
-            var1.drawBitmap(var2, var3, var4, var5, this._frontBuffer, 0, 0);
+         int width = this._frontBuffer.getWidth();
+         int height = this._frontBuffer.getHeight();
+         if (width != 0 && height != 0) {
+            graphics.drawBitmap(x, y, width, height, this._frontBuffer, 0, 0);
          }
       }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public synchronized void updateBuffers() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._backBuffer != null && !this._dirty.isEmpty()) {
+         if (this._frontBuffer == null) {
+            this._frontBuffer = createBitmap(this._width, this._height, this._transparency);
+            if (this._frontBuffer == null) {
+               return;
+            }
+         }
+
+         boolean var5 = false /* VF: Semaphore variable */;
+
+         try {
+            var5 = true;
+            synchronized (this._frontBuffer) {
+               Graphics graphics = (Graphics)(new Object(this._frontBuffer));
+               graphics.setGlobalAlpha(0);
+               graphics.clear(this._dirty.x, this._dirty.y, this._dirty.width, this._dirty.height);
+               graphics.rop(-97, this._dirty.x, this._dirty.y, this._dirty.width, this._dirty.height, this._backBuffer, this._dirty.x, this._dirty.y);
+            }
+
+            this._totalDirty.unionNoEmpty(this._dirty);
+            var5 = false;
+         } finally {
+            if (var5) {
+               this._dirty.set(0, 0, 0, 0);
+            }
+         }
+
+         this._dirty.set(0, 0, 0, 0);
+      }
    }
 }

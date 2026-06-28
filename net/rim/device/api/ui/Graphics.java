@@ -119,22 +119,22 @@ public final class Graphics implements DrawStyle {
 
    private final native void createFrontbufferSurface();
 
-   public Graphics(Bitmap var1) {
+   public Graphics(Bitmap bitmap) {
    }
 
    private static final native boolean fitsInCache(Bitmap var0);
 
    private final native void createBackbufferSurface(Bitmap var1);
 
-   private final void createStack(int var1, int var2) {
-      this._clipWidth = var1;
-      this._clipHeight = var2;
+   private final void createStack(int width, int height) {
+      this._clipWidth = width;
+      this._clipHeight = height;
       this._stackSize = 1;
    }
 
-   private final void init(int var1, int var2) {
+   private final void init(int width, int height) {
       this.resetStack();
-      this.setClip(0, 0, var1, var2);
+      this.setClip(0, 0, width, height);
       this.setOffset(0, 0);
       this._font = Font.getDefault();
       this._fgColour = 0;
@@ -148,44 +148,44 @@ public final class Graphics implements DrawStyle {
       this._isIdentity = 1;
    }
 
-   static final Graphics getGraphics(Screen var0) {
-      UiEngineImpl var1 = var0.getUiEngineImpl();
-      Graphics var2 = null;
-      if (var1 != null) {
-         var1.assertHaveEventLock();
-         var2 = var1._fbGraphics;
-         int var3 = var1.getLocalGlobalScreenIndex(var0);
-         if (var3 != -1) {
-            if (var3 <= var1.getLocalGlobalScreenCount() - 2) {
-               var2._overlappedRectArray = var1.getOpaqueRegionsArray();
-               var2._overlappedRectArrayStart = var3 + 1;
+   static final Graphics getGraphics(Screen screen) {
+      UiEngineImpl engine = screen.getUiEngineImpl();
+      Graphics fbGraphics = null;
+      if (engine != null) {
+         engine.assertHaveEventLock();
+         fbGraphics = engine._fbGraphics;
+         int index = engine.getLocalGlobalScreenIndex(screen);
+         if (index != -1) {
+            if (index <= engine.getLocalGlobalScreenCount() - 2) {
+               fbGraphics._overlappedRectArray = engine.getOpaqueRegionsArray();
+               fbGraphics._overlappedRectArrayStart = index + 1;
             } else {
-               var2._overlappedRectArray = null;
+               fbGraphics._overlappedRectArray = null;
             }
          }
       } else {
-         var2 = new Graphics();
+         fbGraphics = new Graphics();
       }
 
-      var2.init(Display.getWidth(), Display.getHeight());
-      var2.setCurrentScreen(var0);
-      return var2;
+      fbGraphics.init(Display.getWidth(), Display.getHeight());
+      fbGraphics.setCurrentScreen(screen);
+      return fbGraphics;
    }
 
-   static final void releaseGraphics(Screen var0) {
-      if (var0 != null) {
-         UiEngineImpl var1 = var0.getUiEngineImpl();
-         if (var1 != null && var1._fbGraphics._currentScreen == var0) {
-            var1._fbGraphics.setCurrentScreen(null);
+   static final void releaseGraphics(Screen screen) {
+      if (screen != null) {
+         UiEngineImpl engine = screen.getUiEngineImpl();
+         if (engine != null && engine._fbGraphics._currentScreen == screen) {
+            engine._fbGraphics.setCurrentScreen(null);
          }
       }
    }
 
    static final Graphics getNullGraphics() {
-      Graphics var0 = new Graphics();
-      var0.init(0, 0);
-      var0.setCurrentScreen(null);
-      return var0;
+      Graphics nullGraphics = new Graphics();
+      nullGraphics.init(0, 0);
+      nullGraphics.setCurrentScreen(null);
+      return nullGraphics;
    }
 
    public final native void clear();
@@ -204,8 +204,8 @@ public final class Graphics implements DrawStyle {
 
    public final native void drawArc(int var1, int var2, int var3, int var4, int var5, int var6);
 
-   public final void drawEllipse(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      this.drawEllipse32(var1 << 16, var2 << 16, var3 << 16, var4 << 16, var5 << 16, var6 << 16, var7 << 16, var8 << 16);
+   public final void drawEllipse(int cx, int cy, int px, int py, int qx, int qy, int startAngle, int arcAngle) {
+      this.drawEllipse32(cx << 16, cy << 16, px << 16, py << 16, qx << 16, qy << 16, startAngle << 16, arcAngle << 16);
    }
 
    public final native void drawEllipse32(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8);
@@ -220,34 +220,50 @@ public final class Graphics implements DrawStyle {
 
    public final native void drawBitmap(int var1, int var2, int var3, int var4, Bitmap var5, int var6, int var7);
 
-   public final void ropImage(int var1, int var2, int var3, int var4, int var5, EncodedImage var6, int var7, int var8, int var9) {
-      this.ropImageInternal(var1, false, var2, var3, var4, var5, var6, var7, var8, var9, var6.getImageType(), var6.getBitmapType(var7), var6.getAlphaType(var7));
-   }
-
-   public final void tileRopImage(int var1, int var2, int var3, int var4, int var5, EncodedImage var6, int var7, int var8, int var9) {
-      this.ropImageInternal(var1, true, var2, var3, var4, var5, var6, var7, var8, var9, var6.getImageType(), var6.getBitmapType(var7), var6.getAlphaType(var7));
-   }
-
-   public final void drawImage(XYRect var1, EncodedImage var2, int var3, int var4, int var5) {
-      EncodedImage var6 = var2.getReplacementImage(var1.width, var1.height);
-      if (var6 != var2) {
-         var6.setScaleX32(var2.getScaleX32());
-         var6.setScaleY32(var2.getScaleY32());
-      }
-
-      this.drawImageInternal(
-         var1.x, var1.y, var1.width, var1.height, var6, var3, var4, var5, var6.getImageType(), var6.getBitmapType(var3), var6.getAlphaType(var3)
+   public final void ropImage(int rop, int x, int y, int width, int height, EncodedImage image, int frameIndex, int left, int top) {
+      this.ropImageInternal(
+         rop, false, x, y, width, height, image, frameIndex, left, top, image.getImageType(), image.getBitmapType(frameIndex), image.getAlphaType(frameIndex)
       );
    }
 
-   public final void drawImage(int var1, int var2, int var3, int var4, EncodedImage var5, int var6, int var7, int var8) {
-      EncodedImage var9 = var5.getReplacementImage(var3, var4);
-      if (var9 != var5) {
-         var9.setScaleX32(var5.getScaleX32());
-         var9.setScaleY32(var5.getScaleY32());
+   public final void tileRopImage(int rop, int x, int y, int width, int height, EncodedImage image, int frameIndex, int left, int top) {
+      this.ropImageInternal(
+         rop, true, x, y, width, height, image, frameIndex, left, top, image.getImageType(), image.getBitmapType(frameIndex), image.getAlphaType(frameIndex)
+      );
+   }
+
+   public final void drawImage(XYRect dest, EncodedImage image, int frameIndex, int left, int top) {
+      EncodedImage toDraw = image.getReplacementImage(dest.width, dest.height);
+      if (toDraw != image) {
+         toDraw.setScaleX32(image.getScaleX32());
+         toDraw.setScaleY32(image.getScaleY32());
       }
 
-      this.drawImageInternal(var1, var2, var3, var4, var9, var6, var7, var8, var9.getImageType(), var9.getBitmapType(var6), var9.getAlphaType(var6));
+      this.drawImageInternal(
+         dest.x,
+         dest.y,
+         dest.width,
+         dest.height,
+         toDraw,
+         frameIndex,
+         left,
+         top,
+         toDraw.getImageType(),
+         toDraw.getBitmapType(frameIndex),
+         toDraw.getAlphaType(frameIndex)
+      );
+   }
+
+   public final void drawImage(int x, int y, int width, int height, EncodedImage image, int frameIndex, int left, int top) {
+      EncodedImage toDraw = image.getReplacementImage(width, height);
+      if (toDraw != image) {
+         toDraw.setScaleX32(image.getScaleX32());
+         toDraw.setScaleY32(image.getScaleY32());
+      }
+
+      this.drawImageInternal(
+         x, y, width, height, toDraw, frameIndex, left, top, toDraw.getImageType(), toDraw.getBitmapType(frameIndex), toDraw.getAlphaType(frameIndex)
+      );
    }
 
    private final native void drawImageInternal(
@@ -258,12 +274,12 @@ public final class Graphics implements DrawStyle {
       int var1, boolean var2, int var3, int var4, int var5, int var6, EncodedImage var7, int var8, int var9, int var10, int var11, int var12, int var13
    );
 
-   public final void drawFilledPath(int[] var1, int[] var2, byte[] var3, int[] var4) {
-      this.drawPath(var1, var2, var3, null, var4, true, true);
+   public final void drawFilledPath(int[] xPts, int[] yPts, byte[] pointTypes, int[] offsets) {
+      this.drawPath(xPts, yPts, pointTypes, null, offsets, true, true);
    }
 
-   public final void drawShadedFilledPath(int[] var1, int[] var2, byte[] var3, int[] var4, int[] var5) {
-      this.drawPath(var1, var2, var3, var4, var5, true, true);
+   public final void drawShadedFilledPath(int[] xPts, int[] yPts, byte[] pointTypes, int[] colors, int[] offsets) {
+      this.drawPath(xPts, yPts, pointTypes, colors, offsets, true, true);
    }
 
    public final native void drawPathOutline(int[] var1, int[] var2, byte[] var3, int[] var4, boolean var5);
@@ -304,16 +320,16 @@ public final class Graphics implements DrawStyle {
 
    public final native int drawText(char var1, int var2, int var3, int var4, int var5);
 
-   public final int drawText(String var1, int var2, int var3) {
-      return this.drawText(var1, 0, Integer.MAX_VALUE, var2, var3, 0, -1);
+   public final int drawText(String text, int x, int y) {
+      return this.drawText(text, 0, Integer.MAX_VALUE, x, y, 0, -1);
    }
 
-   public final int drawText(String var1, int var2, int var3, int var4) {
-      return this.drawText(var1, 0, Integer.MAX_VALUE, var2, var3, var4, -1);
+   public final int drawText(String text, int x, int y, int flags) {
+      return this.drawText(text, 0, Integer.MAX_VALUE, x, y, flags, -1);
    }
 
-   public final int drawText(String var1, int var2, int var3, int var4, int var5) {
-      return this.drawText(var1, 0, Integer.MAX_VALUE, var2, var3, var4, var5);
+   public final int drawText(String text, int x, int y, int flags, int width) {
+      return this.drawText(text, 0, Integer.MAX_VALUE, x, y, flags, width);
    }
 
    public final native int drawText(byte[] var1, int var2, int var3, int var4, int var5, int var6, int var7);
@@ -336,8 +352,8 @@ public final class Graphics implements DrawStyle {
 
    public final native void fillArc(int var1, int var2, int var3, int var4, int var5, int var6);
 
-   public final void fillEllipse(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      this.fillEllipse32(var1 << 16, var2 << 16, var3 << 16, var4 << 16, var5 << 16, var6 << 16, var7 << 16, var8 << 16);
+   public final void fillEllipse(int cx, int cy, int px, int py, int qx, int qy, int startAngle, int arcAngle) {
+      this.fillEllipse32(cx << 16, cy << 16, px << 16, py << 16, qx << 16, qy << 16, startAngle << 16, arcAngle << 16);
    }
 
    public final native void fillEllipse32(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8);
@@ -348,11 +364,11 @@ public final class Graphics implements DrawStyle {
 
    public final native void fillRoundRect(int var1, int var2, int var3, int var4, int var5, int var6);
 
-   public final void getAbsoluteClippingRect(XYRect var1) {
-      var1.x = this._clipX;
-      var1.y = this._clipY;
-      var1.width = this._clipWidth;
-      var1.height = this._clipHeight;
+   public final void getAbsoluteClippingRect(XYRect clip) {
+      clip.x = this._clipX;
+      clip.y = this._clipY;
+      clip.width = this._clipWidth;
+      clip.height = this._clipHeight;
    }
 
    public final int getBackgroundColor() {
@@ -385,9 +401,9 @@ public final class Graphics implements DrawStyle {
 
    public static final native int getDisplayColor(int var0);
 
-   public final void getDrawingOffset(XYPoint var1) {
-      var1.x = this._offsetX;
-      var1.y = this._offsetY;
+   public final void getDrawingOffset(XYPoint offset) {
+      offset.x = this._offsetX;
+      offset.y = this._offsetY;
    }
 
    public final int getGlobalAlpha() {
@@ -446,9 +462,9 @@ public final class Graphics implements DrawStyle {
 
    public final native boolean pushContext(int var1, int var2, int var3, int var4, int var5, int var6);
 
-   public final void translate(int var1, int var2) {
-      this._offsetX += var1;
-      this._offsetY += var2;
+   public final void translate(int x, int y) {
+      this._offsetX += x;
+      this._offsetY += y;
    }
 
    public final int getTranslateX() {
@@ -459,71 +475,71 @@ public final class Graphics implements DrawStyle {
       return this._offsetY;
    }
 
-   public final boolean isDrawingStyleSet(int var1) {
-      return (this._styleFlag & var1) != 0;
+   public final boolean isDrawingStyleSet(int drawStyle) {
+      return (this._styleFlag & drawStyle) != 0;
    }
 
-   public final void setDrawingStyle(int var1, boolean var2) {
-      if (var2) {
-         this._styleFlag |= var1;
+   public final void setDrawingStyle(int drawStyle, boolean on) {
+      if (on) {
+         this._styleFlag |= drawStyle;
       } else {
-         this._styleFlag &= ~var1;
+         this._styleFlag &= ~drawStyle;
       }
    }
 
-   public final void setStrokeWidth(int var1) {
+   public final void setStrokeWidth(int width) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setStrokeStyle(int var1) {
-      if (var1 < 16) {
-         this._strokeStyle = this._strokeStyle & 240 | var1;
+   public final void setStrokeStyle(int style) {
+      if (style < 16) {
+         this._strokeStyle = this._strokeStyle & 240 | style;
       } else {
-         this._strokeStyle = this._strokeStyle & 15 | var1;
+         this._strokeStyle = this._strokeStyle & 15 | style;
       }
    }
 
-   public final void setColor(int var1) {
-      this._fgColour = var1 & 16777215;
+   public final void setColor(int RGB) {
+      this._fgColour = RGB & 16777215;
    }
 
-   public final void setGlobalAlpha(int var1) {
-      this._globalAlpha = MathUtilities.clamp(0, var1, 255);
+   public final void setGlobalAlpha(int alpha) {
+      this._globalAlpha = MathUtilities.clamp(0, alpha, 255);
    }
 
-   public final void setStipple(int var1) {
+   public final void setStipple(int mask) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setBackgroundColor(int var1) {
-      this._bgColour = var1 & 16777215;
+   public final void setBackgroundColor(int RGB) {
+      this._bgColour = RGB & 16777215;
    }
 
-   public final void setBackgroundImage(Bitmap var1, int var2, int var3) {
-      this._bgBitmap = var1;
-      this._bgBitmapOffsetX = this._offsetX + var2;
-      this._bgBitmapOffsetY = this._offsetY + var3;
+   public final void setBackgroundImage(Bitmap bitmap, int x, int y) {
+      this._bgBitmap = bitmap;
+      this._bgBitmapOffsetX = this._offsetX + x;
+      this._bgBitmapOffsetY = this._offsetY + y;
       this._tileBgBitmap = 1;
    }
 
-   public final void setFont(Font var1) {
-      if (var1 == null) {
+   public final void setFont(Font font) {
+      if (font == null) {
          throw new Object();
       }
 
-      this._font = var1;
+      this._font = font;
    }
 
-   private final void setCurrentScreen(Screen var1) {
+   private final void setCurrentScreen(Screen screen) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    public static final native void flush();
 
    static final void updateDisplay() {
-      UiEngineImpl var0 = UiEngineImpl.getUiEngine();
-      if (var0 != null) {
-         var0._offsetX.updateDisplay0();
+      UiEngineImpl engine = UiEngineImpl.getUiEngine();
+      if (engine != null) {
+         engine._offsetX.updateDisplay0();
       }
    }
 
@@ -549,31 +565,29 @@ public final class Graphics implements DrawStyle {
       }
    }
 
-   public final void setMatrix(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
+   public final void setMatrix(int a, int b, int c, int d, int e, int f, int g, int h, int i) {
       if (this._transformationMatrix == null) {
          this._transformationMatrix = new int[9];
       }
 
-      this._transformationMatrix[0] = var1;
-      this._transformationMatrix[1] = var2;
-      this._transformationMatrix[2] = var3;
-      this._transformationMatrix[3] = var4;
-      this._transformationMatrix[4] = var5;
-      this._transformationMatrix[5] = var6;
-      this._transformationMatrix[6] = var7;
-      this._transformationMatrix[7] = var8;
-      this._transformationMatrix[8] = var9;
+      this._transformationMatrix[0] = a;
+      this._transformationMatrix[1] = b;
+      this._transformationMatrix[2] = c;
+      this._transformationMatrix[3] = d;
+      this._transformationMatrix[4] = e;
+      this._transformationMatrix[5] = f;
+      this._transformationMatrix[6] = g;
+      this._transformationMatrix[7] = h;
+      this._transformationMatrix[8] = i;
       this.checkIdentity();
    }
 
-   public final void setMatrix(int[] var1) {
-      this.setMatrix(var1, 0);
+   public final void setMatrix(int[] m) {
+      this.setMatrix(m, 0);
    }
 
-   public final void setMatrix(int[] var1, int var2) {
-      this.setMatrix(
-         var1[0 + var2], var1[1 + var2], var1[2 + var2], var1[3 + var2], var1[4 + var2], var1[5 + var2], var1[6 + var2], var1[7 + var2], var1[8 + var2]
-      );
+   public final void setMatrix(int[] m, int index) {
+      this.setMatrix(m[0 + index], m[1 + index], m[2 + index], m[3 + index], m[4 + index], m[5 + index], m[6 + index], m[7 + index], m[8 + index]);
    }
 
    public final void setIdentity() {
@@ -583,51 +597,51 @@ public final class Graphics implements DrawStyle {
 
    private final native void resetStack();
 
-   private final void setClip(int var1, int var2, int var3, int var4) {
-      this._clipX = var1;
-      this._clipY = var2;
-      this._clipWidth = var3;
-      this._clipHeight = var4;
+   private final void setClip(int x, int y, int width, int height) {
+      this._clipX = x;
+      this._clipY = y;
+      this._clipWidth = width;
+      this._clipHeight = height;
    }
 
-   private final void setOffset(int var1, int var2) {
-      this._offsetX = var1;
-      this._offsetY = var2;
+   private final void setOffset(int x, int y) {
+      this._offsetX = x;
+      this._offsetY = y;
    }
 
-   public final void setOverlay(int var1, Bitmap var2, int var3, int var4) {
+   public final void setOverlay(int index, Bitmap bitmap, int x, int y) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.setOverlayInternal(var1, var2, var3, var4, false);
+      this.setOverlayInternal(index, bitmap, x, y, false);
    }
 
-   public final void setOverlay(int var1, Bitmap var2, int var3, int var4, boolean var5) {
+   public final void setOverlay(int index, Bitmap bitmap, int x, int y, boolean immediate) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.setOverlayInternal(var1, var2, var3, var4, var5);
+      this.setOverlayInternal(index, bitmap, x, y, immediate);
    }
 
-   private final void setOverlayInternal(int var1, Bitmap var2, int var3, int var4, boolean var5) {
-      if (var2 != null && var2.getType() != Bitmap.getDefaultType()) {
+   private final void setOverlayInternal(int index, Bitmap bitmap, int x, int y, boolean immediate) {
+      if (bitmap != null && bitmap.getType() != Bitmap.getDefaultType()) {
          throw new Object();
       }
 
       if (this._backBufferBitmap != null) {
-         if (var2 != null) {
-            this.drawBitmap(var3, var4, var2.getWidth(), var2.getHeight(), var2, 0, 0);
+         if (bitmap != null) {
+            this.drawBitmap(x, y, bitmap.getWidth(), bitmap.getHeight(), bitmap, 0, 0);
             return;
          }
       } else if (this._currentScreen == UiEngineImpl.getTopmostLocalGlobalScreen()) {
-         setOverlay0(var1, var2, var3 + this._offsetX, var4 + this._offsetY, var5);
+         setOverlay0(index, bitmap, x + this._offsetX, y + this._offsetY, immediate);
       }
    }
 
-   public final boolean setOverlayPosition(int var1, int var2, int var3) {
+   public final boolean setOverlayPosition(int index, int x, int y) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      return this._currentScreen == UiEngineImpl.getTopmostLocalGlobalScreen() ? setOverlayPosition0(var1, var2 + this._offsetX, var3 + this._offsetY) : false;
+      return this._currentScreen == UiEngineImpl.getTopmostLocalGlobalScreen() ? setOverlayPosition0(index, x + this._offsetX, y + this._offsetY) : false;
    }
 
-   public final boolean isOverlaySet(int var1) {
+   public final boolean isOverlaySet(int index) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      return this._currentScreen == UiEngineImpl.getTopmostLocalGlobalScreen() ? isOverlaySet0(var1) : false;
+      return this._currentScreen == UiEngineImpl.getTopmostLocalGlobalScreen() ? isOverlaySet0(index) : false;
    }
 
    public static final native void setGamma(int var0, int var1, int var2, int var3, int var4);
@@ -639,8 +653,8 @@ public final class Graphics implements DrawStyle {
    static final native boolean isOverlaySet0(int var0);
 
    static final void resetOverlays() {
-      for (int var0 = 0; var0 < 5; var0++) {
-         setOverlay0(var0, null, 0, 0, false);
+      for (int i = 0; i < 5; i++) {
+         setOverlay0(i, null, 0, 0, false);
       }
    }
 }

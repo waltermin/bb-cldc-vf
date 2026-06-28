@@ -23,27 +23,27 @@ public class Background {
    public static final int REPEAT_VERTICAL;
    public static final int REPEAT_BOTH;
 
-   public static Background createSolidBackground(int var0) {
-      return new BackgroundSolid(var0);
+   public static Background createSolidBackground(int color) {
+      return new BackgroundSolid(color);
    }
 
-   public static Background createBitmapBackground(Bitmap var0) {
-      BackgroundBitmap var1 = new BackgroundBitmap(var0);
-      var1.setOrigin(0, 0);
-      return var1;
+   public static Background createBitmapBackground(Bitmap bitmap) {
+      BackgroundBitmap background = new BackgroundBitmap(bitmap);
+      background.setOrigin(0, 0);
+      return background;
    }
 
-   public static Background createBitmapBackground(ResourceFetcher var0, String var1) {
-      NamedBackgroundBitmap var2 = new NamedBackgroundBitmap(var0, var1);
-      var2.setOrigin(0, 0);
-      return var2;
+   public static Background createBitmapBackground(ResourceFetcher resource, String name) {
+      BackgroundBitmap background = new NamedBackgroundBitmap(resource, name);
+      background.setOrigin(0, 0);
+      return background;
    }
 
-   public void draw(Graphics var1, XYRect var2) {
+   public void draw(Graphics _1, XYRect _2) {
       throw null;
    }
 
-   public boolean freeStaleObject(int var1) {
+   public boolean freeStaleObject(int priority) {
       return false;
    }
 
@@ -63,12 +63,12 @@ public class Background {
       return this._repeat;
    }
 
-   public void setPosition(int var1, int var2) {
-      this._positionX = var1;
-      this._positionY = var2;
+   public void setPosition(int positionX, int positionY) {
+      this._positionX = positionX;
+      this._positionY = positionY;
    }
 
-   public void setRepeat(int var1) {
+   public void setRepeat(int repeat) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

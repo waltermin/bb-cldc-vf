@@ -10,8 +10,8 @@ class BackgroundBitmap extends Background {
    private int _left;
    private int _top;
 
-   BackgroundBitmap(Bitmap var1) {
-      this.setBitmap(var1);
+   BackgroundBitmap(Bitmap bitmap) {
+      this.setBitmap(bitmap);
    }
 
    protected Bitmap getBitmap() {
@@ -19,45 +19,45 @@ class BackgroundBitmap extends Background {
    }
 
    @Override
-   public void draw(Graphics var1, XYRect var2) {
-      if (this._bitmap != null && var2.width != 0 && var2.height != 0) {
-         int var3;
+   public void draw(Graphics graphics, XYRect rect) {
+      if (this._bitmap != null && rect.width != 0 && rect.height != 0) {
+         int xOrigin;
          switch (this.getPositionY()) {
             case 1:
             default:
-               var3 = 0;
+               xOrigin = 0;
                break;
             case 2:
-               var3 = var2.x - this._bitmap.getWidth();
+               xOrigin = rect.x - this._bitmap.getWidth();
                break;
             case 3:
-               var3 = var2.x - this._bitmap.getWidth() >> 1;
+               xOrigin = rect.x - this._bitmap.getWidth() >> 1;
          }
 
-         int var4;
+         int yOrigin;
          switch (this.getPositionY()) {
             case 1:
             default:
-               var4 = 0;
+               yOrigin = 0;
                break;
             case 2:
-               var4 = var2.y - this._bitmap.getHeight();
+               yOrigin = rect.y - this._bitmap.getHeight();
                break;
             case 3:
-               var4 = var2.y - this._bitmap.getHeight() >> 1;
+               yOrigin = rect.y - this._bitmap.getHeight() >> 1;
          }
 
          if (this.getRepeat() == 1) {
-            var1.drawBitmap(var2.x, var2.y, var2.width, var2.height, this._bitmap, this._left + var3, this._top + var4);
+            graphics.drawBitmap(rect.x, rect.y, rect.width, rect.height, this._bitmap, this._left + xOrigin, this._top + yOrigin);
             return;
          }
 
-         var1.tileRop(this._rop, var2.x, var2.y, var2.width, var2.height, this._bitmap, this._left + var3, this._top + var4);
+         graphics.tileRop(this._rop, rect.x, rect.y, rect.width, rect.height, this._bitmap, this._left + xOrigin, this._top + yOrigin);
       }
    }
 
-   protected void setBitmap(Bitmap var1) {
-      this._bitmap = var1;
+   protected void setBitmap(Bitmap bitmap) {
+      this._bitmap = bitmap;
       if (this._bitmap != null && this._bitmap.hasAlpha()) {
          this._rop = -97;
       } else {
@@ -65,9 +65,9 @@ class BackgroundBitmap extends Background {
       }
    }
 
-   public void setOrigin(int var1, int var2) {
-      this._left = var1;
-      this._top = var2;
+   public void setOrigin(int left, int top) {
+      this._left = left;
+      this._top = top;
    }
 
    @Override

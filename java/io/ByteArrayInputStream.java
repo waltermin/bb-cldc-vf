@@ -6,17 +6,17 @@ public class ByteArrayInputStream extends InputStream {
    protected int mark = 0;
    protected int count;
 
-   public ByteArrayInputStream(byte[] var1) {
-      this.buf = var1;
+   public ByteArrayInputStream(byte[] buf) {
+      this.buf = buf;
       this.pos = 0;
-      this.count = var1.length;
+      this.count = buf.length;
    }
 
-   public ByteArrayInputStream(byte[] var1, int var2, int var3) {
-      this.buf = var1;
-      this.pos = var2;
-      this.count = Math.min(var2 + var3, var1.length);
-      this.mark = var2;
+   public ByteArrayInputStream(byte[] buf, int offset, int length) {
+      this.buf = buf;
+      this.pos = offset;
+      this.count = Math.min(offset + length, buf.length);
+      this.mark = offset;
    }
 
    @Override
@@ -25,12 +25,12 @@ public class ByteArrayInputStream extends InputStream {
    }
 
    @Override
-   public synchronized int read(byte[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public synchronized int read(byte[] b, int off, int len) {
+      if (b == null) {
          throw new NullPointerException();
       }
 
-      if (var2 < 0 || var2 > var1.length || var3 < 0 || var2 + var3 > var1.length || var2 + var3 < 0) {
+      if (off < 0 || off > b.length || len < 0 || off + len > b.length || off + len < 0) {
          throw new IndexOutOfBoundsException();
       }
 
@@ -38,31 +38,31 @@ public class ByteArrayInputStream extends InputStream {
          return -1;
       }
 
-      if (this.pos + var3 > this.count) {
-         var3 = this.count - this.pos;
+      if (this.pos + len > this.count) {
+         len = this.count - this.pos;
       }
 
-      if (var3 <= 0) {
+      if (len <= 0) {
          return 0;
       }
 
-      System.arraycopy(this.buf, this.pos, var1, var2, var3);
-      this.pos += var3;
-      return var3;
+      System.arraycopy(this.buf, this.pos, b, off, len);
+      this.pos += len;
+      return len;
    }
 
    @Override
-   public synchronized long skip(long var1) {
-      if (this.pos + var1 > this.count) {
-         var1 = this.count - this.pos;
+   public synchronized long skip(long n) {
+      if (this.pos + n > this.count) {
+         n = this.count - this.pos;
       }
 
-      if (var1 < 0) {
+      if (n < 0) {
          return 0;
       }
 
-      this.pos = (int)(this.pos + var1);
-      return var1;
+      this.pos = (int)(this.pos + n);
+      return n;
    }
 
    @Override
@@ -76,7 +76,7 @@ public class ByteArrayInputStream extends InputStream {
    }
 
    @Override
-   public void mark(int var1) {
+   public void mark(int readAheadLimit) {
       this.mark = this.pos;
    }
 

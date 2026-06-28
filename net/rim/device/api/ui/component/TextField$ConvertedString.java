@@ -8,20 +8,20 @@ final class TextField$ConvertedString implements AbstractString {
    private int _filteredCharsCount;
    private final TextField this$0;
 
-   private TextField$ConvertedString(TextField var1) {
-      this.this$0 = var1;
+   private TextField$ConvertedString(TextField _1) {
+      this.this$0 = _1;
    }
 
-   final void init(int var1, int var2) {
-      if (this._insertedFilteredChars == null || this._insertedFilteredChars.length < var1) {
-         this._insertedFilteredChars = new char[var1];
+   final void init(int insertedLen, int insertPos) {
+      if (this._insertedFilteredChars == null || this._insertedFilteredChars.length < insertedLen) {
+         this._insertedFilteredChars = new char[insertedLen];
       }
 
       this._filteredCharsCount = 0;
-      this._insertPos = var2;
+      this._insertPos = insertPos;
    }
 
-   final void appendFilteredChar(char var1) {
+   final void appendFilteredChar(char ch) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -35,10 +35,10 @@ final class TextField$ConvertedString implements AbstractString {
    }
 
    @Override
-   public final int indexOf(char var1, int var2, int var3) {
-      for (int var4 = var2; var4 < var3; var4++) {
-         if (this.charAt(var4) == var1) {
-            return var4;
+   public final int indexOf(char c, int startIndex, int endIndex) {
+      for (int i = startIndex; i < endIndex; i++) {
+         if (this.charAt(i) == c) {
+            return i;
          }
       }
 
@@ -46,28 +46,28 @@ final class TextField$ConvertedString implements AbstractString {
    }
 
    @Override
-   public final char charAt(int var1) {
-      var1 += this.this$0.getLabelLength();
-      if (var1 < this._insertPos) {
-         return this.this$0._text.charAt(var1);
+   public final char charAt(int index) {
+      index += this.this$0.getLabelLength();
+      if (index < this._insertPos) {
+         return this.this$0._text.charAt(index);
       } else {
-         return var1 < this._insertPos + this._filteredCharsCount
-            ? this._insertedFilteredChars[var1 - this._insertPos]
-            : this.this$0._text.charAt(var1 - this._filteredCharsCount);
+         return index < this._insertPos + this._filteredCharsCount
+            ? this._insertedFilteredChars[index - this._insertPos]
+            : this.this$0._text.charAt(index - this._filteredCharsCount);
       }
    }
 
    @Override
-   public final void getChars(int var1, int var2, char[] var3, int var4) {
-      int var5 = var1;
+   public final void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+      int i = srcBegin;
 
-      for (int var6 = var4; var5 < var2; var6++) {
-         var3[var6] = this.charAt(var5);
-         var5++;
+      for (int j = dstBegin; i < srcEnd; j++) {
+         dst[j] = this.charAt(i);
+         i++;
       }
    }
 
-   TextField$ConvertedString(TextField var1, TextField$1 var2) {
-      this(var1);
+   TextField$ConvertedString(TextField x0, TextField$1 x1) {
+      this(x0);
    }
 }

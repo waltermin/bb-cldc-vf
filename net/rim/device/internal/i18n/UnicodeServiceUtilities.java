@@ -13,44 +13,44 @@ public final class UnicodeServiceUtilities implements UnicodeServiceConstants {
       return _defaultUnicodeServiceProvider.getSupportedEncodings();
    }
 
-   public static final byte resolveEncoding(byte[] var0, byte[] var1) {
-      return _defaultUnicodeServiceProvider.resolveEncoding(var0, var1);
+   public static final byte resolveEncoding(byte[] supportedEncodings, byte[] encodingsToDecideAgainst) {
+      return _defaultUnicodeServiceProvider.resolveEncoding(supportedEncodings, encodingsToDecideAgainst);
    }
 
-   public static final byte resolveEncoding(byte[] var0) {
-      return _defaultUnicodeServiceProvider.resolveEncoding(getSupportedEncodings(), var0);
+   public static final byte resolveEncoding(byte[] encodingsToDecideAgainst) {
+      return _defaultUnicodeServiceProvider.resolveEncoding(getSupportedEncodings(), encodingsToDecideAgainst);
    }
 
-   public static final String getEncoding(byte var0) {
-      if ((var0 & 128) == 128) {
-         var0 = (byte)(var0 & -129);
+   public static final String getEncoding(byte encodingType) {
+      if ((encodingType & 128) == 128) {
+         encodingType = (byte)(encodingType & -129);
       }
 
-      switch ((byte)(var0 & 112)) {
+      switch ((byte)(encodingType & 112)) {
          case 16:
          case 32:
          case 48:
          case 64:
-            var0 = (byte)(var0 & -113);
+            encodingType = (byte)(encodingType & -113);
          default:
-            return _defaultUnicodeServiceProvider.getEncoding(var0);
+            return _defaultUnicodeServiceProvider.getEncoding(encodingType);
       }
    }
 
-   public static final byte getEncoding(String var0) {
-      return _defaultUnicodeServiceProvider.getEncoding(var0);
+   public static final byte getEncoding(String encodingType) {
+      return _defaultUnicodeServiceProvider.getEncoding(encodingType);
    }
 
    public static final byte getPreferredEncoding() {
-      Locale var0 = Locale.getDefaultInputForSystem();
-      return (byte)(Locale.isLatinOneCharacterSetLocale(var0) ? 0 : 1);
+      Locale locale = Locale.getDefaultInputForSystem();
+      return (byte)(Locale.isLatinOneCharacterSetLocale(locale) ? 0 : 1);
    }
 
-   public static final String readString(byte[] var0, int var1, int var2, boolean var3) {
+   public static final String readString(byte[] dataBuffer, int readPosition, int lengthToRead, boolean encoded) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final int detectFutureData(byte[] var0, int var1, int var2) {
+   public static final int detectFutureData(byte[] dataBuffer, int readPosition, int lengthToRead) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

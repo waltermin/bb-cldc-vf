@@ -1,33 +1,43 @@
 package net.rim.vm;
 
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.util.IntHashtable;
 
 public class CodeUpgrade {
    private static final long MESSAGE_GUID;
 
    private static IntHashtable getMessages() {
-      throw new RuntimeException("cod2jar: exception table");
+      ApplicationRegistry appRegistry = ApplicationRegistry.getApplicationRegistry();
+      synchronized (appRegistry) {
+         IntHashtable ht = (IntHashtable)appRegistry.get(-4292848197358216020L);
+         if (ht == null) {
+            ht = (IntHashtable)(new Object());
+            appRegistry.put(-4292848197358216020L, ht);
+         }
+
+         return ht;
+      }
    }
 
-   public static void setMessage(int var0, byte[] var1) {
-      getMessages().put(var0, var1);
+   public static void setMessage(int id, byte[] msg) {
+      getMessages().put(id, msg);
    }
 
    private static native void setMessage0(int var0, byte[] var1);
 
-   public static void addPatch(long var0, String var2, byte[] var3, int var4) {
-      FlashOutputStream var5 = new FlashOutputStream(var0, true);
-      var5.write(var2.getBytes());
-      var5.write(0);
-      var5.write(var4 >>> 24 & 0xFF);
-      var5.write(var4 >>> 16 & 0xFF);
-      var5.write(var4 >>> 8 & 0xFF);
-      var5.write(var4 >>> 0 & 0xFF);
-      var5.write(var3, 0, var4);
-      var5.close();
+   public static void addPatch(long guid, String name, byte[] patch, int length) {
+      FlashOutputStream newCode = new FlashOutputStream(guid, true);
+      newCode.write(name.getBytes());
+      newCode.write(0);
+      newCode.write(length >>> 24 & 0xFF);
+      newCode.write(length >>> 16 & 0xFF);
+      newCode.write(length >>> 8 & 0xFF);
+      newCode.write(length >>> 0 & 0xFF);
+      newCode.write(patch, 0, length);
+      newCode.close();
    }
 
-   public static void start(boolean var0) {
+   public static void start(boolean undo) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -57,7 +67,7 @@ public class CodeUpgrade {
 
    public static native String[] getPatchNames(long var0);
 
-   public static long getOSGUID(String var0) {
+   public static long getOSGUID(String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -73,12 +83,12 @@ public class CodeUpgrade {
 
    public static native byte[] getOSSectionHash(String var0);
 
-   private static void putBE(byte[] var0, int var1, int var2) {
-      var0[var1] = (byte)(var2 >> 8);
-      var0[var1 + 1] = (byte)var2;
+   private static void putBE(byte[] b, int at, int i) {
+      b[at] = (byte)(i >> 8);
+      b[at + 1] = (byte)i;
    }
 
-   public static void setOTABitmap(int var0, String var1) {
+   public static void setOTABitmap(int id, String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

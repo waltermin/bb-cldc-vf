@@ -8,19 +8,19 @@ final class PersistentContent$ObjectCacheElement {
    private int _encodingLength;
    private Object _object;
 
-   final Object get(char[] var1, boolean var2) {
-      if (this._encodingWR.get() != var1) {
+   final Object get(char[] encoding, boolean firstChunkOnly) {
+      if (this._encodingWR.get() != encoding) {
          return null;
       } else {
-         return var2 || !this._firstChunkOnly && var1.length == this._encodingLength ? copy(this._object) : null;
+         return firstChunkOnly || !this._firstChunkOnly && encoding.length == this._encodingLength ? copy(this._object) : null;
       }
    }
 
-   final void put(char[] var1, boolean var2, Object var3) {
-      this._encodingWR.set(var1);
-      this._firstChunkOnly = var2;
-      this._encodingLength = var1.length;
-      this._object = copy(var3);
+   final void put(char[] encoding, boolean firstChunkOnly, Object object) {
+      this._encodingWR.set(encoding);
+      this._firstChunkOnly = firstChunkOnly;
+      this._encodingLength = encoding.length;
+      this._object = copy(object);
    }
 
    final boolean cleanNow() {
@@ -34,7 +34,7 @@ final class PersistentContent$ObjectCacheElement {
       return true;
    }
 
-   private static final Object copy(Object var0) {
+   private static final Object copy(Object object) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

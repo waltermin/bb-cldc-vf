@@ -5,10 +5,14 @@ public class IPCRunnable extends IPCBaseRunnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         this.doRun(this.getListener());
+      } catch (Throwable t) {
+         this.doLogging(t);
+      }
    }
 
-   protected void doRun(Object var1) {
+   protected void doRun(Object _1) {
       throw null;
    }
 }

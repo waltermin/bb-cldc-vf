@@ -4,83 +4,83 @@ final class ObjectArraySort {
    private ObjectArraySort() {
    }
 
-   private static final int rangeCheck(int var0, int var1, int var2) {
-      if (var1 > var2) {
+   private static final int rangeCheck(int arrayLen, int from, int to) {
+      if (from > to) {
          throw new Object();
-      } else if (var1 < 0) {
-         throw new Object(var1);
-      } else if (var2 > var0) {
-         throw new Object(var2);
+      } else if (from < 0) {
+         throw new Object(from);
+      } else if (to > arrayLen) {
+         throw new Object(to);
       } else {
-         return var2 - var1;
+         return to - from;
       }
    }
 
-   public static final void sort(Object[] var0, int var1, int var2, Comparator var3) {
-      int var4 = rangeCheck(var0.length, var1, var2);
-      if (var4 != 0) {
-         int var5 = var4 + 1 >> 1;
-         Object[] var6 = new Object[var5];
-         mergeSort(var0, var6, var3, var1, var4);
+   public static final void sort(Object[] a, int from, int to, Comparator comparator) {
+      int length = rangeCheck(a.length, from, to);
+      if (length != 0) {
+         int halfSize = length + 1 >> 1;
+         Object[] aux = new Object[halfSize];
+         mergeSort(a, aux, comparator, from, length);
       }
    }
 
-   private static final boolean exchange(Object[] var0, Comparator var1, int var2, int var3) {
-      Object var4 = var0[var2];
-      Object var5 = var0[var3];
-      if (var1.compare(var4, var5) > 0) {
-         var0[var2] = var5;
-         var0[var3] = var4;
+   private static final boolean exchange(Object[] a, Comparator comparator, int x1, int x2) {
+      Object t1 = a[x1];
+      Object t2 = a[x2];
+      if (comparator.compare(t1, t2) > 0) {
+         a[x1] = t2;
+         a[x2] = t1;
          return true;
       } else {
          return false;
       }
    }
 
-   private static final void mergeSort(Object[] var0, Object[] var1, Comparator var2, int var3, int var4) {
-      switch (var4) {
+   private static final void mergeSort(Object[] a, Object[] aux, Comparator comparator, int from, int length) {
+      switch (length) {
          case -1:
-            int var5 = var4 + 1 >> 1;
-            mergeSort(var0, var1, var2, var3, var5);
-            mergeSort(var0, var1, var2, var3 + var5, var4 - var5);
-            int var6 = var3 + var5;
-            if (var2.compare(var0[var6 - 1], var0[var6]) <= 0) {
+            int midLength = length + 1 >> 1;
+            mergeSort(a, aux, comparator, from, midLength);
+            mergeSort(a, aux, comparator, from + midLength, length - midLength);
+            int midIndex = from + midLength;
+            if (comparator.compare(a[midIndex - 1], a[midIndex]) <= 0) {
                return;
             } else {
-               System.arraycopy(var0, var3, var1, 0, var5);
-               int var7 = 0;
-               int var8 = var7 + var5;
-               int var9 = var3 + var5;
-               int var10 = var9 + var4 - var5;
-               int var11 = var3 + var4;
+               System.arraycopy(a, from, aux, 0, midLength);
+               int left = 0;
+               int endLeft = left + midLength;
+               int rite = from + midLength;
+               int endRite = rite + length - midLength;
+               int endFrom = from + length;
 
-               for (; var3 < var11; var3++) {
-                  if (var7 >= var8) {
-                     while (var3 < var11) {
-                        var0[var3] = var0[var9];
-                        var9++;
-                        var3++;
+               for (; from < endFrom; from++) {
+                  if (left >= endLeft) {
+                     while (from < endFrom) {
+                        a[from] = a[rite];
+                        rite++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var9 >= var10) {
-                     while (var3 < var11) {
-                        var0[var3] = var1[var7];
-                        var7++;
-                        var3++;
+                  if (rite >= endRite) {
+                     while (from < endFrom) {
+                        a[from] = aux[left];
+                        left++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var2.compare(var1[var7], var0[var9]) > 0) {
-                     var0[var3] = var0[var9];
-                     var9++;
+                  if (comparator.compare(aux[left], a[rite]) > 0) {
+                     a[from] = a[rite];
+                     rite++;
                   } else {
-                     var0[var3] = var1[var7];
-                     var7++;
+                     a[from] = aux[left];
+                     left++;
                   }
                }
 
@@ -91,12 +91,12 @@ final class ObjectArraySort {
          default:
             return;
          case 2:
-            exchange(var0, var2, var3, var3 + 1);
+            exchange(a, comparator, from, from + 1);
             return;
          case 3:
-            exchange(var0, var2, var3, var3 + 1);
-            if (exchange(var0, var2, var3 + 1, var3 + 2)) {
-               exchange(var0, var2, var3, var3 + 1);
+            exchange(a, comparator, from, from + 1);
+            if (exchange(a, comparator, from + 1, from + 2)) {
+               exchange(a, comparator, from, from + 1);
             }
       }
    }

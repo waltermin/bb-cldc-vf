@@ -4,6 +4,6 @@ public class ConnectionClosedException extends RuntimeException {
    public ConnectionClosedException() {
    }
 
-   public ConnectionClosedException(String var1) {
+   public ConnectionClosedException(String detailMessage) {
    }
 }

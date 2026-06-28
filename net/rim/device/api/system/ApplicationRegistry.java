@@ -24,97 +24,147 @@ public final class ApplicationRegistry {
       Process.registerAppRegistry(this);
    }
 
-   public final Object get(long var1) {
-      return this.get(0, var1, true, null, null);
+   public final Object get(long id) {
+      return this.get(0, id, true, null, null);
    }
 
-   public final Object getOrWaitFor(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Object getOrWaitFor(long id) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   final Object get(int var1, long var2, boolean var4, CodeSigningKey var5, CodeSigningKey var6) {
+   final Object get(int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final Object remove(long var1) {
-      return this.remove(0, var1, true, null, null);
+   public final Object remove(long id) {
+      return this.remove(0, id, true, null, null);
    }
 
-   final Object remove(int var1, long var2, boolean var4, CodeSigningKey var5, CodeSigningKey var6) {
-      Object var7 = this.get(var1, var2, var4, var5, var6);
-      if (var7 != null) {
-         this._registry.remove(var2, var4);
+   final Object remove(int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey) {
+      Object o = this.get(moduleHandle, id, protect, readKey, replaceKey);
+      if (o != null) {
+         this._registry.remove(id, protect);
       }
 
-      return var7;
+      return o;
    }
 
    final void kickAllWaitingThreads() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   final ControlledAccess getControlledAccess(long var1) {
-      return this.getControlledAccess(var1, true);
+   final ControlledAccess getControlledAccess(long id) {
+      return this.getControlledAccess(id, true);
    }
 
-   final ControlledAccess getControlledAccess(long var1, boolean var3) {
+   final ControlledAccess getControlledAccess(long id, boolean protect) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void put(long var1, Object var3) {
-      this.put(0, var1, true, var3, false);
+   public final void put(long id, Object value) {
+      this.put(0, id, true, value, false);
    }
 
-   public final Object replace(long var1, Object var3) {
-      return this.put(0, var1, true, var3, true);
+   public final Object replace(long id, Object value) {
+      return this.put(0, id, true, value, true);
    }
 
-   final Object put(int var1, long var2, boolean var4, Object var5, boolean var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   final Object put(int moduleHandle, long id, boolean protect, Object value, boolean allowReplace) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final Object waitFor(long var1) {
-      return this.waitFor(0, var1, true, null, null, false);
+   public final Object waitFor(long id) {
+      return this.waitFor(0, id, true, null, null, false);
    }
 
-   public final Object waitForStartup(long var1) {
-      return this.waitFor(0, var1, true, null, null, true);
+   public final Object waitForStartup(long id) {
+      return this.waitFor(0, id, true, null, null, true);
    }
 
-   final Object waitFor(int var1, long var2, boolean var4, CodeSigningKey var5, CodeSigningKey var6, boolean var7) {
-      throw new RuntimeException("cod2jar: exception table");
+   final Object waitFor(int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey, boolean startupOnly) {
+      Monitor monitor;
+      synchronized (this._registry) {
+         Object obj = this.get(moduleHandle, id, protect, readKey, replaceKey);
+         if (obj != null) {
+            return obj;
+         }
+
+         if (startupOnly && this._startupComplete) {
+            return null;
+         }
+
+         monitor = (Monitor)this._monitors.get(id);
+         if (monitor == null) {
+            monitor = (Monitor)(new Object(id));
+            this._monitors.put(id, monitor);
+         }
+      }
+
+      return this.waitForObjectToBeRegistered(monitor, moduleHandle, id, protect, readKey, replaceKey, startupOnly);
    }
 
-   private final Object waitForObjectToBeRegistered(Monitor var1, int var2, long var3, boolean var5, CodeSigningKey var6, CodeSigningKey var7, boolean var8) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final Object waitForObjectToBeRegistered(
+      Monitor monitor, int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey, boolean allowNull
+   ) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final Vector getVector(long var1) {
-      return (Vector)this.get(var1, 4);
+   public final Vector getVector(long id) {
+      return (Vector)this.get(id, 4);
    }
 
-   public final IntVector getIntVector(long var1) {
-      return (IntVector)this.get(var1, 5);
+   public final IntVector getIntVector(long id) {
+      return (IntVector)this.get(id, 5);
    }
 
-   public final Hashtable getHashtable(long var1) {
-      return (Hashtable)this.get(var1, 1);
+   public final Hashtable getHashtable(long id) {
+      return (Hashtable)this.get(id, 1);
    }
 
-   public final IntHashtable getIntHashtable(long var1) {
-      return (IntHashtable)this.get(var1, 3);
+   public final IntHashtable getIntHashtable(long id) {
+      return (IntHashtable)this.get(id, 3);
    }
 
-   public final LongHashtable getLongHashtable(long var1) {
-      return (LongHashtable)this.get(var1, 2);
+   public final LongHashtable getLongHashtable(long id) {
+      return (LongHashtable)this.get(id, 2);
    }
 
-   public final Object getObject(long var1) {
-      return this.get(var1, 6);
+   public final Object getObject(long id) {
+      return this.get(id, 6);
    }
 
-   private final Object get(long var1, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final Object get(long id, int type) {
+      synchronized (this._registry) {
+         Object obj = this.get(id);
+         if (obj == null) {
+            switch (type) {
+               case 0:
+                  throw new Object();
+               case 1:
+               default:
+                  obj = new Object();
+                  break;
+               case 2:
+                  obj = new Object();
+                  break;
+               case 3:
+                  obj = new Object();
+                  break;
+               case 4:
+                  obj = new Object();
+                  break;
+               case 5:
+                  obj = new Object();
+                  break;
+               case 6:
+                  obj = new Object();
+            }
+
+            this.put(id, obj);
+         }
+
+         return obj;
+      }
    }
 
    public static final ApplicationRegistry getApplicationRegistry() {

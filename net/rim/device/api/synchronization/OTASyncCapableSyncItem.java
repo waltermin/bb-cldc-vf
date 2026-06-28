@@ -19,12 +19,12 @@ public class OTASyncCapableSyncItem extends SyncItem implements OTASyncCapable, 
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._collectionListeners.addCollectionListener(new Object(var1));
+   public void addCollectionListener(Object listener) {
+      this._collectionListeners.addCollectionListener(new Object(listener));
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._collectionListeners.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._collectionListeners.removeCollectionListener(listener);
    }
 }

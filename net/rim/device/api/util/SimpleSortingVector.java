@@ -9,30 +9,30 @@ public class SimpleSortingVector extends Vector {
    private boolean _sortAsAdded;
 
    public synchronized Vector getVector() {
-      Object var1 = new Object(super.elementCount);
+      Vector vector = (Vector)(new Object(super.elementCount));
 
-      for (int var2 = 0; var2 < super.elementCount; var2++) {
-         ((Vector)var1).addElement(super.elementData[var2]);
+      for (int i = 0; i < super.elementCount; i++) {
+         vector.addElement(super.elementData[i]);
       }
 
-      return (Vector)var1;
+      return vector;
    }
 
-   public void setSortComparator(Comparator var1) {
-      this._sortComparator = var1;
+   public void setSortComparator(Comparator newComparator) {
+      this._sortComparator = newComparator;
       if (this._sortAsAdded) {
          this.doBulkSort();
       }
    }
 
-   public boolean setSort(boolean var1) {
-      boolean var2 = this._sortAsAdded;
-      this._sortAsAdded = var1;
+   public boolean setSort(boolean toSort) {
+      boolean oldValue = this._sortAsAdded;
+      this._sortAsAdded = toSort;
       if (this._sortAsAdded && !this._sorted) {
          this.doBulkSort();
       }
 
-      return var2;
+      return oldValue;
    }
 
    public void reSort() {
@@ -40,46 +40,46 @@ public class SimpleSortingVector extends Vector {
       this.doBulkSort();
    }
 
-   public void add(Object var1) {
-      this.addElement(var1);
+   public void add(Object obj) {
+      this.addElement(obj);
    }
 
    @Override
-   public synchronized void addElement(Object var1) {
-      int var2 = super.elementCount + 1;
-      if (var2 > super.elementData.length) {
-         int var3 = super.elementData.length;
-         int var4 = super.capacityIncrement > 0 ? var3 + super.capacityIncrement : var3 * 2;
-         if (var4 < var2) {
-            var4 = var2;
+   public synchronized void addElement(Object obj) {
+      int newcount = super.elementCount + 1;
+      if (newcount > super.elementData.length) {
+         int oldCapacity = super.elementData.length;
+         int newCapacity = super.capacityIncrement > 0 ? oldCapacity + super.capacityIncrement : oldCapacity * 2;
+         if (newCapacity < newcount) {
+            newCapacity = newcount;
          }
 
-         Array.resize(super.elementData, var4);
+         Array.resize(super.elementData, newCapacity);
       }
 
       if (this._sortAsAdded) {
-         int var5 = this.find(var1);
-         if (var5 < 0) {
-            var5 = -var5 - 1;
+         int insertionOffset = this.find(obj);
+         if (insertionOffset < 0) {
+            insertionOffset = -insertionOffset - 1;
          }
 
-         System.arraycopy(super.elementData, var5, super.elementData, var5 + 1, super.elementCount - var5);
-         super.elementData[var5] = var1;
+         System.arraycopy(super.elementData, insertionOffset, super.elementData, insertionOffset + 1, super.elementCount - insertionOffset);
+         super.elementData[insertionOffset] = obj;
       } else {
          this._sorted = false;
-         super.elementData[super.elementCount] = var1;
+         super.elementData[super.elementCount] = obj;
       }
 
       super.elementCount++;
    }
 
-   public Object getAt(int var1) {
-      return var1 >= 0 && var1 < super.elementCount ? this.elementAt(var1) : null;
+   public Object getAt(int index) {
+      return index >= 0 && index < super.elementCount ? this.elementAt(index) : null;
    }
 
-   public void remove(int var1) {
-      if (var1 >= 0 && var1 < super.elementCount) {
-         this.removeElementAt(var1);
+   public void remove(int index) {
+      if (index >= 0 && index < super.elementCount) {
+         this.removeElementAt(index);
       }
    }
 
@@ -87,7 +87,7 @@ public class SimpleSortingVector extends Vector {
       this.removeAllElements();
    }
 
-   public synchronized int find(Object var1) {
+   public synchronized int find(Object key) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

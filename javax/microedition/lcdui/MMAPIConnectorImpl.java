@@ -4,39 +4,38 @@ import javax.microedition.media.Player;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
 import net.rim.device.internal.lcdui.MMAPIConnector;
-import net.rim.device.internal.ui.component.MMAPIMediaField;
 
 class MMAPIConnectorImpl implements MMAPIConnector {
    @Override
-   public LcduiPlayerController setMediaCanvas(Canvas var1, Player var2) {
-      Object var3 = var1.getPeer();
-      ((LcduiPlayerController)var3).setPlayer(var2);
-      return (LcduiPlayerController)var3;
+   public LcduiPlayerController setMediaCanvas(Canvas c, Player player) {
+      LcduiPlayerController controller = (LcduiPlayerController)c.getPeer();
+      controller.setPlayer(player);
+      return controller;
    }
 
    @Override
-   public LcduiPlayerController getMediaItem(Player var1, String var2, int var3, int var4) {
-      MediaItem var5 = new MediaItem(var2, var3, var4);
-      MMAPIMediaField var6 = var5.getMediaField();
-      var6.setPlayer(var1);
-      return var6;
+   public LcduiPlayerController getMediaItem(Player player, String label, int width, int height) {
+      MediaItem mediaItem = new MediaItem(label, width, height);
+      LcduiPlayerController controller = mediaItem.getMediaField();
+      controller.setPlayer(player);
+      return controller;
    }
 
    @Override
-   public LcduiPlayerController getMediaField(Player var1, int var2, int var3) {
-      Object var4 = new Object(var2, var3);
-      ((LcduiPlayerController)var4).setComponent(var4);
-      ((LcduiPlayerController)var4).setPlayer(var1);
-      return (LcduiPlayerController)var4;
+   public LcduiPlayerController getMediaField(Player player, int width, int height) {
+      LcduiPlayerController controller = (LcduiPlayerController)(new Object(width, height));
+      controller.setComponent(controller);
+      controller.setPlayer(player);
+      return controller;
    }
 
    @Override
-   public void notifyPlayerPositionChange(Player var1, XYRect var2) {
+   public void notifyPlayerPositionChange(Player player, XYRect rect) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void notifyPlayerOffsetChange(Player var1, XYRect var2) {
+   public void notifyPlayerOffsetChange(Player player, XYRect rect) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

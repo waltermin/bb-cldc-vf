@@ -26,7 +26,7 @@ public class Thread implements Runnable {
 
    public final native boolean isAlive();
 
-   public final void setPriority(int var1) {
+   public final void setPriority(int newPriority) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -47,13 +47,13 @@ public class Thread implements Runnable {
 
    public static native Thread currentThread();
 
-   public Thread(String var1) {
-      this.init(null, var1, true);
+   public Thread(String name) {
+      this.init(null, name, true);
    }
 
    public static native void sleep(long var0);
 
-   private void init(Runnable var1, String var2, boolean var3) {
+   private void init(Runnable target, String name, boolean explicit) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -61,12 +61,12 @@ public class Thread implements Runnable {
       this.init(null, null, false);
    }
 
-   public Thread(Runnable var1) {
-      this.init(var1, null, false);
+   public Thread(Runnable target) {
+      this.init(target, null, false);
    }
 
-   public Thread(Runnable var1, String var2) {
-      this.init(var1, var2, true);
+   public Thread(Runnable target, String name) {
+      this.init(target, name, true);
    }
 
    public static native int activeCount();

@@ -10,10 +10,13 @@ class CryptoBlock$ExpireKeysTimerTask extends TimerTask implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (CryptoBlock._persistentKeysById) {
+         this._expireKeyTaskID = -1;
+         CryptoBlock.scanAndScheduleToRemoveExpiredKeys(1);
+      }
    }
 
-   CryptoBlock$ExpireKeysTimerTask(CryptoBlock$1 var1) {
+   CryptoBlock$ExpireKeysTimerTask(CryptoBlock$1 x0) {
       this();
    }
 }

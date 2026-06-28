@@ -52,30 +52,30 @@ public final class TimeLogger {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final synchronized void startTimer(int var1, int var2) {
-      long var3 = var1 << 32 | var2;
-      int var5 = this._timerIds.length;
+   public final synchronized void startTimer(int timerId, int uniqueId) {
+      long id = timerId << 32 | uniqueId;
+      int count = this._timerIds.length;
 
-      for (int var6 = 0; var6 < var5; var6++) {
-         if (this._timerIds[var6] == -1) {
-            this._timerIds[var6] = var3;
-            this._startTime[var6] = System.currentTimeMillis();
+      for (int i = 0; i < count; i++) {
+         if (this._timerIds[i] == -1) {
+            this._timerIds[i] = id;
+            this._startTime[i] = System.currentTimeMillis();
             return;
          }
       }
 
-      int var7 = this._timerIds.length;
+      int originalLen = this._timerIds.length;
       Array.resize(this._timerIds, this._timerIds.length << 1);
       Array.resize(this._startTime, this._startTime.length << 1);
-      this._timerIds[var7] = var3;
-      this._startTime[var7] = System.currentTimeMillis();
+      this._timerIds[originalLen] = id;
+      this._startTime[originalLen] = System.currentTimeMillis();
    }
 
-   public final synchronized void stopTimer(int var1, int var2) {
+   public final synchronized void stopTimer(int timerId, int uniqueId) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void appendSummary(StringBuffer var1, int var2, String var3) {
+   private final void appendSummary(StringBuffer sb, int timerId, String description) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

@@ -1,15 +1,21 @@
 package javax.microedition.midlet;
 
 import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import javax.microedition.io.PushRegistry;
+import javax.microedition.lcdui.Display;
+import javax.microedition.lcdui.Displayable;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.internal.io.PushRegistryHelper;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.lcdui.MIDletInterface;
 import net.rim.device.internal.resource.CommonResource;
 import net.rim.device.internal.ui.MIDletApplication;
+import net.rim.device.resources.Resource;
 import net.rim.vm.Process;
 
 class MIDletMain extends MIDletApplication implements MIDletInterface, CommonResource {
@@ -24,21 +30,44 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    private static final long MIDLET_ID_MASK;
    private static final Object dummy;
 
-   private static MIDletMain getInstance(String var0, boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static MIDletMain getInstance(String midletName, boolean create) {
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      synchronized (ar) {
+         long id = 6179825861491949568L | midletName.hashCode() & 4294967295L;
+         MIDletMain m = null;
+         Object o = ar.get(id);
+         if (o == null && create) {
+            m = new MIDletMain(midletName);
+            ar.put(id, m);
+         } else if (create && o.equals(dummy)) {
+            m = new MIDletMain(midletName);
+            ar.replace(id, m);
+         } else if (o != null && !o.equals(dummy)) {
+            m = (MIDletMain)o;
+         }
+
+         return m;
+      }
    }
 
-   private static void removeInstance(String var0, MIDletMain var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static void removeInstance(String midletName, MIDletMain instance) {
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      long id = 6179825861491949568L | midletName.hashCode() & 4294967295L;
+      synchronized (ar) {
+         Object o = ar.get(id);
+         if (o == instance) {
+            ar.replace(id, dummy);
+         }
+      }
    }
 
-   public static void main(String[] var0) {
+   public static void main(String[] args) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private MIDletMain(String var1) {
+   private MIDletMain(String moduleClassName) {
       this.enableKeyUpEvents(true);
-      this._moduleClassName = var1;
+      this._moduleClassName = moduleClassName;
    }
 
    @Override
@@ -56,8 +85,8 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    }
 
    @Override
-   public void registerAlarm(Runnable var1) {
-      this._alarmThreadCache.addElement(new Object(var1));
+   public void registerAlarm(Runnable r) {
+      this._alarmThreadCache.addElement(new Object(r));
    }
 
    private boolean keepAliveProcess() {
@@ -65,14 +94,14 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
          return true;
       }
 
-      for (int var1 = this._alarmThreadCache.size() - 1; var1 >= 0; var1--) {
-         Object var2 = this._alarmThreadCache.elementAt(var1);
-         if (var2 != null) {
-            if (((WeakReference)var2).get() != null) {
+      for (int i = this._alarmThreadCache.size() - 1; i >= 0; i--) {
+         WeakReference wr = (WeakReference)this._alarmThreadCache.elementAt(i);
+         if (wr != null) {
+            if (wr.get() != null) {
                return true;
             }
 
-            this._alarmThreadCache.removeElement(var2);
+            this._alarmThreadCache.removeElement(wr);
          }
       }
 
@@ -85,7 +114,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    }
 
    @Override
-   public void setForegroundable(boolean var1) {
+   public void setForegroundable(boolean foregroundable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -95,21 +124,49 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
       ApplicationManager.getApplicationManager().requestForeground(this.getProcessId());
    }
 
-   private static void initializePushRegistry(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static void initializePushRegistry(String midletname) {
+      StringBuffer sb = (StringBuffer)(new Object(PushRegistryHelper.MIDLET_PUSH_PROPERTY_NAME_PREFIX));
+      sb.append('n');
+      int charindex = sb.length() - 1;
+      int i = 1;
+
+      while (true) {
+         sb.setCharAt(charindex, (char)(i + 48));
+         String s = PushRegistryHelper.getMidletProperty(sb.toString());
+         if (s == null) {
+            return;
+         }
+
+         String[] values = PushRegistryHelper.getPushPropertyValues(s);
+         String connectionUrl = values[0];
+         String midletClassName = values[1];
+         String filter = values[2];
+         if (midletname.equals(midletClassName)) {
+            MIDletMain m = getInstance(midletname, true);
+
+            try {
+               PushRegistry.registerConnection(connectionUrl, midletClassName, filter);
+            } catch (Exception e) {
+               removeInstance(midletname, m);
+               throw new Object(e.toString());
+            }
+         }
+
+         i++;
+      }
    }
 
    @Override
-   public void addPushRegistry(String var1, String var2) {
-      PushRegistryHelper var3 = PushRegistryHelper.getInstance();
-      var3._weakreferencemap.put(var2, new Object(this));
-      MIDletMain$MIDletPushRegistryWorkerThread var4 = new MIDletMain$MIDletPushRegistryWorkerThread(this, var2);
-      this._workerThreadMap.put(var2, var4);
+   public void addPushRegistry(String midletname, String connection) {
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      prh._weakreferencemap.put(connection, new Object(this));
+      Thread t = new MIDletMain$MIDletPushRegistryWorkerThread(this, connection);
+      this._workerThreadMap.put(connection, t);
       if (this.isHandlingEvents()) {
-         var4.pause();
+         ((MIDletMain$MIDletPushRegistryWorkerThread)t).pause();
       }
 
-      var4.start();
+      t.start();
       if (!this.isHandlingEvents()) {
          this._foregroundable = false;
          this.enterEventDispatcher();
@@ -117,27 +174,53 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    }
 
    @Override
-   public void removePushRegistry(String var1, String var2) {
-      MIDletMain$MIDletPushRegistryWorkerThread var3 = (MIDletMain$MIDletPushRegistryWorkerThread)this._workerThreadMap.remove(var2);
-      var3.shutdown();
-      PushRegistryHelper var4 = PushRegistryHelper.getInstance();
-      var4._weakreferencemap.remove(var2);
+   public void removePushRegistry(String midletname, String connection) {
+      MIDletMain$MIDletPushRegistryWorkerThread t = (MIDletMain$MIDletPushRegistryWorkerThread)this._workerThreadMap.remove(connection);
+      t.shutdown();
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      prh._weakreferencemap.remove(connection);
    }
 
    @Override
-   public void shutdownWorkerThread(String var1) {
-      PushRegistryHelper var2 = PushRegistryHelper.getInstance();
-      var2._connectionMap.remove(var1);
-      var2._filterMap.remove(var1);
-      MIDletMain$MIDletPushRegistryWorkerThread var3 = (MIDletMain$MIDletPushRegistryWorkerThread)this._workerThreadMap.get(var1);
-      if (var3 != null) {
-         var3.shutdown();
+   public void shutdownWorkerThread(String connectionString) {
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      prh._connectionMap.remove(connectionString);
+      prh._filterMap.remove(connectionString);
+      MIDletMain$MIDletPushRegistryWorkerThread workerThread = (MIDletMain$MIDletPushRegistryWorkerThread)this._workerThreadMap.get(connectionString);
+      if (workerThread != null) {
+         workerThread.shutdown();
       }
    }
 
    @Override
    public void activate() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         if (this._midlet == null) {
+            MIDlet._instantiationAllowed = true;
+            this._midlet = (MIDlet)Resource.getResourceClass().instantiateMIDlet(this._moduleClassName);
+            MIDlet._instantiationAllowed = false;
+            this._midlet.setMain(this);
+         }
+
+         boolean displayNeedsPainting = true;
+         this._midlet.startApp();
+         if (!this._active) {
+            Display display = Display.getDisplay(this._midlet);
+            Displayable currentDisplayable = display.getCurrent();
+            if (currentDisplayable != null && currentDisplayable instanceof Object) {
+               display.setCurrent(currentDisplayable);
+               displayNeedsPainting = false;
+            }
+         }
+
+         this._active = true;
+         if (displayNeedsPainting) {
+            this.repaint();
+            return;
+         }
+      } catch (MIDletStateChangeException ex) {
+         this.requestBackground();
+      }
    }
 
    @Override
@@ -151,25 +234,38 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
 
    @Override
    public void updateScreen() {
-      throw new RuntimeException("cod2jar: exception table");
+      Lcdui.runCallback();
+      synchronized (this.getAppEventLock()) {
+         this.doPainting();
+      }
+
+      Lcdui.runPaintCallback();
+      this.updateDisplay();
    }
 
    @Override
-   protected void dispatchInvokeLater(Runnable var1, Object var2, int var3) {
-      if (var3 == 1) {
-         Lcdui.setInvokeLaterCallback(var1, var2);
+   protected void dispatchInvokeLater(Runnable runnable, Object notifier, int data0) {
+      if (data0 == 1) {
+         Lcdui.setInvokeLaterCallback(runnable, notifier);
       } else {
-         super.dispatchInvokeLater(var1, var2, var3);
+         super.dispatchInvokeLater(runnable, notifier, data0);
       }
    }
 
    @Override
-   public void destroyApp(boolean var1) {
-      this._midlet.destroyApp(var1);
+   public void destroyApp(boolean unconditional) {
+      this._midlet.destroyApp(unconditional);
       this.pokeWorkerThreads();
    }
 
    private void pokeWorkerThreads() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         Enumeration e = this._workerThreadMap.elements();
+
+         while (e.hasMoreElements()) {
+            MIDletMain$MIDletPushRegistryWorkerThread mprwt = (MIDletMain$MIDletPushRegistryWorkerThread)e.nextElement();
+            mprwt.resume();
+         }
+      }
    }
 }

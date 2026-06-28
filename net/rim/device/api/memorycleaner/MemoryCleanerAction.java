@@ -3,16 +3,25 @@ package net.rim.device.api.memorycleaner;
 public final class MemoryCleanerAction {
    private Object _listener;
 
-   public MemoryCleanerAction(Object var1) {
-      this._listener = var1;
+   public MemoryCleanerAction(Object listener) {
+      this._listener = listener;
    }
 
    public final MemoryCleanerListener getListener() {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final boolean doAction(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean doAction(int event) {
+      MemoryCleanerListener listener = this.getListener();
+      if (listener != null) {
+         try {
+            return listener.cleanNow(event);
+         } catch (Throwable t) {
+            return true;
+         }
+      } else {
+         return false;
+      }
    }
 
    public final boolean doAction() {
@@ -20,11 +29,11 @@ public final class MemoryCleanerAction {
    }
 
    public final String getDescription() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object other) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

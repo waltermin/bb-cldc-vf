@@ -4,7 +4,7 @@ import net.rim.device.api.util.Comparator;
 
 class MenuItem$1 implements Comparator {
    @Override
-   public int compare(Object var1, Object var2) {
-      return ((MenuItem)var1).getOrdinal() - ((MenuItem)var2).getOrdinal();
+   public int compare(Object o1, Object o2) {
+      return ((MenuItem)o1).getOrdinal() - ((MenuItem)o2).getOrdinal();
    }
 }

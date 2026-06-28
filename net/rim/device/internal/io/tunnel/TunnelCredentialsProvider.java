@@ -1,5 +1,6 @@
 package net.rim.device.internal.io.tunnel;
 
+import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.PersistentObject;
@@ -12,14 +13,14 @@ public final class TunnelCredentialsProvider implements GlobalEventListener {
    private static final long GUID;
 
    public static final TunnelCredentialsProvider getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      TunnelCredentialsProvider var1 = (TunnelCredentialsProvider)var0.getOrWaitFor(1004147189966295995L);
-      if (var1 == null) {
-         var1 = new TunnelCredentialsProvider();
-         var0.put(1004147189966295995L, var1);
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      TunnelCredentialsProvider tunnelCredentialsProvider = (TunnelCredentialsProvider)applicationRegistry.getOrWaitFor(1004147189966295995L);
+      if (tunnelCredentialsProvider == null) {
+         tunnelCredentialsProvider = new TunnelCredentialsProvider();
+         applicationRegistry.put(1004147189966295995L, tunnelCredentialsProvider);
       }
 
-      return var1;
+      return tunnelCredentialsProvider;
    }
 
    private TunnelCredentialsProvider() {
@@ -57,23 +58,37 @@ public final class TunnelCredentialsProvider implements GlobalEventListener {
       return this._tunnelCredentials.incomingSocketsAllowed;
    }
 
-   public final synchronized void setApn(String var1) {
-      this._tunnelCredentials.apn = var1;
+   public final synchronized void setApn(String apn) {
+      this._tunnelCredentials.apn = apn;
       this._persistentObject.commit();
    }
 
-   public final synchronized void setApnUsername(String var1) {
-      this._tunnelCredentials.apnUsername = var1;
+   public final synchronized void setApnUsername(String apnUsername) {
+      this._tunnelCredentials.apnUsername = apnUsername;
       this._persistentObject.commit();
    }
 
-   public final synchronized void setApnPassword(String var1) {
-      this._tunnelCredentials.apnPassword = var1;
+   public final synchronized void setApnPassword(String apnPassword) {
+      this._tunnelCredentials.apnPassword = apnPassword;
       this._persistentObject.commit();
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 8508406279413621091L || guid == -594020114676189989L) {
+         if (!ITPolicy.getBoolean(32, 2, false)) {
+            synchronized (this) {
+               this._tunnelCredentials.loadValuesFromITPolicy();
+               this._persistentObject.commit();
+            }
+         } else {
+            TunnelCredentials tunnelCredentials = (TunnelCredentials)(new Object(true, true, false));
+            synchronized (this) {
+               this._tunnelCredentials = tunnelCredentials;
+               this._persistentObject.setContents(this._tunnelCredentials, 51);
+               this._persistentObject.commit();
+            }
+         }
+      }
    }
 }

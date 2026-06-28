@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import java.util.Calendar;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.cldc.util.CalendarExtensions;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
@@ -46,7 +47,7 @@ public final class ApplicationDescriptor {
       this._powerOnBehavior = 0;
    }
 
-   ApplicationDescriptor(int var1, int var2) {
+   ApplicationDescriptor(int moduleHandle, int index) {
       this._index = -1;
       this._flags = -1;
       this._position = -1;
@@ -55,20 +56,24 @@ public final class ApplicationDescriptor {
       this._scheduledTime = Long.MAX_VALUE;
       this._absoluteTime = Long.MAX_VALUE;
       this._powerOnBehavior = 0;
-      this._moduleHandle = var1;
-      this._index = var2;
+      this._moduleHandle = moduleHandle;
+      this._index = index;
    }
 
-   public ApplicationDescriptor(ApplicationDescriptor var1, String[] var2) {
+   public ApplicationDescriptor(ApplicationDescriptor original, String[] args) {
    }
 
-   public ApplicationDescriptor(ApplicationDescriptor var1, String var2, String[] var3) {
+   public ApplicationDescriptor(ApplicationDescriptor original, String name, String[] args) {
    }
 
-   public ApplicationDescriptor(ApplicationDescriptor var1, String var2, String[] var3, Bitmap var4, int var5, String var6, int var7) {
+   public ApplicationDescriptor(
+      ApplicationDescriptor original, String name, String[] args, Bitmap icon, int position, String nameResourceBundle, int nameResourceId
+   ) {
    }
 
-   public ApplicationDescriptor(ApplicationDescriptor var1, String var2, String[] var3, Bitmap var4, int var5, String var6, int var7, int var8) {
+   public ApplicationDescriptor(
+      ApplicationDescriptor original, String name, String[] args, Bitmap icon, int position, String nameResourceBundle, int nameResourceId, int flags
+   ) {
    }
 
    private final void assertPermission() {
@@ -103,16 +108,16 @@ public final class ApplicationDescriptor {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setOverrideNameResourceId(int var1) {
+   public final void setOverrideNameResourceId(int id) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setOverrideNameResourceBundle(String var1) {
+   public final void setOverrideNameResourceBundle(String bundleName) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    public final String getLocalizedName() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public final synchronized String getVersion() {
@@ -144,16 +149,65 @@ public final class ApplicationDescriptor {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final Bitmap getBitmap(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final Bitmap getBitmap(String id) {
+      byte[] data = CodeModuleManager.getModuleData(this._moduleHandle, id, this._index);
+      if (data == null) {
+         return null;
+      }
+
+      boolean findColour = Graphics.isColor();
+      boolean loopCheck = findColour;
+
+      do {
+         int offset = 0;
+
+         while (offset < data.length) {
+            int length = this.getIconLength(offset, data);
+
+            EncodedImage image;
+            boolean mono;
+            try {
+               image = EncodedImage.createEncodedImage(data, offset + 2, length);
+               switch (image.getImageType()) {
+                  case 2:
+                     PNGEncodedImage pngImage = (PNGEncodedImage)image;
+                     int colourType = pngImage.getColorType();
+                     mono = pngImage.getBitDepth() == 1 && (colourType == 0 || colourType == 4);
+                     break;
+                  case 4:
+                     mono = true;
+                     break;
+                  default:
+                     mono = false;
+               }
+            } catch (IllegalArgumentException iae) {
+               offset += length + 2;
+               continue;
+            }
+
+            if (findColour != mono) {
+               try {
+                  return image.getBitmap();
+               } catch (IllegalArgumentException iae) {
+                  return null;
+               }
+            }
+
+            offset += length + 2;
+         }
+
+         findColour = !findColour;
+      } while (loopCheck != findColour);
+
+      return null;
    }
 
-   private final int getIconLength(int var1, byte[] var2) {
-      return ((var2[var1] & 0xFF) << 8) + (var2[var1 + 1] & 0xFF);
+   private final int getIconLength(int start, byte[] data) {
+      return ((data[start] & 0xFF) << 8) + (data[start + 1] & 0xFF);
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object o) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -169,19 +223,19 @@ public final class ApplicationDescriptor {
       return this._absoluteTime;
    }
 
-   private static final long getNextDate(long var0) {
-      Calendar var2 = DateTimeUtilities.getNextDate((int)var0);
-      return ((CalendarExtensions)var2).getTimeLong();
+   private static final long getNextDate(long relativeTime) {
+      Calendar cal = DateTimeUtilities.getNextDate((int)relativeTime);
+      return ((CalendarExtensions)cal).getTimeLong();
    }
 
    final long getScheduledTime() {
       return this._absoluteTime;
    }
 
-   final long setScheduledTime(long var1, boolean var3) {
-      this._scheduledTime = var1;
-      this._absolute = var3;
-      if (var3) {
+   final long setScheduledTime(long scheduledTime, boolean absolute) {
+      this._scheduledTime = scheduledTime;
+      this._absolute = absolute;
+      if (absolute) {
          this._absoluteTime = this._scheduledTime - this._scheduledTime % 60000;
       } else {
          this._absoluteTime = getNextDate(this._scheduledTime);
@@ -190,9 +244,9 @@ public final class ApplicationDescriptor {
       return this._absoluteTime;
    }
 
-   public final void setPowerOnBehavior(int var1) {
+   public final void setPowerOnBehavior(int behavior) {
       this.assertPermission();
-      switch (var1) {
+      switch (behavior) {
          case 0:
             this._powerOnBehavior = 0;
             return;
@@ -200,7 +254,7 @@ public final class ApplicationDescriptor {
          case 2:
          case 3:
          default:
-            this._powerOnBehavior = var1;
+            this._powerOnBehavior = behavior;
       }
    }
 
@@ -208,20 +262,20 @@ public final class ApplicationDescriptor {
       return this._powerOnBehavior;
    }
 
-   private final void copy(ApplicationDescriptor var1) {
-      this._moduleHandle = var1._moduleHandle;
-      this._moduleName = var1._moduleName;
-      this._index = var1._index;
-      this._name = var1._name;
-      this._version = var1._version;
-      this._args = var1._args;
-      this._flags = var1._flags;
-      this._icon = var1._icon;
-      this._position = var1._position;
-      this._nameResourceBundle = var1._nameResourceBundle;
-      this._overrideNameResourceBundle = var1._overrideNameResourceBundle;
-      this._nameResourceId = var1._nameResourceId;
-      this._overrideNameResourceId = var1._overrideNameResourceId;
-      this._powerOnBehavior = var1._powerOnBehavior;
+   private final void copy(ApplicationDescriptor original) {
+      this._moduleHandle = original._moduleHandle;
+      this._moduleName = original._moduleName;
+      this._index = original._index;
+      this._name = original._name;
+      this._version = original._version;
+      this._args = original._args;
+      this._flags = original._flags;
+      this._icon = original._icon;
+      this._position = original._position;
+      this._nameResourceBundle = original._nameResourceBundle;
+      this._overrideNameResourceBundle = original._overrideNameResourceBundle;
+      this._nameResourceId = original._nameResourceId;
+      this._overrideNameResourceId = original._overrideNameResourceId;
+      this._powerOnBehavior = original._powerOnBehavior;
    }
 }

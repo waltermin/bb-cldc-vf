@@ -18,10 +18,10 @@ public final class CBPacketHeader implements RadioPacketHeader {
    public CBPacketHeader() {
    }
 
-   public CBPacketHeader(int var1, int var2) {
+   public CBPacketHeader(int messageID, int geoScope) {
       this._messageCoding = 0;
-      this._messageID = var1;
-      this._geoScope = var2;
+      this._messageID = messageID;
+      this._geoScope = geoScope;
    }
 
    @Override

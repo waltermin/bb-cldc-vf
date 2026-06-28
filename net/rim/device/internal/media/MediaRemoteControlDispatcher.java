@@ -5,8 +5,8 @@ import net.rim.vm.Message;
 
 final class MediaRemoteControlDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      MediaRemoteControlListener var3 = (MediaRemoteControlListener)var2;
-      var3.mediaPanelEvent(var1.getEvent(), var1.getSubMessage());
+   public final void dispatch(Message message, Object listener) {
+      MediaRemoteControlListener mListener = (MediaRemoteControlListener)listener;
+      mListener.mediaPanelEvent(message.getEvent(), message.getSubMessage());
    }
 }

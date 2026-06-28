@@ -10,11 +10,11 @@ public class Ticker {
    static final int TICKER_DELAY;
    static final int TICKER_IDLE;
 
-   public Ticker(String var1) {
+   public Ticker(String str) {
    }
 
-   final void setStuff(net.rim.device.api.ui.Font var1) {
-      this._font = var1;
+   final void setStuff(net.rim.device.api.ui.Font font) {
+      this._font = font;
       this._pixelLength = this._font.getAdvance(this._str);
    }
 
@@ -22,9 +22,9 @@ public class Ticker {
       return this._font.getHeight();
    }
 
-   final void draw(net.rim.device.api.ui.Graphics var1, int var2) {
-      var1.setFont(this._font);
-      var1.drawText(this._str, this._width - this._pixelOffset, var2);
+   final void draw(net.rim.device.api.ui.Graphics graphics, int y) {
+      graphics.setFont(this._font);
+      graphics.drawText(this._str, this._width - this._pixelOffset, y);
    }
 
    final void advanceTicker() {
@@ -34,8 +34,8 @@ public class Ticker {
       }
    }
 
-   public void setString(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setString(String str) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public String getString() {

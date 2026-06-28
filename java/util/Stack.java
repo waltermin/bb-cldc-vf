@@ -1,24 +1,24 @@
 package java.util;
 
 public class Stack extends Vector {
-   public Object push(Object var1) {
-      this.addElement(var1);
-      return var1;
+   public Object push(Object item) {
+      this.addElement(item);
+      return item;
    }
 
    public synchronized Object pop() {
-      int var2 = this.size();
-      Object var1 = this.peek();
-      this.removeElementAt(var2 - 1);
-      return var1;
+      int len = this.size();
+      Object obj = this.peek();
+      this.removeElementAt(len - 1);
+      return obj;
    }
 
    public synchronized Object peek() {
-      int var1 = this.size();
-      if (var1 == 0) {
+      int len = this.size();
+      if (len == 0) {
          throw new EmptyStackException();
       } else {
-         return this.elementAt(var1 - 1);
+         return this.elementAt(len - 1);
       }
    }
 
@@ -26,8 +26,8 @@ public class Stack extends Vector {
       return this.size() == 0;
    }
 
-   public synchronized int search(Object var1) {
-      int var2 = this.lastIndexOf(var1);
-      return var2 >= 0 ? this.size() - var2 : -1;
+   public synchronized int search(Object o) {
+      int i = this.lastIndexOf(o);
+      return i >= 0 ? this.size() - i : -1;
    }
 }

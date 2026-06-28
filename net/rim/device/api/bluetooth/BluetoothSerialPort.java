@@ -6,6 +6,7 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.bluetooth.BluetoothDeviceManager;
 import net.rim.device.internal.bluetooth.BluetoothME;
 import net.rim.device.internal.bluetooth.BluetoothSDP;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.vm.Message;
 
 public final class BluetoothSerialPort extends IOPort {
@@ -51,26 +52,32 @@ public final class BluetoothSerialPort extends IOPort {
    private BluetoothSerialPort() {
    }
 
-   public BluetoothSerialPort(BluetoothSerialPortInfo var1, int var2, int var3, int var4, int var5, int var6, BluetoothSerialPortListener var7) {
+   public BluetoothSerialPort(
+      BluetoothSerialPortInfo info, int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener
+   ) {
    }
 
-   public BluetoothSerialPort(String var1, int var2, int var3, int var4, int var5, int var6, BluetoothSerialPortListener var7) {
-      this(null, var1, var2, var3, var4, var5, var6, var7);
+   public BluetoothSerialPort(
+      String serviceName, int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener
+   ) {
+      this(null, serviceName, baudRate, dataFormat, flowControl, rxBufferSize, txBufferSize, listener);
    }
 
-   public BluetoothSerialPort(byte[] var1, String var2, int var3, int var4, int var5, int var6, int var7, BluetoothSerialPortListener var8) {
-      this(var3, var4, var5, var6, var7, var8);
-      this.addDefaultSDPRecord(var1, var2);
+   public BluetoothSerialPort(
+      byte[] uuid, String serviceName, int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener
+   ) {
+      this(baudRate, dataFormat, flowControl, rxBufferSize, txBufferSize, listener);
+      this.addDefaultSDPRecord(uuid, serviceName);
    }
 
-   public BluetoothSerialPort(int var1, int var2, int var3, int var4, int var5, BluetoothSerialPortListener var6) {
+   public BluetoothSerialPort(int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener) {
    }
 
    public final int getSDPRecordHandle() {
       return this._sdpRecordHandle;
    }
 
-   public final void addSDPRecord(int[] var1, byte[][][] var2, int var3) {
+   public final void addSDPRecord(int[] attributeIDs, byte[][][] attributeValues, int classOfDevice) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -82,20 +89,20 @@ public final class BluetoothSerialPort extends IOPort {
       return getRFCOMMChannel(this._portHandle);
    }
 
-   private final void addDefaultSDPRecord(byte[] var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void addDefaultSDPRecord(byte[] uuid, String serviceName) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final boolean isSupported() {
       return BluetoothME.isSupported();
    }
 
-   public final void setProperties(int var1, int var2, int var3) {
+   public final void setProperties(int baudRate, int dataFormat, int flowControl) {
    }
 
-   public final void setDsr(boolean var1) {
+   public final void setDsr(boolean state) {
       assertPermission();
-      setDsr(this._portHandle, var1);
+      setDsr(this._portHandle, state);
    }
 
    public final boolean getDtr() {
@@ -135,31 +142,31 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    @Override
-   public final int write(byte[] var1) {
-      return this.write(var1, 0, var1.length);
+   public final int write(byte[] data) {
+      return this.write(data, 0, data.length);
    }
 
    @Override
-   public final int write(byte[] var1, int var2, int var3) {
+   public final int write(byte[] data, int offset, int length) {
       assertPermission();
-      return write(this._portHandle, var1, var2, var3);
+      return write(this._portHandle, data, offset, length);
    }
 
    @Override
-   public final int write(int var1) {
+   public final int write(int b) {
       assertPermission();
-      return write(this._portHandle, var1);
+      return write(this._portHandle, b);
    }
 
    @Override
-   public final int read(byte[] var1) {
+   public final int read(byte[] data) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] data, int offset, int length) {
       assertPermission();
-      return read(this._portHandle, var1, var2, var3);
+      return read(this._portHandle, data, offset, length);
    }
 
    @Override
@@ -170,11 +177,11 @@ public final class BluetoothSerialPort extends IOPort {
 
    public static final BluetoothSerialPortInfo[] getSerialPortInfo() {
       assertPermission();
-      BluetoothDeviceManager var0 = BluetoothDeviceManager.getInstance();
-      if (var0 == null) {
+      BluetoothDeviceManager btManager = BluetoothDeviceManager.getInstance();
+      if (btManager == null) {
          throw new Object();
       } else {
-         return var0.getSerialPortInfo();
+         return btManager.getSerialPortInfo();
       }
    }
 
@@ -200,11 +207,20 @@ public final class BluetoothSerialPort extends IOPort {
 
    private static final native int getRFCOMMChannel(int var0);
 
-   private final void addListener(BluetoothSerialPortListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void addListener(BluetoothSerialPortListener listener) {
+      assertPermission();
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(42) == null) {
+            dispatchManager.setDispatcher(42, new BluetoothSerialEventDispatcher());
+         }
+      }
+
+      this._listener = listener;
+      this._app.addListener(42, this);
    }
 
-   final void dispatch(Message var1) {
+   final void dispatch(Message message) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

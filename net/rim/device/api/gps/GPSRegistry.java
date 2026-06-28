@@ -3,12 +3,16 @@ package net.rim.device.api.gps;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.Branding;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntIntHashtable;
+import net.rim.device.internal.proxy.Proxy;
+import net.rim.device.internal.system.EventDispatchManager;
+import net.rim.device.internal.system.EventDispatcher;
 import net.rim.vm.Process;
 
 public final class GPSRegistry {
@@ -44,7 +48,17 @@ public final class GPSRegistry {
    }
 
    public static final void initialize() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (DeviceInfo.isSimulator()) {
+         EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+         synchronized (dispatchManager) {
+            if (dispatchManager.getDispatcher(22) == null) {
+               dispatchManager.setDispatcher(22, (EventDispatcher)(new Object()));
+            }
+         }
+
+         Proxy proxy = Proxy.getInstance();
+         proxy.addListener(22, _registry);
+      }
    }
 
    public static final GPSRegistry getInstance() {
@@ -55,7 +69,7 @@ public final class GPSRegistry {
       return this._simulateGPSPuck;
    }
 
-   public final void setSimulateGPSPuck(boolean var1) {
+   public final void setSimulateGPSPuck(boolean b) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -63,15 +77,15 @@ public final class GPSRegistry {
       return this._locationLock;
    }
 
-   public final GPSLocation getLocation(int var1) {
-      if (var1 == 0) {
+   public final GPSLocation getLocation(int mode) {
+      if (mode == 0) {
          return this._standardLocation.getUTCTime() > this._extendedLocation.getUTCTime() ? this._standardLocation : this._extendedLocation;
       }
 
-      if (isVerizon() && var1 == 1) {
-         int var2 = Application.getApplication().getProcessId();
-         GPSRegistry$PDEInfoStatus var3 = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(var2);
-         if (var3 == null || !var3.getCredStatus()) {
+      if (isVerizon() && mode == 1) {
+         int processId = Application.getApplication().getProcessId();
+         GPSRegistry$PDEInfoStatus pdeInfoStatus = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(processId);
+         if (pdeInfoStatus == null || !pdeInfoStatus.getCredStatus()) {
             return null;
          }
       }
@@ -79,8 +93,8 @@ public final class GPSRegistry {
       return this._extendedLocation;
    }
 
-   public final long getLastFixTime(int var1) {
-      switch (var1) {
+   public final long getLastFixTime(int mode) {
+      switch (mode) {
          case -1:
             return 0;
          case 0:
@@ -97,78 +111,78 @@ public final class GPSRegistry {
       return Branding.getVendorId() == 105 || Branding.getVendorId() == 226;
    }
 
-   public final boolean getCredentialStatus(int var1) {
-      GPSRegistry$PDEInfoStatus var2 = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(var1);
-      return var2 != null ? var2.getCredStatus() : false;
+   public final boolean getCredentialStatus(int processId) {
+      GPSRegistry$PDEInfoStatus pdeInfoStatus = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(processId);
+      return pdeInfoStatus != null ? pdeInfoStatus.getCredStatus() : false;
    }
 
-   public final synchronized boolean startLocationUpdate(int var1, int var2, GPS$AppCriteria var3) {
+   public final synchronized boolean startLocationUpdate(int interval, int mode, GPS$AppCriteria criteria) {
       if (!GPS.isSupportedOnCurrentNetwork()) {
          return false;
       }
 
-      if (var3 == null) {
-         var3 = new Object();
+      if (criteria == null) {
+         criteria = (GPS$AppCriteria)(new Object());
       }
 
-      if (var2 == 2) {
+      if (mode == 2) {
          _lastFixTimes[0] = System.currentTimeMillis();
-      } else if (var2 == 1) {
+      } else if (mode == 1) {
          _lastFixTimes[1] = System.currentTimeMillis();
       } else {
          _lastFixTimes[2] = System.currentTimeMillis();
       }
 
       _lastFixTimeStore.commit();
-      RIMGlobalMessagePoster.postGlobalEvent(-2101050060249085778L, var2, 0);
-      if (var2 == 0) {
-         return GPS.startLocationUpdate(0, var2, 0, null);
+      RIMGlobalMessagePoster.postGlobalEvent(-2101050060249085778L, mode, 0);
+      if (mode == 0) {
+         return GPS.startLocationUpdate(0, mode, 0, null);
       }
 
-      int var4 = Application.getApplication().getProcessId();
-      if (RadioInfo.getNetworkType() == 4 && var2 == 1) {
-         this._criteriaTable.put(var4, var3);
-         this.setPDEInfo(var4);
+      int processId = Application.getApplication().getProcessId();
+      if (RadioInfo.getNetworkType() == 4 && mode == 1) {
+         this._criteriaTable.put(processId, criteria);
+         this.setPDEInfo(processId);
       }
 
-      IntIntHashtable var5 = null;
-      if (var2 == 2) {
-         var5 = this._autoFixConsumers;
+      IntIntHashtable table = null;
+      if (mode == 2) {
+         table = this._autoFixConsumers;
       } else {
-         if (var2 != 1) {
+         if (mode != 1) {
             return false;
          }
 
-         var5 = this._assistFixConsumers;
+         table = this._assistFixConsumers;
       }
 
-      if (var1 == 0) {
-         if (var5.size() == 0) {
-            return GPS.startLocationUpdate(3, var2, 0, (GPS$AppCriteria)var3);
-         } else if (var2 == 1) {
-            return GPS.startLocationUpdate(3, var2, this._assistGCD, (GPS$AppCriteria)var3);
+      if (interval == 0) {
+         if (table.size() == 0) {
+            return GPS.startLocationUpdate(3, mode, 0, criteria);
+         } else if (mode == 1) {
+            return GPS.startLocationUpdate(3, mode, this._assistGCD, criteria);
          } else {
-            return var2 == 2 ? GPS.startLocationUpdate(3, var2, this._autoGCD, (GPS$AppCriteria)var3) : false;
+            return mode == 2 ? GPS.startLocationUpdate(3, mode, this._autoGCD, criteria) : false;
          }
       } else {
-         if (!var5.contains(var4)) {
-            Object var6 = Process.currentProcess();
-            ((ApplicationProcess)var6).addCleanupRunnable(new GPSRegistry$GPSCleanerRunnable(this, var4, var2));
+         if (!table.contains(processId)) {
+            ApplicationProcess process = (ApplicationProcess)Process.currentProcess();
+            process.addCleanupRunnable(new GPSRegistry$GPSCleanerRunnable(this, processId, mode));
          }
 
-         var5.put(var4, var1);
-         int var8 = this.calculateGCD(var5.elements());
-         if (var2 == 2) {
-            this._autoFixConsumers = var5;
-            this._autoGCD = var8;
-         } else if (var2 == 1) {
-            this._assistFixConsumers = var5;
-            this._assistGCD = var8;
+         table.put(processId, interval);
+         int gcd = this.calculateGCD(table.elements());
+         if (mode == 2) {
+            this._autoFixConsumers = table;
+            this._autoGCD = gcd;
+         } else if (mode == 1) {
+            this._assistFixConsumers = table;
+            this._assistGCD = gcd;
          }
 
          this._gcd = this.getCommonGCD();
          this._gpsListener._errorCount = 0;
-         return GPS.startLocationUpdate(3, var2, var8, (GPS$AppCriteria)var3);
+         return GPS.startLocationUpdate(3, mode, gcd, criteria);
       }
    }
 
@@ -176,113 +190,113 @@ public final class GPSRegistry {
       if (this._assistFixConsumers.size() != 0) {
          this._assistGCD = this.calculateGCD(this._assistFixConsumers.elements());
          this._gcd = this.getCommonGCD();
-         Object var1 = null;
-         IntEnumeration var2 = this._assistFixConsumers.keys();
-         if (var2.hasMoreElements()) {
-            int var3 = var2.nextElement();
-            this.setPDEInfo(var3);
-            var1 = this._criteriaTable.get(var3);
+         GPS$AppCriteria criteria = null;
+         IntEnumeration en = this._assistFixConsumers.keys();
+         if (en.hasMoreElements()) {
+            int pid = en.nextElement();
+            this.setPDEInfo(pid);
+            criteria = (GPS$AppCriteria)this._criteriaTable.get(pid);
          }
 
-         GPS.startLocationUpdate(3, 1, this._assistGCD, (GPS$AppCriteria)var1);
+         GPS.startLocationUpdate(3, 1, this._assistGCD, criteria);
       }
    }
 
-   private final int calculateGCD(int var1, int var2) {
-      while (var2 != 0) {
-         int var3 = var2;
-         var2 = var1 % var2;
-         var1 = var3;
+   private final int calculateGCD(int a, int b) {
+      while (b != 0) {
+         int t = b;
+         b = a % b;
+         a = t;
       }
 
-      return var1;
+      return a;
    }
 
-   private final int calculateGCD(IntEnumeration var1) {
-      int var2 = 0;
+   private final int calculateGCD(IntEnumeration en) {
+      int gcd = 0;
 
-      while (var1.hasMoreElements()) {
-         if (var2 == 0) {
-            var2 = var1.nextElement();
+      while (en.hasMoreElements()) {
+         if (gcd == 0) {
+            gcd = en.nextElement();
          } else {
-            var2 = this.calculateGCD(var2, var1.nextElement());
+            gcd = this.calculateGCD(gcd, en.nextElement());
          }
       }
 
-      if (var2 > _maxGPSInterval) {
-         for (int var3 = _maxGPSInterval; var3 > 0; var3--) {
-            if (var2 % var3 == 0) {
-               return var3;
+      if (gcd > _maxGPSInterval) {
+         for (int i = _maxGPSInterval; i > 0; i--) {
+            if (gcd % i == 0) {
+               return i;
             }
          }
       }
 
-      return var2;
+      return gcd;
    }
 
-   public final synchronized boolean stopLocationUpdate(int var1) {
-      if (var1 == 0) {
+   public final synchronized boolean stopLocationUpdate(int mode) {
+      if (mode == 0) {
          return true;
       }
 
-      int var2 = Application.getApplication().getProcessId();
-      return this.stopLocationUpdate(var1, var2);
+      int processId = Application.getApplication().getProcessId();
+      return this.stopLocationUpdate(mode, processId);
    }
 
-   private final boolean stopLocationUpdate(int var1, int var2) {
-      IntIntHashtable var3 = null;
-      if (var1 == 2) {
-         var3 = this._autoFixConsumers;
+   private final boolean stopLocationUpdate(int mode, int processId) {
+      IntIntHashtable table = null;
+      if (mode == 2) {
+         table = this._autoFixConsumers;
       } else {
-         if (var1 != 1) {
+         if (mode != 1) {
             return false;
          }
 
-         var3 = this._assistFixConsumers;
+         table = this._assistFixConsumers;
       }
 
-      if (!var3.containsKey(var2)) {
-         if (var3.size() == 0) {
-            GPS.stopLocationUpdate(var1);
+      if (!table.containsKey(processId)) {
+         if (table.size() == 0) {
+            GPS.stopLocationUpdate(mode);
          }
 
          return true;
       } else {
-         var3.remove(var2);
-         if (var3.size() == 0) {
-            if (var1 == 2) {
+         table.remove(processId);
+         if (table.size() == 0) {
+            if (mode == 2) {
                this._autoGCD = 0;
-            } else if (var1 == 1) {
+            } else if (mode == 1) {
                this._assistGCD = 0;
             }
 
-            return GPS.stopLocationUpdate(var1);
+            return GPS.stopLocationUpdate(mode);
          } else {
-            int var4 = this.calculateGCD(var3.elements());
-            if (var1 == 2) {
-               this._autoFixConsumers = var3;
-               this._autoGCD = var4;
-            } else if (var1 == 1) {
-               this._assistFixConsumers = var3;
-               this._assistGCD = var4;
+            int gcd = this.calculateGCD(table.elements());
+            if (mode == 2) {
+               this._autoFixConsumers = table;
+               this._autoGCD = gcd;
+            } else if (mode == 1) {
+               this._assistFixConsumers = table;
+               this._assistGCD = gcd;
             }
 
-            this._criteriaTable.remove(var2);
+            this._criteriaTable.remove(processId);
             this._gcd = this.getCommonGCD();
-            Object var5 = new Object();
-            if (RadioInfo.getNetworkType() == 4 && var1 == 1) {
-               this._pdeTable.remove(var2);
+            GPS$AppCriteria criteria = (GPS$AppCriteria)(new Object());
+            if (RadioInfo.getNetworkType() == 4 && mode == 1) {
+               this._pdeTable.remove(processId);
                if (this._assistFixConsumers.size() != 0) {
-                  IntEnumeration var6 = this._assistFixConsumers.keys();
-                  if (var6.hasMoreElements()) {
-                     int var7 = var6.nextElement();
-                     this.setPDEInfo(var7);
-                     var5 = this._criteriaTable.get(var7);
+                  IntEnumeration en = this._assistFixConsumers.keys();
+                  if (en.hasMoreElements()) {
+                     int pid = en.nextElement();
+                     this.setPDEInfo(pid);
+                     criteria = (GPS$AppCriteria)this._criteriaTable.get(pid);
                   }
                }
             }
 
-            GPS.startLocationUpdate(3, var1, var4, (GPS$AppCriteria)var5);
+            GPS.startLocationUpdate(3, mode, gcd, criteria);
             return true;
          }
       }
@@ -296,51 +310,103 @@ public final class GPSRegistry {
       }
    }
 
-   public final boolean addPDEInfo(GPS$GPSPDEInfo var1) {
-      int var2 = Application.getApplication().getProcessId();
-      GPSRegistry$PDEInfoStatus var3 = new GPSRegistry$PDEInfoStatus(var1, false, false, null);
-      this._pdeTable.put(var2, var3);
-      Object var4 = Process.currentProcess();
-      ((ApplicationProcess)var4).addCleanupRunnable(new GPSRegistry$1(this, var2));
-      return isVerizon() ? true : this.setPDEInfo(var1);
+   public final boolean addPDEInfo(GPS$GPSPDEInfo pdeInfo) {
+      int processId = Application.getApplication().getProcessId();
+      GPSRegistry$PDEInfoStatus pdeStatus = new GPSRegistry$PDEInfoStatus(pdeInfo, false, false, null);
+      this._pdeTable.put(processId, pdeStatus);
+      ApplicationProcess process = (ApplicationProcess)Process.currentProcess();
+      process.addCleanupRunnable(new GPSRegistry$1(this, processId));
+      return isVerizon() ? true : this.setPDEInfo(pdeInfo);
    }
 
-   private final boolean setPDEInfo(int var1) {
-      if (this._pdeTable.size() != 0 && this._pdeTable.containsKey(var1)) {
-         GPSRegistry$PDEInfoStatus var2 = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(var1);
-         return this.setPDEInfo(var2.getPDEInfo());
+   private final boolean setPDEInfo(int processId) {
+      if (this._pdeTable.size() != 0 && this._pdeTable.containsKey(processId)) {
+         GPSRegistry$PDEInfoStatus pdeStatus = (GPSRegistry$PDEInfoStatus)this._pdeTable.get(processId);
+         return this.setPDEInfo(pdeStatus.getPDEInfo());
       } else {
          this.logPDEFailure();
          return false;
       }
    }
 
-   private final boolean setPDEInfo(GPS$GPSPDEInfo var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final boolean setPDEInfo(GPS$GPSPDEInfo pdeInfo) {
+      this._pdeRequestSuccess = false;
+      GPS.setPDEInfo(pdeInfo);
+      if (!isVerizon()) {
+         synchronized (_pdeLock) {
+            try {
+               _pdeLock.wait(3000);
+            } catch (InterruptedException var4) {
+            }
+
+            if (!this._pdeRequestSuccess) {
+               this.logPDEFailure();
+            }
+         }
+      }
+
+      return this._pdeRequestSuccess;
    }
 
    private final void logPDEFailure() {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final int gpsGetLocation(GPSLocationStandard var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int gpsGetLocation(GPSLocationStandard info, int aidMode) {
+      int result = 1;
+
+      try {
+         if (DeviceInfo.isSimulator() && this._simulateGPSPuck && !GPS.startFledgeGPS()) {
+            return result;
+         }
+
+         result = GPS.getLocation(info, aidMode);
+         if (result == 0) {
+            info.setUTCTime(System.currentTimeMillis());
+         }
+
+         if (DeviceInfo.isSimulator() && this._simulateGPSPuck) {
+            GPS.stopFledgeGPS();
+            return result;
+         }
+      } catch (Exception var5) {
+      }
+
+      return result;
    }
 
    public final int getGCD() {
       return this._gcd;
    }
 
-   private final void notifyListeners(int var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void notifyListeners(int mode, long event) {
+      synchronized (this) {
+         if (mode == 2 || mode == 1) {
+            if (this._autoFixConsumers.size() > 0) {
+               IntEnumeration en = this._autoFixConsumers.keys();
+
+               while (en.hasMoreElements()) {
+                  RIMGlobalMessagePoster.postGlobalEvent(en.nextElement(), event, this._gcd, 0, null, null);
+               }
+            }
+
+            if (this._assistFixConsumers.size() > 0) {
+               IntEnumeration en = this._assistFixConsumers.keys();
+
+               while (en.hasMoreElements()) {
+                  RIMGlobalMessagePoster.postGlobalEvent(en.nextElement(), event, this._gcd, 0, null, null);
+               }
+            }
+         }
+      }
    }
 
-   private final void restartLocationUpdate(int var1) {
-      if ((var1 != 2 || this._autoFixConsumers.size() != 0) && (var1 != 1 || this._assistFixConsumers.size() != 0)) {
-         if (RadioInfo.getNetworkType() == 4 && var1 == 1) {
+   private final void restartLocationUpdate(int mode) {
+      if ((mode != 2 || this._autoFixConsumers.size() != 0) && (mode != 1 || this._assistFixConsumers.size() != 0)) {
+         if (RadioInfo.getNetworkType() == 4 && mode == 1) {
             new GPSRegistry$2(this).start();
          } else {
-            GPS.startLocationUpdate(3, var1, this._gcd, (GPS$AppCriteria)(new Object()));
+            GPS.startLocationUpdate(3, mode, this._gcd, (GPS$AppCriteria)(new Object()));
          }
       }
    }

@@ -7,8 +7,10 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.io.file.FileSystem;
 import net.rim.device.internal.system.EventDispatchManager;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.MessageListener;
 import net.rim.vm.Message;
+import net.rim.vm.MessageQueue;
 import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
@@ -40,7 +42,7 @@ public class Application {
    protected Application() {
    }
 
-   public final void setMessageListener(MessageListener var1) {
+   public final void setMessageListener(MessageListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -77,246 +79,259 @@ public class Application {
       this._foregroundRequestInProgress = true;
    }
 
-   public final void enableKeyUpEvents(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void enableKeyUpEvents(boolean enable) {
+      this._enableKeyUpMessages = enable;
+      synchronized (this._eventLock) {
+         if (this.isForeground()) {
+            InternalServices.enableKeyUpMessages(this._enableKeyUpMessages);
+         }
+      }
    }
 
    public final boolean acceptsKeyUpEvents() {
       return this._enableKeyUpMessages;
    }
 
-   public synchronized void addListener(int var1, Object var2) {
+   public synchronized void addListener(int device, Object listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      if (var1 == 57 && !(var2 instanceof Object)) {
+      if (device == 57 && !(listener instanceof Object)) {
          throw new Object();
       }
 
-      this._listeners[var1] = ListenerUtilities.addListener(this._listeners[var1], var2);
+      this._listeners[device] = ListenerUtilities.addListener(this._listeners[device], listener);
    }
 
-   public synchronized void removeListener(int var1, Object var2) {
+   public synchronized void removeListener(int device, Object listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._listeners[var1] = ListenerUtilities.removeListener(this._listeners[var1], var2);
+      this._listeners[device] = ListenerUtilities.removeListener(this._listeners[device], listener);
    }
 
-   public synchronized Object[] getListeners(int var1) {
+   public synchronized Object[] getListeners(int device) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      Object[][] var2 = this._listeners[var1];
-      if (var2 == null) {
+      Object[] array = this._listeners[device];
+      if (array == null) {
          return null;
       }
 
-      Object[] var3 = new Object[var2.length];
-      System.arraycopy(var2, 0, var3, 0, var2.length);
-      return var3;
+      Object[] copy = new Object[array.length];
+      System.arraycopy(array, 0, copy, 0, array.length);
+      return copy;
    }
 
-   public void addKeyListener(KeyListener var1) {
+   public void addKeyListener(KeyListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void removeKeyListener(KeyListener var1) {
-      this.removeListener(2, var1);
+   public void removeKeyListener(KeyListener listener) {
+      this.removeListener(2, listener);
    }
 
-   public void addLockedKeyListener(KeyListener var1) {
+   public void addLockedKeyListener(KeyListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.addListener(49, var1);
+      this.addListener(49, listener);
    }
 
-   public void removeLockedKeyListener(KeyListener var1) {
+   public void removeLockedKeyListener(KeyListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.removeListener(49, var1);
+      this.removeListener(49, listener);
    }
 
-   public void addStylusListener(StylusListener var1) {
-      this.addListener(26, var1);
+   public void addStylusListener(StylusListener listener) {
+      this.addListener(26, listener);
    }
 
-   public void removeStylusListener(StylusListener var1) {
-      this.removeListener(26, var1);
+   public void removeStylusListener(StylusListener listener) {
+      this.removeListener(26, listener);
    }
 
-   public void addTrackwheelListener(TrackwheelListener var1) {
-      this.addListener(2, var1);
+   public void addTrackwheelListener(TrackwheelListener listener) {
+      this.addListener(2, listener);
    }
 
-   public void removeTrackwheelListener(TrackwheelListener var1) {
-      this.removeListener(2, var1);
+   public void removeTrackwheelListener(TrackwheelListener listener) {
+      this.removeListener(2, listener);
    }
 
-   public void addRealtimeClockListener(RealtimeClockListener var1) {
-      this.addListener(3, var1);
+   public void addRealtimeClockListener(RealtimeClockListener listener) {
+      this.addListener(3, listener);
    }
 
-   public void removeRealtimeClockListener(RealtimeClockListener var1) {
-      this.removeListener(3, var1);
+   public void removeRealtimeClockListener(RealtimeClockListener listener) {
+      this.removeListener(3, listener);
    }
 
-   public void addSystemListener(SystemListener var1) {
-      this.addListener(1, var1);
+   public void addSystemListener(SystemListener listener) {
+      this.addListener(1, listener);
    }
 
-   public void removeSystemListener(SystemListener var1) {
-      this.removeListener(1, var1);
+   public void removeSystemListener(SystemListener listener) {
+      this.removeListener(1, listener);
    }
 
-   public void addHolsterListener(HolsterListener var1) {
-      this.addListener(7, var1);
+   public void addHolsterListener(HolsterListener listener) {
+      this.addListener(7, listener);
    }
 
-   public void removeHolsterListener(HolsterListener var1) {
-      this.removeListener(7, var1);
+   public void removeHolsterListener(HolsterListener listener) {
+      this.removeListener(7, listener);
    }
 
-   public void addRadioListener(RadioListener var1) {
-      this.addRadioListener(-5, var1);
+   public void addRadioListener(RadioListener listener) {
+      this.addRadioListener(-5, listener);
    }
 
-   public void addRadioListener(int var1, RadioListener var2) {
-      if (var2 == null) {
+   public void addRadioListener(int WAFFilter, RadioListener listener) {
+      if (listener == null) {
          throw new Object();
       }
 
-      if (var2 instanceof Object) {
-         if ((var1 & 4) != 0) {
+      if (listener instanceof Object) {
+         if ((WAFFilter & 4) != 0) {
             ApplicationControl.assertWiFiPermitted(true, CommonResource.getBundle(), 10165);
          }
 
-         Object var3 = var2;
-         this.addListener(33, new Object(var1, (RadioStatusListener)var3));
+         RadioStatusListener rsl = (RadioStatusListener)listener;
+         this.addListener(33, new Object(WAFFilter, rsl));
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(34, var2);
+      if (listener instanceof Object) {
+         this.addListener(34, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(52, var2);
+      if (listener instanceof Object) {
+         this.addListener(52, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(53, var2);
+      if (listener instanceof Object) {
+         this.addListener(53, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(54, var2);
+      if (listener instanceof Object) {
+         this.addListener(54, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(36, var2);
+      if (listener instanceof Object) {
+         this.addListener(36, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(48, var2);
+      if (listener instanceof Object) {
+         this.addListener(48, listener);
       }
 
-      if (var2 instanceof DirectConnectListener) {
-         this.addListener(37, var2);
+      if (listener instanceof DirectConnectListener) {
+         this.addListener(37, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(18, var2);
+      if (listener instanceof Object) {
+         this.addListener(18, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(51, var2);
+      if (listener instanceof Object) {
+         this.addListener(51, listener);
       }
 
-      if (var2 instanceof Object) {
-         this.addListener(58, var2);
+      if (listener instanceof Object) {
+         this.addListener(58, listener);
       }
    }
 
-   public void removeRadioListener(RadioListener var1) {
+   public void removeRadioListener(RadioListener listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void addIOPortListener(IOPortListener var1) {
-      if (var1 == null) {
+   public void addIOPortListener(IOPortListener listener) {
+      if (listener == null) {
          throw new Object();
       }
 
       ApplicationControl.assertLocalConnectionAllowed(true);
-      if (var1 instanceof Object) {
-         this.addListener(14, var1);
+      if (listener instanceof Object) {
+         this.addListener(14, listener);
       }
    }
 
-   public void removeIOPortListener(IOPortListener var1) {
-      this.removeListener(14, var1);
+   public void removeIOPortListener(IOPortListener listener) {
+      this.removeListener(14, listener);
    }
 
-   public void addFileSystemListener(FileSystemListener var1) {
-      FileSystem.addFileSystemListener(var1, this, false);
+   public void addFileSystemListener(FileSystemListener listener) {
+      FileSystem.addFileSystemListener(listener, this, false);
    }
 
-   public void removeFileSystemListener(FileSystemListener var1) {
-      FileSystem.removeFileSystemListener(var1);
+   public void removeFileSystemListener(FileSystemListener listener) {
+      FileSystem.removeFileSystemListener(listener);
    }
 
-   public void addFileSystemJournalListener(FileSystemJournalListener var1) {
-      FileSystem.addJournalListener(var1, this, false);
+   public void addFileSystemJournalListener(FileSystemJournalListener listener) {
+      FileSystem.addJournalListener(listener, this, false);
    }
 
-   public void removeFileSystemJournalListener(FileSystemJournalListener var1) {
-      FileSystem.removeJournalListener(var1);
+   public void removeFileSystemJournalListener(FileSystemJournalListener listener) {
+      FileSystem.removeJournalListener(listener);
    }
 
-   public void addGlobalEventListener(GlobalEventListener var1) {
+   public void addGlobalEventListener(GlobalEventListener listener) {
       ApplicationControl.assertIPCAllowed(true);
-      this.addListener(32, var1);
+      this.addListener(32, listener);
    }
 
-   public void addGlobalEventListenerInternal(GlobalEventListener var1) {
+   public void addGlobalEventListenerInternal(GlobalEventListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.addListener(32, var1);
+      this.addListener(32, listener);
    }
 
-   public void removeGlobalEventListener(GlobalEventListener var1) {
-      this.removeListener(32, var1);
+   public void removeGlobalEventListener(GlobalEventListener listener) {
+      this.removeListener(32, listener);
    }
 
-   public void addPeripheralListener(PeripheralListener var1) {
+   public void addPeripheralListener(PeripheralListener listener) {
    }
 
-   public void removePeripheralListener(PeripheralListener var1) {
+   public void removePeripheralListener(PeripheralListener listener) {
    }
 
-   public void addAlertListener(AlertListener var1) {
-      this.addListener(10, var1);
+   public void addAlertListener(AlertListener listener) {
+      this.addListener(10, listener);
    }
 
-   public void removeAlertListener(AlertListener var1) {
-      this.removeListener(10, var1);
+   public void removeAlertListener(AlertListener listener) {
+      this.removeListener(10, listener);
    }
 
    public void enterEventDispatcher() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setAcceptEvents(boolean var1) {
-      this._process.setAcceptsEvents(var1);
+   public final void setAcceptEvents(boolean on) {
+      this._process.setAcceptsEvents(on);
    }
 
-   public static void setAcceptEventsForProcess(boolean var0) {
-      ApplicationProcess var1 = (ApplicationProcess)Process.currentProcess();
-      var1.setAcceptsEvents(var0);
+   public static void setAcceptEventsForProcess(boolean on) {
+      ApplicationProcess process = (ApplicationProcess)Process.currentProcess();
+      process.setAcceptsEvents(on);
    }
 
    public boolean isAlive() {
       return this._process.isAlive();
    }
 
-   protected void dispatchInvokeLater(Runnable var1, Object var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void dispatchInvokeLater(Runnable runnable, Object notifier, int data0) {
+      if (runnable != null) {
+         runnable.run();
+         if (notifier != null) {
+            synchronized (notifier) {
+               notifier.notifyAll();
+               return;
+            }
+         }
+      }
    }
 
-   final void processNextMessage(Message var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void processNextMessage(Message message) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   protected boolean allowKeyEventFromPreviousApp(int var1, int var2) {
+   protected boolean allowKeyEventFromPreviousApp(int event, int keycode) {
       return false;
    }
 
@@ -348,47 +363,82 @@ public class Application {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void invokeLater(Runnable var1) {
-      this.invokeLaterSpecial(var1, 0);
+   public final void invokeLater(Runnable runnable) {
+      this.invokeLaterSpecial(runnable, 0);
    }
 
-   public final void invokeLaterSpecial(Runnable var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void invokeLaterSpecial(Runnable runnable, int data0) {
+      if (runnable == null) {
+         throw new Object();
+      }
+
+      synchronized (this._invokeLaterMessage) {
+         this._invokeLaterMessage.setObject0(runnable);
+         this._invokeLaterMessage.setObject1(null);
+         this._invokeLaterMessage.setData0(data0);
+         this._process.postMessage(this._invokeLaterMessage);
+         this._invokeLaterMessage.setObject0(null);
+      }
    }
 
-   public final int invokeLater(Runnable var1, long var2, boolean var4) {
-      return this.invokeLater(var1, var2, var4, 16);
+   public final int invokeLater(Runnable runnable, long time, boolean repeat) {
+      return this.invokeLater(runnable, time, repeat, 16);
    }
 
-   public final int invokeLaterInternal(Runnable var1, long var2, boolean var4) {
-      return this.invokeLater(var1, var2, var4, 20);
+   public final int invokeLaterInternal(Runnable runnable, long time, boolean repeat) {
+      return this.invokeLater(runnable, time, repeat, 20);
    }
 
-   private int invokeLater(Runnable var1, long var2, boolean var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   private int invokeLater(Runnable runnable, long time, boolean repeat, int poolSize) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final void cancelInvokeLater(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void cancelInvokeLater(int id) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void resetTimedRunnables() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void invokeAndWait(Runnable var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void invokeAndWait(Runnable runnable) {
+      if (this.isEventThread() || this._currentEventThread == null) {
+         runnable.run();
+      } else {
+         if (runnable == null) {
+            throw new Object();
+         }
+
+         synchronized (this._invokeAndWaitMonitor) {
+            synchronized (this._invokeLaterMessage) {
+               this._invokeLaterMessage.setObject0(runnable);
+               this._invokeLaterMessage.setObject1(this._invokeLaterMessage);
+               this._invokeLaterMessage.setData0(0);
+               this._process.postMessage(this._invokeLaterMessage);
+               this._invokeLaterMessage.setObject0(null);
+               this._invokeLaterMessage.setObject1(null);
+
+               try {
+                  this._invokeLaterMessage.wait();
+               } catch (InterruptedException var5) {
+               }
+            }
+         }
+      }
    }
 
    public final int getMessageQueueSize() {
-      throw new RuntimeException("cod2jar: exception table");
+      MessageQueue queue = this._process.getMessageQueue();
+      synchronized (queue) {
+         return queue.getSize();
+      }
    }
 
    public final int getProcessId() {
       return this._processId;
    }
 
-   public final void startModalEventThread(ModalEventThread var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void startModalEventThread(ModalEventThread modalEventThread) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -11,57 +11,57 @@ class ContentHandlerRegistrationHelperImpl extends ContentHandlerRegistrationHel
    }
 
    static void register() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      ContentHandlerRegistrationHelperImpl var1 = (ContentHandlerRegistrationHelperImpl)var0.get(-352407102385872585L);
-      if (var1 == null) {
-         var1 = new ContentHandlerRegistrationHelperImpl();
-         var0.put(-352407102385872585L, var1);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      ContentHandlerRegistrationHelperImpl instance = (ContentHandlerRegistrationHelperImpl)ar.get(-352407102385872585L);
+      if (instance == null) {
+         instance = new ContentHandlerRegistrationHelperImpl();
+         ar.put(-352407102385872585L, instance);
       }
    }
 
    @Override
-   public int verifyJadAttributes(Hashtable var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int verifyJadAttributes(Hashtable jadAttributes, boolean upgrade) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void registerContentHandlers(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void registerContentHandlers(int moduleHandle) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void unregisterContentHandler(String var1) {
-      RegistryImpl var2 = RegistryImpl.getRegistryImpl();
-      var2.unregisterInternal(var1);
+   public void unregisterContentHandler(String classname) {
+      RegistryImpl ri = RegistryImpl.getRegistryImpl();
+      ri.unregisterInternal(classname);
    }
 
    @Override
-   public void moduleUpgraded(String var1, int var2) {
-      InvocationCleanupManager.getInstance().moduleUpgraded(var1, var2);
+   public void moduleUpgraded(String moduleName, int moduleHandle) {
+      InvocationCleanupManager.getInstance().moduleUpgraded(moduleName, moduleHandle);
    }
 
-   private static String parseHandlerValues(String var0, String[] var1) {
-      if (var0 == null) {
+   private static String parseHandlerValues(String s, String[] a) {
+      if (s == null) {
          return null;
       }
 
-      int var2 = var0.indexOf(44);
-      String var3;
-      String var4;
-      if (var2 == -1) {
-         var3 = var0.trim();
-         var4 = null;
+      int comma = s.indexOf(44);
+      String values;
+      String result;
+      if (comma == -1) {
+         values = s.trim();
+         result = null;
       } else {
-         var3 = var0.substring(0, var2).trim();
-         var4 = var0.substring(var2 + 1);
+         values = s.substring(0, comma).trim();
+         result = s.substring(comma + 1);
       }
 
-      Object var5 = new Object(var3);
+      StringTokenizer tokens = (StringTokenizer)(new Object(values));
 
-      while (((StringTokenizer)var5).hasMoreTokens()) {
-         Arrays.add(var1, ((StringTokenizer)var5).nextToken());
+      while (tokens.hasMoreTokens()) {
+         Arrays.add(a, tokens.nextToken());
       }
 
-      return var4;
+      return result;
    }
 }

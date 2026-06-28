@@ -6,10 +6,10 @@ public class EventInjector$Event {
    protected Message _msg;
    private static ApplicationManagerImpl _ami;
 
-   EventInjector$Event(int var1, int var2, int var3, int var4, int var5, Object var6, Object var7) {
-      this._msg = (Message)(new Object(var1, var2, var3, var4, var5));
-      this._msg.setObject0(var6);
-      this._msg.setObject1(var7);
+   EventInjector$Event(int device, int event, int subMessage, int data0, int data1, Object o1, Object o2) {
+      this._msg = (Message)(new Object(device, event, subMessage, data0, data1));
+      this._msg.setObject0(o1);
+      this._msg.setObject1(o2);
    }
 
    public void post() {
@@ -17,16 +17,16 @@ public class EventInjector$Event {
       _ami.postMessageToForegroundProcess(this._msg);
    }
 
-   public void setEvent(int var1) {
-      this._msg.setEvent(var1);
+   public void setEvent(int event) {
+      this._msg.setEvent(event);
    }
 
    public int getEvent() {
       return this._msg.getEvent();
    }
 
-   public void setStatus(int var1) {
-      this._msg.setData0(var1);
+   public void setStatus(int status) {
+      this._msg.setData0(status);
    }
 
    public int getStatus() {

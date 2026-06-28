@@ -11,19 +11,19 @@ public class UIDGenerator {
    private static final int BLOCK_SIZE;
 
    public static int getUniqueScopingValue() {
-      int var0;
+      int valToReturn;
       do {
-         var0 = RandomSource.getInt();
-      } while (var0 == 0);
+         valToReturn = RandomSource.getInt();
+      } while (valToReturn == 0);
 
-      return var0;
+      return valToReturn;
    }
 
    public static int getUID() {
       return _generator.internalGetUID();
    }
 
-   public static int getUID(int var0) {
+   public static int getUID(int scope) {
       return _generator.internalGetUID();
    }
 
@@ -31,10 +31,10 @@ public class UIDGenerator {
       _generator.internalResetSeed();
    }
 
-   public static long makeLUID(int var0, int var1) {
-      long var2 = var0 & 4294967295L;
-      long var4 = var1 & 4294967295L;
-      return var2 << 32 | var4;
+   public static long makeLUID(int scope, int value) {
+      long highPart = scope & 4294967295L;
+      long lowPart = value & 4294967295L;
+      return highPart << 32 | lowPart;
    }
 
    private UIDGenerator() {
@@ -45,15 +45,15 @@ public class UIDGenerator {
       }
    }
 
-   private synchronized int startNewUIDBlock(int var1) {
-      var1 &= Integer.MAX_VALUE;
-      if (var1 == 0) {
-         var1++;
+   private synchronized int startNewUIDBlock(int next) {
+      next &= Integer.MAX_VALUE;
+      if (next == 0) {
+         next++;
       }
 
-      PersistentInteger.set(this._handle, var1);
-      this._nextUID = var1;
-      return var1;
+      PersistentInteger.set(this._handle, next);
+      this._nextUID = next;
+      return next;
    }
 
    private void internalResetSeed() {
@@ -61,23 +61,23 @@ public class UIDGenerator {
    }
 
    private synchronized int internalGetUID() {
-      int var1 = this._nextUID;
-      int var2 = PersistentInteger.get(this._handle);
-      int var3 = var2 + 1024 & 2147483647;
-      int var4 = this._nextUID + 1 & 2147483647;
-      if (var4 == 0) {
-         var4++;
+      int result = this._nextUID;
+      int begBlock = PersistentInteger.get(this._handle);
+      int endBlock = begBlock + 1024 & 2147483647;
+      int next = this._nextUID + 1 & 2147483647;
+      if (next == 0) {
+         next++;
       }
 
-      if (var2 < var3) {
-         if (var4 >= var3) {
-            var4 = this.startNewUIDBlock(var4);
+      if (begBlock < endBlock) {
+         if (next >= endBlock) {
+            next = this.startNewUIDBlock(next);
          }
-      } else if (var4 >= var3 && var4 < var2) {
-         var4 = this.startNewUIDBlock(var4);
+      } else if (next >= endBlock && next < begBlock) {
+         next = this.startNewUIDBlock(next);
       }
 
-      this._nextUID = var4;
-      return var1;
+      this._nextUID = next;
+      return result;
    }
 }

@@ -8,17 +8,17 @@ final class CoverageInfo$CoverageInfoEventDispatcher extends EventDispatcher {
    }
 
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      int var3 = var1.getEvent();
-      CoverageStatusListener var4 = (CoverageStatusListener)var2;
-      switch (var3) {
+   public final void dispatch(Message message, Object listener) {
+      int event = message.getEvent();
+      CoverageStatusListener csListener = (CoverageStatusListener)listener;
+      switch (event) {
          case 0:
-            int var5 = var1.getSubMessage();
-            var4.coverageStatusChanged(var5);
+            int coverage = message.getSubMessage();
+            csListener.coverageStatusChanged(coverage);
       }
    }
 
-   CoverageInfo$CoverageInfoEventDispatcher(CoverageInfo$1 var1) {
+   CoverageInfo$CoverageInfoEventDispatcher(CoverageInfo$1 x0) {
       this();
    }
 }

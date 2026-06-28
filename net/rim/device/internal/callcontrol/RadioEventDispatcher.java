@@ -9,15 +9,15 @@ import net.rim.vm.Message;
 
 class RadioEventDispatcher extends EventDispatcher {
    @Override
-   public void dispatch(Message var1, Object var2) {
-      int var3 = var1.getEvent();
-      int var4 = var1.getSubMessage();
-      int var5 = var1.getData0();
-      int var6 = var1.getData1();
-      Object var7 = var1.getObject0();
-      if (!Events.dispatchPhoneCallEvent(var3, var4, var5, (PhoneCallListener)var2)) {
-         if (!Events.dispatchPhoneTimerEvent(var3, var4, var5, (PhoneTimerListener)var2)) {
-            if (!Events.dispatchPhoneControlEvent(var3, var4, var5, var6, var7, (PhoneControlListener)var2)) {
+   public void dispatch(Message message, Object listener) {
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      int data0 = message.getData0();
+      int data1 = message.getData1();
+      Object object0 = message.getObject0();
+      if (!Events.dispatchPhoneCallEvent(event, subMessage, data0, (PhoneCallListener)listener)) {
+         if (!Events.dispatchPhoneTimerEvent(event, subMessage, data0, (PhoneTimerListener)listener)) {
+            if (!Events.dispatchPhoneControlEvent(event, subMessage, data0, data1, object0, (PhoneControlListener)listener)) {
                ;
             }
          }

@@ -26,13 +26,26 @@ public final class Protocol extends NativeConnectionBase {
    private static String UDP_TUNNEL;
 
    @Override
-   public final Connection openPrim(String var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Connection openPrim(String name, int mode, boolean timeouts) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      super.close();
+      if (this._localPort != -1 && _hpa != null) {
+         synchronized (_hpa) {
+            if (this._promiscuousApnMode) {
+               _hpa.deregisterConnection(this._localPort, this);
+            } else {
+               _hpa.deregisterConnection(this._localPort, this, this._apnName);
+            }
+         }
+      }
+
+      if (this._tunnel != null) {
+         this._tunnel.close();
+      }
    }
 
    @Override
@@ -41,34 +54,34 @@ public final class Protocol extends NativeConnectionBase {
    }
 
    @Override
-   public final Datagram newDatagram(byte[] var1, int var2) {
+   public final Datagram newDatagram(byte[] buf, int size) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final Datagram newDatagram(byte[] var1, int var2, String var3) {
+   public final Datagram newDatagram(byte[] buf, int size, String addr) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final Datagram newDatagram(int var1) {
+   public final Datagram newDatagram(int size) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final Datagram newDatagram(int var1, String var2) {
+   public final Datagram newDatagram(int size, String addr) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final Datagram newMidletDatagram(byte[] var1, int var2, String var3) {
+   public final Datagram newMidletDatagram(byte[] buf, int size, String addr) {
       this.checkForClosed();
-      var3 = this.midletSpecificWork(var3);
-      Datagram var4 = ((Transport)super._transport).newMidletDatagram(var1, 0, var2, var3);
-      if (var1 == null && var2 > 0) {
-         var4.setLength(var2);
+      addr = this.midletSpecificWork(addr);
+      Datagram datagram = ((Transport)super._transport).newMidletDatagram(buf, 0, size, addr);
+      if (buf == null && size > 0) {
+         datagram.setLength(size);
       }
 
-      return var4;
+      return datagram;
    }
 
    @Override
@@ -98,31 +111,31 @@ public final class Protocol extends NativeConnectionBase {
    }
 
    @Override
-   protected final boolean isAddressed(DatagramAddressBase var1) {
-      return ((UdpInternalAddress)super._receiveFilter).equals(var1, this._promiscuousMode);
+   protected final boolean isAddressed(DatagramAddressBase addressBase) {
+      return ((UdpInternalAddress)super._receiveFilter).equals(addressBase, this._promiscuousMode);
    }
 
    @Override
-   public final void receive(Datagram var1) {
+   public final void receive(Datagram datagram) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public final byte[] setup(int var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final byte[] setup(int callType, Object context) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private final String midletSpecificWork(String var1) {
+   private final String midletSpecificWork(String address) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final int getProperties(String var1) {
-      byte var2 = 2;
-      if (UdpInternalAddress.wifiRequested(var1)) {
-         var2 |= 16;
+   public final int getProperties(String name) {
+      int properties = 2;
+      if (UdpInternalAddress.wifiRequested(name)) {
+         properties |= 16;
       }
 
-      return var2;
+      return properties;
    }
 }

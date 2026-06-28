@@ -8,8 +8,8 @@ public class TunnelApnListFactory {
 
    public static TunnelApnListFactory getTunnelApnListFactory() {
       if (_theInstance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _theInstance = (TunnelApnListFactory)var0.waitFor(-977265756801572775L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _theInstance = (TunnelApnListFactory)ar.waitFor(-977265756801572775L);
       }
 
       return _theInstance;

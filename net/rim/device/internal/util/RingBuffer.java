@@ -13,17 +13,17 @@ public class RingBuffer {
    private int _maxBytesToReadEntirely;
    private static final int BUFFER_SECTION_SIZE;
 
-   public RingBuffer(int var1) {
+   public RingBuffer(int size) {
       this._startIndex = 0;
       this._endIndex = 0;
       this._dataLength = 0;
       this._isOpen = true;
       this._maxBytesToReadEntirely = Integer.MAX_VALUE;
-      this._buffer = new byte[var1];
+      this._buffer = new byte[size];
       Array.setSectionSize(this._buffer, 2048);
    }
 
-   public RingBuffer(byte[] var1) {
+   public RingBuffer(byte[] buffer) {
    }
 
    public synchronized void clear() {
@@ -59,17 +59,17 @@ public class RingBuffer {
       return this._dataLength == this._buffer.length;
    }
 
-   public synchronized int read(byte[] var1, int var2, int var3) {
-      int var4 = Math.min(var3, this._dataLength);
-      int var5 = Math.min(var4, this._buffer.length - this._startIndex);
-      System.arraycopy(this._buffer, this._startIndex, var1, var2, var5);
-      this._startIndex += var5;
-      if (var5 < var4) {
-         var2 += var5;
+   public synchronized int read(byte[] buffer, int start, int length) {
+      int bytesRead = Math.min(length, this._dataLength);
+      int len1 = Math.min(bytesRead, this._buffer.length - this._startIndex);
+      System.arraycopy(this._buffer, this._startIndex, buffer, start, len1);
+      this._startIndex += len1;
+      if (len1 < bytesRead) {
+         start += len1;
          this._startIndex = 0;
-         var5 = var4 - var5;
-         System.arraycopy(this._buffer, this._startIndex, var1, var2, var5);
-         this._startIndex += var5;
+         len1 = bytesRead - len1;
+         System.arraycopy(this._buffer, this._startIndex, buffer, start, len1);
+         this._startIndex += len1;
       }
 
       if (this._startIndex == this._buffer.length) {
@@ -79,21 +79,21 @@ public class RingBuffer {
          }
       }
 
-      this._dataLength -= var4;
-      return var4;
+      this._dataLength -= bytesRead;
+      return bytesRead;
    }
 
-   public synchronized int read(OutputStream var1, int var2) {
-      int var3 = Math.min(this._dataLength, var2);
-      int var4 = 0;
+   public synchronized int read(OutputStream stream, int length) {
+      int bytesToRead = Math.min(this._dataLength, length);
+      int bytesRead = 0;
 
-      while (var3 > 0) {
-         int var5 = Math.min(var3, this._buffer.length - this._startIndex);
-         var1.write(this._buffer, this._startIndex, var5);
-         this._startIndex += var5;
-         var4 += var5;
-         this._dataLength -= var5;
-         var3 -= var5;
+      while (bytesToRead > 0) {
+         int len1 = Math.min(bytesToRead, this._buffer.length - this._startIndex);
+         stream.write(this._buffer, this._startIndex, len1);
+         this._startIndex += len1;
+         bytesRead += len1;
+         this._dataLength -= len1;
+         bytesToRead -= len1;
          if (this._startIndex == this._buffer.length) {
             this._startIndex = 0;
             if (this._endIndex == this._buffer.length) {
@@ -102,27 +102,27 @@ public class RingBuffer {
          }
       }
 
-      return var4;
+      return bytesRead;
    }
 
-   public synchronized int read(RingBuffer$UnassertiveOutputStream var1, int var2) {
-      int var3 = Math.min(this._dataLength, var2);
-      int var4 = 0;
-      if (var3 == 0) {
-         var1.write(this._buffer, 0, 0);
+   public synchronized int read(RingBuffer$UnassertiveOutputStream stream, int length) {
+      int bytesToRead = Math.min(this._dataLength, length);
+      int bytesRead = 0;
+      if (bytesToRead == 0) {
+         stream.write(this._buffer, 0, 0);
       }
 
-      while (var3 > 0) {
-         int var5 = Math.min(var3, this._buffer.length - this._startIndex);
-         int var6 = var1.write(this._buffer, this._startIndex, var5);
-         if (var6 == 0) {
+      while (bytesToRead > 0) {
+         int len1 = Math.min(bytesToRead, this._buffer.length - this._startIndex);
+         int written = stream.write(this._buffer, this._startIndex, len1);
+         if (written == 0) {
             break;
          }
 
-         this._startIndex += var6;
-         var4 += var6;
-         this._dataLength -= var6;
-         var3 -= var6;
+         this._startIndex += written;
+         bytesRead += written;
+         this._dataLength -= written;
+         bytesToRead -= written;
          if (this._startIndex == this._buffer.length) {
             this._startIndex = 0;
             if (this._endIndex == this._buffer.length) {
@@ -131,66 +131,95 @@ public class RingBuffer {
          }
       }
 
-      return var4;
+      return bytesRead;
    }
 
-   public synchronized int read(OutputStream var1) {
-      return this.read(var1, Integer.MAX_VALUE);
+   public synchronized int read(OutputStream stream) {
+      return this.read(stream, Integer.MAX_VALUE);
    }
 
-   public synchronized void readEntirely(OutputStream var1) {
-      this.readEntirely(var1, 0);
+   public synchronized void readEntirely(OutputStream stream) {
+      this.readEntirely(stream, 0);
    }
 
-   public synchronized void readEntirely(OutputStream var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized void readEntirely(OutputStream stream, int bytesToIgnore) {
+      int bytesRead = 0;
+
+      while (this._isOpen && bytesRead < this._maxBytesToReadEntirely) {
+         if (bytesToIgnore > 0) {
+            while (this._dataLength < bytesToIgnore) {
+               try {
+                  super.wait();
+               } catch (InterruptedException var6) {
+               }
+            }
+
+            this._startIndex += bytesToIgnore;
+            this._dataLength -= bytesToIgnore;
+            bytesToIgnore = 0;
+         }
+
+         if (this._maxBytesToReadEntirely == Integer.MAX_VALUE) {
+            bytesRead += this.read(stream);
+         } else {
+            bytesRead += this.read(stream, this._maxBytesToReadEntirely - bytesRead);
+            if (bytesRead >= this._maxBytesToReadEntirely) {
+               return;
+            }
+         }
+
+         try {
+            super.wait();
+         } catch (InterruptedException var5) {
+         }
+      }
    }
 
-   public synchronized void setReadEntirelySizeLimit(int var1) {
-      this._maxBytesToReadEntirely = var1;
+   public synchronized void setReadEntirelySizeLimit(int maxNumBytes) {
+      this._maxBytesToReadEntirely = maxNumBytes;
       super.notify();
    }
 
-   public synchronized int write(byte[] var1, int var2, int var3) {
-      int var4 = Math.min(var3, this._buffer.length - this._dataLength);
-      int var5 = Math.min(var4, this._buffer.length - this._endIndex);
-      System.arraycopy(var1, var2, this._buffer, this._endIndex, var5);
-      this._endIndex += var5;
-      if (var5 < var4) {
-         var2 += var5;
+   public synchronized int write(byte[] buffer, int start, int length) {
+      int bytesWritten = Math.min(length, this._buffer.length - this._dataLength);
+      int len1 = Math.min(bytesWritten, this._buffer.length - this._endIndex);
+      System.arraycopy(buffer, start, this._buffer, this._endIndex, len1);
+      this._endIndex += len1;
+      if (len1 < bytesWritten) {
+         start += len1;
          this._endIndex = 0;
-         var5 = var4 - var5;
-         System.arraycopy(var1, var2, this._buffer, this._endIndex, var5);
-         this._endIndex += var5;
+         len1 = bytesWritten - len1;
+         System.arraycopy(buffer, start, this._buffer, this._endIndex, len1);
+         this._endIndex += len1;
       }
 
-      this._dataLength += var4;
+      this._dataLength += bytesWritten;
       super.notify();
-      return var4;
+      return bytesWritten;
    }
 
-   public synchronized int write(InputStream var1) {
-      int var3 = 0;
-      int var4 = 0;
+   public synchronized int write(InputStream stream) {
+      int bytesWritten = 0;
+      int written = 0;
 
       while (this._dataLength < this._buffer.length) {
          if (this._endIndex == this._buffer.length) {
             this._endIndex = 0;
          }
 
-         int var2 = Math.min(this._buffer.length - this._endIndex, this._buffer.length - this._dataLength);
-         var4 = var1.read(this._buffer, this._endIndex, var2);
-         if (var4 <= 0) {
+         int len1 = Math.min(this._buffer.length - this._endIndex, this._buffer.length - this._dataLength);
+         written = stream.read(this._buffer, this._endIndex, len1);
+         if (written <= 0) {
             break;
          }
 
-         var3 += var4;
-         this._dataLength += var4;
-         this._endIndex += var4;
+         bytesWritten += written;
+         this._dataLength += written;
+         this._endIndex += written;
       }
 
-      if (var3 == 0 && var4 < 0) {
-         var3 = -1;
+      if (bytesWritten == 0 && written < 0) {
+         bytesWritten = -1;
       }
 
       if (this._endIndex == 0 && this._dataLength != 0) {
@@ -198,6 +227,6 @@ public class RingBuffer {
       }
 
       super.notify();
-      return var3;
+      return bytesWritten;
    }
 }

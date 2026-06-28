@@ -22,19 +22,19 @@ public class FormatParams {
    public ArticInterface$LineInfo _cursorLineInfo = new ArticInterface$LineInfo();
    public XYRect _invalidRect = (XYRect)(new Object());
 
-   public void init(int var1, int var2, int var3, int var4, boolean var5, ArticInterface$Line var6) {
-      this._changedTextStart = var1;
-      this._oldLength = var2;
-      this._newLength = var3;
-      this._cursorOffset = var4;
-      this._moveCursor = var5;
-      this._lineList = var6;
+   public void init(int aStart, int aLength, int aNewLength, int aCursorOffset, boolean aMoveCursor, ArticInterface$Line lineList) {
+      this._changedTextStart = aStart;
+      this._oldLength = aLength;
+      this._newLength = aNewLength;
+      this._cursorOffset = aCursorOffset;
+      this._moveCursor = aMoveCursor;
+      this._lineList = lineList;
    }
 
-   public void initCursorLine(ArticInterface$Line var1, int var2, int var3) {
-      this._cursorLineInfo._line = var1;
-      this._cursorLineInfo._start = var2;
-      this._cursorLineInfo._top = var3;
+   public void initCursorLine(ArticInterface$Line cursorLine, int cursorLineStart, int cursorLineTop) {
+      this._cursorLineInfo._line = cursorLine;
+      this._cursorLineInfo._start = cursorLineStart;
+      this._cursorLineInfo._top = cursorLineTop;
    }
 
    public int getNextStartPosToFormat() {
@@ -45,15 +45,15 @@ public class FormatParams {
       return this._newLength - this._oldLength;
    }
 
-   public void computeParamsAfterTextChanged(boolean var1, int var2) {
-      if (!this._isFormatComplete && var1) {
-         int var3 = this._changedTextStart > this._nextStartPosToFormat ? this._changedTextStart - this._nextStartPosToFormat : 0;
-         int var4 = this._nextStartPosToFormat + this._formatOldLength > this._changedTextStart + this._oldLength
+   public void computeParamsAfterTextChanged(boolean mergeFormats, int linesToFormat) {
+      if (!this._isFormatComplete && mergeFormats) {
+         int addFormatLengthFromLeft = this._changedTextStart > this._nextStartPosToFormat ? this._changedTextStart - this._nextStartPosToFormat : 0;
+         int addFormatLengthFromRight = this._nextStartPosToFormat + this._formatOldLength > this._changedTextStart + this._oldLength
             ? this._nextStartPosToFormat + this._formatOldLength - (this._changedTextStart + this._oldLength)
             : 0;
-         this._nextStartPosToFormat = this._changedTextStart - var3;
-         this._formatOldLength = this._oldLength + var3 + var4;
-         this._formatNewLength = this._newLength + var3 + var4;
+         this._nextStartPosToFormat = this._changedTextStart - addFormatLengthFromLeft;
+         this._formatOldLength = this._oldLength + addFormatLengthFromLeft + addFormatLengthFromRight;
+         this._formatNewLength = this._newLength + addFormatLengthFromLeft + addFormatLengthFromRight;
       } else {
          this._formatOldLength = this._oldLength;
          this._formatNewLength = this._newLength;
@@ -62,11 +62,11 @@ public class FormatParams {
 
       this._formatTextUnchanged = false;
       this._isFormatComplete = false;
-      this._linesToFormatCount = var2;
+      this._linesToFormatCount = linesToFormat;
       this._layoutWidth = 0;
    }
 
-   public void setFormatFlags(int var1) {
+   public void setFormatFlags(int formatFlags) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

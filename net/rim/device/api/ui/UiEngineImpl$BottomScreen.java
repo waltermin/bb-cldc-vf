@@ -6,9 +6,9 @@ final class UiEngineImpl$BottomScreen extends Screen {
    }
 
    @Override
-   protected final void sublayout(int var1, int var2) {
+   protected final void sublayout(int width, int height) {
       this.setPosition(0, 0);
-      this.setExtent(var1, var2);
+      this.setExtent(width, height);
    }
 
    @Override
@@ -16,6 +16,6 @@ final class UiEngineImpl$BottomScreen extends Screen {
    }
 
    @Override
-   protected final void paint(Graphics var1) {
+   protected final void paint(Graphics graphics) {
    }
 }

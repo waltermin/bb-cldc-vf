@@ -5,8 +5,8 @@ public final class Boolean {
    public static final Boolean TRUE;
    public static final Boolean FALSE;
 
-   public Boolean(boolean var1) {
-      this.value = var1;
+   public Boolean(boolean value) {
+      this.value = value;
    }
 
    public final boolean booleanValue() {
@@ -24,7 +24,7 @@ public final class Boolean {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

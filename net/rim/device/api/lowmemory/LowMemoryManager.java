@@ -19,47 +19,47 @@ public class LowMemoryManager {
       return _instance;
    }
 
-   public static void addLowMemoryFailedListener(LowMemoryFailedListener var0) {
-      getInstance().doAddLowMemoryFailedListener(var0);
+   public static void addLowMemoryFailedListener(LowMemoryFailedListener listener) {
+      getInstance().doAddLowMemoryFailedListener(listener);
    }
 
-   public static void addLowMemoryListener(LowMemoryListener var0) {
-      getInstance().doAddLowMemoryListener(var0);
+   public static void addLowMemoryListener(LowMemoryListener listener) {
+      getInstance().doAddLowMemoryListener(listener);
    }
 
-   public static void removeLowMemoryListener(LowMemoryListener var0) {
-      getInstance().doRemoveLowMemoryListener(var0);
+   public static void removeLowMemoryListener(LowMemoryListener listener) {
+      getInstance().doRemoveLowMemoryListener(listener);
    }
 
-   public static void removeLowMemoryFailedListener(LowMemoryFailedListener var0) {
-      getInstance().doRemoveLowMemoryFailedListener(var0);
+   public static void removeLowMemoryFailedListener(LowMemoryFailedListener listener) {
+      getInstance().doRemoveLowMemoryFailedListener(listener);
    }
 
    public static void poll() {
       getInstance().doPoll(true);
    }
 
-   public static void markAsRecoverable(Object var0) {
-      Memory.markAsRecoverable(var0);
+   public static void markAsRecoverable(Object o) {
+      Memory.markAsRecoverable(o);
    }
 
-   protected void doAddLowMemoryListener(LowMemoryListener var1) {
+   protected void doAddLowMemoryListener(LowMemoryListener _1) {
       throw null;
    }
 
-   protected void doRemoveLowMemoryListener(LowMemoryListener var1) {
+   protected void doRemoveLowMemoryListener(LowMemoryListener _1) {
       throw null;
    }
 
-   protected void doAddLowMemoryFailedListener(LowMemoryFailedListener var1) {
+   protected void doAddLowMemoryFailedListener(LowMemoryFailedListener _1) {
       throw null;
    }
 
-   protected void doRemoveLowMemoryFailedListener(LowMemoryFailedListener var1) {
+   protected void doRemoveLowMemoryFailedListener(LowMemoryFailedListener _1) {
       throw null;
    }
 
-   protected void doPoll(boolean var1) {
+   protected void doPoll(boolean _1) {
       throw null;
    }
 }

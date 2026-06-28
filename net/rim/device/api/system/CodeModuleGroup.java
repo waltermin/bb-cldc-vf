@@ -36,14 +36,14 @@ public final class CodeModuleGroup {
    public static final int FLAG_DEPENDENCY;
    public static final int FLAG_LIBRARY;
 
-   CodeModuleGroup(int var1) {
-      this._handle = var1;
+   CodeModuleGroup(int handle) {
+      this._handle = handle;
       this._moduleNames = (Vector)(new Object());
       this._dependencies = (Vector)(new Object());
       this._currentLocaleCode = Locale.getDefault().getCode();
    }
 
-   public CodeModuleGroup(String var1) {
+   public CodeModuleGroup(String groupName) {
    }
 
    private final void assertPermission() {
@@ -62,35 +62,35 @@ public final class CodeModuleGroup {
       return this._handle;
    }
 
-   public final boolean containsModule(String var1) {
-      return this._moduleNames.contains(var1);
+   public final boolean containsModule(String moduleName) {
+      return this._moduleNames.contains(moduleName);
    }
 
-   public final void addModule(String var1) {
-      this._moduleNames.addElement(var1);
+   public final void addModule(String moduleName) {
+      this._moduleNames.addElement(moduleName);
    }
 
    public final Enumeration getDependencies() {
       return this._dependencies.elements();
    }
 
-   public final void addDependency(String var1) {
-      this._dependencies.addElement(var1);
+   public final void addDependency(String groupName) {
+      this._dependencies.addElement(groupName);
    }
 
-   public final boolean containsDependency(String var1) {
-      return this._dependencies.contains(var1);
+   public final boolean containsDependency(String groupName) {
+      return this._dependencies.contains(groupName);
    }
 
    public final int getFlags() {
       return this._flags;
    }
 
-   public final void setFlag(int var1, boolean var2) {
-      if (var2) {
-         this._flags |= var1;
+   public final void setFlag(int flag, boolean value) {
+      if (value) {
+         this._flags |= flag;
       } else {
-         this._flags &= ~var1;
+         this._flags &= ~flag;
       }
    }
 
@@ -98,15 +98,15 @@ public final class CodeModuleGroup {
       return this._friendlyName == null ? this._groupName : this._friendlyName;
    }
 
-   public final void setFriendlyName(String var1) {
-      this._friendlyName = var1;
+   public final void setFriendlyName(String friendlyName) {
+      this._friendlyName = friendlyName;
       if (this._friendlyNameTable != null) {
-         this._friendlyNameTable.put(Locale.get(this._currentLocaleCode), var1);
+         this._friendlyNameTable.put(Locale.get(this._currentLocaleCode), friendlyName);
       }
    }
 
-   public final String getFriendlyName(Locale var1) {
-      if (var1 == null) {
+   public final String getFriendlyName(Locale locale) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -114,16 +114,16 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      Object var2 = this._friendlyNameTable.get(var1);
-      if (var2 == null) {
-         var2 = this.getFriendlyName();
+      String friendlyName = (String)this._friendlyNameTable.get(locale);
+      if (friendlyName == null) {
+         friendlyName = this.getFriendlyName();
       }
 
-      return (String)var2;
+      return friendlyName;
    }
 
-   public final void setFriendlyName(Locale var1, String var2) {
-      if (var1 == null) {
+   public final void setFriendlyName(Locale locale, String friendlyName) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -131,10 +131,10 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      this._friendlyNameTable.put(var1, var2);
-      int var3 = var1.getCode();
-      if (var3 == this._currentLocaleCode || this._friendlyName == null && this.fuzzyLocaleMatch(var3)) {
-         this._friendlyName = var2;
+      this._friendlyNameTable.put(locale, friendlyName);
+      int localeCode = locale.getCode();
+      if (localeCode == this._currentLocaleCode || this._friendlyName == null && this.fuzzyLocaleMatch(localeCode)) {
+         this._friendlyName = friendlyName;
       }
    }
 
@@ -150,15 +150,15 @@ public final class CodeModuleGroup {
       return this._description;
    }
 
-   public final void setDescription(String var1) {
-      this._description = var1;
+   public final void setDescription(String description) {
+      this._description = description;
       if (this._descriptionTable != null) {
-         this._descriptionTable.put(Locale.get(this._currentLocaleCode), var1);
+         this._descriptionTable.put(Locale.get(this._currentLocaleCode), description);
       }
    }
 
-   public final String getDescription(Locale var1) {
-      if (var1 == null) {
+   public final String getDescription(Locale locale) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -166,16 +166,16 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      Object var2 = this._descriptionTable.get(var1);
-      if (var2 == null) {
-         var2 = this._description;
+      String description = (String)this._descriptionTable.get(locale);
+      if (description == null) {
+         description = this._description;
       }
 
-      return (String)var2;
+      return description;
    }
 
-   public final void setDescription(Locale var1, String var2) {
-      if (var1 == null) {
+   public final void setDescription(Locale locale, String description) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -183,10 +183,10 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      this._descriptionTable.put(var1, var2);
-      int var3 = var1.getCode();
-      if (var3 == this._currentLocaleCode || this._description == null && this.fuzzyLocaleMatch(var3)) {
-         this._description = var2;
+      this._descriptionTable.put(locale, description);
+      int localeCode = locale.getCode();
+      if (localeCode == this._currentLocaleCode || this._description == null && this.fuzzyLocaleMatch(localeCode)) {
+         this._description = description;
       }
    }
 
@@ -202,15 +202,15 @@ public final class CodeModuleGroup {
       return this._version;
    }
 
-   public final void setVersion(String var1) {
-      this._version = var1;
+   public final void setVersion(String version) {
+      this._version = version;
       if (this._versionTable != null) {
-         this._versionTable.put(Locale.get(this._currentLocaleCode), var1);
+         this._versionTable.put(Locale.get(this._currentLocaleCode), version);
       }
    }
 
-   public final String getVersion(Locale var1) {
-      if (var1 == null) {
+   public final String getVersion(Locale locale) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -218,16 +218,16 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      Object var2 = this._versionTable.get(var1);
-      if (var2 == null) {
-         var2 = this._version;
+      String version = (String)this._versionTable.get(locale);
+      if (version == null) {
+         version = this._version;
       }
 
-      return (String)var2;
+      return version;
    }
 
-   public final void setVersion(Locale var1, String var2) {
-      if (var1 == null) {
+   public final void setVersion(Locale locale, String version) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -235,10 +235,10 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      this._versionTable.put(var1, var2);
-      int var3 = var1.getCode();
-      if (var3 == this._currentLocaleCode || this._version == null && this.fuzzyLocaleMatch(var3)) {
-         this._version = var2;
+      this._versionTable.put(locale, version);
+      int localeCode = locale.getCode();
+      if (localeCode == this._currentLocaleCode || this._version == null && this.fuzzyLocaleMatch(localeCode)) {
+         this._version = version;
       }
    }
 
@@ -254,15 +254,15 @@ public final class CodeModuleGroup {
       return this._vendor;
    }
 
-   public final void setVendor(String var1) {
-      this._vendor = var1;
+   public final void setVendor(String vendor) {
+      this._vendor = vendor;
       if (this._vendorTable != null) {
-         this._vendorTable.put(Locale.get(this._currentLocaleCode), var1);
+         this._vendorTable.put(Locale.get(this._currentLocaleCode), vendor);
       }
    }
 
-   public final String getVendor(Locale var1) {
-      if (var1 == null) {
+   public final String getVendor(Locale locale) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -270,16 +270,16 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      Object var2 = this._vendorTable.get(var1);
-      if (var2 == null) {
-         var2 = this._vendor;
+      String vendor = (String)this._vendorTable.get(locale);
+      if (vendor == null) {
+         vendor = this._vendor;
       }
 
-      return (String)var2;
+      return vendor;
    }
 
-   public final void setVendor(Locale var1, String var2) {
-      if (var1 == null) {
+   public final void setVendor(Locale locale, String vendor) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -287,10 +287,10 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      this._vendorTable.put(var1, var2);
-      int var3 = var1.getCode();
-      if (var3 == this._currentLocaleCode || this._vendor == null && this.fuzzyLocaleMatch(var3)) {
-         this._vendor = var2;
+      this._vendorTable.put(locale, vendor);
+      int localeCode = locale.getCode();
+      if (localeCode == this._currentLocaleCode || this._vendor == null && this.fuzzyLocaleMatch(localeCode)) {
+         this._vendor = vendor;
       }
    }
 
@@ -306,15 +306,15 @@ public final class CodeModuleGroup {
       return this._copyright;
    }
 
-   public final void setCopyright(String var1) {
-      this._copyright = var1;
+   public final void setCopyright(String copyright) {
+      this._copyright = copyright;
       if (this._copyrightTable != null) {
-         this._copyrightTable.put(Locale.get(this._currentLocaleCode), var1);
+         this._copyrightTable.put(Locale.get(this._currentLocaleCode), copyright);
       }
    }
 
-   public final String getCopyright(Locale var1) {
-      if (var1 == null) {
+   public final String getCopyright(Locale locale) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -322,16 +322,16 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      Object var2 = this._copyrightTable.get(var1);
-      if (var2 == null) {
-         var2 = this._copyright;
+      String copyright = (String)this._copyrightTable.get(locale);
+      if (copyright == null) {
+         copyright = this._copyright;
       }
 
-      return (String)var2;
+      return copyright;
    }
 
-   public final void setCopyright(Locale var1, String var2) {
-      if (var1 == null) {
+   public final void setCopyright(Locale locale, String copyright) {
+      if (locale == null) {
          throw new Object();
       }
 
@@ -339,10 +339,10 @@ public final class CodeModuleGroup {
          this.localize();
       }
 
-      this._copyrightTable.put(var1, var2);
-      int var3 = var1.getCode();
-      if (var3 == this._currentLocaleCode || this._copyright == null && this.fuzzyLocaleMatch(var3)) {
-         this._copyright = var2;
+      this._copyrightTable.put(locale, copyright);
+      int localeCode = locale.getCode();
+      if (localeCode == this._currentLocaleCode || this._copyright == null && this.fuzzyLocaleMatch(localeCode)) {
+         this._copyright = copyright;
       }
    }
 
@@ -354,9 +354,9 @@ public final class CodeModuleGroup {
       return this._copyrightTable.keys();
    }
 
-   public final void setMIDletSigner(String var1) {
+   public final void setMIDletSigner(String midletSigner) {
       ControlledAccess.verifyRRISignature(TraceBack.getCallingModule(0));
-      this._midletSigner = var1;
+      this._midletSigner = midletSigner;
    }
 
    public final String getMIDletSigner() {
@@ -364,9 +364,9 @@ public final class CodeModuleGroup {
       return this._midletSigner;
    }
 
-   public final void setMIDletSignerHash(byte[] var1) {
+   public final void setMIDletSignerHash(byte[] sha256MidletSignerHash) {
       ControlledAccess.verifyRRISignature(TraceBack.getCallingModule(0));
-      this._midletSignerHash = var1;
+      this._midletSignerHash = sha256MidletSignerHash;
    }
 
    public final byte[] getMIDletSignerHash() {
@@ -378,13 +378,13 @@ public final class CodeModuleGroup {
       return (Enumeration)(this._properties == null ? new Object() : this._properties.keys());
    }
 
-   public final String getProperty(String var1) {
-      return (String)(this._properties == null ? null : this._properties.get(var1));
+   public final String getProperty(String name) {
+      return (String)(this._properties == null ? null : this._properties.get(name));
    }
 
-   public final void setProperty(String var1, String var2) {
+   public final void setProperty(String name, String value) {
       if (this._properties != null) {
-         this._properties.put(var1, var2);
+         this._properties.put(name, value);
          CodeModuleGroupPropertiesCollection.getInstance().updateSyncObject(this._properties, this._properties);
       }
    }
@@ -396,8 +396,8 @@ public final class CodeModuleGroup {
       }
    }
 
-   private final boolean fuzzyLocaleMatch(int var1) {
-      return var1 == 0 || (var1 & -65536) == (this._currentLocaleCode & -65536);
+   private final boolean fuzzyLocaleMatch(int localeCode) {
+      return localeCode == 0 || (localeCode & -65536) == (this._currentLocaleCode & -65536);
    }
 
    private final boolean localize() {
@@ -407,7 +407,8 @@ public final class CodeModuleGroup {
          this._vendorTable = (Hashtable)(new Object());
          this._versionTable = (Hashtable)(new Object());
          this._copyrightTable = (Hashtable)(new Object());
-         return true;
+         boolean result = true;
+         return result;
       } else {
          return this.load(true);
       }
@@ -417,42 +418,42 @@ public final class CodeModuleGroup {
       return this.load(false);
    }
 
-   final boolean load(boolean var1) {
-      byte[] var2 = CodeModuleGroupManager.getGroupData(this._handle);
-      return this.loadFromData(var2, var1);
+   final boolean load(boolean localized) {
+      byte[] data = CodeModuleGroupManager.getGroupData(this._handle);
+      return this.loadFromData(data, localized);
    }
 
-   final boolean loadFromData(byte[] var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   final boolean loadFromData(byte[] data, boolean localized) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final CodeModuleGroup loadUnpersisted(byte[] var0) {
-      CodeModuleGroup var1 = new CodeModuleGroup(0);
-      boolean var2 = var1.loadFromData(var0, false);
-      return var2 ? var1 : null;
+   public static final CodeModuleGroup loadUnpersisted(byte[] data) {
+      CodeModuleGroup result = new CodeModuleGroup(0);
+      boolean success = result.loadFromData(data, false);
+      return success ? result : null;
    }
 
-   private final String readString(byte[] var1, DataBuffer var2) {
+   private final String readString(byte[] data, DataBuffer buf) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final String readLocalizedString(byte[] var1, DataBuffer var2, String var3, Hashtable var4) {
-      int var5 = var2.readInt();
-      String var6 = this.readString(var1, var2);
-      if (var4 != null) {
-         var4.put(Locale.get(var5), var6);
+   private final String readLocalizedString(byte[] data, DataBuffer buf, String previousValue, Hashtable localizedTable) {
+      int localeCode = buf.readInt();
+      String s = this.readString(data, buf);
+      if (localizedTable != null) {
+         localizedTable.put(Locale.get(localeCode), s);
       }
 
-      return var5 != this._currentLocaleCode && (var3 != null || !this.fuzzyLocaleMatch(var5)) ? var3 : var6;
+      return localeCode != this._currentLocaleCode && (previousValue != null || !this.fuzzyLocaleMatch(localeCode)) ? previousValue : s;
    }
 
-   private final void readProperty(byte[] var1, DataBuffer var2) {
-      String var3 = this.readString(var1, var2);
-      String var4 = this.readString(var1, var2);
+   private final void readProperty(byte[] data, DataBuffer buf) {
+      String name = this.readString(data, buf);
+      String value = this.readString(data, buf);
       if (this._properties != null) {
-         Object var5 = this._properties.get(var3);
-         if (var5 != null && !((String)var5).equals(var4) || var5 == null && var4 != null) {
-            this._properties.put(var3, var4);
+         String storedValue = (String)this._properties.get(name);
+         if (storedValue != null && !storedValue.equals(value) || storedValue == null && value != null) {
+            this._properties.put(name, value);
             CodeModuleGroupPropertiesCollection.getInstance().updateSyncObject(this._properties, this._properties);
          }
       }
@@ -460,32 +461,32 @@ public final class CodeModuleGroup {
 
    public final synchronized boolean store() {
       this.assertPermission();
-      Object var1 = new Object(false);
-      ((DataBuffer)var1).writeInt(2060613291);
-      ((DataBuffer)var1).writeInt(0);
-      ((DataBuffer)var1).writeInt(this._flags);
-      this.writeString((DataBuffer)var1, this._groupName);
-      this.writeVector((DataBuffer)var1, 0, this._moduleNames);
-      this.writeVector((DataBuffer)var1, 1, this._dependencies);
-      this.writeLocalizedHashtable((DataBuffer)var1, 3, this._friendlyName, this._friendlyNameTable);
-      this.writeLocalizedHashtable((DataBuffer)var1, 4, this._description, this._descriptionTable);
-      this.writeLocalizedHashtable((DataBuffer)var1, 5, this._version, this._versionTable);
-      this.writeLocalizedHashtable((DataBuffer)var1, 6, this._vendor, this._vendorTable);
-      this.writeLocalizedHashtable((DataBuffer)var1, 7, this._copyright, this._copyrightTable);
-      int var2 = ((DataBuffer)var1).getLength() & 3;
-      if (var2 != 0) {
-         for (int var3 = 3 - var2; var3 >= 0; var3--) {
-            ((DataBuffer)var1).write(255);
+      DataBuffer buf = (DataBuffer)(new Object(false));
+      buf.writeInt(2060613291);
+      buf.writeInt(0);
+      buf.writeInt(this._flags);
+      this.writeString(buf, this._groupName);
+      this.writeVector(buf, 0, this._moduleNames);
+      this.writeVector(buf, 1, this._dependencies);
+      this.writeLocalizedHashtable(buf, 3, this._friendlyName, this._friendlyNameTable);
+      this.writeLocalizedHashtable(buf, 4, this._description, this._descriptionTable);
+      this.writeLocalizedHashtable(buf, 5, this._version, this._versionTable);
+      this.writeLocalizedHashtable(buf, 6, this._vendor, this._vendorTable);
+      this.writeLocalizedHashtable(buf, 7, this._copyright, this._copyrightTable);
+      int rem = buf.getLength() & 3;
+      if (rem != 0) {
+         for (int i = 3 - rem; i >= 0; i--) {
+            buf.write(255);
          }
       }
 
-      byte[] var5 = ((DataBuffer)var1).toArray();
-      int var4 = CRC32.update(-1, var5, 12, var5.length - 12);
-      var5[4] = (byte)var4;
-      var5[5] = (byte)(var4 >>> 8);
-      var5[6] = (byte)(var4 >>> 16);
-      var5[7] = (byte)(var4 >>> 24);
-      this._handle = CodeModuleGroupManager.createGroup(var5);
+      byte[] data = buf.toArray();
+      int crc = CRC32.update(-1, data, 12, data.length - 12);
+      data[4] = (byte)crc;
+      data[5] = (byte)(crc >>> 8);
+      data[6] = (byte)(crc >>> 16);
+      data[7] = (byte)(crc >>> 24);
+      this._handle = CodeModuleGroupManager.createGroup(data);
       return this._handle > 0;
    }
 
@@ -497,66 +498,66 @@ public final class CodeModuleGroup {
       }
    }
 
-   private final void writeVector(DataBuffer var1, int var2, Vector var3) {
-      int var4 = var3.size();
+   private final void writeVector(DataBuffer buf, int type, Vector v) {
+      int length = v.size();
 
-      for (int var5 = 0; var5 < var4; var5++) {
-         Object var6 = var3.elementAt(var5);
-         var1.writeShort(var2);
-         this.writeString(var1, (String)var6);
+      for (int i = 0; i < length; i++) {
+         String s = (String)v.elementAt(i);
+         buf.writeShort(type);
+         this.writeString(buf, s);
       }
    }
 
-   private final void writeProperty(DataBuffer var1, String var2, String var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void writeProperty(DataBuffer buf, String name, String value) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void writeString(DataBuffer var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void writeString(DataBuffer buf, String s) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void writeLocalizedString(DataBuffer var1, int var2, int var3, String var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void writeLocalizedString(DataBuffer buf, int type, int localeCode, String s) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void writeLocalizedHashtable(DataBuffer var1, int var2, String var3, Hashtable var4) {
-      if (var4 == null) {
-         this.writeLocalizedString(var1, var2, 0, var3);
+   private final void writeLocalizedHashtable(DataBuffer buf, int type, String s, Hashtable localizedTable) {
+      if (localizedTable == null) {
+         this.writeLocalizedString(buf, type, 0, s);
       } else {
-         var3 = (String)var4.get(Locale.get(0));
-         this.writeLocalizedString(var1, var2, 0, var3);
-         Enumeration var5 = var4.keys();
+         s = (String)localizedTable.get(Locale.get(0));
+         this.writeLocalizedString(buf, type, 0, s);
+         Enumeration locales = localizedTable.keys();
 
-         while (var5.hasMoreElements()) {
-            Object var6 = var5.nextElement();
-            int var7 = ((Locale)var6).getCode();
-            if (var7 != 0) {
-               var3 = (String)var4.get(var6);
-               this.writeLocalizedString(var1, var2, var7, var3);
+         while (locales.hasMoreElements()) {
+            Locale locale = (Locale)locales.nextElement();
+            int code = locale.getCode();
+            if (code != 0) {
+               s = (String)localizedTable.get(locale);
+               this.writeLocalizedString(buf, type, code, s);
             }
          }
       }
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object o) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final CodeModuleGroup load(String var0) {
-      return CodeModuleGroupManager.load(var0);
+   public static final CodeModuleGroup load(String groupName) {
+      return CodeModuleGroupManager.load(groupName);
    }
 
    public static final CodeModuleGroup[] loadAll() {
       return CodeModuleGroupManager.loadAll();
    }
 
-   public static final byte[] getGroupData(int var0) {
-      return CodeModuleGroupManager.getGroupData(var0);
+   public static final byte[] getGroupData(int handle) {
+      return CodeModuleGroupManager.getGroupData(handle);
    }
 
-   public static final int createGroup(byte[] var0) {
-      return CodeModuleGroupManager.createGroup(var0);
+   public static final int createGroup(byte[] data) {
+      return CodeModuleGroupManager.createGroup(data);
    }
 
    private static final native void deleteGroup(int var0);

@@ -8,58 +8,58 @@ public final class Integer {
    public static final int MAX_VALUE;
    static final byte[] digits;
 
-   public static final String toString(int var0, int var1) {
-      return Long.toString(var0, var1);
+   public static final String toString(int i, int radix) {
+      return Long.toString(i, radix);
    }
 
-   public static final String toHexString(int var0) {
-      return toUnsignedString(var0, 4);
+   public static final String toHexString(int i) {
+      return toUnsignedString(i, 4);
    }
 
-   public static final String toOctalString(int var0) {
-      return toUnsignedString(var0, 3);
+   public static final String toOctalString(int i) {
+      return toUnsignedString(i, 3);
    }
 
-   public static final String toBinaryString(int var0) {
-      return toUnsignedString(var0, 1);
+   public static final String toBinaryString(int i) {
+      return toUnsignedString(i, 1);
    }
 
-   private static final String toUnsignedString(int var0, int var1) {
-      byte[] var2 = new byte[32];
-      int var3 = 32;
-      int var4 = 1 << var1;
-      int var5 = var4 - 1;
+   private static final String toUnsignedString(int i, int shift) {
+      byte[] buf = new byte[32];
+      int charPos = 32;
+      int radix = 1 << shift;
+      int mask = radix - 1;
 
       do {
-         var2[--var3] = digits[var0 & var5];
-         var0 >>>= var1;
-      } while (var0 != 0);
+         buf[--charPos] = digits[i & mask];
+         i >>>= shift;
+      } while (i != 0);
 
-      return new String(var2, var3, 32 - var3);
+      return new String(buf, charPos, 32 - charPos);
    }
 
-   public static final String toString(int var0) {
-      return toString(var0, 10);
+   public static final String toString(int i) {
+      return toString(i, 10);
    }
 
-   public static final int parseInt(String var0, int var1) {
-      return NumberUtilities.parseInt(var0, 0, MAX_VALUE, var1);
+   public static final int parseInt(String s, int radix) {
+      return NumberUtilities.parseInt(s, 0, MAX_VALUE, radix);
    }
 
-   public static final int parseInt(String var0) {
-      return parseInt(var0, 10);
+   public static final int parseInt(String s) {
+      return parseInt(s, 10);
    }
 
-   public static final Integer valueOf(String var0, int var1) {
-      return new Integer(parseInt(var0, var1));
+   public static final Integer valueOf(String s, int radix) {
+      return new Integer(parseInt(s, radix));
    }
 
-   public static final Integer valueOf(String var0) {
-      return new Integer(parseInt(var0, 10));
+   public static final Integer valueOf(String s) {
+      return new Integer(parseInt(s, 10));
    }
 
-   public Integer(int var1) {
-      this.value = var1;
+   public Integer(int value) {
+      this.value = value;
    }
 
    public final byte byteValue() {
@@ -97,7 +97,7 @@ public final class Integer {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

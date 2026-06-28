@@ -9,7 +9,7 @@ public final class Bitmap$PNGInfo {
    public boolean alpha;
    public int alpha_bit_depth;
 
-   public final void getPNGInfo(byte[] var1, int var2, int var3) {
+   public final void getPNGInfo(byte[] png, int offset, int length) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

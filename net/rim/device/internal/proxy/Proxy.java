@@ -7,20 +7,20 @@ public final class Proxy extends Application {
    private RunnableThread _runnableThread;
    private static final long ID;
 
-   public final void submitRunnable(Runnable var1) {
-      this.invokeLater(new Proxy$UtilRunnable(var1, false));
+   public final void submitRunnable(Runnable runnable) {
+      this.invokeLater(new Proxy$UtilRunnable(runnable, false));
    }
 
-   public final void startThread(Thread var1) {
-      this.invokeLater(new Proxy$UtilRunnable(var1, true));
+   public final void startThread(Thread thread) {
+      this.invokeLater(new Proxy$UtilRunnable(thread, true));
    }
 
-   public final void invokeRunnable(Runnable var1) {
-      this._runnableThread.add(var1);
+   public final void invokeRunnable(Runnable runnable) {
+      this._runnableThread.add(runnable);
    }
 
    @Override
-   public final void addListener(int var1, Object var2) {
+   public final void addListener(int device, Object listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -29,10 +29,10 @@ public final class Proxy extends Application {
    }
 
    public static final Application ProxyMain() {
-      Proxy var0 = new Proxy();
-      ApplicationRegistry.getApplicationRegistry().put(2026383997602970267L, var0);
-      var0._runnableThread = new RunnableThread();
-      var0._runnableThread.start();
-      return var0;
+      Proxy proxy = new Proxy();
+      ApplicationRegistry.getApplicationRegistry().put(2026383997602970267L, proxy);
+      proxy._runnableThread = new RunnableThread();
+      proxy._runnableThread.start();
+      return proxy;
    }
 }

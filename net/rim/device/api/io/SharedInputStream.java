@@ -8,52 +8,52 @@ public class SharedInputStream extends InputStream {
    private int _maxPosition;
    private int _startPosition;
 
-   public SharedInputStream(byte[] var1) {
-      this(new SharedInputStreamSource(var1), 0, var1.length);
+   public SharedInputStream(byte[] input) {
+      this(new SharedInputStreamSource(input), 0, input.length);
    }
 
-   public SharedInputStream(SharedInputStream var1) {
-      this(var1._source, var1._currentPosition, Integer.MAX_VALUE - var1._currentPosition);
+   public SharedInputStream(SharedInputStream input) {
+      this(input._source, input._currentPosition, Integer.MAX_VALUE - input._currentPosition);
    }
 
-   public SharedInputStream(SharedInputStream var1, int var2) {
-      this(var1._source, var1._currentPosition, var2);
+   public SharedInputStream(SharedInputStream input, int length) {
+      this(input._source, input._currentPosition, length);
    }
 
-   private SharedInputStream(SharedInputStreamSource var1) {
-      this(var1, 0, Integer.MAX_VALUE);
+   private SharedInputStream(SharedInputStreamSource source) {
+      this(source, 0, Integer.MAX_VALUE);
    }
 
-   private SharedInputStream(SharedInputStreamSource var1, int var2, int var3) {
-      this._source = var1;
-      this._currentPosition = var2;
-      this._startPosition = var2;
-      if (var3 + var2 >= 0 && var3 >= 0) {
-         this._maxPosition = var2 + var3;
+   private SharedInputStream(SharedInputStreamSource source, int currentPosition, int length) {
+      this._source = source;
+      this._currentPosition = currentPosition;
+      this._startPosition = currentPosition;
+      if (length + currentPosition >= 0 && length >= 0) {
+         this._maxPosition = currentPosition + length;
       } else {
          this._maxPosition = Integer.MAX_VALUE;
       }
    }
 
-   public static SharedInputStream getSharedInputStream(InputStream var0) {
+   public static SharedInputStream getSharedInputStream(InputStream input) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static SharedInputStream getSharedInputStream(byte[] var0) {
-      if (var0 == null) {
+   public static SharedInputStream getSharedInputStream(byte[] input) {
+      if (input == null) {
          throw new Object();
       } else {
-         return new SharedInputStream(new SharedInputStreamSource(var0), 0, var0.length);
+         return new SharedInputStream(new SharedInputStreamSource(input), 0, input.length);
       }
    }
 
-   public static SharedInputStream getSharedInputStream(InputStream var0, int var1) {
+   public static SharedInputStream getSharedInputStream(InputStream input, int length) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void setLength(int var1) {
-      if (var1 + this._startPosition >= 0 && var1 >= 0) {
-         this._maxPosition = this._startPosition + var1;
+   public void setLength(int length) {
+      if (length + this._startPosition >= 0 && length >= 0) {
+         this._maxPosition = this._startPosition + length;
       } else {
          throw new Object();
       }
@@ -69,8 +69,8 @@ public class SharedInputStream extends InputStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      if (var3 < 0) {
+   public int read(byte[] buffer, int offset, int length) {
+      if (length < 0) {
          throw new Object();
       }
 
@@ -78,27 +78,27 @@ public class SharedInputStream extends InputStream {
          return -1;
       }
 
-      var3 = this._source.read(this._currentPosition, var1, var2, Math.min(var3, this._maxPosition - this._currentPosition));
-      if (var3 > 0) {
-         this._currentPosition += var3;
+      length = this._source.read(this._currentPosition, buffer, offset, Math.min(length, this._maxPosition - this._currentPosition));
+      if (length > 0) {
+         this._currentPosition += length;
       }
 
-      return var3;
+      return length;
    }
 
    @Override
-   public long skip(long var1) {
-      if (var1 < 0) {
+   public long skip(long n) {
+      if (n < 0) {
          throw new Object();
       }
 
-      var1 = this._source.skip(this._currentPosition, var1);
-      if (this._currentPosition + var1 >= this._maxPosition) {
-         var1 = this._maxPosition - this._currentPosition;
+      n = this._source.skip(this._currentPosition, n);
+      if (this._currentPosition + n >= this._maxPosition) {
+         n = this._maxPosition - this._currentPosition;
       }
 
-      this._currentPosition = (int)(this._currentPosition + var1);
-      return var1;
+      this._currentPosition = (int)(this._currentPosition + n);
+      return n;
    }
 
    @Override
@@ -110,21 +110,21 @@ public class SharedInputStream extends InputStream {
       return new SharedInputStream(this._source, this._currentPosition, this._maxPosition - this._currentPosition);
    }
 
-   public SharedInputStream readInputStream(int var1) {
-      SharedInputStream var2 = new SharedInputStream(this._source, this._currentPosition, var1);
-      this.skip(var1);
-      return var2;
+   public SharedInputStream readInputStream(int length) {
+      SharedInputStream stream = new SharedInputStream(this._source, this._currentPosition, length);
+      this.skip(length);
+      return stream;
    }
 
    public int getCurrentPosition() {
       return this._currentPosition;
    }
 
-   public void setCurrentPosition(int var1) {
-      if (var1 < 0) {
+   public void setCurrentPosition(int currentPosition) {
+      if (currentPosition < 0) {
          throw new Object();
       }
 
-      this._currentPosition = var1;
+      this._currentPosition = currentPosition;
    }
 }

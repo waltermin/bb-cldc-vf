@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 
@@ -10,14 +11,31 @@ public class StringItem extends Item {
    Font _font;
    int _appearanceMode;
 
-   public StringItem(String var1, String var2) {
+   public StringItem(String label, String text) {
+      synchronized (Application.getEventLock()) {
+         this._label = label;
+         this._text = text;
+         this._field = new StringItem$PrivateRichTextField(this.makeValue());
+         this._field.setCookie(this);
+         this._font = Font.getDefaultFont();
+         this._field.setFont(this._font.getPeer());
+         this.setPeer(this._field);
+      }
    }
 
-   public StringItem(String var1, String var2, int var3) {
+   public StringItem(String label, String text, int appearanceMode) {
+      this(label, text);
+      synchronized (Application.getEventLock()) {
+         if (appearanceMode != 0 && appearanceMode != 1 && appearanceMode != 2) {
+            throw new Object();
+         }
+
+         this._appearanceMode = appearanceMode;
+      }
    }
 
    @Override
-   Field addToForm(FieldChangeListener var1) {
+   Field addToForm(FieldChangeListener changeListener) {
       return this._field;
    }
 
@@ -26,32 +44,51 @@ public class StringItem extends Item {
    }
 
    public String getText() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._text;
+      }
    }
 
-   public void setText(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setText(String text) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public void setLabel(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setLabel(String label) {
+      synchronized (Application.getEventLock()) {
+         this._label = label;
+         this._field.setText(this.makeValue());
+      }
    }
 
    @Override
    public String getLabel() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._label;
+      }
    }
 
    public int getAppearanceMode() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._appearanceMode;
+      }
    }
 
-   public void setFont(Font var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setFont(Font font) {
+      synchronized (Application.getEventLock()) {
+         if (font == null) {
+            this._font = Font.getDefaultFont();
+         } else {
+            this._font = font;
+         }
+
+         this._field.setFont(this._font.getPeer());
+      }
    }
 
    public Font getFont() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._font;
+      }
    }
 }

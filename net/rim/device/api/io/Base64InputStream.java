@@ -18,39 +18,39 @@ public class Base64InputStream extends InputStream {
    private static final int INPUT_BUFFER_LENGTH;
    private static final int OUTPUT_BUFFER_LENGTH;
 
-   public Base64InputStream(InputStream var1) {
-      this(var1, false);
+   public Base64InputStream(InputStream inputStream) {
+      this(inputStream, false);
    }
 
-   public Base64InputStream(InputStream var1, boolean var2) {
-      if (var1 == null) {
+   public Base64InputStream(InputStream inputStream, boolean treatErrorAsEOF) {
+      if (inputStream == null) {
          throw new Object();
       }
 
-      this._treatErrorAsEOF = var2;
+      this._treatErrorAsEOF = treatErrorAsEOF;
       this._exceptionThrown = false;
       this._inputBuffer = new byte[2048];
       this._inputBufferLength = 0;
       this._outputBuffer = new byte[1536];
       this._outputBufferOffset = 0;
       this._outputBufferLength = 0;
-      this._inputStream = var1;
+      this._inputStream = inputStream;
       this._lastException = null;
    }
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public int read(byte[] var1) {
+   public int read(byte[] buffer) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int read(byte[] buffer, int bufferOffset, int bufferLength) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -60,37 +60,54 @@ public class Base64InputStream extends InputStream {
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._lastException != null) {
+         throw this._lastException;
+      }
+
+      try {
+         if (this._inputStream != null) {
+            this._inputStream.close();
+            this._inputBuffer = null;
+            this._inputBufferLength = 0;
+            this._outputBuffer = null;
+            this._outputBufferOffset = 0;
+            this._outputBufferLength = 0;
+            this._inputStream = null;
+         }
+      } catch (IOException e) {
+         this._lastException = e;
+         throw e;
+      }
    }
 
-   private int decode(byte[] var1, int var2) {
+   private int decode(byte[] buffer, int bufferOffset) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static byte[] decode(String var0) {
+   public static byte[] decode(String input) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static byte[] decode(String var0, int var1, int var2) {
-      return decode(var0.getBytes(), var1, var2);
+   public static byte[] decode(String input, int inputOffset, int inputLength) {
+      return decode(input.getBytes(), inputOffset, inputLength);
    }
 
-   public static byte[] decode(byte[] var0, int var1, int var2) {
-      if (var0 != null && var1 >= 0 && var2 >= 0 && var0.length - var2 >= var1) {
-         byte[] var3 = new byte[var2];
-         if (var1 > 0) {
-            var0 = Arrays.copy(var0, var1, var2);
+   public static byte[] decode(byte[] input, int inputOffset, int inputLength) {
+      if (input != null && inputOffset >= 0 && inputLength >= 0 && input.length - inputLength >= inputOffset) {
+         byte[] output = new byte[inputLength];
+         if (inputOffset > 0) {
+            input = Arrays.copy(input, inputOffset, inputLength);
          }
 
-         int var4 = decode(var0, var2, var3, 0);
-         int var5 = var4 >> 16;
-         var4 &= 65535;
-         if (var5 > 0) {
+         int outputLength = decode(input, inputLength, output, 0);
+         int remainder = outputLength >> 16;
+         outputLength &= 65535;
+         if (remainder > 0) {
             throw new Object();
          }
 
-         Array.resize(var3, var4);
-         return var3;
+         Array.resize(output, outputLength);
+         return output;
       } else {
          throw new Object();
       }

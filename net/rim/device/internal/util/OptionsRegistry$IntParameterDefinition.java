@@ -5,13 +5,13 @@ public class OptionsRegistry$IntParameterDefinition extends OptionsRegistry$Para
    private int _min;
    private int _max;
 
-   public OptionsRegistry$IntParameterDefinition(int var1, int var2, int var3) {
-      this._default = var1;
-      this._min = var2;
-      this._max = var3;
+   public OptionsRegistry$IntParameterDefinition(int def, int min, int max) {
+      this._default = def;
+      this._min = min;
+      this._max = max;
    }
 
-   protected boolean isValid(int var1) {
-      return this._min <= var1 && var1 <= this._max;
+   protected boolean isValid(int value) {
+      return this._min <= value && value <= this._max;
    }
 }

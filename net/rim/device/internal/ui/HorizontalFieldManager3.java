@@ -9,12 +9,12 @@ public class HorizontalFieldManager3 extends HorizontalFieldManager {
       super(0);
    }
 
-   public HorizontalFieldManager3(long var1) {
-      super(var1);
+   public HorizontalFieldManager3(long style) {
+      super(style);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      super.sublayout(var1, Math.min(var2, this.getPreferredHeight()));
+   protected void sublayout(int maxWidth, int maxHeight) {
+      super.sublayout(maxWidth, Math.min(maxHeight, this.getPreferredHeight()));
    }
 }

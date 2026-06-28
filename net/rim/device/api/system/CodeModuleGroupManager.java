@@ -11,47 +11,69 @@ public class CodeModuleGroupManager {
       ApplicationControl.assertCMMApiAllowed(true);
    }
 
-   public static CodeModuleGroup load(String var0) {
-      return load(getGroupHandle(var0));
+   public static CodeModuleGroup load(String groupName) {
+      return load(getGroupHandle(groupName));
    }
 
-   public static CodeModuleGroup load(int var0) {
-      if (var0 == 0) {
+   public static CodeModuleGroup load(int groupHandle) {
+      if (groupHandle == 0) {
          return null;
       }
 
-      CodeModuleGroup var1 = new CodeModuleGroup(var0);
-      return var1.load() ? var1 : null;
+      CodeModuleGroup group = new CodeModuleGroup(groupHandle);
+      return group.load() ? group : null;
    }
 
    public static CodeModuleGroup[] loadAll() {
-      throw new RuntimeException("cod2jar: exception table");
+      int[] handles = getGroupHandles();
+      if (handles == null) {
+         return null;
+      }
+
+      int numGroups = handles.length;
+      if (handles.length == 0) {
+         return null;
+      }
+
+      CodeModuleGroup[] groups = new CodeModuleGroup[numGroups];
+
+      for (int i = 0; i < numGroups; i++) {
+         groups[i] = new CodeModuleGroup(handles[i]);
+
+         try {
+            groups[i].load();
+         } catch (IllegalArgumentException var5) {
+         } catch (Throwable var6) {
+         }
+      }
+
+      return groups;
    }
 
    public static void deleteEmptyGroups() {
       assertPermission();
-      CodeModuleGroup[] var0 = loadAll();
-      if (var0 != null) {
-         int var1 = var0.length;
-         CodeModuleGroup var2 = null;
-         Enumeration var3 = null;
-         Object var4 = null;
+      CodeModuleGroup[] allGroups = loadAll();
+      if (allGroups != null) {
+         int numberOfGroups = allGroups.length;
+         CodeModuleGroup currGroup = null;
+         Enumeration modules = null;
+         String moduleName = null;
 
-         for (int var5 = 0; var5 < var1; var5++) {
-            var2 = var0[var5];
-            var3 = var2.getModules();
-            boolean var6 = false;
+         for (int i = 0; i < numberOfGroups; i++) {
+            currGroup = allGroups[i];
+            modules = currGroup.getModules();
+            boolean moduleExists = false;
 
-            while (var3.hasMoreElements()) {
-               var4 = var3.nextElement();
-               if (CodeModuleManager.getModuleHandle((String)var4) != 0) {
-                  var6 = true;
+            while (modules.hasMoreElements()) {
+               moduleName = (String)modules.nextElement();
+               if (CodeModuleManager.getModuleHandle(moduleName) != 0) {
+                  moduleExists = true;
                   break;
                }
             }
 
-            if (!var6) {
-               var2.delete();
+            if (!moduleExists) {
+               currGroup.delete();
             }
          }
       }
@@ -61,9 +83,9 @@ public class CodeModuleGroupManager {
 
    public static native byte[] getGroupData(int var0);
 
-   public static int createGroup(byte[] var0) {
+   public static int createGroup(byte[] data) {
       assertPermission();
-      return createGroupImpl(var0);
+      return createGroupImpl(data);
    }
 
    private static native int createGroupImpl(byte[] var0);

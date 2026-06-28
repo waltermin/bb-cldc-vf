@@ -4,6 +4,6 @@ public class ITPolicyParseException extends Exception {
    public ITPolicyParseException() {
    }
 
-   public ITPolicyParseException(String var1) {
+   public ITPolicyParseException(String s) {
    }
 }

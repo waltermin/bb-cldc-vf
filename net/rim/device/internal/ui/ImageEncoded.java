@@ -7,37 +7,55 @@ public final class ImageEncoded implements Image {
    private EncodedImage _image;
    private boolean _stamp;
 
-   public static final Image create(EncodedImage var0) {
-      return new ImageEncoded(var0);
+   public static final Image create(EncodedImage image) {
+      return new ImageEncoded(image);
    }
 
-   private ImageEncoded(EncodedImage var1) {
+   private ImageEncoded(EncodedImage image) {
    }
 
    @Override
-   public final int getHeight(int var1, int var2) {
-      if (var1 >= this._image.getWidth() && var2 >= this._image.getHeight()) {
+   public final int getHeight(int width, int height) {
+      if (width >= this._image.getWidth() && height >= this._image.getHeight()) {
          return this._image.getHeight();
       }
 
-      int var3 = (this._image.getWidth() + var1 - 1) / var1;
-      var3 = Math.max(var3, (this._image.getHeight() + var2 - 1) / var2);
-      return this._image.getHeight() / var3;
+      int scale = (this._image.getWidth() + width - 1) / width;
+      scale = Math.max(scale, (this._image.getHeight() + height - 1) / height);
+      return this._image.getHeight() / scale;
    }
 
    @Override
-   public final int getWidth(int var1, int var2) {
-      if (var1 >= this._image.getWidth() && var2 >= this._image.getHeight()) {
+   public final int getWidth(int width, int height) {
+      if (width >= this._image.getWidth() && height >= this._image.getHeight()) {
          return this._image.getWidth();
       }
 
-      int var3 = (this._image.getWidth() + var1 - 1) / var1;
-      var3 = Math.max(var3, (this._image.getHeight() + var2 - 1) / var2);
-      return this._image.getWidth() / var3;
+      int scale = (this._image.getWidth() + width - 1) / width;
+      scale = Math.max(scale, (this._image.getHeight() + height - 1) / height);
+      return this._image.getWidth() / scale;
    }
 
    @Override
-   public final void paint(Graphics var1, int var2, int var3, int var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void paint(Graphics graphics, int x, int y, int width, int height) {
+      int scale = 1;
+      if (width < this._image.getWidth() || height < this._image.getHeight()) {
+         scale = (this._image.getWidth() + width - 1) / width;
+         scale = Math.max(scale, (this._image.getHeight() + height - 1) / height);
+      }
+
+      synchronized (this._image) {
+         int oldScale = this._image.getScale();
+         this._image.setScale(scale);
+         x += width - this._image.getScaledWidth() >> 1;
+         y += height - this._image.getScaledHeight() >> 1;
+         if (this._stamp) {
+            graphics.ropImage(-96, x, y, width, height, this._image, 0, 0, 0);
+         } else {
+            graphics.drawImage(x, y, width, height, this._image, 0, 0, 0);
+         }
+
+         this._image.setScale(oldScale);
+      }
    }
 }

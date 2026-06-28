@@ -5,9 +5,9 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 class BasicChoice$1 extends VerticalFieldManager {
    private final BasicChoice this$0;
 
-   BasicChoice$1(BasicChoice var1, long var2) {
-      super(var2);
-      this.this$0 = var1;
+   BasicChoice$1(BasicChoice _1, long x0) {
+      super(x0);
+      this.this$0 = _1;
    }
 
    @Override

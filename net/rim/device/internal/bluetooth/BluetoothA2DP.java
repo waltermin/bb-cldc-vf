@@ -4,6 +4,7 @@ import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.internal.system.EventDispatchManager;
 
 public final class BluetoothA2DP {
    public static final boolean isSupported() {
@@ -34,11 +35,18 @@ public final class BluetoothA2DP {
 
    public static final native int suspendStream(int var0);
 
-   public static final void addListener(Application var0, BluetoothA2DPListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, BluetoothA2DPListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(24) == null) {
+            dispatchManager.setDispatcher(24, new BluetoothA2DPEventDispatcher());
+         }
+      }
+
+      app.addListener(24, listener);
    }
 
-   public static final void removeListener(Application var0, BluetoothA2DPListener var1) {
-      var0.removeListener(24, var1);
+   public static final void removeListener(Application app, BluetoothA2DPListener listener) {
+      app.removeListener(24, listener);
    }
 }

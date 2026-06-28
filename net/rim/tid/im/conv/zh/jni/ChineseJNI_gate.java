@@ -18,46 +18,46 @@ public class ChineseJNI_gate {
       return this._isNativeSupportBuilt;
    }
 
-   public boolean setLocale(int var1) {
+   public boolean setLocale(int aLocaleCode) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   public boolean initWordlist(LinguisticData var1) {
-      boolean var2 = var1.getType() >> 4 == 1;
-      int var3 = initWordlistReader((byte[][][])var1.getData(), var2);
-      if (var3 != 0) {
-         byte[][] var4 = var1.getData();
-         if (!var2 && this._wordlist.length != 0) {
-            Arrays.insertAt(this._indexes, var4.length, 0);
+   public boolean initWordlist(LinguisticData aData) {
+      boolean isGenericType = aData.getType() >> 4 == 1;
+      int res = initWordlistReader((byte[][][])aData.getData(), isGenericType);
+      if (res != 0) {
+         byte[][][] data = (byte[][][])aData.getData();
+         if (!isGenericType && this._wordlist.length != 0) {
+            Arrays.insertAt(this._indexes, data.length, 0);
 
-            for (int var6 = 0; var6 < var4.length; var6++) {
-               Arrays.insertAt(this._wordlist, var4[var6], var6);
+            for (int i = 0; i < data.length; i++) {
+               Arrays.insertAt(this._wordlist, data[i], i);
             }
          } else {
-            Arrays.add(this._indexes, var4.length);
+            Arrays.add(this._indexes, data.length);
 
-            for (int var5 = 0; var5 < var4.length; var5++) {
-               Arrays.add(this._wordlist, var4[var5]);
+            for (int i = 0; i < data.length; i++) {
+               Arrays.add(this._wordlist, data[i]);
             }
          }
       }
 
-      return var3 != 0;
+      return res != 0;
    }
 
-   private void removeWordlist(int var1) {
+   private void removeWordlist(int anIndex) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   public int unloadLinguisticData(int var1) {
-      byte var2 = 2;
-      if (removeWordlistReader(var1)) {
-         this.removeWordlist(var1);
-         Arrays.removeAt(this._indexes, var1);
-         var2 = 1;
+   public int unloadLinguisticData(int anIndex) {
+      int ret = 2;
+      if (removeWordlistReader(anIndex)) {
+         this.removeWordlist(anIndex);
+         Arrays.removeAt(this._indexes, anIndex);
+         ret = 1;
       }
 
-      return var2;
+      return ret;
    }
 
    private native void init();
@@ -102,26 +102,46 @@ public class ChineseJNI_gate {
    public static native Object getWords(char[] var0, byte[] var1, byte[] var2, int var3, int var4, byte[] var5);
 
    public static int getPredictiveWords(
-      char[] var0,
-      byte[] var1,
-      byte[] var2,
-      char[] var3,
-      int var4,
-      int var5,
-      int var6,
-      int[] var7,
-      int var8,
-      char[] var9,
-      byte[] var10,
-      byte[] var11,
-      char[] var12,
-      byte[] var13,
-      byte[] var14,
-      boolean var15,
-      boolean var16,
-      boolean var17
+      char[] pins,
+      byte[] tones,
+      byte[] counts,
+      char[] prefix,
+      int prefixLength,
+      int aFromIndex,
+      int aCount,
+      int[] anIds,
+      int anIdsCount,
+      char[] aResultWords,
+      byte[] aResultWordsLengths,
+      byte[] aResultWordsStartIndexes,
+      char[] aPredictiveWordsIds,
+      byte[] aPredictiveWordsTones,
+      byte[] learningData,
+      boolean lookForward,
+      boolean convertIds,
+      boolean moveStartPosition
    ) {
-      return getPredictiveWords(var0, var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, null, var11, var12, var13, var14, var15, var16, var17);
+      return getPredictiveWords(
+         pins,
+         tones,
+         counts,
+         prefix,
+         prefixLength,
+         aFromIndex,
+         aCount,
+         anIds,
+         anIdsCount,
+         aResultWords,
+         aResultWordsLengths,
+         null,
+         aResultWordsStartIndexes,
+         aPredictiveWordsIds,
+         aPredictiveWordsTones,
+         learningData,
+         lookForward,
+         convertIds,
+         moveStartPosition
+      );
    }
 
    public static native int getPredictiveWords(
@@ -162,12 +182,14 @@ public class ChineseJNI_gate {
 
    public static native int getLearningWordlistSize(byte[] var0);
 
-   public static int getSegmentation(char[] var0, byte[] var1, byte[] var2, int var3, int var4, byte[] var5, byte[] var6) {
-      return getSegmentation(var0, var1, var2, var3, var4, var5, var6, true);
+   public static int getSegmentation(char[] aPinIndexes, byte[] aTones, byte[] anIndexes, int aFromIndex, int aCount, byte[] learningData, byte[] aResult) {
+      return getSegmentation(aPinIndexes, aTones, anIndexes, aFromIndex, aCount, learningData, aResult, true);
    }
 
-   public static int getSegmentation(char[] var0, byte[] var1, byte[] var2, int var3, int var4, byte[] var5, byte[] var6, byte[] var7) {
-      return getSegmentation(var0, var1, var2, var3, var4, var5, var6, var7, true);
+   public static int getSegmentation(
+      char[] aPinIndexes, byte[] aTones, byte[] anIndexes, int aFromIndex, int aCount, byte[] learningData, byte[] linkLearningData, byte[] aResult
+   ) {
+      return getSegmentation(aPinIndexes, aTones, anIndexes, aFromIndex, aCount, learningData, linkLearningData, aResult, true);
    }
 
    public static native int getSegmentation(char[] var0, byte[] var1, byte[] var2, int var3, int var4, byte[] var5, byte[] var6, boolean var7);

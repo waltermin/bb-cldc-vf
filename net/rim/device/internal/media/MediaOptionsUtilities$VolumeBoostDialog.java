@@ -2,8 +2,11 @@ package net.rim.device.internal.media;
 
 import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.util.OptionsRegistry$Listener;
 
 final class MediaOptionsUtilities$VolumeBoostDialog extends Dialog implements DialogClosedListener, OptionsRegistry$Listener {
@@ -16,32 +19,51 @@ final class MediaOptionsUtilities$VolumeBoostDialog extends Dialog implements Di
    }
 
    @Override
-   public final void dialogClosed(Dialog var1, int var2) {
-      MediaOptionsRegistry var3 = MediaOptionsRegistry.getInstance();
-      var3.removeOptionsRegistryChangeListener(this);
-      boolean var4 = false;
-      if (var2 == 4) {
-         var3.setInt(-811168513825316359L, MediaOptionsUtilities.computeCurrentImsiValue());
-         var4 = true;
+   public final void dialogClosed(Dialog dialog, int choice) {
+      MediaOptionsRegistry registry = MediaOptionsRegistry.getInstance();
+      registry.removeOptionsRegistryChangeListener(this);
+      boolean activate = false;
+      if (choice == 4) {
+         registry.setInt(-811168513825316359L, MediaOptionsUtilities.computeCurrentImsiValue());
+         activate = true;
       }
 
-      var3.setBoolean(2886183832722201160L, var4);
-      AudioRouter.getInstance().setVolumeBoostMode(var4);
+      registry.setBoolean(2886183832722201160L, activate);
+      AudioRouter.getInstance().setVolumeBoostMode(activate);
       if (this.isDontAskAgainChecked()) {
-         var3.setBoolean(-4387502259448276168L, true);
+         registry.setBoolean(-4387502259448276168L, true);
       } else {
-         var3.setBoolean(-4387502259448276168L, false);
+         registry.setBoolean(-4387502259448276168L, false);
       }
    }
 
    @Override
-   public final void fieldChanged(Field var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void fieldChanged(Field field, int context) {
+      if (field instanceof Object) {
+         int choice;
+         try {
+            choice = _values[this.getLeafFieldWithFocus().getIndex()];
+         } catch (Exception e) {
+            choice = -1;
+         }
+
+         if (choice == 2) {
+            UiApplication app = UiApplication.getUiApplication();
+            String data = CommonResource.getString(10172);
+            ActiveRichTextField moreInfoField = (ActiveRichTextField)(new Object(data, 18014398509481984L));
+            MediaOptionsUtilities$VolumeBoostMoreInformationScreen screen = new MediaOptionsUtilities$VolumeBoostMoreInformationScreen();
+            screen.add(moreInfoField);
+            app.pushScreen(screen);
+            return;
+         }
+
+         super.fieldChanged(field, context);
+      }
    }
 
    @Override
-   public final void onOptionsRegistryChange(long var1) {
-      if (var1 == 2886183832722201160L) {
+   public final void onOptionsRegistryChange(long key) {
+      if (key == 2886183832722201160L) {
          MediaOptionsRegistry.getInstance().removeOptionsRegistryChangeListener(this);
          this.setDialogClosedListener(null);
          this._closeWhenVisible = true;

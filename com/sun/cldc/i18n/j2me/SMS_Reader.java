@@ -7,44 +7,44 @@ public final class SMS_Reader extends StreamReader {
 
    @Override
    public final int read() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final int read(char[] var1, int var2, int var3) {
-      for (int var4 = 0; var4 < var3; var4++) {
-         int var5 = this.read();
-         if (var5 == -1) {
-            if (var4 == 0) {
+   public final int read(char[] cbuf, int off, int len) {
+      for (int count = 0; count < len; count++) {
+         int ch = this.read();
+         if (ch == -1) {
+            if (count == 0) {
                return -1;
             }
 
-            return var4;
+            return count;
          }
 
-         var1[var2++] = (char)var5;
+         cbuf[off++] = (char)ch;
       }
 
-      return var3;
+      return len;
    }
 
    @Override
-   public final int sizeOf(byte[] var1, int var2, int var3) {
-      int var4 = 0;
-      int var5 = var2 + var3;
+   public final int sizeOf(byte[] array, int offset, int length) {
+      int count = 0;
+      int end = offset + length;
 
-      while (var2 < var5) {
-         int var6 = var1[var2] & 255;
-         var2++;
-         if (var6 != 27 && var6 != 13) {
-            if (var6 == 255) {
+      while (offset < end) {
+         int ch = array[offset] & 255;
+         offset++;
+         if (ch != 27 && ch != 13) {
+            if (ch == 255) {
                break;
             }
 
-            var4++;
+            count++;
          }
       }
 
-      return var4;
+      return count;
    }
 }

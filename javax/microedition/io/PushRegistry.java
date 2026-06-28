@@ -14,78 +14,84 @@ public class PushRegistry {
    private PushRegistry() {
    }
 
-   public static String getFilter(String var0) {
+   public static String getFilter(String connection) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static String getMIDlet(String var0) {
+   public static String getMIDlet(String connection) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static String[] listConnections(boolean var0) {
+   public static String[] listConnections(boolean available) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static long registerAlarm(String var0, long var1) {
+   public static long registerAlarm(String midlet, long time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static void checkPermission(int var0, String var1, String var2) {
-      Object var3 = Application.getApplication();
-      if (!((MIDletApplication)var3).hasEventThread()) {
-         PushRegistry$PermissionCheckRunnable var4 = new PushRegistry$PermissionCheckRunnable(var0, var1, var2);
-         checkPermissionLater((MIDletApplication)var3, var4);
-         if (var4._failed) {
-            throw var4._re;
+   private static void checkPermission(int moduleHandle, String permission, String url) {
+      MIDletApplication a = (MIDletApplication)Application.getApplication();
+      if (!a.hasEventThread()) {
+         PushRegistry$PermissionCheckRunnable pcr = new PushRegistry$PermissionCheckRunnable(moduleHandle, permission, url);
+         checkPermissionLater(a, pcr);
+         if (pcr._failed) {
+            throw pcr._re;
          }
       } else {
-         checkPermissionPrimitive(var0, var1, var2);
+         checkPermissionPrimitive(moduleHandle, permission, url);
       }
    }
 
    private static void checkAlarmPermission() {
-      Object var0 = Application.getApplication();
-      if (!((MIDletApplication)var0).hasEventThread()) {
-         PushRegistry$AlarmPermissionCheckRunnable var1 = new PushRegistry$AlarmPermissionCheckRunnable(null);
-         checkPermissionLater((MIDletApplication)var0, var1);
-         if (var1._failed) {
-            throw var1._re;
+      MIDletApplication a = (MIDletApplication)Application.getApplication();
+      if (!a.hasEventThread()) {
+         PushRegistry$AlarmPermissionCheckRunnable apcr = new PushRegistry$AlarmPermissionCheckRunnable(null);
+         checkPermissionLater(a, apcr);
+         if (apcr._failed) {
+            throw apcr._re;
          }
       } else {
          MIDletSecurity.checkPermission(8);
       }
    }
 
-   private static void checkPermissionLater(MIDletApplication var0, Runnable var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static void checkPermissionLater(MIDletApplication app, Runnable permChecker) {
+      app.invokeLater(permChecker);
+      app.setForegroundable(false);
+
+      try {
+         app.enterEventDispatcher();
+      } catch (PushRegistry$PushRegistryPermissionCheckExitEvent var3) {
+      }
    }
 
-   private static void checkPermissionPrimitive(int var0, String var1, String var2) {
+   private static void checkPermissionPrimitive(int moduleHandle, String permission, String url) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static boolean isMidletInSuite(String var0) {
+   private static boolean isMidletInSuite(String midlet) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static void launchMidlet(String var0, String[] var1, boolean var2) {
-      Object var3 = Application.getApplication();
-      ((MIDletApplication)var3).bringToForeground();
+   private static void launchMidlet(String midletClassName, String[] args, boolean grabForeground) {
+      MIDletApplication ma = (MIDletApplication)Application.getApplication();
+      ma.bringToForeground();
    }
 
-   private static int getModuleHandleForMidletClass(String var0) {
-      return isMidletInSuite(var0) ? Process.currentProcess().getModuleHandle() : -1;
+   private static int getModuleHandleForMidletClass(String midletname) {
+      return isMidletInSuite(midletname) ? Process.currentProcess().getModuleHandle() : -1;
    }
 
-   public static void registerConnection(String var0, String var1, String var2) {
+   public static void registerConnection(String connection, String midlet, String filter) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static boolean unregisterConnection(String var0) {
+   public static boolean unregisterConnection(String connection) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static boolean removeStaleConnection(String var0) {
+   private static boolean removeStaleConnection(String connection) {
       throw new RuntimeException("cod2jar: type check");
    }
 

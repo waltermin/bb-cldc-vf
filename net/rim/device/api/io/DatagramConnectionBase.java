@@ -31,16 +31,38 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._isActive) {
+         this._transport.close(this);
+         this._isActive = false;
+         synchronized (this._datagrams) {
+            this._datagrams.notifyAll();
+         }
+
+         int length;
+         Datagram[] sendingDatagrams;
+         synchronized (this._sendingDatagrams) {
+            length = this._sendingDatagrams.length;
+            if (length <= 0) {
+               return;
+            }
+
+            sendingDatagrams = new Datagram[length];
+            System.arraycopy(this._sendingDatagrams, 0, sendingDatagrams, 0, length);
+         }
+
+         for (int i = length - 1; i >= 0; i--) {
+            this._transport.superCancel(sendingDatagrams[i]);
+         }
+      }
    }
 
    @Override
-   public Connection openPrim(String var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Connection openPrim(String name, int mode, boolean timeouts) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public int getProperties(String var1) {
+   public int getProperties(String _1) {
       throw null;
    }
 
@@ -48,23 +70,27 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setTrafficLogger(TrafficLogger var1) {
+   public void setTrafficLogger(TrafficLogger logger) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void cancel(Datagram var1) {
+   public void cancel(Datagram datagram) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected boolean isAddressed(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected boolean isAddressed(String address) {
+      try {
+         return this.isAddressed(this.newDatagramAddressBase(address, false));
+      } catch (Throwable t) {
+         return false;
+      }
    }
 
-   protected boolean isAddressed(DatagramAddressBase var1) {
+   protected boolean isAddressed(DatagramAddressBase address) {
       return false;
    }
 
-   public void copyFlagsInto(DatagramBase var1) {
+   public void copyFlagsInto(DatagramBase dg) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
@@ -73,144 +99,161 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
       return this._transport.newDatagram(null, 0, 0, null);
    }
 
-   public void datagramProcessed(int var1) {
-      if (var1 != 0) {
-         this._transport.datagramProcessed(var1);
+   public void datagramProcessed(int dgId) {
+      if (dgId != 0) {
+         this._transport.datagramProcessed(dgId);
       }
    }
 
-   public void handleDatagramStatus(int var1, int var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void handleDatagramStatus(int datagramId, int event, Object context) {
+      if (this._listener != null) {
+         try {
+            this._listener.updateDatagramStatus(datagramId, event, context);
+            return;
+         } catch (Throwable var5) {
+         }
+      }
    }
 
-   public Datagram newDatagram(byte[] var1) {
+   public Datagram newDatagram(byte[] buffer) {
       this.checkForClosed();
-      return this._transport.newDatagram(var1, 0, var1.length, null);
+      return this._transport.newDatagram(buffer, 0, buffer.length, null);
    }
 
-   public int allocateDatagramId(Datagram var1) {
-      return this._transport.allocateDatagramId(var1);
+   public int allocateDatagramId(Datagram datagram) {
+      return this._transport.allocateDatagramId(datagram);
    }
 
-   public void setConnectionListener(ConnectionListener var1) {
+   public void setConnectionListener(ConnectionListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public Datagram newDatagram(byte[] var1, int var2, int var3) {
+   public Datagram newDatagram(byte[] buffer, int offset, int length) {
       this.checkForClosed();
-      return this._transport.newDatagram(var1, var2, var3, null);
+      return this._transport.newDatagram(buffer, offset, length, null);
    }
 
-   public Datagram newDatagram(byte[] var1, int var2, int var3, String var4) {
+   public Datagram newDatagram(byte[] buffer, int offset, int length, String address) {
       this.checkForClosed();
-      return this._transport.newDatagram(var1, var2, var3, var4);
+      return this._transport.newDatagram(buffer, offset, length, address);
    }
 
-   public DatagramAddressBase newDatagramAddressBase(String var1, boolean var2) {
-      return this._transport.newDatagramAddressBase(var1, var2);
+   public DatagramAddressBase newDatagramAddressBase(String address, boolean swap) {
+      return this._transport.newDatagramAddressBase(address, swap);
    }
 
-   public DatagramAddressBase newDatagramAddressBase(DatagramAddressBase var1, boolean var2) {
-      return this._transport.newDatagramAddressBase(var1, var2);
+   public DatagramAddressBase newDatagramAddressBase(DatagramAddressBase addressBase, boolean swap) {
+      return this._transport.newDatagramAddressBase(addressBase, swap);
    }
 
-   public void processReceivedDatagram(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void processReceivedDatagram(Datagram datagram) {
+      synchronized (this._datagrams) {
+         this._datagrams.enqueue(datagram);
+         this._datagrams.notify();
+      }
+
+      if (this._connectionListener != null) {
+         try {
+            this._connectionListener.dataAvailable(this);
+            return;
+         } catch (Throwable var4) {
+         }
+      }
    }
 
    public DatagramStatusListener getDatagramStatusListener() {
       return this._listener;
    }
 
-   public void setDatagramStatusListener(DatagramStatusListener var1) {
+   public void setDatagramStatusListener(DatagramStatusListener listener) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public byte[] setup(int var1, Object var2) {
-      return this._transport.setup(var1, var2);
+   public byte[] setup(int callType, Object context) {
+      return this._transport.setup(callType, context);
    }
 
-   public void setTimeout(long var1) {
-      this._timeout = var1;
+   public void setTimeout(long timeout) {
+      this._timeout = timeout;
       this._isTimeOutSet = true;
    }
 
    @Override
-   public boolean isFlagSet(int var1) {
-      return (this._validFlags & var1) != 0 && (this._flags & var1) != 0;
+   public boolean isFlagSet(int flag) {
+      return (this._validFlags & flag) != 0 && (this._flags & flag) != 0;
    }
 
    @Override
-   public int getFlag(int var1) {
-      if ((this._validFlags & var1) != 0) {
-         return (this._flags & var1) != 0 ? 1 : 0;
+   public int getFlag(int flag) {
+      if ((this._validFlags & flag) != 0) {
+         return (this._flags & flag) != 0 ? 1 : 0;
       } else {
          return -1;
       }
    }
 
    @Override
-   public void setFlag(int var1, boolean var2) {
-      if (var2) {
-         this._flags |= var1;
+   public void setFlag(int flag, boolean value) {
+      if (value) {
+         this._flags |= flag;
       } else {
-         this._flags &= ~var1;
+         this._flags &= ~flag;
       }
 
-      this._validFlags |= var1;
+      this._validFlags |= flag;
    }
 
    @Override
-   public Object getProperty(String var1) {
-      return this._properties == null ? null : this._properties.get(var1);
+   public Object getProperty(String name) {
+      return this._properties == null ? null : this._properties.get(name);
    }
 
    @Override
-   public Object setProperty(String var1, Object var2) {
+   public Object setProperty(String name, Object data) {
       if (this._properties == null) {
          this._properties = (Hashtable)(new Object());
       }
 
-      return this._properties.put(var1, var2);
+      return this._properties.put(name, data);
    }
 
    @Override
-   public Datagram newDatagram(byte[] var1, int var2, String var3) {
+   public Datagram newDatagram(byte[] buffer, int length, String address) {
       this.checkForClosed();
-      return this._transport.newDatagram(var1, 0, var2, var3);
+      return this._transport.newDatagram(buffer, 0, length, address);
    }
 
    @Override
-   public Datagram newDatagram(byte[] var1, int var2) {
+   public Datagram newDatagram(byte[] buffer, int length) {
       this.checkForClosed();
-      return this._transport.newDatagram(var1, 0, var2, null);
+      return this._transport.newDatagram(buffer, 0, length, null);
    }
 
    @Override
-   public Datagram newDatagram(int var1, String var2) {
+   public Datagram newDatagram(int length, String address) {
       this.checkForClosed();
-      return this._transport.newDatagram(null, 0, var1, var2);
+      return this._transport.newDatagram(null, 0, length, address);
    }
 
    @Override
-   public Datagram newDatagram(int var1) {
+   public Datagram newDatagram(int length) {
       this.checkForClosed();
-      return this._transport.newDatagram(null, 0, var1, null);
+      return this._transport.newDatagram(null, 0, length, null);
    }
 
    @Override
-   public void receive(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void receive(Datagram datagram) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void send(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void send(Datagram datagram) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public String getLocalAddress() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

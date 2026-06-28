@@ -7,6 +7,8 @@ import net.rim.device.api.system.QOSInfo;
 import net.rim.device.api.system.Radio;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioPacketHeader;
+import net.rim.device.api.system.SIMCard;
+import net.rim.device.api.system.SIMCardException;
 import net.rim.device.api.system.SMSParameters;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.util.Arrays;
@@ -200,43 +202,43 @@ public final class RadioInternal {
       return PersistentInteger.get(_enabled3GPPRatsKeyId);
    }
 
-   public static final void set3GPPEnabledRats(int var0) {
-      PersistentInteger.set(_enabled3GPPRatsKeyId, var0);
+   public static final void set3GPPEnabledRats(int rats) {
+      PersistentInteger.set(_enabled3GPPRatsKeyId, rats);
    }
 
    public static final int get3GPPActiveRats() {
-      int var0 = getGANPreference();
-      int var1 = get3GPPEnabledRats();
-      switch (var0) {
+      int ganPreference = getGANPreference();
+      int active3GPPRats = get3GPPEnabledRats();
+      switch (ganPreference) {
          case 0:
-            return var1 & -5;
+            return active3GPPRats & -5;
          case 2:
-            var1 &= 4;
+            active3GPPRats &= 4;
          default:
-            return var1;
+            return active3GPPRats;
       }
    }
 
-   public static final int get3GPPRATPreference(int var0) {
-      byte var1 = 0;
-      int var2 = get3GPPEnabledRats();
-      switch (var0) {
+   public static final int get3GPPRATPreference(int ganPreference) {
+      int preference = 0;
+      int enabled3GPPRats = get3GPPEnabledRats();
+      switch (ganPreference) {
          case 1:
-            if ((var2 & 4) != 0 && (var2 & -5) != 0) {
+            if ((enabled3GPPRats & 4) != 0 && (enabled3GPPRats & -5) != 0) {
                return 1;
             }
             break;
          case 3:
-            if ((var2 & 4) != 0 && (var2 & -5) != 0) {
-               var1 = 2;
+            if ((enabled3GPPRats & 4) != 0 && (enabled3GPPRats & -5) != 0) {
+               preference = 2;
             }
       }
 
-      return var1;
+      return preference;
    }
 
-   public static final void set3GPPRatConfig(int var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void set3GPPRatConfig(int active3GPPRats, int ratPreference) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final native boolean set3GPPRatConfiguration(int var0, int var1);
@@ -245,130 +247,130 @@ public final class RadioInternal {
       return translateWAFsToRadios(RadioInfo.getSupportedWAFs());
    }
 
-   public static final boolean setEnabledRadios(int var0) {
-      return Radio.setEnabledWAFs(translateRadiosToWAFs(var0));
+   public static final boolean setEnabledRadios(int radios) {
+      return Radio.setEnabledWAFs(translateRadiosToWAFs(radios));
    }
 
    public static final int getEnabledRadios() {
       return translateWAFsToRadios(RadioInfo.getEnabledWAFs());
    }
 
-   private static final int translateRadiosToWAFs(int var0) {
-      byte var1 = 0;
-      if ((var0 & 1) != 0) {
-         var1 |= 1;
+   private static final int translateRadiosToWAFs(int radios) {
+      int wafs = 0;
+      if ((radios & 1) != 0) {
+         wafs |= 1;
       }
 
-      if ((var0 & 2) != 0) {
-         var1 |= 2;
+      if ((radios & 2) != 0) {
+         wafs |= 2;
       }
 
-      if ((var0 & 4) != 0) {
-         var1 |= 4;
+      if ((radios & 4) != 0) {
+         wafs |= 4;
       }
 
-      if ((var0 & 8) != 0) {
-         var1 |= 8;
+      if ((radios & 8) != 0) {
+         wafs |= 8;
       }
 
-      return var1;
+      return wafs;
    }
 
-   private static final int translateWAFsToRadios(int var0) {
-      byte var1 = 0;
-      if ((var0 & 1) != 0) {
-         var1 |= 1;
+   private static final int translateWAFsToRadios(int wafs) {
+      int radios = 0;
+      if ((wafs & 1) != 0) {
+         radios |= 1;
       }
 
-      if ((var0 & 2) != 0) {
-         var1 |= 2;
+      if ((wafs & 2) != 0) {
+         radios |= 2;
       }
 
-      if ((var0 & 4) != 0) {
-         var1 |= 4;
+      if ((wafs & 4) != 0) {
+         radios |= 4;
       }
 
-      if ((var0 & 8) != 0) {
-         var1 |= 8;
+      if ((wafs & 8) != 0) {
+         radios |= 8;
       }
 
-      return var1;
+      return radios;
    }
 
    public static final int getActiveRadios() {
-      byte var0 = 0;
-      int var1 = RadioInfo.getActiveWAFs();
-      if ((var1 & 1) != 0 && (get3GPPActiveRats() & get3GPPSupportedRats() & -5) != 0) {
-         var0 |= 1;
+      int activeRadios = 0;
+      int activeWafs = RadioInfo.getActiveWAFs();
+      if ((activeWafs & 1) != 0 && (get3GPPActiveRats() & get3GPPSupportedRats() & -5) != 0) {
+         activeRadios |= 1;
       }
 
-      if ((var1 & 2) != 0) {
-         var0 |= 2;
+      if ((activeWafs & 2) != 0) {
+         activeRadios |= 2;
       }
 
-      if ((var1 & 4) != 0) {
-         var0 |= 4;
+      if ((activeWafs & 4) != 0) {
+         activeRadios |= 4;
       }
 
-      if ((var1 & 8) != 0) {
-         var0 |= 8;
+      if ((activeWafs & 8) != 0) {
+         activeRadios |= 8;
       }
 
-      return var0;
+      return activeRadios;
    }
 
    public static final boolean reactivateRadios() {
       return activateRadios(_activeRadios);
    }
 
-   public static final boolean activateRadios(int var0) {
-      int var1 = translateRadiosToWAFs(var0);
-      if (var0 == 0) {
+   public static final boolean activateRadios(int radios) {
+      int wafs = translateRadiosToWAFs(radios);
+      if (radios == 0) {
          return true;
       }
 
-      _activeRadios = var0;
-      return Radio.activateWAFs(var1);
+      _activeRadios = radios;
+      return Radio.activateWAFs(wafs);
    }
 
    public static final native void activateWAFsInternal(int var0);
 
    public static final native void deactivateWAFsInternal(int var0);
 
-   public static final void deactivateRadios(int var0) {
-      Radio.deactivateWAFs(translateRadiosToWAFs(var0));
-      _activeRadios &= ~var0;
+   public static final void deactivateRadios(int radios) {
+      Radio.deactivateWAFs(translateRadiosToWAFs(radios));
+      _activeRadios &= ~radios;
    }
 
-   public static final int sendPacket(RadioPacketHeader var0, byte[] var1) {
-      return sendPacket(var0, var1, 0, var1.length);
+   public static final int sendPacket(RadioPacketHeader header, byte[] data) {
+      return sendPacket(header, data, 0, data.length);
    }
 
    public static final native int sendPacket(RadioPacketHeader var0, byte[] var1, int var2, int var3);
 
-   public static final int registerAccessPointNumber(String var0) {
+   public static final int registerAccessPointNumber(String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final int registerAccessPointNumber(String var0, int var1, int var2) {
-      return registerAccessPointNumber(var0, var1, var2, null);
+   public static final int registerAccessPointNumber(String data, int offset, int length) {
+      return registerAccessPointNumber(data, offset, length, null);
    }
 
-   public static final int registerAccessPointNumber(String var0, int var1, int var2, QOSInfo var3) {
-      return registerAccessPointNumber(var0, var1, var2, null, var3, null, null);
+   public static final int registerAccessPointNumber(String data, int offset, int length, QOSInfo qos) {
+      return registerAccessPointNumber(data, offset, length, null, qos, null, null);
    }
 
-   public static final int registerAccessPointNumber(String var0, int var1, int var2, QOSInfo var3, String var4, String var5) {
-      return registerAccessPointNumber(var0, var1, var2, null, var3, var4, var5);
+   public static final int registerAccessPointNumber(String data, int offset, int length, QOSInfo qos, String username, String password) {
+      return registerAccessPointNumber(data, offset, length, null, qos, username, password);
    }
 
    public static final native int registerAccessPointNumber(String var0, int var1, int var2, byte[] var3, QOSInfo var4, String var5, String var6);
 
    public static final native void deregisterAccessPointNumber(int var0);
 
-   public static final byte[] getDNSIPAddress(int var0, int var1) {
-      int var2 = getIPv4DNSAddress(var0, var1);
-      return var2 != 0 ? UDPPacketHeader.IPv4IntToByteArray(var2) : null;
+   public static final byte[] getDNSIPAddress(int apnId, int type) {
+      int addr = getIPv4DNSAddress(apnId, type);
+      return addr != 0 ? UDPPacketHeader.IPv4IntToByteArray(addr) : null;
    }
 
    public static final native void getDefaultSMSParameters(SMSParameters var0);
@@ -393,8 +395,22 @@ public final class RadioInternal {
 
    public static final native int getAvailableNetworkModes();
 
-   public static final void setNetworkSelectionMode(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setNetworkSelectionMode(int mode) {
+      PersistentInteger.set(_plmnSelectionModeID, mode);
+      setNetworkSelectionModeOS(mode);
+      if (mode == 3 && SIMCard.isSupported()) {
+         if (_efHandler == null) {
+            _efHandler = new SIMCardEfHandler();
+         }
+
+         if (!_efHandler.isRunning()) {
+            try {
+               _efHandler.startTask(new DefaultManuallySelectedNetIdReader(), false);
+               return;
+            } catch (Exception var2) {
+            }
+         }
+      }
    }
 
    public static final native void setNetworkSelectionModeOS(int var0);
@@ -409,9 +425,9 @@ public final class RadioInternal {
       return PersistentInteger.get(_ganPreferenceKeyId);
    }
 
-   public static final void setGANPreference(int var0) {
-      int var1 = 0;
-      switch (var0) {
+   public static final void setGANPreference(int ganPreference) {
+      int enabled3GPPRATs = 0;
+      switch (ganPreference) {
          case -1:
             return;
          case 0:
@@ -419,20 +435,20 @@ public final class RadioInternal {
          case 2:
          case 3:
          default:
-            PersistentInteger.set(_ganPreferenceKeyId, var0);
-            if (var0 != 2 && (getActiveRadios() & 1) != 0) {
-               var1 |= get3GPPSupportedRats() & -5;
+            PersistentInteger.set(_ganPreferenceKeyId, ganPreference);
+            if (ganPreference != 2 && (getActiveRadios() & 1) != 0) {
+               enabled3GPPRATs |= get3GPPSupportedRats() & -5;
             }
 
-            if (var0 != 0 && GAN.isGANAllowed() && (getActiveRadios() & 4) != 0) {
-               var1 |= get3GPPSupportedRats() & 4;
+            if (ganPreference != 0 && GAN.isGANAllowed() && (getActiveRadios() & 4) != 0) {
+               enabled3GPPRATs |= get3GPPSupportedRats() & 4;
             }
 
             if (get3GPPEnabledRats() != 0) {
-               set3GPPEnabledRats(var1);
+               set3GPPEnabledRats(enabled3GPPRATs);
             }
 
-            set3GPPRatConfig(get3GPPActiveRats(), get3GPPRATPreference(var0));
+            set3GPPRatConfig(get3GPPActiveRats(), get3GPPRATPreference(ganPreference));
             if (get3GPPActiveRats() != 0) {
                if ((RadioInfo.getActiveWAFs() & 1) == 0) {
                   activateWAFsInternal(1);
@@ -456,23 +472,23 @@ public final class RadioInternal {
 
    private static final native int getNetworkParameter(int var0, int var1, int var2, int var3, byte[] var4, byte[] var5);
 
-   public static final byte[] getNetworkParameter(int var0, int var1, int var2) {
-      if (var2 >= 0 && var0 >= 0) {
-         byte[] var3 = new byte[1];
-         int var4 = getNetworkParameter(-1, var0, var1, var2, null, var3) - 1;
-         if (var4 >= var2 && var2 >= 0 && var3[0] > 0) {
-            Array.resize(var3, var3[0] & 255);
-            Arrays.zero(var3);
-            getNetworkParameter(-1, var0, var1, var2, var3, null);
-            return var3;
+   public static final byte[] getNetworkParameter(int apnID, int paramType, int index) {
+      if (index >= 0 && apnID >= 0) {
+         byte[] data = new byte[1];
+         int result = getNetworkParameter(-1, apnID, paramType, index, null, data) - 1;
+         if (result >= index && index >= 0 && data[0] > 0) {
+            Array.resize(data, data[0] & 255);
+            Arrays.zero(data);
+            getNetworkParameter(-1, apnID, paramType, index, data, null);
+            return data;
          }
       }
 
       return null;
    }
 
-   public static final int getNetworkParameterListSize(int var0, int var1) {
-      return var0 >= 0 ? getNetworkParameter(-1, var0, var1, 0, null, null) : 0;
+   public static final int getNetworkParameterListSize(int apnID, int paramType) {
+      return apnID >= 0 ? getNetworkParameter(-1, apnID, paramType, 0, null, null) : 0;
    }
 
    public static final native void reportNetworkDisplayName(String var0, int var1);
@@ -485,10 +501,10 @@ public final class RadioInternal {
 
    public static final native int getNetworkLAC(int var0);
 
-   public static final void changeNetworks(int var0) {
-      int var1 = RadioInfo.getNetworkId(var0);
-      changeNetworksOS(var0);
-      setManuallySelectedNetworkID(var1);
+   public static final void changeNetworks(int index) {
+      int networkId = RadioInfo.getNetworkId(index);
+      changeNetworksOS(index);
+      setManuallySelectedNetworkID(networkId);
    }
 
    public static final native void changeNetworksOS(int var0);
@@ -516,39 +532,39 @@ public final class RadioInternal {
    }
 
    public static final int getPrimaryWAF() {
-      int var1 = RadioInfo.getSupportedWAFs();
-      byte var0;
-      if ((var1 & 2) != 0) {
-         var0 = 2;
-      } else if ((var1 & 1) != 0) {
-         var0 = 1;
-      } else if ((var1 & 8) != 0) {
-         var0 = 8;
+      int supportedWafs = RadioInfo.getSupportedWAFs();
+      int primaryWAF;
+      if ((supportedWafs & 2) != 0) {
+         primaryWAF = 2;
+      } else if ((supportedWafs & 1) != 0) {
+         primaryWAF = 1;
+      } else if ((supportedWafs & 8) != 0) {
+         primaryWAF = 8;
       } else {
-         var0 = 4;
+         primaryWAF = 4;
       }
 
-      byte[] var2 = Branding.getData(14336);
-      if (var2 != null && var2.length > 0) {
-         int var3 = var2[0] & 255;
-         if (var3 == 2) {
+      byte[] buf = Branding.getData(14336);
+      if (buf != null && buf.length > 0) {
+         int brandingWAF = buf[0] & 255;
+         if (brandingWAF == 2) {
             return 2;
          }
 
-         if (var3 == 1) {
+         if (brandingWAF == 1) {
             return 1;
          }
 
-         if (var3 == 4) {
+         if (brandingWAF == 4) {
             return 8;
          }
 
-         if (var3 == 3) {
-            var0 = 4;
+         if (brandingWAF == 3) {
+            primaryWAF = 4;
          }
       }
 
-      return var0;
+      return primaryWAF;
    }
 
    public static final native void enableDTM(boolean var0);
@@ -560,28 +576,34 @@ public final class RadioInternal {
    public static final native boolean isSUPLEnabled();
 
    public static final boolean isSIMCardPresent() {
-      throw new RuntimeException("cod2jar: exception table");
+      boolean simCardIsPresent = false;
+
+      try {
+         return SIMCard.isSupported() && SIMCard.isValid();
+      } catch (SIMCardException var2) {
+         return simCardIsPresent;
+      }
    }
 
-   public static final void setManuallySelectedNetworkID(int var0) {
+   public static final void setManuallySelectedNetworkID(int networkId) {
       if (getNetworkSelectionMode() == 3) {
-         PersistentInteger.set(_manuallySelectedNetworkKeyId, var0);
+         PersistentInteger.set(_manuallySelectedNetworkKeyId, networkId);
       }
    }
 
    public static final int getManuallySelectedNetworkID() {
-      int var0 = -1;
+      int networkId = -1;
       if (getNetworkSelectionMode() == 3) {
-         var0 = PersistentInteger.get(_manuallySelectedNetworkKeyId);
+         networkId = PersistentInteger.get(_manuallySelectedNetworkKeyId);
       }
 
-      return var0;
+      return networkId;
    }
 
-   public static final void assertWAFAccessPermission(int var0) {
+   public static final void assertWAFAccessPermission(int WAFs) {
       if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(2), 51)) {
          ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
-         if ((var0 & 4) != 0) {
+         if ((WAFs & 4) != 0) {
             ApplicationControl.assertWiFiPermitted(true, CommonResource.getBundle(), 10165);
          }
       }

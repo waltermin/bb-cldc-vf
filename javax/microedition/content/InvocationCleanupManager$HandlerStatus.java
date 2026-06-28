@@ -11,11 +11,11 @@ final class InvocationCleanupManager$HandlerStatus {
       this.invocationsAdded = false;
    }
 
-   public InvocationCleanupManager$HandlerStatus(ContentHandlerServerImpl var1) {
-      this.handler = var1;
+   public InvocationCleanupManager$HandlerStatus(ContentHandlerServerImpl handler) {
+      this.handler = handler;
    }
 
-   public InvocationCleanupManager$HandlerStatus(RegistryImpl var1) {
-      this.registry = var1;
+   public InvocationCleanupManager$HandlerStatus(RegistryImpl registry) {
+      this.registry = registry;
    }
 }

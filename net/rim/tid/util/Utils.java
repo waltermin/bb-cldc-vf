@@ -14,89 +14,89 @@ public class Utils {
 
    public static native int hashCode(char[] var0, int var1, int var2, boolean var3);
 
-   public static int bytes2Int(byte var0, byte var1) {
-      return bytes2Int(var0 & 0xFF, var1 & 0xFF);
+   public static int bytes2Int(byte byte1, byte byte2) {
+      return bytes2Int(byte1 & 0xFF, byte2 & 0xFF);
    }
 
-   public static int bytes2Int(int var0, int var1) {
-      int var2 = 0;
-      var2 |= var0;
-      var2 <<= 8;
-      return var2 | var1;
+   public static int bytes2Int(int byte1, int byte2) {
+      int result = 0;
+      result |= byte1;
+      result <<= 8;
+      return result | byte2;
    }
 
-   public static int bytes2Int(byte var0, byte var1, byte var2, byte var3) {
-      return bytes2Int(var0 & 0xFF, var1 & 0xFF, var2 & 0xFF, var3 & 0xFF);
+   public static int bytes2Int(byte byte1, byte byte2, byte byte3, byte byte4) {
+      return bytes2Int(byte1 & 0xFF, byte2 & 0xFF, byte3 & 0xFF, byte4 & 0xFF);
    }
 
-   public static int bytes2Int(int var0, int var1, int var2, int var3) {
-      int var4 = 0;
-      var4 |= var0;
-      var4 <<= 8;
-      var4 |= var1;
-      var4 <<= 8;
-      var4 |= var2;
-      var4 <<= 8;
-      return var4 | var3;
+   public static int bytes2Int(int byte1, int byte2, int byte3, int byte4) {
+      int result = 0;
+      result |= byte1;
+      result <<= 8;
+      result |= byte2;
+      result <<= 8;
+      result |= byte3;
+      result <<= 8;
+      return result | byte4;
    }
 
-   public static int bytes2Int(byte var0, byte var1, byte var2) {
-      return bytes2Int(var0 & 0xFF, var1 & 0xFF, var2 & 0xFF);
+   public static int bytes2Int(byte byte1, byte byte2, byte byte3) {
+      return bytes2Int(byte1 & 0xFF, byte2 & 0xFF, byte3 & 0xFF);
    }
 
-   public static int bytes2Int(int var0, int var1, int var2) {
-      int var3 = 0;
-      var3 |= var0;
-      var3 <<= 8;
-      var3 |= var1;
-      var3 <<= 8;
-      return var3 | var2;
+   public static int bytes2Int(int byte1, int byte2, int byte3) {
+      int result = 0;
+      result |= byte1;
+      result <<= 8;
+      result |= byte2;
+      result <<= 8;
+      return result | byte3;
    }
 
-   public static int findShift(int var0) {
-      int var1 = 0;
+   public static int findShift(int aAttribMask) {
+      int shift = 0;
 
-      while ((var0 & 1) == 0) {
-         var1++;
-         var0 >>>= 1;
+      while ((aAttribMask & 1) == 0) {
+         shift++;
+         aAttribMask >>>= 1;
       }
 
-      return var1;
+      return shift;
    }
 
-   public static String[] getInputLocalesDisplayNames(Locale[] var0) {
-      String[] var1 = new String[var0.length];
+   public static String[] getInputLocalesDisplayNames(Locale[] locales) {
+      String[] res = new String[locales.length];
 
-      for (int var2 = var0.length - 1; var2 >= 0; var2--) {
-         var1[var2] = getDisplayStringFor(var0[var2]);
+      for (int i = locales.length - 1; i >= 0; i--) {
+         res[i] = getDisplayStringFor(locales[i]);
       }
 
-      return var1;
+      return res;
    }
 
-   public static void filterRootInputLocales(Locale[] var0) {
-      for (int var1 = 0; var1 < var0.length; var1++) {
-         int var2 = var0[var1].getCode();
-         String var3 = var0[var1].getVariant();
+   public static void filterRootInputLocales(Locale[] locales) {
+      for (int i = 0; i < locales.length; i++) {
+         int code = locales[i].getCode();
+         String variant = locales[i].getVariant();
 
-         for (int var4 = 0; var4 < var0.length; var4++) {
-            if (var4 != var1
-               && (var0[var4].getCode() & -65536) == (var2 & -65536)
-               && var3.equals(var0[var4].getVariant())
-               && (var2 & 65535) != (var0[var4].getCode() & 65535)) {
-               if ((var2 & 65535) == 0) {
-                  if (var2 != 1886650368) {
-                     Arrays.removeAt(var0, var1);
-                     var1--;
+         for (int j = 0; j < locales.length; j++) {
+            if (j != i
+               && (locales[j].getCode() & -65536) == (code & -65536)
+               && variant.equals(locales[j].getVariant())
+               && (code & 65535) != (locales[j].getCode() & 65535)) {
+               if ((code & 65535) == 0) {
+                  if (code != 1886650368) {
+                     Arrays.removeAt(locales, i);
+                     i--;
                   }
                   break;
                }
 
-               if ((var0[var4].getCode() & 65535) == 0) {
-                  if (var0[var4].getCode() != 1886650368) {
-                     Arrays.removeAt(var0, var4);
-                     if (var4 < var1) {
-                        var1--;
+               if ((locales[j].getCode() & 65535) == 0) {
+                  if (locales[j].getCode() != 1886650368) {
+                     Arrays.removeAt(locales, j);
+                     if (j < i) {
+                        i--;
                      }
                   }
                   break;
@@ -106,74 +106,74 @@ public class Utils {
       }
    }
 
-   public static void filterUnsupportedMultitapInputLocales(Locale[] var0) {
+   public static void filterUnsupportedMultitapInputLocales(Locale[] locales) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static void moveToIndex(Locale[] var0, Locale var1, int var2) {
-      if (var1 != null && var0.length > var2 && !var1.equals(var0[var2])) {
-         int var3 = getIndexOf(var0, var1);
-         if (var3 != -1) {
-            moveLocaleToIndex(var0, var3, var2);
+   public static void moveToIndex(Locale[] data, Locale src, int index) {
+      if (src != null && data.length > index && !src.equals(data[index])) {
+         int locIndex = getIndexOf(data, src);
+         if (locIndex != -1) {
+            moveLocaleToIndex(data, locIndex, index);
          }
       }
    }
 
-   private static int getIndexOf(Locale[] var0, Locale var1) {
-      int var2 = -1;
-      if (var1 != null && var0.length > 1) {
-         int var3;
-         for (var3 = var0.length - 1; var3 >= 0; var3--) {
-            if (var1.equals(var0[var3])) {
-               var2 = var3;
+   private static int getIndexOf(Locale[] data, Locale src) {
+      int ret = -1;
+      if (src != null && data.length > 1) {
+         int i;
+         for (i = data.length - 1; i >= 0; i--) {
+            if (src.equals(data[i])) {
+               ret = i;
                break;
             }
          }
 
-         if (var3 == -1) {
-            for (var3 = var0.length - 1; var3 >= 0; var3--) {
-               if (var1.getCode() == var0[var3].getCode()) {
-                  var2 = var3;
+         if (i == -1) {
+            for (i = data.length - 1; i >= 0; i--) {
+               if (src.getCode() == data[i].getCode()) {
+                  ret = i;
                   break;
                }
             }
          }
 
-         if (var3 == -1) {
-            for (int var4 = var0.length - 1; var4 >= 0; var4--) {
-               if ((var1.getCode() & -65536) == (var0[var4].getCode() & -65536)) {
+         if (i == -1) {
+            for (int var4 = data.length - 1; var4 >= 0; var4--) {
+               if ((src.getCode() & -65536) == (data[var4].getCode() & -65536)) {
                   return var4;
                }
             }
          }
       }
 
-      return var2;
+      return ret;
    }
 
-   private static void moveLocaleToIndex(Locale[] var0, int var1, int var2) {
-      if (var1 != var2) {
-         Locale var3 = var0[var1];
-         Arrays.removeAt(var0, var1);
-         Arrays.insertAt(var0, var3, var2);
+   private static void moveLocaleToIndex(Locale[] locales, int fromIndex, int index) {
+      if (fromIndex != index) {
+         Locale locale = locales[fromIndex];
+         Arrays.removeAt(locales, fromIndex);
+         Arrays.insertAt(locales, locale, index);
       }
    }
 
-   public static String getDisplayStringFor(Locale var0) {
+   public static String getDisplayStringFor(Locale aLocale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static Locale[] getAvailableInputLocales(boolean var0) {
+   public static Locale[] getAvailableInputLocales(boolean reorder) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private static boolean localesEqual(Locale var0, Locale var1) {
-      if (var0 != null && var1 != null) {
-         if (var0.equals(var1)) {
+   private static boolean localesEqual(Locale first, Locale second) {
+      if (first != null && second != null) {
+         if (first.equals(second)) {
             return true;
          }
 
-         if ((var0.getCode() & -65536) == 1784741888 && (var0.getCode() == var1.getCode() || (var0.getCode() & -65536) == (var1.getCode() & -65536))) {
+         if ((first.getCode() & -65536) == 1784741888 && (first.getCode() == second.getCode() || (first.getCode() & -65536) == (second.getCode() & -65536))) {
             return true;
          }
       }
@@ -181,83 +181,83 @@ public class Utils {
       return false;
    }
 
-   public static char toUpperCase(char var0) {
-      return CharacterUtilities.toUpperCase(var0, Locale.getDefaultInputForSystem().getCode());
+   public static char toUpperCase(char aChar) {
+      return CharacterUtilities.toUpperCase(aChar, Locale.getDefaultInputForSystem().getCode());
    }
 
-   public static char toLowerCase(char var0) {
-      return CharacterUtilities.toLowerCase(var0, Locale.getDefaultInputForSystem().getCode());
+   public static char toLowerCase(char aChar) {
+      return CharacterUtilities.toLowerCase(aChar, Locale.getDefaultInputForSystem().getCode());
    }
 
-   public static String toUpperCase(String var0) {
-      return StringUtilities.toUpperCase(var0, Locale.getDefaultInputForSystem().getCode());
+   public static String toUpperCase(String aStr) {
+      return StringUtilities.toUpperCase(aStr, Locale.getDefaultInputForSystem().getCode());
    }
 
-   public static String toLowerCase(String var0) {
-      return StringUtilities.toLowerCase(var0, Locale.getDefaultInputForSystem().getCode());
+   public static String toLowerCase(String aStr) {
+      return StringUtilities.toLowerCase(aStr, Locale.getDefaultInputForSystem().getCode());
    }
 
-   public static boolean startsWithIgnoreCase(String var0, String var1) {
-      return StringUtilities.startsWithIgnoreCase(var0, var1, Locale.getDefaultInputForSystem().getCode());
+   public static boolean startsWithIgnoreCase(String str1, String str2) {
+      return StringUtilities.startsWithIgnoreCase(str1, str2, Locale.getDefaultInputForSystem().getCode());
    }
 
-   public static int getDefaultCountryForLanguage(Locale var0) {
+   public static int getDefaultCountryForLanguage(Locale lang) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
-   public static void removeAt(int[] var0, int var1) {
-      int var2 = var0.length - 1;
-      System.arraycopy(var0, var1 + 1, var0, var1, var2 - var1);
-      Array.resize(var0, var2);
+   public static void removeAt(int[] array, int index) {
+      int newLength = array.length - 1;
+      System.arraycopy(array, index + 1, array, index, newLength - index);
+      Array.resize(array, newLength);
    }
 
-   public static String composeResourceID(int var0, String var1, Locale var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static String composeResourceID(int aKeyboardId, String aKeyboardType, Locale anInputLocale, boolean useDefaultLang) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static void addDelimiters(StringBuffer var0, int var1) {
-      for (int var2 = 0; var2 < var1; var2++) {
-         var0.append('_');
+   private static void addDelimiters(StringBuffer toAdd, int aCount) {
+      for (int i = 0; i < aCount; i++) {
+         toAdd.append('_');
       }
    }
 
-   public static byte[] loadRimRes(String var0, String var1) {
-      Resource var2 = Resource$Internal.getResourceClass(var0.trim());
-      return var2 == null ? null : var2.getResource(var1.trim());
+   public static byte[] loadRimRes(String libName, String toLoad) {
+      Resource resource = Resource$Internal.getResourceClass(libName.trim());
+      return resource == null ? null : resource.getResource(toLoad.trim());
    }
 
-   public static void reportException(Throwable var0) {
-      long var1 = -2816799803471967993L;
-      RIMGlobalMessagePoster.postGlobalEvent(var1, 0, 0, var0.getMessage(), null);
+   public static void reportException(Throwable th) {
+      long RADIO_LOGWORTHY_REPORT_REQUEST = -2816799803471967993L;
+      RIMGlobalMessagePoster.postGlobalEvent(RADIO_LOGWORTHY_REPORT_REQUEST, 0, 0, th.getMessage(), null);
    }
 
-   public static int binarySearch(char[] var0, char var1) {
-      int var2 = 0;
-      int var3 = var0.length - 1;
+   public static int binarySearch(char[] a, char key) {
+      int low = 0;
+      int high = a.length - 1;
 
-      while (var2 <= var3) {
-         int var4 = var2 + var3 >> 1;
-         char var5 = var0[var4];
-         if (var5 < var1) {
-            var2 = var4 + 1;
+      while (low <= high) {
+         int mid = low + high >> 1;
+         char midVal = a[mid];
+         if (midVal < key) {
+            low = mid + 1;
          } else {
-            if (var5 <= var1) {
-               return var4;
+            if (midVal <= key) {
+               return mid;
             }
 
-            var3 = var4 - 1;
+            high = mid - 1;
          }
       }
 
-      return -(var2 + 1);
+      return -(low + 1);
    }
 
-   public static int stringBufferIndexOf(StringBuffer var0, int var1, char var2) {
-      int var3 = var0.length();
+   public static int stringBufferIndexOf(StringBuffer sb, int startIndex, char c) {
+      int sbLength = sb.length();
 
-      for (int var4 = var1; var4 < var3; var4++) {
-         if (var0.charAt(var4) == var2) {
-            return var4;
+      for (int i = startIndex; i < sbLength; i++) {
+         if (sb.charAt(i) == c) {
+            return i;
          }
       }
 

@@ -3,8 +3,11 @@ package net.rim.device.api.collection.util;
 import net.rim.device.api.collection.BulkUpdateCollectionListener;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
+import net.rim.device.api.collection.CollectionLock;
 import net.rim.device.api.collection.CollectionWithVersion;
 import net.rim.device.api.collection.ReadableList;
+import net.rim.device.api.util.BitSet;
+import net.rim.vm.Array;
 import net.rim.vm.WeakReference;
 
 public class PrefixKeywordFilterList extends AbstractKeywordFilterList implements ChainableCollection, CollectionWithVersion, BulkUpdateCollectionListener {
@@ -31,25 +34,25 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
       return this._filterListData;
    }
 
-   protected int addToIndex(int var1, Object var2) {
+   protected int addToIndex(int index, Object element) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   protected void commit(boolean var1) {
+   protected void commit(boolean afterReload) {
    }
 
-   public boolean matches(Object var1, String var2) {
+   public boolean matches(Object object, String suffix) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void endBulkUpdate(Collection var1) {
+   public void endBulkUpdate(Collection collection) {
       this._commitsSuspended = false;
-      this.doCommit(var1, true);
+      this.doCommit(collection, true);
    }
 
    @Override
-   public void beginBulkUpdate(Collection var1) {
+   public void beginBulkUpdate(Collection collection) {
       this._commitsSuspended = true;
    }
 
@@ -59,24 +62,80 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    @Override
-   public void elementAdded(Collection var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementAdded(Collection collection, Object element) {
+      boolean fireEvent = false;
+
+      try {
+         synchronized (CollectionLock.getGlobalLock()) {
+            synchronized (this) {
+               this.clearPrefixCache();
+               int index = super._source.getIndex(element);
+               if (index != -1) {
+                  this.addToIndex(index, element);
+                  fireEvent = this.doAddCheck(element);
+                  this.doCommit(collection, false);
+               }
+            }
+         }
+
+         if (fireEvent) {
+            this.fireElementAdded(element);
+            return;
+         }
+      } catch (ArrayIndexOutOfBoundsException e) {
+         this.reset(collection);
+      }
    }
 
    @Override
-   public void elementUpdated(Collection var1, Object var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementUpdated(Collection collection, Object oldElement, Object newElement) {
+      boolean changed = false;
+
+      try {
+         synchronized (CollectionLock.getGlobalLock()) {
+            synchronized (this) {
+               this.clearPrefixCache();
+               int oldId = this.removeFromIndex(oldElement);
+               int index = super._source.getIndex(newElement);
+               if (index != -1) {
+                  this.addToIndex(index, newElement);
+                  changed = this.doRemoveCheck(oldId, oldElement);
+                  changed |= this.doAddCheck(newElement);
+                  this.doCommit(collection, false);
+               }
+            }
+         }
+
+         if (changed) {
+            this.fireElementUpdated(oldElement, newElement);
+            return;
+         }
+      } catch (ArrayIndexOutOfBoundsException e) {
+         this.reset(collection);
+      }
    }
 
    @Override
-   public void elementRemoved(Collection var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementRemoved(Collection collection, Object element) {
+      boolean fireEvent = false;
+      synchronized (CollectionLock.getGlobalLock()) {
+         synchronized (this) {
+            this.clearPrefixCache();
+            int oldId = this.removeFromIndex(element);
+            fireEvent = this.doRemoveCheck(oldId, element);
+            this.doCommit(collection, false);
+         }
+      }
+
+      if (fireEvent) {
+         this.fireElementRemoved(element);
+      }
    }
 
    @Override
-   public void persistentContentStateChanged(int var1) {
-      super.persistentContentStateChanged(var1);
-      if (var1 == 1) {
+   public void persistentContentStateChanged(int state) {
+      super.persistentContentStateChanged(state);
+      if (state == 1) {
          this.reload(super._source);
       }
    }
@@ -97,63 +156,166 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
       this._prefixList.haltSearch();
    }
 
-   private void reload(ReadableList var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void reload(ReadableList source) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public boolean matches(Object var1) {
-      return this.matches(var1, null);
+   public boolean matches(Object object) {
+      return this.matches(object, null);
    }
 
-   public PrefixKeywordFilterList(ReadableList var1, KeywordIndexerHelper var2, PrefixKeywordFilterListData var3) {
-   }
-
-   @Override
-   public KeywordPrefixSearchResult search(String[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper, PrefixKeywordFilterListData filterListData) {
    }
 
    @Override
-   public Object[] getElements(KeywordPrefixSearchResult var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public KeywordPrefixSearchResult search(String[] words) {
+      KeywordPrefixSearchResult result = this._prefixList.search(words, this.getPrefixCache());
+      KeywordSearcher searcher = this.getSearcher();
+      String[] longWords = this._prefixList.getLongWords(words);
+      if (result != null && longWords != null) {
+         BitSet matchSet = result.getPrimaryMatches();
+
+         for (int i = 0; i < 2; matchSet = result.getSecondaryMatches()) {
+            int id = matchSet.getFirstSet();
+            synchronized (CollectionLock.getGlobalLock()) {
+               for (; !searcher._interrupted && id != -1; id = matchSet.getNextSet(id + 1)) {
+                  if (!this._keywordHelper.checkForMatch(this._objectList.get(id), longWords)) {
+                     matchSet.clear(id);
+                  }
+               }
+            }
+
+            i++;
+         }
+      }
+
+      if (searcher._interrupted) {
+         result = null;
+      }
+
+      return result;
    }
 
-   public PrefixKeywordFilterList(ReadableList var1, KeywordIndexerHelper var2, boolean var3) {
+   @Override
+   public Object[] getElements(KeywordPrefixSearchResult result) {
+      synchronized (this) {
+         Object[] matchElements = new Object[0];
+         int dest = 0;
+         Array.resize(matchElements, result.getMatchCount());
+         if (this._firstWordBias) {
+            BitSet primaryMatches = result.getPrimaryMatches();
+            BitSet secondaryMatches = result.getSecondaryMatches();
+            int count = primaryMatches.getNumSet();
+
+            for (int src = 0; dest < count; src++) {
+               int id = this._orderList.elementAt(src);
+               if (primaryMatches.isSet(id)) {
+                  matchElements[dest++] = this._objectList.get(id);
+               }
+            }
+
+            count = dest + secondaryMatches.getNumSet();
+
+            for (int var13 = 0; dest < count; var13++) {
+               int id = this._orderList.elementAt(var13);
+               if (secondaryMatches.isSet(id)) {
+                  matchElements[dest++] = this._objectList.get(id);
+               }
+            }
+         } else {
+            BitSet matches = (BitSet)(new Object(result.getPrimaryMatches()));
+            matches.or(result.getSecondaryMatches());
+            int count = matches.getNumSet();
+
+            for (int src = 0; dest < count; src++) {
+               int id = this._orderList.elementAt(src);
+               if (matches.isSet(id)) {
+                  matchElements[dest++] = this._objectList.get(id);
+               }
+            }
+         }
+
+         Array.resize(matchElements, dest);
+         return matchElements;
+      }
+   }
+
+   public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper, boolean firstWordBias) {
       this(
-         var1,
-         var2,
-         (PrefixKeywordFilterListData)(new Object((SparseList)(new Object()), (KeywordPrefixManager)(new Object()), (BigIntVector)(new Object(64)), var3, 0))
+         source,
+         helper,
+         (PrefixKeywordFilterListData)(new Object(
+            (SparseList)(new Object()), (KeywordPrefixManager)(new Object()), (BigIntVector)(new Object(64)), firstWordBias, 0
+         ))
       );
    }
 
-   private boolean doAddCheck(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private int removeFromIndex(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private boolean doRemoveCheck(int var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public void reset(Collection var1) {
+   private boolean doAddCheck(Object element) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public PrefixKeywordFilterList(ReadableList var1, KeywordIndexerHelper var2) {
-      this(var1, var2, false);
+   private int removeFromIndex(Object element) {
+      synchronized (this) {
+         int id = this._objectList.getKey(element);
+         if (id != -1) {
+            this._objectList.removeAt(id);
+            this._prefixList.delete(id);
+
+            for (int i = this._orderList.size() - 1; i >= 0; i--) {
+               if (this._orderList.elementAt(i) == id) {
+                  this._orderList.removeElementAt(i);
+                  break;
+               }
+            }
+         }
+
+         return id;
+      }
    }
 
-   private void doCommit(Collection var1, boolean var2) {
+   private boolean doRemoveCheck(int id, Object element) {
+      boolean changed = false;
+      synchronized (this) {
+         if (super._filterResult != null) {
+            BitSet matches = super._filterResult.getPrimaryMatches();
+            if (matches.isSet(id)) {
+               changed = true;
+               matches.clear(id);
+            } else {
+               matches = super._filterResult.getSecondaryMatches();
+               if (matches.isSet(id)) {
+                  changed = true;
+                  matches.clear(id);
+               }
+            }
+         } else {
+            changed = true;
+         }
+
+         if (changed) {
+            this.clearFilteredElementList();
+         }
+
+         return changed;
+      }
+   }
+
+   @Override
+   public void reset(Collection collection) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper) {
+      this(source, helper, false);
+   }
+
+   private void doCommit(Collection collection, boolean afterReload) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void persistentContentModeChanged(int var1) {
+   public void persistentContentModeChanged(int generation) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

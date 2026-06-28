@@ -8,12 +8,12 @@ public final class StreamingFactory {
    private StreamingFactory() {
    }
 
-   public static final void setStreamingSystem(Streaming var0) {
+   public static final void setStreamingSystem(Streaming streamingSystem) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final Streaming getStreamingSystem() {
-      ApplicationRegistry var2 = ApplicationRegistry.getApplicationRegistry();
-      return (Streaming)var2.waitFor(-7849240269607795087L);
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      return (Streaming)applicationRegistry.waitFor(-7849240269607795087L);
    }
 }

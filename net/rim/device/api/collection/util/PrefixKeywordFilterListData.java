@@ -9,11 +9,11 @@ public final class PrefixKeywordFilterListData implements KeywordFilterListData,
    boolean _firstWordBias;
    int _version;
 
-   PrefixKeywordFilterListData(SparseList var1, KeywordPrefixManager var2, BigIntVector var3, boolean var4, int var5) {
-      this._objectList = var1;
-      this._prefixList = var2;
-      this._orderList = var3;
-      this._firstWordBias = var4;
-      this._version = var5;
+   PrefixKeywordFilterListData(SparseList objectList, KeywordPrefixManager prefixList, BigIntVector orderList, boolean firstWordBias, int version) {
+      this._objectList = objectList;
+      this._prefixList = prefixList;
+      this._orderList = orderList;
+      this._firstWordBias = firstWordBias;
+      this._version = version;
    }
 }

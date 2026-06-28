@@ -28,31 +28,31 @@ public class ActivationService {
    public static final byte OTAKEYGEN_ABORT_REASON_SEND_ERROR;
    public static final String PROVISIONING_CID;
 
-   public int attemptActivation(String var1, String var2, String var3) {
+   public int attemptActivation(String _1, String _2, String _3) {
       throw null;
    }
 
-   public void abortTransaction(int var1, byte var2) {
+   public void abortTransaction(int _1, byte _2) {
       throw null;
    }
 
-   public void abortTransaction(String var1, byte var2) {
+   public void abortTransaction(String _1, byte _2) {
       throw null;
    }
 
-   public int regenerateKey(String var1, boolean var2) {
+   public int regenerateKey(String _1, boolean _2) {
       throw null;
    }
 
-   public String getUIDbyEmailAddress(String var1) {
+   public String getUIDbyEmailAddress(String _1) {
       throw null;
    }
 
-   public boolean isActivationPending(String var1) {
+   public boolean isActivationPending(String _1) {
       throw null;
    }
 
-   public boolean isTransactionInProgress(String var1) {
+   public boolean isTransactionInProgress(String _1) {
       throw null;
    }
 
@@ -84,56 +84,56 @@ public class ActivationService {
       throw new RuntimeException("cod2jar: stack imbalance");
    }
 
-   public static void activationComplete(boolean var0, long var1) {
-      getOrUpdateHashtable(var1, var0 ? System.currentTimeMillis() : 0);
+   public static void activationComplete(boolean completed, long serviceId) {
+      getOrUpdateHashtable(serviceId, completed ? System.currentTimeMillis() : 0);
    }
 
-   protected static void activationComplete(long var0, long var2) {
-      getOrUpdateHashtable(var2, var0);
+   protected static void activationComplete(long completedTime, long serviceId) {
+      getOrUpdateHashtable(serviceId, completedTime);
    }
 
-   protected static void serviceIdChanged(long var0, long var2) {
-      PersistentObject var4 = RIMPersistentStore.getPersistentObject(6247846804872834637L);
-      Object var5 = var4.getContents();
-      if (var5 != null) {
-         if (((LongIntHashtable)var5).containsKey(var0)) {
-            int var6 = ((LongIntHashtable)var5).get(var0);
-            ((LongIntHashtable)var5).remove(var0);
-            ((LongIntHashtable)var5).put(var2, var6);
+   protected static void serviceIdChanged(long oldServiceId, long newServiceId) {
+      PersistentObject persistentObject = RIMPersistentStore.getPersistentObject(6247846804872834637L);
+      LongIntHashtable serviceCompletionHash = (LongIntHashtable)persistentObject.getContents();
+      if (serviceCompletionHash != null) {
+         if (serviceCompletionHash.containsKey(oldServiceId)) {
+            int value = serviceCompletionHash.get(oldServiceId);
+            serviceCompletionHash.remove(oldServiceId);
+            serviceCompletionHash.put(newServiceId, value);
          }
 
-         var4.setContents(var5, 51);
-         var4.commit();
+         persistentObject.setContents(serviceCompletionHash, 51);
+         persistentObject.commit();
       }
    }
 
-   private static LongIntHashtable getOrUpdateHashtable(long var0, long var2) {
-      PersistentObject var4 = RIMPersistentStore.getPersistentObject(6247846804872834637L);
-      Object var5 = var4.getContents();
-      if (var5 == null) {
-         var5 = new Object();
+   private static LongIntHashtable getOrUpdateHashtable(long serviceId, long completedTime) {
+      PersistentObject persistentObject = RIMPersistentStore.getPersistentObject(6247846804872834637L);
+      LongIntHashtable serviceCompletionHash = (LongIntHashtable)persistentObject.getContents();
+      if (serviceCompletionHash == null) {
+         serviceCompletionHash = (LongIntHashtable)(new Object());
       }
 
-      if (var0 != -1) {
-         if (var2 > 0) {
-            ((LongIntHashtable)var5).put(var0, DateTimeUtilities.convertMillisecondsToEpoch(var2));
+      if (serviceId != -1) {
+         if (completedTime > 0) {
+            serviceCompletionHash.put(serviceId, DateTimeUtilities.convertMillisecondsToEpoch(completedTime));
          } else {
-            ((LongIntHashtable)var5).remove(var0);
+            serviceCompletionHash.remove(serviceId);
          }
 
-         var4.setContents(var5, 51);
-         var4.commit();
+         persistentObject.setContents(serviceCompletionHash, 51);
+         persistentObject.commit();
       }
 
-      return (LongIntHashtable)var5;
+      return serviceCompletionHash;
    }
 
-   public static long getLastSuccessfulActivationDate(long var0) {
-      int var2 = getOrUpdateHashtable(-1, 0).get(var0);
-      return var2 > 0 ? DateTimeUtilities.convertEpochToMilliseconds(var2) : 0;
+   public static long getLastSuccessfulActivationDate(long serviceId) {
+      int value = getOrUpdateHashtable(-1, 0).get(serviceId);
+      return value > 0 ? DateTimeUtilities.convertEpochToMilliseconds(value) : 0;
    }
 
-   public void createOtaKeyGenSR(String var1, String var2, String var3) {
+   public void createOtaKeyGenSR(String _1, String _2, String _3) {
       throw null;
    }
 
@@ -149,22 +149,22 @@ public class ActivationService {
       throw null;
    }
 
-   public boolean addActivationStatusListener(ActivationStatusListener var1) {
-      if (!this._listeners.containsKey(var1.getCollectionName())) {
-         this._listeners.put(var1.getCollectionName(), var1);
+   public boolean addActivationStatusListener(ActivationStatusListener listener) {
+      if (!this._listeners.containsKey(listener.getCollectionName())) {
+         this._listeners.put(listener.getCollectionName(), listener);
          return true;
       } else {
          return false;
       }
    }
 
-   public void removeActivationStatusListener(ActivationStatusListener var1) {
-      this._listeners.remove(var1.getCollectionName());
+   public void removeActivationStatusListener(ActivationStatusListener listener) {
+      this._listeners.remove(listener.getCollectionName());
    }
 
-   protected void notifyStatusListener(String var1, boolean var2) {
-      if (this._listeners.containsKey(var1)) {
-         ((ActivationStatusListener)this._listeners.get(var1)).activationComplete(var2);
+   protected void notifyStatusListener(String collectionName, boolean errorsOccured) {
+      if (this._listeners.containsKey(collectionName)) {
+         ((ActivationStatusListener)this._listeners.get(collectionName)).activationComplete(errorsOccured);
       }
    }
 }

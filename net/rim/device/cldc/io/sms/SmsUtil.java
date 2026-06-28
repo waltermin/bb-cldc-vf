@@ -1,10 +1,12 @@
 package net.rim.device.cldc.io.sms;
 
 import javax.microedition.io.Datagram;
+import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.SmsAddress;
 import net.rim.device.api.system.SMSPacketHeader;
 import net.rim.device.api.util.Arrays;
+import net.rim.vm.Array;
 
 public final class SmsUtil {
    public static final byte IEID_CONCATENATEDSHORTMESSAGE;
@@ -28,61 +30,234 @@ public final class SmsUtil {
    public static String PROPERTY_TOTAL_SEGMENTS;
    public static String PROPERTY_SEGMENT_NUMBER;
 
-   public static final int encode(int var0, byte[] var1, byte[] var2, int var3, int var4) {
-      int var5 = getHeaderSize(var0);
-      if (var4 > var1.length - var5) {
+   public static final int encode(int port, byte[] dest, byte[] src, int srcOffset, int srcLength) {
+      int offset = getHeaderSize(port);
+      if (srcLength > dest.length - offset) {
          return -1;
       }
 
-      switch (var0) {
+      switch (port) {
          case 65536:
          default:
-            var1[0] = 47;
-            var1[1] = 47;
-            var1[2] = 71;
-            var1[3] = 67;
-            var1[4] = 77;
-            var1[5] = 80;
+            dest[0] = 47;
+            dest[1] = 47;
+            dest[2] = 71;
+            dest[3] = 67;
+            dest[4] = 77;
+            dest[5] = 80;
          case 65535:
-            System.arraycopy(var2, var3, var1, var5, var4);
-            return var4 + var5;
+            System.arraycopy(src, srcOffset, dest, offset, srcLength);
+            return srcLength + offset;
       }
    }
 
-   public static final byte[] encodeUserDataHeader(byte var0, byte[] var1) {
+   public static final byte[] encodeUserDataHeader(byte informationElementid, byte[] fielddata) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final DatagramBase encode(DatagramBase var0, byte var1, byte[] var2) {
-      Object var3 = var0.getAddressBase();
-      SMSPacketHeader var4 = ((SmsAddress)var3).getHeader();
-      byte[] var5 = Arrays.copy(var0.getData());
-      int var6 = 0;
-      byte var7 = 0;
-      int var8 = var5.length;
-      if (!var4.isUserDataHeaderPresent()) {
-         var4.setUserDataHeaderPresent(true);
+   public static final DatagramBase encode(DatagramBase d, byte informationElementid, byte[] fielddata) {
+      SmsAddress a = (SmsAddress)d.getAddressBase();
+      SMSPacketHeader h = a.getHeader();
+      byte[] originaldata = Arrays.copy(d.getData());
+      int length = 0;
+      int offset = 0;
+      int originaldatalength = originaldata.length;
+      if (!h.isUserDataHeaderPresent()) {
+         h.setUserDataHeaderPresent(true);
       } else {
-         var6 = var5[0];
-         var7 = 1;
-         var8 = var5.length - 1;
+         length = originaldata[0];
+         offset = 1;
+         originaldatalength = originaldata.length - 1;
       }
 
-      var0.setLength(0);
-      byte[] var9 = encodeUserDataHeader(var1, var2);
-      var6 += var9.length;
-      var0.writeByte(var6);
-      var0.write(var9);
-      var0.write(var5, var7, var8);
-      return var0;
+      d.setLength(0);
+      byte[] header = encodeUserDataHeader(informationElementid, fielddata);
+      length += header.length;
+      d.writeByte(length);
+      d.write(header);
+      d.write(originaldata, offset, originaldatalength);
+      return d;
    }
 
-   public static final DatagramBase decode(Transport var0, SMSPacketHeader var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final DatagramBase decode(Transport transport, SMSPacketHeader header, byte[] data) {
+      int[] ports = null;
+      byte[] userDataHeader = null;
+      int refNumber = -1;
+      int totalSegments = 1;
+      int segmentNumber = 0;
+      int dataLength = data.length;
+      if (header.getProtocolMeaning() == 255) {
+         if (dataLength > 3) {
+            int messageType = data[0] & 255;
+            totalSegments = data[1] & 255;
+            segmentNumber = (data[2] & 255) + 1;
+            refNumber = header.getID();
+            int sizeToStrip = 3;
+            if (messageType == 0 && segmentNumber == 1 && dataLength >= 7) {
+               ports = new int[]{65535 & DatagramAddressBase.readShort(data, 5)};
+               sizeToStrip = 7;
+            }
+
+            dataLength = data.length - sizeToStrip;
+            System.arraycopy(data, sizeToStrip, data, 0, dataLength);
+            Array.resize(data, dataLength);
+         }
+      } else if (header.isUserDataHeaderPresent() && dataLength != 0) {
+         try {
+            int userDataHeaderLength = data[0];
+            int i = 1;
+
+            while (i <= userDataHeaderLength) {
+               int ieiType = data[i++];
+               int ieiLength = data[i++];
+               switch (ieiType) {
+                  case 0:
+                     if (ieiLength == 3) {
+                        refNumber = data[i] & 255;
+                        totalSegments = data[i + 1] & 255;
+                        segmentNumber = data[i + 2] & 255;
+                     }
+                     break;
+                  case 5:
+                     if (ieiLength == 4) {
+                        ports = new int[]{65535 & DatagramAddressBase.readShort(data, i), 65535 & DatagramAddressBase.readShort(data, i + 2)};
+                     }
+                     break;
+                  case 8:
+                     if (ieiLength == 4) {
+                        refNumber = (data[i] & 255) << 8;
+                        refNumber += data[i + 1] & 255;
+                        totalSegments = data[i + 2] & 255;
+                        segmentNumber = data[i + 3] & 255;
+                     }
+                     break;
+                  case 34:
+                     if (ieiLength < 3 || ieiLength > 43) {
+                        break;
+                     }
+
+                     int index = i;
+                     int addressLengthInNybbles = data[index++];
+                     int type = data[index] >> 4 & 7;
+                     int plan = data[index++] & 15;
+                     StringBuffer number = (StringBuffer)(new Object());
+                     boolean lowerNybble = true;
+                     int n = 0;
+
+                     for (; n < addressLengthInNybbles && index < dataLength; n++) {
+                        byte numberByte = (byte)((lowerNybble ? data[index] : data[index++] >> 4) & 15);
+                        lowerNybble = !lowerNybble;
+                        switch (numberByte) {
+                           case 9:
+                              number.append((char)(numberByte + 48));
+                              break;
+                           case 10:
+                           default:
+                              number.append('*');
+                              break;
+                           case 11:
+                              number.append('#');
+                              break;
+                           case 12:
+                              number.append('a');
+                              break;
+                           case 13:
+                              number.append('b');
+                              break;
+                           case 14:
+                              number.append('c');
+                           case 15:
+                        }
+                     }
+
+                     header.setCallbackAddress(number.toString(), type, plan);
+                     break;
+                  default:
+                     int offset = 0;
+                     if (userDataHeader == null) {
+                        userDataHeader = new byte[ieiLength + 2];
+                     } else {
+                        offset = userDataHeader.length;
+                        Array.resize(userDataHeader, offset + ieiLength + 2);
+                     }
+
+                     System.arraycopy(data, i - 2, userDataHeader, offset, ieiLength + 2);
+               }
+
+               i += ieiLength;
+            }
+
+            dataLength = data.length - userDataHeaderLength - 1;
+            System.arraycopy(data, userDataHeaderLength + 1, data, 0, dataLength);
+            Array.resize(data, dataLength);
+         } catch (IndexOutOfBoundsException var23) {
+         }
+      } else if (dataLength >= 7 && data[0] == 47 && data[1] == 47 && data[2] == 83 && data[3] == 67 && data[4] == 75) {
+         int wapHeaderLength;
+         label154:
+         for (wapHeaderLength = 0; wapHeaderLength < dataLength; wapHeaderLength++) {
+            switch (data[wapHeaderLength]) {
+               case 10:
+               case 13:
+               case 32:
+                  break label154;
+            }
+         }
+
+         if (data[5] == 76) {
+            try {
+               ports = new int[]{DatagramAddressBase.parseInt(data, 6, 10, 16)};
+            } catch (IllegalArgumentException e) {
+               ports = null;
+            }
+
+            if (wapHeaderLength == 20) {
+               refNumber = DatagramAddressBase.parseInt(data, 14, 16, 16);
+               totalSegments = DatagramAddressBase.parseInt(data, 16, 18, 16);
+               segmentNumber = DatagramAddressBase.parseInt(data, 18, 20, 16);
+            }
+         } else {
+            int portLength = 4;
+            if (wapHeaderLength == 7) {
+               portLength = 2;
+            }
+
+            try {
+               ports = new int[]{DatagramAddressBase.parseInt(data, 5, 5 + portLength, 16)};
+            } catch (IllegalArgumentException e) {
+               ports = null;
+            }
+         }
+
+         dataLength = data.length - wapHeaderLength - 1;
+         System.arraycopy(data, wapHeaderLength + 1, data, 0, dataLength);
+         Array.resize(data, dataLength);
+      } else if (data.length >= 6 && data[0] == 47 && data[1] == 47 && data[2] == 71 && data[3] == 67 && data[4] == 77 && data[5] == 80) {
+         ports = new int[]{65536};
+         int length = data.length - 6;
+         System.arraycopy(data, 6, data, 0, length);
+         Array.resize(data, length);
+      } else if (data.length >= 7 && data[0] == 47 && data[1] == 47 && data[2] == 75 && data[3] == 78 && data[4] == 112 && data[5] == 116) {
+         ports = new int[]{65552};
+      }
+
+      DatagramBase dgram = (DatagramBase)(new Object(data, 0, data.length));
+      dgram.setAddressBase((DatagramAddressBase)(new Object(header, ports)));
+      if (userDataHeader != null) {
+         dgram.setProperty(PROPERTY_USER_DATA_HEADER, userDataHeader);
+      }
+
+      if (totalSegments > 1) {
+         dgram.setProperty(PROPERTY_REF_NUMBER, new Object(refNumber));
+         dgram.setProperty(PROPERTY_TOTAL_SEGMENTS, new Object(totalSegments));
+         dgram.setProperty(PROPERTY_SEGMENT_NUMBER, new Object(segmentNumber));
+      }
+
+      return dgram;
    }
 
-   public static final int getHeaderSize(int var0) {
-      switch (var0) {
+   public static final int getHeaderSize(int port) {
+      switch (port) {
          case 65535:
             return 0;
          case 65536:
@@ -91,57 +266,71 @@ public final class SmsUtil {
       }
    }
 
-   public static final void constructSegment(Datagram var0, SMSPacketHeader var1, byte[] var2, int var3, int var4, int var5, boolean var6) {
-      byte var7;
-      if (!var6) {
-         var1.setUserDataHeaderPresent(true);
-         var7 = 0;
+   public static final void constructSegment(
+      Datagram datagram, SMSPacketHeader header, byte[] data, int totalSegments, int segment, int refNumber, boolean alreadyHasUDH
+   ) {
+      int length;
+      if (!alreadyHasUDH) {
+         header.setUserDataHeaderPresent(true);
+         length = 0;
       } else {
-         var7 = var2[0];
+         length = data[0];
       }
 
-      int var8 = var1.getMessageCoding();
-      int var9 = SMSPacketHeader.getBitsPerCharacter(var8) / SMSPacketHeader.getBytesPerCharacter(var8);
-      int var10 = SMSPacketHeader.getBitsPerSegment(var8, var7) / var9;
-      int var11 = var4 * var10;
-      int var12 = Math.min(var2.length - var11, var10);
-      var0.setLength(0);
-      var7 += 5;
-      var0.writeByte(var7);
-      var0.write(0);
-      var0.write(3);
-      var0.write(var5);
-      var0.write(var3);
-      var0.write(var4 + 1);
-      if (var4 == 0) {
-         if (var6) {
-            var0.write(var2, 1, var12 - 1);
+      int messageCoding = header.getMessageCoding();
+      int bitsPerByte = SMSPacketHeader.getBitsPerCharacter(messageCoding) / SMSPacketHeader.getBytesPerCharacter(messageCoding);
+      int dataSize = SMSPacketHeader.getBitsPerSegment(messageCoding, length) / bitsPerByte;
+      int dataOffset = segment * dataSize;
+      int dataLength = Math.min(data.length - dataOffset, dataSize);
+      datagram.setLength(0);
+      length += 5;
+      datagram.writeByte(length);
+      datagram.write(0);
+      datagram.write(3);
+      datagram.write(refNumber);
+      datagram.write(totalSegments);
+      datagram.write(segment + 1);
+      if (segment == 0) {
+         if (alreadyHasUDH) {
+            datagram.write(data, 1, dataLength - 1);
          } else {
-            var0.write(var2, 0, var12);
+            datagram.write(data, 0, dataLength);
          }
       } else {
-         if (var6) {
-            var0.write(var2, 1, var2[0]);
+         if (alreadyHasUDH) {
+            datagram.write(data, 1, data[0]);
          }
 
-         var0.write(var2, var11, var12);
+         datagram.write(data, dataOffset, dataLength);
       }
    }
 
-   public static final void constructSegmentCDMA(Datagram var0, SMSPacketHeader var1, byte[] var2, int var3, int var4) {
-      int var5 = var1.getMessageCoding();
-      int var6 = SMSPacketHeader.getBitsPerCharacter(var5) / SMSPacketHeader.getBytesPerCharacter(var5);
-      int var7 = SMSPacketHeader.getBitsPerSegmentCDMA(var5, 3) / var6;
-      int var8 = var4 * var7;
-      int var9 = Math.min(var2.length - var8, var7);
-      var0.setLength(0);
-      var0.write(0);
-      var0.write(var3);
-      var0.write(var4);
-      var0.write(var2, var8, var9);
+   public static final void constructSegmentCDMA(Datagram datagram, SMSPacketHeader header, byte[] data, int totalSegments, int segment) {
+      int messageCoding = header.getMessageCoding();
+      int bitsPerByte = SMSPacketHeader.getBitsPerCharacter(messageCoding) / SMSPacketHeader.getBytesPerCharacter(messageCoding);
+      int dataSize = SMSPacketHeader.getBitsPerSegmentCDMA(messageCoding, 3) / bitsPerByte;
+      int dataOffset = segment * dataSize;
+      int dataLength = Math.min(data.length - dataOffset, dataSize);
+      datagram.setLength(0);
+      datagram.write(0);
+      datagram.write(totalSegments);
+      datagram.write(segment);
+      datagram.write(data, dataOffset, dataLength);
    }
 
-   public static final byte[] decodeWDPData(byte[] var0, int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final byte[] decodeWDPData(byte[] data, int offset, int length) {
+      int newDataLength = length >> 1;
+      byte[] newData = new byte[newDataLength];
+
+      try {
+         for (int i = 0; i < newDataLength; i++) {
+            newData[i] = (byte)DatagramAddressBase.parseInt(data, offset, offset + 2, 16);
+            offset += 2;
+         }
+
+         return newData;
+      } catch (IllegalArgumentException ex) {
+         return null;
+      }
    }
 }

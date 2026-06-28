@@ -11,15 +11,15 @@ public final class StringProvider {
    private String _string;
    private Locale _locale;
 
-   public StringProvider(ResourceBundleFamily var1, int var2) {
-      this._family = var1;
-      this._id = var2;
+   public StringProvider(ResourceBundleFamily family, int id) {
+      this._family = family;
+      this._id = id;
       this._useResource = true;
       this.resetStringBaseline();
    }
 
-   public StringProvider(String var1) {
-      this.setString(var1);
+   public StringProvider(String string) {
+      this.setString(string);
       this.resetStringBaseline();
    }
 
@@ -40,15 +40,15 @@ public final class StringProvider {
       }
    }
 
-   public final void setString(ResourceBundleFamily var1, int var2) {
-      this._family = var1;
-      this._id = var2;
+   public final void setString(ResourceBundleFamily family, int id) {
+      this._family = family;
+      this._id = id;
       this._useResource = true;
       this._locale = null;
    }
 
-   public final void setString(String var1) {
+   public final void setString(String string) {
       this._useResource = false;
-      this._stringSet = var1;
+      this._stringSet = string;
    }
 }

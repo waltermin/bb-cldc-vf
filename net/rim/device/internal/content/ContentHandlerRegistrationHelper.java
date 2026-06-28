@@ -16,23 +16,23 @@ public class ContentHandlerRegistrationHelper {
    }
 
    public static ContentHandlerRegistrationHelper getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      return (ContentHandlerRegistrationHelper)var0.waitFor(-352407102385872585L);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      return (ContentHandlerRegistrationHelper)ar.waitFor(-352407102385872585L);
    }
 
-   public int verifyJadAttributes(Hashtable var1, boolean var2) {
+   public int verifyJadAttributes(Hashtable _1, boolean _2) {
       throw null;
    }
 
-   public void registerContentHandlers(int var1) {
+   public void registerContentHandlers(int _1) {
       throw null;
    }
 
-   public void unregisterContentHandler(String var1) {
+   public void unregisterContentHandler(String _1) {
       throw null;
    }
 
-   public void moduleUpgraded(String var1, int var2) {
+   public void moduleUpgraded(String _1, int _2) {
       throw null;
    }
 }

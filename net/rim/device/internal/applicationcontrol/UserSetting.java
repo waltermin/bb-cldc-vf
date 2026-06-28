@@ -21,16 +21,16 @@ final class UserSetting implements Persistable, SyncObject {
    static final int L_DONTPROMPT;
    static final int L_ISSET;
 
-   final void setPermissions(UserSetting var1) {
-      this.setPermissions(var1._permissions, var1._dontPrompt, var1._isSet);
+   final void setPermissions(UserSetting us) {
+      this.setPermissions(us._permissions, us._dontPrompt, us._isSet);
    }
 
    final long getPermissions() {
       return this._permissions;
    }
 
-   final void setPermissions(long var1) {
-      this._permissions = var1;
+   final void setPermissions(long perms) {
+      this._permissions = perms;
    }
 
    @Override
@@ -38,14 +38,14 @@ final class UserSetting implements Persistable, SyncObject {
       return this._uid;
    }
 
-   final void setPermissions(long var1, long var3, long var5) {
-      this._permissions = var1;
-      this._dontPrompt = var3;
-      this._isSet = var5;
+   final void setPermissions(long permissions, long dontPrompt, long isSet) {
+      this._permissions = permissions;
+      this._dontPrompt = dontPrompt;
+      this._isSet = isSet;
    }
 
-   final boolean hashEquals(byte[] var1) {
-      return Arrays.equals(this._hash, var1);
+   final boolean hashEquals(byte[] hash) {
+      return Arrays.equals(this._hash, hash);
    }
 
    final byte[] getHash() {
@@ -60,9 +60,9 @@ final class UserSetting implements Persistable, SyncObject {
       return this._dontPrompt;
    }
 
-   final void resetPrompt(long var1) {
-      this._permissions = this._permissions | this._dontPrompt & var1;
-      this._dontPrompt &= var1 ^ -1;
+   final void resetPrompt(long mask) {
+      this._permissions = this._permissions | this._dontPrompt & mask;
+      this._dontPrompt &= mask ^ -1;
    }
 
    final void resetPrompts() {
@@ -70,33 +70,33 @@ final class UserSetting implements Persistable, SyncObject {
       this._dontPrompt = 0;
    }
 
-   UserSetting(byte[] var1, long var2) {
+   UserSetting(byte[] moduleHash, long perms) {
    }
 
-   UserSetting(UserSetting var1) {
-      this(var1._hash, var1._permissions, var1._dontPrompt, var1._isSet, var1._uid);
+   UserSetting(UserSetting us) {
+      this(us._hash, us._permissions, us._dontPrompt, us._isSet, us._uid);
    }
 
-   UserSetting(byte[] var1, long var2, long var4, long var6) {
-      this._hash = new byte[var1.length];
-      System.arraycopy(var1, 0, this._hash, 0, var1.length);
-      this._permissions = var2;
-      this._dontPrompt = var4;
-      this._isSet = var6;
+   UserSetting(byte[] moduleHash, long perms, long dontprompt, long isSet) {
+      this._hash = new byte[moduleHash.length];
+      System.arraycopy(moduleHash, 0, this._hash, 0, moduleHash.length);
+      this._permissions = perms;
+      this._dontPrompt = dontprompt;
+      this._isSet = isSet;
       this._uid = UIDGenerator.getUID();
    }
 
-   UserSetting(byte[] var1, long var2, long var4, long var6, int var8) {
-      this._hash = new byte[var1.length];
-      System.arraycopy(var1, 0, this._hash, 0, var1.length);
-      this._permissions = var2;
-      this._dontPrompt = var4;
-      this._isSet = var6;
-      this._uid = var8;
+   UserSetting(byte[] moduleHash, long perms, long dontprompt, long isSet, int uid) {
+      this._hash = new byte[moduleHash.length];
+      System.arraycopy(moduleHash, 0, this._hash, 0, moduleHash.length);
+      this._permissions = perms;
+      this._dontPrompt = dontprompt;
+      this._isSet = isSet;
+      this._uid = uid;
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

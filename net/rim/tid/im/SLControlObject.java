@@ -12,63 +12,63 @@ public class SLControlObject {
    protected SLControlObject() {
    }
 
-   public SLControlObject(MinimalInputMethod var1) {
-      this._inputMethod = var1;
+   public SLControlObject(MinimalInputMethod inputMethod) {
+      this._inputMethod = inputMethod;
    }
 
-   public Object getViewComponent(int var1) {
+   public Object getViewComponent(int component) {
       return null;
    }
 
-   public int actionPerformed(int var1, Object var2) {
-      return this._inputMethod.actionPerformed(null, var1, var2);
+   public int actionPerformed(int action, Object param) {
+      return this._inputMethod.actionPerformed(null, action, param);
    }
 
    public SLKeyLayout getKeyLayout() {
       return this._inputMethod.getKeyLayout();
    }
 
-   public byte[] getIMProperties(byte var1) {
-      return this._inputMethod.getIMProperties(var1);
+   public byte[] getIMProperties(byte propID) {
+      return this._inputMethod.getIMProperties(propID);
    }
 
-   public boolean getIMStyleAsBoolean(int var1) {
+   public boolean getIMStyleAsBoolean(int styleId) {
       return false;
    }
 
-   public void setIMProperties(byte var1, byte[] var2) {
-      this._inputMethod.setIMProperties(var1, var2);
+   public void setIMProperties(byte propID, byte[] IMProperties) {
+      this._inputMethod.setIMProperties(propID, IMProperties);
    }
 
    public String[] getShortcuts() {
       return null;
    }
 
-   public int removeShortcut(String var1, String var2) {
+   public int removeShortcut(String replacedString, String replacementString) {
       return -1;
    }
 
-   public int addShortcut(String var1, String var2) {
+   public int addShortcut(String replacedString, String replacementStringPattern) {
       return -1;
    }
 
-   public void addDataRepository(IDataSearchRepository var1, int var2) {
+   public void addDataRepository(IDataSearchRepository repository, int flag) {
    }
 
-   public boolean setFilter(TextFilter var1) {
-      return this._inputMethod.setFilter(var1);
+   public boolean setFilter(TextFilter filter) {
+      return this._inputMethod.setFilter(filter);
    }
 
-   public int setTextInputStyle(int var1) {
-      return this._inputMethod.setTextInputStyle(var1);
+   public int setTextInputStyle(int style) {
+      return this._inputMethod.setTextInputStyle(style);
    }
 
-   public boolean setKeyLayoutLocale(Locale var1) {
-      return this._inputMethod.setKeyLayoutLocale(var1);
+   public boolean setKeyLayoutLocale(Locale aLocale) {
+      return this._inputMethod.setKeyLayoutLocale(aLocale);
    }
 
-   public boolean isCorrectWord(StringBufferGap var1, int var2, int var3) {
-      return this._inputMethod.isCorrectWord(var1, var2, var3);
+   public boolean isCorrectWord(StringBufferGap sbg, int startIndex, int length) {
+      return this._inputMethod.isCorrectWord(sbg, startIndex, length);
    }
 
    public int getInputMode() {
@@ -79,7 +79,7 @@ public class SLControlObject {
       return this._inputMethod.getPeriodSymbol();
    }
 
-   public Object getAdditionalSymbolData(int var1) {
+   public Object getAdditionalSymbolData(int type) {
       return null;
    }
 }

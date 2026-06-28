@@ -11,7 +11,7 @@ final class TunnelCredentials implements Persistable {
    boolean outgoingSocketsAllowed;
    boolean incomingSocketsAllowed;
 
-   TunnelCredentials(boolean var1, boolean var2, boolean var3) {
+   TunnelCredentials(boolean loadNVS, boolean loadPRV, boolean loadITP) {
    }
 
    final void loadValuesFromBranding() {
@@ -19,9 +19,9 @@ final class TunnelCredentials implements Persistable {
    }
 
    final void loadValuesFromITPolicy() {
-      String var1 = ITPolicy.getString(32, 4);
-      if (var1 != null) {
-         this.apn = var1;
+      String data = ITPolicy.getString(32, 4);
+      if (data != null) {
+         this.apn = data;
          this.apnUsername = ITPolicy.getString(32, 5);
          this.apnPassword = ITPolicy.getString(32, 6);
       }

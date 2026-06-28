@@ -6,19 +6,19 @@ class StringBufferGap$SBGAbstractString implements AbstractString {
    private int _labelLength;
    private final StringBufferGap this$0;
 
-   public void setLabelLength(int var1) {
+   public void setLabelLength(int length) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void getChars(int var1, int var2, char[] var3, int var4) {
-      this.this$0.getChars(this._labelLength + var1, this._labelLength + var2, var3, var4);
+   public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+      this.this$0.getChars(this._labelLength + srcBegin, this._labelLength + srcEnd, dst, dstBegin);
    }
 
    @Override
-   public int indexOf(char var1, int var2, int var3) {
-      int var4 = this.this$0.indexOf(var1, this._labelLength + var2, this._labelLength + var3);
-      return var4 >= this._labelLength ? var4 - this._labelLength : -1;
+   public int indexOf(char c, int startIndex, int endIndex) {
+      int index = this.this$0.indexOf(c, this._labelLength + startIndex, this._labelLength + endIndex);
+      return index >= this._labelLength ? index - this._labelLength : -1;
    }
 
    @Override
@@ -27,12 +27,12 @@ class StringBufferGap$SBGAbstractString implements AbstractString {
    }
 
    @Override
-   public char charAt(int var1) {
-      return this.this$0.charAt(this._labelLength + var1);
+   public char charAt(int index) {
+      return this.this$0.charAt(this._labelLength + index);
    }
 
-   StringBufferGap$SBGAbstractString(StringBufferGap var1) {
-      this.this$0 = var1;
+   StringBufferGap$SBGAbstractString(StringBufferGap _1) {
+      this.this$0 = _1;
    }
 
    @Override

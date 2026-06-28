@@ -4,29 +4,29 @@ class FDBigInt {
    int nWords;
    int[] data;
 
-   public FDBigInt(int var1) {
+   public FDBigInt(int v) {
       this.nWords = 1;
       this.data = new int[1];
-      this.data[0] = var1;
+      this.data[0] = v;
    }
 
-   public FDBigInt(long var1) {
+   public FDBigInt(long v) {
    }
 
-   public FDBigInt(FDBigInt var1) {
-      this.data = new int[this.nWords = var1.nWords];
-      System.arraycopy(var1.data, 0, this.data, 0, this.nWords);
+   public FDBigInt(FDBigInt other) {
+      this.data = new int[this.nWords = other.nWords];
+      System.arraycopy(other.data, 0, this.data, 0, this.nWords);
    }
 
-   private FDBigInt(int[] var1, int var2) {
-      this.data = var1;
-      this.nWords = var2;
+   private FDBigInt(int[] d, int n) {
+      this.data = d;
+      this.nWords = n;
    }
 
-   public FDBigInt(long var1, char[] var3, int var4, int var5) {
+   public FDBigInt(long seed, char[] digit, int nd0, int nd) {
    }
 
-   public void lshiftMe(int var1) {
+   public void lshiftMe(int c) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -34,150 +34,150 @@ class FDBigInt {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public FDBigInt mult(int var1) {
-      long var2 = var1;
-      int[] var4 = new int[var2 * (this.data[this.nWords - 1] & 4294967295L) > 268435455 ? this.nWords + 1 : this.nWords];
-      long var5 = 0;
+   public FDBigInt mult(int iv) {
+      long v = iv;
+      int[] r = new int[v * (this.data[this.nWords - 1] & 4294967295L) > 268435455 ? this.nWords + 1 : this.nWords];
+      long p = 0;
 
-      for (int var7 = 0; var7 < this.nWords; var7++) {
-         var5 += var2 * (this.data[var7] & 4294967295L);
-         var4[var7] = (int)var5;
-         var5 >>>= 32;
+      for (int i = 0; i < this.nWords; i++) {
+         p += v * (this.data[i] & 4294967295L);
+         r[i] = (int)p;
+         p >>>= 32;
       }
 
-      if (var5 == 0) {
-         return new FDBigInt(var4, this.nWords);
+      if (p == 0) {
+         return new FDBigInt(r, this.nWords);
       }
 
-      var4[this.nWords] = (int)var5;
-      return new FDBigInt(var4, this.nWords + 1);
+      r[this.nWords] = (int)p;
+      return new FDBigInt(r, this.nWords + 1);
    }
 
-   public void multaddMe(int var1, int var2) {
-      long var3 = var1;
-      long var5 = var3 * (this.data[0] & 4294967295L) + (var2 & 4294967295L);
-      this.data[0] = (int)var5;
-      var5 >>>= 32;
+   public void multaddMe(int iv, int addend) {
+      long v = iv;
+      long p = v * (this.data[0] & 4294967295L) + (addend & 4294967295L);
+      this.data[0] = (int)p;
+      p >>>= 32;
 
-      for (int var7 = 1; var7 < this.nWords; var7++) {
-         var5 += var3 * (this.data[var7] & 4294967295L);
-         this.data[var7] = (int)var5;
-         var5 >>>= 32;
+      for (int i = 1; i < this.nWords; i++) {
+         p += v * (this.data[i] & 4294967295L);
+         this.data[i] = (int)p;
+         p >>>= 32;
       }
 
-      if (var5 != 0) {
-         this.data[this.nWords] = (int)var5;
+      if (p != 0) {
+         this.data[this.nWords] = (int)p;
          this.nWords++;
       }
    }
 
-   public FDBigInt mult(FDBigInt var1) {
-      int[] var2 = new int[this.nWords + var1.nWords];
+   public FDBigInt mult(FDBigInt other) {
+      int[] r = new int[this.nWords + other.nWords];
 
-      for (int var3 = 0; var3 < this.nWords; var3++) {
-         long var4 = this.data[var3] & 4294967295L;
-         long var6 = 0;
+      for (int i = 0; i < this.nWords; i++) {
+         long v = this.data[i] & 4294967295L;
+         long p = 0;
 
-         int var8;
-         for (var8 = 0; var8 < var1.nWords; var8++) {
-            var6 += (var2[var3 + var8] & 4294967295L) + var4 * (var1.data[var8] & 4294967295L);
-            var2[var3 + var8] = (int)var6;
-            var6 >>>= 32;
+         int j;
+         for (j = 0; j < other.nWords; j++) {
+            p += (r[i + j] & 4294967295L) + v * (other.data[j] & 4294967295L);
+            r[i + j] = (int)p;
+            p >>>= 32;
          }
 
-         var2[var3 + var8] = (int)var6;
+         r[i + j] = (int)p;
       }
 
-      int var9 = var2.length - 1;
+      int var9 = r.length - 1;
 
-      while (var9 > 0 && var2[var9] == 0) {
+      while (var9 > 0 && r[var9] == 0) {
          var9--;
       }
 
-      return new FDBigInt(var2, var9 + 1);
+      return new FDBigInt(r, var9 + 1);
    }
 
-   public FDBigInt add(FDBigInt var1) {
-      long var7 = 0;
-      int[] var3;
-      int[] var4;
-      int var5;
-      int var6;
-      if (this.nWords >= var1.nWords) {
-         var3 = this.data;
-         var5 = this.nWords;
-         var4 = var1.data;
-         var6 = var1.nWords;
+   public FDBigInt add(FDBigInt other) {
+      long c = 0;
+      int[] a;
+      int[] b;
+      int n;
+      int m;
+      if (this.nWords >= other.nWords) {
+         a = this.data;
+         n = this.nWords;
+         b = other.data;
+         m = other.nWords;
       } else {
-         var3 = var1.data;
-         var5 = var1.nWords;
-         var4 = this.data;
-         var6 = this.nWords;
+         a = other.data;
+         n = other.nWords;
+         b = this.data;
+         m = this.nWords;
       }
 
-      int[] var9 = new int[var5];
+      int[] r = new int[n];
 
-      int var2;
-      for (var2 = 0; var2 < var5; var2++) {
-         var7 += var3[var2] & 4294967295L;
-         if (var2 < var6) {
-            var7 += var4[var2] & 4294967295L;
+      int i;
+      for (i = 0; i < n; i++) {
+         c += a[i] & 4294967295L;
+         if (i < m) {
+            c += b[i] & 4294967295L;
          }
 
-         var9[var2] = (int)var7;
-         var7 >>= 32;
+         r[i] = (int)c;
+         c >>= 32;
       }
 
-      if (var7 != 0) {
-         int[] var10 = new int[var9.length + 1];
-         System.arraycopy(var9, 0, var10, 0, var9.length);
-         var10[var2++] = (int)var7;
-         return new FDBigInt(var10, var2);
+      if (c != 0) {
+         int[] s = new int[r.length + 1];
+         System.arraycopy(r, 0, s, 0, r.length);
+         s[i++] = (int)c;
+         return new FDBigInt(s, i);
       } else {
-         return new FDBigInt(var9, var2);
+         return new FDBigInt(r, i);
       }
    }
 
-   public FDBigInt sub(FDBigInt var1) {
+   public FDBigInt sub(FDBigInt other) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
-   public int cmp(FDBigInt var1) {
-      int var2;
-      if (this.nWords > var1.nWords) {
-         int var3 = var1.nWords - 1;
+   public int cmp(FDBigInt other) {
+      int i;
+      if (this.nWords > other.nWords) {
+         int j = other.nWords - 1;
 
-         for (var2 = this.nWords - 1; var2 > var3; var2--) {
-            if (this.data[var2] != 0) {
+         for (i = this.nWords - 1; i > j; i--) {
+            if (this.data[i] != 0) {
                return 1;
             }
          }
-      } else if (this.nWords < var1.nWords) {
-         int var5 = this.nWords - 1;
+      } else if (this.nWords < other.nWords) {
+         int j = this.nWords - 1;
 
-         for (var2 = var1.nWords - 1; var2 > var5; var2--) {
-            if (var1.data[var2] != 0) {
+         for (i = other.nWords - 1; i > j; i--) {
+            if (other.data[i] != 0) {
                return -1;
             }
          }
       } else {
-         var2 = this.nWords - 1;
+         i = this.nWords - 1;
       }
 
-      while (var2 > 0 && this.data[var2] == var1.data[var2]) {
-         var2--;
+      while (i > 0 && this.data[i] == other.data[i]) {
+         i--;
       }
 
-      int var6 = this.data[var2];
-      int var4 = var1.data[var2];
-      if (var6 < 0) {
-         return var4 < 0 ? var6 - var4 : 1;
+      int a = this.data[i];
+      int b = other.data[i];
+      if (a < 0) {
+         return b < 0 ? a - b : 1;
       } else {
-         return var4 < 0 ? -1 : var6 - var4;
+         return b < 0 ? -1 : a - b;
       }
    }
 
-   public int quoRemIteration(FDBigInt var1) {
+   public int quoRemIteration(FDBigInt S) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

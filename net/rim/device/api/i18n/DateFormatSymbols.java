@@ -1,6 +1,10 @@
 package net.rim.device.api.i18n;
 
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.ObjectGroup;
+import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
+import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.Persistable;
 import net.rim.device.internal.i18n.DateTimeFormatOptions;
@@ -23,10 +27,10 @@ public final class DateFormatSymbols implements Persistable {
    private DateFormatSymbols() {
    }
 
-   private DateFormatSymbols(Locale var1) {
+   private DateFormatSymbols(Locale locale) {
    }
 
-   private final void init(ResourceBundle var1) {
+   private final void init(ResourceBundle resources) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -39,27 +43,27 @@ public final class DateFormatSymbols implements Persistable {
       return _default;
    }
 
-   public static final synchronized DateFormatSymbols getInstance(Locale var0) {
-      return getSymbols(var0.getCode());
+   public static final synchronized DateFormatSymbols getInstance(Locale locale) {
+      return getSymbols(locale.getCode());
    }
 
    public final String[] getMonths() {
       return this._months;
    }
 
-   public final String getPattern(int var1) {
-      int var2 = 4 * DateTimeFormatOptions.getDateFormat() + (var1 >> 3 & 3);
-      var2 = MathUtilities.clamp(0, var2, this._dateFormats.length - 1);
-      String var3 = this._dateFormats[var2];
-      int var4 = 4 * DateTimeFormatOptions.getTimeFormat() + (var1 >> 0 & 3);
-      var4 = MathUtilities.clamp(0, var4, this._timeFormats.length - 1);
-      String var5 = this._timeFormats[var4];
-      if ((var1 & 32) != 0 && (var1 & 4) != 0) {
-         return MessageFormat.format(this._datetimeFormat, new String[]{var3, var5});
-      } else if ((var1 & 32) != 0) {
-         return var3;
-      } else if ((var1 & 4) != 0) {
-         return var5;
+   public final String getPattern(int style) {
+      int dateIndex = 4 * DateTimeFormatOptions.getDateFormat() + (style >> 3 & 3);
+      dateIndex = MathUtilities.clamp(0, dateIndex, this._dateFormats.length - 1);
+      String datePattern = this._dateFormats[dateIndex];
+      int timeIndex = 4 * DateTimeFormatOptions.getTimeFormat() + (style >> 0 & 3);
+      timeIndex = MathUtilities.clamp(0, timeIndex, this._timeFormats.length - 1);
+      String timePattern = this._timeFormats[timeIndex];
+      if ((style & 32) != 0 && (style & 4) != 0) {
+         return MessageFormat.format(this._datetimeFormat, new String[]{datePattern, timePattern});
+      } else if ((style & 32) != 0) {
+         return datePattern;
+      } else if ((style & 4) != 0) {
+         return timePattern;
       } else {
          throw new Object();
       }
@@ -77,8 +81,21 @@ public final class DateFormatSymbols implements Persistable {
       return this._weekdays_short;
    }
 
-   private static final DateFormatSymbols getSymbols(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final DateFormatSymbols getSymbols(int localecode) {
+      DateFormatSymbols symbols = null;
+      PersistentObject persist = RIMPersistentStore.getPersistentObject(1125501472565950566L);
+      synchronized (persist) {
+         IntHashtable hashtable = (IntHashtable)persist.getContents();
+         if (hashtable != null) {
+            symbols = (DateFormatSymbols)hashtable.get(localecode);
+         }
+
+         if (symbols == null) {
+            symbols = new DateFormatSymbols(Locale.get(localecode));
+         }
+
+         return symbols;
+      }
    }
 
    public final String[] getWeekdays() {
@@ -90,43 +107,66 @@ public final class DateFormatSymbols implements Persistable {
    }
 
    public final void setSymbols(
-      Locale var1,
-      String[] var2,
-      String[] var3,
-      String[] var4,
-      String var5,
-      String[] var6,
-      String[] var7,
-      String[] var8,
-      String[] var9,
-      String[] var10,
-      char var11
+      Locale locale,
+      String[] ampm,
+      String[] ampm_short,
+      String[] dateFormats,
+      String datetimeFormat,
+      String[] months,
+      String[] months_short,
+      String[] timeFormats,
+      String[] weekdays,
+      String[] weekdays_short,
+      char undefinedSymbol
    ) {
-      throw new RuntimeException("cod2jar: exception table");
+      DateFormatSymbols symbols = new DateFormatSymbols();
+      symbols._localecode = locale.getCode();
+      symbols._ampm = ampm;
+      symbols._ampm_short = ampm_short;
+      symbols._dateFormats = dateFormats;
+      symbols._datetimeFormat = datetimeFormat;
+      symbols._months = months;
+      symbols._months_short = months_short;
+      symbols._timeFormats = timeFormats;
+      symbols._weekdays = weekdays;
+      symbols._weekdays_short = weekdays_short;
+      symbols._undefinedSymbol = undefinedSymbol;
+      ObjectGroup.createGroupIgnoreTooBig(symbols);
+      PersistentObject persist = RIMPersistentStore.getPersistentObject(1125501472565950566L);
+      synchronized (persist) {
+         IntHashtable hashtable = (IntHashtable)persist.getContents();
+         if (hashtable == null) {
+            hashtable = new IntHashtable();
+            persist.setContents(hashtable, 51);
+         }
+
+         hashtable.put(locale.getCode(), symbols);
+         persist.commit();
+      }
    }
 
    static final void settingChanged() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      int var1 = Locale.getDefaultForSystem().getCode();
-      DateFormatSymbols var2 = (DateFormatSymbols)var0.get(1125501472565950566L);
-      if (var2 == null || var2._localecode != var1) {
-         DateFormatSymbols var3 = getSymbols(var1);
-         var2 = (DateFormatSymbols)var0.getOrWaitFor(1125501472565950566L);
-         if (var2 == null || var2._localecode != var1) {
-            var2 = var3;
-            var0.replace(1125501472565950566L, var2);
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      int systemLocalecode = Locale.getDefaultForSystem().getCode();
+      DateFormatSymbols symbols = (DateFormatSymbols)applicationRegistry.get(1125501472565950566L);
+      if (symbols == null || symbols._localecode != systemLocalecode) {
+         DateFormatSymbols tmpSymbols = getSymbols(systemLocalecode);
+         symbols = (DateFormatSymbols)applicationRegistry.getOrWaitFor(1125501472565950566L);
+         if (symbols == null || symbols._localecode != systemLocalecode) {
+            symbols = tmpSymbols;
+            applicationRegistry.replace(1125501472565950566L, symbols);
          }
       }
 
-      int var4 = Locale.getDefault().getCode();
-      if (var4 != var1) {
-         if (_default != null && _default._localecode == var4) {
-            var2 = _default;
+      int appLocalecode = Locale.getDefault().getCode();
+      if (appLocalecode != systemLocalecode) {
+         if (_default != null && _default._localecode == appLocalecode) {
+            symbols = _default;
          } else {
-            var2 = getSymbols(var4);
+            symbols = getSymbols(appLocalecode);
          }
       }
 
-      _default = var2;
+      _default = symbols;
    }
 }

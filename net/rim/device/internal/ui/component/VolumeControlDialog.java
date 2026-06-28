@@ -24,23 +24,29 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    public static VolumeControlDialog getInstance() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_lock) {
+         if (_vcd == null) {
+            _vcd = new VolumeControlDialog();
+         }
+
+         return _vcd;
+      }
    }
 
-   public void setCallback(Field var1) {
+   public void setCallback(Field callback) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setVolume(int var1) {
-      this._volume = var1;
+   public void setVolume(int volume) {
+      this._volume = volume;
       if (this.isDisplayed()) {
          this.makeAudibleFeedback();
       }
 
-      this._volumeGraphics.changeIndex(var1 / 10);
+      this._volumeGraphics.changeIndex(volume / 10);
    }
 
-   public void setText(String var1) {
+   public void setText(String text) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
@@ -55,13 +61,13 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    private void makeAudibleFeedback() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 != 27 && var1 != '\n') {
-         return super.keyChar(var1, var2, var3);
+   protected boolean keyChar(char key, int status, int time) {
+      if (key != 27 && key != '\n') {
+         return super.keyChar(key, status, time);
       }
 
       this.close(0);
@@ -69,14 +75,14 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    @Override
-   public int adjustVolume(int var1) {
+   public int adjustVolume(int volumeLevelChange) {
       this._keyClickTime = InternalServices.getUptime();
-      return this._callback != null ? this._callback.adjustVolume(var1) : -1;
+      return this._callback != null ? this._callback.adjustVolume(volumeLevelChange) : -1;
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      super.sublayout(var1, var2);
-      this.setPosition(var1 - this.getDelegate().getExtent().width, 0);
+   protected void sublayout(int width, int height) {
+      super.sublayout(width, height);
+      this.setPosition(width - this.getDelegate().getExtent().width, 0);
    }
 }

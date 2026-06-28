@@ -12,31 +12,31 @@ public class KeypadUtil {
    private KeypadUtil() {
    }
 
-   public static char getKeyChar(int var0, int var1) {
-      switch (var1) {
+   public static char getKeyChar(int keycode, int mode) {
+      switch (mode) {
          case -1:
             throw new Object();
          case 0:
          default:
-            return UiInternal.map(var0);
+            return UiInternal.map(keycode);
          case 1:
-            return UiInternal.mapFromFallbackLayout(var0);
+            return UiInternal.mapFromFallbackLayout(keycode);
       }
    }
 
-   public static int getKeyCode(char var0, int var1, int var2) {
-      SLKeyLayout var3 = null;
-      switch (var2) {
+   public static int getKeyCode(char ch, int status, int mode) {
+      SLKeyLayout layout = null;
+      switch (mode) {
          case -1:
             throw new Object();
          case 0:
          default:
-            var3 = UILocaleKeyLayout.getUIKeyLayout();
+            layout = UILocaleKeyLayout.getUIKeyLayout();
             break;
          case 1:
-            var3 = DefaultKeyLayout.getDefaultKeyLayout();
+            layout = DefaultKeyLayout.getDefaultKeyLayout();
       }
 
-      return var3 == null ? 0 : var3.getOriginalKeyCode(var0, SLKeyLayout.convertStatusToModifiers(var1)) << 16 | var1;
+      return layout == null ? 0 : layout.getOriginalKeyCode(ch, SLKeyLayout.convertStatusToModifiers(status)) << 16 | status;
    }
 }

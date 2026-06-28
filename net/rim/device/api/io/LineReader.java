@@ -12,12 +12,12 @@ public class LineReader {
    private static final byte CR;
    private static final byte LF;
 
-   public LineReader(InputStream var1) {
-      if (var1 == null) {
+   public LineReader(InputStream stream) {
+      if (stream == null) {
          throw new Object();
       }
 
-      this._stream = var1;
+      this._stream = stream;
       this._buffer = new byte[1024];
       this._bufferOffset = 0;
       this._bufferLength = 0;
@@ -39,11 +39,11 @@ public class LineReader {
       return this._bufferLength;
    }
 
-   public void setBufferOffset(int var1) {
+   public void setBufferOffset(int bufferOffset) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setBufferLength(int var1) {
+   public void setBufferLength(int bufferLength) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -55,10 +55,10 @@ public class LineReader {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private byte[] concatenate(byte[] var1, byte[] var2, int var3, int var4) {
-      int var5 = var1.length;
-      Array.resize(var1, var1.length + var4);
-      System.arraycopy(var2, var3, var1, var5, var4);
-      return var1;
+   private byte[] concatenate(byte[] original, byte[] newData, int offset, int length) {
+      int originalLength = original.length;
+      Array.resize(original, original.length + length);
+      System.arraycopy(newData, offset, original, originalLength, length);
+      return original;
    }
 }

@@ -12,11 +12,11 @@ public class Border {
    private boolean _transparent;
    private static XYEdges _edges;
 
-   public Border(int var1, int var2, int var3, int var4) {
-      this._top = var1;
-      this._right = var2;
-      this._bottom = var3;
-      this._left = var4;
+   public Border(int top, int right, int bottom, int left) {
+      this._top = top;
+      this._right = right;
+      this._bottom = bottom;
+      this._left = left;
    }
 
    public Background getBackground() {
@@ -32,8 +32,8 @@ public class Border {
       return _edges;
    }
 
-   public final void getEdges(XYEdges var1) {
-      var1.set(this._top, this._right, this._bottom, this._left);
+   public final void getEdges(XYEdges edges) {
+      edges.set(this._top, this._right, this._bottom, this._left);
    }
 
    public final int getLeft() {
@@ -52,11 +52,11 @@ public class Border {
       return this._transparent;
    }
 
-   public void paint(Graphics var1, XYRect var2) {
+   public void paint(Graphics _1, XYRect _2) {
       throw null;
    }
 
-   protected final void setTransparent(boolean var1) {
+   protected final void setTransparent(boolean transparent) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

@@ -48,90 +48,103 @@ final class GlobalScreenManager implements GlobalEventListener {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void copyGlobalScreens(Screen[] var0, int var1, Screen[] var2) {
+   static final void copyGlobalScreens(Screen[] screenArray, int index, Screen[] hiddenScreenArray) {
       assertHaveLock();
-      int var3 = _statusManager._statusQueue.size();
-      int var4 = _statusManager.getVisibleScreenCountImpl();
-      Array.resize(var0, var1 + var4);
+      int screenCount = _statusManager._statusQueue.size();
+      int visibleScreenCount = _statusManager.getVisibleScreenCountImpl();
+      Array.resize(screenArray, index + visibleScreenCount);
 
-      for (int var5 = 0; var5 < var4; var5++) {
-         int var6 = var4 - 1 - var5;
-         GlobalScreenManager$StatusData var7 = (GlobalScreenManager$StatusData)_statusManager._statusQueue.elementAt(var6);
-         var0[var5 + var1] = var7.screen;
+      for (int i = 0; i < visibleScreenCount; i++) {
+         int queueIndex = visibleScreenCount - 1 - i;
+         GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)_statusManager._statusQueue.elementAt(queueIndex);
+         screenArray[i + index] = data.screen;
       }
 
-      Array.resize(var2, var3 - var4);
+      Array.resize(hiddenScreenArray, screenCount - visibleScreenCount);
 
-      for (int var8 = var4; var8 < var3; var8++) {
-         int var9 = var3 - 1 - (var8 - var4);
-         GlobalScreenManager$StatusData var10 = (GlobalScreenManager$StatusData)_statusManager._statusQueue.elementAt(var9);
-         var2[var8 - var4] = var10.screen;
+      for (int i = visibleScreenCount; i < screenCount; i++) {
+         int queueIndex = screenCount - 1 - (i - visibleScreenCount);
+         GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)_statusManager._statusQueue.elementAt(queueIndex);
+         hiddenScreenArray[i - visibleScreenCount] = data.screen;
       }
    }
 
-   static final boolean dismiss(Screen var0, UiEngineImpl var1, boolean var2, int var3) {
+   static final boolean dismiss(Screen screen, UiEngineImpl engine, boolean oldNotification, int processId) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final synchronized boolean dismissInternal(Screen var1, UiEngineImpl var2, boolean var3, int var4) {
-      if (!var1.isGlobal()) {
+   private final synchronized boolean dismissInternal(Screen screen, UiEngineImpl engine, boolean oldNotification, int processId) {
+      if (!screen.isGlobal()) {
          return false;
       }
 
-      var1.setUiEngine(null);
-      var1.setGlobal(false);
-      GlobalScreenManager$StatusData var5 = null;
-      int var6 = this._statusQueue.size();
+      screen.setUiEngine(null);
+      screen.setGlobal(false);
+      GlobalScreenManager$StatusData current = null;
+      int numStatus = this._statusQueue.size();
 
-      int var7;
-      for (var7 = 0; var7 < var6; var7++) {
-         var5 = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var7);
-         if (var5.screen == var1) {
+      int index;
+      for (index = 0; index < numStatus; index++) {
+         current = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(index);
+         if (current.screen == screen) {
             break;
          }
       }
 
-      if (var7 == var6 || var5 == null) {
+      if (index == numStatus || current == null) {
          return false;
       }
 
-      if (var5.engine != null && !var5.engine.equals(var2)) {
+      if (current.engine != null && !current.engine.equals(engine)) {
          return false;
       }
 
-      XYRect var8 = Ui.getTmpXYRect();
-      var8.set(var1.getExtent());
-      this._statusQueue.removeElementAt(var7);
+      XYRect exposedExtents = Ui.getTmpXYRect();
+      exposedExtents.set(screen.getExtent());
+      this._statusQueue.removeElementAt(index);
 
       for (int var10 = 0; var10 < _statusManager._statusQueue.size(); var10++) {
-         GlobalScreenManager$StatusData var9 = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var10);
-         var8.unionNoEmpty(var9.screen.getExtent());
-         if (var9.suppress) {
+         GlobalScreenManager$StatusData temp = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var10);
+         exposedExtents.unionNoEmpty(temp.screen.getExtent());
+         if (temp.suppress) {
             break;
          }
       }
 
-      if (var3) {
-         var5.engine.statusDismissedEvent(var5.screen);
+      if (oldNotification) {
+         current.engine.statusDismissedEvent(current.screen);
       } else {
-         RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, var8, new Object(var4));
+         RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, exposedExtents, new Object(processId));
       }
 
-      this.updatePaintControl(2, false, var2);
+      this.updatePaintControl(2, false, engine);
       this.redirectInput();
       return true;
    }
 
-   public static final int getGlobalPriority(Screen var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int getGlobalPriority(Screen screen) {
+      synchronized (_statusManager) {
+         for (int lv = _statusManager._statusQueue.size() - 1; lv >= 0; lv--) {
+            GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)_statusManager._statusQueue.elementAt(lv);
+            if (data.screen == screen) {
+               return data.priority;
+            }
+         }
+      }
+
+      throw new Object();
    }
 
    public static final Screen getCurrentGlobalScreen() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_statusManager) {
+         return _statusManager._statusQueue.size() > 0 ? ((GlobalScreenManager$StatusData)_statusManager._statusQueue.firstElement()).screen : null;
+      }
    }
 
    public static final Screen getScreenWithFocus() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_statusManager) {
+         return _statusManager._focusScreen != null ? (Screen)_statusManager._focusScreen.get() : null;
+      }
    }
 
    static final UiInternalListener getUiInternalListener() {
@@ -139,36 +152,40 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    private final int getVisibleScreenCountImpl() {
-      int var1 = 0;
+      int visibleCount = 0;
 
-      for (int var2 = 0; var2 < this._statusQueue.size(); var2++) {
-         var1++;
-         GlobalScreenManager$StatusData var3 = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var2);
-         if (var3.suppress) {
-            return var1;
+      for (int i = 0; i < this._statusQueue.size(); i++) {
+         visibleCount++;
+         GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(i);
+         if (data.suppress) {
+            return visibleCount;
          }
       }
 
-      return var1;
+      return visibleCount;
    }
 
    public static final int getVisibleScreenCount() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_statusManager) {
+         return _statusManager.getVisibleScreenCountImpl();
+      }
    }
 
    public static final boolean isGlobalScreenWithInputDisplayed() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_statusManager) {
+         return _statusManager._statusQueue.size() > 0 ? ((GlobalScreenManager$StatusData)_statusManager._statusQueue.firstElement()).inputRequired : false;
+      }
    }
 
    private final void redirectInput() {
-      for (int var1 = 0; var1 < this._statusQueue.size(); var1++) {
-         GlobalScreenManager$StatusData var2 = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var1);
-         if (var2.inputRequired) {
-            this._appManager.redirectInput(var2.process, false);
+      for (int lv = 0; lv < this._statusQueue.size(); lv++) {
+         GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(lv);
+         if (data.inputRequired) {
+            this._appManager.redirectInput(data.process, false);
             return;
          }
 
-         if (var2.suppress) {
+         if (data.suppress) {
             break;
          }
       }
@@ -177,44 +194,62 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void getExtent(XYRect var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void getExtent(XYRect rect) {
+      synchronized (_statusManager) {
+         if (_statusManager._statusQueue.size() != 0) {
+            GlobalScreenManager$StatusData current = (GlobalScreenManager$StatusData)_statusManager._statusQueue.firstElement();
+            current.screen.getExtent(rect);
+         } else {
+            rect.set(0, 0, 0, 0);
+         }
+      }
    }
 
    public static final Object getLock() {
       return _statusManager;
    }
 
-   static final void queue(Screen var0, int var1, boolean var2, int var3, UiEngineImpl var4) {
+   static final void queue(Screen screen, int priority, boolean inputRequired, int processId, UiEngineImpl engine) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void push(Screen var0, int var1, boolean var2, int var3, UiEngineImpl var4) {
+   static final void push(Screen screen, int priority, boolean inputRequired, int processId, UiEngineImpl engine) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void push(Screen var0, int var1, int var2, int var3, UiEngineImpl var4) {
+   static final void push(Screen screen, int priority, int flags, int processId, UiEngineImpl engine) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final synchronized void queueInternal(Screen var1, int var2, boolean var3, boolean var4, int var5, UiEngineImpl var6, boolean var7, boolean var8) {
+   private final synchronized void queueInternal(
+      Screen screen,
+      int priority,
+      boolean inputRequired,
+      boolean suppress,
+      int processId,
+      UiEngineImpl engine,
+      boolean insertBeforeSamePriority,
+      boolean oldNotofication
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void setScreenWithFocus(Screen var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setScreenWithFocus(Screen screen) {
+      synchronized (_statusManager) {
+         _statusManager._focusScreen = (WeakReference)(new Object(screen));
+      }
    }
 
-   static final void setUiInternalListener(UiInternalListener var0) {
-      _statusManager._uiInternalListener = var0;
+   static final void setUiInternalListener(UiInternalListener listener) {
+      _statusManager._uiInternalListener = listener;
    }
 
-   static final void setAccessibleEventListener(AccessibleEventListener var0) {
-      _statusManager._accessibleEventListener = var0;
+   static final void setAccessibleEventListener(AccessibleEventListener listener) {
+      _statusManager._accessibleEventListener = listener;
    }
 
    static final BackingStore getBackingStore() {
@@ -229,16 +264,19 @@ final class GlobalScreenManager implements GlobalEventListener {
          : _statusManager._transparentBackingStoreStack.pop());
    }
 
-   static final void returnBackingStore(BackingStore var0) {
-      _statusManager._backingStoreStack.push(var0);
+   static final void returnBackingStore(BackingStore backingStore) {
+      _statusManager._backingStoreStack.push(backingStore);
    }
 
-   static final void returnTransparentBackingStore(BackingStore var0) {
-      _statusManager._transparentBackingStoreStack.push(var0);
+   static final void returnTransparentBackingStore(BackingStore backingStore) {
+      _statusManager._transparentBackingStoreStack.push(backingStore);
    }
 
-   static final void removeAccessibleEventListener(AccessibleEventListener var0) {
-      if (var0 != null && _statusManager != null && _statusManager._accessibleEventListener != null && _statusManager._accessibleEventListener.equals(var0)) {
+   static final void removeAccessibleEventListener(AccessibleEventListener listener) {
+      if (listener != null
+         && _statusManager != null
+         && _statusManager._accessibleEventListener != null
+         && _statusManager._accessibleEventListener.equals(listener)) {
          _statusManager._accessibleEventListener = null;
       }
    }
@@ -247,8 +285,8 @@ final class GlobalScreenManager implements GlobalEventListener {
       return _statusManager._accessibleEventListener;
    }
 
-   static final void setForegroundEngine(UiEngineImpl var0) {
-      _statusManager._foregroundEngine = var0;
+   static final void setForegroundEngine(UiEngineImpl engine) {
+      _statusManager._foregroundEngine = engine;
       _statusManager.updatePaintControl(0, true, null);
    }
 
@@ -256,77 +294,81 @@ final class GlobalScreenManager implements GlobalEventListener {
       return _statusManager._paintControlEngine;
    }
 
-   private final void updatePaintControl(int var1, boolean var2, UiEngineImpl var3) {
-      UiEngineImpl var4 = this._foregroundEngine;
-      UiEngineImpl var5 = var4;
-      this._paintControlEngine = var4;
-      boolean var6 = false;
-      int var7 = this._statusQueue.size();
+   private final void updatePaintControl(int type, boolean grabLock, UiEngineImpl engine) {
+      UiEngineImpl foregroundEngine = this._foregroundEngine;
+      UiEngineImpl paintControlEngine = foregroundEngine;
+      this._paintControlEngine = foregroundEngine;
+      boolean hasPaintControlGlobal = false;
+      int numStatus = this._statusQueue.size();
 
-      for (int var8 = 0; var8 < var7; var8++) {
-         GlobalScreenManager$StatusData var9 = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(var8);
-         Screen var10 = var9.screen;
-         if (var10.isPaintController()) {
-            var5 = var10.getUiEngineImpl();
-            this._paintControlEngine = var5;
-            var6 = true;
+      for (int index = 0; index < numStatus; index++) {
+         GlobalScreenManager$StatusData data = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(index);
+         Screen screen = data.screen;
+         if (screen.isPaintController()) {
+            paintControlEngine = screen.getUiEngineImpl();
+            this._paintControlEngine = paintControlEngine;
+            hasPaintControlGlobal = true;
             break;
          }
 
-         if (var9.suppress) {
+         if (data.suppress) {
             break;
          }
       }
 
-      if (var4 != null && var5 != null) {
-         Application var11 = var5.getApplication();
-         if (!var5.equals(var4) && var11 != null) {
-            if (var1 == 0) {
-               RIMGlobalMessagePoster.postGlobalEvent(var11.getProcessId(), 3160755958169834551L, 0, 0, var4.getLocalWrappedScreens(), null);
-            } else if (var1 == 1 && !var2 && var3 != null && var3.equals(var5)) {
-               var3.injectLocalWrappedScreens(var4.getLocalWrappedScreens());
-            } else if (var1 == 2 && var3 != null) {
-               if (var3.equals(var5) && var3.shouldAddLocalWrappedScreens()) {
-                  var3.injectLocalWrappedScreens(var4.getLocalWrappedScreens());
-               } else if (!var3.equals(var5)) {
-                  RIMGlobalMessagePoster.postGlobalEvent(var11.getProcessId(), 3160755958169834551L, 0, 0, var4.getLocalWrappedScreens(), null);
+      if (foregroundEngine != null && paintControlEngine != null) {
+         Application paintControlApp = paintControlEngine.getApplication();
+         if (!paintControlEngine.equals(foregroundEngine) && paintControlApp != null) {
+            if (type == 0) {
+               RIMGlobalMessagePoster.postGlobalEvent(
+                  paintControlApp.getProcessId(), 3160755958169834551L, 0, 0, foregroundEngine.getLocalWrappedScreens(), null
+               );
+            } else if (type == 1 && !grabLock && engine != null && engine.equals(paintControlEngine)) {
+               engine.injectLocalWrappedScreens(foregroundEngine.getLocalWrappedScreens());
+            } else if (type == 2 && engine != null) {
+               if (engine.equals(paintControlEngine) && engine.shouldAddLocalWrappedScreens()) {
+                  engine.injectLocalWrappedScreens(foregroundEngine.getLocalWrappedScreens());
+               } else if (!engine.equals(paintControlEngine)) {
+                  RIMGlobalMessagePoster.postGlobalEvent(
+                     paintControlApp.getProcessId(), 3160755958169834551L, 0, 0, foregroundEngine.getLocalWrappedScreens(), null
+                  );
                }
             }
-         } else if (var1 == 0 && var6) {
-            var5.removeLocalWrappedScreens();
-         } else if (var1 == 1 && !var6) {
-            var3.removeLocalWrappedScreens();
+         } else if (type == 0 && hasPaintControlGlobal) {
+            paintControlEngine.removeLocalWrappedScreens();
+         } else if (type == 1 && !hasPaintControlGlobal) {
+            engine.removeLocalWrappedScreens();
          }
 
-         if (var1 == 2 && var3 != null && var3.shouldRemoveLocalWrappedScreens()) {
-            var3.removeLocalWrappedScreens();
+         if (type == 2 && engine != null && engine.shouldRemoveLocalWrappedScreens()) {
+            engine.removeLocalWrappedScreens();
          }
       }
 
-      if (var5 != null) {
-         Application var12 = var5.getApplication();
-         if (var12 != null) {
-            if (_statusManager._statusQueue.isEmpty() && ApplicationManager.getApplicationManager().getForegroundProcessId() != var12.getProcessId()) {
+      if (paintControlEngine != null) {
+         Application paintControlApp = paintControlEngine.getApplication();
+         if (paintControlApp != null) {
+            if (_statusManager._statusQueue.isEmpty() && ApplicationManager.getApplicationManager().getForegroundProcessId() != paintControlApp.getProcessId()) {
                return;
             }
 
-            InternalServices.setVisibleProcess(var12.getProcessId());
+            InternalServices.setVisibleProcess(paintControlApp.getProcessId());
          }
       }
    }
 
-   static final void injectLocalWrappedScreens(UiEngineImpl var0) {
-      if (var0 != null && !var0.getApplication().isForeground() && _statusManager._foregroundEngine != null) {
+   static final void injectLocalWrappedScreens(UiEngineImpl engine) {
+      if (engine != null && !engine.getApplication().isForeground() && _statusManager._foregroundEngine != null) {
          RIMGlobalMessagePoster.postGlobalEvent(
-            var0.getApplication().getProcessId(), 3160755958169834551L, 0, 0, _statusManager._foregroundEngine.getLocalWrappedScreens(), null
+            engine.getApplication().getProcessId(), 3160755958169834551L, 0, 0, _statusManager._foregroundEngine.getLocalWrappedScreens(), null
          );
       }
    }
 
-   static final void updateInjectedScreens(UiEngineImpl var0) {
-      if (var0 != null && var0.equals(_statusManager._foregroundEngine) && !var0.equals(_statusManager._paintControlEngine)) {
+   static final void updateInjectedScreens(UiEngineImpl engine) {
+      if (engine != null && engine.equals(_statusManager._foregroundEngine) && !engine.equals(_statusManager._paintControlEngine)) {
          RIMGlobalMessagePoster.postGlobalEvent(
-            _statusManager._paintControlEngine.getApplication().getProcessId(), 3160755958169834551L, 0, 0, var0.getLocalWrappedScreens(), null
+            _statusManager._paintControlEngine.getApplication().getProcessId(), 3160755958169834551L, 0, 0, engine.getLocalWrappedScreens(), null
          );
       }
    }

@@ -7,16 +7,16 @@ public final class ControlledAccessException extends SecurityException {
    public ControlledAccessException() {
    }
 
-   public ControlledAccessException(String var1) {
+   public ControlledAccessException(String msg) {
    }
 
-   public ControlledAccessException(String var1, String var2) {
-      super(var1);
-      this._deniedPermission = var2;
+   public ControlledAccessException(String msg, String deniedPermissionString) {
+      super(msg);
+      this._deniedPermission = deniedPermissionString;
    }
 
-   public ControlledAccessException(CodeSigningKey var1) {
-      this._key = var1;
+   public ControlledAccessException(CodeSigningKey key) {
+      this._key = key;
    }
 
    public final CodeSigningKey getCodeSigningKey() {

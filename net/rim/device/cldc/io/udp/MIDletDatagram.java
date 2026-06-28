@@ -8,8 +8,8 @@ public class MIDletDatagram extends DatagramBase {
    private boolean initcomplete = true;
    private static final String DATAGRAMSCHEME;
 
-   MIDletDatagram(byte[] var1, int var2, int var3, String var4) {
-      super(var1, var2, var3, var4);
+   MIDletDatagram(byte[] buffer, int offset, int length, String address) {
+      super(buffer, offset, length, address);
    }
 
    @Override
@@ -23,37 +23,37 @@ public class MIDletDatagram extends DatagramBase {
    }
 
    @Override
-   public void setAddress(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setAddress(String addr) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void setData(byte[] var1, int var2, int var3) {
-      if (var1 == null || var2 < var1.length && var2 + var3 <= var1.length && var2 + var3 >= 0) {
-         super.setData(var1, var2, var3);
+   public void setData(byte[] buffer, int offset, int length) {
+      if (buffer == null || offset < buffer.length && offset + length <= buffer.length && offset + length >= 0) {
+         super.setData(buffer, offset, length);
       } else {
          throw new Object();
       }
    }
 
    @Override
-   public void setLength(int var1) {
-      if (var1 > this.getArray().length - this.getArrayStart()) {
+   public void setLength(int length) {
+      if (length > this.getArray().length - this.getArrayStart()) {
          throw new Object();
       }
 
-      super.setLength(var1);
+      super.setLength(length);
    }
 
    @Override
-   public void setAddress(Datagram var1) {
+   public void setAddress(Datagram d) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public void reset() {
-      byte[] var1 = this.getArray();
+      byte[] buf = this.getArray();
       super.reset();
-      this.setData(var1, 0, 0, this.isBigEndian());
+      this.setData(buf, 0, 0, this.isBigEndian());
    }
 }

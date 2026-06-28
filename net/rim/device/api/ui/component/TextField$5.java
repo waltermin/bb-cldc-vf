@@ -8,9 +8,9 @@ class TextField$5 implements Runnable {
    private final Screen val$screen;
    private final TextField this$0;
 
-   TextField$5(TextField var1, Screen var2) {
-      this.this$0 = var1;
-      this.val$screen = var2;
+   TextField$5(TextField _1, Screen _2) {
+      this.this$0 = _1;
+      this.val$screen = _2;
    }
 
    @Override

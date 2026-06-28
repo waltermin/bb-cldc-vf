@@ -6,11 +6,11 @@ public class BugReport {
    protected BugReport() {
    }
 
-   public void attach(String var1, String var2, byte[] var3) {
+   public void attach(String _1, String _2, byte[] _3) {
       throw null;
    }
 
-   public void attachText(String var1, String var2, String var3) {
+   public void attachText(String _1, String _2, String _3) {
       throw null;
    }
 
@@ -26,7 +26,7 @@ public class BugReport {
       throw null;
    }
 
-   public void setUserComment(String var1) {
+   public void setUserComment(String _1) {
       throw null;
    }
 }

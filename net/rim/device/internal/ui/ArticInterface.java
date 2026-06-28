@@ -20,20 +20,20 @@ public class ArticInterface {
    }
 
    public static ArticInterface$Layout Format(
-      int var0,
-      int var1,
-      int var2,
-      int var3,
-      int var4,
-      boolean var5,
-      int var6,
-      AttributedString var7,
-      ArticInterface$Line var8,
-      int var9,
-      int var10,
-      int var11,
-      boolean var12,
-      int var13
+      int aWidth,
+      int aTextStart,
+      int aOldLength,
+      int aNewLength,
+      int aCursor,
+      boolean aCursorLeadingEdge,
+      int aAnchor,
+      AttributedString aText,
+      ArticInterface$Line aLine,
+      int aLineStart,
+      int aLineTop,
+      int aMaxLines,
+      boolean aTextUnchanged,
+      int aFlags
    ) {
       throw new RuntimeException("cod2jar: ldc");
    }
@@ -64,28 +64,28 @@ public class ArticInterface {
 
    private static native void DocPosMove(int var0, TextHitInfo var1, XYRect var2, AttributedString var3, ArticInterface$Line var4, int var5, int var6);
 
-   public static void DocPosNext(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(0, var0, var1, var2, var3, var4, var5);
+   public static void DocPosNext(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(0, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
-   public static void DocPosPrev(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(1, var0, var1, var2, var3, var4, var5);
+   public static void DocPosPrev(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(1, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
-   public static void DocPosLeft(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(3, var0, var1, var2, var3, var4, var5);
+   public static void DocPosLeft(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(3, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
-   public static void DocPosRight(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(2, var0, var1, var2, var3, var4, var5);
+   public static void DocPosRight(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(2, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
-   public static void DocPosDown(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(4, var0, var1, var2, var3, var4, var5);
+   public static void DocPosDown(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(4, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
-   public static void DocPosUp(TextHitInfo var0, XYRect var1, AttributedString var2, ArticInterface$Line var3, int var4, int var5) {
-      DocPosMove(5, var0, var1, var2, var3, var4, var5);
+   public static void DocPosUp(TextHitInfo aDocPos, XYRect aCaret, AttributedString aText, ArticInterface$Line aLine, int aLineStart, int aLineTop) {
+      DocPosMove(5, aDocPos, aCaret, aText, aLine, aLineStart, aLineTop);
    }
 
    public static native int AdjustDocPos(StringBufferGap var0, TextHitInfo var1, int var2);

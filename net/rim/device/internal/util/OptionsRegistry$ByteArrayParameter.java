@@ -9,7 +9,7 @@ public final class OptionsRegistry$ByteArrayParameter implements Persistable {
       return this._value;
    }
 
-   final void setValue(byte[] var1) {
+   final void setValue(byte[] value) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

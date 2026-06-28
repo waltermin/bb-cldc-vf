@@ -20,7 +20,7 @@ public class CDMAInfo$CDMACellInfo {
       return this._bid;
    }
 
-   CDMAInfo$CDMACellInfo(CDMAInfo$1 var1) {
+   CDMAInfo$CDMACellInfo(CDMAInfo$1 x0) {
       this();
    }
 }

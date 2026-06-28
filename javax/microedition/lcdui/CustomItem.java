@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -18,18 +19,26 @@ public class CustomItem extends Item {
    protected static final int POINTER_DRAG;
    protected static final int NONE;
 
-   protected CustomItem(String var1) {
+   protected CustomItem(String label) {
+      synchronized (Application.getEventLock()) {
+         this._container = (VerticalFieldManager)(new Object(1152921504606846976L));
+         this._field = new CustomField(this);
+         this._container.setCookie(this);
+         this.setLabel(label);
+         this._container.add(this._field);
+         this.setPeer(this._container);
+      }
    }
 
    @Override
-   Field addToForm(FieldChangeListener var1) {
+   Field addToForm(FieldChangeListener changeListener) {
       this._field.setChangeListener(null);
-      this._field.setChangeListener(var1);
+      this._field.setChangeListener(changeListener);
       return this._container;
    }
 
-   public int getGameAction(int var1) {
-      return Display.getGameAction(var1);
+   public int getGameAction(int keyCode) {
+      return Display.getGameAction(keyCode);
    }
 
    protected final int getInteractionModes() {
@@ -44,22 +53,24 @@ public class CustomItem extends Item {
       throw null;
    }
 
-   protected int getPrefContentWidth(int var1) {
+   protected int getPrefContentWidth(int _1) {
       throw null;
    }
 
-   protected int getPrefContentHeight(int var1) {
+   protected int getPrefContentHeight(int _1) {
       throw null;
    }
 
-   protected void sizeChanged(int var1, int var2) {
+   protected void sizeChanged(int w, int h) {
    }
 
    protected final void invalidate() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         this._field.redoLayout();
+      }
    }
 
-   protected void paint(Graphics var1, int var2, int var3) {
+   protected void paint(Graphics _1, int _2, int _3) {
       throw null;
    }
 
@@ -67,33 +78,33 @@ public class CustomItem extends Item {
       this._field.callInvalidate();
    }
 
-   protected final void repaint(int var1, int var2, int var3, int var4) {
-      this._field.callInvalidate(var1, var2, var3, var4);
+   protected final void repaint(int x, int y, int w, int h) {
+      this._field.callInvalidate(x, y, w, h);
    }
 
-   protected boolean traverse(int var1, int var2, int var3, int[] var4) {
+   protected boolean traverse(int dir, int viewportWidth, int viewportHeight, int[] visRect_inout) {
       return false;
    }
 
    protected void traverseOut() {
    }
 
-   protected void keyPressed(int var1) {
+   protected void keyPressed(int keyCode) {
    }
 
-   protected void keyReleased(int var1) {
+   protected void keyReleased(int keyCode) {
    }
 
-   protected void keyRepeated(int var1) {
+   protected void keyRepeated(int keyCode) {
    }
 
-   protected void pointerPressed(int var1, int var2) {
+   protected void pointerPressed(int x, int y) {
    }
 
-   protected void pointerReleased(int var1, int var2) {
+   protected void pointerReleased(int x, int y) {
    }
 
-   protected void pointerDragged(int var1, int var2) {
+   protected void pointerDragged(int x, int y) {
    }
 
    protected void showNotify() {
@@ -103,12 +114,26 @@ public class CustomItem extends Item {
    }
 
    @Override
-   public void setLabel(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setLabel(String label) {
+      synchronized (Application.getEventLock()) {
+         if (label == null) {
+            if (this._label != null) {
+               this._container.delete(this._label);
+               this._label = null;
+            }
+         } else if (this._label == null) {
+            this._label = new CustomLabelField(label, this._field);
+            this._container.insert(this._label, 0);
+         } else {
+            this._label.setText(label);
+         }
+      }
    }
 
    @Override
    public String getLabel() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._label == null ? null : this._label.getText();
+      }
    }
 }

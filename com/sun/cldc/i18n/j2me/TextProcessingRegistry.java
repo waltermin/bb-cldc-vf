@@ -15,31 +15,35 @@ public final class TextProcessingRegistry {
       return _registry;
    }
 
-   public static final boolean loadTextProcessingData(String var0, String var1, int var2, int var3, String var4) {
-      return loadTextProcessingData(var0, var1, var2, null, -1, var3, var4);
+   public static final boolean loadTextProcessingData(String dataName, String dataLocation, int dataType, int localeCode, String typeface) {
+      return loadTextProcessingData(dataName, dataLocation, dataType, null, -1, localeCode, typeface);
    }
 
-   public static final boolean loadTextProcessingData(String var0, String var1, int var2, String var3, int var4, int var5, String var6) {
+   public static final boolean loadTextProcessingData(
+      String dataName, String dataLocation, int dataType, String dataSpecificName, int dataSpecificID, int localeCode, String typeface
+   ) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   public static final boolean loadTextProcessingData(byte[][][] var0, int var1, String var2, int var3, int var4, String var5) {
-      switch (var1) {
+   public static final boolean loadTextProcessingData(
+      byte[][][] data, int dataType, String dataSpecificName, int dataSpecificID, int localeCode, String typeface
+   ) {
+      switch (dataType) {
          case 0:
-            return getInstance()._conversionRegistryHelper.loadConversionData(var2, var3, var4, var5, var0);
+            return getInstance()._conversionRegistryHelper.loadConversionData(dataSpecificName, dataSpecificID, localeCode, typeface, data);
          case 2:
-            return getInstance()._breakingDataRegistryHelper.loadBreakingData(var4, var1, (byte[][])var0);
+            return getInstance()._breakingDataRegistryHelper.loadBreakingData(localeCode, dataType, (byte[][])data);
          default:
             return false;
       }
    }
 
-   public final byte[][][] getTextProcessingData(int var1, int var2, int[] var3) {
+   public final byte[][][] getTextProcessingData(int dataID, int dataType, int[] dataOffset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final String[] getSupported(int var1) {
-      switch (var1) {
+   public final String[] getSupported(int dataType) {
+      switch (dataType) {
          case 0:
             return this._conversionRegistryHelper.getSupportedEncodings();
          default:
@@ -47,44 +51,44 @@ public final class TextProcessingRegistry {
       }
    }
 
-   public final boolean isSupported(String var1, int var2) {
-      switch (var2) {
+   public final boolean isSupported(String dataSpecificName, int dataType) {
+      switch (dataType) {
          case 0:
-            return this._conversionRegistryHelper.isSupported(var1);
+            return this._conversionRegistryHelper.isSupported(dataSpecificName);
          default:
             return false;
       }
    }
 
-   public final int getSuggestedLocale(String var1) {
-      return this._conversionRegistryHelper.getSuggestedLocale(var1);
+   public final int getSuggestedLocale(String enc) {
+      return this._conversionRegistryHelper.getSuggestedLocale(enc);
    }
 
-   public final String getSuggestedTypeface(String var1) {
-      return this._conversionRegistryHelper.getSuggestedTypeface(var1);
+   public final String getSuggestedTypeface(String enc) {
+      return this._conversionRegistryHelper.getSuggestedTypeface(enc);
    }
 
-   public final String getSuggestedTypeface(int var1) {
-      return this._conversionRegistryHelper.getSuggestedTypeface(var1);
+   public final String getSuggestedTypeface(int localeCode) {
+      return this._conversionRegistryHelper.getSuggestedTypeface(localeCode);
    }
 
-   public final String getSuggestedEncoding(int var1) {
-      return this._conversionRegistryHelper.getSuggestedEncoding(var1);
+   public final String getSuggestedEncoding(int localeCode) {
+      return this._conversionRegistryHelper.getSuggestedEncoding(localeCode);
    }
 
-   public final int getTextProcessingDataID(String var1, int var2) {
-      switch (var2) {
+   public final int getTextProcessingDataID(String dataSpecificName, int dataType) {
+      switch (dataType) {
          case 0:
-            return this._conversionRegistryHelper.getEncodingID(var1);
+            return this._conversionRegistryHelper.getEncodingID(dataSpecificName);
          default:
             return -1;
       }
    }
 
-   public final int getTextProcessingDataID(int var1, int var2) {
-      switch (var2) {
+   public final int getTextProcessingDataID(int localeCode, int dataType) {
+      switch (dataType) {
          case 2:
-            return this._breakingDataRegistryHelper.getTextProcessingDataID(var1, var2);
+            return this._breakingDataRegistryHelper.getTextProcessingDataID(localeCode, dataType);
          default:
             return -1;
       }

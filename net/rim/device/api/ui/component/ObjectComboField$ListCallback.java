@@ -9,23 +9,23 @@ public class ObjectComboField$ListCallback implements ListFieldCallback {
    protected Object[] _subset;
    private final ObjectComboField this$0;
 
-   public ObjectComboField$ListCallback(ObjectComboField var1, Object[] var2) {
-      this.this$0 = var1;
+   public ObjectComboField$ListCallback(ObjectComboField _1, Object[] choices) {
+      this.this$0 = _1;
       this._subset = new Object[0];
-      this._choices = var2;
+      this._choices = choices;
    }
 
-   public void update(String var1) {
+   public void update(String prefix) {
       if (!this.this$0.doFilter()) {
          this._subset = this._choices;
       } else {
          Array.resize(this._subset, 0);
-         int var2 = this._choices.length;
+         int count = this._choices.length;
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            String var4 = this._choices[var3].toString();
-            if (this.this$0.matches(var4, var1)) {
-               Arrays.add(this._subset, this._choices[var3]);
+         for (int i = 0; i < count; i++) {
+            String choice = this._choices[i].toString();
+            if (this.this$0.matches(choice, prefix)) {
+               Arrays.add(this._subset, this._choices[i]);
             }
          }
       }
@@ -36,27 +36,27 @@ public class ObjectComboField$ListCallback implements ListFieldCallback {
    }
 
    @Override
-   public void drawListRow(ListField var1, Graphics var2, int var3, int var4, int var5) {
-      Object var6 = this.get(var1, var3);
-      if (var6 != null) {
-         String var7 = var6.toString();
-         var4 = var1.getAdjustedY(var2.getFont(), var7, var4);
-         var2.drawText(var7, 0, Integer.MAX_VALUE, 0, var4, 64, var5);
+   public void drawListRow(ListField listField, Graphics g, int index, int y, int width) {
+      Object data = this.get(listField, index);
+      if (data != null) {
+         String dataString = data.toString();
+         y = listField.getAdjustedY(g.getFont(), dataString, y);
+         g.drawText(dataString, 0, Integer.MAX_VALUE, 0, y, 64, width);
       }
    }
 
    @Override
-   public int getPreferredWidth(ListField var1) {
+   public int getPreferredWidth(ListField listField) {
       return 0;
    }
 
    @Override
-   public Object get(ListField var1, int var2) {
-      return this._subset[var2];
+   public Object get(ListField listField, int index) {
+      return this._subset[index];
    }
 
    @Override
-   public int indexOfList(ListField var1, String var2, int var3) {
+   public int indexOfList(ListField listField, String prefix, int start) {
       return -1;
    }
 }

@@ -8,13 +8,13 @@ final class CodeModuleDeletionListener$CodeModuleDeletionListenerInternal implem
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == -4232371946002803201L) {
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == -4232371946002803201L) {
          CodeModuleGroupManager.deleteEmptyGroups();
       }
    }
 
-   CodeModuleDeletionListener$CodeModuleDeletionListenerInternal(CodeModuleDeletionListener$1 var1) {
+   CodeModuleDeletionListener$CodeModuleDeletionListenerInternal(CodeModuleDeletionListener$1 x0) {
       this();
    }
 }

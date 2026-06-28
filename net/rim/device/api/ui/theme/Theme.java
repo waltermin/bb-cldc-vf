@@ -13,6 +13,7 @@ import net.rim.device.api.util.ToIntHashtable;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.Image;
 import net.rim.device.internal.ui.NamedIconCollection;
+import net.rim.device.internal.util.StringUtilitiesInternal;
 import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
 
@@ -96,94 +97,94 @@ public class Theme {
    private static final int[] OS_ICONS_KEY_STATE;
    private static final int[] OS_ICONS_RADIO;
 
-   Theme(Hashtable var1, Hashtable var2, ResourceFetcher var3) {
-      this._moduleDefaults = var1;
-      this._defaultImageDescriptors = var2;
+   Theme(Hashtable moduleDefaults, Hashtable defaultImageDescriptors, ResourceFetcher resourceFetcher) {
+      this._moduleDefaults = moduleDefaults;
+      this._defaultImageDescriptors = defaultImageDescriptors;
    }
 
    public final void $init0() {
-      String var1 = TraceBack.getCallingModuleName(0);
-      this.addDefaultResources(var1);
+      String moduleName = TraceBack.getCallingModuleName(0);
+      this.addDefaultResources(moduleName);
    }
 
-   private void setResourceBundle(ResourceBundle var1) {
+   private void setResourceBundle(ResourceBundle resourceBundle) {
       if (this._resourceBundle == null) {
-         this._resourceBundle = var1;
+         this._resourceBundle = resourceBundle;
       }
    }
 
-   private synchronized void addDefaultResources(String var1) {
-      if (!this._moduleDefaults.containsKey(var1)) {
-         this._moduleDefaults.put(var1, this._moduleDefaults);
-         DefaultResourceFetcher var2 = new DefaultResourceFetcher(var1);
-         this.addResources(var2, true);
+   private synchronized void addDefaultResources(String moduleName) {
+      if (!this._moduleDefaults.containsKey(moduleName)) {
+         this._moduleDefaults.put(moduleName, this._moduleDefaults);
+         DefaultResourceFetcher fetcher = new DefaultResourceFetcher(moduleName);
+         this.addResources(fetcher, true);
       }
    }
 
-   protected void addFont(ResourceFetcher var1, String var2) {
+   protected void addFont(ResourceFetcher resourceFetcher, String name) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   protected void addImage(ResourceFetcher var1, String var2, boolean var3) {
-      Theme$ImageDescriptor var4 = new Theme$ImageDescriptor(var2, var1, var3);
-      if (var3) {
-         this._defaultImageDescriptors.put(var4.getName(), var4);
+   protected void addImage(ResourceFetcher resourceFetcher, String name, boolean isDefault) {
+      Theme$ImageDescriptor descriptor = new Theme$ImageDescriptor(name, resourceFetcher, isDefault);
+      if (isDefault) {
+         this._defaultImageDescriptors.put(descriptor.getName(), descriptor);
       } else {
-         boolean var6 = this._themeLoadingCount == 0;
-         boolean var7 = false;
-         int var8 = var2.indexOf(ThemeConstants.ICONS_SUFFIX);
-         if (var8 >= 0) {
-            var7 = true;
-            String var5 = var2.substring(0, var8);
+         boolean passed = this._themeLoadingCount == 0;
+         boolean isIconCollection = false;
+         int iconIndex = name.indexOf(ThemeConstants.ICONS_SUFFIX);
+         if (iconIndex >= 0) {
+            isIconCollection = true;
+            String subName = name.substring(0, iconIndex);
             if (this._iconCollectionNames == null) {
                this._iconCollectionNames = (ToIntHashtable)(new Object(100));
             }
 
-            int var9 = this._iconCollectionNames.get(var5);
-            if (var9 < 0 || var9 == this._themeLoadingCount) {
-               var6 = true;
+            int themeIndex = this._iconCollectionNames.get(subName);
+            if (themeIndex < 0 || themeIndex == this._themeLoadingCount) {
+               passed = true;
             }
 
-            if (var9 < 0) {
-               this._iconCollectionNames.put(var5, this._themeLoadingCount);
-            }
-         }
-
-         if (!var6 && !var7) {
-            Theme$ImageDescriptor var10 = (Theme$ImageDescriptor)this._themeImageDescriptors.get(var4.getName());
-            if (var10 == null) {
-               var6 = true;
+            if (themeIndex < 0) {
+               this._iconCollectionNames.put(subName, this._themeLoadingCount);
             }
          }
 
-         if (var6) {
-            this._themeImageDescriptors.put(var4.getName(), var4);
+         if (!passed && !isIconCollection) {
+            Theme$ImageDescriptor extant = (Theme$ImageDescriptor)this._themeImageDescriptors.get(descriptor.getName());
+            if (extant == null) {
+               passed = true;
+            }
          }
-      }
-   }
 
-   synchronized void addResources(ResourceFetcher var1, boolean var2) {
-      Enumeration var3 = var1.listResources();
-
-      while (var3.hasMoreElements()) {
-         Object var4 = var3.nextElement();
-         if (((String)var4).indexOf(47) == -1) {
-            if (((String)var4).endsWith(ThemeConstants.EXT_GIF) || ((String)var4).endsWith(ThemeConstants.EXT_PNG)) {
-               this.addImage(var1, (String)var4, var2);
-            }
-
-            if (((String)var4).endsWith(ThemeConstants.EXT_CBTF) || ((String)var4).endsWith(ThemeConstants.EXT_SFF4)) {
-               this.addFont(var1, (String)var4);
-            }
-
-            if (((String)var4).endsWith(ThemeConstants.EXT_MID)) {
-               this.addTune(var1, (String)var4);
-            }
+         if (passed) {
+            this._themeImageDescriptors.put(descriptor.getName(), descriptor);
          }
       }
    }
 
-   protected void addTune(ResourceFetcher var1, String var2) {
+   synchronized void addResources(ResourceFetcher resourceFetcher, boolean isDefault) {
+      Enumeration enumeration = resourceFetcher.listResources();
+
+      while (enumeration.hasMoreElements()) {
+         String name = (String)enumeration.nextElement();
+         if (name.indexOf(47) == -1) {
+            if (name.endsWith(ThemeConstants.EXT_GIF) || name.endsWith(ThemeConstants.EXT_PNG)) {
+               this.addImage(resourceFetcher, name, isDefault);
+            }
+
+            if (name.endsWith(ThemeConstants.EXT_CBTF) || name.endsWith(ThemeConstants.EXT_SFF4)) {
+               this.addFont(resourceFetcher, name);
+            }
+
+            if (name.endsWith(ThemeConstants.EXT_MID)) {
+               this.addTune(resourceFetcher, name);
+            }
+         }
+      }
+   }
+
+   protected void addTune(ResourceFetcher resourceFetcher, String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -191,28 +192,28 @@ public class Theme {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   synchronized String getRegisteredFontNameHack(String var1) {
-      Object var2 = this._registeredFontNames.get(var1);
-      return (String)(var2 != null ? var2 : var1);
+   synchronized String getRegisteredFontNameHack(String name) {
+      String registeredName = (String)this._registeredFontNames.get(name);
+      return registeredName != null ? registeredName : name;
    }
 
    synchronized void applyFont() {
-      Enumeration var1 = this._attributeSets.elements();
+      Enumeration enumeration = this._attributeSets.elements();
 
-      while (var1.hasMoreElements()) {
-         Object var2 = var1.nextElement();
-         ((ThemeAttributeSet)var2).apply();
+      while (enumeration.hasMoreElements()) {
+         ThemeAttributeSet attributes = (ThemeAttributeSet)enumeration.nextElement();
+         attributes.apply();
       }
    }
 
    private void applyIconCollections() {
       ThemeManager.clearIconCollections();
-      Enumeration var1 = ThemeManager.enumerateIconCollections();
+      Enumeration collections = ThemeManager.enumerateIconCollections();
 
-      while (var1.hasMoreElements()) {
-         Object var2 = var1.nextElement();
-         this.initializeIconCollectionHelper((NamedIconCollection)var2, this._defaultImageDescriptors);
-         this.initializeIconCollectionHelper((NamedIconCollection)var2, this._themeImageDescriptors);
+      while (collections.hasMoreElements()) {
+         NamedIconCollection collection = (NamedIconCollection)collections.nextElement();
+         this.initializeIconCollectionHelper(collection, this._defaultImageDescriptors);
+         this.initializeIconCollectionHelper(collection, this._themeImageDescriptors);
       }
    }
 
@@ -222,57 +223,57 @@ public class Theme {
       this.applyRadioIcons(this._isRadioIconsVisible);
    }
 
-   public synchronized void applyKeyStateIcons(boolean var1) {
-      this._isKeyStateIconsVisible = var1;
-      this.applyOsIcons(OS_ICONS_KEY_STATE, var1);
+   public synchronized void applyKeyStateIcons(boolean visible) {
+      this._isKeyStateIconsVisible = visible;
+      this.applyOsIcons(OS_ICONS_KEY_STATE, visible);
 
-      for (int var2 = OS_ICONS_KEY_STATE.length - 1; var2 >= 0; var2--) {
-         int var3 = OS_ICONS_KEY_STATE[var2];
-         EncodedImage var4 = this._osIcons[var3];
-         if (var4 != null) {
-            this._osKeyIconWidth = Math.max(this._osKeyIconWidth, var4.getWidth());
+      for (int lv = OS_ICONS_KEY_STATE.length - 1; lv >= 0; lv--) {
+         int iconIndex = OS_ICONS_KEY_STATE[lv];
+         EncodedImage image = this._osIcons[iconIndex];
+         if (image != null) {
+            this._osKeyIconWidth = Math.max(this._osKeyIconWidth, image.getWidth());
          }
       }
    }
 
-   public synchronized void applyRadioIcons(boolean var1) {
-      this._isRadioIconsVisible = var1;
-      this.applyOsIcons(OS_ICONS_RADIO, var1);
+   public synchronized void applyRadioIcons(boolean visible) {
+      this._isRadioIconsVisible = visible;
+      this.applyOsIcons(OS_ICONS_RADIO, visible);
    }
 
-   private void applyOsIcons(int[] var1, boolean var2) {
+   private void applyOsIcons(int[] icons, boolean visible) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void applyOsIcon(String var1, Theme$ImageDescriptor var2) {
+   private void applyOsIcon(String name, Theme$ImageDescriptor descriptor) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void applyUiIcon(String var1, Theme$ImageDescriptor var2) {
-      byte var3 = -1;
-      if (var1.equals(ThemeConstants.NAVIGATION_UP_ARROW)) {
-         var3 = 0;
-      } else if (var1.equals(ThemeConstants.NAVIGATION_DOWN_ARROW)) {
-         var3 = 1;
-      } else if (var1.equals(ThemeConstants.SCROLLBAR_ELEVATOR)) {
-         var3 = 2;
-      } else if (var1.equals(ThemeConstants.SCROLLBAR_INDICATOR)) {
-         var3 = 3;
+   private void applyUiIcon(String name, Theme$ImageDescriptor descriptor) {
+      int id = -1;
+      if (name.equals(ThemeConstants.NAVIGATION_UP_ARROW)) {
+         id = 0;
+      } else if (name.equals(ThemeConstants.NAVIGATION_DOWN_ARROW)) {
+         id = 1;
+      } else if (name.equals(ThemeConstants.SCROLLBAR_ELEVATOR)) {
+         id = 2;
+      } else if (name.equals(ThemeConstants.SCROLLBAR_INDICATOR)) {
+         id = 3;
       }
 
-      if (var3 != -1 && this._themeBitmaps[var3] == null) {
-         this._themeBitmaps[var3] = var2.getImage().getBitmap();
+      if (id != -1 && this._themeBitmaps[id] == null) {
+         this._themeBitmaps[id] = descriptor.getImage().getBitmap();
       }
    }
 
-   protected void calcIconSize(EncodedImage var1) {
+   protected void calcIconSize(EncodedImage image) {
       if (!this._ribbonIconSizeSet) {
-         if (var1.getWidth() > this._ribbonIconWidth) {
-            this._ribbonIconWidth = var1.getWidth();
+         if (image.getWidth() > this._ribbonIconWidth) {
+            this._ribbonIconWidth = image.getWidth();
          }
 
-         if (var1.getHeight() > this._ribbonIconHeight) {
-            this._ribbonIconHeight = var1.getHeight();
+         if (image.getHeight() > this._ribbonIconHeight) {
+            this._ribbonIconHeight = image.getHeight();
          }
       }
    }
@@ -289,8 +290,8 @@ public class Theme {
    }
 
    public void dispose() {
-      for (int var1 = this._themeBitmaps.length - 1; var1 >= 0; var1--) {
-         this._themeBitmaps[var1] = null;
+      for (int lv = this._themeBitmaps.length - 1; lv >= 0; lv--) {
+         this._themeBitmaps[lv] = null;
       }
 
       this._themeBitmaps = null;
@@ -302,8 +303,8 @@ public class Theme {
       this._borders.clear();
       this._borders = null;
 
-      for (int var2 = this._osIcons.length - 1; var2 >= 0; var2--) {
-         this._osIcons[var2] = null;
+      for (int lv = this._osIcons.length - 1; lv >= 0; lv--) {
+         this._osIcons[lv] = null;
       }
 
       this._osIcons = null;
@@ -313,111 +314,132 @@ public class Theme {
    }
 
    public void disposeFonts() {
-      for (int var1 = this._fontHandles.length - 1; var1 >= 0; var1--) {
-         FontRegistry.unloadFont(this._fontHandles[var1]);
+      for (int lv = this._fontHandles.length - 1; lv >= 0; lv--) {
+         FontRegistry.unloadFont(this._fontHandles[lv]);
       }
 
       this._fontHandles = null;
    }
 
-   boolean freeStaleObject(int var1) {
-      boolean var2 = false;
-      Enumeration var3 = this._attributeSets.elements();
+   boolean freeStaleObject(int priority) {
+      boolean ret = false;
+      Enumeration enumeration = this._attributeSets.elements();
 
-      while (var3.hasMoreElements()) {
-         Object var4 = var3.nextElement();
-         var2 = ((ThemeAttributeSet)var4).freeStaleObject(var1) || var2;
+      while (enumeration.hasMoreElements()) {
+         ThemeAttributeSet tas = (ThemeAttributeSet)enumeration.nextElement();
+         ret = tas.freeStaleObject(priority) || ret;
       }
 
-      return var2;
+      return ret;
    }
 
-   private String getNameWithState(String var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private String getNameWithState(String name, int state) {
+      StringBuffer _buffer = StringUtilitiesInternal.getScratchBuffer();
+      synchronized (_buffer) {
+         _buffer.append(name);
+         _buffer.append('~');
+         _buffer.append(this.getNameForState(state));
+         String nameWithState = _buffer.toString();
+         _buffer.setLength(0);
+         return nameWithState;
+      }
    }
 
-   private String getNameWithAppState(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private String getNameWithAppState(String name, String appState) {
+      if (appState == null) {
+         return name;
+      }
+
+      StringBuffer _buffer = StringUtilitiesInternal.getScratchBuffer();
+      synchronized (_buffer) {
+         _buffer.append(name);
+         _buffer.append('.');
+         _buffer.append(appState);
+         String nameWithAppState = _buffer.toString();
+         _buffer.setLength(0);
+         return nameWithAppState;
+      }
    }
 
-   public String getString(int var1) {
-      return this._resourceBundle.getString(var1);
+   public String getString(int id) {
+      return this._resourceBundle.getString(id);
    }
 
-   public String getOption(String var1) {
-      return (String)this._options.get(var1);
+   public String getOption(String key) {
+      return (String)this._options.get(key);
    }
 
-   public Image getApplicationIcon(String var1, int var2, int var3, Image var4, int var5) {
-      return this.getApplicationIcon(var1, null, var2, var3, var4, var5);
+   public Image getApplicationIcon(String name, int state, int size, Image defaultValue, int method) {
+      return this.getApplicationIcon(name, null, state, size, defaultValue, method);
    }
 
-   public Image getApplicationIcon(String var1, String var2, int var3, int var4, Image var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Image getApplicationIcon(String name, String appState, int state, int size, Image defaultValue, int method) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public ThemeAttributeSet getAttributeSet(Tag var1) {
-      if (var1 == null) {
+   public ThemeAttributeSet getAttributeSet(Tag tag) {
+      if (tag == null) {
          return null;
       }
 
-      long var2 = this.getKey(var1.hashCode(), null, 0);
-      return (ThemeAttributeSet)this._attributeSets.get(var2);
+      long lkey = this.getKey(tag.hashCode(), null, 0);
+      ThemeAttributeSet attributes = (ThemeAttributeSet)this._attributeSets.get(lkey);
+      return attributes;
    }
 
-   public ThemeAttributeSet getAttributeSet(Tag var1, String var2, int var3) {
-      return this.getAttributeSet(var1, var2, var3, false);
+   public ThemeAttributeSet getAttributeSet(Tag tag, String idname, int state) {
+      return this.getAttributeSet(tag, idname, state, false);
    }
 
-   public ThemeAttributeSet getAttributeSet(Tag var1, String var2, int var3, boolean var4) {
-      if (var1 == null) {
+   public ThemeAttributeSet getAttributeSet(Tag tag, String idname, int state, boolean allowsNull) {
+      if (tag == null) {
          return null;
       }
 
-      Object var5 = null;
+      ThemeAttributeSet attributes = null;
 
       while (true) {
-         long var6 = this.getKey(var1.hashCode(), var2, var3);
-         var5 = this._attributeSets.get(var6);
-         if (var4 || var5 != null) {
+         long key = this.getKey(tag.hashCode(), idname, state);
+         attributes = (ThemeAttributeSet)this._attributeSets.get(key);
+         if (allowsNull || attributes != null) {
             break;
          }
 
-         if (var3 != 0) {
-            var3 = 0;
-         } else if (var2 != null) {
-            var2 = null;
+         if (state != 0) {
+            state = 0;
+         } else if (idname != null) {
+            idname = null;
          } else {
-            if (var1.hashCode() == 0) {
+            if (tag.hashCode() == 0) {
                break;
             }
 
-            var1 = Tag.get(null);
+            tag = Tag.get(null);
          }
       }
 
-      return (ThemeAttributeSet)var5;
+      return attributes;
    }
 
-   public ThemeAttributeSet getAttributeSet(Field var1) {
-      return !this._attributeSets.isEmpty() && var1 != null ? this.getAttributeSet(var1.getTag(), var1.getId(), var1.getState()) : null;
+   public ThemeAttributeSet getAttributeSet(Field element) {
+      return !this._attributeSets.isEmpty() && element != null ? this.getAttributeSet(element.getTag(), element.getId(), element.getState()) : null;
    }
 
-   public ThemeAttributeSet getAttributeSet(Field var1, int var2) {
-      return !this._attributeSets.isEmpty() && var1 != null ? this.getAttributeSet(var1.getTag(), var1.getId(), var2) : null;
+   public ThemeAttributeSet getAttributeSet(Field element, int state) {
+      return !this._attributeSets.isEmpty() && element != null ? this.getAttributeSet(element.getTag(), element.getId(), state) : null;
    }
 
-   public Bitmap getBitmap(String var1) {
-      Bitmap var2 = null;
-      EncodedImage var3 = this.getImage(var1);
-      if (var3 != null) {
-         var2 = var3.getBitmap();
+   public Bitmap getBitmap(String name) {
+      Bitmap bitmap = null;
+      EncodedImage image = this.getImage(name);
+      if (image != null) {
+         bitmap = image.getBitmap();
       }
 
-      return var2;
+      return bitmap;
    }
 
-   public int getColor(String var1) {
+   public int getColor(String name) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -429,34 +451,34 @@ public class Theme {
       return this._thumbnailName;
    }
 
-   public EncodedImage getImage(String var1) {
-      String var2 = TraceBack.getCallingModuleName(0);
-      return this.getImage(var1, var2, false);
+   public EncodedImage getImage(String name) {
+      String moduleName = TraceBack.getCallingModuleName(0);
+      return this.getImage(name, moduleName, false);
    }
 
-   public EncodedImage getImage(String var1, boolean var2) {
-      String var3 = TraceBack.getCallingModuleName(0);
-      return this.getImage(var1, var3, var2);
+   public EncodedImage getImage(String name, boolean allowNull) {
+      String moduleName = TraceBack.getCallingModuleName(0);
+      return this.getImage(name, moduleName, allowNull);
    }
 
-   public EncodedImage getImage(String var1, String var2, boolean var3) {
+   public EncodedImage getImage(String name, String moduleName, boolean allowNull) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private long getKey(int var1, String var2, int var3) {
-      if (var2 == null && var3 == 0) {
-         return var1;
+   private long getKey(int tag, String idname, int state) {
+      if (idname == null && state == 0) {
+         return tag;
       }
 
-      long var4 = var1 | var3 << 24;
-      if (var2 != null) {
-         var4 |= (long)var2.hashCode() << 32;
+      long key = tag | state << 24;
+      if (idname != null) {
+         key |= (long)idname.hashCode() << 32;
       }
 
-      return var4;
+      return key;
    }
 
-   public Manager getLayout(String var1, Object var2) {
+   public Manager getLayout(String name, Object context) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -468,11 +490,12 @@ public class Theme {
       return this._ribbonIconWidth;
    }
 
-   public Border getBorder(String var1) {
-      return (Border)this._borders.get(var1);
+   public Border getBorder(String name) {
+      Border border = (Border)this._borders.get(name);
+      return border;
    }
 
-   public Bitmap[] getScrollbar(String var1) {
+   public Bitmap[] getScrollbar(String name) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -484,7 +507,7 @@ public class Theme {
       return this._ringtones.keys();
    }
 
-   public byte[] getRingtone(String var1) {
+   public byte[] getRingtone(String name) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -500,13 +523,13 @@ public class Theme {
       return this._writer;
    }
 
-   private String getNameForState(int var1) {
+   private String getNameForState(int state) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static Bitmap getThemeBitmap(int var0) {
-      if (var0 >= 0 && var0 < 4) {
-         return ThemeManager.getActiveTheme()._themeBitmaps[var0];
+   public static Bitmap getThemeBitmap(int type) {
+      if (type >= 0 && type < 4) {
+         return ThemeManager.getActiveTheme()._themeBitmaps[type];
       } else {
          throw new Object();
       }
@@ -520,11 +543,11 @@ public class Theme {
       this._themeLoadingCount++;
    }
 
-   void initializeIconCollection(NamedIconCollection var1, String var2) {
+   void initializeIconCollection(NamedIconCollection collection, String moduleName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   void initializeIconCollectionHelper(NamedIconCollection var1, Hashtable var2) {
+   void initializeIconCollectionHelper(NamedIconCollection collection, Hashtable descriptors) {
       throw new RuntimeException("cod2jar: string-special");
    }
 

@@ -11,13 +11,13 @@ class PersistentContent$ResetPasswordData implements Persistable {
    private byte[] _passwordCiphertext;
    private static final long ID;
 
-   private PersistentContent$ResetPasswordData(byte[] var1, byte[] var2, byte[] var3) {
-      this._B = var1;
-      this._D = var2;
-      this._passwordCiphertext = var3;
-      Object var4 = new Object();
-      ((Digest)var4).update(var1);
-      this._digestOfB = ((Digest)var4).getDigest();
+   private PersistentContent$ResetPasswordData(byte[] B, byte[] D, byte[] passwordCiphertext) {
+      this._B = B;
+      this._D = D;
+      this._passwordCiphertext = passwordCiphertext;
+      Digest digest = (Digest)(new Object());
+      digest.update(B);
+      this._digestOfB = digest.getDigest();
    }
 
    byte[] getD() {
@@ -28,26 +28,26 @@ class PersistentContent$ResetPasswordData implements Persistable {
       return this._digestOfB;
    }
 
-   boolean isSameB(byte[] var1) {
-      return Arrays.equals(this._B, var1);
+   boolean isSameB(byte[] B) {
+      return Arrays.equals(this._B, B);
    }
 
    byte[] getPasswordCiphertext() {
       return this._passwordCiphertext;
    }
 
-   static void createInstance(byte[] var0, byte[] var1, byte[] var2) {
-      PersistentObject var3 = PersistentStore.getPersistentObject(-4896566637383887503L);
-      var3.setContents(new PersistentContent$ResetPasswordData(var0, var1, var2), 51);
+   static void createInstance(byte[] B, byte[] D, byte[] passwordCiphertext) {
+      PersistentObject po = PersistentStore.getPersistentObject(-4896566637383887503L);
+      po.setContents(new PersistentContent$ResetPasswordData(B, D, passwordCiphertext), 51);
    }
 
    static PersistentContent$ResetPasswordData getInstance() {
-      PersistentObject var0 = PersistentStore.getPersistentObject(-4896566637383887503L);
-      return (PersistentContent$ResetPasswordData)var0.getContents();
+      PersistentObject po = PersistentStore.getPersistentObject(-4896566637383887503L);
+      return (PersistentContent$ResetPasswordData)po.getContents();
    }
 
    static void clearInstance() {
-      PersistentObject var0 = PersistentStore.getPersistentObject(-4896566637383887503L);
-      var0.setContents(null, 51);
+      PersistentObject po = PersistentStore.getPersistentObject(-4896566637383887503L);
+      po.setContents(null, 51);
    }
 }

@@ -13,11 +13,11 @@ public final class FileSystemJournalEntry {
    private FileSystemJournalEntry() {
    }
 
-   private FileSystemJournalEntry(long var1, String var3, String var4, int var5) {
-      this._usn = var1;
-      this._path = var3;
-      this._oldPath = var4;
-      this._event = var5;
+   private FileSystemJournalEntry(long usn, String path, String oldPath, int event) {
+      this._usn = usn;
+      this._path = path;
+      this._oldPath = oldPath;
+      this._event = event;
    }
 
    public final String getPath() {
@@ -36,7 +36,7 @@ public final class FileSystemJournalEntry {
       return this._usn;
    }
 
-   public static final FileSystemJournalEntry createEntry(long var0, String var2, String var3, int var4) {
-      return new FileSystemJournalEntry(var0, var2, var3, var4);
+   public static final FileSystemJournalEntry createEntry(long usn, String path, String oldPath, int event) {
+      return new FileSystemJournalEntry(usn, path, oldPath, event);
    }
 }

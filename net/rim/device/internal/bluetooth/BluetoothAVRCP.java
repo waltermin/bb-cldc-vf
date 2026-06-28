@@ -4,6 +4,7 @@ import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.internal.system.EventDispatchManager;
 
 public final class BluetoothAVRCP {
    public static final boolean isSupported() {
@@ -26,11 +27,18 @@ public final class BluetoothAVRCP {
 
    public static final native int setPanelKey(int var0, int var1, boolean var2);
 
-   public static final void addListener(Application var0, BluetoothAVRCPListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, BluetoothAVRCPListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(25) == null) {
+            dispatchManager.setDispatcher(25, new BluetoothAVRCPEventDispatcher());
+         }
+      }
+
+      app.addListener(25, listener);
    }
 
-   public static final void removeListener(Application var0, BluetoothAVRCPListener var1) {
-      var0.removeListener(25, var1);
+   public static final void removeListener(Application app, BluetoothAVRCPListener listener) {
+      app.removeListener(25, listener);
    }
 }

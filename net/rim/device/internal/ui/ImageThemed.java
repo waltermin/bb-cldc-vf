@@ -11,37 +11,37 @@ public class ImageThemed implements Image {
    private int _themeGeneration;
    private Image _image;
 
-   public ImageThemed(String var1, String var2) {
-      this._moduleName = var2;
-      this._name = var1;
+   public ImageThemed(String name, String moduleName) {
+      this._moduleName = moduleName;
+      this._name = name;
       this.update();
    }
 
    @Override
-   public int getHeight(int var1, int var2) {
+   public int getHeight(int width, int height) {
       this.update();
-      return this._image.getHeight(var1, var2);
+      return this._image.getHeight(width, height);
    }
 
    @Override
-   public int getWidth(int var1, int var2) {
+   public int getWidth(int width, int height) {
       this.update();
-      return this._image.getWidth(var1, var2);
+      return this._image.getWidth(width, height);
    }
 
    @Override
-   public void paint(Graphics var1, int var2, int var3, int var4, int var5) {
+   public void paint(Graphics graphics, int x, int y, int width, int height) {
       this.update();
-      this._image.paint(var1, var2, var3, var4, var5);
+      this._image.paint(graphics, x, y, width, height);
    }
 
    private void update() {
-      int var1 = ThemeManager.getGeneration();
-      if (this._themeGeneration != var1) {
-         this._themeGeneration = var1;
-         Theme var2 = ThemeManager.getActiveTheme();
-         EncodedImage var3 = var2.getImage(this._name, this._moduleName, false);
-         this._image = ImageEncoded.create(var3);
+      int themeGeneration = ThemeManager.getGeneration();
+      if (this._themeGeneration != themeGeneration) {
+         this._themeGeneration = themeGeneration;
+         Theme theme = ThemeManager.getActiveTheme();
+         EncodedImage encoded = theme.getImage(this._name, this._moduleName, false);
+         this._image = ImageEncoded.create(encoded);
       }
    }
 }

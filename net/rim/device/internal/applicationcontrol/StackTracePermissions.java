@@ -3,37 +3,49 @@ package net.rim.device.internal.applicationcontrol;
 import java.util.Enumeration;
 import java.util.Vector;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.IntHashtable;
 
 final class StackTracePermissions {
    private IntHashtable _delegate;
-   private PersistentObject _persistentDelegate;
+   private PersistentObject _persistentDelegate = RIMPersistentStore.getPersistentObject(2849651058031202388L);
    private static final long STACK_HASHES_KEY;
 
-   final void setResponse(int var1, int[] var2, int var3, int var4, boolean var5) {
-      byte[] var6 = this.getHashOfStackTrace(var2);
-      if (var6 != null) {
-         Object var7 = this.getResponses(var1);
-         if (var7 == null) {
-            var7 = new Object();
-            this._delegate.put(var1, var7);
+   StackTracePermissions() {
+      synchronized (this._persistentDelegate) {
+         this._delegate = (IntHashtable)this._persistentDelegate.getContents();
+         if (this._delegate == null) {
+            this._delegate = (IntHashtable)(new Object());
+            this._persistentDelegate.setContents(this._delegate, 51);
+            this._persistentDelegate.commit();
+         }
+      }
+   }
+
+   final void setResponse(int processHandle, int[] stackHandles, int allowFlag, int promptFlag, boolean allow) {
+      byte[] stackHash = this.getHashOfStackTrace(stackHandles);
+      if (stackHash != null) {
+         Vector stackTracePermissionsVector = this.getResponses(processHandle);
+         if (stackTracePermissionsVector == null) {
+            stackTracePermissionsVector = (Vector)(new Object());
+            this._delegate.put(processHandle, stackTracePermissionsVector);
          }
 
-         Object var8 = this.getResponse((Vector)var7, var6);
-         if (var8 == null) {
-            var8 = new Object(var6);
-            ((Vector)var7).addElement(var8);
+         CachedStackTraceResponse stackTraceResponse = this.getResponse(stackTracePermissionsVector, stackHash);
+         if (stackTraceResponse == null) {
+            stackTraceResponse = (CachedStackTraceResponse)(new Object(stackHash));
+            stackTracePermissionsVector.addElement(stackTraceResponse);
          }
 
-         ((CachedStackTraceResponse)var8).setAllowed(var3, var4, var5);
+         stackTraceResponse.setAllowed(allowFlag, promptFlag, allow);
          this.persistChanges();
       }
    }
 
-   final int getResponsePermission(int var1, int[] var2, int var3, int var4) {
-      byte[] var5 = this.getHashOfStackTrace(var2);
-      CachedStackTraceResponse var6 = this.getResponse(var1, var5);
-      return CachedStackTraceResponse.responseToPermission(var6, var3, var4);
+   final int getResponsePermission(int processHandle, int[] stackHandles, int allowFlag, int promptFlag) {
+      byte[] stackHash = this.getHashOfStackTrace(stackHandles);
+      CachedStackTraceResponse stackTraceResponse = this.getResponse(processHandle, stackHash);
+      return CachedStackTraceResponse.responseToPermission(stackTraceResponse, allowFlag, promptFlag);
    }
 
    final void removeAllResponses() {
@@ -41,58 +53,58 @@ final class StackTracePermissions {
       this.persistChanges();
    }
 
-   final void removeAllResponses(int var1, int var2) {
-      Enumeration var3 = this._delegate.elements();
-      Object var4 = null;
+   final void removeAllResponses(int allowFlag, int promptFlag) {
+      Enumeration processVectors = this._delegate.elements();
+      Vector stackTracePermissionsVector = null;
 
-      while (var3.hasMoreElements()) {
-         var4 = var3.nextElement();
-         this.removeResponses((Vector)var4, var1, var2);
+      while (processVectors.hasMoreElements()) {
+         stackTracePermissionsVector = (Vector)processVectors.nextElement();
+         this.removeResponses(stackTracePermissionsVector, allowFlag, promptFlag);
       }
 
       this.persistChanges();
    }
 
-   final void removeResponses(int var1) {
-      this._delegate.remove(var1);
+   final void removeResponses(int processHandle) {
+      this._delegate.remove(processHandle);
       this.persistChanges();
    }
 
-   final void removeResponses(int var1, int var2, int var3) {
-      this.removeResponses(this.getResponses(var1), var2, var3);
+   final void removeResponses(int processHandle, int allowFlag, int promptFlag) {
+      this.removeResponses(this.getResponses(processHandle), allowFlag, promptFlag);
       this.persistChanges();
    }
 
-   private final CachedStackTraceResponse getResponse(int var1, byte[] var2) {
-      Vector var3 = this.getResponses(var1);
-      return var3 == null ? null : this.getResponse(var3, var2);
+   private final CachedStackTraceResponse getResponse(int processHandle, byte[] stackHash) {
+      Vector stackTracePermissionsVector = this.getResponses(processHandle);
+      return stackTracePermissionsVector == null ? null : this.getResponse(stackTracePermissionsVector, stackHash);
    }
 
-   private final CachedStackTraceResponse getResponse(Vector var1, byte[] var2) {
-      Enumeration var3 = var1.elements();
-      Object var4 = null;
+   private final CachedStackTraceResponse getResponse(Vector stackTracePermissionsVector, byte[] stackHash) {
+      Enumeration responseElements = stackTracePermissionsVector.elements();
+      CachedStackTraceResponse stackTracePermissions = null;
 
-      while (var3.hasMoreElements()) {
-         var4 = var3.nextElement();
-         if (((CachedStackTraceResponse)var4).equals(var2)) {
-            return (CachedStackTraceResponse)var4;
+      while (responseElements.hasMoreElements()) {
+         stackTracePermissions = (CachedStackTraceResponse)responseElements.nextElement();
+         if (stackTracePermissions.equals(stackHash)) {
+            return stackTracePermissions;
          }
       }
 
       return null;
    }
 
-   private final Vector getResponses(int var1) {
-      return (Vector)this._delegate.get(var1);
+   private final Vector getResponses(int processHandle) {
+      return (Vector)this._delegate.get(processHandle);
    }
 
-   private final void removeResponses(Vector var1, int var2, int var3) {
-      Enumeration var4 = var1.elements();
-      Object var5 = null;
+   private final void removeResponses(Vector stackTracePermissionVector, int allowFlag, int promptFlag) {
+      Enumeration responseElements = stackTracePermissionVector.elements();
+      CachedStackTraceResponse stackTracePermissions = null;
 
-      while (var4.hasMoreElements()) {
-         var5 = var4.nextElement();
-         ((CachedStackTraceResponse)var5).reset(var2, var3);
+      while (responseElements.hasMoreElements()) {
+         stackTracePermissions = (CachedStackTraceResponse)responseElements.nextElement();
+         stackTracePermissions.reset(allowFlag, promptFlag);
       }
    }
 
@@ -100,7 +112,7 @@ final class StackTracePermissions {
       this._persistentDelegate.commit();
    }
 
-   private final byte[] getHashOfStackTrace(int[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final byte[] getHashOfStackTrace(int[] handles) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -1,6 +1,8 @@
 package net.rim.device.internal.io;
 
 import java.util.Vector;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioStatusListener;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.cldc.io.daemon.ProtocolDaemon;
@@ -13,24 +15,24 @@ final class PortAssigner$PromiscuousApnPortHolder implements RadioStatusListener
    private Object[] _activeApns;
    private final PortAssigner this$0;
 
-   private PortAssigner$PromiscuousApnPortHolder(PortAssigner var1) {
-      this.this$0 = var1;
+   private PortAssigner$PromiscuousApnPortHolder(PortAssigner _1) {
+      this.this$0 = _1;
       this._keys = new int[0];
       this._values = new Object[0];
       this._clients = new int[0];
       this._activeApns = new Object[0];
-      ProtocolDaemon var2 = ProtocolDaemon.getInstance();
-      if (var2 != null) {
-         var2.addRadioListener(this);
+      ProtocolDaemon pd = ProtocolDaemon.getInstance();
+      if (pd != null) {
+         pd.addRadioListener(this);
       }
    }
 
    @Override
-   public final void signalLevel(int var1) {
+   public final void signalLevel(int level) {
    }
 
    @Override
-   public final void networkStarted(int var1, int var2) {
+   public final void networkStarted(int networkId, int service) {
    }
 
    @Override
@@ -42,55 +44,81 @@ final class PortAssigner$PromiscuousApnPortHolder implements RadioStatusListener
    }
 
    @Override
-   public final void networkStateChange(int var1) {
+   public final void networkStateChange(int state) {
    }
 
    @Override
-   public final void networkScanComplete(boolean var1) {
+   public final void networkScanComplete(boolean success) {
    }
 
    @Override
-   public final void networkServiceChange(int var1, int var2) {
+   public final void networkServiceChange(int networkId, int service) {
    }
 
    @Override
-   public final void pdpStateChange(int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   public final void pdpStateChange(int apn, int state, int cause) {
+      String apnName = null;
 
-   private final void registerPromiscuousPort(int var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+      try {
+         apnName = RadioInfo.getAccessPointName(apn);
+      } catch (RadioException re) {
+         return;
+      }
 
-   private final void deregisterPromiscuousPort(int var1, Object var2) {
-      this.removeClient(var1);
-      if (this.getClients(var1) <= 0) {
-         Object var3 = this.get(var1);
-         if (var3 != null) {
-            for (int var4 = ((Vector)var3).size() - 1; var4 >= 1; var4--) {
-               this.this$0.deregisterConnection(var1, var2, (String)((Vector)var3).elementAt(var4), false);
+      switch (state) {
+         case 0:
+            try {
+               synchronized (this._activeApns) {
+                  if (Arrays.getIndex(this._activeApns, apnName) < 0) {
+                     Arrays.add(this._activeApns, apnName);
+                  }
+               }
+
+               this.triggerPromiscuousPortsRegistration(apnName);
+               return;
+            } catch (Exception var9) {
+               return;
             }
-         }
-
-         this.remove(var1);
+         default:
+            synchronized (this._activeApns) {
+               Arrays.remove(this._activeApns, apnName);
+            }
       }
    }
 
-   private final void triggerPromiscuousPortsRegistration(String var1) {
-      int[] var2 = this.keys();
+   private final void registerPromiscuousPort(int port, Object connection) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+   }
 
-      for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-         int var4 = var2[var3];
-         Object var5 = this.get(var4);
-         if (var5 != null && ((Vector)var5).size() > 0) {
-            Object var6 = ((Vector)var5).elementAt(0);
-            Object var7 = var6 != null ? ((WeakReference)var6).get() : null;
-            if (var7 != null) {
-               if (var5 != null && ((Vector)var5).indexOf(var1) < 0 && this.this$0.registerConnection(var4, var7, var1, false)) {
-                  ((Vector)var5).addElement(var1);
+   private final void deregisterPromiscuousPort(int port, Object connection) {
+      this.removeClient(port);
+      if (this.getClients(port) <= 0) {
+         Vector v = (Vector)this.get(port);
+         if (v != null) {
+            for (int i = v.size() - 1; i >= 1; i--) {
+               this.this$0.deregisterConnection(port, connection, (String)v.elementAt(i), false);
+            }
+         }
+
+         this.remove(port);
+      }
+   }
+
+   private final void triggerPromiscuousPortsRegistration(String apn) {
+      int[] keys = this.keys();
+
+      for (int i = keys.length - 1; i >= 0; i--) {
+         int port = keys[i];
+         Vector v = (Vector)this.get(port);
+         if (v != null && v.size() > 0) {
+            WeakReference wk = (WeakReference)v.elementAt(0);
+            Object connection = wk != null ? wk.get() : null;
+            if (connection != null) {
+               if (v != null && v.indexOf(apn) < 0 && this.this$0.registerConnection(port, connection, apn, false)) {
+                  v.addElement(apn);
                }
             } else {
-               this.deregisterPromiscuousPort(var4, var7);
+               this.deregisterPromiscuousPort(port, connection);
             }
          }
       }
@@ -100,52 +128,52 @@ final class PortAssigner$PromiscuousApnPortHolder implements RadioStatusListener
       return this._keys;
    }
 
-   private final Object remove(int var1) {
-      int var2 = Arrays.getIndex(this._keys, var1);
-      Object var3 = null;
-      if (var2 >= 0) {
-         var3 = this._values[var2];
-         Arrays.removeAt(this._keys, var2);
-         Arrays.removeAt(this._values, var2);
-         Arrays.removeAt(this._clients, var2);
+   private final Object remove(int key) {
+      int i = Arrays.getIndex(this._keys, key);
+      Object obj = null;
+      if (i >= 0) {
+         obj = this._values[i];
+         Arrays.removeAt(this._keys, i);
+         Arrays.removeAt(this._values, i);
+         Arrays.removeAt(this._clients, i);
       }
 
-      return var3;
+      return obj;
    }
 
-   private final Object get(int var1) {
-      int var2 = Arrays.getIndex(this._keys, var1);
-      return var2 >= 0 ? this._values[var2] : null;
+   private final Object get(int key) {
+      int i = Arrays.getIndex(this._keys, key);
+      return i >= 0 ? this._values[i] : null;
    }
 
-   private final void put(int var1, Object var2) {
-      int var3 = Arrays.getIndex(this._keys, var1);
-      if (var3 < 0) {
-         var3 = this._keys.length;
-         Arrays.add(this._keys, var1);
-         Arrays.add(this._values, var2);
+   private final void put(int key, Object value) {
+      int i = Arrays.getIndex(this._keys, key);
+      if (i < 0) {
+         i = this._keys.length;
+         Arrays.add(this._keys, key);
+         Arrays.add(this._values, value);
          Arrays.add(this._clients, 0);
       }
 
-      this._keys[var3] = var1;
-      this._values[var3] = var2;
-      this._clients[var3] = 0;
+      this._keys[i] = key;
+      this._values[i] = value;
+      this._clients[i] = 0;
    }
 
-   private final void addClient(int var1) {
+   private final void addClient(int key) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   private final void removeClient(int var1) {
+   private final void removeClient(int key) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   private final int getClients(int var1) {
-      int var2 = Arrays.getIndex(this._keys, var1);
-      return var2 >= 0 ? this._clients[var2] : 0;
+   private final int getClients(int key) {
+      int i = Arrays.getIndex(this._keys, key);
+      return i >= 0 ? this._clients[i] : 0;
    }
 
-   PortAssigner$PromiscuousApnPortHolder(PortAssigner var1, PortAssigner$1 var2) {
-      this(var1);
+   PortAssigner$PromiscuousApnPortHolder(PortAssigner x0, PortAssigner$1 x1) {
+      this(x0);
    }
 }

@@ -8,12 +8,12 @@ public class RemoteException extends IOException {
    public RemoteException() {
    }
 
-   public RemoteException(String var1) {
+   public RemoteException(String s) {
    }
 
-   public RemoteException(String var1, Throwable var2) {
-      super(var1);
-      this.detail = var2;
+   public RemoteException(String s, Throwable throwable) {
+      super(s);
+      this.detail = throwable;
    }
 
    @Override

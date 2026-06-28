@@ -6,13 +6,13 @@ import net.rim.vm.WeakReference;
 class IPCInvokerWeak extends IPCInvoker {
    private WeakReference _listenerReference;
 
-   IPCInvokerWeak(Application var1, Object var2) {
-      this(var1, var2, null);
+   IPCInvokerWeak(Application app, Object listener) {
+      this(app, listener, null);
    }
 
-   IPCInvokerWeak(Application var1, Object var2, IPCRunnable var3) {
-      super(var1, var3);
-      this._listenerReference = (WeakReference)(new Object(var2));
+   IPCInvokerWeak(Application app, Object listener, IPCRunnable runnable) {
+      super(app, runnable);
+      this._listenerReference = (WeakReference)(new Object(listener));
    }
 
    @Override

@@ -8,19 +8,19 @@ import net.rim.device.api.system.EventLogger;
 
 public class NativeConnectionBase extends DatagramConnectionBase {
    @Override
-   public Connection openPrim(String var1, int var2, boolean var3) {
+   public Connection openPrim(String name, int mode, boolean timeouts) {
       if (!this.checkNetwork()) {
          throw new Object();
       }
 
-      super.openPrim(var1, var2, var3);
+      super.openPrim(name, mode, timeouts);
       EventLogger.logEvent(super._transport.GUID, 1229874030, 0);
       return this;
    }
 
    @Override
-   protected boolean isAddressed(DatagramAddressBase var1) {
-      return super._receiveFilter.equals(var1);
+   protected boolean isAddressed(DatagramAddressBase addressBase) {
+      return super._receiveFilter.equals(addressBase);
    }
 
    protected boolean checkNetwork() {
@@ -28,7 +28,7 @@ public class NativeConnectionBase extends DatagramConnectionBase {
    }
 
    @Override
-   public int getProperties(String var1) {
+   public int getProperties(String name) {
       return 2;
    }
 

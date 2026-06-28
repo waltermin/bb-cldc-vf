@@ -5,7 +5,7 @@ public class WLANSystem {
       throw null;
    }
 
-   protected void setWLANOverride(boolean var1) {
+   protected void setWLANOverride(boolean _1) {
       throw null;
    }
 
@@ -18,21 +18,21 @@ public class WLANSystem {
    }
 
    public int isAssociated() {
-      int var1 = this.getActiveProfileSet();
-      return var1 != -1 ? this.getActiveProfileId(var1) : -1;
+      int handle = this.getActiveProfileSet();
+      return handle != -1 ? this.getActiveProfileId(handle) : -1;
    }
 
-   public WLANNetInfo[] getWLANNetworkInfo(int var1) {
+   public WLANNetInfo[] getWLANNetworkInfo(int _1) {
       throw null;
    }
 
-   public WLANNetInfo getWLANNetworkInfo(int var1, int var2) {
+   public WLANNetInfo getWLANNetworkInfo(int _1, int _2) {
       throw null;
    }
 
-   public final int getActiveProfileId(int var1) {
-      int var2 = getCurrentProfileId(var1);
-      return var2 >= 0 ? var2 : -1;
+   public final int getActiveProfileId(int handle) {
+      int ret = getCurrentProfileId(handle);
+      return ret >= 0 ? ret : -1;
    }
 
    public String getActiveProfileSSID() {
@@ -47,11 +47,11 @@ public class WLANSystem {
       throw null;
    }
 
-   public String getProfileSSID(int var1) {
+   public String getProfileSSID(int _1) {
       throw null;
    }
 
-   public String getProfileName(int var1) {
+   public String getProfileName(int _1) {
       throw null;
    }
 
@@ -93,48 +93,48 @@ public class WLANSystem {
       this.deregisterWLANEvent(4622);
    }
 
-   protected final void registerWLANEvent(int var1) {
-      register(var1);
+   protected final void registerWLANEvent(int event) {
+      register(event);
    }
 
-   protected final void deregisterWLANEvent(int var1) {
-      deregister(var1);
+   protected final void deregisterWLANEvent(int event) {
+      deregister(event);
    }
 
    protected final int createWLANProfileSet() {
       return createProfileSet();
    }
 
-   protected final int destroyWLANProfileSet(int var1) {
-      return destroyProfileSet(var1);
+   protected final int destroyWLANProfileSet(int handle) {
+      return destroyProfileSet(handle);
    }
 
-   protected final int addWLANProfile(int var1, WLANProfile var2, boolean var3) {
-      return addProfile(var1, var2, var3);
+   protected final int addWLANProfile(int handle, WLANProfile profile, boolean lastProfile) {
+      return addProfile(handle, profile, lastProfile);
    }
 
-   protected final int updateWLANProfile(int var1, WLANProfile var2) {
-      return updateProfile(var1, var2);
+   protected final int updateWLANProfile(int handle, WLANProfile profile) {
+      return updateProfile(handle, profile);
    }
 
-   protected final int flushWLANProfiles(int var1) {
-      return flushProfiles(var1);
+   protected final int flushWLANProfiles(int handle) {
+      return flushProfiles(handle);
    }
 
-   protected final int enableWLANProfileScanning(int var1) {
-      return enableProfileScanning(var1);
+   protected final int enableWLANProfileScanning(int handle) {
+      return enableProfileScanning(handle);
    }
 
-   protected final int disableWLANProfileScanning(int var1) {
-      return disableProfileScanning(var1);
+   protected final int disableWLANProfileScanning(int handle) {
+      return disableProfileScanning(handle);
    }
 
-   protected final int connectWLANProfile(int var1, int var2) {
-      return connectProfile(var1, var2);
+   protected final int connectWLANProfile(int handle, int profileID) {
+      return connectProfile(handle, profileID);
    }
 
-   protected final int disconnectWLANProfile(int var1, int var2) {
-      return disconnectProfile(var1, var2);
+   protected final int disconnectWLANProfile(int handle, int profileID) {
+      return disconnectProfile(handle, profileID);
    }
 
    private static native int register(int var0);

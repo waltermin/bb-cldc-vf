@@ -27,28 +27,28 @@ public class UsernamePasswordDialog extends PopupDialog implements FieldChangeLi
    public static final int BROWSER_MODE;
    public static final int JUST_USERNAME_AND_PASSWORD_MODE;
 
-   public UsernamePasswordDialog(int var1) {
-      this(null, var1);
+   public UsernamePasswordDialog(int mode) {
+      this(null, mode);
    }
 
-   public UsernamePasswordDialog(String var1, int var2) {
-      this(var1, null, null, null, var2, 0);
+   public UsernamePasswordDialog(String prompt, int mode) {
+      this(prompt, null, null, null, mode, 0);
    }
 
-   public UsernamePasswordDialog(String var1, String var2, String var3, String var4, int var5, long var6) {
-      super((Manager)(new Object()), var6);
-      this._username = var2;
-      this._domain = var3;
-      this._password = var4;
-      this.populateDialog(var1, var5);
+   public UsernamePasswordDialog(String prompt, String username, String domain, String password, int mode, long style) {
+      super((Manager)(new Object()), style);
+      this._username = username;
+      this._domain = domain;
+      this._password = password;
+      this.populateDialog(prompt, mode);
    }
 
-   private void populateDialog(String var1, int var2) {
+   private void populateDialog(String prompt, int mode) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void setAllowUnicodePassword(boolean var1) {
-      this._passwordField.setAllowUnicodeInput(var1);
+   public void setAllowUnicodePassword(boolean allow) {
+      this._passwordField.setAllowUnicodeInput(allow);
    }
 
    public boolean isUnicodePasswordAllowed() {
@@ -89,40 +89,40 @@ public class UsernamePasswordDialog extends PopupDialog implements FieldChangeLi
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 == this._okButton) {
+   public void fieldChanged(Field field, int context) {
+      if (field == this._okButton) {
          this.accept();
       } else {
-         if (var1 == this._cancelButton) {
+         if (field == this._cancelButton) {
             this.cancel();
          }
       }
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == '\n') {
-         Field var4 = this.getDelegate().getLeafFieldWithFocus();
-         if (var4 == this._cancelButton) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == '\n') {
+         Field field = this.getDelegate().getLeafFieldWithFocus();
+         if (field == this._cancelButton) {
             this.cancel();
             return true;
          }
 
-         if (var4 == this._usernameField) {
+         if (field == this._usernameField) {
             if (this._domainField != null) {
                this._domainField.setFocus();
             } else {
                this._passwordField.setFocus();
             }
-         } else if (var4 == this._domainField) {
+         } else if (field == this._domainField) {
             this._passwordField.setFocus();
-         } else if (var4 == this._passwordField || var4 == this._okButton) {
+         } else if (field == this._passwordField || field == this._okButton) {
             this.accept();
          }
-      } else if (var1 == 27) {
+      } else if (key == 27) {
          this.cancel();
       }
 
-      return super.keyChar(var1, var2, var3);
+      return super.keyChar(key, status, time);
    }
 }

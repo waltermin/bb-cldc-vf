@@ -1,5 +1,7 @@
 package javax.microedition.io;
 
+import net.rim.device.internal.system.MIDletSecurity;
+
 class PushRegistry$AlarmPermissionCheckRunnable implements Runnable {
    boolean _failed;
    boolean _done;
@@ -10,10 +12,22 @@ class PushRegistry$AlarmPermissionCheckRunnable implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         try {
+            MIDletSecurity.checkPermission(8);
+         } catch (Exception e) {
+            this._failed = true;
+            if (e instanceof Object) {
+               this._re = (RuntimeException)e;
+            }
+         }
+
+         this._done = true;
+         throw new PushRegistry$PushRegistryPermissionCheckExitEvent(null);
+      }
    }
 
-   PushRegistry$AlarmPermissionCheckRunnable(PushRegistry$1 var1) {
+   PushRegistry$AlarmPermissionCheckRunnable(PushRegistry$1 x0) {
       this();
    }
 }

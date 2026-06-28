@@ -15,38 +15,38 @@ public class Connector {
    private Connector() {
    }
 
-   public static Connection open(String var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return RIMConnector.open(var1, var0, 3, false);
+   public static Connection open(String name) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.open(caller, name, 3, false);
    }
 
-   public static Connection open(String var0, int var1) {
-      int var2 = TraceBack.getCallingModule(0);
-      return RIMConnector.open(var2, var0, var1, false);
+   public static Connection open(String name, int mode) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.open(caller, name, mode, false);
    }
 
-   public static Connection open(String var0, int var1, boolean var2) {
-      int var3 = TraceBack.getCallingModule(0);
-      return RIMConnector.open(var3, var0, var1, var2);
+   public static Connection open(String name, int mode, boolean timeouts) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.open(caller, name, mode, timeouts);
    }
 
-   public static DataInputStream openDataInputStream(String var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return RIMConnector.openDataInputStream(var1, var0);
+   public static DataInputStream openDataInputStream(String name) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.openDataInputStream(caller, name);
    }
 
-   public static DataOutputStream openDataOutputStream(String var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return RIMConnector.openDataOutputStream(var1, var0);
+   public static DataOutputStream openDataOutputStream(String name) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.openDataOutputStream(caller, name);
    }
 
-   public static InputStream openInputStream(String var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return RIMConnector.openDataInputStream(var1, var0);
+   public static InputStream openInputStream(String name) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.openDataInputStream(caller, name);
    }
 
-   public static OutputStream openOutputStream(String var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return RIMConnector.openDataOutputStream(var1, var0);
+   public static OutputStream openOutputStream(String name) {
+      int caller = TraceBack.getCallingModule(0);
+      return RIMConnector.openDataOutputStream(caller, name);
    }
 }

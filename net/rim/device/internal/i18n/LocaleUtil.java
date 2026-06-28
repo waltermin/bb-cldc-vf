@@ -10,10 +10,10 @@ public final class LocaleUtil {
    private static final int ITALIAN_LOCALE_NUMBER;
    private static final int ALL_LOCALES;
 
-   public static final int convertCppLocaleToJavaLocale(int var0) {
-      switch (var0) {
+   public static final int convertCppLocaleToJavaLocale(int code) {
+      switch (code) {
          case -2:
-            return var0;
+            return code;
          case -1:
             return 0;
          case 0:
@@ -30,16 +30,16 @@ public final class LocaleUtil {
       }
    }
 
-   public static final int convertJavaLocaleToCppLocale(int var0) {
-      if (var0 == 0) {
+   public static final int convertJavaLocaleToCppLocale(int code) {
+      if (code == 0) {
          return -1;
       }
 
-      Locale var1 = Locale.get(var0);
-      String var2 = var1.getLanguage();
-      Locale var3 = Locale.get(var2);
-      var0 = var3.getCode();
-      switch (var0) {
+      Locale locale = Locale.get(code);
+      String language = locale.getLanguage();
+      Locale languageLocale = Locale.get(language);
+      code = languageLocale.getCode();
+      switch (code) {
          case 1684340736:
             return 3;
          case 1701707776:
@@ -51,7 +51,7 @@ public final class LocaleUtil {
          case 1769209856:
             return 4;
          default:
-            return var0;
+            return code;
       }
    }
 }

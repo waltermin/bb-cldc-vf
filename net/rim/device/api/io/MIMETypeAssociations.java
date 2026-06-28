@@ -32,68 +32,79 @@ public final class MIMETypeAssociations {
       ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
    }
 
-   private final void registerTypeInternal(String var1, String var2, int var3) {
-      this._extToMimeType.put(var2, var1);
-      if (!this._mimeTypeToExt.containsKey(var1)) {
-         this._mimeTypeToExt.put(var1, var2);
+   private final void registerTypeInternal(String type, String ext, int mediaType) {
+      this._extToMimeType.put(ext, type);
+      if (!this._mimeTypeToExt.containsKey(type)) {
+         this._mimeTypeToExt.put(type, ext);
       }
 
-      this._extToMediaType.put(var2, var3);
+      this._extToMediaType.put(ext, mediaType);
    }
 
-   private final void registerMapping(String var1, String var2) {
-      this._typeMappings.put(var1, var2);
+   private final void registerMapping(String typeFrom, String typeTo) {
+      this._typeMappings.put(typeFrom, typeTo);
    }
 
-   public static final void registerMIMETypeMapping(String var0, String var1) {
+   public static final void registerMIMETypeMapping(String typeFrom, String typeTo) {
       assertPermission();
-      var0 = StringUtilities.toLowerCase(var0, 1701707776);
-      var1 = StringUtilities.toLowerCase(var1, 1701707776);
-      _instance.registerMapping(var0, var1);
+      typeFrom = StringUtilities.toLowerCase(typeFrom, 1701707776);
+      typeTo = StringUtilities.toLowerCase(typeTo, 1701707776);
+      _instance.registerMapping(typeFrom, typeTo);
    }
 
-   public static final String getMIMEType(String var0) {
+   public static final String getMIMEType(String filename) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final int getMediaType(String var0) {
+   public static final int getMediaType(String filename) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final int getMediaTypeFromMIMEType(String var0) {
-      if (var0 == null) {
+   public static final int getMediaTypeFromMIMEType(String mimeType) {
+      if (mimeType == null) {
          return 0;
       }
 
-      Object var1 = _instance._mimeTypeToExt.get(getNormalizedType(var0));
-      if (var1 == null) {
+      String ext = (String)_instance._mimeTypeToExt.get(getNormalizedType(mimeType));
+      if (ext == null) {
          return 0;
       }
 
-      int var2 = _instance._extToMediaType.get((String)var1);
-      return var2 == -1 ? 0 : var2;
+      int result = _instance._extToMediaType.get(ext);
+      return result == -1 ? 0 : result;
    }
 
-   public static final String getExtensionFromMIMEType(String var0) {
-      return (String)(var0 == null ? null : _instance._mimeTypeToExt.get(getNormalizedType(var0)));
+   public static final String getExtensionFromMIMEType(String mimeType) {
+      return (String)(mimeType == null ? null : _instance._mimeTypeToExt.get(getNormalizedType(mimeType)));
    }
 
-   public static final void registerType(String var0, String var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void registerType(String extension, String mimeType, int mediaType) {
+      assertPermission();
+      if (extension != null && mimeType != null) {
+         synchronized (_instance) {
+            if (!_instance._extToMimeType.containsKey(extension)) {
+               extension = StringUtilities.toLowerCase(extension, 1701707776);
+               mimeType = StringUtilities.toLowerCase(mimeType, 1701707776);
+               _instance.registerTypeInternal(mimeType, extension, mediaType);
+            }
+         }
+      } else {
+         throw new Object();
+      }
    }
 
-   public static final String getNormalizedType(String var0) {
-      if (var0 == null) {
+   public static final String getNormalizedType(String mimeType) {
+      if (mimeType == null) {
          return null;
       }
 
-      int var1 = var0.indexOf(59);
-      if (var1 > 0) {
-         var0 = var0.substring(0, var1).trim();
+      int indexOfSemicolon = mimeType.indexOf(59);
+      if (indexOfSemicolon > 0) {
+         mimeType = mimeType.substring(0, indexOfSemicolon).trim();
       }
 
-      var0 = StringUtilities.toLowerCase(var0, 1701707776);
-      Object var2 = _instance._typeMappings.get(var0);
-      return (String)(var2 != null ? var2 : var0);
+      mimeType = StringUtilities.toLowerCase(mimeType, 1701707776);
+      String normal = (String)_instance._typeMappings.get(mimeType);
+      return normal != null ? normal : mimeType;
    }
 }

@@ -8,35 +8,39 @@ public class Timer {
       this.thread.start();
    }
 
-   public void schedule(TimerTask var1, long var2) {
+   public void schedule(TimerTask task, long delay) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void schedule(TimerTask var1, Date var2) {
-      this.sched(var1, var2.getTime(), 0);
+   public void schedule(TimerTask task, Date time) {
+      this.sched(task, time.getTime(), 0);
    }
 
-   public void schedule(TimerTask var1, long var2, long var4) {
+   public void schedule(TimerTask task, long delay, long period) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void schedule(TimerTask var1, Date var2, long var3) {
+   public void schedule(TimerTask task, Date firstTime, long period) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void scheduleAtFixedRate(TimerTask var1, long var2, long var4) {
+   public void scheduleAtFixedRate(TimerTask task, long delay, long period) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void scheduleAtFixedRate(TimerTask var1, Date var2, long var3) {
+   public void scheduleAtFixedRate(TimerTask task, Date firstTime, long period) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void sched(TimerTask var1, long var2, long var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void sched(TimerTask task, long time, long period) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void cancel() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this.queue) {
+         this.thread.newTasksMayBeScheduled = false;
+         this.queue.clear();
+         this.queue.notify();
+      }
    }
 }

@@ -54,51 +54,51 @@ public class TextFlowRegion {
       return this._flags;
    }
 
-   public void setAdditionalFlags(short var1) {
+   public void setAdditionalFlags(short displayFlags) {
       this._flags = (short)(this._flags & -3073);
-      this._flags = (short)(this._flags | var1 & 3072);
+      this._flags = (short)(this._flags | displayFlags & 3072);
    }
 
-   public void setVAlignment(short var1) {
+   public void setVAlignment(short alignment) {
       this._flags = (short)(this._flags & -12289);
-      this._flags = (short)(this._flags | var1 & 12288);
+      this._flags = (short)(this._flags | alignment & 12288);
    }
 
-   public void setFindMaxWidthFlag(boolean var1) {
-      if (var1) {
+   public void setFindMaxWidthFlag(boolean set) {
+      if (set) {
          this._flags = (short)(this._flags | 16384);
       } else {
          this._flags = (short)(this._flags & -16385);
       }
    }
 
-   public void setAlignment(short var1) {
+   public void setAlignment(short alignment) {
       this._flags = (short)(this._flags & -8);
-      this._flags = (short)(this._flags | var1 & 7);
+      this._flags = (short)(this._flags | alignment & 7);
    }
 
-   public void setDirection(short var1) {
+   public void setDirection(short direction) {
       this._flags = (short)(this._flags & -9);
-      this._flags = (short)(this._flags | var1 & 8);
+      this._flags = (short)(this._flags | direction & 8);
    }
 
-   public void setBreakingFlags(short var1) {
+   public void setBreakingFlags(short breaking) {
       this._flags = (short)(this._flags & -961);
-      this._flags = (short)(this._flags | var1 & 960);
+      this._flags = (short)(this._flags | breaking & 960);
    }
 
-   public void inherit(TextFlowRegion var1) {
-      this._fontFamily = var1._fontFamily;
-      this._fontStyle = var1._fontStyle;
-      this._fontHeight = var1._fontHeight;
-      this._font = var1._font;
-      this._foregroundColour = var1._foregroundColour;
-      this._backgroundColour = var1._backgroundColour;
-      this._flags = (short)(var1._flags & -961);
-      this._margin = var1._margin;
+   public void inherit(TextFlowRegion parentRegion) {
+      this._fontFamily = parentRegion._fontFamily;
+      this._fontStyle = parentRegion._fontStyle;
+      this._fontHeight = parentRegion._fontHeight;
+      this._font = parentRegion._font;
+      this._foregroundColour = parentRegion._foregroundColour;
+      this._backgroundColour = parentRegion._backgroundColour;
+      this._flags = (short)(parentRegion._flags & -961);
+      this._margin = parentRegion._margin;
    }
 
-   public void setFont(Font var1) {
+   public void setFont(Font f) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -106,23 +106,23 @@ public class TextFlowRegion {
       return this._font;
    }
 
-   public void setFontHeight(int var1) {
-      if (this._fontHeight != var1) {
-         this._fontHeight = var1;
+   public void setFontHeight(int height) {
+      if (this._fontHeight != height) {
+         this._fontHeight = height;
          this._font = null;
       }
    }
 
-   public void setFontFamily(String var1) {
-      if (!var1.equals(this._fontFamily)) {
-         this._fontFamily = var1;
+   public void setFontFamily(String family) {
+      if (!family.equals(this._fontFamily)) {
+         this._fontFamily = family;
          this._font = null;
       }
    }
 
-   public void setFontStyle(int var1) {
-      if (this._fontStyle != var1) {
-         this._fontStyle = var1;
+   public void setFontStyle(int style) {
+      if (this._fontStyle != style) {
+         this._fontStyle = style;
          this._font = null;
       }
    }
@@ -155,24 +155,24 @@ public class TextFlowRegion {
       return this._offsetXRight;
    }
 
-   public void getCoords(XYRect var1) {
+   public void getCoords(XYRect rect) {
       if ((this._flags & 16384) != 0) {
-         var1.set(this._offsetXLeftmost, this._offsetYTop, this._offsetXRightmost - this._offsetXLeftmost, this._offsetYBottom - this._offsetYTop);
+         rect.set(this._offsetXLeftmost, this._offsetYTop, this._offsetXRightmost - this._offsetXLeftmost, this._offsetYBottom - this._offsetYTop);
       } else {
-         var1.set(this._offsetXLeft, this._offsetYTop, this._offsetXRight - this._offsetXLeft, this._offsetYBottom - this._offsetYTop);
+         rect.set(this._offsetXLeft, this._offsetYTop, this._offsetXRight - this._offsetXLeft, this._offsetYBottom - this._offsetYTop);
       }
    }
 
-   public void setPosition(int var1, int var2, int var3, int var4) {
-      this._offsetXLeft = (short)var1;
-      this._offsetYTop = var2;
-      this._offsetXRight = (short)var3;
-      this._offsetYBottom = var4;
+   public void setPosition(int leftX, int topY, int rightX, int bottomY) {
+      this._offsetXLeft = (short)leftX;
+      this._offsetYTop = topY;
+      this._offsetXRight = (short)rightX;
+      this._offsetYBottom = bottomY;
    }
 
-   public void calculateTextWidth(StringBuffer var1, int var2, int var3) {
-      if (this._calcWidthEndOffset != var3 || this._calcWidthStartOffset != var2) {
-         this.calculateTextWidth0(var1, var2, var3);
+   public void calculateTextWidth(StringBuffer text, int textPosition, int endTextPosition) {
+      if (this._calcWidthEndOffset != endTextPosition || this._calcWidthStartOffset != textPosition) {
+         this.calculateTextWidth0(text, textPosition, endTextPosition);
       }
    }
 

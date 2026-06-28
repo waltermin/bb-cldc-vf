@@ -12,14 +12,14 @@ public final class BufferedInputStream extends InputStream {
    private boolean _closed;
    private static final int BUFFER_SIZE;
 
-   public BufferedInputStream(InputStream var1) {
-      this(var1, 2048);
+   public BufferedInputStream(InputStream in) {
+      this(in, 2048);
    }
 
-   public BufferedInputStream(InputStream var1, int var2) {
-      this._in = var1;
-      if (var2 > 0 && var1 != null) {
-         this._buffer = new byte[var2];
+   public BufferedInputStream(InputStream in, int size) {
+      this._in = in;
+      if (size > 0 && in != null) {
+         this._buffer = new byte[size];
          this._bufferPos = this._buffer.length;
       } else {
          throw new Object();
@@ -40,9 +40,23 @@ public final class BufferedInputStream extends InputStream {
       return true;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      boolean var2 = false /* VF: Semaphore variable */;
+
+      try {
+         var2 = true;
+         super.close();
+         var2 = false;
+      } finally {
+         if (var2) {
+            this._closed = true;
+         }
+      }
+
+      this._closed = true;
    }
 
    @Override
@@ -55,8 +69,8 @@ public final class BufferedInputStream extends InputStream {
    }
 
    @Override
-   public final synchronized void mark(int var1) {
-      this._maxMarkPos = var1;
+   public final synchronized void mark(int limit) {
+      this._maxMarkPos = limit;
       this._currentMarkPos = this._bufferPos;
    }
 
@@ -69,53 +83,53 @@ public final class BufferedInputStream extends InputStream {
       if (this._currentMarkPos < 0) {
          this._bufferPos = 0;
       } else if (this._currentMarkPos > 0) {
-         int var1 = this._bufferPos - this._currentMarkPos;
-         System.arraycopy(this._buffer, this._currentMarkPos, this._buffer, 0, var1);
-         this._currentMarkPos = var1;
+         int bytesRemainingAsMarked = this._bufferPos - this._currentMarkPos;
+         System.arraycopy(this._buffer, this._currentMarkPos, this._buffer, 0, bytesRemainingAsMarked);
+         this._currentMarkPos = bytesRemainingAsMarked;
          this._currentMarkPos = 0;
       } else if (this._buffer.length >= this._maxMarkPos) {
          this._currentMarkPos = -1;
          this._bufferPos = 0;
       } else {
-         int var3 = this._buffer.length + 2048;
-         Array.resize(this._buffer, var3);
+         int size = this._buffer.length + 2048;
+         Array.resize(this._buffer, size);
       }
 
-      int var4 = this._buffer.length - this._bufferPos;
-      int var2 = this._in.read(this._buffer, this._bufferPos, var4);
-      if (var2 > 0 && var2 != var4) {
-         Array.resize(this._buffer, this._bufferPos + var2);
+      int numToRead = this._buffer.length - this._bufferPos;
+      int numRead = this._in.read(this._buffer, this._bufferPos, numToRead);
+      if (numRead > 0 && numRead != numToRead) {
+         Array.resize(this._buffer, this._bufferPos + numRead);
       }
 
-      return var2 > 0;
+      return numRead > 0;
    }
 
    @Override
-   public final synchronized int read(byte[] var1, int var2, int var3) {
+   public final synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
       if (this._closed) {
          throw new Object();
       }
 
-      if (var1 == null || var2 < 0 || var3 < 0 || var1.length - var3 < var2) {
+      if (buffer == null || bufferOffset < 0 || bufferLength < 0 || buffer.length - bufferLength < bufferOffset) {
          throw new Object();
       }
 
-      if (var3 == 0) {
+      if (bufferLength == 0) {
          return 0;
       }
 
-      int var4 = 0;
+      int numRead = 0;
 
-      while (var3 > 0) {
+      while (bufferLength > 0) {
          if (this._buffer.length == this._bufferPos) {
-            if (var3 >= this._buffer.length && this._currentMarkPos < 0) {
-               int var6 = this._in.read(var1, var2, var3);
-               if (var6 >= 0) {
-                  return var6 + var4;
+            if (bufferLength >= this._buffer.length && this._currentMarkPos < 0) {
+               int numAuxRead = this._in.read(buffer, bufferOffset, bufferLength);
+               if (numAuxRead >= 0) {
+                  return numAuxRead + numRead;
                }
 
-               if (var4 > 0) {
-                  return var4;
+               if (numRead > 0) {
+                  return numRead;
                }
 
                return -1;
@@ -126,14 +140,14 @@ public final class BufferedInputStream extends InputStream {
             }
          }
 
-         int var5 = Math.min(this._buffer.length - this._bufferPos, var3);
-         System.arraycopy(this._buffer, this._bufferPos, var1, var2, var5);
-         this._bufferPos += var5;
-         var4 += var5;
-         var3 -= var5;
-         var2 += var5;
+         int toRead = Math.min(this._buffer.length - this._bufferPos, bufferLength);
+         System.arraycopy(this._buffer, this._bufferPos, buffer, bufferOffset, toRead);
+         this._bufferPos += toRead;
+         numRead += toRead;
+         bufferLength -= toRead;
+         bufferOffset += toRead;
       }
 
-      return var4 > 0 ? var4 : -1;
+      return numRead > 0 ? numRead : -1;
    }
 }

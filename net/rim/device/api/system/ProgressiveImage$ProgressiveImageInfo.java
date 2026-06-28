@@ -6,7 +6,7 @@ final class ProgressiveImage$ProgressiveImageInfo extends EncodedImage$ImageInfo
    private ProgressiveImage$ProgressiveImageInfo() {
    }
 
-   ProgressiveImage$ProgressiveImageInfo(ProgressiveImage$1 var1) {
+   ProgressiveImage$ProgressiveImageInfo(ProgressiveImage$1 x0) {
       this();
    }
 }

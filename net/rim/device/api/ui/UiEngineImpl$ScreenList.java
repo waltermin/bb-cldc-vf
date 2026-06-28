@@ -12,8 +12,8 @@ class UiEngineImpl$ScreenList {
    private Screen[] _hiddenGlobalScreens;
    private final UiEngineImpl this$0;
 
-   public UiEngineImpl$ScreenList(UiEngineImpl var1) {
-      this.this$0 = var1;
+   public UiEngineImpl$ScreenList(UiEngineImpl _1) {
+      this.this$0 = _1;
       this._screens = new Screen[0];
       this._extents = new XYRect[0];
       this._opaqueRegions = new XYRect[0];
@@ -41,51 +41,55 @@ class UiEngineImpl$ScreenList {
    }
 
    public synchronized int getInProcessGlobalScreenCount() {
-      int var1 = 0;
-      int var2 = this.getScreenCount();
+      int count = 0;
+      int screenCount = this.getScreenCount();
 
-      for (int var3 = var2 - 1; var3 >= var2 - this._globalScreenCount; var3--) {
-         Screen var4 = this.getScreen(var3);
-         if (this.this$0.isInProcess(var4) || var4.getUiEngineImpl() == null && var4.isDismissing() && !(var4 instanceof UiEngineImpl$ProxyScreen)) {
-            var1++;
+      for (int i = screenCount - 1; i >= screenCount - this._globalScreenCount; i--) {
+         Screen next = this.getScreen(i);
+         if (this.this$0.isInProcess(next) || next.getUiEngineImpl() == null && next.isDismissing() && !(next instanceof UiEngineImpl$ProxyScreen)) {
+            count++;
          }
       }
 
-      return var1;
+      return count;
    }
 
-   public synchronized Screen getScreen(int var1) {
+   public synchronized Screen getScreen(int index) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized Screen getLocalScreen(int var1) {
-      return var1 >= this._localScreenCount ? null : this.getScreen(var1);
+   public synchronized Screen getLocalScreen(int index) {
+      return index >= this._localScreenCount ? null : this.getScreen(index);
    }
 
-   public synchronized XYRect getExtent(int var1) {
+   public synchronized XYRect getExtent(int index) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized XYRect getOpaqueRegion(int var1) {
+   public synchronized XYRect getOpaqueRegion(int index) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized Screen getScreenInNonEventThread(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized Screen getScreenInNonEventThread(int index) {
+      try {
+         return this._screens[index];
+      } catch (ArrayIndexOutOfBoundsException var3) {
+         return null;
+      }
    }
 
-   public synchronized int getIndex(Screen var1) {
-      return Arrays.getIndex(this._screens, var1);
+   public synchronized int getIndex(Screen screen) {
+      return Arrays.getIndex(this._screens, screen);
    }
 
-   public synchronized int getLocalIndex(Screen var1) {
-      int var2 = this.getIndex(var1);
-      return var2 >= this._localScreenCount ? -1 : var2;
+   public synchronized int getLocalIndex(Screen screen) {
+      int index = this.getIndex(screen);
+      return index >= this._localScreenCount ? -1 : index;
    }
 
    public synchronized Screen getTopmostScreen() {
-      int var1 = this._screens.length;
-      return var1 == 0 ? null : this._screens[var1 - 1];
+      int count = this._screens.length;
+      return count == 0 ? null : this._screens[count - 1];
    }
 
    public synchronized Screen getTopmostLocalScreen() {
@@ -93,62 +97,62 @@ class UiEngineImpl$ScreenList {
          return null;
       }
 
-      int var1 = this._localScreenCount - 1;
+      int i = this._localScreenCount - 1;
 
-      while (var1 >= 0 && this._screens[var1] instanceof UiEngineImpl$ProxyScreen) {
-         var1--;
+      while (i >= 0 && this._screens[i] instanceof UiEngineImpl$ProxyScreen) {
+         i--;
       }
 
-      return var1 < 0 ? null : this._screens[var1];
+      return i < 0 ? null : this._screens[i];
    }
 
    public synchronized Screen getTopmostGlobalScreen() {
       return this._globalScreenCount == 0 ? null : this.getTopmostScreen();
    }
 
-   public synchronized int highestOpaqueRegionContaining(XYRect var1) {
-      for (int var2 = this._opaqueRegions.length - 1; var2 >= 0; var2--) {
-         if (this._opaqueRegions[var2].contains(var1)) {
-            return var2;
+   public synchronized int highestOpaqueRegionContaining(XYRect region) {
+      for (int i = this._opaqueRegions.length - 1; i >= 0; i--) {
+         if (this._opaqueRegions[i].contains(region)) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public synchronized boolean isTopmost(Screen var1) {
+   public synchronized boolean isTopmost(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized boolean isTopmostLocal(Screen var1) {
+   public synchronized boolean isTopmostLocal(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void push(Screen var1) {
+   public synchronized void push(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void pop(Screen var1) {
+   public synchronized void pop(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void updateExtent(Screen var1) {
+   public synchronized void updateExtent(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public synchronized Screen getScreenAbove(Screen var1) {
+   public synchronized Screen getScreenAbove(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized Screen getLocalScreenAbove(Screen var1) {
+   public synchronized Screen getLocalScreenAbove(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized Screen getScreenBelow(Screen var1) {
+   public synchronized Screen getScreenBelow(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized Screen getLocalScreenBelow(Screen var1) {
+   public synchronized Screen getLocalScreenBelow(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -157,53 +161,53 @@ class UiEngineImpl$ScreenList {
    }
 
    private void wrapOutOfProcessGlobalScreens() {
-      for (int var1 = 0; var1 < this._globalScreenCount; var1++) {
-         this._screens[var1 + this._localScreenCount] = this.wrapGlobalScreen(this._screens[var1 + this._localScreenCount], false);
+      for (int i = 0; i < this._globalScreenCount; i++) {
+         this._screens[i + this._localScreenCount] = this.wrapGlobalScreen(this._screens[i + this._localScreenCount], false);
       }
 
-      for (int var2 = 0; var2 < this._hiddenGlobalScreens.length; var2++) {
-         this._hiddenGlobalScreens[var2] = this.wrapGlobalScreen(this._hiddenGlobalScreens[var2], true);
+      for (int i = 0; i < this._hiddenGlobalScreens.length; i++) {
+         this._hiddenGlobalScreens[i] = this.wrapGlobalScreen(this._hiddenGlobalScreens[i], true);
       }
    }
 
-   private Screen wrapGlobalScreen(Screen var1, boolean var2) {
-      if (var1 instanceof UiEngineImpl$ProxyScreen) {
-         return var1;
+   private Screen wrapGlobalScreen(Screen screen, boolean hidden) {
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         return screen;
       }
 
-      if (this.this$0.isInProcess(var1)) {
-         return var1;
+      if (this.this$0.isInProcess(screen)) {
+         return screen;
       }
 
-      var1 = new UiEngineImpl$ProxyScreen(var1);
-      var1.setUiEngine(this.this$0);
-      var1.doLayoutNoSynch();
-      return var1;
+      screen = new UiEngineImpl$ProxyScreen(screen);
+      screen.setUiEngine(this.this$0);
+      screen.doLayoutNoSynch();
+      return screen;
    }
 
    private Screen[] wrapLocalScreens() {
-      Screen[] var1 = new Screen[0];
+      Screen[] wrappedLocalScreens = new Screen[0];
 
-      for (int var2 = this._localScreenCount - 1; var2 >= 0; var2--) {
-         Screen var3 = this._screens[var2];
-         if (!(var3 instanceof UiEngineImpl$ProxyScreen)) {
-            Arrays.insertAt(var1, this.wrapLocalScreen(var3), 0);
-            if (var3.getExtent().contains(0, 0, Display.getWidth(), Display.getHeight())
-               && !this.this$0.isScreenTransparent(var3)
-               && !this.this$0.isScreenTransparentBorder(var3)) {
-               return var1;
+      for (int i = this._localScreenCount - 1; i >= 0; i--) {
+         Screen local = this._screens[i];
+         if (!(local instanceof UiEngineImpl$ProxyScreen)) {
+            Arrays.insertAt(wrappedLocalScreens, this.wrapLocalScreen(local), 0);
+            if (local.getExtent().contains(0, 0, Display.getWidth(), Display.getHeight())
+               && !this.this$0.isScreenTransparent(local)
+               && !this.this$0.isScreenTransparentBorder(local)) {
+               return wrappedLocalScreens;
             }
 
-            if (this.this$0.isScreenTransparent(var3) && var2 == 0) {
-               Arrays.insertAt(var1, this.wrapLocalScreen(this.this$0._bottomScreen), 0);
+            if (this.this$0.isScreenTransparent(local) && i == 0) {
+               Arrays.insertAt(wrappedLocalScreens, this.wrapLocalScreen(this.this$0._bottomScreen), 0);
             }
          }
       }
 
-      return var1;
+      return wrappedLocalScreens;
    }
 
-   private Screen wrapLocalScreen(Screen var1) {
+   private Screen wrapLocalScreen(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

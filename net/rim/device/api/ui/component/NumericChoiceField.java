@@ -20,22 +20,22 @@ public class NumericChoiceField extends ChoiceField {
       this(null, 0, 0, 1);
    }
 
-   public NumericChoiceField(String var1, int var2, int var3, int var4) {
-      this(var1, var2, var3, var4, 0, 0);
+   public NumericChoiceField(String label, int begin, int end, int increment) {
+      this(label, begin, end, increment, 0, 0);
    }
 
-   public NumericChoiceField(String var1, int var2, int var3, int var4, int var5) {
-      this(var1, var2, var3, var4, var5, 0);
+   public NumericChoiceField(String label, int begin, int end, int increment, int initialIndex) {
+      this(label, begin, end, increment, initialIndex, 0);
    }
 
-   public NumericChoiceField(String var1, int var2, int var3, int var4, int var5, long var6) {
+   public NumericChoiceField(String label, int begin, int end, int increment, int initialIndex, long style) {
    }
 
    @Override
-   protected ChoiceField getChangeOptionChoiceField(String var1) {
-      NumericChoiceField$1 var2 = new NumericChoiceField$1(this, var1, this._begin, this._intendedEnd, this._increment, this.getSelectedIndex());
-      var2.setChangeListener(this.getChangeListener());
-      return var2;
+   protected ChoiceField getChangeOptionChoiceField(String label) {
+      NumericChoiceField field = new NumericChoiceField$1(this, label, this._begin, this._intendedEnd, this._increment, this.getSelectedIndex());
+      field.setChangeListener(this.getChangeListener());
+      return field;
    }
 
    @Override
@@ -44,12 +44,12 @@ public class NumericChoiceField extends ChoiceField {
    }
 
    @Override
-   public Object getChoice(int var1) {
+   public Object getChoice(int index) {
       this._buffer.setLength(0);
       if (this._inEditMode) {
          this._buffer.append(Integer.toString(MathUtilities.clamp(this._begin, this._intendedValue, this._end)));
       } else {
-         this._buffer.append(this.getValue(var1));
+         this._buffer.append(this.getValue(index));
       }
 
       return this._buffer.toString();
@@ -59,82 +59,82 @@ public class NumericChoiceField extends ChoiceField {
       return this.getValue(this.getSelectedIndex());
    }
 
-   private int getValue(int var1) {
-      return MathUtilities.clamp(this._begin, this.indexToValue(var1), this._intendedEnd);
+   private int getValue(int index) {
+      return MathUtilities.clamp(this._begin, this.indexToValue(index), this._intendedEnd);
    }
 
-   private int indexToValue(int var1) {
-      return this._begin + var1 * this._increment;
+   private int indexToValue(int index) {
+      return this._begin + index * this._increment;
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
+   protected void makeContextMenu(ContextMenu contextMenu) {
       this.terminateEditMode();
-      super.makeContextMenu(var1);
+      super.makeContextMenu(contextMenu);
    }
 
    @Override
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
+   protected boolean trackwheelRoll(int amount, int status, int time) {
       this.terminateEditMode();
       this._isKeyRepeat = false;
-      return super.trackwheelRoll(var1, var2, var3);
+      return super.trackwheelRoll(amount, status, time);
    }
 
-   public void setSelectedValue(int var1, int var2) {
-      var1 = MathUtilities.clamp(this._begin, var1, this._end);
-      this.setSelectedIndex(this.roundValueToNearestIndex(var1), var2);
+   public void setSelectedValue(int value, int context) {
+      value = MathUtilities.clamp(this._begin, value, this._end);
+      this.setSelectedIndex(this.roundValueToNearestIndex(value), context);
    }
 
-   public void setSelectedValue(int var1) {
-      this.setSelectedValue(var1, Integer.MIN_VALUE);
+   public void setSelectedValue(int value) {
+      this.setSelectedValue(value, Integer.MIN_VALUE);
    }
 
    @Override
    public int getWidthOfChoices() {
-      Font var1 = this.getFont();
-      int var2 = var1.getBounds('0');
+      Font font = this.getFont();
+      int widestCharWidth = font.getBounds('0');
 
-      for (char var3 = '1'; var3 <= '9'; var3++) {
-         int var4 = var1.getBounds(var3);
-         if (var4 > var2) {
-            var2 = var4;
+      for (char c = '1'; c <= '9'; c++) {
+         int charWidth = font.getBounds(c);
+         if (charWidth > widestCharWidth) {
+            widestCharWidth = charWidth;
          }
       }
 
-      int var5 = var2;
+      int width = widestCharWidth;
       if (this._begin < 0 || this._end < 0) {
-         var5 += var1.getBounds('-');
+         width += font.getBounds('-');
       }
 
-      for (int var6 = Math.max(Math.abs(this._end), Math.abs(this._begin)) / 10; var6 > 0; var6 /= 10) {
-         var5 += var2;
+      for (int delta = Math.max(Math.abs(this._end), Math.abs(this._begin)) / 10; delta > 0; delta /= 10) {
+         width += widestCharWidth;
       }
 
-      return var5;
+      return width;
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      if (InternalServices.isReducedFormFactor() && Keypad.key(var1) == 32) {
+   protected boolean keyRepeat(int keycode, int time) {
+      if (InternalServices.isReducedFormFactor() && Keypad.key(keycode) == 32) {
          this._isKeyRepeat = true;
          this._inEditMode = true;
          this._intendedValue = 0;
          this.setSelectedValue(this._intendedValue, 0);
       }
 
-      return super.keyRepeat(var1, var2);
+      return super.keyRepeat(keycode, time);
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      boolean var3 = super.navigationClick(var1, var2);
+   protected boolean navigationClick(int status, int time) {
+      boolean retVal = super.navigationClick(status, time);
       this.terminateEditMode();
-      return var3;
+      return retVal;
    }
 
    @Override
@@ -152,38 +152,38 @@ public class NumericChoiceField extends ChoiceField {
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      char var4 = Keypad.getAltedChar(var1);
-      return Character.isDigit(var4) ? this.keyChar(var4, var2, var3) : super.keyControl(var1, var2, var3);
+   protected boolean keyControl(char character, int status, int time) {
+      char alted = Keypad.getAltedChar(character);
+      return Character.isDigit(alted) ? this.keyChar(alted, status, time) : super.keyControl(character, status, time);
    }
 
    @Override
-   protected boolean keyStatus(int var1, int var2) {
-      if (Keypad.key(var1) == 257) {
+   protected boolean keyStatus(int keycode, int time) {
+      if (Keypad.key(keycode) == 257) {
          this.terminateEditMode();
       }
 
-      return super.keyStatus(var1, var2);
+      return super.keyStatus(keycode, time);
    }
 
-   private int roundValueToNearestIndex(int var1) {
+   private int roundValueToNearestIndex(int value) {
       if (this._increment == 1) {
-         return var1 - this._begin;
+         return value - this._begin;
       }
 
-      if (var1 >= this._intendedEnd && var1 <= this._end) {
-         var1 = this._end;
+      if (value >= this._intendedEnd && value <= this._end) {
+         value = this._end;
       }
 
-      return ((var1 - this._begin) * 10 / this._increment + 5) / 10;
+      return ((value - this._begin) * 10 / this._increment + 5) / 10;
    }
 
-   private boolean validate(char var1) {
-      if (Character.isDigit(var1)) {
+   private boolean validate(char ch) {
+      if (Character.isDigit(ch)) {
          return true;
       }
 
-      switch (var1) {
+      switch (ch) {
          case '\b':
          case ' ':
          case '\u007f':

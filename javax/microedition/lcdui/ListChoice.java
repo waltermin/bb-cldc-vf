@@ -9,27 +9,27 @@ final class ListChoice extends BasicChoice {
    private RadioButtonGroup _radioGroup;
    private ChoiceGroup _choiceGroupFacade;
 
-   ListChoice(ChoiceGroup var1, int var2) {
-      super._type = var2;
-      this._choiceGroupFacade = var1;
-      if (var2 == 1) {
+   ListChoice(ChoiceGroup facade, int choiceType) {
+      super._type = choiceType;
+      this._choiceGroupFacade = facade;
+      if (choiceType == 1) {
          this._radioGroup = (RadioButtonGroup)(new Object());
       }
    }
 
    @Override
-   final Field addToForm(FieldChangeListener var1) {
-      super._changeListener = var1;
+   final Field addToForm(FieldChangeListener changeListener) {
+      super._changeListener = changeListener;
       switch (super._type) {
          case 1:
             this._radioGroup.setChangeListener(null);
-            this._radioGroup.setChangeListener(var1);
+            this._radioGroup.setChangeListener(changeListener);
             break;
          default:
-            for (int var2 = 0; var2 < super._container.getFieldCount(); var2++) {
-               Field var3 = super._container.getField(var2);
-               var3.setChangeListener(null);
-               var3.setChangeListener(var1);
+            for (int i = 0; i < super._container.getFieldCount(); i++) {
+               Field field = super._container.getField(i);
+               field.setChangeListener(null);
+               field.setChangeListener(changeListener);
             }
       }
 
@@ -38,60 +38,60 @@ final class ListChoice extends BasicChoice {
 
    @Override
    public final int getSelectedIndex() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   protected final String doGetString(int var1) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   protected final Image doGetImage(int var1) {
+   protected final String doGetString(int elementNum) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   protected final void doInsert(int var1, String var2, Image var3) {
+   protected final Image doGetImage(int elementNum) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+   }
+
+   @Override
+   protected final void doInsert(int elementNum, String stringElement, Image imageElement) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected final void doDelete(int var1) {
-      boolean var2 = var1 < this.getSelectedIndex();
-      Field var3 = this.getField(var1);
-      var3.setChangeListener(null);
-      super._container.delete(var3);
+   protected final void doDelete(int elementNum) {
+      boolean mustAdjustSelectedIndex = elementNum < this.getSelectedIndex();
+      Field field = this.getField(elementNum);
+      field.setChangeListener(null);
+      super._container.delete(field);
       if (super._type == 1) {
-         Object var4 = var3;
-         boolean var5 = ((RadioButtonField)var4).isSelected();
-         this._radioGroup.remove((RadioButtonField)var4);
-         if (var5 && this.size() - 1 > 0) {
+         RadioButtonField radio = (RadioButtonField)field;
+         boolean selected = radio.isSelected();
+         this._radioGroup.remove(radio);
+         if (selected && this.size() - 1 > 0) {
             this._radioGroup.setSelectedIndex(0);
             return;
          }
-      } else if (super._type == 3 && !super._onScreen && var2) {
+      } else if (super._type == 3 && !super._onScreen && mustAdjustSelectedIndex) {
          this.doSetSelectedIndex(this.getSelectedIndex() - 1, true);
       }
    }
 
    @Override
-   protected final void doSet(int var1, String var2, Image var3) {
+   protected final void doSet(int elementNum, String stringPart, Image imagePart) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected final boolean doIsSelected(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   protected final void doSetSelectedIndex(int var1, boolean var2) {
+   protected final boolean doIsSelected(int elementNum) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   protected final void doSetSelectedFlags(boolean[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected final void doSetSelectedIndex(int elementNum, boolean selected) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+   }
+
+   @Override
+   protected final void doSetSelectedFlags(boolean[] selectedArray) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 }

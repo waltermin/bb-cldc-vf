@@ -8,14 +8,14 @@ import net.rim.tid.util.Utils;
 class BasicEditField$1 extends MenuItem {
    private final BasicEditField this$0;
 
-   BasicEditField$1(BasicEditField var1, ResourceBundle var2, int var3, int var4, int var5) {
-      super(var2, var3, var4, var5);
-      this.this$0 = var1;
+   BasicEditField$1(BasicEditField _1, ResourceBundle x0, int x1, int x2, int x3) {
+      super(x0, x1, x2, x3);
+      this.this$0 = _1;
    }
 
    @Override
    public void run() {
-      Locale[] var1 = Utils.getAvailableInputLocales(true);
-      new Object(var1, Utils.getInputLocalesDisplayNames(var1), true, null);
+      Locale[] locales = Utils.getAvailableInputLocales(true);
+      new Object(locales, Utils.getInputLocalesDisplayNames(locales), true, null);
    }
 }

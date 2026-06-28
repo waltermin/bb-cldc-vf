@@ -18,83 +18,115 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    private static long LED_ENGINE_GUID;
    private static LEDEngine _ledEngineInstance;
 
-   public void setConfigurationInternal(int var1, int var2, int var3, int var4) {
+   public void setConfigurationInternal(int type, int onTime, int offTime, int brightness) {
       if (!this.isLEDAccessLocked()) {
-         setConfigurationNative(var1, var2, var3, var4);
+         setConfigurationNative(type, onTime, offTime, brightness);
       }
    }
 
-   public void setColorConfigurationInternal(int var1, int var2, int var3, int var4) {
-      if (!isValidColor(var4)) {
+   public void setColorConfigurationInternal(int type, int onTime, int offTime, int color) {
+      if (!isValidColor(color)) {
          throw new Object();
       }
 
       if (!this.isLEDAccessLocked()) {
-         setColorConfigurationNative(var1, var2, var3, var4);
+         setColorConfigurationNative(type, onTime, offTime, color);
       }
    }
 
-   public void setStateInternal(int var1, int var2) {
+   public void setStateInternal(int type, int state) {
       if (!this.isLEDAccessLocked()) {
-         setStateNative(var1, var2);
+         setStateNative(type, state);
       }
    }
 
-   public void setColorPatternInternal(int var1, int[] var2, boolean var3) {
+   public void setColorPatternInternal(int type, int[] pattern, boolean repeat) {
       if (!this.isLEDAccessLocked()) {
-         setColorPatternNative(var1, var2, var3);
+         setColorPatternNative(type, pattern, repeat);
       }
    }
 
-   void lock(boolean var1) {
+   void lock(boolean lock) {
       ControlledAccess.assertRRISignatures(true);
-      lock0(var1);
+      lock0(lock);
    }
 
-   public void updateGSMFlag(boolean var1) {
-      if (var1) {
+   public void updateGSMFlag(boolean status) {
+      if (status) {
          this.setFlag(8);
       } else {
          this.clearFlag(8);
       }
    }
 
-   public void clearFlag(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void clearFlag(int flag) {
+      synchronized (this._ledEventProcessor.getLockObject()) {
+         int currentFlags = this._stateFlags;
+         this._stateFlags &= ~flag;
+         if (this._stateFlags != currentFlags) {
+            this.setPattern(this._stateFlags);
+         }
+      }
    }
 
-   public void setFlag(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setFlag(int flag) {
+      synchronized (this._ledEventProcessor.getLockObject()) {
+         int currentFlags = this._stateFlags;
+         this._stateFlags |= flag;
+         if (this._stateFlags != currentFlags) {
+            this.setPattern(this._stateFlags);
+         }
+      }
    }
 
    void notifyLEDThread() {
       this._ledEventProcessor.notifyLEDThread();
    }
 
-   public boolean contains(long var1) {
-      return this._ledEventProcessor.contains(var1);
+   public boolean contains(long sourceIdLong) {
+      return this._ledEventProcessor.contains(sourceIdLong);
    }
 
-   public void removeEvents(long var1, int var3) {
-      this._ledEventProcessor.removeEvents(var1, var3);
+   public void removeEvents(long sourceIdLong, int groupInfo) {
+      this._ledEventProcessor.removeEvents(sourceIdLong, groupInfo);
    }
 
    public boolean isLEDAccessLocked() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._ledEventProcessor.getLockObject()) {
+         return this.isLEDAccessLocked(this._isMicEnabled);
+      }
    }
 
-   public boolean isLEDAccessLocked(boolean var1) {
-      boolean var2 = ITPolicy.getBoolean(24, 54, false);
-      return var1 && var2;
+   public boolean isLEDAccessLocked(boolean isMicEnabled) {
+      boolean forceFlashingLEDonEnabledMIC = ITPolicy.getBoolean(24, 54, false);
+      return isMicEnabled && forceFlashingLEDonEnabledMIC;
    }
 
-   public void addEvent(long var1, boolean var3, int var4) {
-      this._ledEventProcessor.addEvent(var1, var3, var4);
+   public void addEvent(long sourceIdLong, boolean holsteredBoolean, int groupInfo) {
+      this._ledEventProcessor.addEvent(sourceIdLong, holsteredBoolean, groupInfo);
    }
 
    @Override
-   public void micStatusChange(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void micStatusChange(boolean micEnabled) {
+      synchronized (this._ledEventProcessor.getLockObject()) {
+         boolean lockDownLED = this.isLEDAccessLocked(micEnabled);
+         boolean wasLEDAccessLocked = this.isLEDAccessLocked();
+         if (lockDownLED) {
+            this.setConfigurationInternal(0, 100, 150, 3);
+            this.setStateInternal(0, 2);
+         }
+
+         this._isMicEnabled = micEnabled;
+         this.lock(lockDownLED);
+         if (!lockDownLED) {
+            if (!this._isPolychromatic && wasLEDAccessLocked) {
+               this.setStateInternal(0, 0);
+            }
+
+            this.setPattern(this._stateFlags);
+            this.notifyLEDThread();
+         }
+      }
    }
 
    @Override
@@ -106,30 +138,30 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    }
 
    @Override
-   public void responseAVCModeChange(boolean var1, int var2) {
+   public void responseAVCModeChange(boolean success, int mode) {
    }
 
    @Override
-   public void recordStreamFail(int var1) {
+   public void recordStreamFail(int handle) {
    }
 
    @Override
-   public void recordStreamDone(int var1, int var2) {
+   public void recordStreamDone(int handle, int headerLength) {
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == 6270993390899536868L) {
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 6270993390899536868L) {
          this.updateGSMFlag(UiSettings.getLEDCoverageIndicatorStatus());
       }
    }
 
    @Override
-   public void powerOffRequested(int var1) {
+   public void powerOffRequested(int reason) {
    }
 
    @Override
-   public void cradleMismatch(boolean var1) {
+   public void cradleMismatch(boolean mismatch) {
    }
 
    @Override
@@ -137,11 +169,11 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    }
 
    @Override
-   public void backlightStateChange(boolean var1) {
+   public void backlightStateChange(boolean on) {
    }
 
    @Override
-   public void usbConnectionStateChange(int var1) {
+   public void usbConnectionStateChange(int state) {
    }
 
    @Override
@@ -165,8 +197,8 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    }
 
    @Override
-   public void batteryStatusChange(int var1) {
-      if ((268435456 & var1) != 268435456 && (-2147483648 & var1) != Integer.MIN_VALUE && (16384 & var1) != 16384) {
+   public void batteryStatusChange(int status) {
+      if ((268435456 & status) != 268435456 && (-2147483648 & status) != Integer.MIN_VALUE && (16384 & status) != 16384) {
          this.setFlag(4);
       } else {
          this.clearFlag(4);
@@ -175,17 +207,50 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
 
    private static native void lock0(boolean var0);
 
-   private void setPattern(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void setPattern(int flags) {
+      if (!this._poweredOff) {
+         if (this._isPolychromatic) {
+            synchronized (this._ledEventProcessor.getLockObject()) {
+               int patternColours = LEDUtilities.stateToColours(flags);
+               int numFlags = LEDUtilities.countSetBits(patternColours);
+               if (numFlags == 0) {
+                  this._polyPattern = null;
+                  this.setStateInternal(0, 0);
+               } else {
+                  int offTime = (flags & 64) == 0 ? 2850 : 150;
+                  this._polyPattern = new int[numFlags * 6];
+                  int i = 0;
+
+                  for (int j = 0; j < 32; j++) {
+                     if ((patternColours >> j & 1) == 1) {
+                        int offset = i * 6;
+                        this._polyPattern[offset + 0] = LEDUtilities.getFlagColour(j);
+                        this._polyPattern[offset + 1] = 150;
+                        this._polyPattern[offset + 2] = 0;
+                        this._polyPattern[offset + 3] = 0;
+                        this._polyPattern[offset + 4] = offTime;
+                        this._polyPattern[offset + 5] = 0;
+                        i++;
+                     }
+                  }
+
+                  this._ledEventProcessor.getLockObject().notify();
+                  if (this._polyPattern != null && !this._poweredOff) {
+                     this.setColorPatternInternal(0, this._polyPattern, true);
+                  }
+               }
+            }
+         }
+      }
    }
 
-   public static boolean isSupported(int var0) {
+   public static boolean isSupported(int type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private static native void setStateNative(int var0, int var1);
 
-   public static boolean isPolychromatic(int var0) {
+   public static boolean isPolychromatic(int type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -197,17 +262,17 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
 
    private static native void setColorConfigurationNative(int var0, int var1, int var2, int var3);
 
-   private static boolean isValidColor(int var0) {
-      return var0 >= 0 && var0 <= 16777215;
+   private static boolean isValidColor(int color) {
+      return color >= 0 && color <= 16777215;
    }
 
    public static LEDEngine getInstance() {
       if (_ledEngineInstance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _ledEngineInstance = (LEDEngine)var0.getOrWaitFor(LED_ENGINE_GUID);
+         ApplicationRegistry registry = ApplicationRegistry.getApplicationRegistry();
+         _ledEngineInstance = (LEDEngine)registry.getOrWaitFor(LED_ENGINE_GUID);
          if (_ledEngineInstance == null) {
             _ledEngineInstance = new LEDEngine();
-            var0.put(LED_ENGINE_GUID, _ledEngineInstance);
+            registry.put(LED_ENGINE_GUID, _ledEngineInstance);
          }
       }
 

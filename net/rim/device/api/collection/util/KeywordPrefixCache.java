@@ -14,11 +14,11 @@ class KeywordPrefixCache {
    private static final int MAX_ENTRY_COUNT;
 
    KeywordPrefixCache() {
-      short var1 = 171;
-      this._primaryCache = (Hashtable)(new Object(var1));
-      this._secondaryCache = (Hashtable)(new Object(var1));
-      this._returnResultCache = (Hashtable)(new Object(var1));
-      this._timestamps = (ToIntHashtable)(new Object(var1));
+      int initialSize = 171;
+      this._primaryCache = (Hashtable)(new Object(initialSize));
+      this._secondaryCache = (Hashtable)(new Object(initialSize));
+      this._returnResultCache = (Hashtable)(new Object(initialSize));
+      this._timestamps = (ToIntHashtable)(new Object(initialSize));
    }
 
    void reset() {
@@ -30,45 +30,45 @@ class KeywordPrefixCache {
    }
 
    private void removeOldest() {
-      Enumeration var1 = this._timestamps.keys();
-      Object var2 = null;
-      int var3 = this._timestamp;
+      Enumeration enumerator = this._timestamps.keys();
+      String oldestKey = null;
+      int oldestTimestamp = this._timestamp;
 
-      while (var1.hasMoreElements()) {
-         Object var4 = var1.nextElement();
-         int var5 = this._timestamps.get(var4);
-         if (var5 < var3) {
-            var2 = var4;
-            var3 = var5;
+      while (enumerator.hasMoreElements()) {
+         String key = (String)enumerator.nextElement();
+         int timestamp = this._timestamps.get(key);
+         if (timestamp < oldestTimestamp) {
+            oldestKey = key;
+            oldestTimestamp = timestamp;
          }
       }
 
-      this._primaryCache.remove(var2);
-      this._secondaryCache.remove(var2);
-      this._timestamps.remove(var2);
+      this._primaryCache.remove(oldestKey);
+      this._secondaryCache.remove(oldestKey);
+      this._timestamps.remove(oldestKey);
    }
 
-   synchronized BitSet getPrimaryEntry(String var1) {
+   synchronized BitSet getPrimaryEntry(String key) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized BitSet getSecondaryEntry(String var1) {
+   synchronized BitSet getSecondaryEntry(String key) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized BitSet getReturnResultEntry(String var1) {
+   synchronized BitSet getReturnResultEntry(String key) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized void putPrimaryEntry(String var1, BitSet var2) {
+   synchronized void putPrimaryEntry(String key, BitSet matches) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized void putSecondaryEntry(String var1, BitSet var2) {
+   synchronized void putSecondaryEntry(String key, BitSet matches) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   synchronized void putReturnResultEntry(String var1, BitSet var2) {
+   synchronized void putReturnResultEntry(String key, BitSet result) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

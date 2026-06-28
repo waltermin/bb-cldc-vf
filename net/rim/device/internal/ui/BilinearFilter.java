@@ -9,7 +9,7 @@ class BilinearFilter implements Filter {
    }
 
    @Override
-   public int weightFP(int var1) {
-      return Fixed32.abs(var1) < 65536 ? 65536 - var1 : 0;
+   public int weightFP(int valFP) {
+      return Fixed32.abs(valFP) < 65536 ? 65536 - valFP : 0;
    }
 }

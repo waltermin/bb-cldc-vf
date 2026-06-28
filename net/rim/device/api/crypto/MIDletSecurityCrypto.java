@@ -1,11 +1,15 @@
 package net.rim.device.api.crypto;
 
+import java.io.EOFException;
 import java.util.Hashtable;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.util.DataBuffer;
+import net.rim.device.api.util.TLEUtilities;
 import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.MIDletSecurity;
+import net.rim.device.internal.system.NvStore;
 import net.rim.device.internal.util.ByteArray;
 
 public class MIDletSecurityCrypto {
@@ -44,11 +48,11 @@ public class MIDletSecurityCrypto {
    protected MIDletSecurityCrypto() {
    }
 
-   public static final int checkMIDletSignature(Digest var0, String var1, String[] var2, byte[] var3, byte[] var4) {
-      return _impl == null ? 5 : _impl.checkMIDletSignatureImpl(var0, var1, var2, var3, var4);
+   public static final int checkMIDletSignature(Digest digest, String rsaSHA1Sig, String[] signingCerts, byte[] refTrailerBytes, byte[] signerCertEncoding) {
+      return _impl == null ? 5 : _impl.checkMIDletSignatureImpl(digest, rsaSHA1Sig, signingCerts, refTrailerBytes, signerCertEncoding);
    }
 
-   protected int checkMIDletSignatureImpl(Digest var1, String var2, String[] var3, byte[] var4, byte[] var5) {
+   protected int checkMIDletSignatureImpl(Digest _1, String _2, String[] _3, byte[] _4, byte[] _5) {
       throw null;
    }
 
@@ -56,40 +60,40 @@ public class MIDletSecurityCrypto {
       return new SHA1Digest();
    }
 
-   public static final byte[] signMIDletTrailer(byte[] var0, byte[] var1) {
-      return _impl == null ? null : _impl.signMIDletTrailerImpl(var0, var1);
+   public static final byte[] signMIDletTrailer(byte[] codfile, byte[] trailerBytes) {
+      return _impl == null ? null : _impl.signMIDletTrailerImpl(codfile, trailerBytes);
    }
 
-   protected byte[] signMIDletTrailerImpl(byte[] var1, byte[] var2) {
+   protected byte[] signMIDletTrailerImpl(byte[] _1, byte[] _2) {
       throw null;
    }
 
-   public static final int checkJADCertChain(String[] var0) {
-      return _impl == null ? 5 : _impl.checkJADCertChainImpl(var0);
+   public static final int checkJADCertChain(String[] certs) {
+      return _impl == null ? 5 : _impl.checkJADCertChainImpl(certs);
    }
 
-   protected int checkJADCertChainImpl(String[] var1) {
+   protected int checkJADCertChainImpl(String[] _1) {
       throw null;
    }
 
-   public static final int verifyMIDletTrailer(byte[] var0) {
+   public static final int verifyMIDletTrailer(byte[] policy) {
       if (_moduleHandle == 0) {
          return 2;
       }
 
       if (!ControlledAccess.verifyCodeModuleSignature(_moduleHandle, 51) && !ControlledAccess.verifyCodeModuleSignature(_moduleHandle, 4342354)) {
-         byte[] var1 = CodeModuleManager.getModuleSignature(_moduleHandle, 1346652493);
-         byte[] var2 = CodeModuleManager.getModuleTrailer(_moduleHandle, 2, 0);
-         if (var1 == null && var2 == null) {
+         byte[] signature = CodeModuleManager.getModuleSignature(_moduleHandle, 1346652493);
+         byte[] trailer = CodeModuleManager.getModuleTrailer(_moduleHandle, 2, 0);
+         if (signature == null && trailer == null) {
             return 1;
          }
 
-         if (!verify(_moduleHash, var2, var1)) {
+         if (!verify(_moduleHash, trailer, signature)) {
             return 2;
          }
 
-         if (var0 != null) {
-            MIDletSecurity.copyPolicyFromMIDletTrailer(var2, var0);
+         if (policy != null) {
+            MIDletSecurity.copyPolicyFromMIDletTrailer(trailer, policy);
          }
 
          return 0;
@@ -98,16 +102,40 @@ public class MIDletSecurityCrypto {
       }
    }
 
-   private static boolean verify(byte[] var0, byte[] var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static boolean verify(byte[] codFileHash, byte[] codFileTrailer, byte[] signature) {
+      if (codFileHash != null && codFileTrailer != null && signature != null) {
+         if (codFileHash.length != 20) {
+            return false;
+         }
+
+         SHA1Digest digest = new SHA1Digest();
+         digest.update(codFileHash);
+         digest.update(codFileTrailer);
+
+         try {
+            DataBuffer buffer = (DataBuffer)(new Object(signature, 0, signature.length, true));
+            byte[] r = TLEUtilities.readDataField(buffer, 1);
+            byte[] s = TLEUtilities.readDataField(buffer, 2);
+            byte[] publicKey = NvStore.readData(23);
+            if (publicKey == null) {
+               throw new Object();
+            } else {
+               return NativeEC.verifyDSA(CURVE_NAME, publicKey, digest.getDigest(), r, s);
+            }
+         } catch (EOFException e) {
+            throw new Object();
+         }
+      } else {
+         return false;
+      }
    }
 
    public static final byte[] fetchStoredSettings() {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void updateStoredSettings(byte[] var0) {
-      _hashtable.put(_moduleHashByteArray, var0);
+   public static final void updateStoredSettings(byte[] settings) {
+      _hashtable.put(_moduleHashByteArray, settings);
       _persist.commit();
    }
 

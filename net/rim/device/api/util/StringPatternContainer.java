@@ -11,28 +11,28 @@ public final class StringPatternContainer implements ReadableList {
    }
 
    @Override
-   public final Object getAt(int var1) {
-      return this._elements[var1];
+   public final Object getAt(int index) {
+      return this._elements[index];
    }
 
    @Override
-   public final int getAt(int var1, int var2, Object[] var3, int var4) {
-      int var5 = this._elements.length;
-      if (var2 > var5 - var1) {
-         var2 = var5 - var1;
+   public final int getAt(int index, int count, Object[] elements, int destIndex) {
+      int tmpCount = this._elements.length;
+      if (count > tmpCount - index) {
+         count = tmpCount - index;
       }
 
-      if (var3.length < var2 + var4) {
-         Array.resize(var3, var2 + var4);
+      if (elements.length < count + destIndex) {
+         Array.resize(elements, count + destIndex);
       }
 
-      System.arraycopy(this._elements, var1, var3, var4, var2);
-      return var2;
+      System.arraycopy(this._elements, index, elements, destIndex, count);
+      return count;
    }
 
    @Override
-   public final int getIndex(Object var1) {
-      return Arrays.getIndex(this._elements, var1);
+   public final int getIndex(Object element) {
+      return Arrays.getIndex(this._elements, element);
    }
 
    @Override
@@ -40,7 +40,7 @@ public final class StringPatternContainer implements ReadableList {
       return this._elements.length;
    }
 
-   public StringPatternContainer(StringPattern[] var1) {
-      this._elements = var1;
+   public StringPatternContainer(StringPattern[] elements) {
+      this._elements = elements;
    }
 }

@@ -17,18 +17,18 @@ public final class MD5Digest extends AbstractDigest implements Digest {
    }
 
    @Override
-   public final void update(int var1) {
-      this._context.update(var1);
+   public final void update(int data) {
+      this._context.update(data);
    }
 
    @Override
-   public final void update(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         while (var3 > 0) {
-            int var4 = Math.min(var3, 1024);
-            this._context.update(var1, var2, var4);
-            var2 += var4;
-            var3 -= var4;
+   public final void update(byte[] data, int offset, int length) {
+      if (data != null && offset >= 0 && length >= 0 && data.length - length >= offset) {
+         while (length > 0) {
+            int updated = Math.min(length, 1024);
+            this._context.update(data, offset, updated);
+            offset += updated;
+            length -= updated;
          }
       } else {
          throw new Object();
@@ -46,8 +46,8 @@ public final class MD5Digest extends AbstractDigest implements Digest {
    }
 
    @Override
-   public final int getDigest(byte[] var1, int var2, boolean var3) {
-      this._context.getDigest(var1, var2, var3);
+   public final int getDigest(byte[] buffer, int offset, boolean resetDigest) {
+      this._context.getDigest(buffer, offset, resetDigest);
       return 16;
    }
 

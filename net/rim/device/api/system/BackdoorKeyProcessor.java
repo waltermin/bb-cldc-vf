@@ -10,12 +10,12 @@ public class BackdoorKeyProcessor {
    private static boolean _developmentDevice;
    private static boolean _rimBrandedDevice;
 
-   public BackdoorKeyProcessor(boolean var1, BackdoorKeyListener var2) {
-      this._listener = var2;
-      this.setAltStatus(var1);
+   public BackdoorKeyProcessor(boolean altStatus, BackdoorKeyListener listener) {
+      this._listener = listener;
+      this.setAltStatus(altStatus);
    }
 
-   public void setAltStatus(boolean var1) {
+   public void setAltStatus(boolean altStatus) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -23,20 +23,20 @@ public class BackdoorKeyProcessor {
       return _developmentDevice || _rimBrandedDevice && !PersistentContent.isEncryptionEnabled();
    }
 
-   public boolean keyDown(int var1) {
-      return this.processKey(Keypad.key(var1), Keypad.status(var1));
+   public boolean keyDown(int keycode) {
+      return this.processKey(Keypad.key(keycode), Keypad.status(keycode));
    }
 
-   public boolean keyChar(char var1, int var2, int var3) {
-      return this.processKey(var1, var2);
+   public boolean keyChar(char key, int status, int time) {
+      return this.processKey(key, status);
    }
 
-   private static int nextKey(int var0) {
+   private static int nextKey(int in) {
       if (!InternalServices.isReducedFormFactor()) {
-         return var0;
+         return in;
       }
 
-      switch (var0) {
+      switch (in) {
          case 65:
             return 83;
          case 66:
@@ -62,22 +62,22 @@ public class BackdoorKeyProcessor {
          case 90:
             return 88;
          default:
-            return var0;
+            return in;
       }
    }
 
-   public static int appendKeyDetectingMultitap(int var0, int var1) {
-      var1 &= 255;
-      int var2;
-      return var1 == (var0 & 0xFF) && (var2 = nextKey(var1)) != var1 ? var0 & -256 | var2 : var0 << 8 | var1;
+   public static int appendKeyDetectingMultitap(int keys, int key) {
+      key &= 255;
+      int nextKey;
+      return key == (keys & 0xFF) && (nextKey = nextKey(key)) != key ? keys & -256 | nextKey : keys << 8 | key;
    }
 
-   private boolean processKey(int var1, int var2) {
-      if ((var2 & 1) != this._altStatus) {
+   private boolean processKey(int key, int status) {
+      if ((status & 1) != this._altStatus) {
          this._keys = 0;
          return false;
       } else {
-         this._keys = appendKeyDetectingMultitap(this._keys, var1);
+         this._keys = appendKeyDetectingMultitap(this._keys, key);
          if (this._listener.openProductionBackdoor(this._keys)) {
             this._keys = 0;
             return true;

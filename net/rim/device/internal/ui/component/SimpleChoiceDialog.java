@@ -17,8 +17,8 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
    private Object[] _choices;
    private int _defaultChoice;
 
-   public void select(int var1) {
-      this._selectedIndex = var1;
+   public void select(int index) {
+      this._selectedIndex = index;
       this.close(0);
    }
 
@@ -27,92 +27,94 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
    }
 
    protected void select() {
-      Field var1 = this.getLeafFieldWithFocus();
-      if (var1 != null) {
-         this.select(var1.getIndex());
+      Field field = this.getLeafFieldWithFocus();
+      if (field != null) {
+         this.select(field.getIndex());
       }
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 instanceof Object) {
+   public void fieldChanged(Field field, int context) {
+      if (field instanceof Object) {
          this.select();
       }
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
-      if (var1 && this._dfm.getCustomManager().getFieldCount() > 0) {
+   protected void onUiEngineAttached(boolean attached) {
+      if (attached && this._dfm.getCustomManager().getFieldCount() > 0) {
          this._dfm.getCustomField(Math.max(0, this._defaultChoice)).setFocus();
       }
 
-      super.onUiEngineAttached(var1);
+      super.onUiEngineAttached(attached);
    }
 
-   public SimpleChoiceDialog(String var1, Object[] var2, int var3, Bitmap var4, long var5) {
-      this((RichTextField)(new Object(var1, 36028797086072832L)), var2, var3, var4, var5);
+   public SimpleChoiceDialog(String message, Object[] choices, int defaultChoice, Bitmap bitmap, long style) {
+      this((RichTextField)(new Object(message, 36028797086072832L)), choices, defaultChoice, bitmap, style);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public SimpleChoiceDialog(RichTextField var1, Object[] var2, int var3, Bitmap var4, long var5) {
-      super((Manager)(new Object()), var5);
-      this._dfm.setMessage(var1);
-      if (var2 != null) {
-         this._choices = var2;
-         int var7 = var2.length;
+   public SimpleChoiceDialog(RichTextField message, Object[] choices, int defaultChoice, Bitmap bitmap, long style) {
+      super((Manager)(new Object()), style);
+      this._dfm.setMessage(message);
+      if (choices != null) {
+         this._choices = choices;
+         int numChoices = choices.length;
 
-         for (int var8 = 0; var8 < var7; var8++) {
-            Object var9 = new Object(var2[var8].toString(), 12884901888L);
-            ((ButtonField)var9).setChangeListener(this);
-            this._dfm.addCustomField((Field)var9);
+         for (int i = 0; i < numChoices; i++) {
+            ButtonField button = (ButtonField)(new Object(choices[i].toString(), 12884901888L));
+            button.setChangeListener(this);
+            this._dfm.addCustomField(button);
          }
       }
 
-      this._defaultChoice = var3;
-      if (var4 != null) {
-         this._dfm.setIcon((BitmapField)(new Object(var4, 32)));
+      this._defaultChoice = defaultChoice;
+      if (bitmap != null) {
+         this._dfm.setIcon((BitmapField)(new Object(bitmap, 32)));
       }
    }
 
-   public SimpleChoiceDialog(String var1, Object[] var2, int var3, Bitmap var4) {
-      this(var1, var2, var3, var4, 0);
+   public SimpleChoiceDialog(String message, Object[] choices, int defaultChoice, Bitmap bitmap) {
+      this(message, choices, defaultChoice, bitmap, 0);
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      super.trackwheelClick(var1, var2);
+   protected boolean trackwheelClick(int status, int time) {
+      super.trackwheelClick(status, time);
       this.select();
       return true;
    }
 
-   public static boolean askYesNoQuestion(String var0) {
-      return askYesNoQuestion(var0, null);
+   public static boolean askYesNoQuestion(String question) {
+      return askYesNoQuestion(question, null);
    }
 
-   public static boolean askYesNoQuestion(String var0, String var1) {
-      SimpleChoiceDialog var2 = createYesNoQuestionDialog(var0, var1, 0);
-      var2.show();
-      return var2.getCloseReason() == -1 ? false : var2.getSelectedIndex() == 0;
+   public static boolean askYesNoQuestion(String question, String boldArgument) {
+      SimpleChoiceDialog dialog = createYesNoQuestionDialog(question, boldArgument, 0);
+      dialog.show();
+      return dialog.getCloseReason() == -1 ? false : dialog.getSelectedIndex() == 0;
    }
 
-   public static boolean askYesNoQuestionOnBackground(String var0) {
-      return askYesNoQuestionOnBackground(var0, null);
+   public static boolean askYesNoQuestionOnBackground(String question) {
+      return askYesNoQuestionOnBackground(question, null);
    }
 
-   public static boolean askYesNoQuestionOnBackground(String var0, String var1) {
-      SimpleChoiceDialog var2 = createYesNoQuestionDialog(var0, var1, 134217728);
-      BackgroundDialog.show(var2);
-      return var2.getCloseReason() == -1 ? false : var2.getSelectedIndex() == 0;
+   public static boolean askYesNoQuestionOnBackground(String question, String boldArgument) {
+      SimpleChoiceDialog dialog = createYesNoQuestionDialog(question, boldArgument, 134217728);
+      BackgroundDialog.show(dialog);
+      return dialog.getCloseReason() == -1 ? false : dialog.getSelectedIndex() == 0;
    }
 
-   private static SimpleChoiceDialog createYesNoQuestionDialog(String var0, String var1, long var2) {
-      Object var4 = var1 == null ? new Object(var0, 45035996273704960L) : MessageFormatUtilities.getBoldArgumentField(var0, new String[]{var1});
-      String[] var5 = CommonResource.getStringArray(10012);
-      Bitmap var6 = Bitmap.getPredefinedBitmap(1);
-      return new SimpleChoiceDialog((RichTextField)var4, var5, 1, var6, var2);
+   private static SimpleChoiceDialog createYesNoQuestionDialog(String question, String boldArgument, long style) {
+      RichTextField messageField = (RichTextField)(boldArgument == null
+         ? new Object(question, 45035996273704960L)
+         : MessageFormatUtilities.getBoldArgumentField(question, new String[]{boldArgument}));
+      String[] yesNo = CommonResource.getStringArray(10012);
+      Bitmap bitmap = Bitmap.getPredefinedBitmap(1);
+      return new SimpleChoiceDialog(messageField, yesNo, 1, bitmap, style);
    }
 }

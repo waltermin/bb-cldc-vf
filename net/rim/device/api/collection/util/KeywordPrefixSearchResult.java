@@ -6,8 +6,8 @@ public class KeywordPrefixSearchResult {
    private BitSet _primarySet;
    private BitSet _secondarySet;
 
-   public KeywordPrefixSearchResult(BitSet var1, BitSet var2) {
-      this.setResults(var1, var2);
+   public KeywordPrefixSearchResult(BitSet primarySet, BitSet secondarySet) {
+      this.setResults(primarySet, secondarySet);
    }
 
    public BitSet getPrimaryMatches() {
@@ -18,9 +18,9 @@ public class KeywordPrefixSearchResult {
       return this._secondarySet;
    }
 
-   public final void setResults(BitSet var1, BitSet var2) {
-      this._primarySet = var1;
-      this._secondarySet = var2;
+   public final void setResults(BitSet primarySet, BitSet secondarySet) {
+      this._primarySet = primarySet;
+      this._secondarySet = secondarySet;
    }
 
    public int getMatchCount() {
@@ -28,7 +28,7 @@ public class KeywordPrefixSearchResult {
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

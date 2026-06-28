@@ -8,23 +8,23 @@ public class IOPort {
       throw null;
    }
 
-   public int write(byte[] var1) {
+   public int write(byte[] _1) {
       throw null;
    }
 
-   public int write(byte[] var1, int var2, int var3) {
+   public int write(byte[] _1, int _2, int _3) {
       throw null;
    }
 
-   public int write(int var1) {
+   public int write(int _1) {
       throw null;
    }
 
-   public int read(byte[] var1) {
+   public int read(byte[] _1) {
       throw null;
    }
 
-   public int read(byte[] var1, int var2, int var3) {
+   public int read(byte[] _1, int _2, int _3) {
       throw null;
    }
 
@@ -32,8 +32,8 @@ public class IOPort {
       throw null;
    }
 
-   public static void registerNotifyPattern(byte[] var0) {
-      SerialPort.registerNotifyPattern(var0);
+   public static void registerNotifyPattern(byte[] pattern) {
+      SerialPort.registerNotifyPattern(pattern);
    }
 
    public void cleanup() {

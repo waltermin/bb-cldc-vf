@@ -5,21 +5,21 @@ public final class Byte {
    public static final byte MIN_VALUE;
    public static final byte MAX_VALUE;
 
-   public static final byte parseByte(String var0) {
-      return parseByte(var0, 10);
+   public static final byte parseByte(String s) {
+      return parseByte(s, 10);
    }
 
-   public static final byte parseByte(String var0, int var1) {
-      int var2 = Integer.parseInt(var0, var1);
-      if (var2 >= -128 && var2 <= 127) {
-         return (byte)var2;
+   public static final byte parseByte(String s, int radix) {
+      int i = Integer.parseInt(s, radix);
+      if (i >= -128 && i <= 127) {
+         return (byte)i;
       } else {
          throw new Object();
       }
    }
 
-   public Byte(byte var1) {
-      this.value = var1;
+   public Byte(byte value) {
+      this.value = value;
    }
 
    public final byte byteValue() {
@@ -37,7 +37,7 @@ public final class Byte {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

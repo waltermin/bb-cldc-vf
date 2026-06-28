@@ -26,35 +26,35 @@ public final class MobitexPacketHeader implements RadioPacketHeader {
    public final void reset() {
    }
 
-   public final void setSourceAddress(int var1) {
+   public final void setSourceAddress(int sourceAddress) {
    }
 
    public final int getSourceAddress() {
       return 0;
    }
 
-   public final void setDestinationAddress(int var1) {
+   public final void setDestinationAddress(int destinationAddress) {
    }
 
    public final int getDestinationAddress() {
       return 0;
    }
 
-   public final void setPacketType(int var1) {
+   public final void setPacketType(int packetType) {
    }
 
    public final int getPacketType() {
       return 0;
    }
 
-   public final void setPacketFlags(int var1) {
+   public final void setPacketFlags(int packetFlags) {
    }
 
    public final int getPacketFlags() {
       return 0;
    }
 
-   public final void setHPID(int var1) {
+   public final void setHPID(int hpid) {
    }
 
    public final int getHPID() {

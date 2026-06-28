@@ -7,15 +7,15 @@ class SimplePatternMatch {
    private int _requiredCount;
    private boolean _gteq;
 
-   public SimplePatternMatch(String var1) {
-      this._pattern = var1;
+   public SimplePatternMatch(String pattern) {
+      this._pattern = pattern;
    }
 
-   public boolean match(String var1) {
+   public boolean match(String candidate) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private boolean matchRegion(StringBuffer var1, int var2) {
+   private boolean matchRegion(StringBuffer region, int anchor) {
       throw new RuntimeException("cod2jar: string-special");
    }
 

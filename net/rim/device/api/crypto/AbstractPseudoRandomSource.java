@@ -6,69 +6,75 @@ public class AbstractPseudoRandomSource {
    protected AbstractPseudoRandomSource() {
    }
 
-   public void xorBytes(byte[] var1, int var2, int var3) {
+   public void xorBytes(byte[] _1, int _2, int _3) {
       throw null;
    }
 
-   public void xorBytes(byte[] var1) {
-      if (var1 == null) {
+   public void xorBytes(byte[] buffer) {
+      if (buffer == null) {
          throw new Object();
       }
 
-      this.xorBytes(var1, 0, var1.length);
+      this.xorBytes(buffer, 0, buffer.length);
    }
 
-   public void xorBytes(byte[] var1, int var2, int var3, byte[] var4, int var5) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2 && var4 != null && var5 >= 0 && var4.length - var3 >= var5) {
-         System.arraycopy(var1, var2, var4, var5, var3);
-         this.xorBytes(var4, var5, var3);
+   public void xorBytes(byte[] data, int dataOffset, int dataLength, byte[] buffer, int bufferOffset) {
+      if (data != null
+         && dataOffset >= 0
+         && dataLength >= 0
+         && data.length - dataLength >= dataOffset
+         && buffer != null
+         && bufferOffset >= 0
+         && buffer.length - dataLength >= bufferOffset) {
+         System.arraycopy(data, dataOffset, buffer, bufferOffset, dataLength);
+         this.xorBytes(buffer, bufferOffset, dataLength);
       } else {
          throw new Object();
       }
    }
 
-   public byte[] xorCopy(byte[] var1) {
-      if (var1 == null) {
+   public byte[] xorCopy(byte[] data) {
+      if (data == null) {
          throw new Object();
       } else {
-         return this.xorCopy(var1, 0, var1.length);
+         return this.xorCopy(data, 0, data.length);
       }
    }
 
-   public byte[] xorCopy(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         byte[] var4 = new byte[var3];
-         this.xorBytes(var1, var2, var3, var4, 0);
-         return var4;
-      } else {
-         throw new Object();
-      }
-   }
-
-   public void getBytes(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         Arrays.fill(var1, (byte)0, var2, var3);
-         this.xorBytes(var1, var2, var3);
+   public byte[] xorCopy(byte[] data, int offset, int length) {
+      if (data != null && offset >= 0 && length >= 0 && data.length - length >= offset) {
+         byte[] buffer = new byte[length];
+         this.xorBytes(data, offset, length, buffer, 0);
+         return buffer;
       } else {
          throw new Object();
       }
    }
 
-   public byte[] getBytes(int var1) {
-      if (var1 < 0) {
+   public void getBytes(byte[] buffer, int offset, int length) {
+      if (buffer != null && offset >= 0 && length >= 0 && buffer.length - length >= offset) {
+         Arrays.fill(buffer, (byte)0, offset, length);
+         this.xorBytes(buffer, offset, length);
+      } else {
          throw new Object();
       }
-
-      byte[] var2 = new byte[var1];
-      this.xorBytes(var2, 0, var1);
-      return var2;
    }
 
-   public void getBytes(byte[] var1) {
-      if (var1 == null) {
+   public byte[] getBytes(int length) {
+      if (length < 0) {
          throw new Object();
       }
 
-      this.getBytes(var1, 0, var1.length);
+      byte[] buffer = new byte[length];
+      this.xorBytes(buffer, 0, length);
+      return buffer;
+   }
+
+   public void getBytes(byte[] buffer) {
+      if (buffer == null) {
+         throw new Object();
+      }
+
+      this.getBytes(buffer, 0, buffer.length);
    }
 }

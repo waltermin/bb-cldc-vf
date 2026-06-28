@@ -9,29 +9,29 @@ public class Reader {
       this.lock = this;
    }
 
-   protected Reader(Object var1) {
-      if (var1 == null) {
+   protected Reader(Object lock) {
+      if (lock == null) {
          throw new NullPointerException();
       }
 
-      this.lock = var1;
+      this.lock = lock;
    }
 
    public int read() {
-      char[] var1 = new char[1];
-      return this.read(var1, 0, 1) == -1 ? -1 : var1[0];
+      char[] cb = new char[1];
+      return this.read(cb, 0, 1) == -1 ? -1 : cb[0];
    }
 
-   public int read(char[] var1) {
-      return this.read(var1, 0, var1.length);
+   public int read(char[] cbuf) {
+      return this.read(cbuf, 0, cbuf.length);
    }
 
-   public int read(char[] var1, int var2, int var3) {
+   public int read(char[] _1, int _2, int _3) {
       throw null;
    }
 
-   public long skip(long var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public long skip(long n) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public boolean ready() {
@@ -42,7 +42,7 @@ public class Reader {
       return false;
    }
 
-   public void mark(int var1) {
+   public void mark(int readAheadLimit) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

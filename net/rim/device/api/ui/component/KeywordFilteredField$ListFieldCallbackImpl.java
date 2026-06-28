@@ -4,26 +4,26 @@ import net.rim.device.api.ui.Graphics;
 
 class KeywordFilteredField$ListFieldCallbackImpl implements ListFieldCallback {
    @Override
-   public void drawListRow(ListField var1, Graphics var2, int var3, int var4, int var5) {
-      Object var6 = var1;
-      Object var7 = ((CollectionListField)var6).getElementAt(var3);
-      if (var7 != null) {
-         var2.drawText(var7.toString(), 0, var4);
+   public void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
+      CollectionListField collectionListField = (CollectionListField)listField;
+      Object element = collectionListField.getElementAt(index);
+      if (element != null) {
+         graphics.drawText(element.toString(), 0, y);
       }
    }
 
    @Override
-   public Object get(ListField var1, int var2) {
+   public Object get(ListField listField, int index) {
       return null;
    }
 
    @Override
-   public int getPreferredWidth(ListField var1) {
+   public int getPreferredWidth(ListField listField) {
       return 0;
    }
 
    @Override
-   public int indexOfList(ListField var1, String var2, int var3) {
+   public int indexOfList(ListField listField, String prefix, int start) {
       return 0;
    }
 }

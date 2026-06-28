@@ -1,22 +1,57 @@
 package net.rim.device.cldc.io.dns;
 
 import java.util.Vector;
+import net.rim.device.api.system.EventLogger;
 
 class DNSResolverIPv4$DNSResolverIPv4Thread extends Thread {
    private DNSResolverIPv4 _resolver;
    private Vector _queue;
 
-   DNSResolverIPv4$DNSResolverIPv4Thread(DNSResolverIPv4 var1) {
-      this._resolver = var1;
+   DNSResolverIPv4$DNSResolverIPv4Thread(DNSResolverIPv4 resolver) {
+      this._resolver = resolver;
       this._queue = (Vector)(new Object());
    }
 
-   public void addRequest(DNSRequest var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addRequest(DNSRequest req) {
+      synchronized (this._queue) {
+         this._queue.addElement(req);
+         this._queue.notify();
+      }
    }
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      EventLogger.logEvent(1197736374800106759L, 1231972724, 0);
+
+      while (true) {
+         DNSRequest req;
+         synchronized (this._queue) {
+            while (this._queue.size() == 0) {
+               try {
+                  this._queue.wait();
+               } catch (InterruptedException var4) {
+               }
+            }
+
+            req = (DNSRequest)this._queue.elementAt(0);
+            this._queue.removeElementAt(0);
+         }
+
+         try {
+            this._resolver.executeQuery(req);
+         } catch (DNSException e) {
+            int status = -1;
+            if (e.getErrorCode() != 0) {
+               status = e.getErrorCode();
+            }
+
+            if (req.getListener() != null) {
+               req.getListener().DNSEvent(req.getPacketId(), status, null);
+            }
+         } catch (Throwable var7) {
+         }
+
+         DNSRequest var8 = null;
+      }
    }
 }

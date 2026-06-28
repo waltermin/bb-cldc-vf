@@ -19,7 +19,7 @@ public class BigVector implements Persistable {
    private int _currChunkLastElementIndexPlusOne;
    private int _currChunkStartIndex;
 
-   private void adjustSubsequentElementIndexes(int var1) {
+   private void adjustSubsequentElementIndexes(int by) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
@@ -28,10 +28,10 @@ public class BigVector implements Persistable {
          this.init(new Object[this._arrayChunkSize]);
       } else {
          this._numArrayChunks--;
-         int var1 = this._numArrayChunks - this._currChunkIndex;
-         System.arraycopy(this._firstElementIndex, this._currChunkIndex + 1, this._firstElementIndex, this._currChunkIndex, var1 + 1);
-         System.arraycopy(this._arrayChunks, this._currChunkIndex + 1, this._arrayChunks, this._currChunkIndex, var1);
-         System.arraycopy(this._chunkStartIndex, this._currChunkIndex + 1, this._chunkStartIndex, this._currChunkIndex, var1);
+         int tailSize = this._numArrayChunks - this._currChunkIndex;
+         System.arraycopy(this._firstElementIndex, this._currChunkIndex + 1, this._firstElementIndex, this._currChunkIndex, tailSize + 1);
+         System.arraycopy(this._arrayChunks, this._currChunkIndex + 1, this._arrayChunks, this._currChunkIndex, tailSize);
+         System.arraycopy(this._chunkStartIndex, this._currChunkIndex + 1, this._chunkStartIndex, this._currChunkIndex, tailSize);
          Array.resize(this._firstElementIndex, this._numArrayChunks + 1);
          Array.resize(this._arrayChunks, this._numArrayChunks);
          Array.resize(this._chunkStartIndex, this._numArrayChunks);
@@ -47,28 +47,28 @@ public class BigVector implements Persistable {
       this._currChunkLastElementIndexPlusOne = -1;
    }
 
-   private void cacheIndex(int var1) {
+   private void cacheIndex(int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private void splitCurrentChunk(int var1) {
+   private void splitCurrentChunk(int splitPoint) {
       this._numArrayChunks++;
-      int var2 = this._currChunkIndex + 1;
-      int var3 = this._numArrayChunks - this._currChunkIndex - 2;
+      int newSlot = this._currChunkIndex + 1;
+      int tailSize = this._numArrayChunks - this._currChunkIndex - 2;
       Array.resize(this._firstElementIndex, this._numArrayChunks + 1);
       Array.resize(this._arrayChunks, this._numArrayChunks);
       Array.resize(this._chunkStartIndex, this._numArrayChunks);
-      System.arraycopy(this._firstElementIndex, var2, this._firstElementIndex, var2 + 1, var3 + 1);
-      System.arraycopy(this._arrayChunks, var2, this._arrayChunks, var2 + 1, var3);
-      System.arraycopy(this._chunkStartIndex, var2, this._chunkStartIndex, var2 + 1, var3);
-      Object[] var4 = new Object[this._arrayChunkSize];
-      this._firstElementIndex[var2] = this._firstElementIndex[this._currChunkIndex] + var1;
-      this._arrayChunks[var2] = var4;
-      this._chunkStartIndex[var2] = 0;
-      System.arraycopy(this._currChunk, var1 + this._currChunkStartIndex, var4, 0, this._arrayChunkSize - var1);
+      System.arraycopy(this._firstElementIndex, newSlot, this._firstElementIndex, newSlot + 1, tailSize + 1);
+      System.arraycopy(this._arrayChunks, newSlot, this._arrayChunks, newSlot + 1, tailSize);
+      System.arraycopy(this._chunkStartIndex, newSlot, this._chunkStartIndex, newSlot + 1, tailSize);
+      Object[] newChunk = new Object[this._arrayChunkSize];
+      this._firstElementIndex[newSlot] = this._firstElementIndex[this._currChunkIndex] + splitPoint;
+      this._arrayChunks[newSlot] = newChunk;
+      this._chunkStartIndex[newSlot] = 0;
+      System.arraycopy(this._currChunk, splitPoint + this._currChunkStartIndex, newChunk, 0, this._arrayChunkSize - splitPoint);
 
-      for (int var5 = var1; var5 < this._arrayChunkSize; var5++) {
-         this._currChunk[var5 + this._currChunkStartIndex] = null;
+      for (int i = splitPoint; i < this._arrayChunkSize; i++) {
+         this._currChunk[i + this._currChunkStartIndex] = null;
       }
 
       this._currChunkIndex = 0;
@@ -85,43 +85,43 @@ public class BigVector implements Persistable {
       this._currChunkIndex = 0;
    }
 
-   private int getNumChunks(int var1) {
-      return (var1 + this._arrayChunkSize - 1) / this._arrayChunkSize;
+   private int getNumChunks(int size) {
+      return (size + this._arrayChunkSize - 1) / this._arrayChunkSize;
    }
 
-   private void getNumArrayChunks(int var1, int var2) {
-      if (var2 > 0 && var1 >= 0) {
-         if (var2 > 256) {
-            var2 = 256;
+   private void getNumArrayChunks(int initialCapacity, int chunkSize) {
+      if (chunkSize > 0 && initialCapacity >= 0) {
+         if (chunkSize > 256) {
+            chunkSize = 256;
          }
 
-         if (var2 < 32) {
-            var2 = 32;
+         if (chunkSize < 32) {
+            chunkSize = 32;
          }
 
-         if (var1 < var2) {
-            var1 = var2;
+         if (initialCapacity < chunkSize) {
+            initialCapacity = chunkSize;
          }
 
-         this._arrayChunkSize = var2;
-         this._numArrayChunks = this.getNumChunks(var1);
+         this._arrayChunkSize = chunkSize;
+         this._numArrayChunks = this.getNumChunks(initialCapacity);
       } else {
          throw new Object();
       }
    }
 
-   private void init(Object[] var1) {
+   private void init(Object[] elements) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   public BigVector(int var1, int var2) {
-      this.getNumArrayChunks(var1, var2);
+   public BigVector(int initialCapacity, int chunkSize) {
+      this.getNumArrayChunks(initialCapacity, chunkSize);
       this.init(new Object[this._numArrayChunks * this._arrayChunkSize]);
       this._vectorSize = 0;
    }
 
-   public BigVector(int var1) {
-      this(var1, 64);
+   public BigVector(int initialCapacity) {
+      this(initialCapacity, 64);
    }
 
    public BigVector() {
@@ -138,28 +138,28 @@ public class BigVector implements Persistable {
       }
 
       this.uncacheIndex();
-      int var1 = this.getNumChunks(this._vectorSize) * this._arrayChunkSize;
-      Object[] var2 = new Object[var1];
+      int newElementCount = this.getNumChunks(this._vectorSize) * this._arrayChunkSize;
+      Object[] elements = new Object[newElementCount];
 
       for (this._currChunkIndex = 0; this._currChunkIndex < this._numArrayChunks; this._currChunkIndex++) {
-         int var3 = this._firstElementIndex[this._currChunkIndex];
-         Object[][] var4 = this._arrayChunks[this._currChunkIndex];
-         int var5 = this._chunkStartIndex[this._currChunkIndex];
-         int var6 = this._firstElementIndex[this._currChunkIndex + 1];
-         if (var6 > this._vectorSize) {
-            var6 = this._vectorSize;
+         int elementIndex = this._firstElementIndex[this._currChunkIndex];
+         Object[] chunk = this._arrayChunks[this._currChunkIndex];
+         int arrayIndex = this._chunkStartIndex[this._currChunkIndex];
+         int endElementIndex = this._firstElementIndex[this._currChunkIndex + 1];
+         if (endElementIndex > this._vectorSize) {
+            endElementIndex = this._vectorSize;
          }
 
-         while (var3 < var6) {
-            var2[var3] = var4[var5];
-            var3++;
-            var5++;
+         while (elementIndex < endElementIndex) {
+            elements[elementIndex] = chunk[arrayIndex];
+            elementIndex++;
+            arrayIndex++;
          }
       }
 
       this.getNumArrayChunks(this._vectorSize, this._arrayChunkSize);
-      this.init(var2);
-      return var2;
+      this.init(elements);
+      return elements;
    }
 
    public synchronized void optimize() {
@@ -170,26 +170,26 @@ public class BigVector implements Persistable {
       return this._vectorSize == 0;
    }
 
-   public synchronized Object elementAt(int var1) {
+   public synchronized Object elementAt(int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized int firstIndexOf(Object var1) {
-      for (int var2 = 0; var2 < this._numArrayChunks; var2++) {
-         int var3 = this._firstElementIndex[var2];
-         int var4 = this._firstElementIndex[var2 + 1] - var3;
-         int var5 = this._chunkStartIndex[var2];
-         int var6 = var5 + var4;
-         Object[][] var7 = this._arrayChunks[var2];
+   public synchronized int firstIndexOf(Object value) {
+      for (int i = 0; i < this._numArrayChunks; i++) {
+         int firstElement = this._firstElementIndex[i];
+         int chunkSize = this._firstElementIndex[i + 1] - firstElement;
+         int startChunk = this._chunkStartIndex[i];
+         int endChunk = startChunk + chunkSize;
+         Object[] chunk = this._arrayChunks[i];
 
-         for (int var8 = var5; var8 < var6; var8++) {
-            if (var7[var8] == var1) {
-               int var9 = var3 + var8 - var5;
-               if (var9 >= this._vectorSize) {
+         for (int j = startChunk; j < endChunk; j++) {
+            if (chunk[j] == value) {
+               int index = firstElement + j - startChunk;
+               if (index >= this._vectorSize) {
                   return -1;
                }
 
-               return var9;
+               return index;
             }
          }
       }
@@ -197,26 +197,28 @@ public class BigVector implements Persistable {
       return -1;
    }
 
-   public synchronized void setElementAt(Object var1, int var2) {
+   public synchronized void setElementAt(Object value, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized void removeElementAt(int var1) {
-      this.cacheIndex(var1);
+   public synchronized void removeElementAt(int index) {
+      this.cacheIndex(index);
       this.adjustSubsequentElementIndexes(-1);
-      int var2 = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
-      if (var2 == 1) {
+      int currChunkSize = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
+      if (currChunkSize == 1) {
          this._vectorSize--;
          this.removeCurrentChunk();
       } else {
-         int var3 = var1 - this._currChunkFirstElementIndex;
-         int var4 = var2 - var3 - 1;
-         if (var4 > 0) {
-            System.arraycopy(this._currChunk, var3 + this._currChunkStartIndex + 1, this._currChunk, var3 + this._currChunkStartIndex, var4);
+         int currElementOffset = index - this._currChunkFirstElementIndex;
+         int tailSize = currChunkSize - currElementOffset - 1;
+         if (tailSize > 0) {
+            System.arraycopy(
+               this._currChunk, currElementOffset + this._currChunkStartIndex + 1, this._currChunk, currElementOffset + this._currChunkStartIndex, tailSize
+            );
          }
 
          this._vectorSize--;
-         this._currChunk[var2 + this._currChunkStartIndex - 1] = null;
+         this._currChunk[currChunkSize + this._currChunkStartIndex - 1] = null;
       }
 
       this.uncacheIndex();
@@ -231,200 +233,202 @@ public class BigVector implements Persistable {
       }
    }
 
-   public synchronized void insertElementAt(Object var1, int var2) {
-      if (var2 == this._vectorSize) {
-         this.addElement(var1);
+   public synchronized void insertElementAt(Object obj, int index) {
+      if (index == this._vectorSize) {
+         this.addElement(obj);
       } else {
-         this.cacheIndex(var2);
-         int var3;
+         this.cacheIndex(index);
+         int currChunkSize;
          if (this._currChunkLastElementIndexPlusOne > this._vectorSize) {
-            var3 = this._vectorSize - this._currChunkFirstElementIndex;
+            currChunkSize = this._vectorSize - this._currChunkFirstElementIndex;
          } else {
-            var3 = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
+            currChunkSize = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
          }
 
-         if (var3 >= this._arrayChunkSize) {
-            this.splitCurrentChunk(var3 >> 1);
-            this.cacheIndex(var2);
-            var3 = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
+         if (currChunkSize >= this._arrayChunkSize) {
+            this.splitCurrentChunk(currChunkSize >> 1);
+            this.cacheIndex(index);
+            currChunkSize = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
          }
 
-         int var4 = var2 - this._currChunkFirstElementIndex;
-         int var5 = var3 - var4;
-         if (var5 > 0) {
-            System.arraycopy(this._currChunk, var4 + this._currChunkStartIndex, this._currChunk, var4 + this._currChunkStartIndex + 1, var5);
+         int currElementOffset = index - this._currChunkFirstElementIndex;
+         int tailSize = currChunkSize - currElementOffset;
+         if (tailSize > 0) {
+            System.arraycopy(
+               this._currChunk, currElementOffset + this._currChunkStartIndex, this._currChunk, currElementOffset + this._currChunkStartIndex + 1, tailSize
+            );
          }
 
          if (this._currChunkLastElementIndexPlusOne <= this._vectorSize) {
             this.adjustSubsequentElementIndexes(1);
          }
 
-         this._currChunk[var4 + this._currChunkStartIndex] = var1;
+         this._currChunk[currElementOffset + this._currChunkStartIndex] = obj;
          this._vectorSize++;
          this.uncacheIndex();
       }
    }
 
-   public synchronized void insertElementsAt(Object[] var1, int var2) {
-      int var3 = 0;
+   public synchronized void insertElementsAt(Object[] array, int index) {
+      int i = 0;
 
-      while (var3 < var1.length) {
-         this.insertElementAt(var1[var3], var2);
-         var3++;
-         var2++;
+      while (i < array.length) {
+         this.insertElementAt(array[i], index);
+         i++;
+         index++;
       }
    }
 
-   public synchronized void addElement(Object var1) {
+   public synchronized void addElement(Object obj) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public synchronized void addElements(Object[] var1) {
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         this.addElement(var1[var2]);
+   public synchronized void addElements(Object[] array) {
+      for (int i = 0; i < array.length; i++) {
+         this.addElement(array[i]);
       }
    }
 
-   public synchronized int copyInto(int var1, int var2, Object[] var3, int var4) {
-      int var5 = this._vectorSize;
-      if (var1 >= 0 && var1 <= var5) {
-         if (var2 < 0) {
-            var2 = 0;
-         } else if (var1 + var2 > var5) {
-            var2 = var5 - var1;
+   public synchronized int copyInto(int offset, int len, Object[] array, int dstPosition) {
+      int n = this._vectorSize;
+      if (offset >= 0 && offset <= n) {
+         if (len < 0) {
+            len = 0;
+         } else if (offset + len > n) {
+            len = n - offset;
          }
 
-         if (var2 != 0) {
+         if (len != 0) {
             if (this._contiguousArray != null) {
-               System.arraycopy(this._contiguousArray, var1, var3, var4, var2);
-               return var2;
+               System.arraycopy(this._contiguousArray, offset, array, dstPosition, len);
+               return len;
             }
 
-            int var6 = var2;
+            int amtLeftToCopy = len;
 
             do {
-               if (var1 < this._currChunkFirstElementIndex || var1 >= this._currChunkLastElementIndexPlusOne) {
-                  this.cacheIndex(var1);
+               if (offset < this._currChunkFirstElementIndex || offset >= this._currChunkLastElementIndexPlusOne) {
+                  this.cacheIndex(offset);
                }
 
-               int var7 = var1 - this._currChunkFirstElementIndex;
-               int var8 = var7 + this._currChunkStartIndex;
-               int var9 = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
-               var9 -= var7;
-               if (var9 > var6) {
-                  var9 = var6;
+               int offsetWithinChunk = offset - this._currChunkFirstElementIndex;
+               int srcPosition = offsetWithinChunk + this._currChunkStartIndex;
+               int amtToCopy = this._currChunkLastElementIndexPlusOne - this._currChunkFirstElementIndex;
+               amtToCopy -= offsetWithinChunk;
+               if (amtToCopy > amtLeftToCopy) {
+                  amtToCopy = amtLeftToCopy;
                }
 
-               System.arraycopy(this._currChunk, var8, var3, var4, var9);
-               var1 += var9;
-               var4 += var9;
-               var6 -= var9;
-            } while (var6 > 0);
+               System.arraycopy(this._currChunk, srcPosition, array, dstPosition, amtToCopy);
+               offset += amtToCopy;
+               dstPosition += amtToCopy;
+               amtLeftToCopy -= amtToCopy;
+            } while (amtLeftToCopy > 0);
          }
 
-         return var2;
+         return len;
       } else {
          throw new Object();
       }
    }
 
-   public synchronized int binarySearch(Comparator var1, Object var2) {
+   public synchronized int binarySearch(Comparator cmp, Object value) {
       if (this._contiguousArray != null) {
-         return Arrays.binarySearch(this._contiguousArray, var2, var1, 0, this._vectorSize);
+         return Arrays.binarySearch(this._contiguousArray, value, cmp, 0, this._vectorSize);
       }
 
-      int var3 = 0;
-      int var4 = this._numArrayChunks;
-      int var5 = 0;
-      int var6 = 0;
-      int var7 = 0;
-      int var8 = 0;
-      Object[][] var9 = null;
+      int low = 0;
+      int hi = this._numArrayChunks;
+      int mid = 0;
+      int chunkSize = 0;
+      int chunkStart = 0;
+      int chunkEnd = 0;
+      Object[] chunk = null;
 
-      while (var4 != var3) {
-         var5 = var4 + var3 >> 1;
-         var9 = this._arrayChunks[var5];
-         int var10 = this._firstElementIndex[var5 + 1];
-         if (var10 > this._vectorSize) {
-            var10 = this._vectorSize;
+      while (hi != low) {
+         mid = hi + low >> 1;
+         chunk = this._arrayChunks[mid];
+         int lastElement = this._firstElementIndex[mid + 1];
+         if (lastElement > this._vectorSize) {
+            lastElement = this._vectorSize;
          }
 
-         int var11 = this._firstElementIndex[var5];
-         if (var11 > this._vectorSize) {
-            var11 = this._vectorSize;
+         int firstElement = this._firstElementIndex[mid];
+         if (firstElement > this._vectorSize) {
+            firstElement = this._vectorSize;
          }
 
-         var6 = var10 - var11;
-         var7 = this._chunkStartIndex[var5];
-         var8 = var7 + var6;
-         if (var6 != 0 && var1.compare(var9[var7], var2) <= 0) {
-            if (var1.compare(var9[var8 - 1], var2) >= 0) {
+         chunkSize = lastElement - firstElement;
+         chunkStart = this._chunkStartIndex[mid];
+         chunkEnd = chunkStart + chunkSize;
+         if (chunkSize != 0 && cmp.compare(chunk[chunkStart], value) <= 0) {
+            if (cmp.compare(chunk[chunkEnd - 1], value) >= 0) {
                break;
             }
 
-            var3 = var5 + 1;
+            low = mid + 1;
          } else {
-            var4 = var5;
+            hi = mid;
          }
       }
 
-      if (this._firstElementIndex[var5] > this._vectorSize) {
+      if (this._firstElementIndex[mid] > this._vectorSize) {
          return -this._vectorSize - 1;
       }
 
-      int var13 = Arrays.binarySearch(var9, var2, var1, var7, var8);
-      return var13 < 0 ? var13 - this._firstElementIndex[var5] + var7 : this._firstElementIndex[var5] + var13 - var7;
+      int index = Arrays.binarySearch(chunk, value, cmp, chunkStart, chunkEnd);
+      return index < 0 ? index - this._firstElementIndex[mid] + chunkStart : this._firstElementIndex[mid] + index - chunkStart;
    }
 
-   public synchronized void sort(Comparator var1) {
-      Arrays.sort(this.getContiguousArray(), 0, this._vectorSize, var1);
+   public synchronized void sort(Comparator cmp) {
+      Arrays.sort(this.getContiguousArray(), 0, this._vectorSize, cmp);
    }
 
-   public synchronized boolean removeElement(Comparator var1, Object var2) {
-      boolean var3 = false;
-      int var4 = this.binarySearch(var1, var2);
-      if (var4 >= 0) {
-         this.removeElementAt(var4);
-         var3 = true;
+   public synchronized boolean removeElement(Comparator cmp, Object e) {
+      boolean found = false;
+      int index = this.binarySearch(cmp, e);
+      if (index >= 0) {
+         this.removeElementAt(index);
+         found = true;
       }
 
-      return var3;
+      return found;
    }
 
-   public synchronized void insertElement(Comparator var1, Object var2) {
-      int var3 = this.binarySearch(var1, var2);
-      if (var3 < 0) {
-         var3 = -var3 - 1;
+   public synchronized void insertElement(Comparator cmp, Object e) {
+      int index = this.binarySearch(cmp, e);
+      if (index < 0) {
+         index = -index - 1;
       }
 
-      this.insertElementAt(var2, var3);
+      this.insertElementAt(e, index);
    }
 
-   public synchronized boolean updateElement(Comparator var1, Object var2, Object var3) {
-      boolean var4 = true;
-      if (var2 != var3) {
-         if (this.removeElement(var1, var2)) {
-            this.insertElement(var1, var3);
+   public synchronized boolean updateElement(Comparator cmp, Object o, Object n) {
+      boolean ret = true;
+      if (o != n) {
+         if (this.removeElement(cmp, o)) {
+            this.insertElement(cmp, n);
          } else {
-            var4 = false;
+            ret = false;
          }
       } else {
-         var4 = this.binarySearch(var1, var2) >= 0;
+         ret = this.binarySearch(cmp, o) >= 0;
       }
 
-      return var4;
+      return ret;
    }
 
-   public synchronized int getIndex(Comparator var1, Object var2) {
-      if (var2 == null) {
+   public synchronized int getIndex(Comparator cmp, Object o) {
+      if (o == null) {
          return -1;
       }
 
-      int var3 = this.binarySearch(var1, var2);
-      if (var3 < 0) {
-         var3 = -1;
+      int index = this.binarySearch(cmp, o);
+      if (index < 0) {
+         index = -1;
       }
 
-      return var3;
+      return index;
    }
 }

@@ -43,17 +43,17 @@ class DefaultMenuListField extends Field implements MenuList {
    protected void applyTheme() {
       super.applyTheme();
       this._font = this.getFont();
-      int var1 = Locale.getDefaultForSystem().getCode();
-      if (!FontLogicHelper.fontLegible(this._font, var1)) {
-         this._font = FontLogicHelper.getSuggestedFont(this._font, var1, true);
+      int locale = Locale.getDefaultForSystem().getCode();
+      if (!FontLogicHelper.fontLegible(this._font, locale)) {
+         this._font = FontLogicHelper.getSuggestedFont(this._font, locale, true);
       }
 
-      Theme var2 = ThemeManager.getActiveTheme();
-      this._tasFocus = var2.getAttributeSet(this, 6);
+      Theme theme = ThemeManager.getActiveTheme();
+      this._tasFocus = theme.getAttributeSet(this, 6);
       if (this._tasFocus != null) {
          this._fontFocus = this._tasFocus.getFont();
-         if (this._fontFocus != null && !FontLogicHelper.fontLegible(this._fontFocus, var1)) {
-            this._fontFocus = FontLogicHelper.getSuggestedFont(this._fontFocus, var1, true);
+         if (this._fontFocus != null && !FontLogicHelper.fontLegible(this._fontFocus, locale)) {
+            this._fontFocus = FontLogicHelper.getSuggestedFont(this._fontFocus, locale, true);
          }
       }
 
@@ -69,7 +69,7 @@ class DefaultMenuListField extends Field implements MenuList {
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -78,12 +78,12 @@ class DefaultMenuListField extends Field implements MenuList {
       return this._items[this._selection];
    }
 
-   private int getDisplayIndex(MenuItem var1) {
-      int var2 = this._items.length;
+   private int getDisplayIndex(MenuItem item) {
+      int length = this._items.length;
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (this._items[var3] == var1) {
-            return var3;
+      for (int lv = 0; lv < length; lv++) {
+         if (this._items[lv] == item) {
+            return lv;
          }
       }
 
@@ -91,71 +91,71 @@ class DefaultMenuListField extends Field implements MenuList {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      int var2 = this.getPosOfItem(this._selection);
-      var1.set(0, var2, this.getWidth(), this.getHeightOfItem(this._selection));
+   public void getFocusRect(XYRect rect) {
+      int y = this.getPosOfItem(this._selection);
+      rect.set(0, y, this.getWidth(), this.getHeightOfItem(this._selection));
    }
 
-   private int getHeightOfItem(int var1) {
-      return var1 == this._selection ? Math.max(this._focusHeight + this._heights[var1] - this._fontHeight, this._heights[var1]) : this._heights[var1];
+   private int getHeightOfItem(int item) {
+      return item == this._selection ? Math.max(this._focusHeight + this._heights[item] - this._fontHeight, this._heights[item]) : this._heights[item];
    }
 
-   private int getItemForPosition(int var1, int var2) {
-      var1 -= var2;
-      int var3 = 0;
-      int var4 = this._items.length;
+   private int getItemForPosition(int y, int round) {
+      y -= round;
+      int yUsed = 0;
+      int end = this._items.length;
 
-      for (int var5 = 0; var5 < var4; var5++) {
-         var3 += this.getHeightOfItem(var5);
-         if (var3 >= var1) {
-            return var5;
+      for (int lv = 0; lv < end; lv++) {
+         yUsed += this.getHeightOfItem(lv);
+         if (yUsed >= y) {
+            return lv;
          }
       }
 
-      return var4;
+      return end;
    }
 
-   private int getPosOfItem(int var1) {
-      int var2 = Arrays.sum(this._heights, 0, var1, false);
-      if (var1 > this._selection) {
-         var2 = var2 + this.getHeightOfItem(this._selection) - this._heights[this._selection];
+   private int getPosOfItem(int index) {
+      int y = Arrays.sum(this._heights, 0, index, false);
+      if (index > this._selection) {
+         y = y + this.getHeightOfItem(this._selection) - this._heights[this._selection];
       }
 
-      return var2;
+      return y;
    }
 
    @Override
    public int getPreferredWidth() {
-      int var1 = 0;
-      int var2 = 0;
-      int var3 = this._items.length;
+      int width = 0;
+      int iconGapWidth = 0;
+      int length = this._items.length;
 
-      for (int var4 = 0; var4 < var3; var4++) {
-         MenuItem var5 = this._items[var4];
-         Image var6 = var5.getIcon();
-         if (var6 != null) {
-            var2 = Math.max(var2, var6.getWidth(Display.getWidth(), Display.getHeight()));
+      for (int lv = 0; lv < length; lv++) {
+         MenuItem item = this._items[lv];
+         Image icon = item.getIcon();
+         if (icon != null) {
+            iconGapWidth = Math.max(iconGapWidth, icon.getWidth(Display.getWidth(), Display.getHeight()));
          }
       }
 
-      for (int var7 = var3 - 1; var7 >= 0; var7--) {
-         MenuItem var8 = this._items[var7];
-         if (!var8.isSeparator()) {
-            String var9 = var8.toString();
-            var1 = Math.max(var1, this._font.getBounds(var9) + var2);
+      for (int lv = length - 1; lv >= 0; lv--) {
+         MenuItem item = this._items[lv];
+         if (!item.isSeparator()) {
+            String string = item.toString();
+            width = Math.max(width, this._font.getBounds(string) + iconGapWidth);
             if (this._fontFocus != this._font) {
-               var1 = Math.max(var1, this._fontFocus.getBounds(var9) + var2);
+               width = Math.max(width, this._fontFocus.getBounds(string) + iconGapWidth);
             }
          }
       }
 
-      return var1 + this._contentPaddingLeft + this._contentPaddingRight;
+      return width + this._contentPaddingLeft + this._contentPaddingRight;
    }
 
-   private boolean containsChar(StringBuffer var1, char var2) {
-      if (var1 != null) {
-         for (int var3 = var1.length() - 1; var3 >= 0; var3--) {
-            if (var1.charAt(var3) == var2) {
+   private boolean containsChar(StringBuffer aBuffer, char aChar) {
+      if (aBuffer != null) {
+         for (int i = aBuffer.length() - 1; i >= 0; i--) {
+            if (aBuffer.charAt(i) == aChar) {
                return true;
             }
          }
@@ -165,37 +165,37 @@ class DefaultMenuListField extends Field implements MenuList {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      if ((var2 & 65536) != 0) {
-         return var1;
+   protected int moveFocus(int amount, int status, int time) {
+      if ((status & 65536) != 0) {
+         return amount;
       }
 
-      int var4 = this._selection;
-      int var5 = MathUtilities.clamp(-1, var1, 1);
-      int var6 = this._items.length - 1;
+      int start = this._selection;
+      int sign = MathUtilities.clamp(-1, amount, 1);
+      int lengthMinusOne = this._items.length - 1;
 
-      while (var1 != 0) {
-         this._selection = MathUtilities.clamp(0, this._selection + var5, var6);
+      while (amount != 0) {
+         this._selection = MathUtilities.clamp(0, this._selection + sign, lengthMinusOne);
          if (this._items[this._selection].isSeparator()) {
-            this._selection = MathUtilities.clamp(0, this._selection + var5, var6);
+            this._selection = MathUtilities.clamp(0, this._selection + sign, lengthMinusOne);
          }
 
-         var1 -= var5;
+         amount -= sign;
       }
 
       if (this._focusDrawWithInvalidate) {
-         int var7 = this.getPosOfItem(Math.min(var4, this._selection));
-         this.invalidate(0, var7, this.getWidth(), this.getPosOfItem(Math.max(var4, this._selection) + 1));
+         int top = this.getPosOfItem(Math.min(start, this._selection));
+         this.invalidate(0, top, this.getWidth(), this.getPosOfItem(Math.max(start, this._selection) + 1));
       }
 
       if (Ui.isTTSEnabled()) {
@@ -206,35 +206,35 @@ class DefaultMenuListField extends Field implements MenuList {
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
-      if (this.getExtent().contains(var1, var2)) {
-         int var5 = MathUtilities.clamp(0, this.getItemForPosition(var2, -1), this._items.length - 1);
-         if (!this._items[var5].isSeparator()) {
-            this._selection = var5;
+   protected void moveFocus(int x, int y, int status, int time) {
+      if (this.getExtent().contains(x, y)) {
+         int newSelection = MathUtilities.clamp(0, this.getItemForPosition(y, -1), this._items.length - 1);
+         if (!this._items[newSelection].isSeparator()) {
+            this._selection = newSelection;
          }
       }
    }
 
    @Override
-   public boolean stylusDrag(int var1, int var2, int var3, int var4) {
+   public boolean stylusDrag(int x, int y, int status, int time) {
       this.focusRemove();
-      this.moveFocus(var1, var2, var3, var4);
+      this.moveFocus(x, y, status, time);
       this.focusAdd(true);
       return true;
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public void setCurrentItem(MenuItem var1) {
-      this._selection = this.getDisplayIndex(var1);
+   public void setCurrentItem(MenuItem item) {
+      this._selection = this.getDisplayIndex(item);
    }
 
    @Override
-   public void setMenuItems(MenuItem[] var1) {
+   public void setMenuItems(MenuItem[] items) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

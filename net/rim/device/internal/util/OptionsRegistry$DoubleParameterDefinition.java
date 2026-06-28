@@ -5,13 +5,13 @@ public class OptionsRegistry$DoubleParameterDefinition extends OptionsRegistry$P
    private double _min;
    private double _max;
 
-   public OptionsRegistry$DoubleParameterDefinition(double var1, double var3, double var5) {
-      this._default = var1;
-      this._min = var3;
-      this._max = var5;
+   public OptionsRegistry$DoubleParameterDefinition(double def, double min, double max) {
+      this._default = def;
+      this._min = min;
+      this._max = max;
    }
 
-   protected boolean isValid(double var1) {
-      return this._min <= var1 && var1 <= this._max;
+   protected boolean isValid(double value) {
+      return this._min <= value && value <= this._max;
    }
 }

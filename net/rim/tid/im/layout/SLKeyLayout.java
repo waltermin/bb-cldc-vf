@@ -27,150 +27,150 @@ public class SLKeyLayout {
    private static int[] _modifiers;
    private static String[] _maps;
 
-   public SLKeyLayout(Locale var1, boolean var2, byte var3, InputStream var4) {
+   public SLKeyLayout(Locale locale, boolean reduced, byte modifierMask, InputStream is) {
    }
 
-   public SLKeyLayout(Locale var1, boolean var2, byte var3, byte[] var4) {
+   public SLKeyLayout(Locale locale, boolean reduced, byte modifierMask, byte[] data) {
    }
 
-   private boolean openMapFile(InputStream var1) {
-      byte[] var2 = new byte[var1.available()];
-      var1.read(var2);
-      return this.openMapFile(var2);
+   private boolean openMapFile(InputStream is) {
+      byte[] data = new byte[is.available()];
+      is.read(data);
+      return this.openMapFile(data);
    }
 
    public String getNameID() {
       return this._nameID;
    }
 
-   public void setNameID(String var1) {
+   public void setNameID(String nameID) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private boolean openMapFile(byte[] var1) {
+   private boolean openMapFile(byte[] data) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
    private void createAltKeys() {
-      int var1 = 0;
-      int var2 = this._ranges.length;
+      int size = 0;
+      int len = this._ranges.length;
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         var1 += this._ranges[var3][1] - this._ranges[var3][0];
+      for (int i = 0; i < len; i++) {
+         size += this._ranges[i][1] - this._ranges[i][0];
       }
 
-      var1 += this._special.length;
-      this._iAltedKeys = new int[var1];
-      int var9 = 0;
+      size += this._special.length;
+      this._iAltedKeys = new int[size];
+      int index = 0;
 
-      for (int var4 = 0; var4 < this._ranges.length; var4++) {
-         short[] var5 = this._ranges[var4][1];
+      for (int i = 0; i < this._ranges.length; i++) {
+         int rLen = (int)this._ranges[i][1];
 
-         for (short[] var6 = this._ranges[var4][0]; var6 < var5; var6++) {
-            this._iAltedKeys[var9++] = CharacterUtilities.toUpperCase(this.getKeyChars((int)var6, 0, false).charAt(0), this._locale.getCode());
+         for (int j = (int)this._ranges[i][0]; j < rLen; j++) {
+            this._iAltedKeys[index++] = CharacterUtilities.toUpperCase(this.getKeyChars(j, 0, false).charAt(0), this._locale.getCode());
          }
       }
 
-      var2 = this._special.length;
+      len = this._special.length;
 
-      for (int var10 = 0; var10 < var2; var10++) {
-         this._iAltedKeys[var9++] = CharacterUtilities.toUpperCase(this.getKeyChars(this._special[var10], 0, false).charAt(0), this._locale.getCode());
+      for (int i = 0; i < len; i++) {
+         this._iAltedKeys[index++] = CharacterUtilities.toUpperCase(this.getKeyChars(this._special[i], 0, false).charAt(0), this._locale.getCode());
       }
    }
 
-   private int findAltedKeyCode(int var1) {
-      int var2 = this._iAltedKeys.length;
+   private int findAltedKeyCode(int ch) {
+      int len = this._iAltedKeys.length;
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (var1 == this._iAltedKeys[var3]) {
-            int var4 = 0;
+      for (int i = 0; i < len; i++) {
+         if (ch == this._iAltedKeys[i]) {
+            int index = 0;
 
-            for (int var5 = 0; var5 < this._ranges.length; var5++) {
-               if (var4 + (this._ranges[var5][1] - this._ranges[var5][0]) > var3) {
-                  return this._ranges[var5][0] + (var3 - var4);
+            for (int j = 0; j < this._ranges.length; j++) {
+               if (index + (this._ranges[j][1] - this._ranges[j][0]) > i) {
+                  return this._ranges[j][0] + (i - index);
                }
 
-               var4 += this._ranges[var5][1] - this._ranges[var5][0];
+               index += this._ranges[j][1] - this._ranges[j][0];
             }
 
-            return this._special[var3 - var4];
+            return this._special[i - index];
          }
       }
 
       return -1;
    }
 
-   public char getAltedChar(char var1) {
-      int var2 = -1;
-      switch (var1) {
+   public char getAltedChar(char ch) {
+      int keyCode = -1;
+      switch (ch) {
          case 'Σ':
-            var2 = 83;
+            keyCode = 83;
             break;
          case 'ς':
-            var2 = 87;
+            keyCode = 87;
             break;
          default:
-            var2 = this.findAltedKeyCode(CharacterUtilities.toUpperCase(var1, this._locale.getCode()));
+            keyCode = this.findAltedKeyCode(CharacterUtilities.toUpperCase(ch, this._locale.getCode()));
       }
 
-      return var2 != -1 ? this.getKeyChars(var2, 8, false).charAt(0) : '\u0000';
+      return keyCode != -1 ? this.getKeyChars(keyCode, 8, false).charAt(0) : '\u0000';
    }
 
-   public char getUnaltedChar(char var1) {
-      var1 = CharacterUtilities.toUpperCase(var1, this._locale.getCode());
+   public char getUnaltedChar(char ch) {
+      ch = CharacterUtilities.toUpperCase(ch, this._locale.getCode());
 
-      for (int var2 = 0; var2 < this._ranges.length; var2++) {
-         short[] var3 = this._ranges[var2][1];
+      for (int i = 0; i < this._ranges.length; i++) {
+         int rLen = (int)this._ranges[i][1];
 
-         for (short[] var4 = this._ranges[var2][0]; var4 < var3; var4++) {
-            char var5 = this.getKeyChars((int)var4, 8, false).charAt(0);
-            if (CharacterUtilities.toUpperCase(var5, this._locale.getCode()) == var1) {
-               return this.getKeyChars((int)var4, 0, false).charAt(0);
+         for (int j = (int)this._ranges[i][0]; j < rLen; j++) {
+            char normal = this.getKeyChars(j, 8, false).charAt(0);
+            if (CharacterUtilities.toUpperCase(normal, this._locale.getCode()) == ch) {
+               return this.getKeyChars(j, 0, false).charAt(0);
             }
          }
       }
 
-      int var7 = this._special.length;
+      int len = this._special.length;
 
-      for (int var8 = 0; var8 < var7; var8++) {
-         char var9 = this.getKeyChars(this._special[var8], 8, false).charAt(0);
-         if (CharacterUtilities.toUpperCase(var9, this._locale.getCode()) == var1) {
-            return this.getKeyChars(this._special[var8], 0, false).charAt(0);
+      for (int i = 0; i < len; i++) {
+         char normal = this.getKeyChars(this._special[i], 8, false).charAt(0);
+         if (CharacterUtilities.toUpperCase(normal, this._locale.getCode()) == ch) {
+            return this.getKeyChars(this._special[i], 0, false).charAt(0);
          }
       }
 
       return '\u0000';
    }
 
-   public int getOriginalKeyCode(char var1, int var2) {
-      for (int var3 = 0; var3 < this._ranges.length; var3++) {
-         short[] var4 = this._ranges[var3][1];
+   public int getOriginalKeyCode(char ch, int modifier) {
+      for (int i = 0; i < this._ranges.length; i++) {
+         int rLen = (int)this._ranges[i][1];
 
-         for (short[] var5 = this._ranges[var3][0]; var5 < var4; var5++) {
-            StringBuffer var6 = this.getKeyChars((int)var5, var2, false);
-            if (this.indexOf(var6, var1) != -1) {
-               return (int)var5;
+         for (int j = (int)this._ranges[i][0]; j < rLen; j++) {
+            StringBuffer chars = this.getKeyChars(j, modifier, false);
+            if (this.indexOf(chars, ch) != -1) {
+               return j;
             }
          }
       }
 
-      int var7 = this._special.length;
+      int len = this._special.length;
 
-      for (int var8 = 0; var8 < var7; var8++) {
-         StringBuffer var9 = this.getKeyChars(this._special[var8], var2, false);
-         if (this.indexOf(var9, var1) != -1) {
-            return this._special[var8];
+      for (int i = 0; i < len; i++) {
+         StringBuffer chars = this.getKeyChars(this._special[i], modifier, false);
+         if (this.indexOf(chars, ch) != -1) {
+            return this._special[i];
          }
       }
 
       return 0;
    }
 
-   private int bytesToInt(byte var1, byte var2) {
-      int var3 = 0;
-      var3 |= var1 & 255;
-      var3 <<= 8;
-      return var3 | var2 & 0xFF;
+   private int bytesToInt(byte byte1, byte byte2) {
+      int result = 0;
+      result |= byte1 & 255;
+      result <<= 8;
+      return result | byte2 & 0xFF;
    }
 
    public boolean isReduced() {
@@ -181,17 +181,17 @@ public class SLKeyLayout {
       return this._mask;
    }
 
-   public boolean contains(char var1) {
-      var1 = CharacterUtilities.toUpperCase(var1, this._locale.getCode());
+   public boolean contains(char ch) {
+      ch = CharacterUtilities.toUpperCase(ch, this._locale.getCode());
 
-      for (int var2 = 0; var2 < this._ranges.length; var2++) {
-         short[] var3 = this._ranges[var2][1];
+      for (int i = 0; i < this._ranges.length; i++) {
+         int rLen = (int)this._ranges[i][1];
 
-         for (short[] var4 = this._ranges[var2][0]; var4 < var3; var4++) {
-            for (int var5 = 0; var5 < 7; var5++) {
-               if (var5 != 4 && var5 != 5) {
-                  char var6 = this.getKeyChars((int)var4, _modifiers[var5], false).charAt(0);
-                  if (CharacterUtilities.toUpperCase(var6, this._locale.getCode()) == var1) {
+         for (int j = (int)this._ranges[i][0]; j < rLen; j++) {
+            for (int g = 0; g < 7; g++) {
+               if (g != 4 && g != 5) {
+                  char normal = this.getKeyChars(j, _modifiers[g], false).charAt(0);
+                  if (CharacterUtilities.toUpperCase(normal, this._locale.getCode()) == ch) {
                      return true;
                   }
                }
@@ -199,13 +199,13 @@ public class SLKeyLayout {
          }
       }
 
-      int var8 = this._special.length;
+      int len = this._special.length;
 
-      for (int var9 = 0; var9 < var8; var9++) {
-         for (int var10 = 0; var10 < 7; var10++) {
-            if (var10 != 4 && var10 != 5) {
-               char var11 = this.getKeyChars(this._special[var9], _modifiers[var10], false).charAt(0);
-               if (CharacterUtilities.toUpperCase(var11, this._locale.getCode()) == var1) {
+      for (int i = 0; i < len; i++) {
+         for (int g = 0; g < 7; g++) {
+            if (g != 4 && g != 5) {
+               char normal = this.getKeyChars(this._special[i], _modifiers[g], false).charAt(0);
+               if (CharacterUtilities.toUpperCase(normal, this._locale.getCode()) == ch) {
                   return true;
                }
             }
@@ -215,68 +215,68 @@ public class SLKeyLayout {
       return false;
    }
 
-   private boolean getDataFor(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private boolean getDataFor(int keyCode) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized StringBuffer getComplementaryChars(char var1, int var2) {
-      for (int var3 = 0; var3 < this._ranges.length; var3++) {
-         short[] var4 = this._ranges[var3][1];
+   public synchronized StringBuffer getComplementaryChars(char ch, int modifier) {
+      for (int i = 0; i < this._ranges.length; i++) {
+         int rLen = (int)this._ranges[i][1];
 
-         for (short[] var5 = this._ranges[var3][0]; var5 < var4; var5++) {
-            StringBuffer var6 = this.getKeyChars((int)var5, var2, false);
-            if (this.indexOf(var6, var1) != -1) {
-               return var6;
+         for (int j = (int)this._ranges[i][0]; j < rLen; j++) {
+            StringBuffer temp = this.getKeyChars(j, modifier, false);
+            if (this.indexOf(temp, ch) != -1) {
+               return temp;
             }
          }
       }
 
-      int var7 = this._special.length;
+      int len = this._special.length;
 
-      for (int var8 = 0; var8 < var7; var8++) {
-         StringBuffer var9 = this.getKeyChars(this._special[var8], var2, false);
-         if (this.indexOf(var9, var1) != -1) {
-            return var9;
+      for (int i = 0; i < len; i++) {
+         StringBuffer temp = this.getKeyChars(this._special[i], modifier, false);
+         if (this.indexOf(temp, ch) != -1) {
+            return temp;
          }
       }
 
       return null;
    }
 
-   private int indexOf(StringBuffer var1, char var2) {
-      for (int var3 = 0; var3 < var1.length(); var3++) {
-         if (var1.charAt(var3) == var2) {
-            return var3;
+   private int indexOf(StringBuffer sb, char element) {
+      for (int i = 0; i < sb.length(); i++) {
+         if (sb.charAt(i) == element) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   private int getModifierIndex(int var1) {
-      for (int var2 = 0; var2 < _modifiers.length; var2++) {
-         if (_modifiers[var2] == var1) {
-            return var2;
+   private int getModifierIndex(int modifier) {
+      for (int i = 0; i < _modifiers.length; i++) {
+         if (_modifiers[i] == modifier) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public synchronized StringBuffer getKeyChars(int var1, int var2) {
-      return this.getKeyChars(var1, var2, false);
+   public synchronized StringBuffer getKeyChars(int keyCode, int modifier) {
+      return this.getKeyChars(keyCode, modifier, false);
    }
 
-   public synchronized StringBuffer getKeyChars(int var1, int var2, boolean var3) {
+   public synchronized StringBuffer getKeyChars(int keyCode, int modifier, boolean isCapsOn) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   private synchronized StringBuffer getKeyChars0(byte[] var1, int var2, int var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private synchronized StringBuffer getKeyChars0(byte[] data, int length, int modifier, boolean isCapsOn) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private StringBuffer bytesToString(byte[] var1, int var2, int var3, byte var4) {
-      if (var3 == 0) {
+   private StringBuffer bytesToString(byte[] data, int start, int len, byte byteStructure) {
+      if (len == 0) {
          return this.getDefBuffer();
       }
 
@@ -284,80 +284,80 @@ public class SLKeyLayout {
          this._bytes2StringCache = (StringBuffer)(new Object());
       }
 
-      this._bytes2StringCache.setLength(var3);
-      if (var4 == 1) {
-         for (int var5 = 0; var5 < var3; var5++) {
-            this._bytes2StringCache.setCharAt(var5, (char)(var1[var2 + var5] & 0xFF));
+      this._bytes2StringCache.setLength(len);
+      if (byteStructure == 1) {
+         for (int i = 0; i < len; i++) {
+            this._bytes2StringCache.setCharAt(i, (char)(data[start + i] & 0xFF));
          }
       } else {
-         for (int var7 = 0; var7 < var3; var7++) {
-            int var6 = var2 + var7 * 2;
-            this._bytes2StringCache.setCharAt(var7, (char)this.bytesToInt(var1[var6], var1[var6 + 1]));
+         for (int i = 0; i < len; i++) {
+            int pos = start + i * 2;
+            this._bytes2StringCache.setCharAt(i, (char)this.bytesToInt(data[pos], data[pos + 1]));
          }
       }
 
       return this._bytes2StringCache;
    }
 
-   public static int convertStatusToModifiers(int var0) {
-      if ((var0 & 32768) != 0) {
+   public static int convertStatusToModifiers(int status) {
+      if ((status & 32768) != 0) {
          return 32768;
       }
 
-      var0 &= 28695;
-      if (var0 == 0) {
+      status &= 28695;
+      if (status == 0) {
          return 0;
       }
 
-      if ((var0 & 4) != 0 && (var0 & 16) != 0) {
-         var0 &= -7;
+      if ((status & 4) != 0 && (status & 16) != 0) {
+         status &= -7;
       }
 
-      if ((var0 & 4) != 0) {
-         var0 &= -3;
-         if ((var0 & 1) != 0) {
-            var0 &= -5;
+      if ((status & 4) != 0) {
+         status &= -3;
+         if ((status & 1) != 0) {
+            status &= -5;
          }
       }
 
-      if ((var0 & 16) != 0) {
-         var0 &= -2;
-         if ((var0 & 2) != 0) {
-            var0 &= -17;
+      if ((status & 16) != 0) {
+         status &= -2;
+         if ((status & 2) != 0) {
+            status &= -17;
          }
       }
 
-      byte var1 = 0;
-      if ((var0 & 2) != 0) {
-         var1 |= 1;
+      int modifier = 0;
+      if ((status & 2) != 0) {
+         modifier |= 1;
       }
 
-      if ((var0 & 1) != 0) {
-         var1 |= 8;
+      if ((status & 1) != 0) {
+         modifier |= 8;
       }
 
-      if ((var0 & 4) != 0) {
-         var1 |= 2;
+      if ((status & 4) != 0) {
+         modifier |= 2;
       }
 
-      if ((var0 & 16) != 0) {
-         var1 |= 10;
+      if ((status & 16) != 0) {
+         modifier |= 10;
       }
 
-      return var1;
+      return modifier;
    }
 
-   public static int convertModifiersToStatus(int var0) {
-      byte var1 = 0;
-      if ((var0 & 1) != 0) {
-         var1 |= 2;
+   public static int convertModifiersToStatus(int modifier) {
+      int status = 0;
+      if ((modifier & 1) != 0) {
+         status |= 2;
       }
 
-      if ((var0 & 8) != 0) {
-         var1 |= 1;
+      if ((modifier & 8) != 0) {
+         status |= 1;
       }
 
-      return var1;
+      return status;
    }
 
    private StringBuffer getDefBuffer() {
@@ -368,23 +368,25 @@ public class SLKeyLayout {
       return this._locale;
    }
 
-   private static boolean isExists(String var0) {
+   private static boolean isExists(String mapName) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static String getMapID(int var0, String var1, Locale var2, String var3, boolean var4) {
+   private static String getMapID(int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static SLKeyLayout getLayout(Locale var0, boolean var1, int var2, String var3, Locale var4, String var5, boolean var6) {
+   public static SLKeyLayout getLayout(
+      Locale originatingLocale, boolean reduced, int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault
+   ) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static InputStream getLayoutData(int var0, String var1, Locale var2, String var3, boolean var4) {
+   public static InputStream getLayoutData(int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static String getKeyboardType(int var0) {
+   public static String getKeyboardType(int aLocaleCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

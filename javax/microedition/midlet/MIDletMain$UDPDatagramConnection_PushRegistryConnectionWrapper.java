@@ -12,7 +12,7 @@ final class MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper imple
       this._udpDatagramConnection.close();
    }
 
-   final void pushBack(Datagram var1) {
+   final void pushBack(Datagram d) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -32,33 +32,45 @@ final class MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper imple
    }
 
    @Override
-   public final Datagram newDatagram(byte[] var1, int var2) {
-      return this._udpDatagramConnection.newDatagram(var1, var2);
+   public final Datagram newDatagram(byte[] buf, int size) {
+      return this._udpDatagramConnection.newDatagram(buf, size);
    }
 
    @Override
-   public final Datagram newDatagram(byte[] var1, int var2, String var3) {
-      return this._udpDatagramConnection.newDatagram(var1, var2, var3);
+   public final Datagram newDatagram(byte[] buf, int size, String addr) {
+      return this._udpDatagramConnection.newDatagram(buf, size, addr);
    }
 
    @Override
-   public final Datagram newDatagram(int var1) {
-      return this._udpDatagramConnection.newDatagram(var1);
+   public final Datagram newDatagram(int size) {
+      return this._udpDatagramConnection.newDatagram(size);
    }
 
    @Override
-   public final Datagram newDatagram(int var1, String var2) {
-      return this._udpDatagramConnection.newDatagram(var1, var2);
+   public final Datagram newDatagram(int size, String addr) {
+      return this._udpDatagramConnection.newDatagram(size, addr);
    }
 
    @Override
-   public final void receive(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void receive(Datagram dgram) {
+      synchronized (this) {
+         if (this._datagram != null) {
+            Datagram d = this._datagram;
+            this._datagram = null;
+            dgram.setAddress(d);
+            byte[] data = d.getData();
+            dgram.setLength(data.length);
+            dgram.setData(data, 0, data.length);
+            return;
+         }
+      }
+
+      this._udpDatagramConnection.receive(dgram);
    }
 
    @Override
-   public final void send(Datagram var1) {
-      this._udpDatagramConnection.send(var1);
+   public final void send(Datagram dgram) {
+      this._udpDatagramConnection.send(dgram);
    }
 
    @Override
@@ -66,7 +78,7 @@ final class MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper imple
       return this._udpDatagramConnection.getLocalAddress();
    }
 
-   public MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper(UDPDatagramConnection var1) {
-      this._udpDatagramConnection = var1;
+   public MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper(UDPDatagramConnection impl) {
+      this._udpDatagramConnection = impl;
    }
 }

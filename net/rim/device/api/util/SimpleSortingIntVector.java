@@ -15,92 +15,101 @@ public class SimpleSortingIntVector extends IntVector {
       return this._sorted;
    }
 
-   public void setSortComparator(IntComparator var1, boolean var2, boolean var3) {
-      this._sortComparator = var1;
-      this._uniqueComparator = var3;
-      if (var2) {
+   public void setSortComparator(IntComparator newComparator, boolean sortNow, boolean uniqueValueComparator) {
+      this._sortComparator = newComparator;
+      this._uniqueComparator = uniqueValueComparator;
+      if (sortNow) {
          this.doBulkSort((short)2);
       }
    }
 
-   public boolean setSortAsAdded(short var1) {
-      switch (var1) {
+   public boolean setSortAsAdded(short sortType) {
+      switch (sortType) {
          case -1:
             return false;
          case 0:
          case 1:
          case 2:
          default:
-            this._sortAsAdded = var1;
+            this._sortAsAdded = sortType;
             return true;
       }
    }
 
-   public void reSort(short var1) {
+   public void reSort(short sortType) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public synchronized void addElement(int var1) {
-      int var2 = super.elementCount + 1;
-      if (var2 > super.elementData.length) {
-         int var3 = super.elementData.length;
-         int var4 = super.capacityIncrement > 0 ? var3 + super.capacityIncrement : var3 * 2;
-         if (var4 < var2) {
-            var4 = var2;
+   public synchronized void addElement(int obj) {
+      int newcount = super.elementCount + 1;
+      if (newcount > super.elementData.length) {
+         int oldCapacity = super.elementData.length;
+         int newCapacity = super.capacityIncrement > 0 ? oldCapacity + super.capacityIncrement : oldCapacity * 2;
+         if (newCapacity < newcount) {
+            newCapacity = newcount;
          }
 
-         Array.resize(super.elementData, var4);
+         Array.resize(super.elementData, newCapacity);
       }
 
-      int var5 = -1;
+      int insertionOffset = -1;
       if (this._sortAsAdded != 0) {
-         var5 = this.binarySearch(var1, this._sortAsAdded);
-         if (var5 < 0) {
-            var5 = -var5 - 1;
+         insertionOffset = this.binarySearch(obj, this._sortAsAdded);
+         if (insertionOffset < 0) {
+            insertionOffset = -insertionOffset - 1;
          }
 
-         System.arraycopy(super.elementData, var5, super.elementData, var5 + 1, super.elementCount - var5);
-         super.elementData[var5] = var1;
+         System.arraycopy(super.elementData, insertionOffset, super.elementData, insertionOffset + 1, super.elementCount - insertionOffset);
+         super.elementData[insertionOffset] = obj;
       } else {
          this._sorted = 0;
-         super.elementData[super.elementCount] = var1;
+         super.elementData[super.elementCount] = obj;
       }
 
       super.elementCount++;
    }
 
    @Override
-   public boolean removeElement(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean removeElement(int obj) {
+      if (this._sorted == 1 || this._sortComparator != null && this._sorted == 2 && this._uniqueComparator) {
+         try {
+            super.removeElementAt(this.binarySearch(obj, this._sorted));
+            return true;
+         } catch (Exception e) {
+            return false;
+         }
+      } else {
+         return super.removeElement(obj);
+      }
    }
 
-   public synchronized int binarySearch(int var1, short var2) {
-      if (this._sorted != var2) {
-         this.doBulkSort(var2);
+   public synchronized int binarySearch(int obj, short sortType) {
+      if (this._sorted != sortType) {
+         this.doBulkSort(sortType);
       }
 
-      if (var2 == 1) {
-         return Arrays.binarySearch(super.elementData, var1, 0, super.elementCount);
-      } else if (this._sortComparator != null && var2 == 2) {
-         return Arrays.binarySearch(super.elementData, var1, this._sortComparator, 0, super.elementCount);
+      if (sortType == 1) {
+         return Arrays.binarySearch(super.elementData, obj, 0, super.elementCount);
+      } else if (this._sortComparator != null && sortType == 2) {
+         return Arrays.binarySearch(super.elementData, obj, this._sortComparator, 0, super.elementCount);
       } else {
          throw new Object();
       }
    }
 
-   public int bestGuessBinarySearch(int var1) {
+   public int bestGuessBinarySearch(int object) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public synchronized int linearSearch(int var1) {
-      return Arrays.getIndex(super.elementData, var1);
+   public synchronized int linearSearch(int obj) {
+      return Arrays.getIndex(super.elementData, obj);
    }
 
-   private void doBulkSort(short var1) {
+   private void doBulkSort(short sortType) {
       if (super.elementCount > 0) {
-         this._sorted = var1;
-         switch (var1) {
+         this._sorted = sortType;
+         switch (sortType) {
             case 0:
                this._sorted = 0;
                break;
@@ -115,30 +124,30 @@ public class SimpleSortingIntVector extends IntVector {
       }
    }
 
-   private int findObjectUsingNonUniqueComparason(int var1) {
-      int var2 = 0;
-      boolean var3 = false;
-      boolean var4 = false;
-      int var5 = this.binarySearch(var1, this._sorted);
-      if (super.elementData[var5] == var1) {
-         return var5;
+   private int findObjectUsingNonUniqueComparason(int obj) {
+      int range = 0;
+      boolean highFailed = false;
+      boolean lowFailed = false;
+      int initialPoint = this.binarySearch(obj, this._sorted);
+      if (super.elementData[initialPoint] == obj) {
+         return initialPoint;
       }
 
-      for (; !var3 && !var4; var2++) {
-         if (var5 + var2 < super.elementCount && this._sortComparator.compare(var1, super.elementData[var5 + var2]) == 0) {
-            if (super.elementData[var5 + var2] == var1) {
-               return var5 + var2;
+      for (; !highFailed && !lowFailed; range++) {
+         if (initialPoint + range < super.elementCount && this._sortComparator.compare(obj, super.elementData[initialPoint + range]) == 0) {
+            if (super.elementData[initialPoint + range] == obj) {
+               return initialPoint + range;
             }
-         } else if (!var3) {
-            var3 = true;
+         } else if (!highFailed) {
+            highFailed = true;
          }
 
-         if (var5 - var2 >= 0 && this._sortComparator.compare(var1, super.elementData[var5 - var2]) == 0) {
-            if (super.elementData[var5 - var2] == var1) {
-               return var5 - var2;
+         if (initialPoint - range >= 0 && this._sortComparator.compare(obj, super.elementData[initialPoint - range]) == 0) {
+            if (super.elementData[initialPoint - range] == obj) {
+               return initialPoint - range;
             }
-         } else if (!var4) {
-            var4 = true;
+         } else if (!lowFailed) {
+            lowFailed = true;
          }
       }
 

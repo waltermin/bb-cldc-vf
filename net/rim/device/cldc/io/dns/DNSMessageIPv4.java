@@ -68,7 +68,7 @@ public final class DNSMessageIPv4 {
       return this._id;
    }
 
-   public final void setID(int var1) {
+   public final void setID(int id) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -76,87 +76,87 @@ public final class DNSMessageIPv4 {
       return this._flags & 32768;
    }
 
-   public final void setQR(int var1) {
-      if (var1 != 0 && var1 != 32768) {
+   public final void setQR(int qr) {
+      if (qr != 0 && qr != 32768) {
          throw new Object();
       }
 
-      this._flags = this._flags & -32769 | var1;
+      this._flags = this._flags & -32769 | qr;
    }
 
    public final int getOpcode() {
       return this._flags & 30720;
    }
 
-   public final void setOpcode(int var1) {
-      if (var1 != 0 && var1 != 2048 && var1 != 4096) {
+   public final void setOpcode(int opcode) {
+      if (opcode != 0 && opcode != 2048 && opcode != 4096) {
          throw new Object();
       }
 
-      this._flags = this._flags & -30721 | var1;
+      this._flags = this._flags & -30721 | opcode;
    }
 
    public final int getAA() {
       return this._flags & 1024;
    }
 
-   public final void setAA(int var1) {
-      if (var1 != 0 && var1 != 1024) {
+   public final void setAA(int aa) {
+      if (aa != 0 && aa != 1024) {
          throw new Object();
       }
 
-      this._flags = this._flags & -1025 | var1;
+      this._flags = this._flags & -1025 | aa;
    }
 
    public final int getTC() {
       return this._flags & 512;
    }
 
-   public final void setTC(int var1) {
-      if (var1 != 0 && var1 != 512) {
+   public final void setTC(int tc) {
+      if (tc != 0 && tc != 512) {
          throw new Object();
       }
 
-      this._flags = this._flags & -513 | var1;
+      this._flags = this._flags & -513 | tc;
    }
 
    public final int getRD() {
       return this._flags & 256;
    }
 
-   public final void setRD(int var1) {
-      if (var1 != 0 && var1 != 256) {
+   public final void setRD(int rd) {
+      if (rd != 0 && rd != 256) {
          throw new Object();
       }
 
-      this._flags = this._flags & -257 | var1;
+      this._flags = this._flags & -257 | rd;
    }
 
    public final int getRA() {
       return this._flags & 128;
    }
 
-   public final void setRA(int var1) {
-      if (var1 != 0 && var1 != 128) {
+   public final void setRA(int ra) {
+      if (ra != 0 && ra != 128) {
          throw new Object();
       }
 
-      this._flags = this._flags & -129 | var1;
+      this._flags = this._flags & -129 | ra;
    }
 
    public final int getRcode() {
       return this._flags & 15;
    }
 
-   public final void setRcode(int var1) {
-      if (var1 != 0 && var1 != 1 && var1 != 2 && var1 != 3 && var1 != 4 && var1 != 5) {
+   public final void setRcode(int rcode) {
+      if (rcode != 0 && rcode != 1 && rcode != 2 && rcode != 3 && rcode != 4 && rcode != 5) {
          throw new Object();
       }
 
-      this._flags = this._flags & -16 | var1;
+      this._flags = this._flags & -16 | rcode;
    }
 
-   final void setFlags(int var1) {
+   final void setFlags(int flags) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -164,132 +164,132 @@ public final class DNSMessageIPv4 {
       return this._flags;
    }
 
-   public final void addQuestion(DNSMessageIPv4Question var1) {
-      this._questionSection.addElement(var1);
+   public final void addQuestion(DNSMessageIPv4Question dnsQuestion) {
+      this._questionSection.addElement(dnsQuestion);
    }
 
    public final Vector getQuestions() {
       return this._questionSection;
    }
 
-   public final void addAnswer(DNSMessageIPv4Resource var1) {
-      this._answerSection.addElement(var1);
+   public final void addAnswer(DNSMessageIPv4Resource dnsAnswer) {
+      this._answerSection.addElement(dnsAnswer);
    }
 
    public final Vector getAnswers() {
       return this._answerSection;
    }
 
-   public final void addAuthority(DNSMessageIPv4Resource var1) {
-      this._authoritySection.addElement(var1);
+   public final void addAuthority(DNSMessageIPv4Resource dnsAuthority) {
+      this._authoritySection.addElement(dnsAuthority);
    }
 
    public final Vector getAuthorities() {
       return this._authoritySection;
    }
 
-   public final void addAdditional(DNSMessageIPv4Resource var1) {
-      this._additionalSection.addElement(var1);
+   public final void addAdditional(DNSMessageIPv4Resource dnsAdditional) {
+      this._additionalSection.addElement(dnsAdditional);
    }
 
    public final Vector getAdditional() {
       return this._additionalSection;
    }
 
-   final void writeMessage(DataBuffer var1) {
-      int var2 = this._questionSection.size();
-      int var3 = this._answerSection.size();
-      int var4 = this._authoritySection.size();
-      int var5 = this._additionalSection.size();
-      var1.writeShort(this.getID());
-      var1.writeShort(this.getFlags());
-      var1.writeShort(var2);
-      var1.writeShort(var3);
-      var1.writeShort(var4);
-      var1.writeShort(var5);
+   final void writeMessage(DataBuffer db) {
+      int qdCount = this._questionSection.size();
+      int anCount = this._answerSection.size();
+      int nsCount = this._authoritySection.size();
+      int arCount = this._additionalSection.size();
+      db.writeShort(this.getID());
+      db.writeShort(this.getFlags());
+      db.writeShort(qdCount);
+      db.writeShort(anCount);
+      db.writeShort(nsCount);
+      db.writeShort(arCount);
 
-      for (int var6 = 0; var6 < var2; var6++) {
-         ((DNSMessageIPv4Question)this._questionSection.elementAt(var6)).writeQuestion(var1);
+      for (int i = 0; i < qdCount; i++) {
+         ((DNSMessageIPv4Question)this._questionSection.elementAt(i)).writeQuestion(db);
       }
 
-      for (int var7 = 0; var7 < var3; var7++) {
-         ((DNSMessageIPv4Resource)this._answerSection.elementAt(var7)).writeResource(var1);
+      for (int var7 = 0; var7 < anCount; var7++) {
+         ((DNSMessageIPv4Resource)this._answerSection.elementAt(var7)).writeResource(db);
       }
 
-      for (int var8 = 0; var8 < var4; var8++) {
-         ((DNSMessageIPv4Resource)this._authoritySection.elementAt(var8)).writeResource(var1);
+      for (int var8 = 0; var8 < nsCount; var8++) {
+         ((DNSMessageIPv4Resource)this._authoritySection.elementAt(var8)).writeResource(db);
       }
 
-      for (int var9 = 0; var9 < var5; var9++) {
-         ((DNSMessageIPv4Resource)this._additionalSection.elementAt(var9)).writeResource(var1);
-      }
-   }
-
-   final void readMessage(DataBuffer var1) {
-      this.setID(var1.readShort());
-      this.setFlags(var1.readShort());
-      int var2 = var1.readUnsignedShort();
-      int var3 = var1.readUnsignedShort();
-      int var4 = var1.readUnsignedShort();
-      int var5 = var1.readUnsignedShort();
-
-      for (int var6 = 0; var6 < var2; var6++) {
-         DNSMessageIPv4Question var7 = new DNSMessageIPv4Question();
-         var7.readQuestion(var1);
-         this.addQuestion(var7);
-      }
-
-      for (int var9 = 0; var9 < var3; var9++) {
-         DNSMessageIPv4Resource var8 = new DNSMessageIPv4Resource();
-         var8.readResource(var1);
-         this.addAnswer(var8);
-      }
-
-      for (int var10 = 0; var10 < var4; var10++) {
-         DNSMessageIPv4Resource var12 = new DNSMessageIPv4Resource();
-         var12.readResource(var1);
-         this.addAuthority(var12);
-      }
-
-      for (int var11 = 0; var11 < var5; var11++) {
-         DNSMessageIPv4Resource var13 = new DNSMessageIPv4Resource();
-         var13.readResource(var1);
-         this.addAdditional(var13);
+      for (int var9 = 0; var9 < arCount; var9++) {
+         ((DNSMessageIPv4Resource)this._additionalSection.elementAt(var9)).writeResource(db);
       }
    }
 
-   static final String readDomainName(DataBuffer var0) {
-      Object var1 = new Object(32);
-      readDomainName(var0, (StringBuffer)var1);
-      return ((StringBuffer)var1).toString();
+   final void readMessage(DataBuffer db) {
+      this.setID(db.readShort());
+      this.setFlags(db.readShort());
+      int qd = db.readUnsignedShort();
+      int an = db.readUnsignedShort();
+      int ns = db.readUnsignedShort();
+      int ad = db.readUnsignedShort();
+
+      for (int i = 0; i < qd; i++) {
+         DNSMessageIPv4Question question = new DNSMessageIPv4Question();
+         question.readQuestion(db);
+         this.addQuestion(question);
+      }
+
+      for (int var9 = 0; var9 < an; var9++) {
+         DNSMessageIPv4Resource resource = new DNSMessageIPv4Resource();
+         resource.readResource(db);
+         this.addAnswer(resource);
+      }
+
+      for (int var10 = 0; var10 < ns; var10++) {
+         DNSMessageIPv4Resource resource = new DNSMessageIPv4Resource();
+         resource.readResource(db);
+         this.addAuthority(resource);
+      }
+
+      for (int var11 = 0; var11 < ad; var11++) {
+         DNSMessageIPv4Resource resource = new DNSMessageIPv4Resource();
+         resource.readResource(db);
+         this.addAdditional(resource);
+      }
    }
 
-   static final void readDomainName(DataBuffer var0, StringBuffer var1) {
-      int var2 = var0.readUnsignedByte();
+   static final String readDomainName(DataBuffer db) {
+      StringBuffer strBuf = (StringBuffer)(new Object(32));
+      readDomainName(db, strBuf);
+      return strBuf.toString();
+   }
 
-      while (var2 > 0) {
-         if ((var2 & 192) != 0) {
-            int var4 = (var2 & 63) << 8;
-            var4 |= var0.readUnsignedByte();
-            int var3 = var0.getPosition();
-            var0.setPosition(var4);
-            readDomainName(var0, var1);
-            var0.setPosition(var3);
+   static final void readDomainName(DataBuffer db, StringBuffer strBuf) {
+      int len = db.readUnsignedByte();
+
+      while (len > 0) {
+         if ((len & 192) != 0) {
+            int backOffset = (len & 63) << 8;
+            backOffset |= db.readUnsignedByte();
+            int curPos = db.getPosition();
+            db.setPosition(backOffset);
+            readDomainName(db, strBuf);
+            db.setPosition(curPos);
             return;
          }
 
-         while (--var2 >= 0) {
-            var1.append((char)var0.readUnsignedByte());
+         while (--len >= 0) {
+            strBuf.append((char)db.readUnsignedByte());
          }
 
-         var2 = var0.readUnsignedByte();
-         if (var2 > 0) {
-            var1.append('.');
+         len = db.readUnsignedByte();
+         if (len > 0) {
+            strBuf.append('.');
          }
       }
    }
 
-   static final void writeDomainName(DataBuffer var0, String var1) {
+   static final void writeDomainName(DataBuffer db, String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

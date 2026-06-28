@@ -18,28 +18,30 @@ public final class RichText {
    private RichText() {
    }
 
-   public static final Edit$Helper calculateLengths(int var0, String var1, int[] var2, byte[] var3, Font[] var4) {
+   public static final Edit$Helper calculateLengths(int width, String text, int[] offsets, byte[] attributes, Font[] fonts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Edit$Helper calculateLengths(int var0, int var1, int var2, StringBufferGap var3, int[] var4, byte[] var5, Font[] var6, boolean var7) {
+   public static final Edit$Helper calculateLengths(
+      int width, int startOffset, int currentOffset, StringBufferGap text, int[] offsets, byte[] attributes, Font[] fonts, boolean measureAll
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void validateEntries(byte[] var0, Font[] var1) {
+   private static final void validateEntries(byte[] attributes, Font[] fonts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final int getDefaultParagDirection() {
-      int var0 = Locale.getDefaultForSystem().getCode() & -65536;
-      return var0 != 1751449600 && var0 != 1634861056 && var0 != 1717633024 ? 0 : 1;
+      int code = Locale.getDefaultForSystem().getCode() & -65536;
+      return code != 1751449600 && code != 1634861056 && code != 1717633024 ? 0 : 1;
    }
 
-   public static final int getParagraphOrdering(long var0) {
-      if ((var0 & 549755813888L) != 0) {
+   public static final int getParagraphOrdering(long fieldStyle) {
+      if ((fieldStyle & 549755813888L) != 0) {
          return 2;
       } else {
-         return (var0 & 274877906944L) != 0 ? 3 : getDefaultParagDirection();
+         return (fieldStyle & 274877906944L) != 0 ? 3 : getDefaultParagDirection();
       }
    }
 
@@ -49,36 +51,62 @@ public final class RichText {
       Edit$Helper var0, int var1, int var2, int var3, StringBufferGap var4, int[] var5, byte[] var6, Font[] var7, int var8
    );
 
-   public static final Edit$BidiLineRuns getBidiOrder(StringBufferGap var0, int var1, int var2, byte[] var3, boolean var4, int[] var5) {
-      return getBidiOrder(var0, var1, var2, var3, var4, getDefaultParagDirection(), var5, 0, var5 == null ? 0 : var5.length);
+   public static final Edit$BidiLineRuns getBidiOrder(StringBufferGap text, int offset, int length, byte[] bidiState, boolean paragStart, int[] styleBreaks) {
+      return getBidiOrder(text, offset, length, bidiState, paragStart, getDefaultParagDirection(), styleBreaks, 0, styleBreaks == null ? 0 : styleBreaks.length);
    }
 
    public static final Edit$BidiLineRuns getBidiOrder(
-      StringBufferGap var0, int var1, int var2, byte[] var3, boolean var4, int var5, int[] var6, int var7, int var8
+      StringBufferGap text,
+      int offset,
+      int length,
+      byte[] bidiState,
+      boolean paragStart,
+      int paragDirection,
+      int[] styleBreaks,
+      int styleBreaksOffset,
+      int styleBreaksLen
    ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Edit$BidiLineRuns getBidiOrder(StringBuffer var0, int var1, int var2, byte[] var3, boolean var4, int[] var5) {
-      return getBidiOrder(var0, var1, var2, var3, var4, getDefaultParagDirection(), var5, 0, var5 == null ? 0 : var5.length);
+   public static final Edit$BidiLineRuns getBidiOrder(StringBuffer text, int offset, int length, byte[] bidiState, boolean paragStart, int[] styleBreaks) {
+      return getBidiOrder(text, offset, length, bidiState, paragStart, getDefaultParagDirection(), styleBreaks, 0, styleBreaks == null ? 0 : styleBreaks.length);
    }
 
    public static final Edit$BidiLineRuns getBidiOrder(
-      StringBuffer var0, int var1, int var2, byte[] var3, boolean var4, int var5, int[] var6, int var7, int var8
+      StringBuffer text,
+      int offset,
+      int length,
+      byte[] bidiState,
+      boolean paragStart,
+      int paragDirection,
+      int[] styleBreaks,
+      int styleBreaksOffset,
+      int styleBreaksLen
    ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Edit$BidiLineRuns getBidiOrder(String var0, int var1, int var2, byte[] var3, boolean var4, int[] var5) {
-      return getBidiOrder(var0, var1, var2, var3, var4, getDefaultParagDirection(), var5, 0, var5 == null ? 0 : var5.length);
+   public static final Edit$BidiLineRuns getBidiOrder(String text, int offset, int length, byte[] bidiState, boolean paragStart, int[] styleBreaks) {
+      return getBidiOrder(text, offset, length, bidiState, paragStart, getDefaultParagDirection(), styleBreaks, 0, styleBreaks == null ? 0 : styleBreaks.length);
    }
 
-   public static final Edit$BidiLineRuns getBidiOrder(String var0, int var1, int var2, byte[] var3, boolean var4, int var5, int[] var6, int var7, int var8) {
+   public static final Edit$BidiLineRuns getBidiOrder(
+      String text,
+      int offset,
+      int length,
+      byte[] bidiState,
+      boolean paragStart,
+      int paragDirection,
+      int[] styleBreaks,
+      int styleBreaksOffset,
+      int styleBreaksLen
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void sendLog(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final void sendLog(int rc) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static final native int getBidiOrder(
@@ -93,33 +121,33 @@ public final class RichText {
       Edit$BidiLineRuns var0, String var1, int var2, int var3, byte[] var4, int var5, boolean var6, int[] var7, int var8, int var9
    );
 
-   public static final void drawTextWithEllipses(Graphics var0, String var1, int var2, int var3, int var4, int var5, int var6) {
+   public static final void drawTextWithEllipses(Graphics graphics, String text, int x, int y, int width, int paragDirection, int flags) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte getLineDirection(String var0) {
+   public static final byte getLineDirection(String s) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte getLineDirection(String var0, int var1, int var2) {
+   public static final byte getLineDirection(String s, int offset, int len) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte getLineDirection(StringBufferGap var0) {
-      return var0 != null && var0.length() > 0 ? getLineDirection(var0, 0, var0.length()) : 0;
+   public static final byte getLineDirection(StringBufferGap s) {
+      return s != null && s.length() > 0 ? getLineDirection(s, 0, s.length()) : 0;
    }
 
-   public static final byte getLineDirection(StringBufferGap var0, int var1, int var2) {
-      if (var0 != null && var0.length() > 0) {
-         int var3 = var1 + var2;
-         if (var1 >= 0 && var2 >= 0 && var3 <= var0.length()) {
-            for (int var4 = var1; var4 < var3; var4++) {
-               char var5 = var0.charAt(var4);
-               if (isRTL(var5)) {
+   public static final byte getLineDirection(StringBufferGap s, int offset, int len) {
+      if (s != null && s.length() > 0) {
+         int endIndex = offset + len;
+         if (offset >= 0 && len >= 0 && endIndex <= s.length()) {
+            for (int i = offset; i < endIndex; i++) {
+               char c = s.charAt(i);
+               if (isRTL(c)) {
                   return 2;
                }
 
-               if (!isNeutral(var5)) {
+               if (!isNeutral(c)) {
                   return 0;
                }
             }
@@ -133,23 +161,23 @@ public final class RichText {
       }
    }
 
-   public static final int getRTLCount(String var0, int var1, int var2) {
+   public static final int getRTLCount(String s, int offset, int len) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final int getRTLCount(StringBufferGap var0, int var1, int var2) {
-      if (var0 != null && var0.length() > 0) {
-         int var3 = 0;
-         int var4 = var1 + var2;
-         if (var1 >= 0 && var2 >= 0 && var4 <= var0.length()) {
-            for (int var5 = var1; var5 < var4; var5++) {
-               char var6 = var0.charAt(var5);
-               if (isRTL(var6)) {
-                  var3++;
+   public static final int getRTLCount(StringBufferGap s, int offset, int len) {
+      if (s != null && s.length() > 0) {
+         int rtlCount = 0;
+         int endIndex = offset + len;
+         if (offset >= 0 && len >= 0 && endIndex <= s.length()) {
+            for (int i = offset; i < endIndex; i++) {
+               char c = s.charAt(i);
+               if (isRTL(c)) {
+                  rtlCount++;
                }
             }
 
-            return var3;
+            return rtlCount;
          } else {
             throw new Object();
          }
@@ -158,33 +186,33 @@ public final class RichText {
       }
    }
 
-   public static final boolean isRTL(char var0) {
-      return var0 >= 1425 && var0 <= 1524 || var0 >= 1548 && var0 <= 1866 || var0 >= 'יִ' && var0 <= 'ﷻ' || var0 >= 'ﹰ' && var0 <= 'ﻼ';
+   public static final boolean isRTL(char c) {
+      return c >= 1425 && c <= 1524 || c >= 1548 && c <= 1866 || c >= 'יִ' && c <= 'ﷻ' || c >= 'ﹰ' && c <= 'ﻼ';
    }
 
-   public static final boolean isNeutral(char var0) {
-      return var0 == '\n'
-         || var0 >= 0 && var0 <= '@'
-         || var0 >= '[' && var0 <= '`'
-         || var0 >= '{' && var0 <= 191
-         || var0 == 215
-         || var0 == 247
-         || var0 >= 768 && var0 <= 866
-         || var0 >= 8192 && var0 <= 8334
-         || var0 >= 8352 && var0 <= 8367
-         || var0 >= 8400 && var0 <= 8419
-         || var0 >= 8448 && var0 <= 9371
-         || var0 >= 9472 && var0 <= 10174
-         || var0 >= 12288 && var0 <= 12351
-         || var0 >= 13056 && var0 <= 13310
-         || var0 >= '︠' && var0 <= '﹫'
-         || var0 >= '\ufeff' && var0 <= '＠'
-         || var0 >= '［' && var0 <= '｀'
-         || var0 >= '｛' && var0 <= '､'
-         || var0 >= '\ufff9' && var0 <= '\uffff';
+   public static final boolean isNeutral(char c) {
+      return c == '\n'
+         || c >= 0 && c <= '@'
+         || c >= '[' && c <= '`'
+         || c >= '{' && c <= 191
+         || c == 215
+         || c == 247
+         || c >= 768 && c <= 866
+         || c >= 8192 && c <= 8334
+         || c >= 8352 && c <= 8367
+         || c >= 8400 && c <= 8419
+         || c >= 8448 && c <= 9371
+         || c >= 9472 && c <= 10174
+         || c >= 12288 && c <= 12351
+         || c >= 13056 && c <= 13310
+         || c >= '︠' && c <= '﹫'
+         || c >= '\ufeff' && c <= '＠'
+         || c >= '［' && c <= '｀'
+         || c >= '｛' && c <= '､'
+         || c >= '\ufff9' && c <= '\uffff';
    }
 
-   public static final int[] getParagraphOffsets(StringBufferGap var0, int var1, int var2) {
+   public static final int[] getParagraphOffsets(StringBufferGap s, int offset, int endIndex) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 }

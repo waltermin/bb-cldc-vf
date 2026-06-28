@@ -11,6 +11,7 @@ import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.IntHashtable;
@@ -18,6 +19,7 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.ui.IconCollection;
 import net.rim.device.internal.ui.Image;
+import net.rim.device.internal.ui.NamedIconCollection;
 import net.rim.device.internal.ui.UiOptionsRegistry;
 import net.rim.device.internal.ui.UiSettings;
 import net.rim.vm.TraceBack;
@@ -56,48 +58,68 @@ public class ThemeManager {
       this.verifyActiveTheme();
       this._defaultThemeFactory = (Theme$Factory)(new Object());
       this.addInternal(this._defaultThemeFactory);
-      Object var1 = new Object();
-      ((DefaultResourceFetcher)var1).setResourcesFromModule(TraceBack.getCallingModuleName(0));
-      this._activeTheme = (Theme)(new Object(this._moduleDefaults, this._defaultImageDescriptors, (ResourceFetcher)var1));
+      DefaultResourceFetcher fetcher = (DefaultResourceFetcher)(new Object());
+      fetcher.setResourcesFromModule(TraceBack.getCallingModuleName(0));
+      this._activeTheme = (Theme)(new Object(this._moduleDefaults, this._defaultImageDescriptors, fetcher));
       UiSettings.addListener(this._listeners);
       LowMemoryManager.addLowMemoryListener(this._listeners);
       Proxy.getInstance().addGlobalEventListener(this._listeners);
    }
 
    public static void activateTheme() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+      String saved = UiOptionsRegistry.getInstance().getString(-7276267599751932452L);
+      if (saved != null) {
+         try {
+            setActiveTheme(saved);
+         } catch (IllegalStateException var3) {
+         }
+      }
 
-   public static void add(Theme$Factory var0) {
-      ApplicationControl.assertThemeDataAllowed(CodeModuleManager.getModuleHandleForObject(var0));
-      _instance.addInternal(var0);
-   }
+      if (!_instance._activated) {
+         try {
+            setActiveTheme(_instance.getDefaultId());
+         } catch (IllegalStateException var2) {
+         }
+      }
 
-   private void addInternal(Theme$Factory var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static void addLayoutFactory(Theme$LayoutFactory var0) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static void clearIconCollections() {
-      Enumeration var0 = _instance._iconCollections.elements();
-
-      while (var0.hasMoreElements()) {
-         Object var1 = var0.nextElement();
-         ((IconCollection)var1).clear();
+      if (!_instance._activated) {
+         Theme theme = createTheme(_instance._defaultThemeFactory);
+         _instance._activeTheme = theme;
       }
    }
 
-   public static Theme createTheme(Theme$Factory var0) {
-      Object var1 = new Object(_instance._moduleDefaults, _instance._defaultImageDescriptors, var0.getResourceFetcher());
-      ((Theme)var1).$init0();
-      createThemeHelper(var0, (Theme)var1);
-      return (Theme)var1;
+   public static void add(Theme$Factory factory) {
+      ApplicationControl.assertThemeDataAllowed(CodeModuleManager.getModuleHandleForObject(factory));
+      _instance.addInternal(factory);
    }
 
-   public static void createThemeHelper(Theme$Factory var0, Theme var1) {
+   private void addInternal(Theme$Factory factory) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public static void addLayoutFactory(Theme$LayoutFactory factory) {
+      synchronized (_instance) {
+         Arrays.add(_instance._layoutFactories, factory);
+      }
+   }
+
+   public static void clearIconCollections() {
+      Enumeration elements = _instance._iconCollections.elements();
+
+      while (elements.hasMoreElements()) {
+         IconCollection collection = (IconCollection)elements.nextElement();
+         collection.clear();
+      }
+   }
+
+   public static Theme createTheme(Theme$Factory factory) {
+      Theme theme = (Theme)(new Object(_instance._moduleDefaults, _instance._defaultImageDescriptors, factory.getResourceFetcher()));
+      theme.$init0();
+      createThemeHelper(factory, theme);
+      return theme;
+   }
+
+   public static void createThemeHelper(Theme$Factory factory, Theme theme) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -118,10 +140,10 @@ public class ThemeManager {
    }
 
    private Theme$Factory getBrandingTheme() {
-      for (int var1 = _instance._factories.length - 1; var1 >= 0; var1--) {
-         Theme$Factory var2 = _instance._factories[var1];
-         if (var2.isVendorIDValid(Branding.getVendorId())) {
-            return var2;
+      for (int lv = _instance._factories.length - 1; lv >= 0; lv--) {
+         Theme$Factory factory = _instance._factories[lv];
+         if (factory.isVendorIDValid(Branding.getVendorId())) {
+            return factory;
          }
       }
 
@@ -136,53 +158,65 @@ public class ThemeManager {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static int log2(int var0) {
-      var0 >>= 1;
+   private static int log2(int number) {
+      number >>= 1;
 
-      int var1;
-      for (var1 = 0; var0 != 0; var1++) {
-         var0 >>= 1;
+      int log;
+      for (log = 0; number != 0; log++) {
+         number >>= 1;
       }
 
-      return var1;
+      return log;
    }
 
    public static String[] getNameChoices() {
-      String[] var0 = new String[_instance._factories.length];
+      String[] result = new String[_instance._factories.length];
 
-      for (int var1 = var0.length - 1; var1 >= 0; var1--) {
-         var0[var1] = getPersistableIdForName(_instance._factories[var1].getName());
+      for (int lv = result.length - 1; lv >= 0; lv--) {
+         result[lv] = getPersistableIdForName(_instance._factories[lv].getName());
       }
 
-      return var0;
+      return result;
    }
 
-   public static String[] getNameChoices(Locale var0) {
-      String[] var1 = new String[_instance._factories.length];
+   public static String[] getNameChoices(Locale locale) {
+      String[] result = new String[_instance._factories.length];
 
-      for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-         var1[var2] = _instance._factories[var2].getName(var0);
+      for (int lv = result.length - 1; lv >= 0; lv--) {
+         result[lv] = _instance._factories[lv].getName(locale);
       }
 
-      return var1;
+      return result;
    }
 
-   static synchronized IconCollection getIconCollection(String var0) {
-      return (IconCollection)_instance._iconCollections.get(var0);
+   static synchronized IconCollection getIconCollection(String name) {
+      IconCollection collection = (IconCollection)_instance._iconCollections.get(name);
+      return collection;
    }
 
-   public static IconCollection getIconCollection(String var0, int var1, int var2, String var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static IconCollection getIconCollection(String name, int columns, int rows, String moduleName) {
+      synchronized (_instance) {
+         NamedIconCollection collection = (NamedIconCollection)_instance._iconCollections.get(name);
+         if (collection == null) {
+            collection = (NamedIconCollection)(new Object(name, columns, rows, moduleName));
+            getActiveTheme().initializeIconCollection(collection, moduleName);
+            _instance._iconCollections.put(name, collection);
+         } else {
+            collection.verifyModule(moduleName);
+         }
+
+         return collection;
+      }
    }
 
-   private static int getIndex(String var0) {
-      if (var0 != null) {
-         Theme$Factory[] var1 = _instance._factories;
+   private static int getIndex(String name) {
+      if (name != null) {
+         Theme$Factory[] factories = _instance._factories;
 
-         for (int var2 = var1.length - 1; var2 >= 0; var2--) {
-            String var3 = getPersistableId(var1[var2]);
-            if (var0.equals(var3)) {
-               return var2;
+         for (int lv = factories.length - 1; lv >= 0; lv--) {
+            String temp = getPersistableId(factories[lv]);
+            if (name.equals(temp)) {
+               return lv;
             }
          }
       }
@@ -190,72 +224,77 @@ public class ThemeManager {
       return -1;
    }
 
-   public static Manager getLayout(String var0, Object var1) {
-      Manager var2 = null;
-      Theme$LayoutFactory[] var3 = _instance._layoutFactories;
-      int var4 = var3.length;
+   public static Manager getLayout(String name, Object context) {
+      Manager manager = null;
+      Theme$LayoutFactory[] factories = _instance._layoutFactories;
+      int last = factories.length;
 
-      for (int var5 = 0; var5 < var4 && var2 == null; var5++) {
-         var2 = var3[var5].getLayout(var0, var1);
+      for (int lv = 0; lv < last && manager == null; lv++) {
+         manager = factories[lv].getLayout(name, context);
       }
 
-      return var2;
+      return manager;
    }
 
-   public static String getPersistableId(Theme$Factory var0) {
+   public static String getPersistableId(Theme$Factory factory) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static String getPersistableIdForName(String var0) {
-      int var1 = Arrays.binarySearch(_instance._factories, var0, _instance._comparatorStringFactory, 0, _instance._factories.length);
-      String var2 = null;
-      if (var1 >= 0) {
-         var2 = getPersistableId(_instance._factories[var1]);
+   public static String getPersistableIdForName(String name) {
+      int index = Arrays.binarySearch(_instance._factories, name, _instance._comparatorStringFactory, 0, _instance._factories.length);
+      String id = null;
+      if (index >= 0) {
+         id = getPersistableId(_instance._factories[index]);
       }
 
-      return var2;
+      return id;
    }
 
-   static Tag createTag(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static Tag createTag(String tagName) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   static Tag getTag(String var0) {
-      return (Tag)(var0 == null ? ATTRIBUTE_INHERIT : _instance._nameToTag.get(var0));
+   static Tag getTag(String tagName) {
+      if (tagName == null) {
+         return ATTRIBUTE_INHERIT;
+      }
+
+      Tag tag = (Tag)_instance._nameToTag.get(tagName);
+      return tag;
    }
 
-   public static Theme getTheme(String var0) {
-      Theme$Factory var1 = getThemeFactory(var0);
-      return var1 != null ? createTheme(var1) : null;
+   public static Theme getTheme(String name) {
+      Theme$Factory factory = getThemeFactory(name);
+      return factory != null ? createTheme(factory) : null;
    }
 
-   public static Image getThemeAwareImage(String var0) {
-      String var1 = TraceBack.getCallingModuleName(0);
-      return (Image)(new Object(var0, var1));
+   public static Image getThemeAwareImage(String name) {
+      String moduleName = TraceBack.getCallingModuleName(0);
+      return (Image)(new Object(name, moduleName));
    }
 
-   public static Theme$Factory getThemeFactory(String var0) {
-      if (var0 == null) {
+   public static Theme$Factory getThemeFactory(String name) {
+      if (name == null) {
          return null;
       }
 
-      if (var0.indexOf(58) == -1) {
-         var0 = getPersistableIdForName(var0);
+      if (name.indexOf(58) == -1) {
+         name = getPersistableIdForName(name);
       }
 
-      int var1 = getIndex(var0);
-      return var1 != -1 ? _instance._factories[var1] : null;
+      int index = getIndex(name);
+      return index != -1 ? _instance._factories[index] : null;
    }
 
-   private void internalSetActiveTheme(Theme$Factory var1, boolean var2) {
-      Theme var3 = createTheme(var1);
-      Theme var4 = this._activeTheme;
-      this._activeThemeName = getPersistableId(var1);
-      this._activeTheme = var3;
+   private void internalSetActiveTheme(Theme$Factory factory, boolean restore) {
+      Theme theme = createTheme(factory);
+      Theme oldTheme = this._activeTheme;
+      this._activeThemeName = getPersistableId(factory);
+      this._activeTheme = theme;
       this._generation++;
       UiOptionsRegistry.getInstance().setString(-7276267599751932452L, this._activeThemeName);
-      if (var4 != null) {
-         var4.disposeFonts();
+      if (oldTheme != null) {
+         oldTheme.disposeFonts();
       }
 
       this._activeTheme.apply();
@@ -264,9 +303,9 @@ public class ThemeManager {
       }
 
       UiOptionsRegistry.getInstance().setString(-3809895234519942708L, this._activeThemeName);
-      RIMGlobalMessagePoster.postGlobalEvent(2573494863350550132L, var2 ? 2 : 1, 0, null, null);
-      if (var4 != null) {
-         var4.dispose();
+      RIMGlobalMessagePoster.postGlobalEvent(2573494863350550132L, restore ? 2 : 1, 0, null, null);
+      if (oldTheme != null) {
+         oldTheme.dispose();
       }
    }
 
@@ -281,12 +320,12 @@ public class ThemeManager {
       return _instance._generation;
    }
 
-   public static Bitmap getPredefinedBitmap(int var0) {
+   public static Bitmap getPredefinedBitmap(int id) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static boolean isActivatable(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean isActivatable(String name) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static void onSystemFontChangeInternal() {
@@ -294,34 +333,93 @@ public class ThemeManager {
       getActiveTheme().applyFont();
    }
 
-   public static void remove(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static void remove(String name) {
+      if (name.indexOf(58) == -1) {
+         name = getPersistableIdForName(name);
+      }
+
+      synchronized (_instance) {
+         int index = getIndex(name);
+         if (index >= 0) {
+            Theme$Factory factory = _instance._factories[index];
+            if (!factory.isRemovable()) {
+               throw new Object();
+            }
+
+            boolean removingActive = _instance._defaultThemeFactory == factory;
+            int rc = factory.remove();
+            int message;
+            if (rc == 0) {
+               removeFromList(index, removingActive);
+               message = 401;
+            } else if (rc == 1) {
+               removeFromList(index, removingActive);
+               message = 402;
+            } else {
+               message = 403;
+            }
+
+            if (rc != 3) {
+               UiApplication.getUiApplication().invokeLater((Runnable)(new Object(message)));
+            }
+         } else {
+            throw new Object();
+         }
+      }
    }
 
-   private static void removeFromList(int var0, boolean var1) {
-      Arrays.removeAt(_instance._factories, var0);
-      if (var1) {
+   private static void removeFromList(int index, boolean removingActive) {
+      Arrays.removeAt(_instance._factories, index);
+      if (removingActive) {
          activateTheme();
       }
    }
 
-   public static boolean isRemoveable(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean isRemoveable(String name) {
+      if (name.indexOf(58) == -1) {
+         name = getPersistableIdForName(name);
+      }
+
+      synchronized (_instance) {
+         int index = getIndex(name);
+         if (index >= 0) {
+            Theme$Factory factory = _instance._factories[index];
+            return factory.isRemovable();
+         } else {
+            throw new Object();
+         }
+      }
    }
 
-   public static boolean allowUserWallpaper(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean allowUserWallpaper(String name) {
+      if (name == null) {
+         return true;
+      }
+
+      if (name.indexOf(58) == -1) {
+         name = getPersistableIdForName(name);
+      }
+
+      synchronized (_instance) {
+         int index = getIndex(name);
+         if (index >= 0) {
+            Theme$Factory factory = _instance._factories[index];
+            return factory.allowUserWallpaper();
+         } else {
+            return true;
+         }
+      }
    }
 
-   private static void setActiveTheme(String var0, boolean var1) {
+   private static void setActiveTheme(String name, boolean restore) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static void setActiveTheme(String var0) {
-      setActiveTheme(var0, false);
+   public static void setActiveTheme(String name) {
+      setActiveTheme(name, false);
    }
 
    private void verifyActiveTheme() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

@@ -4,6 +4,6 @@ public class NegativeArraySizeException extends RuntimeException {
    public NegativeArraySizeException() {
    }
 
-   public NegativeArraySizeException(String var1) {
+   public NegativeArraySizeException(String s) {
    }
 }

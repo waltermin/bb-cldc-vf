@@ -6,19 +6,19 @@ class DebugSupport$DebugSupportOutputStream extends OutputStream {
    private int _fileno;
    private byte[] _byteBuf = new byte[1];
 
-   DebugSupport$DebugSupportOutputStream(int var1) {
-      this._fileno = var1;
+   DebugSupport$DebugSupportOutputStream(int fileno) {
+      this._fileno = fileno;
    }
 
    @Override
-   public void write(int var1) {
-      this._byteBuf[0] = (byte)var1;
+   public void write(int b) {
+      this._byteBuf[0] = (byte)b;
       DebugSupport.write(this._fileno, this._byteBuf, 0, 1);
    }
 
    @Override
-   public void write(byte[] var1, int var2, int var3) {
-      DebugSupport.write(this._fileno, var1, var2, var3);
+   public void write(byte[] b, int off, int len) {
+      DebugSupport.write(this._fileno, b, off, len);
    }
 
    @Override

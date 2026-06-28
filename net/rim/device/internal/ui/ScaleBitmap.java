@@ -11,113 +11,113 @@ public class ScaleBitmap {
    static Filter _filterBilinear;
    static Filter _filterLanczos;
 
-   public static int[] scale(Bitmap var0, int var1, int var2) {
-      return scale(1, var0, var1, var2);
+   public static int[] scale(Bitmap bitmap, int dst_width, int dst_height) {
+      return scale(1, bitmap, dst_width, dst_height);
    }
 
-   public static int[] scale(int var0, Bitmap var1, int var2, int var3) {
-      Filter var4;
-      switch (var0) {
+   public static int[] scale(int filterType, Bitmap bitmap, int dst_width, int dst_height) {
+      Filter filter;
+      switch (filterType) {
          case -1:
-            var4 = _filterLanczos;
+            filter = _filterLanczos;
             break;
          case 0:
          default:
-            var4 = _filterLanczos;
+            filter = _filterLanczos;
             break;
          case 1:
-            var4 = _filterBox;
+            filter = _filterBox;
             break;
          case 2:
-            var4 = _filterBilinear;
+            filter = _filterBilinear;
       }
 
-      return scale(var4, var1, var2, var3);
+      return scale(filter, bitmap, dst_width, dst_height);
    }
 
-   public static Bitmap scaleBitmap(Bitmap var0, int var1, int var2) {
-      return scaleBitmap(1, var0, var1, var2);
+   public static Bitmap scaleBitmap(Bitmap bitmap, int dst_width, int dst_height) {
+      return scaleBitmap(1, bitmap, dst_width, dst_height);
    }
 
-   public static Bitmap scaleBitmap(int var0, Bitmap var1, int var2, int var3) {
-      Bitmap var4 = var1.createScaledBitmap(var2, var3);
-      var1.getScaled(var4, var0);
-      return var4;
+   public static Bitmap scaleBitmap(int filterType, Bitmap bitmap, int dst_width, int dst_height) {
+      Bitmap scaled = bitmap.createScaledBitmap(dst_width, dst_height);
+      bitmap.getScaled(scaled, filterType);
+      return scaled;
    }
 
-   public static int[] scale(Filter var0, Bitmap var1, int var2, int var3) {
-      int var4 = var1.getWidth();
-      int var5 = var1.getHeight();
-      Weights[] var6 = null;
-      int[] var7 = new int[var2 * var5];
-      if (var4 == var2) {
-         var1.getARGB(var7, 0, var4, 0, 0, var4, var5);
+   public static int[] scale(Filter filter, Bitmap bitmap, int dst_width, int dst_height) {
+      int src_width = bitmap.getWidth();
+      int src_height = bitmap.getHeight();
+      Weights[] weights = null;
+      int[] intermediate = new int[dst_width * src_height];
+      if (src_width == dst_width) {
+         bitmap.getARGB(intermediate, 0, src_width, 0, 0, src_width, src_height);
       } else {
-         HorizontalFetcher var8 = new HorizontalFetcher();
-         var6 = calcWeights(var0, var4, var2);
-         int var9 = 0;
-         int[] var10 = new int[var4];
+         HorizontalFetcher hfetcher = new HorizontalFetcher();
+         weights = calcWeights(filter, src_width, dst_width);
+         int iDst = 0;
+         int[] data = new int[src_width];
 
-         for (int var11 = 0; var11 < var5; var11++) {
-            var1.getARGB(var10, 0, var4, 0, var11, var4, 1);
-            var8.set(var10);
+         for (int y = 0; y < src_height; y++) {
+            bitmap.getARGB(data, 0, src_width, 0, y, src_width, 1);
+            hfetcher.set(data);
 
-            for (int var12 = 0; var12 < var2; var12++) {
-               var7[var9++] = var6[var12].filter(var8);
+            for (int x = 0; x < dst_width; x++) {
+               intermediate[iDst++] = weights[x].filter(hfetcher);
             }
          }
       }
 
-      int[] var13;
-      if (var5 == var3) {
-         var13 = var7;
+      int[] result;
+      if (src_height == dst_height) {
+         result = intermediate;
       } else {
-         var13 = new int[var2 * var3];
-         VerticalFetcher var14 = new VerticalFetcher(var7, var2);
-         if (var4 != var5 || var2 != var3 || var6 == null) {
-            var6 = calcWeights(var0, var5, var3);
+         result = new int[dst_width * dst_height];
+         VerticalFetcher vfetcher = new VerticalFetcher(intermediate, dst_width);
+         if (src_width != src_height || dst_width != dst_height || weights == null) {
+            weights = calcWeights(filter, src_height, dst_height);
          }
 
-         for (int var15 = 0; var15 < var2; var15++) {
-            var14.set(var15);
+         for (int x = 0; x < dst_width; x++) {
+            vfetcher.set(x);
 
-            for (int var16 = 0; var16 < var3; var16++) {
-               var13[var16 * var2 + var15] = var6[var16].filter(var14);
+            for (int y = 0; y < dst_height; y++) {
+               result[y * dst_width + x] = weights[y].filter(vfetcher);
             }
          }
       }
 
-      return var13;
+      return result;
    }
 
-   private static Weights[] calcWeights(Filter var0, int var1, int var2) {
-      int var3 = Fixed32.toFP(var2) / var1;
-      int var4 = 65536;
-      int var5 = var0.widthFP();
-      if (var3 < 65536) {
-         var5 = Fixed32.div(var5, var3);
-         var4 = var3;
+   private static Weights[] calcWeights(Filter filter, int src, int dst) {
+      int scaleFP = Fixed32.toFP(dst) / src;
+      int fscaleFP = 65536;
+      int widthFP = filter.widthFP();
+      if (scaleFP < 65536) {
+         widthFP = Fixed32.div(widthFP, scaleFP);
+         fscaleFP = scaleFP;
       }
 
-      int var6 = Fixed32.toInt(Fixed32.ceil(var5) << 1) + 1;
-      Weights[] var7 = new Weights[var2];
+      int window_size = Fixed32.toInt(Fixed32.ceil(widthFP) << 1) + 1;
+      Weights[] weights = new Weights[dst];
 
-      for (int var8 = 0; var8 < var2; var8++) {
-         int var9 = Fixed32.div(32768, var3) - 32768;
-         int var10 = Fixed32.div(Fixed32.toFP(var8), var3) + var9;
-         int var11 = Math.max(0, Fixed32.toInt(Fixed32.floor(var10 - var5)));
-         int var12 = Math.min(Fixed32.toInt(Fixed32.ceil(var10 + var5)), var1 - 1);
-         if (var12 - var11 + 1 > var6) {
-            if (var11 < var1 - 0) {
-               var11++;
+      for (int i = 0; i < dst; i++) {
+         int offsetFP = Fixed32.div(32768, scaleFP) - 32768;
+         int centerFP = Fixed32.div(Fixed32.toFP(i), scaleFP) + offsetFP;
+         int left = Math.max(0, Fixed32.toInt(Fixed32.floor(centerFP - widthFP)));
+         int right = Math.min(Fixed32.toInt(Fixed32.ceil(centerFP + widthFP)), src - 1);
+         if (right - left + 1 > window_size) {
+            if (left < src - 0) {
+               left++;
             } else {
-               var12++;
+               right++;
             }
          }
 
-         var7[var8] = new Weights(var0, var11, var12, var10, var4);
+         weights[i] = new Weights(filter, left, right, centerFP, fscaleFP);
       }
 
-      return var7;
+      return weights;
    }
 }

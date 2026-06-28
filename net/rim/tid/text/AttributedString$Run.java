@@ -11,12 +11,14 @@ final class AttributedString$Run {
    AttributedString$Run() {
    }
 
-   AttributedString$Run(AttributedString$Run var1, AttributedString$Run var2, int var3, long var4, long var6, AttributedString$PictureInfo var8) {
-      this._prev = var1;
-      this._next = var2;
-      this._length = var3;
-      this._attrib = var4;
-      this._xAttrib = var6;
-      this._pictureInfo = var8;
+   AttributedString$Run(
+      AttributedString$Run aPrev, AttributedString$Run aNext, int aLength, long aAttrib, long aXAttrib, AttributedString$PictureInfo aPictureInfo
+   ) {
+      this._prev = aPrev;
+      this._next = aNext;
+      this._length = aLength;
+      this._attrib = aAttrib;
+      this._xAttrib = aXAttrib;
+      this._pictureInfo = aPictureInfo;
    }
 }

@@ -7,31 +7,31 @@ public class LockIconField extends Field {
    private int _x;
    private int _y;
 
-   public LockIconField(int var1, int var2) {
+   public LockIconField(int x, int y) {
       super(36028797018963968L);
-      this._x = var1;
-      this._y = var2;
+      this._x = x;
+      this._y = y;
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(this._x + 5, this._y + 5);
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      drawLock(var1, this._x, this._y);
+   protected void paint(Graphics graphics) {
+      drawLock(graphics, this._x, this._y);
    }
 
-   public static void drawLock(Graphics var0, int var1, int var2) {
-      int var3 = var0.getColor();
-      var0.setColor(16711680);
-      var0.drawRect(var1, var2 + 2, 5, 3);
-      var0.drawPoint(var1 + 1, var2 + 1);
-      var0.drawPoint(var1 + 2, var2);
-      var0.drawPoint(var1 + 3, var2 + 1);
-      var0.drawPoint(var1 + 1, var2 + 3);
-      var0.drawPoint(var1 + 3, var2 + 3);
-      var0.setColor(var3);
+   public static void drawLock(Graphics graphics, int x, int y) {
+      int colour = graphics.getColor();
+      graphics.setColor(16711680);
+      graphics.drawRect(x, y + 2, 5, 3);
+      graphics.drawPoint(x + 1, y + 1);
+      graphics.drawPoint(x + 2, y);
+      graphics.drawPoint(x + 3, y + 1);
+      graphics.drawPoint(x + 1, y + 3);
+      graphics.drawPoint(x + 3, y + 3);
+      graphics.setColor(colour);
    }
 }

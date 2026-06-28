@@ -1,41 +1,41 @@
 package net.rim.device.internal.system;
 
 public final class DefaultManuallySelectedNetIdReader implements SIMCardEfTask {
-   public final void setManuallySelectedNetId(int var1) {
+   public final void setManuallySelectedNetId(int networkId) {
       if (RadioInternal.getManuallySelectedNetworkID() == -1) {
-         RadioInternal.setManuallySelectedNetworkID(var1);
+         RadioInternal.setManuallySelectedNetworkID(networkId);
       }
    }
 
    @Override
-   public final void doWork(SIMCardEfHandler var1) {
-      int var2 = var1.infoRequest(17);
-      if (var2 == 0) {
-         byte[] var3 = new byte[var1.getFileSize()];
-         int var4 = var1.readRequest(0, var3);
-         if (var4 == 0) {
-            if (var3.length >= 7) {
-               byte var5 = var3[4];
-               byte var6 = var3[5];
-               byte var7 = var3[6];
-               if ((var5 & var6 & var7) == 255) {
+   public final void doWork(SIMCardEfHandler efHandler) {
+      int result = efHandler.infoRequest(17);
+      if (result == 0) {
+         byte[] buffer = new byte[efHandler.getFileSize()];
+         int code = efHandler.readRequest(0, buffer);
+         if (code == 0) {
+            if (buffer.length >= 7) {
+               int byte1 = buffer[4];
+               int byte2 = buffer[5];
+               int byte3 = buffer[6];
+               if ((byte1 & byte2 & byte3) == 255) {
                   return;
                }
 
-               int var8 = (var5 & 15) << 8;
-               var8 |= var5 & 240;
-               var8 |= var6 & 15;
-               int var12;
-               if ((var6 & 240) == 240) {
-                  var12 = (var7 & 15) << 4;
-                  var12 |= (var7 & 240) >> 4;
+               int mcc = (byte1 & 15) << 8;
+               mcc |= byte1 & 240;
+               mcc |= byte2 & 15;
+               int mnc;
+               if ((byte2 & 240) == 240) {
+                  mnc = (byte3 & 15) << 4;
+                  mnc |= (byte3 & 240) >> 4;
                } else {
-                  var12 = (var7 & 15) << 8;
-                  var12 |= var7 & 240;
-                  var12 |= (var6 & 240) >> 4;
+                  mnc = (byte3 & 15) << 8;
+                  mnc |= byte3 & 240;
+                  mnc |= (byte2 & 240) >> 4;
                }
 
-               this.setManuallySelectedNetId(var12 << 16 | var8);
+               this.setManuallySelectedNetId(mnc << 16 | mcc);
             }
          }
       }

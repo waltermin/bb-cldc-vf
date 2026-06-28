@@ -7,9 +7,12 @@ import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.i18n.DateTimeFormatOptions;
 import net.rim.device.internal.i18n.LocaleInternal;
 import net.rim.tid.awt.im.InputContext;
+import net.rim.vm.Array;
 import net.rim.vm.TraceBack;
 
 public final class Locale {
@@ -97,15 +100,15 @@ public final class Locale {
    public static final int FIRST_NAME_ORDER;
    public static final int LAST_NAME_ORDER;
 
-   private Locale(int var1, String var2) {
+   private Locale(int code, String variant) {
    }
 
-   public static final boolean isLatinOneCharacterSetLocale(Locale var0) {
-      if (_latin1CharacterSetsLocales != null && var0 != null) {
-         short var1 = (short)(var0.getCode() >> 16);
+   public static final boolean isLatinOneCharacterSetLocale(Locale locale) {
+      if (_latin1CharacterSetsLocales != null && locale != null) {
+         short code = (short)(locale.getCode() >> 16);
 
-         for (int var2 = 0; var2 < _latin1CharacterSetsLocales.length; var2++) {
-            if (var1 == _latin1CharacterSetsLocales[var2]) {
+         for (int i = 0; i < _latin1CharacterSetsLocales.length; i++) {
+            if (code == _latin1CharacterSetsLocales[i]) {
                return true;
             }
          }
@@ -114,64 +117,102 @@ public final class Locale {
       return false;
    }
 
-   public static final void addLocaleInternal(Locale var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addLocaleInternal(Locale locale) {
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      synchronized (_locales.available) {
+         Array.resize(_locales.available, _locales.available.length + 1);
+         _locales.available[_locales.available.length - 1] = locale;
+         Arrays.sort(_locales.available, _locales.comparator);
+      }
    }
 
-   public static final void addInputLocaleInternal(Locale var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addInputLocaleInternal(Locale locale) {
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      synchronized (_locales.inputAvailable) {
+         if (Arrays.getIndex(_locales.inputAvailable, locale) == -1) {
+            Array.resize(_locales.inputAvailable, _locales.inputAvailable.length + 1);
+            _locales.inputAvailable[_locales.inputAvailable.length - 1] = locale;
+            Arrays.sort(_locales.inputAvailable, _locales.comparator);
+         }
+      }
    }
 
-   public static final String convertCodeToVariant(int var0) {
-      return convertKeyboardIDToString(var0);
+   public static final String convertCodeToVariant(int code) {
+      return convertKeyboardIDToString(code);
    }
 
-   public static final int convertVariantToCcode(String var0) {
-      return convertStringToKeyboardID(var0);
+   public static final int convertVariantToCcode(String variant) {
+      return convertStringToKeyboardID(variant);
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final Locale get(int var0) {
-      return get(var0, null);
+   public static final Locale get(int code) {
+      return get(code, null);
    }
 
-   public static final Locale get(int var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final Locale get(String var0) {
-      return get(var0, null, null);
-   }
-
-   public static final Locale get(String var0, String var1) {
-      return get(var0, var1, null);
-   }
-
-   public static final Locale get(String var0, String var1, String var2) {
-      int var3 = pack(var0, var1);
-      return get(var3, var2);
-   }
-
-   public static final Locale get(int var0, String var1, int var2) {
-      if (var2 == -1) {
-         return get(var0, var1);
+   public static final Locale get(int code, String variant) {
+      if (variant == null) {
+         variant = EMPTY;
       }
 
-      Locale var3 = new Locale(var0, var1);
-      var3._keyboardID = var2;
-      return var3;
+      synchronized (_locales.used) {
+         Locale locale = null;
+         if (variant == EMPTY) {
+            locale = (Locale)_locales.used.get(code);
+         }
+
+         if (locale == null) {
+            locale = new Locale(code, variant);
+            if (variant == EMPTY) {
+               _locales.used.put(code, locale);
+            }
+         }
+
+         return locale;
+      }
+   }
+
+   public static final Locale get(String language) {
+      return get(language, null, null);
+   }
+
+   public static final Locale get(String language, String country) {
+      return get(language, country, null);
+   }
+
+   public static final Locale get(String language, String country, String variant) {
+      int code = pack(language, country);
+      return get(code, variant);
+   }
+
+   public static final Locale get(int code, String variant, int keyboardID) {
+      if (keyboardID == -1) {
+         return get(code, variant);
+      }
+
+      Locale result = new Locale(code, variant);
+      result._keyboardID = keyboardID;
+      return result;
    }
 
    public static final Locale[] getAvailableLocales() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_locales.available) {
+         Locale[] result = new Locale[_locales.available.length];
+         System.arraycopy(_locales.available, 0, result, 0, result.length);
+         return result;
+      }
    }
 
    public static final Locale[] getAvailableInputLocales() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_locales.inputAvailable) {
+         Locale[] result = new Locale[_locales.inputAvailable.length];
+         System.arraycopy(_locales.inputAvailable, 0, result, 0, result.length);
+         return result;
+      }
    }
 
    public final int getCode() {
@@ -207,24 +248,24 @@ public final class Locale {
    }
 
    public static final Locale getDefaultForKeyboard() {
-      int var0 = checkDefaultCode(Keypad.getHardwareMap());
-      return get(var0);
+      int code = checkDefaultCode(Keypad.getHardwareMap());
+      return get(code);
    }
 
    private static final Locale getDefaultFromOS() {
-      int var0 = checkDefaultCode(getDefaultLanguageLocale());
-      return get(var0, null);
+      int code = checkDefaultCode(getDefaultLanguageLocale());
+      return get(code, null);
    }
 
-   private static final int checkDefaultCode(int var0) {
-      if (verifyCode(var0) && var0 != 0) {
-         return var0;
+   private static final int checkDefaultCode(int code) {
+      if (verifyCode(code) && code != 0) {
+         return code;
       }
 
-      int var1 = Branding.getVendorId();
+      int vendorId = Branding.getVendorId();
 
-      for (int var2 = US_VENDORS.length - 1; var2 >= 0; var2--) {
-         if (US_VENDORS[var2] == var1) {
+      for (int i = US_VENDORS.length - 1; i >= 0; i--) {
+         if (US_VENDORS[i] == vendorId) {
             return 1701729619;
          }
       }
@@ -232,32 +273,32 @@ public final class Locale {
       return 1701726018;
    }
 
-   public static final int getDefaultNameOrder(int var0) {
+   public static final int getDefaultNameOrder(int _localeCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public final String getDisplayCountry() {
-      int var1 = this._code & 65535;
-      return var1 == 0 ? EMPTY : LocaleInternal.getString(65536 + var1);
+      int country = this._code & 65535;
+      return country == 0 ? EMPTY : LocaleInternal.getString(65536 + country);
    }
 
    public final String getDisplayLanguage() {
-      int var1 = this._code >> 16 & 65535;
-      if (var1 == 0) {
+      int language = this._code >> 16 & 65535;
+      if (language == 0) {
          return EMPTY;
       }
 
-      Object var2 = null;
-      ResourceBundle var3 = LocaleInternal.getBundle().getBundle(this);
-      if (var3.getLocale().getCode() == this._code) {
-         var2 = var3.getObject(2, false);
+      String result = null;
+      ResourceBundle bundle = LocaleInternal.getBundle().getBundle(this);
+      if (bundle.getLocale().getCode() == this._code) {
+         result = (String)bundle.getObject(2, false);
       }
 
-      if (var2 == null) {
-         var2 = LocaleInternal.getString(65536 + var1);
+      if (result == null) {
+         result = LocaleInternal.getString(65536 + language);
       }
 
-      return (String)var2;
+      return result;
    }
 
    public final String getDisplayName() {
@@ -280,28 +321,64 @@ public final class Locale {
       return this._keyboardID;
    }
 
-   public static final String convertKeyboardIDToString(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String convertKeyboardIDToString(int aID) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final String getPersonalNamesSeparator() {
       return getPersonalNamesSeparator(getSystemNameOrder());
    }
 
-   public static final String getPersonalNamesSeparator(int var0) {
+   public static final String getPersonalNamesSeparator(int order) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final int convertStringToKeyboardID(String var0) {
+   public static final int convertStringToKeyboardID(String variant) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final String[] getISOCountries() {
-      throw new RuntimeException("cod2jar: exception table");
+      String[] countries = new String[239];
+      StringBuffer buffer = _locales.buffer;
+      synchronized (buffer) {
+         buffer.setLength(0);
+         int count = 0;
+
+         for (int first = 0; first < 26; first++) {
+            for (int second = 0; second < 26; second++) {
+               if ((1 << second & _countriesISO3166[first]) != 0) {
+                  buffer.setLength(0);
+                  buffer.append((char)(65 + first));
+                  buffer.append((char)(65 + second));
+                  countries[count++] = buffer.toString();
+               }
+            }
+         }
+
+         return countries;
+      }
    }
 
    public static final String[] getISOLanguages() {
-      throw new RuntimeException("cod2jar: exception table");
+      String[] languages = new String[139];
+      StringBuffer buffer = _locales.buffer;
+      synchronized (buffer) {
+         buffer.setLength(0);
+         int count = 0;
+
+         for (int first = 0; first < 26; first++) {
+            for (int second = 0; second < 26; second++) {
+               if ((1 << second & _languagesISO639[first]) != 0) {
+                  buffer.setLength(0);
+                  buffer.append((char)(97 + first));
+                  buffer.append((char)(97 + second));
+                  languages[count++] = buffer.toString();
+               }
+            }
+         }
+
+         return languages;
+      }
    }
 
    public final String getLanguage() {
@@ -309,20 +386,20 @@ public final class Locale {
    }
 
    final Locale getParent() {
-      int var1 = this._code;
+      int code = this._code;
       if (this._variant == EMPTY) {
          if ((this._code & 65535) != 0) {
-            var1 &= -65536;
+            code &= -65536;
          } else {
             if ((this._code & -65536) == 0) {
                return null;
             }
 
-            var1 = 0;
+            code = 0;
          }
       }
 
-      return get(var1);
+      return get(code);
    }
 
    public static final int getSystemNameOrder() {
@@ -339,94 +416,127 @@ public final class Locale {
    }
 
    public static final boolean isDefaultForKeyboardSet() {
-      int var0 = Keypad.getHardwareMap();
-      return verifyCode(var0) && var0 != 0;
+      int code = Keypad.getHardwareMap();
+      return verifyCode(code) && code != 0;
    }
 
-   private static final int pack(String var0, String var1) {
+   private static final int pack(String language, String country) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final Locale parse(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final Locale parse(String id) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean isLocaleEligbleForRemovable(Locale var0, boolean var1) {
-      if (var0 == null) {
+   public static final boolean isLocaleEligbleForRemovable(Locale locale, boolean inputLocale) {
+      if (locale == null) {
          return false;
       }
 
-      int var2 = var0.getCode();
-      return var2 != 0 && var2 != 1701707776 && var2 != getDefaultLanguageLocale() ? !var1 || checkDefaultCode(0) != var2 : false;
+      int localeCode = locale.getCode();
+      return localeCode != 0 && localeCode != 1701707776 && localeCode != getDefaultLanguageLocale()
+         ? !inputLocale || checkDefaultCode(0) != localeCode
+         : false;
    }
 
-   public static final void removeLocaleInternal(Locale var0) {
+   public static final void removeLocaleInternal(Locale locale) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      int var1 = Arrays.binarySearch(_locales.available, var0, _locales.comparator, 0, _locales.available.length);
-      if (var1 > 0 && var0.getCode() == _locales.available[var1].getCode() && isLocaleEligbleForRemovable(var0, false)) {
-         String var2 = var0.getVariant();
-         String var3 = _locales.available[var1].getVariant();
-         if (var2 != null && var3 != null && var2.equals(var3)) {
-            Arrays.remove(_locales.available, _locales.available[var1]);
+      int indexToRemove = Arrays.binarySearch(_locales.available, locale, _locales.comparator, 0, _locales.available.length);
+      if (indexToRemove > 0 && locale.getCode() == _locales.available[indexToRemove].getCode() && isLocaleEligbleForRemovable(locale, false)) {
+         String paramVariant = locale.getVariant();
+         String localeVariant = _locales.available[indexToRemove].getVariant();
+         if (paramVariant != null && localeVariant != null && paramVariant.equals(localeVariant)) {
+            Arrays.remove(_locales.available, _locales.available[indexToRemove]);
          }
       }
 
-      var1 = Arrays.binarySearch(_locales.inputAvailable, var0, _locales.comparator, 0, _locales.inputAvailable.length);
-      if (var1 >= 0 && var0.getCode() == _locales.inputAvailable[var1].getCode() && isLocaleEligbleForRemovable(var0, true)) {
-         String var5 = var0.getVariant();
-         String var6 = _locales.inputAvailable[var1].getVariant();
-         if (var5 != null && var6 != null && var5.equals(var6)) {
-            Arrays.remove(_locales.inputAvailable, _locales.inputAvailable[var1]);
+      indexToRemove = Arrays.binarySearch(_locales.inputAvailable, locale, _locales.comparator, 0, _locales.inputAvailable.length);
+      if (indexToRemove >= 0 && locale.getCode() == _locales.inputAvailable[indexToRemove].getCode() && isLocaleEligbleForRemovable(locale, true)) {
+         String paramVariant = locale.getVariant();
+         String localeVariant = _locales.inputAvailable[indexToRemove].getVariant();
+         if (paramVariant != null && localeVariant != null && paramVariant.equals(localeVariant)) {
+            Arrays.remove(_locales.inputAvailable, _locales.inputAvailable[indexToRemove]);
          }
       }
    }
 
-   public static final void setDefault(Locale var0) {
-      _defaultLocale = var0;
-      int var1 = Application.getApplication().getProcessId();
-      RIMGlobalMessagePoster.postGlobalEvent(var1, -7464003439710973532L, 1, 0, null, null);
-      RIMGlobalMessagePoster.postGlobalEvent(var1, -8040378802380461050L, 1, 0, null, null);
-      RIMGlobalMessagePoster.postGlobalEvent(var1, -1438311245835636745L, 1, 0, null, null);
+   public static final void setDefault(Locale defaultLocale) {
+      _defaultLocale = defaultLocale;
+      int pid = Application.getApplication().getProcessId();
+      RIMGlobalMessagePoster.postGlobalEvent(pid, -7464003439710973532L, 1, 0, null, null);
+      RIMGlobalMessagePoster.postGlobalEvent(pid, -8040378802380461050L, 1, 0, null, null);
+      RIMGlobalMessagePoster.postGlobalEvent(pid, -1438311245835636745L, 1, 0, null, null);
       DateTimeFormatOptions.onAppLocaleChange();
-      RIMGlobalMessagePoster.postGlobalEvent(var1, 7207871974803693937L, 1, 0, null, null);
+      RIMGlobalMessagePoster.postGlobalEvent(pid, 7207871974803693937L, 1, 0, null, null);
    }
 
-   public static final void setDefaultInput(Locale var0) {
-      if (InputContext.getInstance().selectInputMethod(var0)) {
-         _defaultInputLocale = var0;
-         int var1 = Application.getApplication().getProcessId();
-         RIMGlobalMessagePoster.postGlobalEvent(var1, -8040378802380461050L, 1, 0, null, null);
+   public static final void setDefaultInput(Locale defaultLocale) {
+      if (InputContext.getInstance().selectInputMethod(defaultLocale)) {
+         _defaultInputLocale = defaultLocale;
+         int pid = Application.getApplication().getProcessId();
+         RIMGlobalMessagePoster.postGlobalEvent(pid, -8040378802380461050L, 1, 0, null, null);
       }
    }
 
-   public static final void setDefaultForSystem(Locale var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setDefaultForSystem(Locale locale) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private final native void setDisplayLocale(int var1);
 
    private final native void setInputLocale(int var1);
 
-   public static final int setDefaultInputForSystem(Locale var0) {
-      int var1 = TraceBack.getCallingModule(0);
-      return setDefaultInputForSystemImpl(var0, true, var1);
+   public static final int setDefaultInputForSystem(Locale locale) {
+      int callingModule = TraceBack.getCallingModule(0);
+      return setDefaultInputForSystemImpl(locale, true, callingModule);
    }
 
-   public static final int setDefaultInputForSystem(Locale var0, boolean var1) {
-      int var2 = TraceBack.getCallingModule(0);
-      return setDefaultInputForSystemImpl(var0, var1, var2);
+   public static final int setDefaultInputForSystem(Locale locale, boolean updateInput) {
+      int callingModule = TraceBack.getCallingModule(0);
+      return setDefaultInputForSystemImpl(locale, updateInput, callingModule);
    }
 
-   private static final int setDefaultInputForSystemImpl(Locale var0, boolean var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int setDefaultInputForSystemImpl(Locale locale, boolean updateInput, int callingModule) {
+      if (!ControlledAccess.verifyRRISignature(callingModule)) {
+         ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
+      }
+
+      if (updateInput && !InputContext.getInstance().selectInputMethod(locale)) {
+         return 0;
+      }
+
+      synchronized (_persist) {
+         if (locale == null) {
+            _localePersist.inputCode = -1;
+            _localePersist.inputVariant = null;
+         } else {
+            _localePersist.inputCode = locale.getCode();
+            _localePersist.inputVariant = locale.getVariant();
+         }
+
+         _persist.commit();
+         _locales.currentInput = locale;
+      }
+
+      if (locale != null) {
+         locale.setInputLocale(locale.getCode());
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(-8040378802380461050L);
+      return 1;
    }
 
    public static final String getCLDCLocaleString() {
       return _locales.current.buildToString(false).replace('_', '-');
    }
 
-   public static final void setNameOrder(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setNameOrder(int order) {
+      synchronized (_persist) {
+         _localePersist.nameOrder = order;
+         _persist.commit();
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(-1438311245835636745L);
    }
 
    @Override
@@ -434,24 +544,53 @@ public final class Locale {
       return this._code == 0 ? EMPTY : this.buildToString(true);
    }
 
-   private final String buildToString(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final String buildToString(boolean withVariant) {
+      StringBuffer buffer = _locales.buffer;
+      synchronized (buffer) {
+         buffer.setLength(0);
+         if ((this._code & -65536) != 0) {
+            buffer.append((char)(this._code >> 24 & 0xFF));
+            buffer.append((char)(this._code >> 16 & 0xFF));
+         }
+
+         if ((this._code & 65535) != 0) {
+            buffer.append('_');
+            buffer.append((char)(this._code >> 8 & 0xFF));
+            buffer.append((char)(this._code >> 0 & 0xFF));
+         }
+
+         if (withVariant && this._variant != EMPTY) {
+            if ((this._code & 65535) == 0) {
+               buffer.append('_');
+            }
+
+            buffer.append('_');
+            buffer.append(this._variant);
+         }
+
+         return buffer.toString();
+      }
    }
 
-   public static final boolean verifyCode(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean verifyCode(int code) {
+      try {
+         return ((code & -65536) == 0 || (_languagesISO639[(code >>> 24) - 97] & 1 << (code >> 16 & 0xFF) - 97) != 0)
+            && ((code & 65535) == 0 || (_countriesISO3166[(code >> 8 & 0xFF) - 65] & 1 << (code & 0xFF) - 65) != 0);
+      } catch (Exception e) {
+         return false;
+      }
    }
 
-   private static final boolean verifyCountry(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final boolean verifyCountry(String country) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static final boolean verifyLanguage(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final boolean verifyLanguage(String language) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static final Locale verifySystemModulePresent(Locale var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final Locale verifySystemModulePresent(Locale locale) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static final native int getDefaultLanguageLocale();

@@ -17,9 +17,9 @@ public final class USBPort extends IOPort {
       return USBPortInternal.isSupported();
    }
 
-   public USBPort(int var1) {
+   public USBPort(int channel) {
       assertPermission();
-      this._usbPortInternal = (USBPortInternal)(new Object(var1));
+      this._usbPortInternal = (USBPortInternal)(new Object(channel));
    }
 
    @Override
@@ -29,33 +29,33 @@ public final class USBPort extends IOPort {
    }
 
    @Override
-   public final int write(byte[] var1) {
+   public final int write(byte[] data) {
       assertPermission();
-      return this._usbPortInternal.write(var1);
+      return this._usbPortInternal.write(data);
    }
 
    @Override
-   public final synchronized int write(byte[] var1, int var2, int var3) {
+   public final synchronized int write(byte[] data, int offset, int length) {
       assertPermission();
-      return this._usbPortInternal.write(var1, var2, var3);
+      return this._usbPortInternal.write(data, offset, length);
    }
 
    @Override
-   public final synchronized int write(int var1) {
+   public final synchronized int write(int b) {
       assertPermission();
-      return this._usbPortInternal.write(var1);
+      return this._usbPortInternal.write(b);
    }
 
    @Override
-   public final int read(byte[] var1) {
+   public final int read(byte[] data) {
       assertPermission();
-      return this._usbPortInternal.read(var1);
+      return this._usbPortInternal.read(data);
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] data, int offset, int length) {
       assertPermission();
-      return this._usbPortInternal.read(var1, var2, var3);
+      return this._usbPortInternal.read(data, offset, length);
    }
 
    @Override
@@ -64,11 +64,11 @@ public final class USBPort extends IOPort {
       return this._usbPortInternal.read();
    }
 
-   public static final int registerChannel(String var0, int var1, int var2) {
+   public static final int registerChannel(String name, int maxRxSize, int maxTxSize) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void deregisterChannel(int var0) {
+   public static final void deregisterChannel(int channel) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

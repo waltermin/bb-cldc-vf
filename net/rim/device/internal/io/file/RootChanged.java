@@ -7,10 +7,10 @@ final class RootChanged implements Runnable {
    private String _rootName;
    private int _state;
 
-   public RootChanged(FileSystemListener var1, int var2, String var3) {
-      this._listener = var1;
-      this._state = var2;
-      this._rootName = var3;
+   public RootChanged(FileSystemListener listener, int state, String rootName) {
+      this._listener = listener;
+      this._state = state;
+      this._rootName = rootName;
    }
 
    @Override

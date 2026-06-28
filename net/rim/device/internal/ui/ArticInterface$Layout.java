@@ -43,16 +43,16 @@ public final class ArticInterface$Layout {
       return this._runData.length / 5;
    }
 
-   public final int textLength(int var1) {
-      return this._lineData[var1 * 11 + 0] + this._lineData[var1 * 11 + 1];
+   public final int textLength(int aLine) {
+      return this._lineData[aLine * 11 + 0] + this._lineData[aLine * 11 + 1];
    }
 
-   public final int pixelLength(int var1) {
-      return this._lineData[var1 * 11 + 7] - this._lineData[var1 * 11 + 5];
+   public final int pixelLength(int aLine) {
+      return this._lineData[aLine * 11 + 7] - this._lineData[aLine * 11 + 5];
    }
 
-   public final int pixelHeight(int var1) {
-      return this._lineData[var1 * 11 + 8] - this._lineData[var1 * 11 + 6];
+   public final int pixelHeight(int aLine) {
+      return this._lineData[aLine * 11 + 8] - this._lineData[aLine * 11 + 6];
    }
 
    public final int boundsWidth() {

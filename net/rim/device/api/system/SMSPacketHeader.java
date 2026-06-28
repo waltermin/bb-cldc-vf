@@ -56,36 +56,36 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       _maxPacketBits = 0;
    }
 
-   public final void setProtocolId(int var1, int var2) {
+   public final void setProtocolId(int protocolMeaning, int protocolId) {
       this._useDefaultProtocolId = false;
-      super.setProtocolMeaning(var1);
-      super.setProtocolId(var2);
+      super.setProtocolMeaning(protocolMeaning);
+      super.setProtocolId(protocolId);
    }
 
    @Override
-   public final void setMessageCoding(int var1) {
+   public final void setMessageCoding(int messageCoding) {
       this._useDefaultMessageCoding = false;
-      super.setMessageCoding(var1);
+      super.setMessageCoding(messageCoding);
    }
 
    @Override
-   public final void setMessageClass(int var1) {
+   public final void setMessageClass(int messageClass) {
       this._useDefaultMessageClass = false;
-      super.setMessageClass(var1);
+      super.setMessageClass(messageClass);
    }
 
    public final boolean isUserDataHeaderPresent() {
       return this._userDataHeaderPresent;
    }
 
-   public final void setUserDataHeaderPresent(boolean var1) {
+   public final void setUserDataHeaderPresent(boolean userDataHeaderPresent) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public final void setValidityPeriod(int var1) {
+   public final void setValidityPeriod(int validityPeriod) {
       this._useDefaultValidityPeriod = false;
-      super.setValidityPeriod(var1);
+      super.setValidityPeriod(validityPeriod);
    }
 
    public final boolean isValidityPeriodDefault() {
@@ -93,9 +93,9 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
    }
 
    @Override
-   public final void setDeliveryPeriod(int var1) {
+   public final void setDeliveryPeriod(int deliveryPeriod) {
       this._useDefaultDeliveryPeriod = false;
-      super.setDeliveryPeriod(var1);
+      super.setDeliveryPeriod(deliveryPeriod);
    }
 
    public final boolean isDeliveryPeriodDefault() {
@@ -106,7 +106,7 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       return this._statusReportRequest;
    }
 
-   public final void setStatusReportRequest(boolean var1) {
+   public final void setStatusReportRequest(boolean statusReportRequest) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -126,18 +126,18 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       return this._waitingIndType;
    }
 
-   public final void setMessageWaitingType(int var1) {
+   public final void setMessageWaitingType(int waitingIndType) {
       this._waitingIndValid = true;
-      this._waitingIndType = var1;
+      this._waitingIndType = waitingIndType;
    }
 
    public final int getNumMessages() {
       return this._numMessages;
    }
 
-   public final void setNumMessages(int var1) {
+   public final void setNumMessages(int numMessages) {
       this._waitingIndValid = true;
-      this._numMessages = var1;
+      this._numMessages = numMessages;
    }
 
    public final int getID() {
@@ -160,8 +160,8 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       return this._replyPath;
    }
 
-   public static final boolean isMessageCodingSupported(int var0, int var1) {
-      switch (var1) {
+   public static final boolean isMessageCodingSupported(int wafs, int messageCoding) {
+      switch (messageCoding) {
          case -1:
          case 1:
          case 3:
@@ -170,14 +170,14 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
          case 2:
          case 6:
          default:
-            if ((var0 & 1) != 0) {
+            if ((wafs & 1) != 0) {
                return true;
             }
 
             return false;
          case 4:
          case 5:
-            return (var0 & 2) != 0;
+            return (wafs & 2) != 0;
       }
    }
 
@@ -189,8 +189,8 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       return (RadioInfo.getActiveWAFs() & 1) != 0;
    }
 
-   public static final int getBitsPerCharacter(int var0) {
-      switch (var0) {
+   public static final int getBitsPerCharacter(int messageCoding) {
+      switch (messageCoding) {
          case -1:
          case 3:
             throw new Object();
@@ -207,8 +207,8 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       }
    }
 
-   public static final int getBytesPerCharacter(int var0) {
-      switch (var0) {
+   public static final int getBytesPerCharacter(int messageCoding) {
+      switch (messageCoding) {
          case -1:
          case 3:
             throw new Object();
@@ -232,94 +232,94 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       return _maxPacketBits;
    }
 
-   public static final int getBitsPerSegment(int var0) {
-      return getBitsPerSegment(var0, 0);
+   public static final int getBitsPerSegment(int messageCoding) {
+      return getBitsPerSegment(messageCoding, 0);
    }
 
-   public static final int getBitsPerSegment(int var0, int var1) {
-      int var2 = getMaxPacketBits() - 48 - var1 * 8;
-      if (var0 == 0) {
-         var2 -= 7 - (48 + var1 * 8) % 7;
+   public static final int getBitsPerSegment(int messageCoding, int wmaUDHLength) {
+      int dataBitsPerPacket = getMaxPacketBits() - 48 - wmaUDHLength * 8;
+      if (messageCoding == 0) {
+         dataBitsPerPacket -= 7 - (48 + wmaUDHLength * 8) % 7;
       }
 
-      return var2;
+      return dataBitsPerPacket;
    }
 
-   public static final int getBitsPerSegmentCDMA(int var0, int var1) {
-      int var2 = getMaxPacketBits() - var1 * 8;
-      if (var0 == 0) {
-         var2 -= 7 - var1 * 8 % 7;
+   public static final int getBitsPerSegmentCDMA(int messageCoding, int wmaUDHLength) {
+      int dataBitsPerPacket = getMaxPacketBits() - wmaUDHLength * 8;
+      if (messageCoding == 0) {
+         dataBitsPerPacket -= 7 - wmaUDHLength * 8 % 7;
       }
 
-      return var2;
+      return dataBitsPerPacket;
    }
 
-   public static final int getSegments(int var0, int var1) {
-      return getSegments(var0, var1, 0);
+   public static final int getSegments(int characters, int messageCoding) {
+      return getSegments(characters, messageCoding, 0);
    }
 
-   public static final int getSegments(int var0, int var1, int var2) {
-      int var3 = getMaxPacketBits() - var2 * 8;
-      int var4 = var0 * getBitsPerCharacter(var1);
-      if (var4 <= var3) {
+   public static final int getSegments(int characters, int messageCoding, int udhLength) {
+      int maxPacketBits = getMaxPacketBits() - udhLength * 8;
+      int bitsRequired = characters * getBitsPerCharacter(messageCoding);
+      if (bitsRequired <= maxPacketBits) {
          return 1;
       }
 
-      int var5 = getBitsPerSegment(var1, var2);
-      int var6 = var4 / var5;
-      if (var4 % var5 != 0) {
-         var6++;
+      int bitsPerSegment = getBitsPerSegment(messageCoding, udhLength);
+      int segments = bitsRequired / bitsPerSegment;
+      if (bitsRequired % bitsPerSegment != 0) {
+         segments++;
       }
 
-      return var6;
+      return segments;
    }
 
-   public static final int getSegmentsCDMA(int var0, int var1, int var2) {
-      int var3 = getMaxPacketBits() - var2 * 8;
-      int var4 = var0 * getBitsPerCharacter(var1);
-      if (var4 <= var3) {
+   public static final int getSegmentsCDMA(int characters, int messageCoding, int udhLength) {
+      int maxPacketBits = getMaxPacketBits() - udhLength * 8;
+      int bitsRequired = characters * getBitsPerCharacter(messageCoding);
+      if (bitsRequired <= maxPacketBits) {
          return 1;
       }
 
-      int var5 = getBitsPerSegmentCDMA(var1, var2);
-      int var6 = var4 / var5;
-      if (var4 % var5 != 0) {
-         var6++;
+      int bitsPerSegment = getBitsPerSegmentCDMA(messageCoding, udhLength);
+      int segments = bitsRequired / bitsPerSegment;
+      if (bitsRequired % bitsPerSegment != 0) {
+         segments++;
       }
 
-      return var6;
+      return segments;
    }
 
-   public static final int getCharacters(int var0, int var1) {
-      int var2 = getBitsPerCharacter(var1);
-      if (var0 == 1) {
-         return getMaxPacketBits() / var2;
+   public static final int getCharacters(int segments, int messageCoding) {
+      int bitsPerCharacter = getBitsPerCharacter(messageCoding);
+      if (segments == 1) {
+         return getMaxPacketBits() / bitsPerCharacter;
       }
 
-      int var3 = getBitsPerSegment(var1);
-      return var3 * var0 / var2;
+      int bitsPerSegment = getBitsPerSegment(messageCoding);
+      return bitsPerSegment * segments / bitsPerCharacter;
    }
 
-   public static final boolean validateForMessageCoding(char var0, int var1) {
-      switch (var1) {
+   public static final boolean validateForMessageCoding(char c, int messageCoding) {
+      switch (messageCoding) {
          case -1:
          case 3:
          case 4:
-            return validateForASCIIMessageCoding(var0);
+            return validateForASCIIMessageCoding(c);
          case 0:
          default:
-            return validateForDefaultMessageCoding(var0);
+            return validateForDefaultMessageCoding(c);
          case 1:
          case 5:
-            return validateForISO8859MessageCoding(var0);
+            return validateForISO8859MessageCoding(c);
          case 2:
          case 6:
-            return validateForUCS2MessageCoding(var0);
+            return validateForUCS2MessageCoding(c);
       }
    }
 
-   public static final boolean validateForDefaultMessageCoding(char var0) {
-      switch (var0) {
+   public static final boolean validateForDefaultMessageCoding(char c) {
+      switch (c) {
          case '\n':
          case '\f':
          case '\r':
@@ -464,15 +464,15 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       }
    }
 
-   public static final boolean validateForISO8859MessageCoding(char var0) {
-      return var0 <= 255;
+   public static final boolean validateForISO8859MessageCoding(char c) {
+      return c <= 255;
    }
 
-   public static final boolean validateForASCIIMessageCoding(char var0) {
-      return var0 <= 127;
+   public static final boolean validateForASCIIMessageCoding(char c) {
+      return c <= 127;
    }
 
-   public static final boolean validateForUCS2MessageCoding(char var0) {
+   public static final boolean validateForUCS2MessageCoding(char c) {
       return true;
    }
 }

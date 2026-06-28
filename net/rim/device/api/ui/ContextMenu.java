@@ -15,19 +15,19 @@ public final class ContextMenu {
       this._items = new MenuItem[0];
    }
 
-   public final void addItem(MenuItem var1) {
+   public final void addItem(MenuItem item) {
       if (this._target == null) {
          throw new Object();
       }
 
-      int var2 = this._items.length;
-      Array.resize(this._items, var2 + 1);
-      this._items[var2] = var1;
+      int last = this._items.length;
+      Array.resize(this._items, last + 1);
+      this._items[last] = item;
    }
 
    public final int addSeparatorInternal() {
-      int var1 = this._items.length > 0 ? this._items[this._items.length - 1].getOrdinal() : 0;
-      this.addItem(MenuItem.separator(var1 + 1));
+      int maxOrdinal = this._items.length > 0 ? this._items[this._items.length - 1].getOrdinal() : 0;
+      this.addItem(MenuItem.separator(maxOrdinal + 1));
       return this._items.length - 1;
    }
 
@@ -43,13 +43,13 @@ public final class ContextMenu {
       return this._defaultItem;
    }
 
-   public final boolean setDefaultItem(MenuItem var1) {
-      int var2 = this._items.length;
+   public final boolean setDefaultItem(MenuItem item) {
+      int end = this._items.length;
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         MenuItem var4 = this._items[var3];
-         if (var4 == var1) {
-            this._defaultItem = var3;
+      for (int lv = 0; lv < end; lv++) {
+         MenuItem litem = this._items[lv];
+         if (litem == item) {
+            this._defaultItem = lv;
             this._defaultIsSet = true;
             return true;
          }
@@ -58,8 +58,8 @@ public final class ContextMenu {
       return false;
    }
 
-   public final void setDefault(int var1) {
-      this._defaultItem = var1;
+   public final void setDefault(int position) {
+      this._defaultItem = position;
       if (this._defaultItem == -1) {
          this._defaultIsSet = false;
       }
@@ -82,17 +82,17 @@ public final class ContextMenu {
    }
 
    public final MenuItem[] getItems() {
-      MenuItem[] var1 = new MenuItem[this._items.length];
-      System.arraycopy(this._items, 0, var1, 0, this._items.length);
-      return var1;
+      MenuItem[] itemsCopy = new MenuItem[this._items.length];
+      System.arraycopy(this._items, 0, itemsCopy, 0, this._items.length);
+      return itemsCopy;
    }
 
    public final boolean isEmpty() {
       return this.getSize() == 0;
    }
 
-   public final void setTarget(Field var1) {
-      this._target = var1;
+   public final void setTarget(Field target) {
+      this._target = target;
       this.clear();
    }
 
@@ -103,14 +103,14 @@ public final class ContextMenu {
    }
 
    public final void sort() {
-      MenuItem var1 = null;
+      MenuItem _default = null;
       if (this._defaultItem != -1) {
-         var1 = this.getDefaultItem();
+         _default = this.getDefaultItem();
       }
 
       Arrays.sort(this._items, 0, this._items.length, MenuItem.ORDINAL_COMPARATOR);
-      if (var1 != null) {
-         this.setDefaultItem(var1);
+      if (_default != null) {
+         this.setDefaultItem(_default);
       }
    }
 }

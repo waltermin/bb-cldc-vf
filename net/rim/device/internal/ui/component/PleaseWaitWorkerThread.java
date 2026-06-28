@@ -7,21 +7,47 @@ public class PleaseWaitWorkerThread extends Thread {
    private Application _application;
    public PleaseWaitDialog _pleaseWaitDialog;
 
-   public void setDialog(PleaseWaitDialog var1) {
-      this._pleaseWaitDialog = var1;
+   public void setDialog(PleaseWaitDialog pleaseWaitDialog) {
+      this._pleaseWaitDialog = pleaseWaitDialog;
       this._application = Application.getApplication();
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      boolean var4 = false /* VF: Semaphore variable */;
+
+      label27: {
+         try {
+            var4 = true;
+            this.doWork();
+            var4 = false;
+            break label27;
+         } catch (Throwable t) {
+            this.setThrowable(t);
+            var4 = false;
+         } finally {
+            if (var4) {
+               this._pleaseWaitDialog.waitForDialog();
+               this._application.invokeLater(this._screenPopper);
+            }
+         }
+
+         this._pleaseWaitDialog.waitForDialog();
+         this._application.invokeLater(this._screenPopper);
+         return;
+      }
+
+      this._pleaseWaitDialog.waitForDialog();
+      this._application.invokeLater(this._screenPopper);
    }
 
    protected void doWork() {
       throw null;
    }
 
-   protected void setThrowable(Throwable var1) {
-      this._pleaseWaitDialog.setThrowable(var1);
+   protected void setThrowable(Throwable t) {
+      this._pleaseWaitDialog.setThrowable(t);
    }
 }

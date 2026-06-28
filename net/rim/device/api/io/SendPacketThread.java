@@ -8,10 +8,13 @@ final class SendPacketThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void addRequest(Object var1, Datagram var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void addRequest(Object sendObj, Datagram datagram) {
+      synchronized (this._requests) {
+         this._requests.enqueue(new SendPacketThread$SPTRequest(sendObj, datagram));
+         this._requests.notify();
+      }
    }
 }

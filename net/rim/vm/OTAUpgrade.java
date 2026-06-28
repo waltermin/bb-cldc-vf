@@ -1,6 +1,10 @@
 package net.rim.vm;
 
+import java.util.Vector;
 import net.rim.device.api.synchronization.SyncCollection;
+import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.Radio;
+import net.rim.device.internal.system.RadioInternal;
 
 public final class OTAUpgrade {
    public static final long DEFER_AUTO_OFF_GUID;
@@ -23,8 +27,8 @@ public final class OTAUpgrade {
          return true;
       }
 
-      int var0 = getState();
-      switch (var0) {
+      int state = getState();
+      switch (state) {
          case 0:
          case 1:
          case 2:
@@ -38,16 +42,61 @@ public final class OTAUpgrade {
       }
    }
 
-   public static final synchronized void requestRadioState(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public static final synchronized void requestRadioState(boolean on) {
+      boolean var2 = false /* VF: Semaphore variable */;
+
+      try {
+         var2 = true;
+         _considerState = false;
+         if (on) {
+            Radio.requestPowerOn();
+            var2 = false;
+         } else {
+            Radio.requestPowerOff();
+            var2 = false;
+         }
+      } finally {
+         if (var2) {
+            _considerState = true;
+         }
+      }
+
+      _considerState = true;
    }
 
-   public static final synchronized void activateRadios(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public static final synchronized void activateRadios(int radios) {
+      boolean var2 = false /* VF: Semaphore variable */;
+
+      try {
+         var2 = true;
+         _considerState = false;
+         RadioInternal.activateRadios(radios);
+         var2 = false;
+      } finally {
+         if (var2) {
+            _considerState = true;
+         }
+      }
+
+      _considerState = true;
    }
 
-   public static final void addOTASLOnlyCollection(SyncCollection var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addOTASLOnlyCollection(SyncCollection sc) {
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      synchronized (ar) {
+         Object o = ar.get(3338648511322103566L);
+         if (o == null || !(o instanceof Object)) {
+            o = new Object();
+            ar.put(3338648511322103566L, o);
+         }
+
+         Vector v = (Vector)o;
+         v.addElement(sc);
+      }
    }
 
    public static final SyncCollection[] getOTASLOnlyCollections() {
@@ -55,8 +104,8 @@ public final class OTAUpgrade {
    }
 
    public static final boolean isOTASLInProgress() {
-      int var0 = getState();
-      switch (var0) {
+      int state = getState();
+      switch (state) {
          case -1:
             return true;
          case 0:

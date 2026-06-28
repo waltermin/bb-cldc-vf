@@ -28,12 +28,12 @@ public class AccessibleState {
    public static final int AVAILABLE;
    private static ResourceBundleFamily _rb;
 
-   public static String toDisplayString(int var0) {
-      int var1;
-      for (var1 = 0; var0 >= 1; var1++) {
-         var0 >>= 1;
+   public static String toDisplayString(int state) {
+      int count;
+      for (count = 0; state >= 1; count++) {
+         state >>= 1;
       }
 
-      return _rb.getString(var1);
+      return _rb.getString(count);
    }
 }

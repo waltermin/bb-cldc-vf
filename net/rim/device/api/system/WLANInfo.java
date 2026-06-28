@@ -13,20 +13,20 @@ public class WLANInfo {
    private WLANInfo() {
    }
 
-   public static void addListener(WLANListener var0) {
-      if (var0 == null) {
+   public static void addListener(WLANListener listener) {
+      if (listener == null) {
          throw new Object();
       }
 
       if (WLAN.isSupported()) {
          ApplicationControl.assertWiFiPermitted(true, CommonResource.getBundle(), 10165);
-         WLANInfoImpl.getInstance().addListener(var0);
+         WLANInfoImpl.getInstance().addListener(listener);
       }
    }
 
-   public static void removeListener(WLANListener var0) {
+   public static void removeListener(WLANListener listener) {
       if (WLAN.isSupported()) {
-         WLANInfoImpl.getInstance().removeListener(var0);
+         WLANInfoImpl.getInstance().removeListener(listener);
       }
    }
 

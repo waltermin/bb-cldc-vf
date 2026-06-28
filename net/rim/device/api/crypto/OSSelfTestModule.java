@@ -7,20 +7,20 @@ public class OSSelfTestModule implements SelfTestModule {
    boolean _prngTestsDone = false;
 
    @Override
-   public int getNumTests(boolean var1) {
+   public int getNumTests(boolean startupTests) {
       return 8;
    }
 
    @Override
-   public void test(int var1) {
+   public void test(int testIndex) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public String[] getTestNames(boolean var1) {
-      String[] var2 = CommonResource.getStringArray(10020);
-      String[] var3 = new String[this.getNumTests(var1)];
-      System.arraycopy(var2, 0, var3, 0, var3.length);
-      return var3;
+   public String[] getTestNames(boolean startupTests) {
+      String[] testStrings = CommonResource.getStringArray(10020);
+      String[] temp = new String[this.getNumTests(startupTests)];
+      System.arraycopy(testStrings, 0, temp, 0, temp.length);
+      return temp;
    }
 }

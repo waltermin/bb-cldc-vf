@@ -8,10 +8,10 @@ public class GPS$GPSPDEInfo {
    public GPS$GPSPDEInfo() {
    }
 
-   public GPS$GPSPDEInfo(int var1, int var2, GPS$AppCredential var3) {
-      this._ip = var1;
-      this._port = var2;
-      this._credential = var3;
+   public GPS$GPSPDEInfo(int ip, int port, GPS$AppCredential cred) {
+      this._ip = ip;
+      this._port = port;
+      this._credential = cred;
    }
 
    public int getIP() {

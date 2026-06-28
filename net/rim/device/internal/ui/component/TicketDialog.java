@@ -26,65 +26,67 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 == this._ok) {
+   public void fieldChanged(Field field, int context) {
+      if (field == this._ok) {
          this.accept();
       } else {
-         if (var1 == this._cancel) {
+         if (field == this._cancel) {
             this.cancel();
          }
       }
    }
 
-   public TicketDialog(RichTextField var1, boolean var2, String var3, boolean var4, long var5, boolean var7) {
-      super(new VerticalIndentFieldManager(1153220571769602048L), var5);
-      VerticalIndentFieldManager var8 = (VerticalIndentFieldManager)this.getDelegate();
-      if (var1 != null) {
-         var8.add(var1);
+   public TicketDialog(
+      RichTextField label, boolean promptForPassword, String promptForPasswordString, boolean revealPassword, long style, boolean numericPasswordEntry
+   ) {
+      super(new VerticalIndentFieldManager(1153220571769602048L), style);
+      VerticalIndentFieldManager vifm = (VerticalIndentFieldManager)this.getDelegate();
+      if (label != null) {
+         vifm.add(label);
       }
 
-      this._revealPassword = var4;
-      if (var2) {
-         if (var3 != null) {
-            var8.add(new VerticalSpacerField(4));
-            Object var9 = new Object(var3, 9007199254740992L);
-            var8.add((Field)var9);
+      this._revealPassword = revealPassword;
+      if (promptForPassword) {
+         if (promptForPasswordString != null) {
+            vifm.add(new VerticalSpacerField(4));
+            RichTextField passwordPrompt = (RichTextField)(new Object(promptForPasswordString, 9007199254740992L));
+            vifm.add(passwordPrompt);
          }
 
-         if (var7) {
+         if (numericPasswordEntry) {
             this._passwordHFM = (HorizontalFieldManager)(new Object());
-            var8.add(this._passwordHFM);
+            vifm.add(this._passwordHFM);
             this._numericPassword = true;
             this.resetPasswordField(false);
          } else {
-            FrameLayout var10 = this.createPasswordField();
-            var8.add(var10);
+            FrameLayout layout = this.createPasswordField();
+            vifm.add(layout);
          }
       }
 
-      Object var11 = new Object(12884901888L);
+      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
       this._ok = (ButtonField)(new Object(CommonResource.getString(100)));
       this._ok.setChangeListener(this);
-      ((HorizontalFieldManager)var11).add(this._ok);
+      buttonManager.add(this._ok);
       this._cancel = (ButtonField)(new Object(CommonResource.getString(10005)));
       this._cancel.setChangeListener(this);
-      ((HorizontalFieldManager)var11).add(this._cancel);
-      var8.add((Field)var11);
-      VendorModuleStackDialog.populateVendorApplicationModulesStack(var8);
+      buttonManager.add(this._cancel);
+      vifm.add(buttonManager);
+      VendorModuleStackDialog.populateVendorApplicationModulesStack(vifm);
    }
 
    private FrameLayout createPasswordField() {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private void resetPasswordField(boolean var1) {
+   private void resetPasswordField(boolean focusOnPasswordField) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1) {
+   public void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached) {
          if (this._passwordField != null) {
             this._passwordField.setFocus();
             return;
@@ -96,8 +98,8 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
       }
    }
 
-   public TicketDialog(RichTextField var1, boolean var2, String var3, boolean var4, long var5) {
-      this(var1, var2, var3, var4, var5, false);
+   public TicketDialog(RichTextField label, boolean promptForPassword, String promptForPasswordString, boolean revealPassword, long style) {
+      this(label, promptForPassword, promptForPasswordString, revealPassword, style, false);
    }
 
    private synchronized boolean accept() {
@@ -116,12 +118,12 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
       }
    }
 
-   public TicketDialog(RichTextField var1, boolean var2, String var3, boolean var4) {
-      this(var1, var2, var3, var4, 0);
+   public TicketDialog(RichTextField label, boolean promptForPassword, String promptForPasswordString, boolean revealPassword) {
+      this(label, promptForPassword, promptForPasswordString, revealPassword, 0);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

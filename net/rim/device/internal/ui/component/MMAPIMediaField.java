@@ -22,33 +22,33 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    private boolean _obscured;
    private boolean _firstPaint = true;
 
-   public MMAPIMediaField(int var1, int var2) {
-      this._width = var1;
-      this._height = var2;
+   public MMAPIMediaField(int width, int height) {
+      this._width = width;
+      this._height = height;
       this._currentRect = (XYRect)(new Object());
    }
 
-   public MMAPIMediaField(int var1, int var2, long var3) {
-      super(var3);
-      this._width = var1;
-      this._height = var2;
+   public MMAPIMediaField(int width, int height, long style) {
+      super(style);
+      this._width = width;
+      this._height = height;
       this._currentRect = (XYRect)(new Object());
    }
 
    @Override
-   public void setPlayer(Player var1) {
-      this._player = var1;
+   public void setPlayer(Player player) {
+      this._player = player;
       this._player.addPlayerListener(this);
    }
 
    @Override
-   public void resizeComponent(int var1, int var2) {
-      this._width = var1;
-      this._height = var2;
+   public void resizeComponent(int width, int height) {
+      this._width = width;
+      this._height = height;
    }
 
    @Override
-   public void setComponent(Object var1) {
+   public void setComponent(Object component) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -60,15 +60,15 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    @Override
    public void refresh() {
       if (!this._obscured) {
-         Screen var1 = this.getScreen();
-         if (var1 != null) {
-            var1.invalidate();
+         Screen s = this.getScreen();
+         if (s != null) {
+            s.invalidate();
             return;
          }
 
-         Manager var2 = this.getManager();
-         if (var2 != null) {
-            var2.invalidate();
+         Manager m = this.getManager();
+         if (m != null) {
+            m.invalidate();
             return;
          }
 
@@ -77,13 +77,13 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      int var2 = var1.getColor();
-      var1.setColor(0);
-      var1.fillRect(0, 0, this._width, this._height);
-      var1.setColor(var2);
+   protected void paint(Graphics graphics) {
+      int colour = graphics.getColor();
+      graphics.setColor(0);
+      graphics.fillRect(0, 0, this._width, this._height);
+      graphics.setColor(colour);
       if (this._bitmap != null) {
-         var1.drawBitmap(var1.getClippingRect(), this._bitmap, 0, 0);
+         graphics.drawBitmap(graphics.getClippingRect(), this._bitmap, 0, 0);
       }
 
       if (this._firstPaint) {
@@ -95,9 +95,9 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      this._width = MathUtilities.clamp(0, this._width, var1);
-      this._height = MathUtilities.clamp(0, this._height, var2);
+   protected void layout(int width, int height) {
+      this._width = MathUtilities.clamp(0, this._width, width);
+      this._height = MathUtilities.clamp(0, this._height, height);
       this.setExtent(this._width, this._height);
    }
 
@@ -118,9 +118,9 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    @Override
-   protected void onVisibilityChange(boolean var1) {
-      super.onVisibilityChange(var1);
-      this.layoutMedia(var1);
+   protected void onVisibilityChange(boolean visible) {
+      super.onVisibilityChange(visible);
+      this.layoutMedia(visible);
    }
 
    @Override
@@ -136,8 +136,8 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
       this.layoutMedia(true);
    }
 
@@ -147,16 +147,16 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
       this.layoutMedia(true);
    }
 
-   private void layoutMedia(boolean var1) {
+   private void layoutMedia(boolean visible) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private void toggleVideoVisibility(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void toggleVideoVisibility(boolean visible) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void playerUpdate(Player var1, String var2, Object var3) {
+   public void playerUpdate(Player player, String event, Object eventData) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

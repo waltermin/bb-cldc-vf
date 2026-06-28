@@ -6,17 +6,17 @@ public class RadioStatusListenerFilter {
    private int _wafFilter;
    private RadioStatusListener _listener;
 
-   public RadioStatusListenerFilter(int var1, RadioStatusListener var2) {
-      this._wafFilter = var1;
-      this._listener = var2;
+   public RadioStatusListenerFilter(int wafFilter, RadioStatusListener listener) {
+      this._wafFilter = wafFilter;
+      this._listener = listener;
    }
 
-   public void dispatchEvent(int var1, int var2, int var3, int var4) {
+   public void dispatchEvent(int event, int subMessage, int data0, int data1) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 

@@ -1,8 +1,10 @@
 package javax.microedition.lcdui;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.BitmapField;
+import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -26,23 +28,36 @@ public class Alert extends Screen {
    public static final int FOREVER;
    public static final Command DISMISS_COMMAND;
 
-   public Alert(String var1) {
+   public Alert(String title) {
       super(null);
-      this.init(var1, null, null, null);
+      this.init(title, null, null, null);
    }
 
-   public Alert(String var1, String var2, Image var3, AlertType var4) {
+   public Alert(String title, String alertText, Image alertImage, AlertType alertType) {
       super(null);
-      this.init(var1, var2, var3, var4);
+      this.init(title, alertText, alertImage, alertType);
    }
 
-   private void init(String var1, String var2, Image var3, AlertType var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void init(String title, String alertText, Image alertImage, AlertType alertType) {
+      synchronized (Application.getEventLock()) {
+         this._commands = (SimpleSortingVector)(new Object());
+         this._commands.setSortComparator(new Alert$CommandComparator());
+         this._commands.setSort(true);
+         this._buttonContainer = (VerticalFieldManager)(new Object(281474976710656L));
+         this._dfm = (DialogFieldManager)(new Object());
+         this._dfm.addCustomField(this._buttonContainer);
+         this.setPeer(new MIDPAlert(this._dfm, alertType));
+         this.getPeer().setDisplayable(this);
+         this._alertType = alertType;
+         this.setImage(alertImage);
+         this.setTitle(title);
+         this.setString(alertText);
+      }
    }
 
-   void show(Display var1, Displayable var2) {
-      this._display = var1;
-      this._nextDisplayable = var2;
+   void show(Display display, Displayable nextDisplayable) {
+      this._display = display;
+      this._nextDisplayable = nextDisplayable;
       this.getPeer().doLayout();
       this.updateModalState();
       if (this._timeout > 0) {
@@ -57,14 +72,14 @@ public class Alert extends Screen {
       }
 
       if (this._commandListener != null) {
-         Command var1;
+         Command command;
          if (this._buttonContainer.getFieldCount() == 0) {
-            var1 = DISMISS_COMMAND;
+            command = DISMISS_COMMAND;
          } else {
-            var1 = (Command)this._buttonContainer.getFieldWithFocus().getCookie();
+            command = (Command)this._buttonContainer.getFieldWithFocus().getCookie();
          }
 
-         this._commandListener.commandAction(var1, this);
+         this._commandListener.commandAction(command, this);
       }
 
       if (this._nextDisplayable != null && this._display.getCurrent() == this) {
@@ -74,61 +89,125 @@ public class Alert extends Screen {
    }
 
    public int getDefaultTimeout() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return 4000;
+      }
    }
 
    public int getTimeout() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._timeout;
+      }
    }
 
-   public void setTimeout(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setTimeout(int time) {
+      synchronized (Application.getEventLock()) {
+         if (time <= 0 && time != -2) {
+            throw new Object();
+         }
+
+         this._timeout = time;
+         if (time == -2 && _timerId != -1) {
+            Application.getApplication().cancelInvokeLater(_timerId);
+            _timerId = -1;
+         }
+      }
    }
 
    public AlertType getType() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._alertType;
+      }
    }
 
-   public void setType(AlertType var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setType(AlertType type) {
+      synchronized (Application.getEventLock()) {
+         this._alertType = type;
+         if (this._midpImage == null) {
+            this.setImage(null);
+         }
+      }
    }
 
    public String getString() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._text == null ? null : this._text.getText();
+      }
    }
 
-   public void setString(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setString(String str) {
+      synchronized (Application.getEventLock()) {
+         Manager mgr = this._dfm.getCustomManager();
+         if (str == null) {
+            if (this._text != null) {
+               mgr.delete(this._text);
+               this._text = null;
+            }
+         } else {
+            if (this._text == null) {
+               this._text = (RichTextField)(new Object(str, 36028797018963968L));
+               this._dfm.addCustomField(this._text);
+            } else {
+               this._text.setText(str);
+            }
+
+            this.updateModalState();
+         }
+      }
    }
 
    public Image getImage() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._midpImage;
+      }
    }
 
-   public void setImage(Image var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setImage(Image img) {
+      synchronized (Application.getEventLock()) {
+         if (img != null) {
+            if (this._image != null) {
+               this._image.setBitmap(img.getBitmap());
+               this._midpImage = img;
+               return;
+            }
+
+            this._image = (BitmapField)(new Object(img.getBitmap()));
+         } else {
+            int type = 0;
+            if (this._alertType == AlertType.ALARM || this._alertType == AlertType.ERROR) {
+               type = 2;
+            } else if (this._alertType == AlertType.CONFIRMATION) {
+               type = 1;
+            }
+
+            this._image = (BitmapField)(new Object(Bitmap.getPredefinedBitmap(type)));
+         }
+
+         this._midpImage = img;
+         this._dfm.setIcon(this._image);
+      }
    }
 
-   public void setIndicator(Gauge var1) {
-      if (var1 == null
-         || !var1.isInteractive()
-            && var1.getOwner() == null
-            && var1.getCommands().size() == 0
-            && var1.getItemCommandListener() == null
-            && var1.getLabel() == null
-            && var1._preferredHeight == -1
-            && var1._preferredWidth == -1
-            && var1.getLayout() == 0) {
+   public void setIndicator(Gauge indicator) {
+      if (indicator == null
+         || !indicator.isInteractive()
+            && indicator.getOwner() == null
+            && indicator.getCommands().size() == 0
+            && indicator.getItemCommandListener() == null
+            && indicator.getLabel() == null
+            && indicator._preferredHeight == -1
+            && indicator._preferredWidth == -1
+            && indicator.getLayout() == 0) {
          if (this._indicator != null) {
             this._dfm.deleteCustomField(this._indicator.getPeer());
          }
 
-         if (var1 != null) {
-            this._dfm.addCustomField(var1.getPeer());
-            var1.setOwner(this);
+         if (indicator != null) {
+            this._dfm.addCustomField(indicator.getPeer());
+            indicator.setOwner(this);
          }
 
-         this._indicator = var1;
+         this._indicator = indicator;
       } else {
          throw new Object();
       }
@@ -139,38 +218,84 @@ public class Alert extends Screen {
    }
 
    @Override
-   public void addCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addCommand(Command cmd) {
+      if (cmd == null) {
+         throw new Object();
+      }
+
+      if (cmd != DISMISS_COMMAND) {
+         synchronized (Application.getEventLock()) {
+            this._commands.addElement(cmd);
+            int commandIndex = this._commands.find(cmd);
+            ButtonField buttonField = (ButtonField)(new Object(cmd.getLabel(), 18014398509481984L));
+            buttonField.setCookie(cmd);
+            this._buttonContainer.insert(buttonField, commandIndex);
+            this.updateModalState();
+            if (commandIndex == 0 && this._buttonContainer.isVisible()) {
+               this._buttonContainer.setFieldWithFocus(buttonField);
+            }
+         }
+      }
    }
 
    @Override
-   public void removeCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void removeCommand(Command cmd) {
+      if (cmd != null && cmd != DISMISS_COMMAND) {
+         synchronized (Application.getEventLock()) {
+            int commandIndex = this._commands.find(cmd);
+            if (commandIndex >= 0) {
+               this._commands.removeElementAt(commandIndex);
+               if (commandIndex == 0 && this._buttonContainer.getFieldCount() > 1) {
+                  this._buttonContainer.setFieldWithFocus(this._buttonContainer.getField(1));
+               }
+
+               this._buttonContainer.deleteRange(commandIndex, 1);
+            }
+
+            this.updateModalState();
+         }
+      }
    }
 
    @Override
-   public void setCommandListener(CommandListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCommandListener(CommandListener l) {
+      synchronized (Application.getEventLock()) {
+         this._commandListener = l;
+      }
    }
 
    @Override
    public String getTitle() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._title == null ? null : this._title.getText();
+      }
    }
 
    @Override
-   public void setTitle(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setTitle(String title) {
+      synchronized (Application.getEventLock()) {
+         if (this._title == null) {
+            if (title != null) {
+               this._title = (RichTextField)(new Object(title, 36028797018963968L));
+               this._dfm.setMessage(this._title);
+            }
+         } else if (title != null) {
+            this._title.setText(title);
+         } else {
+            this._dfm.setMessage(null);
+            this._title = null;
+         }
+      }
    }
 
    private void updateModalState() {
-      Manager var1 = this._dfm.getCustomManager();
-      boolean var2 = var1.getVirtualHeight() > var1.getHeight() || this._buttonContainer.getFieldCount() > 1;
-      if (!var2 && this._text != null) {
-         var2 = this._text.getHeight() > this._dfm.getHeight();
+      Manager mgr = this._dfm.getCustomManager();
+      boolean makeModal = mgr.getVirtualHeight() > mgr.getHeight() || this._buttonContainer.getFieldCount() > 1;
+      if (!makeModal && this._text != null) {
+         makeModal = this._text.getHeight() > this._dfm.getHeight();
       }
 
-      if (var2) {
+      if (makeModal) {
          this.setTimeout(-2);
       }
    }

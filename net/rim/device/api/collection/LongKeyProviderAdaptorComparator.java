@@ -6,20 +6,20 @@ import net.rim.vm.Memory;
 public class LongKeyProviderAdaptorComparator implements Comparator {
    private LongKeyProviderAdaptor _longKeyProviderAdaptor;
 
-   public LongKeyProviderAdaptorComparator(LongKeyProviderAdaptor var1) {
-      this._longKeyProviderAdaptor = var1;
+   public LongKeyProviderAdaptorComparator(LongKeyProviderAdaptor longKeyProviderAdaptor) {
+      this._longKeyProviderAdaptor = longKeyProviderAdaptor;
    }
 
    @Override
-   public int compare(Object var1, Object var2) {
-      long var3 = this._longKeyProviderAdaptor.getLongKey(var1);
-      long var5 = this._longKeyProviderAdaptor.getLongKey(var2);
-      if (var3 < var5) {
+   public int compare(Object o1, Object o2) {
+      long key1 = this._longKeyProviderAdaptor.getLongKey(o1);
+      long key2 = this._longKeyProviderAdaptor.getLongKey(o2);
+      if (key1 < key2) {
          return -1;
-      } else if (var3 > var5) {
+      } else if (key1 > key2) {
          return 1;
       } else {
-         return var1 == var2 ? 0 : Memory.objectToInt(var1) - Memory.objectToInt(var2);
+         return o1 == o2 ? 0 : Memory.objectToInt(o1) - Memory.objectToInt(o2);
       }
    }
 }

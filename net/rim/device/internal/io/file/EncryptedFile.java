@@ -2,7 +2,6 @@ package net.rim.device.internal.io.file;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.OutputStream;
 import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.io.FileInfo;
@@ -24,100 +23,100 @@ public final class EncryptedFile {
    private EncryptedFile() {
    }
 
-   public static final EncryptedFile readHeader(int var0, DataInputStream var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final EncryptedFile readHeader(int handle, DataInputStream in, byte[] masterKey) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final EncryptedFile createFile(int var0, DataOutputStream var1, boolean var2, byte[] var3, CodeSigningKey var4) {
-      var1.write(82);
-      var1.write(69);
-      var1.write(77);
-      var1.write(70);
-      var1.write(1);
-      Object var5 = new Object();
-      Object var6 = new Object((OutputStream)var5);
-      ((DataOutputStream)var6).write(0);
-      ((DataOutputStream)var6).write(0);
-      if (var4 == null) {
-         ((DataOutputStream)var6).writeInt(0);
+   public static final EncryptedFile createFile(int handle, DataOutputStream out, boolean isDRMProtected, byte[] key, CodeSigningKey protectionKey) {
+      out.write(82);
+      out.write(69);
+      out.write(77);
+      out.write(70);
+      out.write(1);
+      NoCopyByteArrayOutputStream bytesOut = (NoCopyByteArrayOutputStream)(new Object());
+      DataOutputStream dataOut = (DataOutputStream)(new Object(bytesOut));
+      dataOut.write(0);
+      dataOut.write(0);
+      if (protectionKey == null) {
+         dataOut.writeInt(0);
       } else {
-         int var7 = var4.getSignerIdAsInt();
-         ((DataOutputStream)var6).writeInt(var7);
-         switch (var7) {
+         int signerId = protectionKey.getSignerIdAsInt();
+         dataOut.writeInt(signerId);
+         switch (signerId) {
             case 51:
             case 4342354:
             case 4408146:
             case 4801362:
             case 5391186:
             case 5526098:
-               ((DataOutputStream)var6).writeShort(0);
+               dataOut.writeShort(0);
                break;
             default:
-               byte[] var8 = var4.getPublicKey();
-               ((DataOutputStream)var6).writeShort(var8.length);
-               ((DataOutputStream)var6).write(var8);
+               byte[] keyData = protectionKey.getPublicKey();
+               dataOut.writeShort(keyData.length);
+               dataOut.write(keyData);
          }
       }
 
-      byte[] var11 = new byte[32];
-      RandomSource.getBytes(var11);
-      ((DataOutputStream)var6).writeShort(var11.length);
-      Object var12 = new Object();
-      if (!var2) {
-         ((DataOutputStream)var6).write(1);
-         ((DataOutputStream)var6).write(var11);
+      byte[] sessionKey = new byte[32];
+      RandomSource.getBytes(sessionKey);
+      dataOut.writeShort(sessionKey.length);
+      SHA256Digest digest = (SHA256Digest)(new Object());
+      if (!isDRMProtected) {
+         dataOut.write(1);
+         dataOut.write(sessionKey);
       } else {
-         ((DataOutputStream)var6).write(2);
-         ((SHA256Digest)var12).update(var11);
-         ((DataOutputStream)var6).write(((SHA256Digest)var12).getDigest());
-         ((SHA256Digest)var12).reset();
-         byte[] var9 = new byte[EncryptionUtilities.getCiphertextLength(var11.length)];
-         ((DataOutputStream)var6).writeShort(var9.length);
-         byte[] var10 = DRMServices.getSubscriberKey();
-         if (var10 != null) {
-            EncryptionUtilities.encrypt(var10, var11, 0, var11.length, var9, 0);
+         dataOut.write(2);
+         digest.update(sessionKey);
+         dataOut.write(digest.getDigest());
+         digest.reset();
+         byte[] encryptedKey = new byte[EncryptionUtilities.getCiphertextLength(sessionKey.length)];
+         dataOut.writeShort(encryptedKey.length);
+         byte[] subKey = DRMServices.getSubscriberKey();
+         if (subKey != null) {
+            EncryptionUtilities.encrypt(subKey, sessionKey, 0, sessionKey.length, encryptedKey, 0);
          }
 
-         ((DataOutputStream)var6).write(var9);
-         EncryptionUtilities.encrypt(DRMServices.getDeviceKey(), var11, 0, var11.length, var9, 0);
-         ((DataOutputStream)var6).write(var9);
+         dataOut.write(encryptedKey);
+         EncryptionUtilities.encrypt(DRMServices.getDeviceKey(), sessionKey, 0, sessionKey.length, encryptedKey, 0);
+         dataOut.write(encryptedKey);
       }
 
-      ((SHA256Digest)var12).update(((NoCopyByteArrayOutputStream)var5).getByteArray(), 0, ((NoCopyByteArrayOutputStream)var5).size());
-      ((DataOutputStream)var6).write(((SHA256Digest)var12).getDigest());
-      byte[] var13 = new byte[EncryptionUtilities.getCiphertextLength(((NoCopyByteArrayOutputStream)var5).size())];
-      EncryptionUtilities.encrypt(var3, ((NoCopyByteArrayOutputStream)var5).getByteArray(), 0, ((NoCopyByteArrayOutputStream)var5).size(), var13, 0);
-      var1.writeShort(var13.length);
-      var1.write(var13);
-      EncryptedFile var14 = new EncryptedFile();
-      var14._protectionKey = var4;
-      var14._handle = var0;
-      var14.init(var11);
-      var14._headerLength = (int)FileSystem.tell(var0);
-      return var14;
+      digest.update(bytesOut.getByteArray(), 0, bytesOut.size());
+      dataOut.write(digest.getDigest());
+      byte[] cipher = new byte[EncryptionUtilities.getCiphertextLength(bytesOut.size())];
+      EncryptionUtilities.encrypt(key, bytesOut.getByteArray(), 0, bytesOut.size(), cipher, 0);
+      out.writeShort(cipher.length);
+      out.write(cipher);
+      EncryptedFile ef = new EncryptedFile();
+      ef._protectionKey = protectionKey;
+      ef._handle = handle;
+      ef.init(sessionKey);
+      ef._headerLength = (int)FileSystem.tell(handle);
+      return ef;
    }
 
    public final long getFileSize() {
-      Object var1 = new Object();
-      int var2 = FileSystem.getFileInfo(this._handle, (FileInfo)var1);
-      if (var2 != 0) {
-         throw new Object(var2);
+      FileInfo info = (FileInfo)(new Object());
+      int status = FileSystem.getFileInfo(this._handle, info);
+      if (status != 0) {
+         throw new Object(status);
       } else {
-         long var3 = (((FileInfo)var1).getFileSize() - FileSystem.tell(this._handle)) / 16 * 16;
-         var2 = FileSystem.seek(this._handle, var3, 1);
-         if (var2 != 0) {
-            throw new Object(var2);
+         long bytesToSkip = (info.getFileSize() - FileSystem.tell(this._handle)) / 16 * 16;
+         status = FileSystem.seek(this._handle, bytesToSkip, 1);
+         if (status != 0) {
+            throw new Object(status);
          } else {
-            byte[] var5 = new byte[1];
-            long var6 = FileSystem.read(this._handle, var5);
-            if ((int)var6 != 0) {
-               throw new Object((int)var6);
+            byte[] lastByte = new byte[1];
+            long readStatus = FileSystem.read(this._handle, lastByte);
+            if ((int)readStatus != 0) {
+               throw new Object((int)readStatus);
             } else {
-               int var8 = (int)(var6 >> 32);
-               if (var8 != 1) {
+               int size = (int)(readStatus >> 32);
+               if (size != 1) {
                   return 0;
-               } else if (var5[0] > 0 && var5[0] <= 16) {
-                  return var3 - (16 - var5[0]);
+               } else if (lastByte[0] > 0 && lastByte[0] <= 16) {
+                  return bytesToSkip - (16 - lastByte[0]);
                } else {
                   throw new Object(6);
                }

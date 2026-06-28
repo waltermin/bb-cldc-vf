@@ -6,9 +6,9 @@ import net.rim.device.api.ui.MenuItem;
 class Menu$1 extends MenuItem {
    private final Menu this$0;
 
-   Menu$1(Menu var1, ResourceBundle var2, int var3, int var4, int var5) {
-      super(var2, var3, var4, var5);
-      this.this$0 = var1;
+   Menu$1(Menu _1, ResourceBundle x0, int x1, int x2, int x3) {
+      super(x0, x1, x2, x3);
+      this.this$0 = _1;
    }
 
    @Override

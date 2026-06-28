@@ -39,30 +39,30 @@ public final class Tooltip {
       this._calloutPoint = null;
    }
 
-   public final void setContent(Field var1) {
+   public final void setContent(Field field) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setContent(String var1) {
+   public final void setContent(String text) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void setDuration(int var1) {
+   public final void setDuration(int duration) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setPosition(int var1, int var2) {
-      this._position.set(var1, var2);
+   public final void setPosition(int x, int y) {
+      this._position.set(x, y);
    }
 
-   static final void show(Tooltip$TooltipProvider var0) {
+   static final void show(Tooltip$TooltipProvider tooltipProvider) {
       if (_tooltip._screen.isDisplayed()) {
          _tooltip._popScreenRunnable.cancelInvokeLater();
          Application.getApplication().invokeLater(_tooltip._popScreenRunnable);
       }
 
       _tooltip.reset();
-      var0.provideTooltip(_tooltip);
+      tooltipProvider.provideTooltip(_tooltip);
       if (_tooltip._content != null) {
          Application.getApplication().invokeLater(new Tooltip$TooltipInvoker(_tooltip));
       }

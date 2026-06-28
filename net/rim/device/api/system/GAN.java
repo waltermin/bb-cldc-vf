@@ -102,28 +102,28 @@ public final class GAN {
    private GAN() {
    }
 
-   public static final void setGANSystem(GANSystem var0) {
+   public static final void setGANSystem(GANSystem system) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final GANSystem getGANSystem() {
       if (_system == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _system = var0 != null ? (GANSystem)var0.get(4566345875717469622L) : null;
+         ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+         _system = appReg != null ? (GANSystem)appReg.get(4566345875717469622L) : null;
       }
 
       return _system;
    }
 
    public static final boolean isGANAllowed() {
-      GANSystem var0 = getGANSystem();
-      return var0 != null ? var0.isGANAllowed() : false;
+      GANSystem gan = getGANSystem();
+      return gan != null ? gan.isGANAllowed() : false;
    }
 
-   public static final void setGANOverride(boolean var0) {
-      GANSystem var1 = getGANSystem();
-      if (var1 != null) {
-         var1.setGANOverride(var0);
+   public static final void setGANOverride(boolean ganOverride) {
+      GANSystem system = getGANSystem();
+      if (system != null) {
+         system.setGANOverride(ganOverride);
       }
    }
 

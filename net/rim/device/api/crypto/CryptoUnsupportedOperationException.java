@@ -4,6 +4,6 @@ public class CryptoUnsupportedOperationException extends CryptoException {
    public CryptoUnsupportedOperationException() {
    }
 
-   public CryptoUnsupportedOperationException(String var1) {
+   public CryptoUnsupportedOperationException(String msg) {
    }
 }

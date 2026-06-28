@@ -3,8 +3,8 @@ package net.rim.device.cldc.io.sms;
 import javax.wireless.messaging.BinaryMessage;
 
 public final class BinaryMessageImpl extends MessageImpl implements BinaryMessage {
-   public BinaryMessageImpl(String var1) {
-      super(var1);
+   public BinaryMessageImpl(String address) {
+      super(address);
       super._encoding = 1;
    }
 
@@ -14,7 +14,7 @@ public final class BinaryMessageImpl extends MessageImpl implements BinaryMessag
    }
 
    @Override
-   public final void setPayloadData(byte[] var1) {
+   public final void setPayloadData(byte[] data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

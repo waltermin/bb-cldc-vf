@@ -12,54 +12,57 @@ public class NumericTextFilter extends TextFilter {
       this(0);
    }
 
-   public NumericTextFilter(int var1) {
-      this._style = var1;
+   public NumericTextFilter(int style) {
+      this._style = style;
    }
 
    @Override
-   public char convert(char var1, int var2) {
-      if (!this.validate(var1)) {
-         var1 = Keypad.getAltedChar(var1);
+   public char convert(char character, int status) {
+      if (!this.validate(character)) {
+         character = Keypad.getAltedChar(character);
       }
 
-      return var1;
+      return character;
    }
 
    @Override
-   public char convert(char var1, AbstractString var2, int var3, int var4) {
-      if (!this.validate(var1, var2, var3)) {
-         var1 = Keypad.getAltedChar(var1);
+   public char convert(char character, AbstractString text, int position, int status) {
+      if (!this.validate(character, text, position)) {
+         character = Keypad.getAltedChar(character);
       }
 
-      return var1;
+      return character;
    }
 
    @Override
-   public boolean validate(char var1) {
-      return var1 >= '0' && var1 <= '9' || var1 == 128 || var1 == '-' && (this._style & 1) != 0 || var1 == '.' && (this._style & 2) != 0;
+   public boolean validate(char character) {
+      return character >= '0' && character <= '9'
+         || character == 128
+         || character == '-' && (this._style & 1) != 0
+         || character == '.' && (this._style & 2) != 0;
    }
 
    @Override
-   public boolean validate(char var1, AbstractString var2, int var3) {
-      return var2 == null
-         || var1 >= '0' && var1 <= '9'
-         || var1 == 128
-         || var1 == '-' && (this._style & 1) != 0 && var3 == 0 && (var2.length() == 0 || var2.charAt(0) != '-')
-         || var1 == '.' && (this._style & 2) != 0;
+   public boolean validate(char character, AbstractString text, int position) {
+      return text == null
+         || character >= '0' && character <= '9'
+         || character == 128
+         || character == '-' && (this._style & 1) != 0 && position == 0 && (text.length() == 0 || text.charAt(0) != '-')
+         || character == '.' && (this._style & 2) != 0;
    }
 
    @Override
-   public boolean validate(AbstractString var1) {
-      if (var1 != null) {
-         int var2 = var1.length();
+   public boolean validate(AbstractString text) {
+      if (text != null) {
+         int textLength = text.length();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            char var4 = var1.charAt(var3);
-            if (var4 == '-' && (var3 != 0 || (this._style & 1) == 0)) {
+         for (int lv = 0; lv < textLength; lv++) {
+            char character = text.charAt(lv);
+            if (character == '-' && (lv != 0 || (this._style & 1) == 0)) {
                return false;
             }
 
-            if (!this.validate(var4)) {
+            if (!this.validate(character)) {
                return false;
             }
          }

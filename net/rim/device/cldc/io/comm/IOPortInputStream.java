@@ -8,8 +8,8 @@ final class IOPortInputStream extends InputStream {
    private int _offset;
    private int _length;
 
-   IOPortInputStream(Protocol var1) {
-      this._conn = var1;
+   IOPortInputStream(Protocol conn) {
+      this._conn = conn;
       this._data = new byte[1024];
    }
 
@@ -26,17 +26,17 @@ final class IOPortInputStream extends InputStream {
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] buffer, int offset, int length) {
       this.fill();
-      int var4 = this._length;
-      if (var4 > var3) {
-         var4 = var3;
+      int len = this._length;
+      if (len > length) {
+         len = length;
       }
 
-      System.arraycopy(this._data, this._offset, var1, var2, var4);
-      this._offset += var4;
-      this._length -= var4;
-      return var4;
+      System.arraycopy(this._data, this._offset, buffer, offset, len);
+      this._offset += len;
+      this._length -= len;
+      return len;
    }
 
    @Override

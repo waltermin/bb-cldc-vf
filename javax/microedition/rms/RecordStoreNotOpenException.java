@@ -4,6 +4,6 @@ public class RecordStoreNotOpenException extends RecordStoreException {
    public RecordStoreNotOpenException() {
    }
 
-   public RecordStoreNotOpenException(String var1) {
+   public RecordStoreNotOpenException(String s) {
    }
 }

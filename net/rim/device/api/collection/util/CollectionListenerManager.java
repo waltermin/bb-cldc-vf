@@ -9,93 +9,93 @@ public class CollectionListenerManager implements CollectionEventSource {
    private Object[] _listeners;
 
    public boolean isEmpty() {
-      Object[] var1 = this._listeners;
-      return var1 == null || var1.length == 0;
+      Object[] listeners = this._listeners;
+      return listeners == null || listeners.length == 0;
    }
 
    public void clearOut() {
-      Object[] var1 = this._listeners;
+      Object[] listeners = this._listeners;
       this._listeners = null;
-      if (var1 != null) {
-         Array.resize(var1, 0);
+      if (listeners != null) {
+         Array.resize(listeners, 0);
       }
    }
 
-   public void fireReset(Collection var1, Object var2) {
+   public void fireReset(Collection collection, Object context) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void fireReset(Collection var1) {
-      this.fireReset(var1, null);
+   public void fireReset(Collection collection) {
+      this.fireReset(collection, null);
    }
 
-   public void fireElementAdded(Collection var1, Object var2) {
-      Object[] var3 = this._listeners;
-      if (var3 != null) {
-         int var4 = var3.length;
+   public void fireElementAdded(Collection collection, Object element) {
+      Object[] listeners = this._listeners;
+      if (listeners != null) {
+         int count = listeners.length;
 
-         for (int var5 = 0; var5 < var4; var5++) {
-            CollectionListener var6 = this.getListener(var3, var5);
-            if (var6 != null) {
-               var6.elementAdded(var1, var2);
+         for (int i = 0; i < count; i++) {
+            CollectionListener listener = this.getListener(listeners, i);
+            if (listener != null) {
+               listener.elementAdded(collection, element);
             }
          }
       }
    }
 
-   public void fireElementUpdated(Collection var1, Object var2, Object var3) {
-      Object[] var4 = this._listeners;
-      if (var4 != null) {
-         int var5 = var4.length;
+   public void fireElementUpdated(Collection collection, Object oldElement, Object newElement) {
+      Object[] listeners = this._listeners;
+      if (listeners != null) {
+         int count = listeners.length;
 
-         for (int var6 = 0; var6 < var5; var6++) {
-            CollectionListener var7 = this.getListener(var4, var6);
-            if (var7 != null) {
-               var7.elementUpdated(var1, var2, var3);
+         for (int i = 0; i < count; i++) {
+            CollectionListener listener = this.getListener(listeners, i);
+            if (listener != null) {
+               listener.elementUpdated(collection, oldElement, newElement);
             }
          }
       }
    }
 
-   public void fireElementRemoved(Collection var1, Object var2) {
-      Object[] var3 = this._listeners;
-      if (var3 != null) {
-         int var4 = var3.length;
+   public void fireElementRemoved(Collection collection, Object element) {
+      Object[] listeners = this._listeners;
+      if (listeners != null) {
+         int count = listeners.length;
 
-         for (int var5 = 0; var5 < var4; var5++) {
-            CollectionListener var6 = this.getListener(var3, var5);
-            if (var6 != null) {
-               var6.elementRemoved(var1, var2);
+         for (int i = 0; i < count; i++) {
+            CollectionListener listener = this.getListener(listeners, i);
+            if (listener != null) {
+               listener.elementRemoved(collection, element);
             }
          }
       }
    }
 
-   public void forEachListener(Collection var1, CollectionListenerAction var2) {
-      Object[] var3 = this._listeners;
-      if (var3 != null) {
-         int var4 = var3.length;
+   public void forEachListener(Collection collection, CollectionListenerAction action) {
+      Object[] listeners = this._listeners;
+      if (listeners != null) {
+         int count = listeners.length;
 
-         for (int var5 = 0; var5 < var4; var5++) {
-            CollectionListener var6 = this.getListener(var3, var5);
-            if (var6 != null) {
-               var2.invoke(var1, var6);
+         for (int i = 0; i < count; i++) {
+            CollectionListener listener = this.getListener(listeners, i);
+            if (listener != null) {
+               action.invoke(collection, listener);
             }
          }
       }
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void removeCollectionListener(Object listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addCollectionListener(Object listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private CollectionListener getListener(Object[] var1, int var2) {
+   private CollectionListener getListener(Object[] listeners, int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

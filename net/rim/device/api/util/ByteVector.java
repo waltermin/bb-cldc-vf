@@ -7,29 +7,29 @@ public class ByteVector implements Persistable {
    protected int elementCount;
    protected int capacityIncrement;
 
-   public ByteVector(int var1, int var2) {
+   public ByteVector(int initialCapacity, int capacityIncrement) {
    }
 
-   public ByteVector(int var1) {
-      this(var1, 0);
+   public ByteVector(int initialCapacity) {
+      this(initialCapacity, 0);
    }
 
    public ByteVector() {
       this(10);
    }
 
-   public void copyInto(byte[] var1) {
-      int var2 = this.elementCount;
+   public void copyInto(byte[] anArray) {
+      int i = this.elementCount;
 
-      while (var2-- > 0) {
-         var1[var2] = this.elementData[var2];
+      while (i-- > 0) {
+         anArray[i] = this.elementData[i];
       }
    }
 
    public byte[] toArray() {
-      byte[] var1 = new byte[this.elementCount];
-      System.arraycopy(this.elementData, 0, var1, 0, this.elementCount);
-      return var1;
+      byte[] newArray = new byte[this.elementCount];
+      System.arraycopy(this.elementData, 0, newArray, 0, this.elementCount);
+      return newArray;
    }
 
    public byte[] getArray() {
@@ -42,28 +42,28 @@ public class ByteVector implements Persistable {
       }
    }
 
-   public void ensureCapacity(int var1) {
-      if (var1 > this.elementData.length) {
-         this.ensureCapacityHelper(var1);
+   public void ensureCapacity(int minCapacity) {
+      if (minCapacity > this.elementData.length) {
+         this.ensureCapacityHelper(minCapacity);
       }
    }
 
-   private void ensureCapacityHelper(int var1) {
-      int var2 = this.elementData.length;
-      int var3 = this.capacityIncrement > 0 ? var2 + this.capacityIncrement : var2 * 2;
-      if (var3 < var1) {
-         var3 = var1;
+   private void ensureCapacityHelper(int minCapacity) {
+      int oldCapacity = this.elementData.length;
+      int newCapacity = this.capacityIncrement > 0 ? oldCapacity + this.capacityIncrement : oldCapacity * 2;
+      if (newCapacity < minCapacity) {
+         newCapacity = minCapacity;
       }
 
-      Array.resize(this.elementData, var3);
+      Array.resize(this.elementData, newCapacity);
    }
 
-   public void setSize(int var1) {
-      if (var1 > this.elementCount && var1 > this.elementData.length) {
-         this.ensureCapacityHelper(var1);
+   public void setSize(int newSize) {
+      if (newSize > this.elementCount && newSize > this.elementData.length) {
+         this.ensureCapacityHelper(newSize);
       }
 
-      this.elementCount = var1;
+      this.elementCount = newSize;
    }
 
    public int capacity() {
@@ -78,34 +78,34 @@ public class ByteVector implements Persistable {
       return this.elementCount == 0;
    }
 
-   public boolean contains(byte var1) {
-      return this.indexOf(var1, 0) >= 0;
+   public boolean contains(byte elem) {
+      return this.indexOf(elem, 0) >= 0;
    }
 
-   public int indexOf(byte var1) {
-      return this.indexOf(var1, 0);
+   public int indexOf(byte elem) {
+      return this.indexOf(elem, 0);
    }
 
-   public int indexOf(byte var1, int var2) {
-      for (int var3 = var2; var3 < this.elementCount; var3++) {
-         if (var1 == this.elementData[var3]) {
-            return var3;
+   public int indexOf(byte elem, int index) {
+      for (int i = index; i < this.elementCount; i++) {
+         if (elem == this.elementData[i]) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public int lastIndexOf(byte var1) {
-      return this.lastIndexOf(var1, this.elementCount - 1);
+   public int lastIndexOf(byte elem) {
+      return this.lastIndexOf(elem, this.elementCount - 1);
    }
 
-   public int lastIndexOf(byte var1, int var2) {
+   public int lastIndexOf(byte elem, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public byte elementAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public byte elementAt(int index) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    public byte firstElement() {
@@ -124,26 +124,26 @@ public class ByteVector implements Persistable {
       }
    }
 
-   public void setElementAt(byte var1, int var2) {
+   public void setElementAt(byte obj, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public void removeElementAt(int var1) {
+   public void removeElementAt(int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public void insertElementAt(byte var1, int var2) {
+   public void insertElementAt(byte obj, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public void addElement(byte var1) {
+   public void addElement(byte obj) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public boolean removeElement(byte var1) {
-      int var2 = this.indexOf(var1);
-      if (var2 >= 0) {
-         this.removeElementAt(var2);
+   public boolean removeElement(byte obj) {
+      int i = this.indexOf(obj);
+      if (i >= 0) {
+         this.removeElementAt(i);
          return true;
       } else {
          return false;

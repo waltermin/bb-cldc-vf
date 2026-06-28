@@ -5,8 +5,8 @@ public class Object {
 
    public native int hashCode();
 
-   public boolean equals(Object var1) {
-      return this == var1;
+   public boolean equals(Object obj) {
+      return this == obj;
    }
 
    public String toString() {
@@ -19,13 +19,13 @@ public class Object {
 
    public final native void wait(long var1);
 
-   public final void wait(long var1, int var3) {
-      if (var1 >= 0 && var3 >= 0 && var3 <= 999999) {
-         if (var3 >= 500000 || var3 != 0 && var1 == 0) {
-            var1 += 1;
+   public final void wait(long timeout, int nanos) {
+      if (timeout >= 0 && nanos >= 0 && nanos <= 999999) {
+         if (nanos >= 500000 || nanos != 0 && timeout == 0) {
+            timeout += 1;
          }
 
-         this.wait(var1);
+         this.wait(timeout);
       } else {
          throw new Object();
       }

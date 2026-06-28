@@ -4,17 +4,17 @@ public class Tag {
    private String _name;
    private int _id;
 
-   Tag(String var1, int var2) {
-      this._name = var1;
-      this._id = var2;
+   Tag(String name, int id) {
+      this._name = name;
+      this._id = id;
    }
 
-   public static Tag create(String var0) {
-      return ThemeManager.createTag(var0);
+   public static Tag create(String name) {
+      return ThemeManager.createTag(name);
    }
 
-   public static Tag get(String var0) {
-      return ThemeManager.getTag(var0);
+   public static Tag get(String name) {
+      return ThemeManager.getTag(name);
    }
 
    @Override

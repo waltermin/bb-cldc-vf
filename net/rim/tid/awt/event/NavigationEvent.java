@@ -15,15 +15,15 @@ public class NavigationEvent extends ComponentEvent {
    public static final int TRACK_BALL_ID;
    public static final int THUMB_WHEEL_ID;
 
-   public NavigationEvent(IComponent var1, int var2) {
-      super(var1, var2, Event.NAVIGATION_EVENT_MASK);
+   public NavigationEvent(IComponent source, int id) {
+      super(source, id, Event.NAVIGATION_EVENT_MASK);
    }
 
-   public void init(IComponent var1, int var2, int var3, int var4, int var5) {
-      super.init(var1, var2);
-      this._dxMagnitude = var3;
-      this._dyMagnitude = var4;
-      this._status = var5;
+   public void init(IComponent aSource, int aId, int dxMagnitude, int dyMagnitude, int status) {
+      super.init(aSource, aId);
+      this._dxMagnitude = dxMagnitude;
+      this._dyMagnitude = dyMagnitude;
+      this._status = status;
    }
 
    public int getDxMagnitude() {
@@ -54,7 +54,7 @@ public class NavigationEvent extends ComponentEvent {
       return this._eventConsumptionId;
    }
 
-   public void setEventConsumptionId(int var1) {
+   public void setEventConsumptionId(int consumptionId) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

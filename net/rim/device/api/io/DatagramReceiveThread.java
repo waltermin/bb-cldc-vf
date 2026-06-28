@@ -1,7 +1,9 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
+import javax.microedition.io.Datagram;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.util.CyclicQueue;
 import net.rim.device.cldc.io.daemon.ProtocolDaemon;
@@ -12,29 +14,52 @@ final class DatagramReceiveThread extends Thread implements ConnectionListener {
    private static final long ID;
 
    public static final DatagramReceiveThread getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      DatagramReceiveThread var1 = (DatagramReceiveThread)var0.getOrWaitFor(-4931091334314128113L);
-      if (var1 == null) {
-         var1 = new DatagramReceiveThread();
-         ProtocolDaemon.getInstance().startThread(var1);
-         var0.put(-4931091334314128113L, var1);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      DatagramReceiveThread ret = (DatagramReceiveThread)ar.getOrWaitFor(-4931091334314128113L);
+      if (ret == null) {
+         ret = new DatagramReceiveThread();
+         ProtocolDaemon.getInstance().startThread(ret);
+         ar.put(-4931091334314128113L, ret);
       }
 
-      return var1;
+      return ret;
    }
 
-   public final void addConnection(DatagramConnectionBase var1, DatagramTransportBase var2) {
-      this._connections.put(var1, var2);
-      var1.setConnectionListener(this);
+   public final void addConnection(DatagramConnectionBase connection, DatagramTransportBase transport) {
+      this._connections.put(connection, transport);
+      connection.setConnectionListener(this);
    }
 
    @Override
-   public final void dataAvailable(Connection var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void dataAvailable(Connection connection) {
+      synchronized (this._queue) {
+         this._queue.enqueue(connection);
+         this._queue.notify();
+      }
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (true) {
+         try {
+            DatagramConnectionBase connection;
+            synchronized (this._queue) {
+               if (this._queue.isEmpty()) {
+                  this._queue.wait();
+               }
+
+               connection = (DatagramConnectionBase)this._queue.dequeue();
+            }
+
+            Datagram datagram = connection.newDatagram(0);
+            connection.receive(datagram);
+            ((DatagramTransportBase)this._connections.get(connection)).superProcessReceivedDatagram(datagram);
+         } catch (IOException var9) {
+         } catch (Throwable var10) {
+         } finally {
+            DatagramConnectionBase connection = null;
+            Datagram datagram = null;
+         }
+      }
    }
 }

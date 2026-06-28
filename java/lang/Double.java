@@ -8,28 +8,28 @@ public final class Double {
    public static final double MAX_VALUE;
    public static final double MIN_VALUE;
 
-   public static final String toString(double var0) {
+   public static final String toString(double d) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final Double valueOf(String var0) {
-      return new Double(FloatingDecimal.readJavaFormatString(var0).doubleValue());
+   public static final Double valueOf(String s) {
+      return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
    }
 
-   public static final double parseDouble(String var0) {
-      return FloatingDecimal.readJavaFormatString(var0).doubleValue();
+   public static final double parseDouble(String s) {
+      return FloatingDecimal.readJavaFormatString(s).doubleValue();
    }
 
-   public static final boolean isNaN(double var0) {
-      return var0 != var0;
+   public static final boolean isNaN(double v) {
+      return v != v;
    }
 
-   public static final boolean isInfinite(double var0) {
-      return var0 == 9218868437227405312L || var0 == -4503599627370496L;
+   public static final boolean isInfinite(double v) {
+      return v == 9218868437227405312L || v == -4503599627370496L;
    }
 
-   public Double(double var1) {
-      this.value = var1;
+   public Double(double value) {
+      this.value = value;
    }
 
    public final boolean isNaN() {
@@ -71,12 +71,12 @@ public final class Double {
 
    @Override
    public final int hashCode() {
-      long var1 = doubleToLongBits(this.value);
-      return (int)(var1 ^ var1 >>> 32);
+      long bits = doubleToLongBits(this.value);
+      return (int)(bits ^ bits >>> 32);
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 

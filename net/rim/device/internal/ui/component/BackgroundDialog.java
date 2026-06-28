@@ -6,63 +6,67 @@ public class BackgroundDialog {
    private BackgroundDialog() {
    }
 
-   public static String getInput(String var0, int var1) {
-      return getInput(var0, 0, 1000000, var1);
+   public static String getInput(String label, int type) {
+      return getInput(label, 0, 1000000, type);
    }
 
-   public static String getInput(String var0, int var1, int var2, int var3) {
-      Object var4 = new Object(var0, var1, var2, var3);
-      Object var5 = ((BackgroundDialog$GetInputDialogDisplayRunnable)var4).runInCorrectProcess();
-      if (((SimpleOKCancelInputDialog)var5).getCloseReason() == -1) {
+   public static String getInput(String label, int minLength, int maxLength, int type) {
+      BackgroundDialog$GetInputDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$GetInputDialogDisplayRunnable)(new Object(
+         label, minLength, maxLength, type
+      ));
+      SimpleOKCancelInputDialog dialog = (SimpleOKCancelInputDialog)dialogDisplayRunnable.runInCorrectProcess();
+      if (dialog.getCloseReason() == -1) {
          throw new Object();
       } else {
-         return ((SimpleOKCancelInputDialog)var5).getText();
+         return dialog.getText();
       }
    }
 
-   public static int getChoice(String var0, Object[] var1, int var2) {
-      return getChoice(var0, var1, var2, 50);
+   public static int getChoice(String label, Object[] choices, int defaultChoice) {
+      return getChoice(label, choices, defaultChoice, 50);
    }
 
-   public static int getChoice(String var0, Object[] var1, int var2, int var3) {
-      return getChoice(var0, var1, var2, null, var3);
+   public static int getChoice(String label, Object[] choices, int defaultChoice, int priority) {
+      return getChoice(label, choices, defaultChoice, null, priority);
    }
 
-   public static int getChoice(String var0, Object[] var1, int var2, Bitmap var3, int var4) {
-      Object var5 = new Object(var0, var1, var2, var3, var4);
-      Object var6 = ((BackgroundDialog$GetChoiceDialogDisplayRunnable)var5).runInCorrectProcess();
-      return ((SimpleChoiceDialog)var6).getCloseReason() == -1 ? -1 : ((SimpleChoiceDialog)var6).getSelectedIndex();
+   public static int getChoice(String label, Object[] choices, int defaultChoice, Bitmap bitmap, int priority) {
+      BackgroundDialog$GetChoiceDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$GetChoiceDialogDisplayRunnable)(new Object(
+         label, choices, defaultChoice, bitmap, priority
+      ));
+      SimpleChoiceDialog dialog = (SimpleChoiceDialog)dialogDisplayRunnable.runInCorrectProcess();
+      return dialog.getCloseReason() == -1 ? -1 : dialog.getSelectedIndex();
    }
 
-   public static void showMessage(String var0) {
-      showMessage(var0, 50, false);
+   public static void showMessage(String label) {
+      showMessage(label, 50, false);
    }
 
-   public static void showMessageOnProxy(String var0) {
-      showMessage(var0, 50, true);
+   public static void showMessageOnProxy(String label) {
+      showMessage(label, 50, true);
    }
 
-   public static void showMessage(String var0, int var1) {
-      showMessage(var0, var1, false);
+   public static void showMessage(String label, int priority) {
+      showMessage(label, priority, false);
    }
 
-   private static void showMessage(String var0, int var1, boolean var2) {
-      Object var3 = new Object(var0, var1);
-      if (var2) {
-         ((BackgroundDialog$ShowMessageDialogDisplayRunnable)var3).forceRunInProxy();
+   private static void showMessage(String label, int priority, boolean forceRunInProxy) {
+      BackgroundDialog$ShowMessageDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowMessageDialogDisplayRunnable)(new Object(label, priority));
+      if (forceRunInProxy) {
+         dialogDisplayRunnable.forceRunInProxy();
       }
 
-      ((BackgroundDialog$ShowMessageDialogDisplayRunnable)var3).runInCorrectProcess();
+      dialogDisplayRunnable.runInCorrectProcess();
    }
 
-   public static void show(PopupDialog var0) {
-      Object var1 = new Object(var0);
-      ((BackgroundDialog$ShowDialogDisplayRunnable)var1).runInCorrectProcess();
+   public static void show(PopupDialog dialog) {
+      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowDialogDisplayRunnable)(new Object(dialog));
+      dialogDisplayRunnable.runInCorrectProcess();
    }
 
-   public static void showOnProxy(PopupDialog var0) {
-      Object var1 = new Object(var0);
-      ((BackgroundDialog$ShowDialogDisplayRunnable)var1).forceRunInProxy();
-      ((BackgroundDialog$ShowDialogDisplayRunnable)var1).runInCorrectProcess();
+   public static void showOnProxy(PopupDialog dialog) {
+      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowDialogDisplayRunnable)(new Object(dialog));
+      dialogDisplayRunnable.forceRunInProxy();
+      dialogDisplayRunnable.runInCorrectProcess();
    }
 }

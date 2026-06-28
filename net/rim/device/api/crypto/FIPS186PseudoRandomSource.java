@@ -3,21 +3,30 @@ package net.rim.device.api.crypto;
 public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource implements PseudoRandomSource {
    private NativeFIPSPRNG _context;
 
-   public FIPS186PseudoRandomSource(byte[] var1) {
-      this(var1, 0, var1 == null ? 0 : var1.length);
+   public FIPS186PseudoRandomSource(byte[] seed) {
+      this(seed, 0, seed == null ? 0 : seed.length);
    }
 
-   public FIPS186PseudoRandomSource(byte[] var1, int var2, int var3) {
-      this(var1, var2, var3, null, 0, 0, true);
+   public FIPS186PseudoRandomSource(byte[] seed, int offset, int length) {
+      this(seed, offset, length, null, 0, 0, true);
    }
 
-   public FIPS186PseudoRandomSource(byte[] var1, byte[] var2) {
-      this(var1, 0, var1 == null ? 0 : var1.length, var2, 0, var2 == null ? 0 : var2.length, true);
+   public FIPS186PseudoRandomSource(byte[] seed, byte[] additionalSeed) {
+      this(seed, 0, seed == null ? 0 : seed.length, additionalSeed, 0, additionalSeed == null ? 0 : additionalSeed.length, true);
    }
 
-   public FIPS186PseudoRandomSource(byte[] var1, int var2, int var3, byte[] var4, int var5, int var6, boolean var7) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2 && (var4 == null || var5 >= 0 && var6 >= 0 && var4.length - var6 >= var5)) {
-         this._context = NativeFIPSPRNG.initialize(var1, var2, var3, var4, var5, var6, var7);
+   public FIPS186PseudoRandomSource(
+      byte[] seed, int offset, int length, byte[] additionalSeed, int additionalSeedOffset, int additionalSeedLength, boolean useRevisedAlgorithm
+   ) {
+      if (seed != null
+         && offset >= 0
+         && length >= 0
+         && seed.length - length >= offset
+         && (
+            additionalSeed == null
+               || additionalSeedOffset >= 0 && additionalSeedLength >= 0 && additionalSeed.length - additionalSeedLength >= additionalSeedOffset
+         )) {
+         this._context = NativeFIPSPRNG.initialize(seed, offset, length, additionalSeed, additionalSeedOffset, additionalSeedLength, useRevisedAlgorithm);
       } else {
          throw new Object();
       }
@@ -29,9 +38,9 @@ public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource 
    }
 
    @Override
-   public final void xorBytes(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         this._context.xorBytes(var1, var2, var3);
+   public final void xorBytes(byte[] buffer, int offset, int length) {
+      if (buffer != null && offset >= 0 && length >= 0 && buffer.length - length >= offset) {
+         this._context.xorBytes(buffer, offset, length);
       } else {
          throw new Object();
       }
@@ -48,6 +57,6 @@ public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource 
    }
 
    public static final void selfTest() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: array init");
    }
 }

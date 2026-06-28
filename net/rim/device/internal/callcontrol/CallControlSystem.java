@@ -28,11 +28,11 @@ public final class CallControlSystem {
 
    public static final synchronized CallControlSystem getInstance() {
       if (_ccSystem == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _ccSystem = (CallControlSystem)var0.getOrWaitFor(6176826427881664509L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _ccSystem = (CallControlSystem)ar.getOrWaitFor(6176826427881664509L);
          if (_ccSystem == null) {
-            var0.put(6176826427881664509L, new CallControlSystem());
-            _ccSystem = (CallControlSystem)var0.getOrWaitFor(6176826427881664509L);
+            ar.put(6176826427881664509L, new CallControlSystem());
+            _ccSystem = (CallControlSystem)ar.getOrWaitFor(6176826427881664509L);
          }
       }
 
@@ -46,7 +46,7 @@ public final class CallControlSystem {
       return getInstance()._commandHandler;
    }
 
-   public final void startListening(Application var1) {
-      this._radioHandler.startListening(var1);
+   public final void startListening(Application app) {
+      this._radioHandler.startListening(app);
    }
 }

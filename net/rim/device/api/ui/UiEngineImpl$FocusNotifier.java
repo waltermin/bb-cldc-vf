@@ -8,10 +8,10 @@ class UiEngineImpl$FocusNotifier implements Runnable {
    private boolean _setFocusToIM;
    private Application _app;
 
-   UiEngineImpl$FocusNotifier(Screen var1, Screen var2, Application var3) {
+   UiEngineImpl$FocusNotifier(Screen screenLost, Screen screenGained, Application app) {
    }
 
-   public void setEnableFocusNotificationForIM(boolean var1) {
+   public void setEnableFocusNotificationForIM(boolean enable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

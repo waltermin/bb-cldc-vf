@@ -9,9 +9,9 @@ public class PatriciaKeywordSearchResult {
    public BitSet _primarySet;
    public BitSet _theSet;
 
-   public PatriciaKeywordSearchResult(PatriciaKeywordFilterList var1, byte[] var2, BitSet var3) {
-      this._list = var1;
-      this._hitCount = var2;
-      this._primarySet = var3;
+   public PatriciaKeywordSearchResult(PatriciaKeywordFilterList list, byte[] hitCount, BitSet primarySet) {
+      this._list = list;
+      this._hitCount = hitCount;
+      this._primarySet = primarySet;
    }
 }

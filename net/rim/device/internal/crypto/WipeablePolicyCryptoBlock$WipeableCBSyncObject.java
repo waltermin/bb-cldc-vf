@@ -17,9 +17,9 @@ public final class WipeablePolicyCryptoBlock$WipeableCBSyncObject implements Syn
       return this._uid;
    }
 
-   WipeablePolicyCryptoBlock$WipeableCBSyncObject(int var1, byte[] var2) {
-      this._uid = var1;
-      this._key = var2;
+   WipeablePolicyCryptoBlock$WipeableCBSyncObject(int uid, byte[] keyData) {
+      this._uid = uid;
+      this._key = keyData;
    }
 
    WipeablePolicyCryptoBlock$WipeableCBSyncObject() {
@@ -27,11 +27,11 @@ public final class WipeablePolicyCryptoBlock$WipeableCBSyncObject implements Syn
       this._key = WipeablePolicyCryptoBlock.getWLANKey();
    }
 
-   public static final boolean convert(SyncObject var0, DataBuffer var1) {
+   public static final boolean convert(SyncObject object, DataBuffer buffer) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final SyncObject convert(DataBuffer var0, int var1) {
+   public static final SyncObject convert(DataBuffer data, int UID) {
       throw new RuntimeException("cod2jar: array creation");
    }
 }

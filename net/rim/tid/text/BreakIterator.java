@@ -23,34 +23,34 @@ public final class BreakIterator {
    public static final int ELine;
    public static final int DONE;
 
-   public static final BreakIterator getInstance(int var0, Locale var1) {
-      return new BreakIterator(var0, var1);
+   public static final BreakIterator getInstance(int aType, Locale aLocale) {
+      return new BreakIterator(aType, aLocale);
    }
 
-   public static final BreakIterator getInstance(int var0) {
-      return getInstance(var0, null);
+   public static final BreakIterator getInstance(int aType) {
+      return getInstance(aType, null);
    }
 
-   private BreakIterator(int var1, Locale var2) {
+   private BreakIterator(int aType, Locale aLocale) {
    }
 
-   public final void setText(String var1) {
-      this._str = var1;
+   public final void setText(String strToBreak) {
+      this._str = strToBreak;
       this._dataType = 0;
    }
 
-   public final void setText(StringBuffer var1) {
-      this._strB = var1;
+   public final void setText(StringBuffer strToBreak) {
+      this._strB = strToBreak;
       this._dataType = 1;
    }
 
-   public final void setText(StringBufferGap var1) {
-      this._strBG = var1;
+   public final void setText(StringBufferGap strToBreak) {
+      this._strBG = strToBreak;
       this._dataType = 2;
    }
 
-   public final void setText(char[] var1) {
-      this._charArr = var1;
+   public final void setText(char[] strToBreak) {
+      this._charArr = strToBreak;
       this._dataType = 3;
    }
 
@@ -91,7 +91,7 @@ public final class BreakIterator {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final int following(int var1) {
+   public final int following(int aPos) {
       if (this._dataType != -1 && this._iterType != -1) {
          this._currentPos = Integer.MAX_VALUE;
          switch (this._dataType) {
@@ -99,16 +99,16 @@ public final class BreakIterator {
                break;
             case 0:
             default:
-               this._currentPos = this.scan(this._str, var1, 1, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._str, aPos, 1, this._iterType, this._wordlistData);
                break;
             case 1:
-               this._currentPos = this.scan(this._strB, var1, 1, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._strB, aPos, 1, this._iterType, this._wordlistData);
                break;
             case 2:
-               this._currentPos = this.scan(this._strBG, var1, 1, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._strBG, aPos, 1, this._iterType, this._wordlistData);
                break;
             case 3:
-               this._currentPos = this.scan(this._charArr, var1, 1, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._charArr, aPos, 1, this._iterType, this._wordlistData);
          }
 
          return this._currentPos;
@@ -117,7 +117,7 @@ public final class BreakIterator {
       }
    }
 
-   public final int preceding(int var1) {
+   public final int preceding(int aPos) {
       if (this._dataType != -1 && this._iterType != -1) {
          this._currentPos = Integer.MAX_VALUE;
          switch (this._dataType) {
@@ -125,16 +125,16 @@ public final class BreakIterator {
                break;
             case 0:
             default:
-               this._currentPos = this.scan(this._str, var1, 0, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._str, aPos, 0, this._iterType, this._wordlistData);
                break;
             case 1:
-               this._currentPos = this.scan(this._strB, var1, 0, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._strB, aPos, 0, this._iterType, this._wordlistData);
                break;
             case 2:
-               this._currentPos = this.scan(this._strBG, var1, 0, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._strBG, aPos, 0, this._iterType, this._wordlistData);
                break;
             case 3:
-               this._currentPos = this.scan(this._charArr, var1, 0, this._iterType, this._wordlistData);
+               this._currentPos = this.scan(this._charArr, aPos, 0, this._iterType, this._wordlistData);
          }
 
          return this._currentPos;
@@ -147,9 +147,9 @@ public final class BreakIterator {
       return this.next(1);
    }
 
-   public final int next(int var1) {
+   public final int next(int aCount) {
       if (this._dataType != -1 && this._iterType != -1) {
-         while (var1-- > 0) {
+         while (aCount-- > 0) {
             switch (this._dataType) {
                case -1:
                   break;
@@ -182,9 +182,9 @@ public final class BreakIterator {
       return this.previous(1);
    }
 
-   public final int previous(int var1) {
+   public final int previous(int aCount) {
       if (this._dataType != -1 && this._iterType != -1) {
-         while (var1-- > 0) {
+         while (aCount-- > 0) {
             switch (this._dataType) {
                case -1:
                   break;

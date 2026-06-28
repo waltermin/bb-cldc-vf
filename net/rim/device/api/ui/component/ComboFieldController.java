@@ -6,14 +6,14 @@ public class ComboFieldController {
    public static final int SELECT_TRACKBALL_CLICK;
    public static final int SELECT_ENTER;
 
-   protected void setComboField(ComboField var1) {
+   protected void setComboField(ComboField comboField) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected void textChanged(String var1, int var2) {
+   protected void textChanged(String newText, int context) {
    }
 
-   protected void select(Object var1, int var2) {
+   protected void select(Object selection, int type) {
    }
 
    protected void escape() {

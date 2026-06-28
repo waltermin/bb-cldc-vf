@@ -11,6 +11,7 @@ import javax.microedition.io.StreamConnection;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.IOPort;
 import net.rim.device.api.system.USBPortListener;
+import net.rim.device.cldc.io.utility.EventThreadCheck;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.system.USBPortInternal;
 
@@ -38,21 +39,51 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
    }
 
    @Override
-   public final Connection openPrim(String var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Connection openPrim(String name, int mode, boolean timeouts) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final int getProperties(String var1) {
+   public final int getProperties(String name) {
       return 128;
    }
 
-   final void write(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void write(byte[] buffer, int offset, int length) {
+      ApplicationControl.assertLocalConnectionAllowed(true);
+
+      while (true) {
+         synchronized (this._writeSemaphore) {
+            if (this._exception != null) {
+               throw this._exception;
+            }
+
+            if (this._port != null && this._writeSemaphore.ready) {
+               this._writeSemaphore.ready = false;
+               int len = length;
+               if (len > 1024) {
+                  len = 1024;
+               }
+
+               int ret = this._port.write(buffer, offset, len);
+               offset += ret;
+               length -= ret;
+               if (length == 0) {
+                  return;
+               }
+            }
+
+            EventThreadCheck.throwException();
+
+            try {
+               this._writeSemaphore.wait();
+            } catch (InterruptedException var7) {
+            }
+         }
+      }
    }
 
-   final int read(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   final int read(byte[] buffer, int offset, int length) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -85,31 +116,45 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final void connected() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._readSemaphore) {
+         this._readSemaphore.notify();
+      }
+
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.ready = true;
+         this._writeSemaphore.notify();
+      }
    }
 
    @Override
    public final void disconnected() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void receiveError(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void receiveError(int error) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void dataReceived(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void dataReceived(int length) {
+      synchronized (this._readSemaphore) {
+         this._readSemaphore.ready = true;
+         this._readSemaphore.length = length;
+         this._readSemaphore.notify();
+      }
    }
 
    @Override
    public final void dataSent() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.ready = true;
+         this._writeSemaphore.notify();
+      }
    }
 
    @Override
-   public final void patternReceived(byte[] var1) {
+   public final void patternReceived(byte[] pattern) {
    }
 
    @Override
@@ -119,11 +164,25 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final void dataNotSent() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public final void connectionRequested() {
-      throw new RuntimeException("cod2jar: exception table");
+      ApplicationControl.assertLocalConnectionAllowed(true);
+
+      try {
+         this._port = (IOPort)(new Object(this._channel));
+      } catch (IOException ioe) {
+         this._exception = ioe;
+      }
+
+      synchronized (this._readSemaphore) {
+         this._readSemaphore.notify();
+      }
+
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.notify();
+      }
    }
 }

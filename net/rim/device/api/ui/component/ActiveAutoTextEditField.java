@@ -17,6 +17,7 @@ import net.rim.device.api.util.StringPatternEnumerator;
 import net.rim.device.api.util.StringPatternRepository$Internal;
 import net.rim.device.internal.ui.FormatParams;
 import net.rim.tid.text.AttributedString$Iterator;
+import net.rim.vm.Process;
 
 public class ActiveAutoTextEditField extends AutoTextEditField implements CookieProvider, Runnable, ActiveRegionSupport$ActiveRegionFieldIf {
    private IntHashtable _cookieID;
@@ -51,23 +52,23 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       return this._arSupport.isInCookieRegion(this.getCaretPosition());
    }
 
-   protected boolean regionHasCookie(int var1) {
-      return var1 < this._regionCount && var1 >= 0;
+   protected boolean regionHasCookie(int region) {
+      return region < this._regionCount && region >= 0;
    }
 
    protected int getRegion() {
       return this.getRegion(this.getCursorPosition() + this.getLabelLength());
    }
 
-   protected int getRegion(int var1) {
-      return this._arSupport.getRegion(var1);
+   protected int getRegion(int curPos) {
+      return this._arSupport.getRegion(curPos);
    }
 
-   protected String getRegionText(int var1) {
-      return this._arSupport.getRegionText(var1, super._text);
+   protected String getRegionText(int region) {
+      return this._arSupport.getRegionText(region, super._text);
    }
 
-   protected synchronized int drawText(Graphics var1, int var2, int var3, int var4, int var5) {
+   protected synchronized int drawText(Graphics graphics, int x, int y, int offset, int length) {
       return 0;
    }
 
@@ -76,67 +77,107 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       return this._arSupport.getCookieWithFocus(this.getCaretPosition());
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+      Process.waitForIdle(1000);
+      int version = this.initialize();
+      if (version >= 0) {
+         boolean var8 = false /* VF: Semaphore variable */;
 
-   @Override
-   public boolean isCookieValid(int var1) {
-      return true;
-   }
+         label77: {
+            try {
+               var8 = true;
+               if (this.scanForActiveRegions(version)) {
+                  this.postResults(version);
+                  this.invalidate();
+                  var8 = false;
+               } else {
+                  var8 = false;
+               }
+               break label77;
+            } catch (IndexOutOfBoundsException var12) {
+               var8 = false;
+            } finally {
+               if (var8) {
+                  synchronized (this) {
+                     this._activeThread = null;
+                     super.notify();
+                  }
+               }
+            }
 
-   @Override
-   public Object getCookie(int var1) {
-      throw new RuntimeException("cod2jar: type check");
-   }
+            synchronized (this) {
+               this._activeThread = null;
+               super.notify();
+               return;
+            }
+         }
 
-   @Override
-   public boolean regionsHaveSameCookie(int var1, int var2) {
-      return false;
-   }
-
-   @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      if (this.isSelecting() || !this._invertCookieRegion) {
-         XYRect var7 = Ui.getTmpXYRect();
-         super.getFocusRect(var7);
-         var1.pushContext(var7, 0, 0);
-         Ui.returnTmpXYRect(var7);
-         super.drawFocus(var1, var2);
-         var1.popContext();
-      } else if (!this.regionHasCookie()) {
-         XYRect var6 = Ui.getTmpXYRect();
-         super.getFocusRect(var6);
-         var1.pushContext(var6, 0, 0);
-         Ui.returnTmpXYRect(var6);
-         super.drawFocus(var1, var2);
-         var1.popContext();
-      } else {
-         this.highlightSelectedArea(var1, var2, this._arSupport.getRunStart(), this._arSupport.getRunEnd());
-         XYRect var3 = Ui.getTmpXYRect();
-         super.getFocusRect(var3);
-         int var4 = var3.y;
-         int var5 = var3.height >> 2;
-         var4 += var3.height - var5;
-         this.drawHighlightRegion(var1, 1, var2, var3.x, var4, var3.width, var5);
-         Ui.returnTmpXYRect(var3);
+         synchronized (this) {
+            this._activeThread = null;
+            super.notify();
+         }
       }
    }
 
    @Override
-   public synchronized void getFocusRect(XYRect var1) {
-      super.getFocusRect(var1);
-      this._arSupport.init();
-      this._arSupport.getFocusRect(var1, this);
+   public boolean isCookieValid(int id) {
+      return true;
    }
 
    @Override
-   public void selectionCopy(Clipboard var1) {
-      if (!this.isSelecting() && this.regionHasCookie() && this._invertCookieRegion) {
-         var1.put(new Object(super._text, this._arSupport.getRunStart(), this._arSupport.getRunEnd()));
+   public Object getCookie(int id) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   @Override
+   public boolean regionsHaveSameCookie(int regionId1, int regionId2) {
+      return false;
+   }
+
+   @Override
+   protected void drawFocus(Graphics graphics, boolean on) {
+      if (this.isSelecting() || !this._invertCookieRegion) {
+         XYRect focusRect = Ui.getTmpXYRect();
+         super.getFocusRect(focusRect);
+         graphics.pushContext(focusRect, 0, 0);
+         Ui.returnTmpXYRect(focusRect);
+         super.drawFocus(graphics, on);
+         graphics.popContext();
+      } else if (!this.regionHasCookie()) {
+         XYRect focusRect = Ui.getTmpXYRect();
+         super.getFocusRect(focusRect);
+         graphics.pushContext(focusRect, 0, 0);
+         Ui.returnTmpXYRect(focusRect);
+         super.drawFocus(graphics, on);
+         graphics.popContext();
       } else {
-         super.selectionCopy(var1);
+         this.highlightSelectedArea(graphics, on, this._arSupport.getRunStart(), this._arSupport.getRunEnd());
+         XYRect focusRect = Ui.getTmpXYRect();
+         super.getFocusRect(focusRect);
+         int y = focusRect.y;
+         int height = focusRect.height >> 2;
+         y += focusRect.height - height;
+         this.drawHighlightRegion(graphics, 1, on, focusRect.x, y, focusRect.width, height);
+         Ui.returnTmpXYRect(focusRect);
+      }
+   }
+
+   @Override
+   public synchronized void getFocusRect(XYRect rect) {
+      super.getFocusRect(rect);
+      this._arSupport.init();
+      this._arSupport.getFocusRect(rect, this);
+   }
+
+   @Override
+   public void selectionCopy(Clipboard cb) {
+      if (!this.isSelecting() && this.regionHasCookie() && this._invertCookieRegion) {
+         cb.put(new Object(super._text, this._arSupport.getRunStart(), this._arSupport.getRunEnd()));
+      } else {
+         super.selectionCopy(cb);
       }
    }
 
@@ -156,59 +197,59 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    }
 
    @Override
-   protected int scrollHorizontally(int var1) {
-      int var2 = super.scrollHorizontally(var1);
+   protected int scrollHorizontally(int amount) {
+      int result = super.scrollHorizontally(amount);
       this._snapToCookie = false;
-      return var2;
+      return result;
    }
 
    @Override
-   protected int scrollVertically(int var1) {
+   protected int scrollVertically(int amount) {
       if (!this._snapToCookie || this.isSelecting()) {
-         return super.scrollVertically(var1);
+         return super.scrollVertically(amount);
       }
 
-      if (var1 == 0) {
+      if (amount == 0) {
          return 0;
       }
 
-      var1 = this._arSupport.scrollVertically(var1, this, this.getCursorLine()._line);
-      if (var1 != 0) {
-         return super.scrollVertically(var1 + this._arSupport.getAdjustedAmount());
+      amount = this._arSupport.scrollVertically(amount, this, this.getCursorLine()._line);
+      if (amount != 0) {
+         return super.scrollVertically(amount + this._arSupport.getAdjustedAmount());
       }
 
       super.scrollVertically(this._arSupport.getAdjustedAmount());
       if (this._arSupport.endsOnCookie()) {
-         int var2 = MathUtilities.clamp(this._arSupport.getRunStart(), this.getCaretPosition(), this._arSupport.getRunEnd() - 1);
-         this.setSelection(var2, true, var2);
+         int newPos = MathUtilities.clamp(this._arSupport.getRunStart(), this.getCaretPosition(), this._arSupport.getRunEnd() - 1);
+         this.setSelection(newPos, true, newPos);
       }
 
       return 0;
    }
 
-   public ActiveAutoTextEditField(String var1, String var2, int var3, long var4, StringPatternContainer var6) {
-      super(var1, var2, var3, var4);
+   public ActiveAutoTextEditField(String label, String initialValue, int maxNumChars, long style, StringPatternContainer patterns) {
+      super(label, initialValue, maxNumChars, style);
       this._threadSafeIterator = super._text.getIterator();
       this._arSupport = new ActiveRegionSupport(super._text.getIterator(), this);
       this._smileySupport = (SmileySupport)(new Object(this));
       this._pendingOffsets = new int[16];
       this._pendingCookieID = new long[8];
       this._pendingRegionCount = 0;
-      if (var6 != null) {
-         for (int var7 = 0; var7 < var6.size(); var7++) {
-            Object var8 = var6.getAt(var7);
-            if (var8 instanceof Object) {
-               this._smileySupport.setPattern((EmoticonStringPattern)var8);
-               if (var6.size() > 1) {
-                  StringPattern[] var9 = new StringPattern[var6.size() - 1];
+      if (patterns != null) {
+         for (int index = 0; index < patterns.size(); index++) {
+            Object pattern = patterns.getAt(index);
+            if (pattern instanceof Object) {
+               this._smileySupport.setPattern((EmoticonStringPattern)pattern);
+               if (patterns.size() > 1) {
+                  StringPattern[] elements = new StringPattern[patterns.size() - 1];
 
-                  for (int var10 = 0; var10 < var6.size(); var10++) {
-                     if (var10 != var7) {
-                        var9[var10 < var7 ? var10 : var10 - 1] = (StringPattern)var6.getAt(var10);
+                  for (int index1 = 0; index1 < patterns.size(); index1++) {
+                     if (index1 != index) {
+                        elements[index1 < index ? index1 : index1 - 1] = (StringPattern)patterns.getAt(index1);
                      }
                   }
 
-                  this._patterns = (StringPatternContainer)(new Object(var9));
+                  this._patterns = (StringPatternContainer)(new Object(elements));
                   this._enumerator = (StringPatternEnumerator)(new Object(null, this._patterns));
                }
                break;
@@ -223,77 +264,96 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1, int var2) {
-      super.makeContextMenu(var1, var2);
-      if (var2 != 65537) {
-         Object var3 = this.getCookieWithFocus();
-         MenuItem var4 = ActiveRegionSupport.addCookieMenuItems(this, var3, var1, null);
-         if (var4 != null && this._invertCookieRegion) {
-            var1.setDefaultItem(var4);
+   protected void makeContextMenu(ContextMenu contextMenu, int instance) {
+      super.makeContextMenu(contextMenu, instance);
+      if (instance != 65537) {
+         Object cookie = this.getCookieWithFocus();
+         MenuItem defaultItem = ActiveRegionSupport.addCookieMenuItems(this, cookie, contextMenu, null);
+         if (defaultItem != null && this._invertCookieRegion) {
+            contextMenu.setDefaultItem(defaultItem);
          }
 
-         if (var3 == null) {
-            AbstractString var5 = this.getTextAbstractString(true);
-            int var6 = this.getCursorPosition();
-            ActiveRegionSupport.addCookieMenuItems(this, var5, 0, var6, var5.length(), this._patterns, var1, null, var2);
+         if (cookie == null) {
+            AbstractString text = this.getTextAbstractString(true);
+            int curIndex = this.getCursorPosition();
+            ActiveRegionSupport.addCookieMenuItems(this, text, 0, curIndex, text.length(), this._patterns, contextMenu, null, instance);
          }
       }
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
+   protected void makeMenu(Menu menu, int instance) {
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
       this._invertCookieRegion = true;
       this._snapToCookie = true;
    }
 
    @Override
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
-      super.notifyTextChanged(var1, var2);
-      if (this._scanForSmileys && !this._inPostResults && this.getComposedTextStart() == this.getComposedTextEnd() && var2) {
-         this._smileySupport.scanForSmileys(var1);
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
+      super.notifyTextChanged(aParams, aIsInsertionOrDeletion);
+      if (this._scanForSmileys && !this._inPostResults && this.getComposedTextStart() == this.getComposedTextEnd() && aIsInsertionOrDeletion) {
+         this._smileySupport.scanForSmileys(aParams);
       }
 
       this._arSupport.init();
-      if (var2 && !this._inPostResults) {
+      if (aIsInsertionOrDeletion && !this._inPostResults) {
          this.scanForActiveRegions();
       }
    }
 
-   public ActiveAutoTextEditField(String var1, String var2) {
-      this(var1, var2, 1000000);
+   public ActiveAutoTextEditField(String label, String initialValue) {
+      this(label, initialValue, 1000000);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private synchronized int initialize() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._waitingThread != null) {
+         return -1;
+      }
+
+      for (; this._activeThread != null; this._waitingThread = null) {
+         this._waitingThread = Thread.currentThread();
+
+         try {
+            super.wait();
+         } catch (InterruptedException e) {
+            this._waitingThread = null;
+            return -1;
+         }
+      }
+
+      AbstractString text = this.getTextAbstractString(true);
+      this._enumerator.reset(text, 0, text.length());
+      this._pendingRegionCount = 0;
+      this._activeThread = Thread.currentThread();
+      return this._pendingVersion;
    }
 
-   private boolean scanForActiveRegions(int var1) {
+   private boolean scanForActiveRegions(int version) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
-   private boolean nextActiveRegion(AttributedString$Iterator var1) {
-      while ((var1.runXAttrib() & 65504) == 0) {
-         if (!var1.next()) {
+   private boolean nextActiveRegion(AttributedString$Iterator iterator) {
+      while ((iterator.runXAttrib() & 65504) == 0) {
+         if (!iterator.next()) {
             return false;
          }
       }
@@ -301,9 +361,9 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       return true;
    }
 
-   private boolean prevActiveRegion(AttributedString$Iterator var1) {
-      while ((var1.runXAttrib() & 65504) == 0) {
-         if (!var1.prev()) {
+   private boolean prevActiveRegion(AttributedString$Iterator iterator) {
+      while ((iterator.runXAttrib() & 65504) == 0) {
+         if (!iterator.prev()) {
             return false;
          }
       }
@@ -311,24 +371,24 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       return true;
    }
 
-   private void postResults(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void postResults(int version) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      if (var1 == 128 && this.isSymbolScreenAllowed() && !this.getScreen().isGlobal()) {
+   protected boolean keyControl(char key, int status, int time) {
+      if (key == 128 && this.isSymbolScreenAllowed() && !this.getScreen().isGlobal()) {
          this._smileySupport.showSymbolScreen();
          return true;
       } else {
-         return super.keyControl(var1, var2, var3);
+         return super.keyControl(key, status, time);
       }
    }
 
    @Override
-   public void actionPerformed(int var1, Object var2) {
-      if ((var1 & 0xFF) > 0) {
-         switch (var1 & 0xFF) {
+   public void actionPerformed(int action, Object parameter) {
+      if ((action & 0xFF) > 0) {
+         switch (action & 0xFF) {
             case 113:
                if (this.isSymbolScreenAllowed() && !this.getScreen().isGlobal()) {
                   this._smileySupport.showSymbolScreen();
@@ -338,7 +398,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
          }
       }
 
-      super.actionPerformed(var1, var2);
+      super.actionPerformed(action, parameter);
    }
 
    @Override
@@ -353,8 +413,8 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
          : super.getText();
    }
 
-   private AbstractString getTextAbstractString(boolean var1) {
-      return var1 ? super.getTextAbstractString() : this.getTextAbstractString();
+   private AbstractString getTextAbstractString(boolean internal) {
+      return internal ? super.getTextAbstractString() : this.getTextAbstractString();
    }
 
    @Override
@@ -365,41 +425,41 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    }
 
    @Override
-   public String getText(int var1, int var2) {
-      return !this._smileySupport.isSmileyAvailable() ? super.getText(var1, var2) : this._smileySupport.getDecodedString(var1, var1 + var2);
+   public String getText(int offset, int length) {
+      return !this._smileySupport.isSmileyAvailable() ? super.getText(offset, length) : this._smileySupport.getDecodedString(offset, offset + length);
    }
 
    @Override
-   public int getDecodedTextLength(int var1, int var2) {
-      return this._smileySupport != null && this._smileySupport.isSmileyAvailable() ? this._smileySupport.getDecodedStringLength(var1, var2) : var2 - var1;
+   public int getDecodedTextLength(int start, int end) {
+      return this._smileySupport != null && this._smileySupport.isSmileyAvailable() ? this._smileySupport.getDecodedStringLength(start, end) : end - start;
    }
 
    @Override
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public int insert(String var1, int var2, boolean var3, boolean var4) {
+   public int insert(String text, int context, boolean stripInvalid, boolean validateText) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public synchronized void setText(String var1) {
-      super.setText(var1);
+   public synchronized void setText(String text) {
+      super.setText(text);
    }
 
-   public ActiveAutoTextEditField(String var1, String var2, int var3) {
-      this(var1, var2, var3, 4503599627370496L);
+   public ActiveAutoTextEditField(String label, String initialValue, int maxNumChars) {
+      this(label, initialValue, maxNumChars, 4503599627370496L);
    }
 
-   public ActiveAutoTextEditField(String var1, String var2, int var3, long var4) {
-      this(var1, var2, var3, var4, null);
+   public ActiveAutoTextEditField(String label, String initialValue, int maxNumChars, long style) {
+      this(label, initialValue, maxNumChars, style, null);
    }
 
    @Override
-   protected void fieldChangeNotify(int var1) {
-      super.fieldChangeNotify(var1);
+   protected void fieldChangeNotify(int context) {
+      super.fieldChangeNotify(context);
       if (this.isDirty()) {
          this._invertCookieRegion = false;
          this._snapToCookie = false;

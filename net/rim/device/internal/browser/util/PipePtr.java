@@ -9,18 +9,18 @@ public class PipePtr {
    public PipePtr() {
    }
 
-   public PipePtr(byte[] var1, int var2, int var3, boolean var4) {
-      this.setData(var1, var2, var3, var4);
+   public PipePtr(byte[] b, int offset, int length, boolean isRef) {
+      this.setData(b, offset, length, isRef);
    }
 
-   public void setData(byte[] var1, int var2, int var3, boolean var4) {
-      this._bytes = var1;
-      this._offset = var2;
-      this._length = var3;
-      this._ref = var4;
+   public void setData(byte[] b, int offset, int length, boolean isRef) {
+      this._bytes = b;
+      this._offset = offset;
+      this._length = length;
+      this._ref = isRef;
    }
 
-   public void setLength(int var1) {
+   public void setLength(int length) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

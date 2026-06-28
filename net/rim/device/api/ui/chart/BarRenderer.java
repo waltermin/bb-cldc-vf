@@ -12,8 +12,8 @@ public class BarRenderer extends ChartRenderer {
    private int _fillColor;
    private int _strokeColor;
 
-   public BarRenderer(ChartField var1) {
-      super(var1);
+   public BarRenderer(ChartField field) {
+      super(field);
    }
 
    @Override
@@ -27,67 +27,67 @@ public class BarRenderer extends ChartRenderer {
    }
 
    @Override
-   public void layout(int var1, int var2) {
-      this.setExtent(var1, var2);
+   public void layout(int width, int height) {
+      this.setExtent(width, height);
    }
 
    @Override
-   public void paint(Graphics var1) {
-      XYDataset var2 = this.getDataset();
-      int var3 = this._barWidth + this._barPadding;
-      int var4 = var1.getColor();
-      Font var5 = this.getField().getFont();
-      int var6 = var5.getHeight();
-      XYPoint var7 = new XYPoint();
-      int var8 = this.getRangeAxis().getMax();
-      int var9 = this.getRangeAxis().getMin();
-      int var10 = var8 - var9;
-      int var11 = MathUtilities.clamp(-1, var9, 1) == MathUtilities.clamp(-1, var8, 1) ? var9 : 0;
-      int var12 = var11 == 0 ? var8 : -var9;
-      int var13 = var2.getSize();
-      int var14 = 0;
+   public void paint(Graphics graphics) {
+      XYDataset dataset = this.getDataset();
+      int barSpacing = this._barWidth + this._barPadding;
+      int initialColour = graphics.getColor();
+      Font font = this.getField().getFont();
+      int fontHeight = font.getHeight();
+      XYPoint point = new XYPoint();
+      int axisMax = this.getRangeAxis().getMax();
+      int axisMin = this.getRangeAxis().getMin();
+      int scale = axisMax - axisMin;
+      int base = MathUtilities.clamp(-1, axisMin, 1) == MathUtilities.clamp(-1, axisMax, 1) ? axisMin : 0;
+      int zeroLine = base == 0 ? axisMax : -axisMin;
+      int last = dataset.getSize();
+      int index = 0;
 
-      for (int var15 = 0; var14 < var13; var15 += var3) {
-         var2.getPoint(var14, var7);
-         int var16 = var7.y;
-         int var17 = (var16 - var11) * this.getHeight() / var10;
-         int var18;
-         if (var17 < 0) {
-            var18 = var12;
-            var17 = -var17;
+      for (int x = 0; index < last; x += barSpacing) {
+         dataset.getPoint(index, point);
+         int value = point.y;
+         int barHeight = (value - base) * this.getHeight() / scale;
+         int y;
+         if (barHeight < 0) {
+            y = zeroLine;
+            barHeight = -barHeight;
          } else {
-            var18 = var12 - var17;
+            y = zeroLine - barHeight;
          }
 
-         var1.setColor(this._fillColor);
-         var1.fillRect(var15, var18, this._barWidth, var17);
-         var1.setColor(this._strokeColor);
-         var1.drawRect(var15, var18, this._barWidth, var17);
+         graphics.setColor(this._fillColor);
+         graphics.fillRect(x, y, this._barWidth, barHeight);
+         graphics.setColor(this._strokeColor);
+         graphics.drawRect(x, y, this._barWidth, barHeight);
          if (this._displayBarValues) {
-            String var19 = Integer.toString(var16);
-            if (var16 < 0) {
-               var18 += var17;
+            String valueString = Integer.toString(value);
+            if (value < 0) {
+               y += barHeight;
             } else {
-               var18 -= var6;
+               y -= fontHeight;
             }
 
-            var1.setColor(var4);
-            var1.drawText(var19, var15, var18, 4, this._barWidth);
+            graphics.setColor(initialColour);
+            graphics.drawText(valueString, x, y, 4, this._barWidth);
          }
 
-         var14++;
+         index++;
       }
    }
 
-   public void setDisplayBarValues(boolean var1) {
+   public void setDisplayBarValues(boolean displayBarValues) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setFillColor(int var1) {
+   public void setFillColor(int color) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setStrokeColor(int var1) {
+   public void setStrokeColor(int color) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

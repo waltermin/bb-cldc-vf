@@ -21,79 +21,95 @@ public class WipeablePolicyCryptoBlock {
       return isWLANKeyAvailable();
    }
 
-   public static Object encode(Object var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Object encode(Object obj) {
+      if (obj == null) {
+         return null;
+      }
+
+      Object encoding = null;
+
+      try {
+         encoding = encrypt(PersistentContent.convertEncodingToByteArray(obj));
+         PersistentContent.markAsPlaintext(obj);
+         return encoding;
+      } catch (IllegalArgumentException var3) {
+         return encoding;
+      }
    }
 
-   public static Object decode(Object var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Object decode(Object obj) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static byte[] encrypt(byte[] var0) {
-      PersistentContent.markAsPlaintext(var0);
-      if (var0 == null) {
+   public static byte[] encrypt(byte[] input) {
+      PersistentContent.markAsPlaintext(input);
+      if (input == null) {
          throw new Object();
       }
 
-      byte[] var1 = new byte[EncryptionUtilities.getCiphertextLength(var0.length)];
-      EncryptionUtilities.encrypt(getWLANKey(), var0, 0, var0.length, var1, 0);
-      return var1;
+      byte[] cipherText = new byte[EncryptionUtilities.getCiphertextLength(input.length)];
+      EncryptionUtilities.encrypt(getWLANKey(), input, 0, input.length, cipherText, 0);
+      return cipherText;
    }
 
-   public static byte[] decrypt(byte[] var0) {
-      if (var0 == null) {
+   public static byte[] decrypt(byte[] input) {
+      if (input == null) {
          throw new Object();
       }
 
-      byte[] var1 = new byte[var0.length];
-      int var2 = EncryptionUtilities.decrypt(getWLANKey(), var0, 0, var0.length, var1, 0);
-      Array.resize(var1, var2);
-      PersistentContent.markAsPlaintext(var1);
-      return var1;
+      byte[] plainText = new byte[input.length];
+      int plainTextLength = EncryptionUtilities.decrypt(getWLANKey(), input, 0, input.length, plainText, 0);
+      Array.resize(plainText, plainTextLength);
+      PersistentContent.markAsPlaintext(plainText);
+      return plainText;
    }
 
    private static byte[] getWLANKey() {
       return getWLANKey(true);
    }
 
-   private static byte[] getWLANKey(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static byte[] getWLANKey(boolean blockingCall) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private static void setNvStoreWLANKey(byte[] var0) {
-      Object var1 = PersistentContent.encode(var0, false, getEncryptFlag());
-      setWLANKeyData(PersistentContent.convertEncodingToByteArray(var1));
+   private static void setNvStoreWLANKey(byte[] key) {
+      Object encoding = PersistentContent.encode(key, false, getEncryptFlag());
+      setWLANKeyData(PersistentContent.convertEncodingToByteArray(encoding));
    }
 
    private static byte[] getNvStoreWLANKey() {
-      byte[] var0 = getWLANKeyData();
-      if (var0 == null) {
+      byte[] wlanKeyData = getWLANKeyData();
+      if (wlanKeyData == null) {
          return null;
       }
 
-      Object var1 = PersistentContent.convertByteArrayToEncoding(var0);
-      return PersistentContentInternal.decodeByteArray(var1, false, true);
+      Object encoding = PersistentContent.convertByteArrayToEncoding(wlanKeyData);
+      return PersistentContentInternal.decodeByteArray(encoding, false, true);
    }
 
-   private static void setWLANKeyData(byte[] var0) {
-      NvStore.writeData(41, var0);
+   private static void setWLANKeyData(byte[] data) {
+      NvStore.writeData(41, data);
    }
 
    private static byte[] getWLANKeyData() {
       return NvStore.readData(41);
    }
 
-   private static void handleInternalUpgradeCase(byte[] var0) {
-      byte[] var1 = NvStore.readData(42);
-      if (var1 != null) {
-         byte[] var2 = new byte[EncryptionUtilities.getCiphertextLength(var1.length)];
-         EncryptionUtilities.encrypt(var0, var1, 0, var1.length, var2, 0);
-         NvStore.writeData(42, var2);
+   private static void handleInternalUpgradeCase(byte[] key) {
+      byte[] wipeableData = NvStore.readData(42);
+      if (wipeableData != null) {
+         byte[] cipherText = new byte[EncryptionUtilities.getCiphertextLength(wipeableData.length)];
+         EncryptionUtilities.encrypt(key, wipeableData, 0, wipeableData.length, cipherText, 0);
+         NvStore.writeData(42, cipherText);
       }
    }
 
    private static boolean isWLANKeyAvailable() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         return getWLANKey(false) != null;
+      } catch (IllegalStateException e) {
+         return false;
+      }
    }
 
    private static boolean getEncryptFlag() {
@@ -108,8 +124,8 @@ public class WipeablePolicyCryptoBlock {
       OTAUpgrade.addOTASLOnlyCollection(new WipeablePolicyCryptoBlock$WipeableCBCollection());
    }
 
-   static byte[][][] access$702(byte[][][] var0) {
-      _wlanKey = var0;
-      return var0;
+   static byte[][][] access$702(byte[][][] x0) {
+      _wlanKey = x0;
+      return x0;
    }
 }

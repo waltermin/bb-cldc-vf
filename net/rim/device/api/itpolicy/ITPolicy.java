@@ -92,117 +92,117 @@ public final class ITPolicy {
    private ITPolicy() {
    }
 
-   public static final String getString(String var0) {
-      return readString(255, var0);
+   public static final String getString(String name) {
+      return readString(255, name);
    }
 
-   public static final byte[] getByteArray(String var0) {
-      return readByteArray(255, var0);
+   public static final byte[] getByteArray(String name) {
+      return readByteArray(255, name);
    }
 
-   public static final byte getByte(String var0) {
-      return readByte(255, var0, (byte)0);
+   public static final byte getByte(String name) {
+      return readByte(255, name, (byte)0);
    }
 
-   public static final boolean getBoolean(String var0, boolean var1) {
-      return readByte(255, var0, (byte)(var1 ? 1 : 0)) != 0;
+   public static final boolean getBoolean(String name, boolean defaultValue) {
+      return readByte(255, name, (byte)(defaultValue ? 1 : 0)) != 0;
    }
 
-   public static final int getInteger(String var0, int var1) {
-      return readInt(255, var0, var1);
+   public static final int getInteger(String name, int defaultValue) {
+      return readInt(255, name, defaultValue);
    }
 
-   public static final String getString(int var0) {
-      return readString(var0, null);
+   public static final String getString(int id) {
+      return readString(id, null);
    }
 
-   public static final String getString(int var0, int var1) {
-      String var2 = null;
-      if (WipeITPolicyDirectory.isWipeableId(var0, var1)) {
+   public static final String getString(int group, int id) {
+      String result = null;
+      if (WipeITPolicyDirectory.isWipeableId(group, id)) {
          if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
             return null;
          }
 
-         var2 = readStringWipeable(var0, var1);
+         result = readStringWipeable(group, id);
       }
 
-      return var2 == null ? readString(var0, var1) : var2;
+      return result == null ? readString(group, id) : result;
    }
 
-   public static final byte[] getByteArray(int var0) {
-      return readByteArray(var0, null);
+   public static final byte[] getByteArray(int id) {
+      return readByteArray(id, null);
    }
 
-   public static final byte[] getByteArray(int var0, int var1) {
-      byte[] var2 = null;
-      if (WipeITPolicyDirectory.isWipeableId(var0, var1)) {
+   public static final byte[] getByteArray(int group, int id) {
+      byte[] result = null;
+      if (WipeITPolicyDirectory.isWipeableId(group, id)) {
          if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
             return null;
          }
 
-         var2 = readByteArrayWipeable(var0, var1);
+         result = readByteArrayWipeable(group, id);
       }
 
-      return var2 == null ? readByteArray(var0, var1) : var2;
+      return result == null ? readByteArray(group, id) : result;
    }
 
-   public static final boolean getBoolean(int var0, boolean var1) {
-      if (var0 != 6 || !getBoolean(24, 2, false) && !getBoolean(24, 63, false) && !getBoolean(24, 1, false)) {
-         return var0 == 7 && !InternalServices.isPINMessagingSupported() ? false : readByte(var0, null, (byte)(var1 ? 1 : 0)) != 0;
+   public static final boolean getBoolean(int id, boolean defaultValue) {
+      if (id != 6 || !getBoolean(24, 2, false) && !getBoolean(24, 63, false) && !getBoolean(24, 1, false)) {
+         return id == 7 && !InternalServices.isPINMessagingSupported() ? false : readByte(id, null, (byte)(defaultValue ? 1 : 0)) != 0;
       } else {
          return true;
       }
    }
 
-   public static final boolean getBoolean(int var0, int var1, boolean var2) {
-      if (var0 != 24 || var1 != 2 || !getBoolean(24, 63, false) && !getBoolean(24, 1, false)) {
-         Byte var3 = null;
-         if (WipeITPolicyDirectory.isWipeableId(var0, var1)) {
+   public static final boolean getBoolean(int group, int id, boolean defaultValue) {
+      if (group != 24 || id != 2 || !getBoolean(24, 63, false) && !getBoolean(24, 1, false)) {
+         Byte result = null;
+         if (WipeITPolicyDirectory.isWipeableId(group, id)) {
             if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
-               return var2;
+               return defaultValue;
             }
 
-            var3 = readByteWipeable(var0, var1);
+            result = readByteWipeable(group, id);
          }
 
-         return var3 == null ? readByte(var0, var1, (byte)(var2 ? 1 : 0)) != 0 : var3 != 0;
+         return result == null ? readByte(group, id, (byte)(defaultValue ? 1 : 0)) != 0 : result != 0;
       } else {
          return true;
       }
    }
 
-   public static final int getInteger(int var0, int var1) {
-      return readInt(var0, null, var1);
+   public static final int getInteger(int id, int defaultValue) {
+      return readInt(id, null, defaultValue);
    }
 
-   public static final int getInteger(int var0, int var1, int var2) {
-      Integer var3 = null;
-      if (WipeITPolicyDirectory.isWipeableId(var0, var1)) {
+   public static final int getInteger(int group, int id, int defaultValue) {
+      Integer result = null;
+      if (WipeITPolicyDirectory.isWipeableId(group, id)) {
          if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
-            return var2;
+            return defaultValue;
          }
 
-         var3 = readIntegerWipeable(var0, var1);
+         result = readIntegerWipeable(group, id);
       }
 
-      return var3 == null ? readInt(var0, var1, var2) : var3;
+      return result == null ? readInt(group, id, defaultValue) : result;
    }
 
-   public static final byte getByte(int var0, byte var1) {
-      return readByte(var0, null, var1);
+   public static final byte getByte(int id, byte defaultValue) {
+      return readByte(id, null, defaultValue);
    }
 
-   public static final byte getByte(int var0, int var1, byte var2) {
-      Byte var3 = null;
-      if (WipeITPolicyDirectory.isWipeableId(var0, var1)) {
+   public static final byte getByte(int group, int id, byte defaultValue) {
+      Byte result = null;
+      if (WipeITPolicyDirectory.isWipeableId(group, id)) {
          if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)) {
-            return var2;
+            return defaultValue;
          }
 
-         var3 = readByteWipeable(var0, var1);
+         result = readByteWipeable(group, id);
       }
 
-      return var3 == null ? readByte(var0, var1, var2) : var3;
+      return result == null ? readByte(group, id, defaultValue) : result;
    }
 
    private static final native byte readByte(int var0, String var1, byte var2);
@@ -221,20 +221,20 @@ public final class ITPolicy {
 
    private static final native byte[] readByteArray(int var0, int var1);
 
-   private static final Byte readByteWipeable(int var0, int var1) {
-      return ITPolicyInternal.readByteInternal(readWipeablePolicyData(), var0, var1);
+   private static final Byte readByteWipeable(int group, int id) {
+      return ITPolicyInternal.readByteInternal(readWipeablePolicyData(), group, id);
    }
 
-   private static final String readStringWipeable(int var0, int var1) {
-      return ITPolicyInternal.readStringInternal(readWipeablePolicyData(), var0, var1);
+   private static final String readStringWipeable(int group, int id) {
+      return ITPolicyInternal.readStringInternal(readWipeablePolicyData(), group, id);
    }
 
-   private static final Integer readIntegerWipeable(int var0, int var1) {
-      return ITPolicyInternal.readIntegerInternal(readWipeablePolicyData(), var0, var1);
+   private static final Integer readIntegerWipeable(int group, int id) {
+      return ITPolicyInternal.readIntegerInternal(readWipeablePolicyData(), group, id);
    }
 
-   private static final byte[] readByteArrayWipeable(int var0, int var1) {
-      return ITPolicyInternal.readByteArrayInternal(readWipeablePolicyData(), var0, var1);
+   private static final byte[] readByteArrayWipeable(int group, int id) {
+      return ITPolicyInternal.readByteArrayInternal(readWipeablePolicyData(), group, id);
    }
 
    private static final byte[] readWipeablePolicyData() {

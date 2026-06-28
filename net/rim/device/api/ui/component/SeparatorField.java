@@ -19,8 +19,8 @@ public class SeparatorField extends Field {
       this(0);
    }
 
-   public SeparatorField(long var1) {
-      super(var1);
+   public SeparatorField(long style) {
+      super(style);
       this.setTag(TAG);
    }
 
@@ -34,16 +34,16 @@ public class SeparatorField extends Field {
    }
 
    private boolean isHorizontal() {
-      long var1 = this.getStyle();
-      if ((var1 & 196608) == 65536) {
+      long style = this.getStyle();
+      if ((style & 196608) == 65536) {
          return true;
       } else {
-         return (var1 & 196608) == 131072 ? false : !(this.getManager() instanceof Object);
+         return (style & 196608) == 131072 ? false : !(this.getManager() instanceof Object);
       }
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       if (this.isThin()) {
          this._fieldHeight = 1;
          this._linePosition = 0;
@@ -53,9 +53,9 @@ public class SeparatorField extends Field {
       }
 
       if (this.isHorizontal()) {
-         this.setExtent(var1, this._fieldHeight);
+         this.setExtent(width, this._fieldHeight);
       } else {
-         this.setExtent(this._fieldHeight, var2);
+         this.setExtent(this._fieldHeight, height);
       }
    }
 
@@ -69,11 +69,11 @@ public class SeparatorField extends Field {
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       if (this.isHorizontal()) {
-         var1.drawLine(0, this._linePosition, this.getContentWidth(), this._linePosition);
+         graphics.drawLine(0, this._linePosition, this.getContentWidth(), this._linePosition);
       } else {
-         var1.drawLine(this._linePosition, 0, this._linePosition, this.getContentHeight());
+         graphics.drawLine(this._linePosition, 0, this._linePosition, this.getContentHeight());
       }
    }
 }

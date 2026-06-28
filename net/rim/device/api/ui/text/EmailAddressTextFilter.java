@@ -4,17 +4,17 @@ import net.rim.device.api.util.AbstractString;
 
 public class EmailAddressTextFilter extends TextFilter {
    @Override
-   public char convert(char var1, int var2) {
-      return var1;
+   public char convert(char character, int status) {
+      return character;
    }
 
    @Override
-   public boolean validate(char var1) {
-      if (var1 <= 31) {
+   public boolean validate(char character) {
+      if (character <= 31) {
          return false;
       }
 
-      switch (var1) {
+      switch (character) {
          case '"':
          case '<':
          case '>':
@@ -34,13 +34,13 @@ public class EmailAddressTextFilter extends TextFilter {
    }
 
    @Override
-   public boolean validate(AbstractString var1) {
-      if (var1 != null) {
-         int var2 = var1.length();
+   public boolean validate(AbstractString text) {
+      if (text != null) {
+         int textLength = text.length();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            char var4 = var1.charAt(var3);
-            if (!this.validate(var4)) {
+         for (int lv = 0; lv < textLength; lv++) {
+            char character = text.charAt(lv);
+            if (!this.validate(character)) {
                return false;
             }
          }

@@ -8,29 +8,29 @@ public class AccessibleContextFactory implements AccessibleContext {
    AccessibleContext _parent;
    AccessibleText _text;
 
-   public AccessibleContextFactory(String var1) {
-      this(var1, null, 0, 0, null, null);
+   public AccessibleContextFactory(String name) {
+      this(name, null, 0, 0, null, null);
    }
 
-   public AccessibleContextFactory(String var1, int var2) {
-      this(var1, null, var2, 0, null, null);
+   public AccessibleContextFactory(String name, int roll) {
+      this(name, null, roll, 0, null, null);
    }
 
-   public AccessibleContextFactory(String var1, int var2, int var3) {
-      this(var1, null, var2, var3, null, null);
+   public AccessibleContextFactory(String name, int roll, int state) {
+      this(name, null, roll, state, null, null);
    }
 
-   public AccessibleContextFactory(String var1, int var2, int var3, AccessibleContext var4) {
-      this(var1, null, var2, var3, var4, null);
+   public AccessibleContextFactory(String name, int roll, int state, AccessibleContext parent) {
+      this(name, null, roll, state, parent, null);
    }
 
-   public AccessibleContextFactory(String var1, String var2, int var3, int var4, AccessibleContext var5, AccessibleText var6) {
-      this._name = var1;
-      this._description = var2;
-      this._roll = var3;
-      this._state = var4;
-      this._parent = var5;
-      this._text = var6;
+   public AccessibleContextFactory(String name, String description, int roll, int state, AccessibleContext parent, AccessibleText text) {
+      this._name = name;
+      this._description = description;
+      this._roll = roll;
+      this._state = state;
+      this._parent = parent;
+      this._text = text;
    }
 
    @Override
@@ -59,8 +59,8 @@ public class AccessibleContextFactory implements AccessibleContext {
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (this._state & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (this._state & state) != 0;
    }
 
    @Override
@@ -79,7 +79,7 @@ public class AccessibleContextFactory implements AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       return null;
    }
 
@@ -94,12 +94,12 @@ public class AccessibleContextFactory implements AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       return null;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
+   public boolean isAccessibleChildSelected(int index) {
       return false;
    }
 }

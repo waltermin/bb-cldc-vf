@@ -9,7 +9,7 @@ public final class OptionsRegistry$StringParameter implements Persistable {
       return this._value;
    }
 
-   final void setValue(String var1) {
+   final void setValue(String value) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

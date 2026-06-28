@@ -26,27 +26,27 @@ public class Backdoor implements Runnable {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private String styleToString(long var1) {
+   private String styleToString(long style) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private String formatClassName(Object var1) {
+   private String formatClassName(Object obj) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void dumpField(Field var1, String var2, boolean var3) {
+   private void dumpField(Field field, String indent, boolean focus) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void validateManager(Manager var1, String var2, boolean var3) {
+   private void validateManager(Manager manager, String indent, boolean focusState) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private void validate(Screen var1) {
+   private void validate(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   static String sayTime(long var0) {
+   static String sayTime(long time) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

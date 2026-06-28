@@ -7,20 +7,20 @@ import net.rim.vm.Array;
 class KeywordFilteredField$KeywordIndexerHelperImpl implements KeywordIndexerHelper {
    private final KeywordFilteredField this$0;
 
-   public KeywordFilteredField$KeywordIndexerHelperImpl(KeywordFilteredField var1) {
-      this.this$0 = var1;
+   public KeywordFilteredField$KeywordIndexerHelperImpl(KeywordFilteredField _1) {
+      this.this$0 = _1;
    }
 
    @Override
-   public boolean checkForMatch(Object var1, String[] var2) {
-      String[] var3 = this.this$0._keywordProvider.getKeywords(var1);
+   public boolean checkForMatch(Object element, String[] words) {
+      String[] keywords = this.this$0._keywordProvider.getKeywords(element);
 
-      for (int var4 = 0; var4 < var2.length; var4++) {
-         for (int var5 = 0; var5 < var3.length; var5++) {
-            String[] var6 = StringUtilities.stringToWords(var3[var5]);
+      for (int i = 0; i < words.length; i++) {
+         for (int j = 0; j < keywords.length; j++) {
+            String[] keys = StringUtilities.stringToWords(keywords[j]);
 
-            for (int var7 = 0; var7 < var6.length; var7++) {
-               if (StringUtilities.startsWithIgnoreCaseAndAccents(var6[var7], var2[var4])) {
+            for (int k = 0; k < keys.length; k++) {
+               if (StringUtilities.startsWithIgnoreCaseAndAccents(keys[k], words[i])) {
                   return true;
                }
             }
@@ -31,10 +31,10 @@ class KeywordFilteredField$KeywordIndexerHelperImpl implements KeywordIndexerHel
    }
 
    @Override
-   public int getKeywords(Object var1, String[] var2) {
-      String[] var3 = this.this$0._keywordProvider.getKeywords(var1);
-      System.arraycopy(var3, 0, var2, 0, var3.length);
-      Array.resize(var2, var3.length);
-      return var2.length;
+   public int getKeywords(Object element, String[] keywords) {
+      String[] keys = this.this$0._keywordProvider.getKeywords(element);
+      System.arraycopy(keys, 0, keywords, 0, keys.length);
+      Array.resize(keywords, keys.length);
+      return keywords.length;
    }
 }

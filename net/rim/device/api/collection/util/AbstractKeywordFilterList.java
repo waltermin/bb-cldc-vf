@@ -11,7 +11,9 @@ import net.rim.device.api.ui.AccessibleEventDispatcher;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.accessibility.AccessibleText;
 import net.rim.device.api.ui.accessibility.AccessibleValue;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.tid.awt.im.InputContext;
+import net.rim.vm.Array;
 
 public class AbstractKeywordFilterList
    implements KeywordFilterList,
@@ -47,7 +49,7 @@ public class AbstractKeywordFilterList
       return this._prefixCache;
    }
 
-   protected void setSearcher(KeywordSearcher var1) {
+   protected void setSearcher(KeywordSearcher searcher) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -56,39 +58,41 @@ public class AbstractKeywordFilterList
    }
 
    public boolean isInProgress() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._searchRequestLock) {
+         return !this._currentSearchRequest.isEmpty();
+      }
    }
 
-   protected void accessibleEventOccurred(int var1, Object var2, Object var3, AccessibleContext var4) {
-      AccessibleEventDispatcher.dispatchAccessibleEvent(var1, var2, var3, var4);
+   protected void accessibleEventOccurred(int event, Object oldValue, Object newValue, AccessibleContext context) {
+      AccessibleEventDispatcher.dispatchAccessibleEvent(event, oldValue, newValue, context);
    }
 
-   protected void removeAccessibleState(int var1) {
-      this._accessibleStateSet &= ~var1;
+   protected void removeAccessibleState(int state) {
+      this._accessibleStateSet &= ~state;
    }
 
-   protected void addAccessibleState(int var1) {
+   protected void addAccessibleState(int state) {
       if (this.isAccessibleStateSet(1)) {
          this.removeAccessibleState(1);
       }
 
-      this._accessibleStateSet |= var1;
+      this._accessibleStateSet |= state;
    }
 
    protected void fireReset() {
       this._listeners.fireReset(this);
    }
 
-   protected void fireElementAdded(Object var1) {
-      this._listeners.fireElementAdded(this, var1);
+   protected void fireElementAdded(Object element) {
+      this._listeners.fireElementAdded(this, element);
    }
 
-   protected void fireElementUpdated(Object var1, Object var2) {
-      this._listeners.fireElementUpdated(this, var1, var2);
+   protected void fireElementUpdated(Object oldElement, Object newElement) {
+      this._listeners.fireElementUpdated(this, oldElement, newElement);
    }
 
-   protected void fireElementRemoved(Object var1) {
-      this._listeners.fireElementRemoved(this, var1);
+   protected void fireElementRemoved(Object element) {
+      this._listeners.fireElementRemoved(this, element);
    }
 
    protected void haltSearch() {
@@ -99,11 +103,11 @@ public class AbstractKeywordFilterList
       this._searcher.halt();
    }
 
-   public KeywordPrefixSearchResult search(String[] var1) {
+   public KeywordPrefixSearchResult search(String[] _1) {
       throw null;
    }
 
-   public Object[] getElements(KeywordPrefixSearchResult var1) {
+   public Object[] getElements(KeywordPrefixSearchResult _1) {
       throw null;
    }
 
@@ -113,8 +117,18 @@ public class AbstractKeywordFilterList
       this._filterResult = null;
    }
 
-   void setFilterResult(Object var1, KeywordPrefixSearchResult var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   void setFilterResult(Object words, KeywordPrefixSearchResult result) {
+      synchronized (this) {
+         this.resetFilterResults();
+         this._filterCriteria = words;
+         if (result != null && (result.getPrimaryMatches() == null || result.getSecondaryMatches() == null)) {
+            result = null;
+         }
+
+         this._filterResult = result;
+      }
+
+      this.fireReset();
    }
 
    protected synchronized void recalculateResults() {
@@ -127,13 +141,34 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public int getIndex(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int getIndex(Object element) {
+      this.buildFilteredElementList();
+      synchronized (this) {
+         if (this._filteredElements != null) {
+            int count = this._filteredElements.length;
+
+            for (int i = 0; i < count; i++) {
+               if (this._filteredElements[i] == element) {
+                  return i;
+               }
+            }
+
+            return -1;
+         }
+      }
+
+      return this._source.getIndex(element);
    }
 
    @Override
-   public void setSuffix(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setSuffix(String suffix) {
+      synchronized (this) {
+         if (!StringUtilities.strEqual(this._filterSuffix, suffix)) {
+            this._filterSuffix = suffix;
+            this.setCriteria(this._filterCriteria, null);
+            this.waitForComplete();
+         }
+      }
    }
 
    @Override
@@ -147,41 +182,75 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public synchronized void searchPrefixes(String[] var1) {
-      KeywordSearcher var2 = this.getSearcher();
-      if (var2 != null) {
-         var2.searchPrefixes(var1);
+   public synchronized void searchPrefixes(String[] prefixes) {
+      KeywordSearcher searcher = this.getSearcher();
+      if (searcher != null) {
+         searcher.searchPrefixes(prefixes);
       }
    }
 
    @Override
-   public boolean matches(Object var1) {
+   public boolean matches(Object _1) {
       throw null;
    }
 
    @Override
-   public void reset(Collection var1) {
+   public void reset(Collection _1) {
       throw null;
    }
 
    @Override
-   public int getAt(int var1, int var2, Object[] var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int getAt(int index, int count, Object[] elements, int destIndex) {
+      if (count >= 0 && index >= 0 && destIndex >= 0) {
+         this.buildFilteredElementList();
+         synchronized (this) {
+            if (this._filteredElements != null) {
+               if (index + count > this._filteredElements.length) {
+                  count = this._filteredElements.length - index;
+               }
+
+               if (elements.length < count + destIndex) {
+                  Array.resize(elements, count + destIndex);
+               }
+
+               System.arraycopy(this._filteredElements, index, elements, destIndex, count);
+               return count;
+            }
+         }
+
+         return this._source.getAt(index, count, elements, destIndex);
+      } else {
+         throw new Object();
+      }
    }
 
    @Override
-   public Object getAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Object getAt(int index) {
+      this.buildFilteredElementList();
+      synchronized (this) {
+         if (this._filteredElements != null) {
+            return this._filteredElements[index];
+         }
+      }
+
+      return this._source.getAt(index);
    }
 
    @Override
    public int size() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.buildFilteredElementList();
+      synchronized (this) {
+         if (this._filteredElements != null) {
+            return this._filteredElements.length;
+         }
+      }
+
+      return this._source.size();
    }
 
    @Override
-   public void setCriteria(Object var1, FilterStatusListener var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCriteria(Object criteria, FilterStatusListener listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -190,15 +259,15 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public void persistentContentStateChanged(int var1) {
-      if (var1 == 2) {
+   public void persistentContentStateChanged(int state) {
+      if (state == 2) {
          this.resetFilterResults();
          this.reset();
       }
    }
 
    @Override
-   public void persistentContentModeChanged(int var1) {
+   public void persistentContentModeChanged(int generation) {
    }
 
    @Override
@@ -222,13 +291,13 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._listeners.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._listeners.removeCollectionListener(listener);
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._listeners.addCollectionListener(var1);
+   public void addCollectionListener(Object listener) {
+      this._listeners.addCollectionListener(listener);
    }
 
    @Override
@@ -237,8 +306,8 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (this._accessibleStateSet & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (this._accessibleStateSet & state) != 0;
    }
 
    @Override
@@ -257,9 +326,9 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      Object var2 = this.getAt(var1);
-      return (AccessibleContext)(var2 != null ? new Object(var2.toString()) : null);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      Object temp = this.getAt(index);
+      return (AccessibleContext)(temp != null ? new Object(temp.toString()) : null);
    }
 
    @Override
@@ -273,30 +342,52 @@ public class AbstractKeywordFilterList
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       return null;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
+   public boolean isAccessibleChildSelected(int index) {
       return false;
    }
 
    @Override
    public synchronized void waitForComplete() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (this.isInProgress()) {
+         try {
+            super.wait();
+         } catch (InterruptedException var2) {
+         }
+      }
    }
 
    private void buildFilteredElementList() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.removeAccessibleState(4194304);
+      this.addAccessibleState(32);
+      synchronized (this._source) {
+         synchronized (this) {
+            if (this._filteredElements == null) {
+               if (this._source.size() == 0) {
+                  this._filteredElements = new Object[0];
+               } else if ((this._filterCriteria != null || this._filterSuffix != null) && this._filterResult != null) {
+                  this._filteredElements = this.getElements(this._filterResult);
+               } else {
+                  this._filteredElements = null;
+               }
+            }
+         }
+      }
+
+      this.removeAccessibleState(32);
+      this.addAccessibleState(4194304);
    }
 
-   protected AbstractKeywordFilterList(ReadableList var1) {
-      if (var1 == null) {
+   protected AbstractKeywordFilterList(ReadableList source) {
+      if (source == null) {
          throw new Object();
       }
 
-      this._source = var1;
+      this._source = source;
       this._listeners = new CollectionListenerManager();
       this._searchRequestLock = new Object();
       this._currentSearchRequest = new AbstractKeywordFilterList$SearchRequest();

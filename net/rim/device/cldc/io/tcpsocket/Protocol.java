@@ -13,20 +13,20 @@ public final class Protocol implements ConnectionBaseInterface {
    private static final String RETRY_NO_CONTEXT;
 
    @Override
-   public final int getProperties(String var1) {
+   public final int getProperties(String name) {
       return 2;
    }
 
    @Override
-   public final Connection openPrim(String var1, int var2, boolean var3) {
+   public final Connection openPrim(String name, int mode, boolean timeouts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final Connection doConnection(URL var1, String var2, int var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final Connection doConnection(URL url, String name, int mode, boolean timeouts) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final Connection doConnectionNotify(URL var1, int var2, boolean var3) {
+   private final Connection doConnectionNotify(URL url, int mode, boolean timeouts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

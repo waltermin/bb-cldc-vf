@@ -9,12 +9,12 @@ public class VerticalFieldManager3 extends VerticalFieldManager {
       super(0);
    }
 
-   public VerticalFieldManager3(long var1) {
-      super(var1);
+   public VerticalFieldManager3(long style) {
+      super(style);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      super.sublayout(Math.min(var1, this.getPreferredWidth()), var2);
+   protected void sublayout(int maxWidth, int maxHeight) {
+      super.sublayout(Math.min(maxWidth, this.getPreferredWidth()), maxHeight);
    }
 }

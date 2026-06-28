@@ -3,6 +3,7 @@ package net.rim.device.internal.ui;
 import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.system.InternalServices;
 
@@ -19,8 +20,8 @@ public class UiSettings {
    private UiSettings() {
    }
 
-   public static void addListener(RegistryListener var0) {
-      Arrays.add(_instance._listeners, var0);
+   public static void addListener(RegistryListener listener) {
+      Arrays.add(_instance._listeners, listener);
    }
 
    public static int getBacklightBrightness() {
@@ -68,91 +69,151 @@ public class UiSettings {
    }
 
    public static void initialize() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         int contrast = getDisplayContrast();
+         setDisplayContrast(contrast);
+      } catch (Exception var10) {
+      }
+
+      try {
+         int brightness = getBacklightBrightness();
+         setBacklightBrightness(brightness);
+      } catch (Exception var9) {
+      }
+
+      try {
+         int timeout = getBacklightTimeout();
+         setBacklightTimeout(timeout);
+      } catch (Exception var8) {
+      }
+
+      try {
+         boolean LEDStatus = getLEDCoverageIndicatorStatus();
+         RIMGlobalMessagePoster.postGlobalEvent(6270993390899536868L);
+         setLEDCoverageIndicatorStatus(LEDStatus);
+      } catch (Exception var7) {
+      }
+
+      try {
+         char value = getCurrencyKey();
+         setCurrencyKey(value);
+      } catch (Exception var6) {
+      }
+
+      try {
+         boolean toneEnabled = getKeypadToneEnabled();
+         setKeypadToneEnabled(toneEnabled);
+      } catch (Exception var5) {
+      }
+
+      try {
+         int keyRepeatRate = getKeypadRepeatRate();
+         setKeypadRepeatRate(keyRepeatRate);
+      } catch (Exception var4) {
+      }
+
+      try {
+         int keyRepeatDelay = getKeypadRepeatDelay();
+         setKeypadRepeatDelay(keyRepeatDelay);
+      } catch (Exception var3) {
+      }
+
+      try {
+         boolean isEnabled = getOffProfileEnabled();
+         setOffProfileEnabled(isEnabled);
+         RIMGlobalMessagePoster.postGlobalEvent(6869208671291562587L);
+      } catch (Exception var2) {
+      }
+
+      try {
+         boolean automaticBacklightEnabled = getAutomaticBacklightEnabled();
+         setAutomaticBacklightEnabled(automaticBacklightEnabled);
+      } catch (Exception var1) {
+      }
    }
 
    static void notifyRegistryChanged() {
       if (_instance._listenersActive) {
-         RegistryListener[] var0 = _instance._listeners;
-         if (var0 != null) {
-            for (int var1 = var0.length - 1; var1 >= 0; var1--) {
-               var0[var1].registryChanged();
+         RegistryListener[] listeners = _instance._listeners;
+         if (listeners != null) {
+            for (int lv = listeners.length - 1; lv >= 0; lv--) {
+               listeners[lv].registryChanged();
             }
          }
       }
    }
 
-   static void notifyRegistryChanged(long var0) {
+   static void notifyRegistryChanged(long key) {
       if (_instance._listenersActive) {
-         RegistryListener[] var2 = _instance._listeners;
-         if (var2 != null) {
-            for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-               var2[var3].registryChanged(var0);
+         RegistryListener[] listeners = _instance._listeners;
+         if (listeners != null) {
+            for (int lv = listeners.length - 1; lv >= 0; lv--) {
+               listeners[lv].registryChanged(key);
             }
          }
       }
    }
 
-   public static void setBacklightBrightness(int var0) {
-      Backlight.setBrightness(var0);
-      UiOptionsRegistry.getInstance().setInt(1685157992482037073L, var0);
+   public static void setBacklightBrightness(int brightness) {
+      Backlight.setBrightness(brightness);
+      UiOptionsRegistry.getInstance().setInt(1685157992482037073L, brightness);
    }
 
-   public static void setBacklightTimeout(int var0) {
-      Backlight.setTimeout(var0);
-      UiOptionsRegistry.getInstance().setInt(-4413078574218726736L, var0);
+   public static void setBacklightTimeout(int timeout) {
+      Backlight.setTimeout(timeout);
+      UiOptionsRegistry.getInstance().setInt(-4413078574218726736L, timeout);
    }
 
-   public static void setTrackballKeyLockBacklightTimeout(int var0) {
-      Backlight.setTimeout(var0);
-      UiOptionsRegistry.getInstance().setInt(5292311981504290757L, var0);
+   public static void setTrackballKeyLockBacklightTimeout(int timeout) {
+      Backlight.setTimeout(timeout);
+      UiOptionsRegistry.getInstance().setInt(5292311981504290757L, timeout);
    }
 
-   public static void setDisplayContrast(int var0) {
-      Display.setContrast(var0);
-      UiOptionsRegistry.getInstance().setInt(-1460892010845079752L, var0);
+   public static void setDisplayContrast(int contrast) {
+      Display.setContrast(contrast);
+      UiOptionsRegistry.getInstance().setInt(-1460892010845079752L, contrast);
    }
 
-   public static void setLEDCoverageIndicatorStatus(boolean var0) {
-      UiOptionsRegistry.getInstance().setBoolean(669566532873263048L, var0);
+   public static void setLEDCoverageIndicatorStatus(boolean status) {
+      UiOptionsRegistry.getInstance().setBoolean(669566532873263048L, status);
    }
 
-   public static void setCurrencyKey(char var0) {
-      UiOptionsRegistry.getInstance().setChar(-9137283790714193735L, var0);
+   public static void setCurrencyKey(char value) {
+      UiOptionsRegistry.getInstance().setChar(-9137283790714193735L, value);
    }
 
-   public static void setOffProfileEnabled(boolean var0) {
-      UiOptionsRegistry.getInstance().setBoolean(-3239010168274370595L, var0);
+   public static void setOffProfileEnabled(boolean isSet) {
+      UiOptionsRegistry.getInstance().setBoolean(-3239010168274370595L, isSet);
    }
 
-   public static void setKeypadToneEnabled(boolean var0) {
-      UiOptionsRegistry.getInstance().setBoolean(4710809342279106215L, var0);
-      AudioRouter.getInstance().enableInputFeedback(1, var0);
+   public static void setKeypadToneEnabled(boolean enabled) {
+      UiOptionsRegistry.getInstance().setBoolean(4710809342279106215L, enabled);
+      AudioRouter.getInstance().enableInputFeedback(1, enabled);
    }
 
-   public static void setKeypadRepeatRate(int var0) {
-      UiOptionsRegistry.getInstance().setInt(3372005855522553662L, var0);
-      setRepeat(getKeypadRepeatDelay(), var0);
+   public static void setKeypadRepeatRate(int rate) {
+      UiOptionsRegistry.getInstance().setInt(3372005855522553662L, rate);
+      setRepeat(getKeypadRepeatDelay(), rate);
    }
 
-   public static void setKeypadRepeatDelay(int var0) {
-      UiOptionsRegistry.getInstance().setInt(4484666050398206415L, var0);
-      setRepeat(var0, getKeypadRepeatRate());
+   public static void setKeypadRepeatDelay(int delay) {
+      UiOptionsRegistry.getInstance().setInt(4484666050398206415L, delay);
+      setRepeat(delay, getKeypadRepeatRate());
    }
 
-   public static void setAutomaticBacklightEnabled(boolean var0) {
-      boolean var1 = InternalServices.isToggleAutomaticBacklightSupported() ? var0 : true;
+   public static void setAutomaticBacklightEnabled(boolean isEnabled) {
+      boolean setting = InternalServices.isToggleAutomaticBacklightSupported() ? isEnabled : true;
       if (InternalServices.isDeviceCapable(16)) {
-         InternalServices.setLightSensorMode(var1 ? 1 : 3);
+         InternalServices.setLightSensorMode(setting ? 1 : 3);
       }
 
-      UiOptionsRegistry.getInstance().setBoolean(-4779732858771257140L, var1);
+      UiOptionsRegistry.getInstance().setBoolean(-4779732858771257140L, setting);
    }
 
-   public static void setListenersActive(boolean var0) {
-      if (var0 != _instance._listenersActive) {
-         _instance._listenersActive = var0;
-         if (var0) {
+   public static void setListenersActive(boolean active) {
+      if (active != _instance._listenersActive) {
+         _instance._listenersActive = active;
+         if (active) {
             notifyRegistryChanged();
          }
       }

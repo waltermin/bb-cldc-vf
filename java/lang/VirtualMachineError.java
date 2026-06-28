@@ -4,6 +4,6 @@ public class VirtualMachineError extends Error {
    public VirtualMachineError() {
    }
 
-   public VirtualMachineError(String var1) {
+   public VirtualMachineError(String s) {
    }
 }

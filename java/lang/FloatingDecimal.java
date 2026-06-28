@@ -50,149 +50,149 @@ class FloatingDecimal {
    private static final char[] notANumber;
    private static final char[] zero;
 
-   private FloatingDecimal(boolean var1, int var2, char[] var3, int var4, boolean var5) {
+   private FloatingDecimal(boolean negSign, int decExponent, char[] digits, int n, boolean e) {
       this.mustSetRoundDir = false;
-      this.isNegative = var1;
-      this.isExceptional = var5;
-      this.decExponent = var2;
-      this.digits = var3;
-      this.nDigits = var4;
+      this.isNegative = negSign;
+      this.isExceptional = e;
+      this.decExponent = decExponent;
+      this.digits = digits;
+      this.nDigits = n;
    }
 
-   private static int countBits(long var0) {
-      if (var0 == 0) {
+   private static int countBits(long v) {
+      if (v == 0) {
          return 0;
       }
 
-      while ((var0 & -72057594037927936L) == 0) {
-         var0 <<= 8;
+      while ((v & -72057594037927936L) == 0) {
+         v <<= 8;
       }
 
-      while (var0 > 0) {
-         var0 <<= 1;
+      while (v > 0) {
+         v <<= 1;
       }
 
-      int var2;
-      for (var2 = 0; (var0 & 72057594037927935L) != 0; var2 += 8) {
-         var0 <<= 8;
+      int n;
+      for (n = 0; (v & 72057594037927935L) != 0; n += 8) {
+         v <<= 8;
       }
 
-      while (var0 != 0) {
-         var0 <<= 1;
-         var2++;
+      while (v != 0) {
+         v <<= 1;
+         n++;
       }
 
-      return var2;
+      return n;
    }
 
-   private static synchronized FDBigInt big5pow(int var0) {
+   private static synchronized FDBigInt big5pow(int p) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static FDBigInt multPow52(FDBigInt var0, int var1, int var2) {
-      if (var1 != 0) {
-         if (var1 < small5pow.length) {
-            var0 = var0.mult(small5pow[var1]);
+   private static FDBigInt multPow52(FDBigInt v, int p5, int p2) {
+      if (p5 != 0) {
+         if (p5 < small5pow.length) {
+            v = v.mult(small5pow[p5]);
          } else {
-            var0 = var0.mult(big5pow(var1));
+            v = v.mult(big5pow(p5));
          }
       }
 
-      if (var2 != 0) {
-         var0.lshiftMe(var2);
+      if (p2 != 0) {
+         v.lshiftMe(p2);
       }
 
-      return var0;
+      return v;
    }
 
-   private static FDBigInt constructPow52(int var0, int var1) {
-      FDBigInt var2 = new FDBigInt(big5pow(var0));
-      if (var1 != 0) {
-         var2.lshiftMe(var1);
+   private static FDBigInt constructPow52(int p5, int p2) {
+      FDBigInt v = new FDBigInt(big5pow(p5));
+      if (p2 != 0) {
+         v.lshiftMe(p2);
       }
 
-      return var2;
+      return v;
    }
 
-   private FDBigInt doubleToBigInt(double var1) {
+   private FDBigInt doubleToBigInt(double dval) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static double ulp(double var0, boolean var2) {
-      long var3 = Double.doubleToLongBits(var0) & Long.MAX_VALUE;
-      int var5 = (int)(var3 >>> 52);
-      if (var2 && var5 >= 52 && (var3 & 4503599627370495L) == 0) {
-         var5--;
+   private static double ulp(double dval, boolean subtracting) {
+      long lbits = Double.doubleToLongBits(dval) & Long.MAX_VALUE;
+      int binexp = (int)(lbits >>> 52);
+      if (subtracting && binexp >= 52 && (lbits & 4503599627370495L) == 0) {
+         binexp--;
       }
 
-      double var6;
-      if (var5 > 52) {
-         var6 = Double.longBitsToDouble((long)(var5 - 52) << 52);
-      } else if (var5 == 0) {
-         var6 = Double.MIN_VALUE;
+      double ulpval;
+      if (binexp > 52) {
+         ulpval = Double.longBitsToDouble((long)(binexp - 52) << 52);
+      } else if (binexp == 0) {
+         ulpval = Double.MIN_VALUE;
       } else {
-         var6 = Double.longBitsToDouble((long)1 << var5 - 1);
+         ulpval = Double.longBitsToDouble((long)1 << binexp - 1);
       }
 
-      if (var2) {
-         var6 = -var6;
+      if (subtracting) {
+         ulpval = -ulpval;
       }
 
-      return var6;
+      return ulpval;
    }
 
-   float stickyRound(double var1) {
-      long var3 = Double.doubleToLongBits(var1);
-      long var5 = var3 & 9218868437227405312L;
-      if (var5 != 0 && var5 != 9218868437227405312L) {
-         var3 += this.roundDir;
-         return (float)Double.longBitsToDouble(var3);
+   float stickyRound(double dval) {
+      long lbits = Double.doubleToLongBits(dval);
+      long binexp = lbits & 9218868437227405312L;
+      if (binexp != 0 && binexp != 9218868437227405312L) {
+         lbits += this.roundDir;
+         return (float)Double.longBitsToDouble(lbits);
       } else {
-         return (float)var1;
+         return (float)dval;
       }
    }
 
-   private void developLongDigits(int var1, long var2, long var4) {
+   private void developLongDigits(int decExponent, long lvalue, long insignificant) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private void roundup() {
-      int var1;
-      char var2 = this.digits[var1 = this.nDigits - 1];
-      if (var2 == '9') {
-         while (var2 == '9' && var1 > 0) {
-            this.digits[var1] = '0';
-            var2 = this.digits[--var1];
+      int i;
+      int q = this.digits[i = this.nDigits - 1];
+      if (q == 57) {
+         while (q == 57 && i > 0) {
+            this.digits[i] = '0';
+            q = this.digits[--i];
          }
 
-         if (var2 == '9') {
+         if (q == 57) {
             this.decExponent++;
             this.digits[0] = '1';
             return;
          }
       }
 
-      this.digits[var1] = (char)(var2 + 1);
+      this.digits[i] = (char)(q + 1);
    }
 
-   public FloatingDecimal(double var1) {
+   public FloatingDecimal(double d) {
    }
 
-   public FloatingDecimal(float var1) {
+   public FloatingDecimal(float f) {
       this.mustSetRoundDir = false;
-      int var2 = Float.floatToIntBits(var1);
-      if ((var2 & -2147483648) != 0) {
+      int fBits = Float.floatToIntBits(f);
+      if ((fBits & -2147483648) != 0) {
          this.isNegative = true;
-         var2 ^= Integer.MIN_VALUE;
+         fBits ^= Integer.MIN_VALUE;
       } else {
          this.isNegative = false;
       }
 
-      int var4 = (var2 & 2139095040) >> 23;
-      int var3 = var2 & 8388607;
-      if (var4 == 255) {
+      int binExp = (fBits & 2139095040) >> 23;
+      int fractBits = fBits & 8388607;
+      if (binExp == 255) {
          this.isExceptional = true;
-         if (var3 == 0) {
+         if (fractBits == 0) {
             this.digits = infinity;
          } else {
             this.digits = notANumber;
@@ -202,33 +202,33 @@ class FloatingDecimal {
          this.nDigits = this.digits.length;
       } else {
          this.isExceptional = false;
-         int var5;
-         if (var4 == 0) {
-            if (var3 == 0) {
+         int nSignificantBits;
+         if (binExp == 0) {
+            if (fractBits == 0) {
                this.decExponent = 0;
                this.digits = zero;
                this.nDigits = 1;
                return;
             }
 
-            while ((var3 & 8388608) == 0) {
-               var3 <<= 1;
-               var4--;
+            while ((fractBits & 8388608) == 0) {
+               fractBits <<= 1;
+               binExp--;
             }
 
-            var5 = 23 + var4 + 1;
-            var4++;
+            nSignificantBits = 23 + binExp + 1;
+            binExp++;
          } else {
-            var3 |= 8388608;
-            var5 = 24;
+            fractBits |= 8388608;
+            nSignificantBits = 24;
          }
 
-         var4 -= 127;
-         this.dtoa(var4, (long)var3 << 29, var5);
+         binExp -= 127;
+         this.dtoa(binExp, (long)fractBits << 29, nSignificantBits);
       }
    }
 
-   private void dtoa(int var1, long var2, int var4) {
+   private void dtoa(int binExp, long fractBits, int nSignificantBits) {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
@@ -238,83 +238,83 @@ class FloatingDecimal {
    }
 
    public String toJavaFormatString() {
-      char[] var1 = new char[this.nDigits + 10];
-      int var2 = 0;
+      char[] result = new char[this.nDigits + 10];
+      int i = 0;
       if (this.isNegative) {
-         var1[0] = '-';
-         var2 = 1;
+         result[0] = '-';
+         i = 1;
       }
 
       if (this.isExceptional) {
-         System.arraycopy(this.digits, 0, var1, var2, this.nDigits);
-         var2 += this.nDigits;
+         System.arraycopy(this.digits, 0, result, i, this.nDigits);
+         i += this.nDigits;
       } else if (this.decExponent > 0 && this.decExponent < 8) {
-         int var20 = Math.min(this.nDigits, this.decExponent);
-         System.arraycopy(this.digits, 0, var1, var2, var20);
-         var2 += var20;
-         if (var20 < this.decExponent) {
-            var20 = this.decExponent - var20;
-            System.arraycopy(zero, 0, var1, var2, var20);
-            var2 += var20;
-            var1[var2++] = '.';
-            var1[var2++] = '0';
+         int charLength = Math.min(this.nDigits, this.decExponent);
+         System.arraycopy(this.digits, 0, result, i, charLength);
+         i += charLength;
+         if (charLength < this.decExponent) {
+            charLength = this.decExponent - charLength;
+            System.arraycopy(zero, 0, result, i, charLength);
+            i += charLength;
+            result[i++] = '.';
+            result[i++] = '0';
          } else {
-            var1[var2++] = '.';
-            if (var20 < this.nDigits) {
-               int var4 = this.nDigits - var20;
-               System.arraycopy(this.digits, var20, var1, var2, var4);
-               var2 += var4;
+            result[i++] = '.';
+            if (charLength < this.nDigits) {
+               int t = this.nDigits - charLength;
+               System.arraycopy(this.digits, charLength, result, i, t);
+               i += t;
             } else {
-               var1[var2++] = '0';
+               result[i++] = '0';
             }
          }
       } else if (this.decExponent <= 0 && this.decExponent > -3) {
-         var1[var2++] = '0';
-         var1[var2++] = '.';
+         result[i++] = '0';
+         result[i++] = '.';
          if (this.decExponent != 0) {
-            System.arraycopy(zero, 0, var1, var2, -this.decExponent);
-            var2 -= this.decExponent;
+            System.arraycopy(zero, 0, result, i, -this.decExponent);
+            i -= this.decExponent;
          }
 
-         System.arraycopy(this.digits, 0, var1, var2, this.nDigits);
-         var2 += this.nDigits;
+         System.arraycopy(this.digits, 0, result, i, this.nDigits);
+         i += this.nDigits;
       } else {
-         var1[var2++] = this.digits[0];
-         var1[var2++] = '.';
+         result[i++] = this.digits[0];
+         result[i++] = '.';
          if (this.nDigits > 1) {
-            System.arraycopy(this.digits, 1, var1, var2, this.nDigits - 1);
-            var2 += this.nDigits - 1;
+            System.arraycopy(this.digits, 1, result, i, this.nDigits - 1);
+            i += this.nDigits - 1;
          } else {
-            var1[var2++] = '0';
+            result[i++] = '0';
          }
 
-         var1[var2++] = 'E';
-         int var3;
+         result[i++] = 'E';
+         int e;
          if (this.decExponent <= 0) {
-            var1[var2++] = '-';
-            var3 = -this.decExponent + 1;
+            result[i++] = '-';
+            e = -this.decExponent + 1;
          } else {
-            var3 = this.decExponent - 1;
+            e = this.decExponent - 1;
          }
 
-         if (var3 <= 9) {
-            var1[var2++] = (char)(var3 + 48);
-         } else if (var3 <= 99) {
-            var1[var2++] = (char)(var3 / 10 + 48);
-            var1[var2++] = (char)(var3 % 10 + 48);
+         if (e <= 9) {
+            result[i++] = (char)(e + 48);
+         } else if (e <= 99) {
+            result[i++] = (char)(e / 10 + 48);
+            result[i++] = (char)(e % 10 + 48);
          } else {
-            var1[var2++] = (char)(var3 / 100 + 48);
-            var3 %= 100;
-            var1[var2++] = (char)(var3 / 10 + 48);
-            var1[var2++] = (char)(var3 % 10 + 48);
+            result[i++] = (char)(e / 100 + 48);
+            e %= 100;
+            result[i++] = (char)(e / 10 + 48);
+            result[i++] = (char)(e % 10 + 48);
          }
       }
 
-      return (String)(new Object(var1, 0, var2));
+      return (String)(new Object(result, 0, i));
    }
 
-   public static FloatingDecimal readJavaFormatString(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static FloatingDecimal readJavaFormatString(String in) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public double doubleValue() {
@@ -322,69 +322,69 @@ class FloatingDecimal {
    }
 
    public float floatValue() {
-      int var1 = Math.min(this.nDigits, 8);
-      int var2 = this.digits[0] - '0';
+      int kDigits = Math.min(this.nDigits, 8);
+      int iValue = this.digits[0] - '0';
 
-      for (int var4 = 1; var4 < var1; var4++) {
-         var2 = var2 * 10 + this.digits[var4] - 48;
+      for (int i = 1; i < kDigits; i++) {
+         iValue = iValue * 10 + this.digits[i] - 48;
       }
 
-      float var3 = var2;
-      int var14 = this.decExponent - var1;
+      float fValue = iValue;
+      int exp = this.decExponent - kDigits;
       if (this.nDigits > 7) {
          if (this.decExponent >= this.nDigits && this.nDigits + this.decExponent <= 15) {
-            long var17 = var2;
+            long lValue = iValue;
 
-            for (int var7 = var1; var7 < this.nDigits; var7++) {
-               var17 = var17 * 10 + (this.digits[var7] - '0');
+            for (int i = kDigits; i < this.nDigits; i++) {
+               lValue = lValue * 10 + (this.digits[i] - '0');
             }
 
-            double var18 = var17;
-            var14 = this.decExponent - this.nDigits;
-            var18 *= small10pow[var14];
-            var3 = (float)var18;
+            double dValue = lValue;
+            exp = this.decExponent - this.nDigits;
+            dValue *= small10pow[exp];
+            fValue = (float)dValue;
             if (this.isNegative) {
-               return -var3;
+               return -fValue;
             }
 
-            return var3;
+            return fValue;
          }
       } else {
-         if (var14 == 0 || var3 == false) {
+         if (exp == 0 || fValue == false) {
             if (this.isNegative) {
-               return -var3;
+               return -fValue;
             }
 
-            return var3;
+            return fValue;
          }
 
-         if (var14 >= 0) {
-            if (var14 <= singleMaxSmallTen) {
-               var3 *= singleSmall10pow[var14];
+         if (exp >= 0) {
+            if (exp <= singleMaxSmallTen) {
+               fValue *= singleSmall10pow[exp];
                if (this.isNegative) {
-                  return -var3;
+                  return -fValue;
                }
 
-               return var3;
+               return fValue;
             }
 
-            int var5 = 7 - var1;
-            if (var14 <= singleMaxSmallTen + var5) {
-               var3 *= singleSmall10pow[var5];
-               var3 *= singleSmall10pow[var14 - var5];
+            int slop = 7 - kDigits;
+            if (exp <= singleMaxSmallTen + slop) {
+               fValue *= singleSmall10pow[slop];
+               fValue *= singleSmall10pow[exp - slop];
                if (this.isNegative) {
-                  return -var3;
+                  return -fValue;
                }
 
-               return var3;
+               return fValue;
             }
-         } else if (var14 >= -singleMaxSmallTen) {
-            var3 /= singleSmall10pow[-var14];
+         } else if (exp >= -singleMaxSmallTen) {
+            fValue /= singleSmall10pow[-exp];
             if (this.isNegative) {
-               return -var3;
+               return -fValue;
             }
 
-            return var3;
+            return fValue;
          }
       }
 
@@ -397,7 +397,7 @@ class FloatingDecimal {
       }
 
       this.mustSetRoundDir = true;
-      double var16 = this.doubleValue();
-      return this.stickyRound(var16);
+      double dValue = this.doubleValue();
+      return this.stickyRound(dValue);
    }
 }

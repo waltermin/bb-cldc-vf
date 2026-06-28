@@ -1,6 +1,7 @@
 package com.sun.cldc.i18n.j2me;
 
 import com.sun.cldc.i18n.StreamReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
@@ -20,7 +21,7 @@ public final class Universal_Reader extends StreamReader {
    private static final int BUF_SIZE;
 
    @Override
-   public final Reader open(InputStream var1, String var2) {
+   public final Reader open(InputStream in, String enc) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -30,28 +31,28 @@ public final class Universal_Reader extends StreamReader {
    }
 
    @Override
-   public final int read(char[] var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
-         int var4 = 0;
+   public final int read(char[] cbuf, int offset, int length) {
+      if (offset >= 0 && length >= 0 && offset + length <= cbuf.length) {
+         int count = 0;
          if (this._noConversionData) {
-            while (var4 < var3) {
-               int var5 = super.in.read();
-               if (var5 == -1) {
-                  if (var4 == 0) {
+            while (count < length) {
+               int ch = super.in.read();
+               if (ch == -1) {
+                  if (count == 0) {
                      return -1;
                   }
 
-                  return var4;
+                  return count;
                }
 
-               var1[var2++] = (char)var5;
-               var4++;
+               cbuf[offset++] = (char)ch;
+               count++;
                this._streamPos += 1;
             }
 
-            return var3;
+            return length;
          } else {
-            return this.read(super.in, 0, Integer.MAX_VALUE, var1, var2, var3);
+            return this.read(super.in, 0, Integer.MAX_VALUE, cbuf, offset, length);
          }
       } else {
          throw new IndexOutOfBoundsException();
@@ -60,7 +61,15 @@ public final class Universal_Reader extends StreamReader {
 
    @Override
    public final boolean ready() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (super.in == null) {
+         return false;
+      }
+
+      try {
+         return super.in.available() <= 0 ? this._size - this._pos > 0 : true;
+      } catch (IOException x) {
+         return this._size - this._pos > 0;
+      }
    }
 
    @Override
@@ -74,25 +83,25 @@ public final class Universal_Reader extends StreamReader {
    }
 
    @Override
-   public final void mark(int var1) {
+   public final void mark(int readAheadLimit) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
    @Override
-   public final int sizeOf(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int sizeOf(byte[] cbuf, int offset, int length) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private final int read(Object var1, int var2, int var3, Object var4, int var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int read(Object in, int inOffset, int inLength, Object cbuf, int offset, int length) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public final Object byteToCharArray(int var1, byte[] var2, int var3, int var4, String var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Object byteToCharArray(int encId, byte[] buffer, int offset, int length, String enc) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

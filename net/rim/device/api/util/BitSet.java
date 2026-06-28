@@ -10,56 +10,56 @@ public class BitSet implements net.rim.vm.Persistable {
       this(128);
    }
 
-   public BitSet(int var1) {
-      if (var1 < 0) {
+   public BitSet(int size) {
+      if (size < 0) {
          throw new Object();
       }
 
-      this._data = new int[var1 + 31 >> 5];
+      this._data = new int[size + 31 >> 5];
       this._numSet = -1;
    }
 
-   public BitSet(BitSet var1) {
-      int[] var2 = var1._data;
-      this._data = new int[var2.length];
-      System.arraycopy(var2, 0, this._data, 0, var2.length);
-      this._numSet = var1._numSet;
+   public BitSet(BitSet srcBitSet) {
+      int[] src = srcBitSet._data;
+      this._data = new int[src.length];
+      System.arraycopy(src, 0, this._data, 0, src.length);
+      this._numSet = srcBitSet._numSet;
    }
 
-   public void fastSet(int var1) {
+   public void fastSet(int index) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   public void set(int var1) {
-      int var2 = 1 << (var1 & 31);
-      int var3 = var1 >> 5;
-      if (var3 >= this._data.length) {
-         Array.resize(this._data, var3 + 1);
+   public void set(int index) {
+      int bit = 1 << (index & 31);
+      int elt = index >> 5;
+      if (elt >= this._data.length) {
+         Array.resize(this._data, elt + 1);
       }
 
-      int var4 = this._data[var3];
-      if ((var4 & var2) == 0) {
-         var4 |= var2;
+      int d = this._data[elt];
+      if ((d & bit) == 0) {
+         d |= bit;
          if (this._numSet != -1) {
             this._numSet++;
          }
 
-         this._data[var3] = var4;
+         this._data[elt] = d;
       }
    }
 
-   public void fastClear(int var1) {
+   public void fastClear(int index) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   public void clear(int var1) {
-      int var2 = 1 << (var1 & 31);
-      int var3 = var1 >> 5;
-      if (var3 < this._data.length) {
-         int var4 = this._data[var3];
-         if ((var4 & var2) != 0) {
-            var4 &= ~var2;
-            this._data[var3] = var4;
+   public void clear(int index) {
+      int bit = 1 << (index & 31);
+      int elt = index >> 5;
+      if (elt < this._data.length) {
+         int d = this._data[elt];
+         if ((d & bit) != 0) {
+            d &= ~bit;
+            this._data[elt] = d;
             if (this._numSet != -1) {
                this._numSet--;
             }
@@ -68,23 +68,31 @@ public class BitSet implements net.rim.vm.Persistable {
    }
 
    public void reset() {
-      for (int var1 = 0; var1 < this._data.length; var1++) {
-         this._data[var1] = 0;
+      for (int i = 0; i < this._data.length; i++) {
+         this._data[i] = 0;
       }
 
       this._numSet = 0;
    }
 
-   public boolean isSet(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean isSet(int index) {
+      try {
+         int element = index >> 5;
+         if (element < this._data.length) {
+            return (this._data[element] & 1 << (index & 31)) != 0;
+         }
+      } catch (Exception var3) {
+      }
+
+      return false;
    }
 
    public int getNumSet() {
       if (this._numSet == -1) {
          this._numSet = 0;
 
-         for (int var1 = 0; var1 < this._data.length; var1++) {
-            for (int var2 = this._data[var1]; var2 != 0; var2 &= var2 - 1) {
+         for (int i = 0; i < this._data.length; i++) {
+            for (int data = this._data[i]; data != 0; data &= data - 1) {
                this._numSet++;
             }
          }
@@ -94,16 +102,60 @@ public class BitSet implements net.rim.vm.Persistable {
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public int getNextSet(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int getNextSet(int index) {
+      int bit = 1 << (index & 31);
+      int elt = index >> 5;
+      int mask = -bit;
+
+      try {
+         while ((this._data[elt] & mask) == 0) {
+            elt++;
+            index = index + 32 & -32;
+            bit = 1;
+            mask = -1;
+         }
+
+         for (int bits = this._data[elt]; (bits & bit) == 0; index++) {
+            bit <<= 1;
+         }
+
+         return index;
+      } catch (ArrayIndexOutOfBoundsException e) {
+         return -1;
+      }
    }
 
-   public int getPreviousSet(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int getPreviousSet(int index) {
+      int bit = 1 << (index & 31);
+      int elt = index >> 5;
+      if (elt >= this._data.length) {
+         elt = this._data.length - 1;
+         bit = Integer.MIN_VALUE;
+         index = this._data.length * 32 - 1;
+      }
+
+      int mask = bit | bit - 1;
+
+      try {
+         while ((this._data[elt] & mask) == 0) {
+            elt--;
+            index = (index & -32) - 1;
+            bit = Integer.MIN_VALUE;
+            mask = -1;
+         }
+
+         for (int bits = this._data[elt]; (bits & bit) == 0; index--) {
+            bit >>= 1;
+         }
+
+         return index;
+      } catch (ArrayIndexOutOfBoundsException e) {
+         return -1;
+      }
    }
 
    public int getFirstSet() {
@@ -114,19 +166,19 @@ public class BitSet implements net.rim.vm.Persistable {
       return this.getPreviousSet(this._data.length * 32 - 1);
    }
 
-   public void and(BitSet var1) {
+   public void and(BitSet mask) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   public void or(BitSet var1) {
+   public void or(BitSet mask) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
    public void not() {
-      int var1 = this._data.length;
+      int size = this._data.length;
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         this._data[var2] = ~this._data[var2];
+      for (int i = 0; i < size; i++) {
+         this._data[i] = ~this._data[i];
       }
 
       if (this._numSet != -1) {
@@ -134,7 +186,7 @@ public class BitSet implements net.rim.vm.Persistable {
       }
    }
 
-   public void xor(BitSet var1) {
+   public void xor(BitSet mask) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 }

@@ -10,11 +10,11 @@ public final class StringBuffer {
       this(16);
    }
 
-   public StringBuffer(int var1) {
-      this.value = new byte[var1];
+   public StringBuffer(int length) {
+      this.value = new byte[length];
    }
 
-   public StringBuffer(String var1) {
+   public StringBuffer(String str) {
    }
 
    public final int length() {
@@ -25,121 +25,121 @@ public final class StringBuffer {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized void ensureCapacity(int var1) {
-      if (var1 > this.capacity()) {
-         this.expandCapacity(var1);
+   public final synchronized void ensureCapacity(int minimumCapacity) {
+      if (minimumCapacity > this.capacity()) {
+         this.expandCapacity(minimumCapacity);
       }
    }
 
-   private final void expandCapacity(int var1) {
-      int var2 = this.capacity();
-      int var3 = (var2 + 1) * 2;
-      if (var1 > var3) {
-         var3 = var1;
+   private final void expandCapacity(int minimumCapacity) {
+      int oldCapacity = this.capacity();
+      int newCapacity = (oldCapacity + 1) * 2;
+      if (minimumCapacity > newCapacity) {
+         newCapacity = minimumCapacity;
       }
 
-      if (var3 < 4096) {
-         Array.resize(this.value, var3);
+      if (newCapacity < 4096) {
+         Array.resize(this.value, newCapacity);
       } else {
-         int var4 = var1 - var2;
-         if (var4 <= 0) {
-            var4 = 1;
+         int incSize = minimumCapacity - oldCapacity;
+         if (incSize <= 0) {
+            incSize = 1;
          }
 
-         Array.extend(this.value, var4);
+         Array.extend(this.value, incSize);
       }
    }
 
-   public final synchronized void setLength(int var1) {
+   public final synchronized void setLength(int newLength) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized char charAt(int var1) {
+   public final synchronized char charAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized void getChars(int var1, int var2, char[] var3, int var4) {
+   public final synchronized void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private final native void promote();
 
-   public final synchronized void setCharAt(int var1, char var2) {
+   public final synchronized void setCharAt(int index, char ch) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized StringBuffer append(Object var1) {
+   public final synchronized StringBuffer append(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized StringBuffer append(String var1) {
-      if (var1 == null) {
-         var1 = String.valueOf(var1);
+   public final synchronized StringBuffer append(String str) {
+      if (str == null) {
+         str = String.valueOf(str);
       }
 
-      this.doAppend(var1);
+      this.doAppend(str);
       return this;
    }
 
    private final native void doAppend(String var1);
 
-   public final StringBuffer append(char[] var1) {
-      return this.append(var1, 0, var1.length);
+   public final StringBuffer append(char[] str) {
+      return this.append(str, 0, str.length);
    }
 
-   public final synchronized StringBuffer append(char[] var1, int var2, int var3) {
-      int var4 = this.count + var3;
+   public final synchronized StringBuffer append(char[] str, int offset, int len) {
+      int newcount = this.count + len;
       this.promote();
-      if (var4 > this.capacity()) {
-         this.expandCapacity(var4);
+      if (newcount > this.capacity()) {
+         this.expandCapacity(newcount);
       }
 
-      System.arraycopy(var1, var2, this.value, this.count, var3);
-      this.count = var4;
+      System.arraycopy(str, offset, this.value, this.count, len);
+      this.count = newcount;
       return this;
    }
 
-   public final StringBuffer append(boolean var1) {
-      return this.append(String.valueOf(var1));
+   public final StringBuffer append(boolean b) {
+      return this.append(String.valueOf(b));
    }
 
-   public final synchronized StringBuffer append(char var1) {
+   public final synchronized StringBuffer append(char c) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final StringBuffer append(int var1) {
-      return this.append((long)var1);
+   public final StringBuffer append(int i) {
+      return this.append((long)i);
    }
 
-   public final synchronized StringBuffer append(long var1) {
+   public final synchronized StringBuffer append(long l) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized StringBuffer delete(int var1, int var2) {
-      if (var1 < 0) {
-         throw new StringIndexOutOfBoundsException(var1);
+   public final synchronized StringBuffer delete(int start, int end) {
+      if (start < 0) {
+         throw new StringIndexOutOfBoundsException(start);
       }
 
-      if (var2 > this.count) {
-         var2 = this.count;
+      if (end > this.count) {
+         end = this.count;
       }
 
-      if (var1 > var2) {
+      if (start > end) {
          throw new StringIndexOutOfBoundsException();
       }
 
-      int var3 = var2 - var1;
-      if (var3 > 0) {
-         System.arraycopy(this.value, var1 + var3, this.value, var1, this.count - var2);
-         this.count -= var3;
+      int len = end - start;
+      if (len > 0) {
+         System.arraycopy(this.value, start + len, this.value, start, this.count - end);
+         this.count -= len;
       }
 
       return this;
    }
 
-   public final synchronized StringBuffer deleteCharAt(int var1) {
-      if (var1 >= 0 && var1 < this.count) {
-         System.arraycopy(this.value, var1 + 1, this.value, var1, this.count - var1 - 1);
+   public final synchronized StringBuffer deleteCharAt(int index) {
+      if (index >= 0 && index < this.count) {
+         System.arraycopy(this.value, index + 1, this.value, index, this.count - index - 1);
          this.count--;
          return this;
       } else {
@@ -147,46 +147,46 @@ public final class StringBuffer {
       }
    }
 
-   public final synchronized StringBuffer insert(int var1, Object var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final synchronized StringBuffer insert(int offset, Object obj) {
+      return this.insert(offset, String.valueOf(obj));
    }
 
-   public final synchronized StringBuffer insert(int var1, String var2) {
+   public final synchronized StringBuffer insert(int offset, String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final synchronized StringBuffer insert(int var1, char[] var2) {
-      if (var1 >= 0 && var1 <= this.count) {
-         int var3 = var2.length;
-         int var4 = this.count + var3;
-         if (var4 > this.capacity()) {
-            this.expandCapacity(var4);
+   public final synchronized StringBuffer insert(int offset, char[] str) {
+      if (offset >= 0 && offset <= this.count) {
+         int len = str.length;
+         int newcount = this.count + len;
+         if (newcount > this.capacity()) {
+            this.expandCapacity(newcount);
          }
 
-         System.arraycopy(this.value, var1, this.value, var1 + var3, this.count - var1);
-         this.count = var4;
+         System.arraycopy(this.value, offset, this.value, offset + len, this.count - offset);
+         this.count = newcount;
          this.promote();
-         System.arraycopy(var2, 0, this.value, var1, var3);
+         System.arraycopy(str, 0, this.value, offset, len);
          return this;
       } else {
          throw new StringIndexOutOfBoundsException();
       }
    }
 
-   public final StringBuffer insert(int var1, boolean var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final StringBuffer insert(int offset, boolean b) {
+      return this.insert(offset, String.valueOf(b));
    }
 
-   public final synchronized StringBuffer insert(int var1, char var2) {
+   public final synchronized StringBuffer insert(int offset, char c) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final StringBuffer insert(int var1, int var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final StringBuffer insert(int offset, int i) {
+      return this.insert(offset, String.valueOf(i));
    }
 
-   public final StringBuffer insert(int var1, long var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final StringBuffer insert(int offset, long l) {
+      return this.insert(offset, String.valueOf(l));
    }
 
    public final native StringBuffer reverse();
@@ -204,19 +204,19 @@ public final class StringBuffer {
 
    static final native int formatNumeric(char[] var0, int var1, int var2, long var3);
 
-   public final StringBuffer append(float var1) {
-      return this.append(String.valueOf(var1));
+   public final StringBuffer append(float f) {
+      return this.append(String.valueOf(f));
    }
 
-   public final StringBuffer append(double var1) {
-      return this.append(String.valueOf(var1));
+   public final StringBuffer append(double d) {
+      return this.append(String.valueOf(d));
    }
 
-   public final StringBuffer insert(int var1, float var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final StringBuffer insert(int offset, float f) {
+      return this.insert(offset, String.valueOf(f));
    }
 
-   public final StringBuffer insert(int var1, double var2) {
-      return this.insert(var1, String.valueOf(var2));
+   public final StringBuffer insert(int offset, double d) {
+      return this.insert(offset, String.valueOf(d));
    }
 }

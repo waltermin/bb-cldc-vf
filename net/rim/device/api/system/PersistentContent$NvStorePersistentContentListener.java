@@ -7,15 +7,15 @@ class PersistentContent$NvStorePersistentContentListener implements PersistentCo
    }
 
    @Override
-   public void persistentContentStateChanged(int var1) {
+   public void persistentContentStateChanged(int state) {
    }
 
    @Override
-   public void persistentContentModeChanged(int var1) {
+   public void persistentContentModeChanged(int generation) {
       NvStore.persistentContentModeChanged();
    }
 
-   PersistentContent$NvStorePersistentContentListener(PersistentContent$1 var1) {
+   PersistentContent$NvStorePersistentContentListener(PersistentContent$1 x0) {
       this();
    }
 }

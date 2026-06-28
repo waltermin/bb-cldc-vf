@@ -5,7 +5,7 @@ import net.rim.vm.Message;
 
 final class GPSEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
+   public final void dispatch(Message message, Object _listener) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

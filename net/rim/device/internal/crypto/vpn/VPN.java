@@ -101,14 +101,14 @@ public final class VPN {
    private VPN() {
    }
 
-   public static final void setVPNSystem(VPNSystem var0) {
+   public static final void setVPNSystem(VPNSystem system) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final VPNSystem getVPNSystem() {
       if (_system == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _system = var0 != null ? (VPNSystem)var0.get(4078127605297297308L) : null;
+         ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+         _system = appReg != null ? (VPNSystem)appReg.get(4078127605297297308L) : null;
       }
 
       return _system;
@@ -120,20 +120,20 @@ public final class VPN {
 
    public static final boolean isVPNAllowed() {
       if (WLAN.isSupported() && isSupported()) {
-         VPNSystem var0 = getVPNSystem();
-         if (var0 != null) {
-            return var0.isVPNAllowed();
+         VPNSystem vpn = getVPNSystem();
+         if (vpn != null) {
+            return vpn.isVPNAllowed();
          }
       }
 
       return false;
    }
 
-   public static final boolean isIPSecRequiredForNetwork(String var0, int var1) {
+   public static final boolean isIPSecRequiredForNetwork(String network, int networkType) {
       if (WLAN.isSupported() && isSupported()) {
-         VPNSystem var2 = getVPNSystem();
-         if (var2 != null) {
-            return var2.isIPSecRequiredForNetwork(var0, var1);
+         VPNSystem vpn = getVPNSystem();
+         if (vpn != null) {
+            return vpn.isIPSecRequiredForNetwork(network, networkType);
          }
       }
 
@@ -142,9 +142,9 @@ public final class VPN {
 
    public static final boolean isConnected() {
       if (WLAN.isSupported() && isSupported()) {
-         VPNSystem var0 = getVPNSystem();
-         if (var0 != null) {
-            return var0.isConnected();
+         VPNSystem vpn = getVPNSystem();
+         if (vpn != null) {
+            return vpn.isConnected();
          }
       }
 
@@ -153,9 +153,9 @@ public final class VPN {
 
    public static final boolean livenessCheckEnabled() {
       if (WLAN.isSupported() && isSupported()) {
-         VPNSystem var0 = getVPNSystem();
-         if (var0 != null) {
-            return var0.livenessCheckEnabled();
+         VPNSystem vpn = getVPNSystem();
+         if (vpn != null) {
+            return vpn.livenessCheckEnabled();
          }
       }
 

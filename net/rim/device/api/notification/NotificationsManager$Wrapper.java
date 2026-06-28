@@ -10,7 +10,7 @@ class NotificationsManager$Wrapper {
    private NotificationsManager$Wrapper() {
    }
 
-   NotificationsManager$Wrapper(NotificationsManager$1 var1) {
+   NotificationsManager$Wrapper(NotificationsManager$1 x0) {
       this();
    }
 }

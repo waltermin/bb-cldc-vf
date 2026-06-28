@@ -1,6 +1,7 @@
 package javax.microedition.io;
 
 import java.util.Date;
+import net.rim.device.internal.system.MIDletSecurity;
 
 final class PushRegistry$MIDletAlarmExpiry implements Runnable {
    private String _midletClassName;
@@ -12,11 +13,15 @@ final class PushRegistry$MIDletAlarmExpiry implements Runnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         MIDletSecurity.checkPermission(8);
+         PushRegistry.launchMidlet(this._midletClassName, new String[]{this._midletClassName}, true);
+      } catch (SecurityException var2) {
+      }
    }
 
-   public PushRegistry$MIDletAlarmExpiry(String var1, Date var2) {
-      this._midletClassName = var1;
-      this._expiry = var2;
+   public PushRegistry$MIDletAlarmExpiry(String classname, Date expiry) {
+      this._midletClassName = classname;
+      this._expiry = expiry;
    }
 }

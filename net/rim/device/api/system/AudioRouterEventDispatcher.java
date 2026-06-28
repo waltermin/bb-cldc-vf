@@ -5,19 +5,19 @@ import net.rim.vm.Message;
 
 final class AudioRouterEventDispatcher extends EventDispatcher {
    @Override
-   public final void dispatch(Message var1, Object var2) {
-      int var3 = var1.getEvent();
-      AudioRouterListener var4 = (AudioRouterListener)var2;
-      switch (var3) {
+   public final void dispatch(Message message, Object listener) {
+      int event = message.getEvent();
+      AudioRouterListener arListener = (AudioRouterListener)listener;
+      switch (event) {
          case 1:
          default:
-            var4.audioVolumeChanged(var1.getSubMessage() != 0);
+            arListener.audioVolumeChanged(message.getSubMessage() != 0);
             return;
          case 2:
-            var4.audioSinkChanged();
+            arListener.audioSinkChanged();
             return;
          case 3:
-            var4.audioSourceChanged();
+            arListener.audioSourceChanged();
          case 0:
       }
    }

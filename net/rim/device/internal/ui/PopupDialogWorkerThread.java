@@ -1,5 +1,6 @@
 package net.rim.device.internal.ui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.internal.ui.component.PleaseWaitWorkerThread;
 import net.rim.device.internal.ui.component.PopupDialog;
 import net.rim.device.internal.ui.component.PopupDialogClosedListener;
@@ -8,21 +9,39 @@ public class PopupDialogWorkerThread extends PleaseWaitWorkerThread implements P
    PopupDialog _popupDialog;
    boolean _popupDialogDisplayed;
 
-   public PopupDialogWorkerThread(PopupDialog var1) {
-      if (var1 == null) {
+   public PopupDialogWorkerThread(PopupDialog popupDialog) {
+      if (popupDialog == null) {
          throw new Object();
       }
 
-      this._popupDialog = var1;
+      this._popupDialog = popupDialog;
    }
 
    @Override
    public void doWork() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._popupDialogDisplayed = true;
+      this._popupDialog.setPopupDialogClosedListener(this);
+      synchronized (Application.getApplication().getAppEventLock()) {
+         this._popupDialog.show();
+      }
+
+      synchronized (this) {
+         while (this._popupDialogDisplayed) {
+            try {
+               super.wait();
+            } catch (InterruptedException var3) {
+            }
+         }
+      }
    }
 
    @Override
-   public void dialogClosed(PopupDialog var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void dialogClosed(PopupDialog popupDialog, int choice) {
+      if (popupDialog == this._popupDialog) {
+         synchronized (this) {
+            this._popupDialogDisplayed = false;
+            super.notifyAll();
+         }
+      }
    }
 }

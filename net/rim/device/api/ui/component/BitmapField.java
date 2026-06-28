@@ -23,19 +23,19 @@ public class BitmapField extends Field implements DrawStyle {
       this(null, 0);
    }
 
-   public BitmapField(Bitmap var1) {
-      this(var1, 0);
+   public BitmapField(Bitmap bitmap) {
+      this(bitmap, 0);
    }
 
-   public BitmapField(Bitmap var1, long var2) {
-      super(var2);
+   public BitmapField(Bitmap bitmap, long style) {
+      super(style);
       this.setTag(TAG);
-      this._bitmap = var1;
+      this._bitmap = bitmap;
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      this.drawHighlightRegion(var1, 1, var2, 0, 0, this.getWidth(), this.getHeight());
+   protected void drawFocus(Graphics graphics, boolean on) {
+      this.drawHighlightRegion(graphics, 1, on, 0, 0, this.getWidth(), this.getHeight());
    }
 
    public int getBitmapHeight() {
@@ -73,65 +73,128 @@ public class BitmapField extends Field implements DrawStyle {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       switch ((int)(this.getStyle() & 56)) {
          case 32:
-            this._y = var2 - this.getPreferredHeight() >> 1;
+            this._y = height - this.getPreferredHeight() >> 1;
             break;
          case 40:
-            this._y = var2 - this.getPreferredHeight();
+            this._y = height - this.getPreferredHeight();
             break;
          case 48:
             this._y = 0;
             break;
          default:
             this._y = 0;
-            var2 = Math.min(var2, this.getPreferredHeight());
+            height = Math.min(height, this.getPreferredHeight());
       }
 
       this._y = this._y + this._vSpace;
       switch ((int)(this.getStyle() & 7)) {
          case 3:
             this._x = 0;
-            var1 = Math.min(var1, this.getPreferredWidth());
+            width = Math.min(width, this.getPreferredWidth());
             break;
          case 4:
          default:
-            this._x = var1 - this.getPreferredWidth() >> 1;
+            this._x = width - this.getPreferredWidth() >> 1;
             break;
          case 5:
-            this._x = var1 - this.getPreferredWidth();
+            this._x = width - this.getPreferredWidth();
             break;
          case 6:
             this._x = 0;
       }
 
       this._x = this._x + this._hSpace;
-      this.setExtent(var1, var2);
+      this.setExtent(width, height);
    }
 
-   protected void paintImage(Graphics var1, int var2, int var3, int var4, int var5, EncodedImage var6, int var7, int var8, int var9) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void paintImage(Graphics graphics, int x, int y, int width, int height, EncodedImage image, int frame, int left, int top) {
+      try {
+         graphics.drawImage(x, y, width, height, image, frame, left, top);
+      } catch (IllegalArgumentException e) {
+         if (this._replacementForCorruptEncodedImage == null) {
+            throw e;
+         }
+
+         graphics.drawImage(x, y, width, height, this._replacementForCorruptEncodedImage, frame, left, top);
+      }
    }
 
-   protected void paintBitmap(Graphics var1, int var2, int var3, int var4, int var5, Bitmap var6, int var7, int var8) {
-      var1.drawBitmap(var2, var3, var4, var5, var6, var7, var8);
+   protected void paintBitmap(Graphics graphics, int x, int y, int width, int height, Bitmap bitmap, int left, int top) {
+      graphics.drawBitmap(x, y, width, height, bitmap, left, top);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   protected void paint(Graphics var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void paint(Graphics graphics) {
+      int oldDecodeMode = 0;
+      boolean var6 = false /* VF: Semaphore variable */;
+
+      label102: {
+         try {
+            var6 = true;
+            Bitmap bitmap = null;
+            if (this._image != null) {
+               oldDecodeMode = this._image.getDecodeMode();
+               int bitmapType = this._image.getBitmapType(0);
+               if (bitmapType != 129 && bitmapType != 1) {
+                  this.paintImage(graphics, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), this._image, 0, 0, 0);
+                  var6 = false;
+                  break label102;
+               }
+
+               this._image.setDecodeMode(oldDecodeMode | 4);
+               bitmap = this._image.getBitmap(0);
+            }
+
+            if (this._bitmap != null) {
+               bitmap = this._bitmap;
+            }
+
+            if (bitmap != null) {
+               if (this.isStyle(65536) && Graphics.isColor() && bitmap.getType() == 129 && bitmap.hasAlpha()) {
+                  graphics.rop(-96, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), bitmap, 0, 0);
+                  var6 = false;
+               } else {
+                  this.paintBitmap(graphics, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), bitmap, 0, 0);
+                  var6 = false;
+               }
+            } else {
+               var6 = false;
+            }
+         } finally {
+            if (var6) {
+               if (this._image != null) {
+                  this._image.setDecodeMode(oldDecodeMode);
+               }
+            }
+         }
+
+         if (this._image != null) {
+            this._image.setDecodeMode(oldDecodeMode);
+            return;
+         }
+
+         return;
+      }
+
+      if (this._image != null) {
+         this._image.setDecodeMode(oldDecodeMode);
+      }
    }
 
-   public void setBitmap(Bitmap var1) {
-      int var2 = this.getPreferredWidth();
-      int var3 = this.getPreferredHeight();
-      this._bitmap = var1;
+   public void setBitmap(Bitmap bitmap) {
+      int oldWidth = this.getPreferredWidth();
+      int oldHeight = this.getPreferredHeight();
+      this._bitmap = bitmap;
       this._image = null;
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      Manager var4 = this.getManager();
-      if (var4 != null && var4.isValidLayout()) {
-         if (var2 != this.getPreferredWidth() || var3 != this.getPreferredHeight()) {
+      Manager manager = this.getManager();
+      if (manager != null && manager.isValidLayout()) {
+         if (oldWidth != this.getPreferredWidth() || oldHeight != this.getPreferredHeight()) {
             this.updateLayout();
          }
 
@@ -139,15 +202,15 @@ public class BitmapField extends Field implements DrawStyle {
       }
    }
 
-   public void setImage(EncodedImage var1) {
-      int var2 = this.getPreferredWidth();
-      int var3 = this.getPreferredHeight();
+   public void setImage(EncodedImage image) {
+      int oldWidth = this.getPreferredWidth();
+      int oldHeight = this.getPreferredHeight();
       this._bitmap = null;
-      this._image = var1;
+      this._image = image;
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      Manager var4 = this.getManager();
-      if (var4 != null && var4.isValidLayout()) {
-         if (var2 != this.getPreferredWidth() || var3 != this.getPreferredHeight()) {
+      Manager manager = this.getManager();
+      if (manager != null && manager.isValidLayout()) {
+         if (oldWidth != this.getPreferredWidth() || oldHeight != this.getPreferredHeight()) {
             this.updateLayout();
          }
 
@@ -155,13 +218,13 @@ public class BitmapField extends Field implements DrawStyle {
       }
    }
 
-   public void setReplacementForCorruptImage(EncodedImage var1) {
+   public void setReplacementForCorruptImage(EncodedImage image) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setSpace(int var1, int var2) {
-      this._hSpace = var1;
-      this._vSpace = var2;
+   public void setSpace(int hSpace, int vSpace) {
+      this._hSpace = hSpace;
+      this._vSpace = vSpace;
       this.updateLayout();
    }
 

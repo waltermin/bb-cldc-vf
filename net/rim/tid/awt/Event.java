@@ -15,19 +15,19 @@ public class Event {
    public static int INPUT_EVENT_MASK;
    public static int INPUT_METHOD_EVENT_MASK;
 
-   public Event(IComponent var1, int var2, int var3) {
-      this._source = var1;
-      this._ID = var2;
-      this._mask = var3;
+   public Event(IComponent aSource, int aId, int aMask) {
+      this._source = aSource;
+      this._ID = aId;
+      this._mask = aMask;
    }
 
-   public void init(IComponent var1, int var2) {
-      this._source = var1;
-      this._ID = var2;
+   public void init(IComponent aSource, int aId) {
+      this._source = aSource;
+      this._ID = aId;
       this._consumed = false;
    }
 
-   public void setSource(IComponent var1) {
+   public void setSource(IComponent aSource) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

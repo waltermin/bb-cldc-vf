@@ -10,11 +10,11 @@ public class VADLanguageSetting {
       throw null;
    }
 
-   public int getLanguageIndexForLocale(Locale var1) {
+   public int getLanguageIndexForLocale(Locale _1) {
       throw null;
    }
 
-   public void setLanguageIndex(int var1) {
+   public void setLanguageIndex(int _1) {
       throw null;
    }
 

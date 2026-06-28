@@ -25,230 +25,249 @@ public final class StringUtilities {
 
    public static final native int computeHashCode(StringBuffer var0);
 
-   public static final int hashCodeIgnoreCase(String var0) {
-      return hashCode(var0, 0, Integer.MAX_VALUE, true);
+   public static final int hashCodeIgnoreCase(String str) {
+      return hashCode(str, 0, Integer.MAX_VALUE, true);
    }
 
    public static final native int hashCode(String var0, int var1, int var2, boolean var3);
 
-   public static final int computeReverseLookupHashCodeString(String var0) {
-      return computeReverseLookupHashCodeString(var0, false);
+   public static final int computeReverseLookupHashCodeString(String string) {
+      return computeReverseLookupHashCodeString(string, false);
    }
 
    public static final native int computeReverseLookupHashCodeString(String var0, boolean var1);
 
-   public static final int computeReverseLookupHashCodeBytes(byte[] var0, int var1, int var2) {
-      return computeReverseLookupHashCodeBytes(var0, var1, var2, false);
+   public static final int computeReverseLookupHashCodeBytes(byte[] bytes, int start, int length) {
+      return computeReverseLookupHashCodeBytes(bytes, start, length, false);
    }
 
    public static final native int computeReverseLookupHashCodeBytes(byte[] var0, int var1, int var2, boolean var3);
 
    public static final native int codeBOM(String var0, int var1, int var2, byte[] var3, int var4);
 
-   public static final String decodeBOM(byte[] var0, int var1, int var2) {
-      return decodeBOM(var0, var1, var2, false);
+   public static final String decodeBOM(byte[] data, int offset, int len) {
+      return decodeBOM(data, offset, len, false);
    }
 
-   public static final String decodeBOM(byte[] var0, int var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String decodeBOM(byte[] data, int offset, int len, boolean stripNullLatin1) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final native int getCharacterSize(String var0);
 
    public static final native boolean isASCII(String var0);
 
-   public static final String intToString(int var0) {
-      if (var0 == -1) {
+   public static final String intToString(int code) {
+      if (code == -1) {
          return null;
       }
 
-      Object var1 = new Object();
+      StringBuffer buffer = (StringBuffer)(new Object());
 
-      for (byte var2 = 24; var2 >= 0; var2 -= 8) {
-         char var3 = (char)(var0 >> var2 & 0xFF);
-         if (var3 == 0) {
-            if (var0 != 0) {
+      for (int lv = 24; lv >= 0; lv -= 8) {
+         char ch = (char)(code >> lv & 0xFF);
+         if (ch == 0) {
+            if (code != 0) {
                throw new Object();
             }
             break;
          }
 
-         ((StringBuffer)var1).append(var3);
+         buffer.append(ch);
       }
 
-      return ((StringBuffer)var1).toString();
+      return buffer.toString();
    }
 
-   public static final boolean startsWithIgnoreCase(String var0, String var1) {
+   public static final boolean startsWithIgnoreCase(String string, String prefix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean startsWithIgnoreCase(String var0, String var1, int var2) {
+   public static final boolean startsWithIgnoreCase(String string, String prefix, int locale) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean endsWithIgnoreCase(String var0, String var1, int var2) {
+   public static final boolean endsWithIgnoreCase(String string, String suffix, int locale) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean startsWithIgnoreCaseAndAccents(String var0, String var1) {
+   public static final boolean startsWithIgnoreCaseAndAccents(String string, String prefix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String removeLineBreaksInString(String var0) {
+   public static final String removeLineBreaksInString(String string) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String[] stringToWords(String var0) {
-      String[] var1 = new String[10];
-      int var2 = stringToWords(var0, var1, 0);
-      Array.resize(var1, var2);
-      return var1;
+   public static final String[] stringToWords(String string) {
+      String[] theWords = new String[10];
+      int count = stringToWords(string, theWords, 0);
+      Array.resize(theWords, count);
+      return theWords;
    }
 
-   public static final String[] stringToKeywords(String var0) {
-      String[] var1 = new String[10];
-      int var2 = stringToKeywords(var0, var1, 0);
-      Array.resize(var1, var2);
-      return var1;
+   public static final String[] stringToKeywords(String string) {
+      String[] theKeywords = new String[10];
+      int count = stringToKeywords(string, theKeywords, 0);
+      Array.resize(theKeywords, count);
+      return theKeywords;
    }
 
-   public static final int stringToWords(String var0, int[] var1, int var2) {
-      return stringToWordsOrKeywords(var0, var1, null, var2, false);
+   public static final int stringToWords(String stringContainingWords, int[] indexResults, int resultOffset) {
+      return stringToWordsOrKeywords(stringContainingWords, indexResults, null, resultOffset, false);
    }
 
-   public static final int stringToKeywords(String var0, int[] var1, int var2) {
-      return stringToWordsOrKeywords(var0, var1, null, var2, true);
+   public static final int stringToKeywords(String stringContainingKeywords, int[] startOffsets, int resultOffset) {
+      return stringToWordsOrKeywords(stringContainingKeywords, startOffsets, null, resultOffset, true);
    }
 
    public static final native int stringToWordsOrKeywords(String var0, int[] var1, int[] var2, int var3, boolean var4);
 
-   public static final int stringToWords(String var0, String[] var1, int var2) {
-      return stringToWordsOrKeywords(var0, var1, var2, false);
+   public static final int stringToWords(String string, String[] wordArray, int index) {
+      return stringToWordsOrKeywords(string, wordArray, index, false);
    }
 
-   public static final int stringToKeywords(String var0, String[] var1, int var2) {
-      return stringToWordsOrKeywords(var0, var1, var2, true);
+   public static final int stringToKeywords(String string, String[] wordArray, int index) {
+      return stringToWordsOrKeywords(string, wordArray, index, true);
    }
 
-   private static final int stringToWordsOrKeywords(String var0, String[] var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final boolean strEqualIgnoreCase(String var0, String var1) {
+   private static final int stringToWordsOrKeywords(String string, String[] wordArray, int index, boolean keywords) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean strEqualIgnoreCase(String var0, String var1, int var2) {
+   public static final boolean strEqualIgnoreCase(String s1, String s2) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final boolean strEqual(String var0, String var1) {
-      if (var0 == var1) {
+   public static final boolean strEqualIgnoreCase(String s1, String s2, int locale) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   public static final boolean strEqual(String s1, String s2) {
+      if (s1 == s2) {
          return true;
       } else {
-         return var0 != null && var1 != null ? var0.equals(var1) : false;
+         return s1 != null && s2 != null ? s1.equals(s2) : false;
       }
    }
 
-   public static final String cStr2String(byte[] var0, int var1, int var2) {
-      int var3 = var2;
+   public static final String cStr2String(byte[] b, int start, int len) {
+      int i = len;
 
-      while (var3 > 0 && var0[var3 + var1 - 1] == 0) {
-         var3--;
+      while (i > 0 && b[i + start - 1] == 0) {
+         i--;
       }
 
-      return (String)(new Object(var0, var1, var3));
+      return (String)(new Object(b, start, i));
    }
 
-   public static final int compareObjectToStringIgnoreCase(Object var0, Object var1) {
-      if (var0 == var1) {
+   public static final int compareObjectToStringIgnoreCase(Object o1, Object o2) {
+      if (o1 == o2) {
          return 0;
       }
 
-      if (var0 == null && var1 != null) {
+      if (o1 == null && o2 != null) {
          return -1;
       }
 
-      if (var1 == null) {
+      if (o2 == null) {
          return 1;
       }
 
-      String var2 = var0.toString();
-      String var3 = var1.toString();
-      return compareToIgnoreCase(var2, var3);
+      String s1 = o1.toString();
+      String s2 = o2.toString();
+      return compareToIgnoreCase(s1, s2);
    }
 
-   public static final int compareObjectToStringIgnoreCase(Object var0, Object var1, int var2) {
-      if (var0 == var1) {
+   public static final int compareObjectToStringIgnoreCase(Object o1, Object o2, int locale) {
+      if (o1 == o2) {
          return 0;
       }
 
-      if (var0 == null && var1 != null) {
+      if (o1 == null && o2 != null) {
          return -1;
       }
 
-      if (var1 == null) {
+      if (o2 == null) {
          return 1;
       }
 
-      String var3 = var0.toString();
-      String var4 = var1.toString();
-      return compareToIgnoreCase(var3, var4, var2);
+      String s1 = o1.toString();
+      String s2 = o2.toString();
+      return compareToIgnoreCase(s1, s2, locale);
    }
 
-   public static final int indexOf(String var0, char var1, int var2, int var3) {
-      return indexOf(var0, var1 & 65535, var2, var3);
+   public static final int indexOf(String string, char ch, int fromIndex, int toIndex) {
+      return indexOf(string, ch & 65535, fromIndex, toIndex);
    }
 
    public static final native int indexOf(String var0, int var1, int var2, int var3);
 
-   public static final String removeChars(String var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final long stringHashToLong(String var0) {
-      Object var1 = new Object();
-      ((SHA1Digest)var1).update(var0.getBytes());
-      byte[] var2 = ((SHA1Digest)var1).getDigest();
-      long var3 = 0;
-
-      for (int var5 = 0; var5 < 8; var5++) {
-         var3 |= (var2[var5] & 255) << 8 * var5;
-      }
-
-      return var3;
-   }
-
-   public static final int stringToInt(String var0) {
+   public static final String removeChars(String src, String remove) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final StringBuffer append(StringBuffer var0, String var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final long stringHashToLong(String key) {
+      SHA1Digest digest = (SHA1Digest)(new Object());
+      digest.update(key.getBytes());
+      byte[] hashValBytes = digest.getDigest();
+      long hashValLong = 0;
+
+      for (int i = 0; i < 8; i++) {
+         hashValLong |= (hashValBytes[i] & 255) << 8 * i;
+      }
+
+      return hashValLong;
+   }
+
+   public static final int stringToInt(String text) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   public static final StringBuffer append(StringBuffer strBuf, String str, int offset, int length) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private static final native void doAppend(StringBuffer var0, String var1, int var2, int var3);
 
-   public static final StringBuffer append(StringBuffer var0, byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final StringBuffer append(StringBuffer strBuf, byte[] buffer, int offset, int length) {
+      synchronized (strBuf) {
+         if (offset >= 0 && length >= 0 && offset + length <= buffer.length) {
+            doAppend(strBuf, buffer, offset, length);
+            return strBuf;
+         } else {
+            throw new Object();
+         }
+      }
    }
 
    private static final native void doAppend(StringBuffer var0, byte[] var1, int var2, int var3);
 
-   public static final StringBuffer append(StringBuffer var0, StringBuffer var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final StringBuffer append(StringBuffer strBuf, StringBuffer other) {
+      synchronized (other) {
+         return append(strBuf, other, 0, other.length());
+      }
    }
 
-   public static final StringBuffer append(StringBuffer var0, StringBuffer var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final StringBuffer append(StringBuffer strBuf, StringBuffer other, int offset, int length) {
+      synchronized (other) {
+         synchronized (strBuf) {
+            if (offset < 0 || length < 0 || offset + length > other.length()) {
+               throw new Object();
+            }
+
+            doAppend(strBuf, other, offset, length);
+         }
+
+         return strBuf;
+      }
    }
 
    private static final native void doAppend(StringBuffer var0, StringBuffer var1, int var2, int var3);
 
    private static final native int strConversionRequired(byte[] var0, int var1, int var2, char var3, char var4);
 
-   public static final int writeUTF(String var0, DataOutput var1) {
+   public static final int writeUTF(String str, DataOutput out) {
       throw new RuntimeException("cod2jar: string-special");
    }
 

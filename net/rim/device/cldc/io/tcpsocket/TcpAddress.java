@@ -20,33 +20,33 @@ final class TcpAddress extends DatagramAddressBase {
    public TcpAddress() {
    }
 
-   public TcpAddress(byte[] var1, int var2) {
-      this(var1, var2, TCP_PORT_NONE, null);
+   public TcpAddress(byte[] ipAddress, int destPort) {
+      this(ipAddress, destPort, TCP_PORT_NONE, null);
    }
 
-   public TcpAddress(byte[] var1, int var2, int var3) {
-      this(var1, var2, var3, null);
+   public TcpAddress(byte[] ipAddress, int destPort, int srcPort) {
+      this(ipAddress, destPort, srcPort, null);
    }
 
-   public TcpAddress(byte[] var1, int var2, String var3) {
+   public TcpAddress(byte[] ipAddress, int destPort, String apn) {
    }
 
-   public TcpAddress(byte[] var1, int var2, int var3, String var4) {
+   public TcpAddress(byte[] ipAddress, int destPort, int srcPort, String apn) {
    }
 
-   public TcpAddress(byte[] var1, int var2, int var3, String var4, int var5, int var6) {
+   public TcpAddress(byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
    }
 
-   public TcpAddress(String var1) {
-      this(var1, null);
+   public TcpAddress(String address) {
+      this(address, null);
    }
 
-   public TcpAddress(String var1, String var2) {
+   public TcpAddress(String address, String apn) {
    }
 
-   private final void processApnInfo(String var1) {
-      if (var1 != null) {
-         this._apnName = var1;
+   private final void processApnInfo(String apn) {
+      if (apn != null) {
+         this._apnName = apn;
       } else {
          this._apnName = TunnelCredentialsProvider.getInstance().getApn();
          this._apnUsername = TunnelCredentialsProvider.getInstance().getApnUsername();
@@ -62,8 +62,8 @@ final class TcpAddress extends DatagramAddressBase {
       return this.getLocalPort();
    }
 
-   public final void setConnectionLocalPort(int var1) {
-      this.setLocalPort(var1);
+   public final void setConnectionLocalPort(int port) {
+      this.setLocalPort(port);
    }
 
    public final int getConnectionDestinationPort() {
@@ -74,11 +74,11 @@ final class TcpAddress extends DatagramAddressBase {
       return this.getApnName();
    }
 
-   protected final void parseAddress(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected final void parseAddress(String address) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final void setLocalPort(int var1) {
+   public final void setLocalPort(int port) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -91,28 +91,28 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object dgramAddress) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public final int hashCode() {
-      int var1 = 7;
-      var1 = 31 * var1 + this._ipAddress;
-      var1 = 31 * var1 + this._port;
-      var1 = 31 * var1 + this._localPort;
+      int hash = 7;
+      hash = 31 * hash + this._ipAddress;
+      hash = 31 * hash + this._port;
+      hash = 31 * hash + this._localPort;
       if (this._apnName != null) {
-         var1 = 31 * var1 + this._apnName.hashCode();
+         hash = 31 * hash + this._apnName.hashCode();
       }
 
-      return var1;
+      return hash;
    }
 
    public final String getApnName() {
       return this._apnName;
    }
 
-   public final void setApnName(String var1) {
+   public final void setApnName(String apn) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -120,7 +120,7 @@ final class TcpAddress extends DatagramAddressBase {
       return this._apnUsername;
    }
 
-   public final void setApnUsername(String var1) {
+   public final void setApnUsername(String apnUsername) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -128,7 +128,7 @@ final class TcpAddress extends DatagramAddressBase {
       return this._apnPassword;
    }
 
-   public final void setApnPassword(String var1) {
+   public final void setApnPassword(String apnPassword) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -144,27 +144,27 @@ final class TcpAddress extends DatagramAddressBase {
       return this._isListenAddress;
    }
 
-   public final boolean compareApn(String var1) {
-      return this._apnName.equalsIgnoreCase(var1);
+   public final boolean compareApn(String apn) {
+      return this._apnName.equalsIgnoreCase(apn);
    }
 
-   public static final String makeAddress(boolean var0, byte[] var1, int var2, int var3) {
-      return makeAddress(var0, var1, var2, var3, null, 0, 0);
+   public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort) {
+      return makeAddress(open, ipAddress, destPort, srcPort, null, 0, 0);
    }
 
-   public static final String makeAddress(boolean var0, byte[] var1, int var2, int var3, String var4) {
+   public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final String makeAddress(boolean var0, byte[] var1, int var2, int var3, String var4, int var5, int var6) {
+   public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final void convertIpAddressBytesToStringBuffer(byte[] var0, StringBuffer var1) {
+   public static final void convertIpAddressBytesToStringBuffer(byte[] ipAddress, StringBuffer buf) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public final String getLocalAddress() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

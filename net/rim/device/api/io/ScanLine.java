@@ -3,11 +3,11 @@ package net.rim.device.api.io;
 public final class ScanLine extends LineReader {
    private byte[] _boundary = new byte[74];
 
-   public ScanLine(SharedInputStream var1) {
-      super(var1);
+   public ScanLine(SharedInputStream stream) {
+      super(stream);
    }
 
-   public final int searchForBoundary(byte[] var1) {
+   public final int searchForBoundary(byte[] boundary) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 

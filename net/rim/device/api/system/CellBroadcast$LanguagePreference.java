@@ -9,8 +9,8 @@ public final class CellBroadcast$LanguagePreference extends CellBroadcast$Info i
       this.setEnabled(false);
    }
 
-   public CellBroadcast$LanguagePreference(int var1) {
-      super(var1);
+   public CellBroadcast$LanguagePreference(int lang) {
+      super(lang);
       this.setEnabled(false);
    }
 
@@ -18,14 +18,14 @@ public final class CellBroadcast$LanguagePreference extends CellBroadcast$Info i
       return this._priority;
    }
 
-   public final void setPriority(int var1) {
+   public final void setPriority(int priority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    public final CellBroadcast$LanguagePreference clone() {
-      CellBroadcast$LanguagePreference var1 = new CellBroadcast$LanguagePreference();
-      var1._priority = this._priority;
-      this.copyInto(var1);
-      return var1;
+      CellBroadcast$LanguagePreference lp = new CellBroadcast$LanguagePreference();
+      lp._priority = this._priority;
+      this.copyInto(lp);
+      return lp;
    }
 }

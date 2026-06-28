@@ -1,22 +1,29 @@
 package net.rim.device.api.ui;
 
+import java.io.IOException;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.BackdoorKeyProcessor;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.system.StylusListener;
 import net.rim.device.api.system.TrackwheelListener;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.media.MediaPlayerState;
+import net.rim.device.internal.system.Events;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.Background;
 import net.rim.device.internal.ui.BackingStore;
+import net.rim.device.internal.ui.UiOptionsRegistry;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.vm.TraceBack;
 
@@ -81,32 +88,32 @@ public class Screen extends Manager {
    private static final int SUPER_ON_UI_ENGINE_ATTACHED;
    private static final int FIELD_VISITOR_TYPE_STATE_IS_PAINTABLE;
 
-   public void addFocusChangeListener(FocusChangeListener var1) {
-      this._focusChangeListeners = ListenerUtilities.addListener(this._focusChangeListeners, var1);
+   public void addFocusChangeListener(FocusChangeListener listener) {
+      this._focusChangeListeners = ListenerUtilities.addListener(this._focusChangeListeners, listener);
    }
 
-   public final synchronized void addKeyListener(KeyListener var1) {
+   public final synchronized void addKeyListener(KeyListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void addPaintabilityListener(PaintabilityListener var1) {
-      this._paintabilityListeners = ListenerUtilities.addListener(this._paintabilityListeners, var1);
+   public void addPaintabilityListener(PaintabilityListener listener) {
+      this._paintabilityListeners = ListenerUtilities.addListener(this._paintabilityListeners, listener);
    }
 
-   public void addScreenUiEngineAttachedListener(ScreenUiEngineAttachedListener var1) {
-      this._screenUiEngineAttachedListeners = ListenerUtilities.addListener(this._screenUiEngineAttachedListeners, var1);
+   public void addScreenUiEngineAttachedListener(ScreenUiEngineAttachedListener listener) {
+      this._screenUiEngineAttachedListeners = ListenerUtilities.addListener(this._screenUiEngineAttachedListeners, listener);
    }
 
-   public final synchronized void addStylusListener(StylusListener var1) {
+   public final synchronized void addStylusListener(StylusListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final synchronized void addTrackwheelListener(TrackwheelListener var1) {
+   public final synchronized void addTrackwheelListener(TrackwheelListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void callOnUiEngineAttached(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void callOnUiEngineAttached(boolean attached) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    final void callOnUiEngineDettachedWithoutNotify() {
@@ -123,7 +130,7 @@ public class Screen extends Manager {
       }
    }
 
-   final void setClearBackingStore(boolean var1) {
+   final void setClearBackingStore(boolean val) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -131,48 +138,205 @@ public class Screen extends Manager {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean dispatchKeyEvent(int var1, char var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public boolean dispatchStylusEvent(int var1, int var2, int var3, int var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   boolean dispatchNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public boolean dispatchTrackwheelEvent(int var1, int var2, int var3, int var4) {
+   public boolean dispatchKeyEvent(int event, char key, int status, int time) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      return this.dispatchNavigationEvent(var1, 0, var2, var3 | 1073741824, var4);
+      boolean result = false;
+      switch (event) {
+         case 513:
+            result = this.keyDown(status, time);
+            break;
+         case 514:
+            result = this.keyRepeat(status, time);
+            break;
+         case 515:
+            result = this.keyUp(status, time);
+            break;
+         case 520:
+            result = this.keyStatus(status, time);
+            break;
+         case 32768:
+            if (128 <= key && key <= 159) {
+               result = this.keyControl(key, status & 65535, time);
+            } else {
+               result = this.keyChar(key, status & 65535, time);
+            }
+      }
+
+      Object[] listeners = this._keyListeners;
+      if (!result && listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            try {
+               if (Events.dispatchKeyEvent(event, key, status, time, (KeyListener)listeners[i])) {
+                  return true;
+               }
+            } catch (Throwable var9) {
+            }
+         }
+      }
+
+      if (!result && event == 32768) {
+         result = this.keyCharUnhandled(key, status, time);
+      }
+
+      return result;
    }
 
+   public boolean dispatchStylusEvent(int event, int x, int y, int status, int time) {
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      if (this.blockInputEvents(event, 0)) {
+         return false;
+      }
+
+      boolean result = false;
+      XYRect extent = this.getExtent();
+      switch (event) {
+         case 6655:
+            break;
+         case 6656:
+         default:
+            result = this.stylusDown(x - extent.x, y - extent.y, status, time);
+            if (!result) {
+               this.setFocus(this._delegate, x - extent.x, y - extent.y, status, time);
+            }
+            break;
+         case 6657:
+            result = this.stylusDrag(x - extent.x, y - extent.y, status, time);
+            break;
+         case 6658:
+            result = this.stylusUp(x - extent.x, y - extent.y, status, time);
+            break;
+         case 6659:
+            result = this.stylusTap(x - extent.x, y - extent.y, status, time);
+            break;
+         case 6660:
+            result = this.stylusTapHold(x - extent.x, y - extent.y, status, time);
+            break;
+         case 6661:
+            result = this.stylusDoubleTap(x - extent.x, y - extent.y, status, time);
+      }
+
+      Object[] listeners = this._stylusListeners;
+      if (!result && listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            try {
+               if (Events.dispatchStylusEvent(event, x - extent.x, y - extent.y, status, time, (StylusListener)listeners[i])) {
+                  return true;
+               }
+            } catch (Throwable var11) {
+            }
+         }
+      }
+
+      if (!result && !DeviceInfo.isInHolster()) {
+         switch (event) {
+            case 6660:
+               result = this.onMenu(0);
+         }
+      }
+
+      return result;
+   }
+
+   boolean dispatchNavigationEvent(int event, int dx, int dy, int status, int time) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
+   }
+
+   public boolean dispatchTrackwheelEvent(int event, int magnitude, int status, int time) {
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      return this.dispatchNavigationEvent(event, 0, magnitude, status | 1073741824, time);
+   }
+
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void doLayout() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._layoutGeneration != UiEngineImpl._layoutGeneration || !this.isValidLayout()) {
+         this.assertHaveEventLock();
+         int themeGeneration = ThemeManager.getGeneration();
+         if (this._themeGeneration != themeGeneration) {
+            this.applyTheme();
+            this._themeGeneration = themeGeneration;
+         }
+
+         this.applyFont();
+         XYRect oldExtent = Ui.getTmpXYRect();
+         this.getExtent(oldExtent);
+         this._inLayout++;
+         boolean var8 = false /* VF: Semaphore variable */;
+
+         try {
+            var8 = true;
+            int uiEngine = Display.getWidth();
+            int height = Display.getHeight();
+            uiEngine -= this.getBorderLeft() + this.getBorderRight() + this.getPaddingLeft() + this.getPaddingRight();
+            height -= this.getBorderTop() + this.getBorderBottom() + this.getPaddingTop() + this.getPaddingBottom();
+            this.layout(uiEngine, height);
+            this.invalidate(0, 0, this.getContentWidth(), this.getContentHeight());
+            this.setValidLayout(true);
+            this._layoutGeneration = UiEngineImpl._layoutGeneration;
+            this.ensureFocusVisible();
+            var8 = false;
+         } finally {
+            if (var8) {
+               this._inLayout--;
+               if (this.isUiEngineAttached() && oldExtent.width > 0 && oldExtent.height > 0 && !oldExtent.equals(this.getExtent())) {
+                  UiEngineImpl uiEnginex = this.getUiEngineImpl();
+                  if (uiEnginex != null) {
+                     uiEnginex.appInvalidate(oldExtent.x, oldExtent.y, oldExtent.width, oldExtent.height);
+                  }
+               }
+
+               Ui.returnTmpXYRect(oldExtent);
+            }
+         }
+
+         this._inLayout--;
+         if (this.isUiEngineAttached() && oldExtent.width > 0 && oldExtent.height > 0 && !oldExtent.equals(this.getExtent())) {
+            UiEngineImpl uiEngine = this.getUiEngineImpl();
+            if (uiEngine != null) {
+               uiEngine.appInvalidate(oldExtent.x, oldExtent.y, oldExtent.width, oldExtent.height);
+            }
+         }
+
+         Ui.returnTmpXYRect(oldExtent);
+      }
+
+      this.assertLayoutCompleteOnScreen();
    }
 
    public final void doPaint() {
-      UiEngineImpl var1 = this._uiEngine;
-      if (var1 != null) {
-         var1.doPainting();
+      UiEngineImpl engine = this._uiEngine;
+      if (engine != null) {
+         engine.doPainting();
       }
    }
 
-   final void doPaintInternal(XYRect var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void doPaintInternal(XYRect invalid) {
+      if (invalid != null && !invalid.isEmpty()) {
+         synchronized (this._invalid) {
+            this._invalid.union(invalid);
+         }
+      }
+
+      if (!this.isScreenState(32)) {
+         this.doPaint0(false, false);
+      } else {
+         try {
+            this.doPaint0(false, false);
+         } catch (Throwable var3) {
+         }
+      }
    }
 
    final boolean isBackingStoreUpdated() {
       return this._backingStoreUpdated;
    }
 
-   final void setBackingStoreUpdated(boolean var1) {
+   final void setBackingStoreUpdated(boolean val) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   final void doPaint0(boolean var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void doPaint0(boolean forceAllowDrawing, boolean paintToBackingStore) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public boolean doSaveInternal() {
@@ -181,22 +345,30 @@ public class Screen extends Manager {
    }
 
    void ensureFocusVisible() {
-      Field var1 = this.getLeafFieldWithFocus();
-      if (var1 != null) {
-         XYRect var2 = Ui.getTmpXYRect();
-         var1.getFocusRectPhantom(var2);
-         this.ensureRegionVisible(var1, var2.x, var2.y, var2.width, var2.height, false, true);
-         Ui.returnTmpXYRect(var2);
+      Field focus = this.getLeafFieldWithFocus();
+      if (focus != null) {
+         XYRect rect = Ui.getTmpXYRect();
+         focus.getFocusRectPhantom(rect);
+         this.ensureRegionVisible(focus, rect.x, rect.y, rect.width, rect.height, false, true);
+         Ui.returnTmpXYRect(rect);
       }
    }
 
-   public void ensureRegionVisible(Field var1, int var2, int var3, int var4, int var5) {
-      boolean var6 = this._invalid.width == 0 || this._invalid.height == 0;
-      this.ensureRegionVisible(var1, var2, var3, var4, var5, var6, true);
+   public void ensureRegionVisible(Field field, int x, int y, int width, int height) {
+      boolean immediate = this._invalid.width == 0 || this._invalid.height == 0;
+      this.ensureRegionVisible(field, x, y, width, height, immediate, true);
    }
 
-   void focusChangeNotifyListeners(Field var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   void focusChangeNotifyListeners(Field field, int eventType) {
+      Object[] listeners = this._focusChangeListeners;
+      if (listeners != null) {
+         for (int index = 0; index < listeners.length; index++) {
+            try {
+               ((FocusChangeListener)listeners[index]).focusChanged(field, eventType);
+            } catch (Throwable var6) {
+            }
+         }
+      }
    }
 
    final boolean acceptsInput() {
@@ -219,23 +391,23 @@ public class Screen extends Manager {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   Graphics getGraphics(XYRect var1, boolean var2) {
+   Graphics getGraphics(XYRect clip, boolean forceAllowDrawing) {
       this.assertHaveEventLock();
-      if (!var2) {
-         UiEngine var3 = this.getUiEngine();
-         if (var3 == null || !this.isScreenState(16)) {
+      if (!forceAllowDrawing) {
+         UiEngine ui = this.getUiEngine();
+         if (ui == null || !this.isScreenState(16)) {
             return Graphics.getNullGraphics();
          }
       }
 
-      Graphics var5 = Graphics.getGraphics(this);
-      XYRect var4 = this.getExtent();
-      if (var1 != null) {
-         var5.pushContext(var1, var4.x, var4.y);
-         return var5;
+      Graphics graphics = Graphics.getGraphics(this);
+      XYRect extent = this.getExtent();
+      if (clip != null) {
+         graphics.pushContext(clip, extent.x, extent.y);
+         return graphics;
       } else {
-         var5.pushRegion(var4);
-         return var5;
+         graphics.pushRegion(extent);
+         return graphics;
       }
    }
 
@@ -247,30 +419,30 @@ public class Screen extends Manager {
       return this._lastInvalid;
    }
 
-   public Menu getMenu(int var1) {
-      Object var2 = new Object(65536);
+   public Menu getMenu(int instance) {
+      Menu menu = (Menu)(new Object(65536));
       Menu.setTargetScreen(this);
-      ((Menu)var2).setTargetScreenVirtual(this);
-      ((Menu)var2).setInstance(var1);
-      this.makeMenuWithContext((Menu)var2, var1);
-      return (Menu)var2;
+      menu.setTargetScreenVirtual(this);
+      menu.setInstance(instance);
+      this.makeMenuWithContext(menu, instance);
+      return menu;
    }
 
    public Screen getScreenAbove() {
-      UiEngineImpl var1 = this._uiEngine;
-      if (var1 == null) {
+      UiEngineImpl uie = this._uiEngine;
+      if (uie == null) {
          throw new Object();
       } else {
-         return var1.getScreenAbove(this);
+         return uie.getScreenAbove(this);
       }
    }
 
    public Screen getScreenBelow() {
-      UiEngineImpl var1 = this._uiEngine;
-      if (var1 == null) {
+      UiEngineImpl uie = this._uiEngine;
+      if (uie == null) {
          throw new Object();
       } else {
-         return var1.getScreenBelow(this);
+         return uie.getScreenBelow(this);
       }
    }
 
@@ -354,11 +526,11 @@ public class Screen extends Manager {
    }
 
    final boolean isValid() {
-      UiEngineImpl var1 = this._uiEngine;
-      return var1 != null && !var1.isValid() ? false : this._invalid.width == 0 || this._invalid.height == 0;
+      UiEngineImpl engine = this._uiEngine;
+      return engine != null && !engine.isValid() ? false : this._invalid.width == 0 || this._invalid.height == 0;
    }
 
-   void setSaveLastInvalid(boolean var1) {
+   void setSaveLastInvalid(boolean val) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -366,75 +538,75 @@ public class Screen extends Manager {
       return this.isScreenState(64);
    }
 
-   public boolean invokeDefaultMenuItem(int var1) {
-      boolean var2 = false;
+   public boolean invokeDefaultMenuItem(int instance) {
+      boolean result = false;
       if (this.isStyle(65536) && !DeviceInfo.isInHolster()) {
-         MenuItem var3 = this.getDefaultMenuItem(var1);
-         if (var3 != null) {
-            var3.run();
-            var2 = true;
+         MenuItem item = this.getDefaultMenuItem(instance);
+         if (item != null) {
+            item.run();
+            result = true;
          }
 
          ContextMenu.getInstance().setTarget(null);
          Menu.setTargetScreen(null);
       }
 
-      return var2;
+      return result;
    }
 
-   public MenuItem getDefaultMenuItem(int var1) {
-      MenuItem var2 = null;
+   public MenuItem getDefaultMenuItem(int instance) {
+      MenuItem menuItem = null;
       if (this.isStyle(65536)) {
-         Menu var3 = this.getMenu(var1);
-         var2 = var3.getDefault();
+         Menu menu = this.getMenu(instance);
+         menuItem = menu.getDefault();
       }
 
-      return var2;
+      return menuItem;
    }
 
    final void invalidateInternal() {
-      XYRect var1 = this.getExtent();
-      this.invalidateCommon(0, 0, var1.width, var1.height, var1);
+      XYRect extent = this.getExtent();
+      this.invalidateCommon(0, 0, extent.width, extent.height, extent);
    }
 
-   final void invalidateInternal(int var1, int var2, int var3, int var4) {
-      XYRect var5 = Ui.getTmpXYRect();
-      this.getContentRect(var5);
-      this.invalidateCommon(var1, var2, var3, var4, var5);
-      Ui.returnTmpXYRect(var5);
+   final void invalidateInternal(int x, int y, int width, int height) {
+      XYRect content = Ui.getTmpXYRect();
+      this.getContentRect(content);
+      this.invalidateCommon(x, y, width, height, content);
+      Ui.returnTmpXYRect(content);
    }
 
-   protected boolean openDevelopmentBackdoor(int var1) {
+   protected boolean openDevelopmentBackdoor(int backdoorCode) {
       return false;
    }
 
-   protected boolean openProductionBackdoor(int var1) {
+   protected boolean openProductionBackdoor(int backdoorCode) {
       return false;
    }
 
-   protected boolean keyCharUnhandled(char var1, int var2, int var3) {
-      boolean var4 = false;
-      if (var1 == 27) {
+   protected boolean keyCharUnhandled(char key, int status, int time) {
+      boolean result = false;
+      if (key == 27) {
          if (this._scrollBehaviourSelect) {
             this._scrollBehaviourSelect = false;
             this.invalidate();
          } else {
-            var4 = this.onClose();
+            result = this.onClose();
          }
-      } else if (var1 == 149 && Trackball.isSupported()) {
+      } else if (key == 149 && Trackball.isSupported()) {
          if (Ui.getTrackballClickAction() != 0) {
-            var4 = this.onMenu(1073741824);
+            result = this.onMenu(1073741824);
          } else {
-            var4 = this.invokeAction(1);
+            result = this.invokeAction(1);
          }
       }
 
-      return var4;
+      return result;
    }
 
-   protected boolean blockInputEvents(int var1, int var2) {
+   protected boolean blockInputEvents(int event, int keycode) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      switch (var1) {
+      switch (event) {
          case 513:
          case 520:
             this._inputStartReceived = true;
@@ -442,7 +614,7 @@ public class Screen extends Manager {
          case 514:
          case 515:
          case 32768:
-            if (var1 == 514 && Keypad.key(var2) == 20 && InputContext.getInstance().isSureType()) {
+            if (event == 514 && Keypad.key(keycode) == 20 && InputContext.getInstance().isSureType()) {
                return false;
             }
 
@@ -462,46 +634,46 @@ public class Screen extends Manager {
       return false;
    }
 
-   protected boolean ignoreBacklightOffKeyEvent(int var1, char var2, int var3, int var4) {
+   protected boolean ignoreBacklightOffKeyEvent(int event, char key, int keycode, int time) {
       return true;
    }
 
-   protected final void layoutDelegate(int var1, int var2) {
-      this.layoutChild(this._delegate, var1, var2);
+   protected final void layoutDelegate(int width, int height) {
+      this.layoutChild(this._delegate, width, height);
    }
 
-   protected final void makeMenuWithContext(Menu var1, int var2) {
-      Field var3 = this.getLeafFieldWithFocus();
-      if (var3 != null) {
-         if (var2 != 0) {
-            ContextMenu var4 = var3.getContextMenu(var2);
-            var1.add(var4, true);
+   protected final void makeMenuWithContext(Menu menu, int instance) {
+      Field field = this.getLeafFieldWithFocus();
+      if (field != null) {
+         if (instance != 0) {
+            ContextMenu cmenu = field.getContextMenu(instance);
+            menu.add(cmenu, true);
          } else {
-            ContextMenu var5 = var3.getContextMenu();
-            var1.add(var5, true);
+            ContextMenu cmenu = field.getContextMenu();
+            menu.add(cmenu, true);
          }
       } else {
-         var3 = this;
+         field = this;
       }
 
-      while (var3 != null) {
-         var3.makeMenu(var1, var2);
-         if (var3 == this) {
+      while (field != null) {
+         field.makeMenu(menu, instance);
+         if (field == this) {
             return;
          }
 
-         var3 = var3.getManager();
+         field = field.getManager();
       }
    }
 
    public boolean onClose() {
-      boolean var1 = true;
+      boolean closeable = true;
       if (this.isStyle(131072)) {
          if (this.isDirty()) {
-            var1 = this.onSavePrompt();
+            closeable = this.onSavePrompt();
          }
 
-         if (var1) {
+         if (closeable) {
             this.close();
             return true;
          }
@@ -510,12 +682,12 @@ public class Screen extends Manager {
       return false;
    }
 
-   protected void onFocusNotify(boolean var1) {
+   protected void onFocusNotify(boolean focus) {
       this._inputStartReceived = false;
-      this.setScreenState(64, var1);
+      this.setScreenState(64, focus);
       this.applyTrackballOffsets();
       if (Ui.isTTSEnabled()) {
-         if (var1) {
+         if (focus) {
             this.accessibleEventOccurred(1, new Object(this.getAccessibleStateSet()), new Object(2), this);
             this.addAccessibleState(2);
             return;
@@ -525,26 +697,123 @@ public class Screen extends Manager {
       }
    }
 
-   public boolean onMenu(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public boolean onMenu(int instance) {
+      if (this.isStyle(65536) && !DeviceInfo.isInHolster()) {
+         boolean menuKey = (instance & 1073741824) != 0;
+         instance &= -1073741825;
+         int menuStyle = UiOptionsRegistry.getInstance().getInt(8794318953449332169L);
+         if (menuStyle == 1) {
+            instance = 0;
+            menuKey = true;
+         }
+
+         this._menu = this.getMenu(instance);
+         if (instance == 65537 || instance == 65536) {
+            this._menu.setAlignment(12884901888L, 34359738368L);
+         } else if (instance == 0 && menuKey) {
+            this._menu.setAlignment(4294967296L, 34359738368L);
+         }
+
+         boolean var5 = false /* VF: Semaphore variable */;
+
+         try {
+            var5 = true;
+            this._menu.show();
+            this.onMenuDismissed(this._menu);
+            ContextMenu.getInstance().setTarget(null);
+            Menu.setTargetScreen(null);
+            var5 = false;
+         } finally {
+            if (var5) {
+               this._menu = null;
+            }
+         }
+
+         this._menu = null;
+         return true;
+      } else {
+         return false;
+      }
    }
 
    protected boolean onSave() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this.isDataValid()) {
+         try {
+            this.save();
+            return true;
+         } catch (IOException e) {
+            Dialog.inform(CommonResource.getString(10018));
+            return false;
+         }
+      } else {
+         return false;
+      }
    }
 
    protected boolean onSavePrompt() {
       return true;
    }
 
-   protected void onUiEngineAttached(boolean var1) {
+   protected void onUiEngineAttached(boolean attached) {
    }
 
    public void save() {
    }
 
    void doRemoveFocus() {
-      throw new RuntimeException("cod2jar: exception table");
+      UiEngineImpl engine = this._uiEngine;
+      if (engine != null) {
+         engine.assertHaveEventLock();
+         Field focus = this._delegate.getLeafFieldWithFocus();
+         if (focus != null) {
+            XYRect rect = Ui.getTmpXYRect();
+            focus.getFocusRect(rect);
+            if (this.isScreenState(16)
+               && !this.isTransparent()
+               && focus.getBorder() == null
+               && !engine.isPaintingSuspended()
+               && !this._globalScreen
+               && engine.allowImmediate(this)) {
+               boolean drawBackground = focus.isFocusDrawn();
+               if (!this._delegate.drawLeafFocus(drawBackground, false)) {
+                  Graphics graphics = focus.getGraphics0(rect, drawBackground);
+                  graphics.popContext();
+                  this._graphicsInUse = graphics;
+                  if (this._uiEngine != null) {
+                     graphics.setDrawingStyle(8, false);
+                     boolean orgdraw = Ui.DRAW_FOCUS_IN_PAINT;
+                     Ui.DRAW_FOCUS_IN_PAINT = false;
+                     if (!this.isScreenState(32)) {
+                        focus.paintSelf(graphics, true, 0, 0);
+                        if (!drawBackground) {
+                           focus.drawFocus(graphics, false);
+                        }
+                     } else {
+                        try {
+                           focus.paintSelf(graphics, true, 0, 0);
+                           if (!drawBackground) {
+                              focus.drawFocus(graphics, false);
+                           }
+                        } catch (Throwable var8) {
+                        }
+                     }
+
+                     Ui.DRAW_FOCUS_IN_PAINT = orgdraw;
+                     graphics.setDrawingStyle(8, false);
+                     engine.invalidateTransparentScreens(this);
+                  }
+
+                  this._graphicsInUse = null;
+               }
+            } else {
+               focus.invalidate(rect.x, rect.y, rect.width, rect.height);
+            }
+
+            Ui.returnTmpXYRect(rect);
+         }
+      }
    }
 
    public void removeFocus() {
@@ -552,188 +821,254 @@ public class Screen extends Manager {
       this.onUnfocus();
    }
 
-   void doAddFocus(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void doAddFocus(boolean draw) {
+      Field focus = this.getLeafFieldWithFocus();
+      UiEngineImpl engine = this._uiEngine;
+      if (engine != null && focus != null) {
+         if (draw) {
+            engine.assertHaveEventLock();
+         }
+
+         boolean immediate = engine.allowImmediate(this);
+         boolean paintable = this.isScreenState(16) && !engine.isPaintingSuspended();
+         if (!paintable) {
+            immediate = false;
+            draw = false;
+         }
+
+         if (!this.isScrollBehaviourViewInternal()) {
+            XYRect focusRect = Ui.getTmpXYRect();
+            focus.getFocusRectPhantom(focusRect);
+            boolean orgdraw = Ui.DRAW_FOCUS_IN_PAINT;
+            Ui.DRAW_FOCUS_IN_PAINT = false;
+            Field step = focus;
+
+            for (Manager manager = focus.getManager(); step != this; manager = step.getManager()) {
+               focusRect.translate(step.getContentLeft(), step.getContentTop());
+               manager.makeFocusVisible(immediate, focusRect, true, false);
+               focusRect.translate(-manager.getHorizontalScroll(), -manager.getVerticalScroll());
+               step = manager;
+            }
+
+            Ui.DRAW_FOCUS_IN_PAINT = orgdraw;
+            Ui.returnTmpXYRect(focusRect);
+         }
+
+         if (draw) {
+            if (paintable && !this.isTransparent() && focus.getBorder() == null && !this._globalScreen && engine.allowImmediate(this)) {
+               XYRect rect = Ui.getTmpXYRect();
+               focus.getFocusRect(rect);
+               if (!this._delegate.drawLeafFocus(false, true)) {
+                  Graphics graphics = focus.getGraphics0(rect, false);
+                  Ui.returnTmpXYRect(rect);
+                  XYRect var13 = null;
+                  this._graphicsInUse = graphics;
+                  if (this._uiEngine != null) {
+                     graphics.setDrawingStyle(8, true);
+                     if (!this.isScreenState(32)) {
+                        focus.drawFocus(graphics, true);
+                     } else {
+                        try {
+                           focus.drawFocus(graphics, true);
+                        } catch (Throwable var10) {
+                        }
+                     }
+
+                     graphics.setDrawingStyle(8, true);
+                     engine.invalidateTransparentScreens(this);
+                  }
+
+                  this._graphicsInUse = null;
+                  return;
+               }
+            } else {
+               XYRect rect = Ui.getTmpXYRect();
+               this.getFocusRect(rect);
+               this.invalidate(rect.x, rect.y, rect.width, rect.height);
+               Ui.returnTmpXYRect(rect);
+            }
+         }
+      }
    }
 
-   protected final void setAcceptsInput(boolean var1) {
+   protected final void setAcceptsInput(boolean acceptsInput) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._acceptsInput = var1;
+      this._acceptsInput = acceptsInput;
       this.setPaintController(false);
    }
 
-   protected void setBackdoorAltStatus(boolean var1) {
+   protected void setBackdoorAltStatus(boolean altStatus) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setCatchPaintExceptions(boolean var1) {
+   public void setCatchPaintExceptions(boolean catchPaintExceptions) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.setScreenState(32, var1);
+      this.setScreenState(32, catchPaintExceptions);
    }
 
-   protected void setDefaultClose(boolean var1) {
-      if (var1) {
+   protected void setDefaultClose(boolean provideDefaultClose) {
+      if (provideDefaultClose) {
          this.setStyleSystem(131072, 0);
       } else {
          this.setStyleSystem(0, 131072);
       }
    }
 
-   public void setScrollBehaviourView(boolean var1) {
+   public void setScrollBehaviourView(boolean scrollBehaviourView) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setScrollBehaviourSelect(boolean var1) {
-      if (this._scrollBehaviourSelect != var1) {
-         this._scrollBehaviourSelect = var1;
+   public void setScrollBehaviourSelect(boolean scrollBehaviourSelect) {
+      if (this._scrollBehaviourSelect != scrollBehaviourSelect) {
+         this._scrollBehaviourSelect = scrollBehaviourSelect;
          this.invalidate();
       }
    }
 
-   void findNewFocus(boolean var1) {
+   void findNewFocus(boolean down) {
       if (this._delegate.getFieldWithFocus() != null) {
-         this.doFocusMove(true, true, Screen$FindNewFocusSelector.getSelector(this, var1));
+         this.doFocusMove(true, true, Screen$FindNewFocusSelector.getSelector(this, down));
       }
    }
 
-   void setFocus(Field var1) {
-      if (var1 instanceof Manager) {
-         for (Field var2 = this.getFieldWithFocus(); var2 instanceof Manager; var2 = ((Manager)var2).getFieldWithFocus()) {
-            if (var2 == var1) {
+   void setFocus(Field field) {
+      if (field instanceof Manager) {
+         for (Field focusField = this.getFieldWithFocus(); focusField instanceof Manager; focusField = ((Manager)focusField).getFieldWithFocus()) {
+            if (focusField == field) {
                return;
             }
          }
-      } else if (this.getLeafFieldWithFocus() == var1) {
+      } else if (this.getLeafFieldWithFocus() == field) {
          return;
       }
 
-      this.doFocusMove(true, true, Screen$SetFocusSelector.getSelector(this, var1));
+      this.doFocusMove(true, true, Screen$SetFocusSelector.getSelector(this, field));
    }
 
-   protected boolean navigationUnclickUnhandled(int var1, int var2) {
-      boolean var3 = false;
-      if (!var3 && !DeviceInfo.isInHolster()) {
+   protected boolean navigationUnclickUnhandled(int status, int time) {
+      boolean result = false;
+      if (!result && !DeviceInfo.isInHolster()) {
          if (Ui.getTrackballClickAction() == 0) {
             return this.onMenu(0);
          }
 
-         Field var4 = this.getLeafFieldWithFocus();
-         if (var4 != null && var4.isSelecting()) {
+         Field leafWithFocus = this.getLeafFieldWithFocus();
+         if (leafWithFocus != null && leafWithFocus.isSelecting()) {
             this.onMenu(65537);
             return true;
          }
 
-         var3 = this.invokeAction(1);
-         if (!var3) {
-            var3 = this.onMenu(65536);
+         result = this.invokeAction(1);
+         if (!result) {
+            result = this.onMenu(65536);
          }
       }
 
-      return var3;
+      return result;
    }
 
-   protected boolean trackwheelClickUnhandled(int var1, int var2) {
-      boolean var3 = false;
-      if (!var3 && !DeviceInfo.isInHolster()) {
+   protected boolean trackwheelClickUnhandled(int status, int time) {
+      boolean result = false;
+      if (!result && !DeviceInfo.isInHolster()) {
          if (Ui.getTrackwheelClickAction() == 0) {
             return this.onMenu(0);
          }
 
-         var3 = this.invokeAction(1);
+         result = this.invokeAction(1);
       }
 
-      return var3;
+      return result;
    }
 
-   public boolean defaultStylusAction(int var1) {
-      boolean var2 = false;
+   public boolean defaultStylusAction(int context) {
+      boolean result = false;
       if (this.isStyle(65536) && !DeviceInfo.isInHolster()) {
-         MenuItem var3 = this.getDefaultMenuItem(var1);
-         if (var3 != null) {
-            var3.run();
-            var2 = true;
+         MenuItem item = this.getDefaultMenuItem(context);
+         if (item != null) {
+            item.run();
+            result = true;
          }
 
          ContextMenu.getInstance().setTarget(null);
          Menu.setTargetScreen(null);
       }
 
-      return var2;
+      return result;
    }
 
-   public void removeFocusChangeListener(FocusChangeListener var1) {
-      this._focusChangeListeners = ListenerUtilities.addListener(this._focusChangeListeners, var1);
+   public void removeFocusChangeListener(FocusChangeListener listener) {
+      this._focusChangeListeners = ListenerUtilities.addListener(this._focusChangeListeners, listener);
    }
 
-   public final synchronized void removeKeyListener(KeyListener var1) {
-      this._keyListeners = ListenerUtilities.removeListener(this._keyListeners, var1);
+   public final synchronized void removeKeyListener(KeyListener listener) {
+      this._keyListeners = ListenerUtilities.removeListener(this._keyListeners, listener);
    }
 
-   public void removePaintabilityListener(PaintabilityListener var1) {
-      this._paintabilityListeners = ListenerUtilities.addListener(this._paintabilityListeners, var1);
+   public void removePaintabilityListener(PaintabilityListener listener) {
+      this._paintabilityListeners = ListenerUtilities.addListener(this._paintabilityListeners, listener);
    }
 
-   public final synchronized void removeScreenUiEngineAttachedListener(ScreenUiEngineAttachedListener var1) {
-      this._screenUiEngineAttachedListeners = ListenerUtilities.removeListener(this._screenUiEngineAttachedListeners, var1);
+   public final synchronized void removeScreenUiEngineAttachedListener(ScreenUiEngineAttachedListener listener) {
+      this._screenUiEngineAttachedListeners = ListenerUtilities.removeListener(this._screenUiEngineAttachedListeners, listener);
    }
 
-   public final synchronized void removeStylusListener(StylusListener var1) {
-      this._stylusListeners = ListenerUtilities.removeListener(this._stylusListeners, var1);
+   public final synchronized void removeStylusListener(StylusListener listener) {
+      this._stylusListeners = ListenerUtilities.removeListener(this._stylusListeners, listener);
    }
 
-   public final synchronized void removeTrackwheelListener(TrackwheelListener var1) {
-      this._trackwheelListeners = ListenerUtilities.removeListener(this._trackwheelListeners, var1);
+   public final synchronized void removeTrackwheelListener(TrackwheelListener listener) {
+      this._trackwheelListeners = ListenerUtilities.removeListener(this._trackwheelListeners, listener);
    }
 
-   public final boolean scroll(int var1) {
+   public final boolean scroll(int direction) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void setUiEngine(UiEngineImpl var1) {
+   final void setUiEngine(UiEngineImpl uiEngine) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final boolean setFocus(Field var1, int var2, int var3, int var4, int var5) {
-      if (var1.getScreen() != this) {
+   public final boolean setFocus(Field field, int x, int y, int status, int time) {
+      if (field.getScreen() != this) {
          throw new Object();
       }
 
-      Screen$LocationFocusSelector var6 = Screen$LocationFocusSelector.getSelector(var1, var2, var3, var4, var5);
-      this.doFocusMove(true, true, var6);
-      return var6.getSuccess();
+      Screen$LocationFocusSelector selector = Screen$LocationFocusSelector.getSelector(field, x, y, status, time);
+      this.doFocusMove(true, true, selector);
+      return selector.getSuccess();
    }
 
-   public void setGateInput(boolean var1) {
+   public void setGateInput(boolean gated) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this.setScreenState(2, !var1);
+      this.setScreenState(2, !gated);
    }
 
-   final void setGlobal(boolean var1) {
+   final void setGlobal(boolean on) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   void setPaintController(boolean var1) {
+   void setPaintController(boolean on) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected final void setPositionDelegate(int var1, int var2) {
-      this._delegate.setPosition(var1, var2);
+   protected final void setPositionDelegate(int x, int y) {
+      this._delegate.setPosition(x, y);
    }
 
-   public void setTrackballFilter(int var1) {
-      if (var1 != -1 && (var1 & -8) != 0) {
+   public void setTrackballFilter(int filter) {
+      if (filter != -1 && (filter & -8) != 0) {
          throw new Object();
       }
 
-      this._trackballFilter = var1;
+      this._trackballFilter = filter;
       if (this.isScreenState(64)) {
          this.applyTrackballOffsets();
       }
    }
 
-   public void setTrackballSensitivityXOffset(int var1) {
-      if (var1 >= -100 && (100 >= var1 || var1 == Integer.MAX_VALUE)) {
-         this._trackballSensitivityXOffset = var1;
+   public void setTrackballSensitivityXOffset(int trackballSensitivityXOffset) {
+      if (trackballSensitivityXOffset >= -100 && (100 >= trackballSensitivityXOffset || trackballSensitivityXOffset == Integer.MAX_VALUE)) {
+         this._trackballSensitivityXOffset = trackballSensitivityXOffset;
          if (this.isScreenState(64)) {
             this.applyTrackballOffsets();
          }
@@ -742,9 +1077,9 @@ public class Screen extends Manager {
       }
    }
 
-   public void setTrackballSensitivityYOffset(int var1) {
-      if (var1 >= -100 && (100 >= var1 || var1 == Integer.MAX_VALUE)) {
-         this._trackballSensitivityYOffset = var1;
+   public void setTrackballSensitivityYOffset(int trackballSensitivityYOffset) {
+      if (trackballSensitivityYOffset >= -100 && (100 >= trackballSensitivityYOffset || trackballSensitivityYOffset == Integer.MAX_VALUE)) {
+         this._trackballSensitivityYOffset = trackballSensitivityYOffset;
          if (this.isScreenState(64)) {
             this.applyTrackballOffsets();
          }
@@ -757,8 +1092,19 @@ public class Screen extends Manager {
       Graphics.updateDisplay();
    }
 
-   void doPaintabilityWalk(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void doPaintabilityWalk(boolean paintable) {
+      if (this.isScreenState(16) != paintable) {
+         this.setScreenState(16, paintable);
+         Object[] listeners = this._paintabilityListeners;
+         if (listeners != null) {
+            for (int index = 0; index < listeners.length; index++) {
+               try {
+                  ((PaintabilityListener)listeners[index]).onPaintablityChange(paintable);
+               } catch (Throwable var5) {
+               }
+            }
+         }
+      }
    }
 
    void doLayoutNoSynch() {
@@ -767,7 +1113,7 @@ public class Screen extends Manager {
       this._noSynchOnInvalidate = false;
    }
 
-   void setPushMethod(int var1) {
+   void setPushMethod(int method) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -775,7 +1121,7 @@ public class Screen extends Manager {
       return this._pushMethod;
    }
 
-   void setDismissing(boolean var1) {
+   void setDismissing(boolean val) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -786,20 +1132,20 @@ public class Screen extends Manager {
    @Override
    protected void onDisplay() {
       this._inputStartReceived = false;
-      Field var1 = this.getLeafFieldWithFocus();
-      if (var1 == null) {
+      Field defaultFocus = this.getLeafFieldWithFocus();
+      if (defaultFocus == null) {
          if (!this._delegate.isFocusable()) {
             return;
          }
 
          this.onFocus(1);
-         var1 = this.getLeafFieldWithFocus();
+         defaultFocus = this.getLeafFieldWithFocus();
       }
 
-      XYRect var2 = Ui.getTmpXYRect();
-      var1.getFocusRectPhantom(var2);
-      this.ensureRegionVisible(var1, var2.x, var2.y, var2.width, var2.height, false, false);
-      Ui.returnTmpXYRect(var2);
+      XYRect rect = Ui.getTmpXYRect();
+      defaultFocus.getFocusRectPhantom(rect);
+      this.ensureRegionVisible(defaultFocus, rect.x, rect.y, rect.width, rect.height, false, false);
+      Ui.returnTmpXYRect(rect);
    }
 
    @Override
@@ -816,7 +1162,7 @@ public class Screen extends Manager {
    }
 
    @Override
-   protected void onFocus(int var1) {
+   protected void onFocus(int direction) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -826,16 +1172,16 @@ public class Screen extends Manager {
    }
 
    @Override
-   public void delete(Field var1) {
-      this._delegate.delete(var1);
+   public void delete(Field field) {
+      this._delegate.delete(field);
    }
 
    @Override
-   protected void onMenuDismissed(Menu var1) {
+   protected void onMenuDismissed(Menu menu) {
       this.onMenuDismissed();
 
-      for (Field var2 = this.getLeafFieldWithFocus(); var2 != null && var2 != this; var2 = var2.getManager()) {
-         var2.onMenuDismissed(var1);
+      for (Field curField = this.getLeafFieldWithFocus(); curField != null && curField != this; curField = curField.getManager()) {
+         curField.onMenuDismissed(menu);
       }
    }
 
@@ -860,8 +1206,8 @@ public class Screen extends Manager {
       this.acceptVisitor(new Screen$ScreenFieldVisitor(this, 0));
    }
 
-   private boolean isScreenState(int var1) {
-      return (this._screenState & var1) == var1;
+   private boolean isScreenState(int state) {
+      return (this._screenState & state) == state;
    }
 
    @Override
@@ -875,37 +1221,37 @@ public class Screen extends Manager {
       this._delegate.focusChangeNotify(3);
    }
 
-   private void assertSuperCalled(int var1) {
+   private void assertSuperCalled(int method) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      this.paintChild(var1, this._delegate);
+   protected void paint(Graphics graphics) {
+      this.paintChild(graphics, this._delegate);
    }
 
    @Override
-   void paintBorder(Graphics var1) {
+   void paintBorder(Graphics graphics) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected void paintBackground(Graphics var1) {
-      XYRect var2 = Ui.getTmpXYRect();
-      var2.set(0, 0, this.getWidth() - this.getBorderLeft() - this.getBorderRight(), this.getHeight() - this.getBorderTop() - this.getBorderBottom());
-      Background var3 = ThemeAttributeSet.getBackground(this);
-      if (var3 != null) {
-         var3.draw(var1, var2);
+   protected void paintBackground(Graphics graphics) {
+      XYRect rect = Ui.getTmpXYRect();
+      rect.set(0, 0, this.getWidth() - this.getBorderLeft() - this.getBorderRight(), this.getHeight() - this.getBorderTop() - this.getBorderBottom());
+      Background background = ThemeAttributeSet.getBackground(this);
+      if (background != null) {
+         background.draw(graphics, rect);
       } else if (this.getThemeAttributeSet() == null) {
-         Background.createSolidBackground(16777215).draw(var1, var2);
+         Background.createSolidBackground(16777215).draw(graphics, rect);
       }
 
-      Ui.returnTmpXYRect(var2);
+      Ui.returnTmpXYRect(rect);
    }
 
    @Override
-   public void replace(Field var1, Field var2) {
-      this._delegate.replace(var1, var2);
+   public void replace(Field oldField, Field newField) {
+      this._delegate.replace(oldField, newField);
    }
 
    private boolean isScrollBehaviourViewInternal() {
@@ -917,86 +1263,86 @@ public class Screen extends Manager {
       return this._delegate.isSelecting();
    }
 
-   private void beginSuperCalled(int var1) {
+   private void beginSuperCalled(int method) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void ensureRegionVisible(Field var1, int var2, int var3, int var4, int var5, boolean var6, boolean var7) {
-      XYRect var8 = Ui.getTmpXYRect();
+   private void ensureRegionVisible(Field field, int x, int y, int width, int height, boolean immediate, boolean draw) {
+      XYRect rect = Ui.getTmpXYRect();
 
       while (true) {
-         Manager var9 = var1.getManager();
-         if (var9 == this || var9 == null) {
-            Ui.returnTmpXYRect(var8);
+         Manager manager = field.getManager();
+         if (manager == this || manager == null) {
+            Ui.returnTmpXYRect(rect);
             return;
          }
 
-         var2 += var1.getContentLeft();
-         var3 += var1.getContentTop();
-         var8.set(var2, var3, var4, var5);
+         x += field.getContentLeft();
+         y += field.getContentTop();
+         rect.set(x, y, width, height);
          if (!this.isScrollBehaviourViewInternal()) {
-            var9.makeFocusVisible(var6, var8, var7, false);
+            manager.makeFocusVisible(immediate, rect, draw, false);
          }
 
-         int var10 = var9.getHorizontalScroll();
-         int var11 = var9.getVerticalScroll();
-         int var12 = var9.getWidth();
-         int var13 = var9.getHeight();
-         if (var2 < var10) {
-            var4 -= var10 - var2;
-            var2 = var10;
+         int hscroll = manager.getHorizontalScroll();
+         int vscroll = manager.getVerticalScroll();
+         int mgrWidth = manager.getWidth();
+         int mgrHeight = manager.getHeight();
+         if (x < hscroll) {
+            width -= hscroll - x;
+            x = hscroll;
          }
 
-         if (var3 < var11) {
-            var5 -= var11 - var3;
-            var3 = var11;
+         if (y < vscroll) {
+            height -= vscroll - y;
+            y = vscroll;
          }
 
-         int var14 = var2 + var4 - (var10 + var12);
-         if (var14 > 0) {
-            var4 -= var14;
+         int xOverflow = x + width - (hscroll + mgrWidth);
+         if (xOverflow > 0) {
+            width -= xOverflow;
          }
 
-         int var15 = var3 + var5 - (var11 + var13);
-         if (var15 > 0) {
-            var5 -= var15;
+         int yOverflow = y + height - (vscroll + mgrHeight);
+         if (yOverflow > 0) {
+            height -= yOverflow;
          }
 
-         var1 = var9;
+         field = manager;
       }
    }
 
-   private void doFocusMove(boolean var1, boolean var2, Screen$FocusSelector var3) {
+   private void doFocusMove(boolean removeFocus, boolean addFocus, Screen$FocusSelector focusSelector) {
       this.assertHaveEventLock();
       Ui.DRAW_FOCUS_IN_PAINT = false;
-      if (var1) {
+      if (removeFocus) {
          this.doRemoveFocus();
       }
 
-      var3.select();
-      this.doAddFocus(var2);
+      focusSelector.select();
+      this.doAddFocus(addFocus);
       Ui.DRAW_FOCUS_IN_PAINT = true;
-      if (var2) {
-         UiEngineImpl var4 = this.getUiEngineImpl();
-         if (var4 != null) {
-            var4.setSomethingInvalid();
+      if (addFocus) {
+         UiEngineImpl uiEngine = this.getUiEngineImpl();
+         if (uiEngine != null) {
+            uiEngine.setSomethingInvalid();
          }
       }
    }
 
-   public Screen(Manager var1) {
-      this(var1, 0);
+   public Screen(Manager delegate) {
+      this(delegate, 0);
    }
 
    @Override
-   public void deleteRange(int var1, int var2) {
-      this._delegate.deleteRange(var1, var2);
+   public void deleteRange(int start, int count) {
+      this._delegate.deleteRange(start, count);
    }
 
-   public Screen(Manager var1, long var2) {
-      super(var2);
+   public Screen(Manager delegate, long style) {
+      super(style);
       this.setTag(TAG);
-      this._delegate = var1;
+      this._delegate = delegate;
       this._delegate.setManager(this, 0);
       this.setPaintController(true);
    }
@@ -1006,120 +1352,120 @@ public class Screen extends Manager {
       return this.isScreenState(8);
    }
 
-   private void setFocusChain(Field var1) {
-      byte var2 = 0;
-      Manager var3 = var1.getManager();
-      if (var1 instanceof Manager) {
-         var2 = 1;
+   private void setFocusChain(Field field) {
+      int direction = 0;
+      Manager manager = field.getManager();
+      if (field instanceof Manager) {
+         direction = 1;
       }
 
-      if (var1.isFocusable()) {
-         var1.onFocus(var2);
-         var1.focusChangeNotify(1);
-         if (var1 != this._delegate) {
+      if (field.isFocusable()) {
+         field.onFocus(direction);
+         field.focusChangeNotify(1);
+         if (field != this._delegate) {
             while (true) {
-               var3.onFocus(0);
-               var3.setFieldWithFocus(var1);
-               var3.focusChangeNotify(1);
-               if (var3 == this._delegate) {
+               manager.onFocus(0);
+               manager.setFieldWithFocus(field);
+               manager.focusChangeNotify(1);
+               if (manager == this._delegate) {
                   return;
                }
 
-               var1 = var3;
-               var3 = var1.getManager();
+               field = manager;
+               manager = field.getManager();
             }
          }
       }
    }
 
-   private final void setScreenState(int var1, boolean var2) {
-      if (var2) {
-         this._screenState |= var1;
+   private final void setScreenState(int state, boolean on) {
+      if (on) {
+         this._screenState |= state;
       } else {
-         this._screenState &= ~var1;
+         this._screenState &= ~state;
       }
    }
 
    @Override
-   public void add(Field var1) {
-      this._delegate.add(var1);
+   public void add(Field field) {
+      this._delegate.add(field);
    }
 
    @Override
-   int getVisibleHeight(int var1, int var2) {
-      if (0 > var2) {
-         var1 += var2;
-         var2 = 0;
+   int getVisibleHeight(int min, int y) {
+      if (0 > y) {
+         min += y;
+         y = 0;
       }
 
-      if (this.getHeight() < var1 + var2) {
-         var1 = this.getHeight() - var2;
+      if (this.getHeight() < min + y) {
+         min = this.getHeight() - y;
       }
 
-      return var1;
+      return min;
    }
 
    @Override
-   public void insert(Field var1, int var2) {
-      this._delegate.insert(var1, var2);
+   public void insert(Field field, int index) {
+      this._delegate.insert(field, index);
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      if (this.getDelegate().invokeAction(var1)) {
+   protected boolean invokeAction(int action) {
+      if (this.getDelegate().invokeAction(action)) {
          return true;
       }
 
-      switch (var1) {
+      switch (action) {
          case 1:
-            Field var2 = this.getLeafFieldWithFocus();
-            if (var2 != null && var2.isSelecting()) {
+            Field leafWithFocus = this.getLeafFieldWithFocus();
+            if (leafWithFocus != null && leafWithFocus.isSelecting()) {
                this.onMenu(65537);
                return true;
             } else if (this._scrollBehaviourSelect) {
-               if (var2 != null) {
-                  var2.select(true);
+               if (leafWithFocus != null) {
+                  leafWithFocus.select(true);
                }
 
                return true;
             }
          default:
-            return super.invokeAction(var1);
+            return super.invokeAction(action);
       }
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      return this._delegate.navigationClick(var1, var2);
+   protected boolean navigationClick(int status, int time) {
+      return this._delegate.navigationClick(status, time);
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   protected boolean navigationUnclick(int var1, int var2) {
-      return this._delegate.navigationUnclick(var1, var2);
+   protected boolean navigationUnclick(int status, int time) {
+      return this._delegate.navigationUnclick(status, time);
    }
 
    @Override
-   int getVisibleWidth(int var1, int var2) {
-      if (0 > var2) {
-         var1 += var2;
-         var2 = 0;
+   int getVisibleWidth(int min, int x) {
+      if (0 > x) {
+         min += x;
+         x = 0;
       }
 
-      if (this.getWidth() < var1 + var2) {
-         var1 = this.getWidth() - var2;
+      if (this.getWidth() < min + x) {
+         min = this.getWidth() - x;
       }
 
-      return var1;
+      return min;
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      return this._delegate.trackwheelClick(var1, var2) ? true : super.trackwheelClick(var1, var2);
+   protected boolean trackwheelClick(int status, int time) {
+      return this._delegate.trackwheelClick(status, time) ? true : super.trackwheelClick(status, time);
    }
 
    @Override
@@ -1129,25 +1475,25 @@ public class Screen extends Manager {
    }
 
    @Override
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
-      if (this._delegate.trackwheelRoll(var1, var2, var3)) {
+   protected boolean trackwheelRoll(int amount, int status, int time) {
+      if (this._delegate.trackwheelRoll(amount, status, time)) {
          return true;
       } else if (this._delegate.getFieldWithFocus() == null) {
          return false;
       } else if (this.isScrollBehaviourViewInternal()) {
-         Screen$ViewFocusSelector var5 = Screen$ViewFocusSelector.getSelector(this, var1, var2, var3);
-         this.doFocusMove(true, true, var5);
-         return var5.getSuccess();
+         Screen$ViewFocusSelector selector = Screen$ViewFocusSelector.getSelector(this, amount, status, time);
+         this.doFocusMove(true, true, selector);
+         return selector.getSuccess();
       } else {
-         Screen$TrackwheelRollFocusSelector var4 = Screen$TrackwheelRollFocusSelector.getSelector(this, var1, var2, var3);
-         this.doFocusMove(true, true, var4);
-         return var4.getSuccess();
+         Screen$TrackwheelRollFocusSelector selector = Screen$TrackwheelRollFocusSelector.getSelector(this, amount, status, time);
+         this.doFocusMove(true, true, selector);
+         return selector.getSuccess();
       }
    }
 
    @Override
-   protected boolean trackwheelUnclick(int var1, int var2) {
-      return this._delegate.trackwheelUnclick(var1, var2);
+   protected boolean trackwheelUnclick(int status, int time) {
+      return this._delegate.trackwheelUnclick(status, time);
    }
 
    @Override
@@ -1157,42 +1503,42 @@ public class Screen extends Manager {
       this._delegate.invalidateLayout0();
    }
 
-   private int mapStylusX(int var1) {
-      return var1 - this._delegate.getLeft();
+   private int mapStylusX(int x) {
+      return x - this._delegate.getLeft();
    }
 
-   private int mapStylusY(int var1) {
-      return var1 - this._delegate.getTop();
-   }
-
-   @Override
-   protected boolean stylusDown(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusDown(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   private int mapStylusY(int y) {
+      return y - this._delegate.getTop();
    }
 
    @Override
-   protected boolean stylusUp(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusUp(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   protected boolean stylusDown(int x, int y, int status, int time) {
+      return this._delegate.stylusDown(this.mapStylusX(x), this.mapStylusY(y), status, time);
    }
 
    @Override
-   protected boolean stylusDrag(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusDrag(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   protected boolean stylusUp(int x, int y, int status, int time) {
+      return this._delegate.stylusUp(this.mapStylusX(x), this.mapStylusY(y), status, time);
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusTap(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   protected boolean stylusDrag(int x, int y, int status, int time) {
+      return this._delegate.stylusDrag(this.mapStylusX(x), this.mapStylusY(y), status, time);
    }
 
    @Override
-   protected boolean stylusDoubleTap(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusDoubleTap(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return this._delegate.stylusTap(this.mapStylusX(x), this.mapStylusY(y), status, time);
    }
 
    @Override
-   protected boolean stylusTapHold(int var1, int var2, int var3, int var4) {
-      return this._delegate.stylusTapHold(this.mapStylusX(var1), this.mapStylusY(var2), var3, var4);
+   protected boolean stylusDoubleTap(int x, int y, int status, int time) {
+      return this._delegate.stylusDoubleTap(this.mapStylusX(x), this.mapStylusY(y), status, time);
+   }
+
+   @Override
+   protected boolean stylusTapHold(int x, int y, int status, int time) {
+      return this._delegate.stylusTapHold(this.mapStylusX(x), this.mapStylusY(y), status, time);
    }
 
    @Override
@@ -1201,8 +1547,8 @@ public class Screen extends Manager {
    }
 
    @Override
-   public Field getField(int var1) {
-      return this._delegate.getField(var1);
+   public Field getField(int index) {
+      return this._delegate.getField(index);
    }
 
    @Override
@@ -1220,9 +1566,36 @@ public class Screen extends Manager {
       return this._delegate.getLeafFieldWithFocus();
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   void runLayoutUpdate0(int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   void runLayoutUpdate0(int index, int added, int deleted) {
+      this._inLayout++;
+      boolean var8 = false /* VF: Semaphore variable */;
+
+      try {
+         var8 = true;
+         UiEngineImpl engine = this._uiEngine;
+         if (engine != null) {
+            engine.appInvalidate(this.getLeft(), this.getTop(), this.getWidth(), this.getHeight());
+         }
+
+         int width = Display.getWidth();
+         int height = Display.getHeight();
+         width -= this.getBorderLeft() + this.getBorderRight() + this.getPaddingLeft() + this.getPaddingRight();
+         height -= this.getBorderTop() + this.getBorderBottom() + this.getPaddingTop() + this.getPaddingBottom();
+         this.layout(width, height);
+         this._invalid.set(0, 0, 0, 0);
+         this.invalidate();
+         this.ensureFocusVisible();
+         var8 = false;
+      } finally {
+         if (var8) {
+            this._inLayout--;
+         }
+      }
+
+      this._inLayout--;
    }
 
    @Override
@@ -1231,29 +1604,51 @@ public class Screen extends Manager {
    }
 
    @Override
-   public int getFieldAtLocation(int var1, int var2) {
-      return this._delegate.getFieldAtLocation(var1, var2);
+   public int getFieldAtLocation(int x, int y) {
+      return this._delegate.getFieldAtLocation(x, y);
    }
 
    @Override
-   public void invalidate(int var1, int var2, int var3, int var4) {
-      this.invalidateInternal(var1, var2, var3, var4);
+   public void invalidate(int x, int y, int width, int height) {
+      this.invalidateInternal(x, y, width, height);
    }
 
    @Override
-   public void invalidateAll(int var1, int var2, int var3, int var4) {
-      this.invalidateCommon(var1, var2, var3, var4, this.getExtent());
+   public void invalidateAll(int x, int y, int width, int height) {
+      this.invalidateCommon(x, y, width, height, this.getExtent());
    }
 
-   private void invalidateCommon(int var1, int var2, int var3, int var4, XYRect var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void invalidateCommon(int x, int y, int width, int height, XYRect extent) {
+      UiEngineImpl engine = this._uiEngine;
+      if (engine != null && this.isValidLayout()) {
+         int clipx1 = extent.x;
+         int clipx2 = extent.x + extent.width;
+         int clipy1 = extent.y;
+         int clipy2 = extent.y + extent.height;
+         x += clipx1;
+         y += clipy1;
+         int newx1 = MathUtilities.clamp(clipx1, x, clipx2);
+         int newx2 = MathUtilities.clamp(clipx1, x + width, clipx2);
+         int newy1 = MathUtilities.clamp(clipy1, y, clipy2);
+         int newy2 = MathUtilities.clamp(clipy1, y + height, clipy2);
+         if (this._noSynchOnInvalidate) {
+            this._invalid.union(newx1, newy1, newx2 - newx1, newy2 - newy1);
+         } else {
+            synchronized (this._invalid) {
+               this._invalid.union(newx1, newy1, newx2 - newx1, newy2 - newy1);
+            }
+         }
+
+         engine.forceRepaintIfNotOnEventThread();
+         engine.setSomethingInvalid();
+      }
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      this._delegate.getFocusRect(var1);
-      XYRect var2 = this._delegate.getContentRect();
-      var1.translate(var2.x, var2.y);
+   public void getFocusRect(XYRect rect) {
+      this._delegate.getFocusRect(rect);
+      XYRect extent = this._delegate.getContentRect();
+      rect.translate(extent.x, extent.y);
    }
 
    @Override
@@ -1262,13 +1657,13 @@ public class Screen extends Manager {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      return this._delegate.keyChar(var1, var2, var3);
+   protected boolean keyChar(char c, int status, int time) {
+      return this._delegate.keyChar(c, status, time);
    }
 
    @Override
-   public void setDirty(boolean var1) {
-      this._delegate.setDirty(var1);
+   public void setDirty(boolean dirty) {
+      this._delegate.setDirty(dirty);
    }
 
    @Override
@@ -1282,111 +1677,111 @@ public class Screen extends Manager {
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
+   protected boolean keyControl(char c, int status, int time) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public int adjustVolume(int var1) {
+   public int adjustVolume(int volumeLevelChange) {
       return MediaPlayerState.areAnyPlayersRegistered() ? -1 : 0;
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      boolean var3 = false;
-      if ((Keypad.status(var1) & 1) == this._backdoorAltStatus) {
-         this._backdoorCode = BackdoorKeyProcessor.appendKeyDetectingMultitap(this._backdoorCode, Keypad.key(var1));
-         var3 = this.openProductionBackdoor(this._backdoorCode);
-         if (!var3 && BackdoorKeyProcessor.isDevelopmentDevice()) {
-            var3 = this.openDevelopmentBackdoor(this._backdoorCode);
+   protected boolean keyDown(int keycode, int time) {
+      boolean result = false;
+      if ((Keypad.status(keycode) & 1) == this._backdoorAltStatus) {
+         this._backdoorCode = BackdoorKeyProcessor.appendKeyDetectingMultitap(this._backdoorCode, Keypad.key(keycode));
+         result = this.openProductionBackdoor(this._backdoorCode);
+         if (!result && BackdoorKeyProcessor.isDevelopmentDevice()) {
+            result = this.openDevelopmentBackdoor(this._backdoorCode);
          }
       } else {
          this._backdoorCode = 0;
       }
 
-      if (!var3) {
-         var3 = this._delegate.keyDown(var1, var2);
+      if (!result) {
+         result = this._delegate.keyDown(keycode, time);
       }
 
-      if (!var3) {
-         var3 = super.keyDown(var1, var2);
+      if (!result) {
+         result = super.keyDown(keycode, time);
       }
 
-      return var3;
+      return result;
    }
 
    @Override
-   public void setHorizontalQuantization(int var1) {
-      this._delegate.setHorizontalQuantization(var1);
+   public void setHorizontalQuantization(int horizontalQuanta) {
+      this._delegate.setHorizontalQuantization(horizontalQuanta);
    }
 
    @Override
-   void setManager(Manager var1, int var2) {
+   void setManager(Manager manager, int index) {
       throw new Object();
    }
 
    @Override
-   protected boolean keyUp(int var1, int var2) {
-      return this._delegate.keyUp(var1, var2);
+   protected boolean keyUp(int keycode, int time) {
+      return this._delegate.keyUp(keycode, time);
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      return this._delegate.keyRepeat(var1, var2);
+   protected boolean keyRepeat(int keycode, int time) {
+      return this._delegate.keyRepeat(keycode, time);
    }
 
    @Override
-   protected boolean keyStatus(int var1, int var2) {
-      return this._delegate.keyStatus(var1, var2);
+   protected boolean keyStatus(int keycode, int time) {
+      return this._delegate.keyStatus(keycode, time);
    }
 
    @Override
-   Graphics getGraphics0(XYRect var1, boolean var2) {
+   Graphics getGraphics0(XYRect clip, boolean drawBackground) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void setVerticalQuantization(int var1) {
-      this._delegate.setVerticalQuantization(var1);
+   public void setVerticalQuantization(int verticalQuanta) {
+      this._delegate.setVerticalQuantization(verticalQuanta);
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
+   public int processKeyEvent(int event, char key, int keycode, int time) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      if (this.blockInputEvents(var1, var3)) {
+      if (this.blockInputEvents(event, keycode)) {
          return 0;
       }
 
-      if (Keypad.key(var3) == 0) {
-         var3 = 32768;
+      if (Keypad.key(keycode) == 0) {
+         keycode = 32768;
       }
 
-      int var5 = this._delegate.processKeyEvent(var1, var2, var3, var4);
-      boolean var6 = (var5 & 65536) == 65536;
-      if (!var6 || var1 == 513) {
-         var6 |= this.dispatchKeyEvent(var1, (char)(var5 & 65535), var3, var4);
+      int result = this._delegate.processKeyEvent(event, key, keycode, time);
+      boolean handled = (result & 65536) == 65536;
+      if (!handled || event == 513) {
+         handled |= this.dispatchKeyEvent(event, (char)(result & 65535), keycode, time);
       }
 
-      if (!var6 && (var1 == 513 || var1 == 514)) {
-         char var7 = (char)(var5 & 65535);
-         if (Ui.getTrackballClickAction() == 1 && Keypad.key(var3) == 4098) {
-            var7 = 149;
+      if (!handled && (event == 513 || event == 514)) {
+         char charkey = (char)(result & 65535);
+         if (Ui.getTrackballClickAction() == 1 && Keypad.key(keycode) == 4098) {
+            charkey = 149;
          }
 
-         if (var7 == 130 && InternalServices.isReducedFormFactor()) {
-            var7 = 132;
+         if (charkey == 130 && InternalServices.isReducedFormFactor()) {
+            charkey = 132;
          }
 
-         if (var7 != 0) {
-            var6 = this.dispatchKeyEvent(32768, var7, var3, var4);
+         if (charkey != 0) {
+            handled = this.dispatchKeyEvent(32768, charkey, keycode, time);
          }
       }
 
-      if (var6) {
-         var5 |= 65536;
+      if (handled) {
+         result |= 65536;
       }
 
-      return var5;
+      return result;
    }
 
    @Override
@@ -1400,8 +1795,8 @@ public class Screen extends Manager {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      return this.getField(var1);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      return this.getField(index);
    }
 
    @Override
@@ -1410,8 +1805,8 @@ public class Screen extends Manager {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      return this._delegate.getAccessibleSelectionAt(var1);
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      return this._delegate.getAccessibleSelectionAt(index);
    }
 
    @Override
@@ -1420,37 +1815,37 @@ public class Screen extends Manager {
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      return this._delegate.isAccessibleChildSelected(var1);
+   public boolean isAccessibleChildSelected(int index) {
+      return this._delegate.isAccessibleChildSelected(index);
    }
 
    @Override
-   protected void accessibleEventOccurred(int var1, Object var2, Object var3, AccessibleContext var4) {
-      AccessibleEventDispatcher.dispatchAccessibleEvent(var1, var2, var3, var4);
+   protected void accessibleEventOccurred(int event, Object oldValue, Object newValue, AccessibleContext context) {
+      AccessibleEventDispatcher.dispatchAccessibleEvent(event, oldValue, newValue, context);
    }
 
    @Override
-   boolean validateFieldStyle(long var1) {
-      return super.validateFieldStyle(var1 & -68719476737L);
+   boolean validateFieldStyle(long style) {
+      return super.validateFieldStyle(style & -68719476737L);
    }
 
    @Override
-   public boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
+   public boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
       return this._delegate != null
-         ? this._delegate.processNavigationEvent(var1, var2, var3, var4, var5)
-         : super.processNavigationEvent(var1, var2, var3, var4, var5);
+         ? this._delegate.processNavigationEvent(event, dx, dy, status, time)
+         : super.processNavigationEvent(event, dx, dy, status, time);
    }
 
    @Override
-   void doVisibilityWalk(boolean var1) {
-      if (this.isScreenState(8) != var1) {
+   void doVisibilityWalk(boolean visible) {
+      if (this.isScreenState(8) != visible) {
          if (Trackball.isSupported()) {
             this._inputStartReceived = false;
          }
 
-         this.setScreenState(8, var1);
-         this.onVisibilityChange(var1);
-         this._delegate.doVisibilityWalk(var1);
+         this.setScreenState(8, visible);
+         this.onVisibilityChange(visible);
+         this._delegate.doVisibilityWalk(visible);
       }
    }
 
@@ -1465,44 +1860,44 @@ public class Screen extends Manager {
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
-      super.makeMenu(var1, var2);
-      if (var2 == 0) {
+   protected void makeMenu(Menu menu, int instance) {
+      super.makeMenu(menu, instance);
+      if (instance == 0) {
          if (this.isStyle(131072) && !this._scrollBehaviourSelect) {
-            var1.add(MenuItem.getPrefab(14));
+            menu.add(MenuItem.getPrefab(14));
          }
 
          if (this.isScrollBehaviourViewInternal()) {
-            var1.add(MenuItem.getPrefab(16));
+            menu.add(MenuItem.getPrefab(16));
          }
 
          if (this._scrollBehaviourSelect) {
-            var1.add(MenuItem.getPrefab(17));
+            menu.add(MenuItem.getPrefab(17));
             return;
          }
       } else {
-         var1.add(MenuItem.getPrefab(18));
+         menu.add(MenuItem.getPrefab(18));
       }
    }
 
    private void applyTrackballOffsets() {
       if (Trackball.isSupported()) {
-         boolean var1 = this.isScreenState(64);
-         if (var1 && this._trackballSensitivityXOffset != Integer.MAX_VALUE) {
-            int var2 = MathUtilities.clamp(0, Trackball.getSensitivityXForSystem() + this._trackballSensitivityXOffset, 100);
-            Trackball.setSensitivityXInternal(var2);
+         boolean hasFocus = this.isScreenState(64);
+         if (hasFocus && this._trackballSensitivityXOffset != Integer.MAX_VALUE) {
+            int sensitivity = MathUtilities.clamp(0, Trackball.getSensitivityXForSystem() + this._trackballSensitivityXOffset, 100);
+            Trackball.setSensitivityXInternal(sensitivity);
          } else {
             Trackball.setSensitivityXInternal(Integer.MAX_VALUE);
          }
 
-         if (var1 && this._trackballSensitivityYOffset != Integer.MAX_VALUE) {
-            int var3 = MathUtilities.clamp(0, Trackball.getSensitivityYForSystem() + this._trackballSensitivityYOffset, 100);
-            Trackball.setSensitivityYInternal(var3);
+         if (hasFocus && this._trackballSensitivityYOffset != Integer.MAX_VALUE) {
+            int sensitivity = MathUtilities.clamp(0, Trackball.getSensitivityYForSystem() + this._trackballSensitivityYOffset, 100);
+            Trackball.setSensitivityYInternal(sensitivity);
          } else {
             Trackball.setSensitivityYInternal(Integer.MAX_VALUE);
          }
 
-         if (var1) {
+         if (hasFocus) {
             Trackball.setFilterInternal(this._trackballFilter);
          } else {
             Trackball.setFilterInternal(-1);
@@ -1513,10 +1908,10 @@ public class Screen extends Manager {
    }
 
    @Override
-   public void getFocusRectPhantom(XYRect var1) {
+   public void getFocusRectPhantom(XYRect rect) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._delegate.getFocusRectPhantom(var1);
-      XYRect var2 = this._delegate.getContentRect();
-      var1.translate(var2.x, var2.y);
+      this._delegate.getFocusRectPhantom(rect);
+      XYRect extent = this._delegate.getContentRect();
+      rect.translate(extent.x, extent.y);
    }
 }

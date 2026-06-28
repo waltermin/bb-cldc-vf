@@ -17,47 +17,47 @@ public final class PersistentObject extends PersistentRootObject implements Pers
       Persistence.commit(this, true);
    }
 
-   public static final void commit(Object var0) {
-      Persistence.commit(var0, false);
+   public static final void commit(Object obj) {
+      Persistence.commit(obj, false);
    }
 
-   public static final void forceCommit(Object var0) {
-      Persistence.commit(var0, true);
+   public static final void forceCommit(Object obj) {
+      Persistence.commit(obj, true);
    }
 
    public final synchronized Object getContents() {
-      int var1 = TraceBack.getCallingModule(0);
-      return this.getContents(var1, null, null);
+      int caller = TraceBack.getCallingModule(0);
+      return this.getContents(caller, null, null);
    }
 
-   public final synchronized Object getContents(CodeSigningKey var1) {
-      int var2 = TraceBack.getCallingModule(0);
-      return this.getContents(var2, var1, var1);
+   public final synchronized Object getContents(CodeSigningKey readAndReplaceKey) {
+      int caller = TraceBack.getCallingModule(0);
+      return this.getContents(caller, readAndReplaceKey, readAndReplaceKey);
    }
 
-   public final Object getContents(CodeSigningKey var1, CodeSigningKey var2) {
-      int var3 = TraceBack.getCallingModule(0);
-      return this.getContents(var3, var1, var2);
+   public final Object getContents(CodeSigningKey readKey, CodeSigningKey replaceKey) {
+      int caller = TraceBack.getCallingModule(0);
+      return this.getContents(caller, readKey, replaceKey);
    }
 
-   private final synchronized Object getContents(int var1, CodeSigningKey var2, CodeSigningKey var3) {
+   private final synchronized Object getContents(int moduleHandle, CodeSigningKey readKey, CodeSigningKey replaceKey) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final synchronized void setContents(Object var1) {
-      int var2 = TraceBack.getCallingModule(0);
-      this.setContents(var2, var1);
+   public final synchronized void setContents(Object contents) {
+      int caller = TraceBack.getCallingModule(0);
+      this.setContents(caller, contents);
    }
 
-   public final void setContents(Object var1, int var2) {
+   public final void setContents(Object contents, int signerId) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setContents(Object var1, int var2, boolean var3) {
+   public final void setContents(Object contents, int signerId, boolean preventReadAccess) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final synchronized void setContents(int var1, Object var2) {
+   private final synchronized void setContents(int moduleHandle, Object contents) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -65,12 +65,12 @@ public final class PersistentObject extends PersistentRootObject implements Pers
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public final void setReservedMemorySize(int var1) {
-      if (var1 < 0) {
+   public final void setReservedMemorySize(int size) {
+      if (size < 0) {
          throw new Object();
       }
 
-      super._reservedMemorySize = var1;
+      super._reservedMemorySize = size;
       this.forceCommit();
    }
 }

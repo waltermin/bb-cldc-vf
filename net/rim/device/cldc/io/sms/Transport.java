@@ -5,6 +5,7 @@ import javax.wireless.messaging.MessageListener;
 import net.rim.blackberry.api.sms.OutboundMessageListener;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
+import net.rim.device.api.io.DatagramConnectionBase;
 import net.rim.device.api.io.DatagramStatusListener;
 import net.rim.device.api.io.IOProperties;
 import net.rim.device.api.io.SmsAddress;
@@ -31,37 +32,37 @@ public final class Transport extends NativeTransport implements SMSPacketListene
    }
 
    @Override
-   public final void nativeSendVerify(DatagramAddressBase var1, Datagram var2) {
+   public final void nativeSendVerify(DatagramAddressBase addressBase, Datagram datagram) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final void nativeSendSetupHeader(Datagram var1, IOProperties var2) {
+   public final void nativeSendSetupHeader(Datagram datagram, IOProperties properties) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public final void nativeSendSetupData(Datagram var1) {
+   public final void nativeSendSetupData(Datagram datagram) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public final void packetNotSent(int var1, int var2) {
-      this.queueSendStatus(var1, -2147483648 | var2);
+   public final void packetNotSent(int packetId, int error) {
+      this.queueSendStatus(packetId, -2147483648 | error);
    }
 
    @Override
-   public final int nativeGetStatus(int var1) {
-      switch (var1) {
+   public final int nativeGetStatus(int status) {
+      switch (status) {
          case -3:
          case -2:
          case 0:
          case 1:
          case 2:
          case 129:
-            return var1;
+            return status;
          default:
-            switch (var1 & 2147483647) {
+            switch (status & 2147483647) {
                case 0:
                case 2:
                case 3:
@@ -158,61 +159,68 @@ public final class Transport extends NativeTransport implements SMSPacketListene
    }
 
    @Override
-   protected final void queueDgslEvent(int var1, int var2, Object var3) {
-      this._statusThread.addStatus(false, null, var1, var2, var3);
+   protected final void queueDgslEvent(int subId, int status, Object context) {
+      this._statusThread.addStatus(false, null, subId, status, context);
    }
 
    @Override
-   protected final void queueDgslEvent(DatagramStatusListener var1, int var2, int var3, Object var4) {
-      this._statusThread.addStatus(true, var1, var2, var3, var4);
+   protected final void queueDgslEvent(DatagramStatusListener listener, int dgramId, int status, Object context) {
+      this._statusThread.addStatus(true, listener, dgramId, status, context);
    }
 
    @Override
-   public final DatagramAddressBase newDatagramAddressBase(String var1, boolean var2) {
-      Object var3 = new Object(var1);
-      if (var2) {
-         ((SmsAddress)var3).swap();
+   public final DatagramAddressBase newDatagramAddressBase(String address, boolean swap) {
+      SmsAddress ret = (SmsAddress)(new Object(address));
+      if (swap) {
+         ret.swap();
       }
 
-      return (DatagramAddressBase)var3;
+      return ret;
    }
 
    @Override
-   public final DatagramAddressBase newDatagramAddressBase(DatagramAddressBase var1, boolean var2) {
-      Object var3 = new Object(var1);
-      if (var2) {
-         ((SmsAddress)var3).swap();
+   public final DatagramAddressBase newDatagramAddressBase(DatagramAddressBase addressBase, boolean swap) {
+      SmsAddress ret = (SmsAddress)(new Object(addressBase));
+      if (swap) {
+         ret.swap();
       }
 
-      return (DatagramAddressBase)var3;
+      return ret;
    }
 
    @Override
-   public final void send(Datagram var1, DatagramAddressBase var2, IOProperties var3, DatagramStatusListener var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void send(Datagram datagram, DatagramAddressBase addressBase, IOProperties properties, DatagramStatusListener listener, int dgramId) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void notifyListener(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void notifyListener(Datagram d) {
+      try {
+         DatagramBase db = (DatagramBase)d;
+         if (this._outboundListener != null) {
+            this._outboundListener.notifyOutgoingMessage(Protocol.makeMessage(db));
+            return;
+         }
+      } catch (Throwable var3) {
+      }
    }
 
-   public final void addOutboundMessageListener(MessageListener var1) {
+   public final void addOutboundMessageListener(MessageListener l) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public final void packetSent(int var1, int var2) {
-      this.addDgramId(super._txListener, super._txDgramId, var2);
-      super.packetSent(var1, var2);
+   public final void packetSent(int packetId, int networkId) {
+      this.addDgramId(super._txListener, super._txDgramId, networkId);
+      super.packetSent(packetId, networkId);
    }
 
-   public final boolean isPortReserved(int var1) {
-      for (int var2 = super._superConnections.length - 1; var2 >= 0; var2--) {
-         WeakReference var3 = super._superConnections[var2];
-         Object var4 = null;
-         if (var3 != null && (var4 = var3.get()) != null) {
-            Protocol var5 = (Protocol)var4;
-            if (var5.getPort() == var1) {
+   public final boolean isPortReserved(int port) {
+      for (int i = super._superConnections.length - 1; i >= 0; i--) {
+         WeakReference w = super._superConnections[i];
+         DatagramConnectionBase c = null;
+         if (w != null && (c = (DatagramConnectionBase)w.get()) != null) {
+            Protocol protocol = (Protocol)c;
+            if (protocol.getPort() == port) {
                return true;
             }
          }
@@ -222,63 +230,63 @@ public final class Transport extends NativeTransport implements SMSPacketListene
    }
 
    @Override
-   public final void packetReceived(SMSPacketHeader var1, byte[] var2) {
+   public final void packetReceived(SMSPacketHeader header, byte[] data) {
       EventLogger.logEvent(super.GUID, 1381528436, 4);
-      DatagramBase var3 = SmsUtil.decode(this, var1, var2);
+      DatagramBase dgram = SmsUtil.decode(this, header, data);
       EventLogger.logEvent(super.GUID, 1381527669, 5);
-      if (this.passUpDatagram(var3)) {
-         VoiceDataUsage.addDataBytes(var2.length);
+      if (this.passUpDatagram(dgram)) {
+         VoiceDataUsage.addDataBytes(data.length);
       } else {
          EventLogger.logEvent(super.GUID, 1381527152, 3);
       }
    }
 
    @Override
-   public final void packetDelivered(int var1, int var2, int var3) {
-      short var4;
-      switch (var2) {
+   public final void packetDelivered(int networkId, int status, int messageTypeAndCauseCode) {
+      int event;
+      switch (status) {
          case 0:
-            var4 = 5;
+            event = 5;
             break;
          case 69:
-            var4 = 12929;
+            event = 12929;
             break;
          case 70:
-            var4 = 12931;
+            event = 12931;
             break;
          case 130:
-            var4 = 13185;
+            event = 13185;
             break;
          case 131:
-            var4 = 13186;
+            event = 13186;
             break;
          case 132:
-            var4 = 13187;
+            event = 13187;
             break;
          case 133:
-            var4 = 13188;
+            event = 13188;
             break;
          case 134:
-            var4 = 13189;
+            event = 13189;
             break;
          case 135:
-            var4 = 13190;
+            event = 13190;
             break;
          case 136:
-            var4 = 13191;
+            event = 13191;
             break;
          case 137:
-            var4 = 13192;
+            event = 13192;
             break;
          default:
-            int var5 = var2 & 96;
-            switch (var5) {
+            int bits = status & 96;
+            switch (bits) {
                case 0:
                   return;
                case 32:
                   return;
                case 64:
-                  var4 = 12932;
+                  event = 12932;
                   break;
                case 96:
                   return;
@@ -287,8 +295,8 @@ public final class Transport extends NativeTransport implements SMSPacketListene
             }
       }
 
-      int var6 = var3 & -65536 | var1 & 65535;
-      Object var7 = new Object(var6);
-      this.queueDgslEvent(var1, var4, var7);
+      int tagIDAndCauseCode = messageTypeAndCauseCode & -65536 | networkId & 65535;
+      Integer intObject = (Integer)(new Object(tagIDAndCauseCode));
+      this.queueDgslEvent(networkId, event, intObject);
    }
 }

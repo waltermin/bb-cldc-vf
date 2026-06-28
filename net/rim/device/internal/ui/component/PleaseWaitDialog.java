@@ -13,39 +13,52 @@ public class PleaseWaitDialog extends PopupScreen {
    private Process _workerThreadProcess;
    ResourceBundleFamily _rb;
 
-   public PleaseWaitDialog(PleaseWaitWorkerThread var1) {
-      this(null, var1, null);
+   public PleaseWaitDialog(PleaseWaitWorkerThread workerThread) {
+      this(null, workerThread, null);
    }
 
-   public PleaseWaitDialog(PleaseWaitWorkerThread var1, Process var2) {
-      this(null, var1, var2);
+   public PleaseWaitDialog(PleaseWaitWorkerThread workerThread, Process workerThreadProcess) {
+      this(null, workerThread, workerThreadProcess);
    }
 
-   public PleaseWaitDialog(String var1, PleaseWaitWorkerThread var2) {
-      this(var1, var2, null);
+   public PleaseWaitDialog(String message, PleaseWaitWorkerThread workerThread) {
+      this(message, workerThread, null);
    }
 
-   public PleaseWaitDialog(String var1, PleaseWaitWorkerThread var2, Process var3) {
+   public PleaseWaitDialog(String message, PleaseWaitWorkerThread workerThread, Process workerThreadProcess) {
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached) {
+         synchronized (this) {
+            super.notify();
+            this._displayed = true;
+         }
+      }
    }
 
    synchronized void waitForDialog() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (!this._displayed) {
+         try {
+            super.wait();
+         } catch (InterruptedException var2) {
+         }
+      }
+
+      this._displayed = false;
    }
 
    public void display() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setMessage(String var1) {
-      this._messageField.setText(var1);
+   public void setMessage(String message) {
+      this._messageField.setText(message);
    }
 
-   void setThrowable(Throwable var1) {
+   void setThrowable(Throwable t) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 

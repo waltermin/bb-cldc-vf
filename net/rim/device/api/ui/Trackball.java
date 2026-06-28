@@ -53,9 +53,9 @@ public final class Trackball {
 
    public static final native int getSensitivityYFromOS();
 
-   public static final void getStats(Trackball$Stats var0) {
+   public static final void getStats(Trackball$Stats stats) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      getStats0(var0);
+      getStats0(stats);
    }
 
    private static final native void getStats0(Trackball$Stats var0);
@@ -77,101 +77,101 @@ public final class Trackball {
 
    private static final native void resetStats0();
 
-   public static final void setFeedbackAudibleForSystem(boolean var0) {
+   public static final void setFeedbackAudibleForSystem(boolean enabled) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      UiOptionsRegistry.getInstance().setBoolean(9173869926753706073L, var0);
-      AudioRouter.getInstance().enableInputFeedback(0, var0);
+      UiOptionsRegistry.getInstance().setBoolean(9173869926753706073L, enabled);
+      AudioRouter.getInstance().enableInputFeedback(0, enabled);
    }
 
-   public static final void setFilter(int var0) {
-      setFilterInternal(var0);
+   public static final void setFilter(int filter) {
+      setFilterInternal(filter);
       updateDeviceWithAppSettings();
    }
 
-   static final void setFilterInternal(int var0) {
-      if (var0 != -1 && (var0 & -8) != 0) {
+   static final void setFilterInternal(int filter) {
+      if (filter != -1 && (filter & -8) != 0) {
          throw new Object();
       }
 
-      _filterMask = var0;
+      _filterMask = filter;
    }
 
    private static final native void setFilterMask0(int var0);
 
-   public static final void setFilterForSystem(int var0) {
+   public static final void setFilterForSystem(int filter) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      if (var0 != -1 && (var0 & -8) != 0) {
+      if (filter != -1 && (filter & -8) != 0) {
          throw new Object();
       }
 
-      UiOptionsRegistry.getInstance().setInt(-1211370300138911215L, var0);
+      UiOptionsRegistry.getInstance().setInt(-1211370300138911215L, filter);
       updateDeviceWithAppSettings();
    }
 
-   public static final void setSensitivityX(int var0) {
-      setSensitivityXInternal(var0);
+   public static final void setSensitivityX(int sensitivity) {
+      setSensitivityXInternal(sensitivity);
       updateDeviceWithAppSettings();
    }
 
-   static final void setSensitivityXInternal(int var0) {
-      if ((var0 < 0 || 100 < var0) && var0 != Integer.MAX_VALUE) {
+   static final void setSensitivityXInternal(int sensitivity) {
+      if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
          throw new Object();
       }
 
-      _sensitivityX = var0;
+      _sensitivityX = sensitivity;
    }
 
    private static final native void setSensitivityX0(int var0);
 
-   public static final void setSensitivityXForSystem(int var0) {
+   public static final void setSensitivityXForSystem(int sensitivity) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      if ((var0 < 0 || 100 < var0) && var0 != Integer.MAX_VALUE) {
+      if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
          throw new Object();
       }
 
-      UiOptionsRegistry.getInstance().setInt(4925806619770988503L, var0);
+      UiOptionsRegistry.getInstance().setInt(4925806619770988503L, sensitivity);
       updateDeviceWithAppSettings();
    }
 
-   public static final void setSensitivityY(int var0) {
-      setSensitivityYInternal(var0);
+   public static final void setSensitivityY(int sensitivity) {
+      setSensitivityYInternal(sensitivity);
       updateDeviceWithAppSettings();
    }
 
-   static final void setSensitivityYInternal(int var0) {
-      if ((var0 < 0 || 100 < var0) && var0 != Integer.MAX_VALUE) {
+   static final void setSensitivityYInternal(int sensitivity) {
+      if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
          throw new Object();
       }
 
-      _sensitivityY = var0;
+      _sensitivityY = sensitivity;
    }
 
    private static final native void setSensitivityY0(int var0);
 
-   public static final void setSensitivityYForSystem(int var0) {
+   public static final void setSensitivityYForSystem(int sensitivity) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      if ((var0 < 0 || 100 < var0) && var0 != Integer.MAX_VALUE) {
+      if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
          throw new Object();
       }
 
-      UiOptionsRegistry.getInstance().setInt(1105523701474371332L, var0);
+      UiOptionsRegistry.getInstance().setInt(1105523701474371332L, sensitivity);
       updateDeviceWithAppSettings();
    }
 
    static final void updateDeviceWithAppSettings() {
       if (isSupported() && Application.getApplication().isForeground()) {
-         UiOptionsRegistry var0 = UiOptionsRegistry.getInstance();
-         int var1 = _sensitivityX != Integer.MAX_VALUE ? _sensitivityX : var0.getInt(4925806619770988503L);
-         int var2 = _sensitivityY != Integer.MAX_VALUE ? _sensitivityY : var0.getInt(1105523701474371332L);
-         setSensitivityX0(var1);
-         setSensitivityY0(var2);
-         AudioRouter.getInstance().enableInputFeedback(0, var0.getBoolean(9173869926753706073L));
-         int var3 = _filterMask != -1 ? _filterMask : var0.getInt(-1211370300138911215L);
-         if (var3 == -1) {
-            var3 = 1;
+         UiOptionsRegistry options = UiOptionsRegistry.getInstance();
+         int sensitvityX = _sensitivityX != Integer.MAX_VALUE ? _sensitivityX : options.getInt(4925806619770988503L);
+         int sensitvityY = _sensitivityY != Integer.MAX_VALUE ? _sensitivityY : options.getInt(1105523701474371332L);
+         setSensitivityX0(sensitvityX);
+         setSensitivityY0(sensitvityY);
+         AudioRouter.getInstance().enableInputFeedback(0, options.getBoolean(9173869926753706073L));
+         int filterMask = _filterMask != -1 ? _filterMask : options.getInt(-1211370300138911215L);
+         if (filterMask == -1) {
+            filterMask = 1;
          }
 
-         setFilterMask0(var3);
+         setFilterMask0(filterMask);
       }
    }
 }

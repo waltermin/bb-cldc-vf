@@ -1,13 +1,20 @@
 package javax.microedition.lcdui;
 
+import javax.microedition.midlet.MIDletStateChangeException;
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.SimpleSortingVector;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.lcdui.Lcdui;
+import net.rim.device.internal.lcdui.MIDletInterface;
+import net.rim.device.internal.ui.MIDletApplication;
 
 class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    private Displayable _displayable;
@@ -29,17 +36,17 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
       return this._displayable;
    }
 
-   final void setDisplayable(Displayable var1) {
+   final void setDisplayable(Displayable displayable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   final void setDisplay(Display var1) {
+   final void setDisplay(Display display) {
    }
 
-   void setFullScreenMode(boolean var1) {
-      if (this._fullScreenMode != var1) {
-         this._fullScreenMode = var1;
-         if (var1) {
+   void setFullScreenMode(boolean mode) {
+      if (this._fullScreenMode != mode) {
+         this._fullScreenMode = mode;
+         if (mode) {
             if (this._title != null) {
                this.deleteRange(0, 2);
             }
@@ -59,32 +66,56 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    String getTitle() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._title == null ? null : this._title.getText();
+      }
    }
 
-   void setTitle(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void setTitle(String s) {
+      synchronized (Application.getEventLock()) {
+         if (s == null) {
+            if (this._title != null) {
+               if (!this._fullScreenMode) {
+                  this.deleteRange(0, 2);
+               }
+
+               this._title = null;
+               this._separator = null;
+            }
+         } else if (this._title == null) {
+            this._separator = (SeparatorField)(new Object());
+            this._title = (LabelField)(new Object(s, 1152921504606846976L));
+            if (!this._fullScreenMode) {
+               this.insert(this._title, 0);
+               this.insert(this._separator, 1);
+            }
+         } else {
+            this._title.setText(s);
+         }
+
+         this.recalcDisplayableAreaHeight();
+      }
    }
 
    public void init() {
    }
 
-   public final void setTicker(Ticker var1) {
-      boolean var2 = false;
-      if (var1 != null) {
+   public final void setTicker(Ticker ticker) {
+      boolean update = false;
+      if (ticker != null) {
          if (this._ticker == null && this.isValidLayout()) {
-            var2 = true;
+            update = true;
             scheduleTickerTimer(0);
          }
 
-         this._ticker = var1;
-         var1.setStuff(this.getFont());
+         this._ticker = ticker;
+         ticker.setStuff(this.getFont());
       } else if (this._ticker != null) {
-         var2 = true;
-         this._ticker = var1;
+         update = true;
+         this._ticker = ticker;
       }
 
-      if (var2) {
+      if (update) {
          this.recalcDisplayableAreaHeight();
          this.invalidate();
       }
@@ -97,12 +128,12 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    boolean advanceTicker() {
       if (this._ticker != null) {
          this._ticker.advanceTicker();
-         boolean var1 = !this._fullScreenMode;
-         if (var1) {
-            int var2 = this._ticker.getHeight();
-            net.rim.device.api.ui.Graphics var3 = this.getGraphics();
-            var3.clear(0, this.getHeight() - var2, this.getWidth(), var2);
-            this._ticker.draw(var3, this.getHeight() - var2);
+         boolean updateVisuals = !this._fullScreenMode;
+         if (updateVisuals) {
+            int tickerHeight = this._ticker.getHeight();
+            net.rim.device.api.ui.Graphics graphics = this.getGraphics();
+            graphics.clear(0, this.getHeight() - tickerHeight, this.getWidth(), tickerHeight);
+            this._ticker.draw(graphics, this.getHeight() - tickerHeight);
             this.updateDisplay();
          }
 
@@ -118,77 +149,83 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
       }
    }
 
-   public void addCommand(Command var1) {
-      int var2 = this._commands.size();
+   public void addCommand(Command cmd) {
+      int n = this._commands.size();
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         if (this._commands.elementAt(var3) == var1) {
+      for (int i = 0; i < n; i++) {
+         if (this._commands.elementAt(i) == cmd) {
             return;
          }
       }
 
-      this._commands.addElement(var1);
-      this.updateKeyMappings(var1);
+      this._commands.addElement(cmd);
+      this.updateKeyMappings(cmd);
    }
 
-   public void removeCommand(Command var1) {
+   public void removeCommand(Command cmd) {
       if (this._commands != null) {
-         int var2 = this._commands.size();
+         int n = this._commands.size();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            if (this._commands.elementAt(var3) == var1) {
-               this._commands.removeElementAt(var3);
+         for (int i = 0; i < n; i++) {
+            if (this._commands.elementAt(i) == cmd) {
+               this._commands.removeElementAt(i);
                break;
             }
          }
 
-         if (var1 == this._escapeCommand) {
+         if (cmd == this._escapeCommand) {
             this.updateEscapeCommand();
          }
       }
    }
 
-   public void setCommandListener(CommandListener var1) {
+   public void setCommandListener(CommandListener l) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public int compare(Object var1, Object var2) {
-      return ((Command)var1).getPriority() - ((Command)var2).getPriority();
+   public int compare(Object o1, Object o2) {
+      return ((Command)o1).getPriority() - ((Command)o2).getPriority();
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
+   protected void sublayout(int width, int height) {
       this.setPosition(0, 0);
-      this.setExtent(var1, var2);
-      boolean var3 = !this._fullScreenMode && this._ticker != null;
-      if (var3) {
+      this.setExtent(width, height);
+      boolean reserveTickerSpace = !this._fullScreenMode && this._ticker != null;
+      if (reserveTickerSpace) {
          this._ticker.setStuff(this.getFont());
-         var2 -= this._ticker.getHeight();
+         height -= this._ticker.getHeight();
       }
 
       this.setPositionDelegate(0, 0);
-      this.layoutDelegate(var1, var2);
+      this.layoutDelegate(width, height);
    }
 
    @Override
-   protected void paint(net.rim.device.api.ui.Graphics var1) {
-      super.paint(var1);
-      boolean var2 = !this._fullScreenMode && this._ticker != null;
-      if (var2) {
-         this._ticker.draw(var1, this.getHeight() - this._ticker.getHeight());
+   protected void paint(net.rim.device.api.ui.Graphics graphics) {
+      super.paint(graphics);
+      boolean paintTicker = !this._fullScreenMode && this._ticker != null;
+      if (paintTicker) {
+         this._ticker.draw(graphics, this.getHeight() - this._ticker.getHeight());
       }
    }
 
    private final void destroyMIDlet() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         ((MIDletInterface)Application.getApplication()).destroyApp(true);
+      } catch (MIDletStateChangeException var2) {
+      }
+
+      MIDletApplication ma = (MIDletApplication)Application.getApplication();
+      ma.exit();
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (super.keyChar(var1, var2, var3)) {
+   protected boolean keyChar(char c, int status, int time) {
+      if (super.keyChar(c, status, time)) {
          return true;
-      } else if (var1 == 27 && this._escapeCommand != null) {
+      } else if (c == 27 && this._escapeCommand != null) {
          Lcdui.setCommandActionCallback(this._commandListener, this._escapeCommand, this.getDisplayable());
          return true;
       } else {
@@ -196,36 +233,36 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
       }
    }
 
-   private long getEscapeKeyPriority(Command var1) {
-      if (var1 == null) {
+   private long getEscapeKeyPriority(Command cmd) {
+      if (cmd == null) {
          return Long.MAX_VALUE;
       }
 
-      long var2;
-      switch (var1.getCommandType()) {
+      long prio;
+      switch (cmd.getCommandType()) {
          case 2:
-            var2 = 8589934592L;
+            prio = 8589934592L;
             break;
          case 3:
-            var2 = 4294967296L;
+            prio = 4294967296L;
             break;
          case 7:
-            var2 = 12884901888L;
+            prio = 12884901888L;
             break;
          default:
             return Long.MAX_VALUE;
       }
 
-      return var2 + var1.getPriority();
+      return prio + cmd.getPriority();
    }
 
-   private void updateKeyMappings(Command var1) {
-      switch (var1.getCommandType()) {
+   private void updateKeyMappings(Command newCommand) {
+      switch (newCommand.getCommandType()) {
          case 2:
          case 3:
          case 7:
-            if (this.getEscapeKeyPriority(var1) < this.getEscapeKeyPriority(this._escapeCommand)) {
-               this._escapeCommand = var1;
+            if (this.getEscapeKeyPriority(newCommand) < this.getEscapeKeyPriority(this._escapeCommand)) {
+               this._escapeCommand = newCommand;
             }
 
             return;
@@ -233,12 +270,87 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void makeMenu(Menu menu, int instance) {
+      Command exitCommand = null;
+      int n = this._commands.size();
+
+      for (int i = 0; i < n; i++) {
+         Command cmd = (Command)this._commands.elementAt(i);
+         if (cmd.getCommandType() == 7) {
+            exitCommand = cmd;
+            break;
+         }
+      }
+
+      this.updateEscapeCommand();
+      boolean defaultSet = false;
+      boolean midpCommandsAdded = false;
+      long minPriority = Long.MAX_VALUE;
+      MenuItem menuItem = null;
+
+      for (int i = 0; i < n; i++) {
+         Command cmd = (Command)this._commands.elementAt(i);
+         if (cmd != exitCommand) {
+            menuItem = new MIDPScreen$MyMenuItem(this, cmd.getMenuLabel(), new MIDPScreen$CommandCookie(cmd, null));
+            menu.add(menuItem);
+            midpCommandsAdded = true;
+            if (cmd.getPriority() < minPriority) {
+               minPriority = cmd.getPriority();
+               menu.setDefault(menuItem);
+               defaultSet = true;
+            }
+         }
+      }
+
+      if (midpCommandsAdded) {
+         menu.addSeparator();
+      }
+
+      midpCommandsAdded = false;
+      Item selectedItem = null;
+      Field selectedField = this.getLeafFieldWithFocus();
+      if (selectedField != null) {
+         try {
+            selectedItem = (Item)selectedField.getCookie();
+         } catch (ClassCastException var15) {
+         }
+      }
+
+      if (selectedItem != null) {
+         SimpleSortingVector commands = selectedItem.getCommands();
+         n = commands.size();
+
+         for (int i = 0; i < n; i++) {
+            Command cmd = (Command)commands.elementAt(i);
+            menuItem = new MIDPScreen$MyMenuItem(this, cmd.getMenuLabel(), new MIDPScreen$CommandCookie(cmd, selectedItem));
+            menu.add(menuItem);
+            midpCommandsAdded = true;
+            if (!defaultSet) {
+               menu.setDefault(menuItem);
+               defaultSet = true;
+            }
+         }
+      }
+
+      if (midpCommandsAdded) {
+         menu.addSeparator();
+      }
+
+      if (exitCommand != null) {
+         menuItem = new MIDPScreen$MyMenuItem(this, exitCommand.getMenuLabel(), new MIDPScreen$CommandCookie(exitCommand, null));
+         menu.add(menuItem);
+      } else {
+         menuItem = new MIDPScreen$MyMenuItem(this, CommonResource.getString(9), null);
+         menu.add(menuItem);
+      }
+
+      if (!defaultSet) {
+         menu.setDefault(menuItem);
+      }
    }
 
-   private static final void scheduleTickerTimer(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final void scheduleTickerTimer(long delay) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    MIDPScreen() {
@@ -248,59 +360,59 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1 && this._ticker != null) {
+   protected void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached && this._ticker != null) {
          scheduleTickerTimer(0);
       }
    }
 
    private void updateEscapeCommand() {
-      long var1 = Long.MAX_VALUE;
+      long minPriority = Long.MAX_VALUE;
       this._escapeCommand = null;
-      int var3 = this._commands.size();
+      int n = this._commands.size();
 
-      for (int var4 = 0; var4 < var3; var4++) {
-         Command var5 = (Command)this._commands.elementAt(var4);
-         if (this.getEscapeKeyPriority(var5) < var1) {
-            var1 = this.getEscapeKeyPriority(var5);
-            this._escapeCommand = var5;
+      for (int i = 0; i < n; i++) {
+         Command cmd = (Command)this._commands.elementAt(i);
+         if (this.getEscapeKeyPriority(cmd) < minPriority) {
+            minPriority = this.getEscapeKeyPriority(cmd);
+            this._escapeCommand = cmd;
          }
       }
    }
 
-   MIDPScreen(Manager var1) {
-      super(var1);
+   MIDPScreen(Manager delegate) {
+      super(delegate);
       this._commands.setSortComparator(this);
       this._commands.setSort(true);
    }
 
    private void recalcDisplayableAreaHeight() {
-      int var1 = net.rim.device.api.system.Display.getHeight();
-      int var2 = 0;
+      int newHeight = net.rim.device.api.system.Display.getHeight();
+      int titleAndSeparatorHeight = 0;
       if (!this._fullScreenMode) {
          if (this._title != null) {
-            var2 = this._title.getPreferredHeight() + this._separator.getPreferredHeight();
-            var1 -= var2;
+            titleAndSeparatorHeight = this._title.getPreferredHeight() + this._separator.getPreferredHeight();
+            newHeight -= titleAndSeparatorHeight;
          }
 
          if (this._ticker != null) {
-            var1 -= this._ticker.getHeight();
+            newHeight -= this._ticker.getHeight();
          }
       }
 
-      this._displayableAreaExtent.set(0, var2, net.rim.device.api.system.Display.getWidth(), var1);
+      this._displayableAreaExtent.set(0, titleAndSeparatorHeight, net.rim.device.api.system.Display.getWidth(), newHeight);
    }
 
    @Override
-   public boolean dispatchKeyEvent(int var1, char var2, int var3, int var4) {
+   public boolean dispatchKeyEvent(int event, char key, int status, int time) {
       this.restartTickerTimer();
-      return var1 == 32768 && var2 == 0 ? false : super.dispatchKeyEvent(var1, var2, var3, var4);
+      return event == 32768 && key == 0 ? false : super.dispatchKeyEvent(event, key, status, time);
    }
 
    @Override
-   public boolean dispatchTrackwheelEvent(int var1, int var2, int var3, int var4) {
+   public boolean dispatchTrackwheelEvent(int event, int magnitude, int status, int time) {
       this.restartTickerTimer();
-      return super.dispatchTrackwheelEvent(var1, var2, var3, var4);
+      return super.dispatchTrackwheelEvent(event, magnitude, status, time);
    }
 }

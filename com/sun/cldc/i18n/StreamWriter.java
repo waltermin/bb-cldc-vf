@@ -6,8 +6,8 @@ import java.io.Writer;
 public class StreamWriter extends Writer {
    public OutputStream out;
 
-   public Writer open(OutputStream var1, String var2) {
-      this.out = var1;
+   public Writer open(OutputStream out, String enc) {
+      this.out = out;
       return this;
    }
 
@@ -21,7 +21,7 @@ public class StreamWriter extends Writer {
       this.out.close();
    }
 
-   public int sizeOf(char[] var1, int var2, int var3) {
+   public int sizeOf(char[] _1, int _2, int _3) {
       throw null;
    }
 }

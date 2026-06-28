@@ -5,8 +5,8 @@ import net.rim.device.api.collection.FilterStatusListener;
 class PrefixKeywordFilterList$1 implements FilterStatusListener {
    private final PrefixKeywordFilterList this$0;
 
-   PrefixKeywordFilterList$1(PrefixKeywordFilterList var1) {
-      this.this$0 = var1;
+   PrefixKeywordFilterList$1(PrefixKeywordFilterList _1) {
+      this.this$0 = _1;
    }
 
    @Override
@@ -14,6 +14,6 @@ class PrefixKeywordFilterList$1 implements FilterStatusListener {
    }
 
    @Override
-   public void filterDone(boolean var1) {
+   public void filterDone(boolean interrupted) {
    }
 }

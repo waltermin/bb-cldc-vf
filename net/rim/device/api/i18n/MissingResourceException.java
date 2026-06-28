@@ -4,6 +4,6 @@ public class MissingResourceException extends RuntimeException {
    public MissingResourceException() {
    }
 
-   public MissingResourceException(String var1) {
+   public MissingResourceException(String s) {
    }
 }

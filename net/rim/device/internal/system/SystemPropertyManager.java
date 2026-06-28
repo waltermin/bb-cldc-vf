@@ -11,29 +11,29 @@ public final class SystemPropertyManager {
    }
 
    public static final SystemPropertyManager getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      if (var0 == null) {
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      if (ar == null) {
          return null;
       }
 
-      SystemPropertyManager var1 = (SystemPropertyManager)var0.getOrWaitFor(-6763663770985155769L);
-      if (var1 == null) {
-         var1 = new SystemPropertyManager();
-         var0.put(-6763663770985155769L, var1);
+      SystemPropertyManager spm = (SystemPropertyManager)ar.getOrWaitFor(-6763663770985155769L);
+      if (spm == null) {
+         spm = new SystemPropertyManager();
+         ar.put(-6763663770985155769L, spm);
       }
 
-      return var1;
+      return spm;
    }
 
-   public final void addProvider(SystemPropertyProvider var1) {
-      Arrays.add(this._providers, var1);
+   public final void addProvider(SystemPropertyProvider provider) {
+      Arrays.add(this._providers, provider);
    }
 
-   public final String getProperty(String var1) {
-      for (int var2 = this._providers.length - 1; var2 >= 0; var2--) {
-         String var3 = this._providers[var2].getProperty(var1);
-         if (var3 != null) {
-            return var3;
+   public final String getProperty(String property) {
+      for (int i = this._providers.length - 1; i >= 0; i--) {
+         String s = this._providers[i].getProperty(property);
+         if (s != null) {
+            return s;
          }
       }
 

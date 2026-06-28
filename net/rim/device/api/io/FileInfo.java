@@ -16,11 +16,11 @@ public final class FileInfo {
    public FileInfo() {
    }
 
-   public FileInfo(String var1, long var2, long var4, int var6) {
-      this._fileName = var1;
-      this._fileSize = var2;
-      this._lastModified = var4;
-      this._attributes = var6;
+   public FileInfo(String filename, long fileSize, long lastModified, int attributes) {
+      this._fileName = filename;
+      this._fileSize = fileSize;
+      this._lastModified = lastModified;
+      this._attributes = attributes;
    }
 
    public final String getFileName() {

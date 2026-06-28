@@ -6,46 +6,46 @@ public final class UUIDUtilities {
    private UUIDUtilities() {
    }
 
-   public static final String toString(byte[] var0) {
+   public static final String toString(byte[] uuidData) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte[] toBytes(String var0) {
+   public static final byte[] toBytes(String uuid) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final byte[] promoteTo128Bits(String var0) {
-      byte[] var1 = toBytes(var0);
-      int var2 = var1.length;
-      if (var2 == 16) {
-         return var1;
+   public static final byte[] promoteTo128Bits(String uuid) {
+      byte[] data = toBytes(uuid);
+      int length = data.length;
+      if (length == 16) {
+         return data;
       }
 
-      byte[] var3 = new byte[16];
-      System.arraycopy(BASE_UUID, 0, var3, 0, BASE_UUID.length);
-      System.arraycopy(var1, 0, var3, 4 - var2, var2);
-      return var3;
+      byte[] newData = new byte[16];
+      System.arraycopy(BASE_UUID, 0, newData, 0, BASE_UUID.length);
+      System.arraycopy(data, 0, newData, 4 - length, length);
+      return newData;
    }
 
-   public static final byte[] serialize(String var0) {
-      return serialize(toBytes(var0));
+   public static final byte[] serialize(String uuid) {
+      return serialize(toBytes(uuid));
    }
 
-   private static final byte[] serialize(byte[] var0) {
-      byte[] var1 = new byte[var0.length + 1];
-      System.arraycopy(var0, 0, var1, 1, var0.length);
-      var1[0] = 24;
-      switch (var0.length) {
+   private static final byte[] serialize(byte[] data) {
+      byte[] serializedData = new byte[data.length + 1];
+      System.arraycopy(data, 0, serializedData, 1, data.length);
+      serializedData[0] = 24;
+      switch (data.length) {
          case 2:
-            var1[0] = (byte)(var1[0] | 1);
-            return var1;
+            serializedData[0] = (byte)(serializedData[0] | 1);
+            return serializedData;
          case 4:
-            var1[0] = (byte)(var1[0] | 2);
-            return var1;
+            serializedData[0] = (byte)(serializedData[0] | 2);
+            return serializedData;
          case 16:
-            var1[0] = (byte)(var1[0] | 4);
+            serializedData[0] = (byte)(serializedData[0] | 4);
          default:
-            return var1;
+            return serializedData;
       }
    }
 }

@@ -8,44 +8,44 @@ public final class HashCodeCalculator {
    private HashCodeCalculator() {
    }
 
-   public static final int getCRC32(byte[] var0) {
-      return var0 == null ? 0 : CRC32.update(-var0.length, var0, 0, var0.length);
+   public static final int getCRC32(byte[] data) {
+      return data == null ? 0 : CRC32.update(-data.length, data, 0, data.length);
    }
 
-   public static final int getCRC32(byte[] var0, int var1, int var2) {
-      if (var0 == null) {
+   public static final int getCRC32(byte[] data, int offset, int length) {
+      if (data == null) {
          return 0;
-      } else if (var1 >= 0 && var2 >= 0 && var0.length - var2 >= var1) {
-         return CRC32.update(-var2, var0, var1, var2);
+      } else if (offset >= 0 && length >= 0 && data.length - length >= offset) {
+         return CRC32.update(-length, data, offset, length);
       } else {
          throw new Object();
       }
    }
 
-   public static final long getDigest64(byte[] var0) {
-      byte[] var1 = getDigest(var0);
-      return (long)var1[0] << 56
-         | (long)var1[1] << 48
-         | (long)var1[2] << 40
-         | (long)var1[3] << 32
-         | (long)var1[4] << 24
-         | (long)var1[5] << 16
-         | (long)var1[6] << 8
-         | var1[7];
+   public static final long getDigest64(byte[] data) {
+      byte[] hash = getDigest(data);
+      return (long)hash[0] << 56
+         | (long)hash[1] << 48
+         | (long)hash[2] << 40
+         | (long)hash[3] << 32
+         | (long)hash[4] << 24
+         | (long)hash[5] << 16
+         | (long)hash[6] << 8
+         | hash[7];
    }
 
-   public static final int getDigest32(byte[] var0) {
-      byte[] var1 = getDigest(var0);
-      return var1[0] << 24 | var1[1] << 16 | var1[2] << 8 | var1[3];
+   public static final int getDigest32(byte[] data) {
+      byte[] hash = getDigest(data);
+      return hash[0] << 24 | hash[1] << 16 | hash[2] << 8 | hash[3];
    }
 
-   private static final synchronized byte[] getDigest(byte[] var0) {
-      if (var0 == null) {
+   private static final synchronized byte[] getDigest(byte[] data) {
+      if (data == null) {
          return new byte[8];
       }
 
       _digest.reset();
-      _digest.update(var0);
+      _digest.update(data);
       return _digest.getDigest();
    }
 }

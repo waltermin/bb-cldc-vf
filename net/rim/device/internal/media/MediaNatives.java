@@ -2,6 +2,7 @@ package net.rim.device.internal.media;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.RadioInfo;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 
 public final class MediaNatives {
@@ -21,8 +22,17 @@ public final class MediaNatives {
    private MediaNatives() {
    }
 
-   static final void addListener(Application var0, MediaEventListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final void addListener(Application app, MediaEventListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(20) == null) {
+            dispatchManager.setDispatcher(20, new MediaNatives$MediaNativesEventDispatcher());
+         }
+      }
+
+      if (app != null && listener != null) {
+         app.addListener(20, listener);
+      }
    }
 
    public static final native int getNumberOfStreamingChannels();
@@ -37,26 +47,26 @@ public final class MediaNatives {
 
    public static final native int[] getStreamingSessionHandles();
 
-   public static final boolean isAudioEncoderCodecSupported(int var0) {
-      return InternalServices.isSoftwareCapable(12) ? getStreamingEncodeInstances(var0) > 0 : false;
+   public static final boolean isAudioEncoderCodecSupported(int codec) {
+      return InternalServices.isSoftwareCapable(12) ? getStreamingEncodeInstances(codec) > 0 : false;
    }
 
-   public static final boolean isAudioDecoderCodecSupported(int var0) {
-      if (RadioInfo.areWAFsSupported(8) && var0 == 6) {
+   public static final boolean isAudioDecoderCodecSupported(int codec) {
+      if (RadioInfo.areWAFsSupported(8) && codec == 6) {
          return true;
       } else {
-         return InternalServices.isSoftwareCapable(2) ? getStreamingDecodeInstances(var0) > 0 : false;
+         return InternalServices.isSoftwareCapable(2) ? getStreamingDecodeInstances(codec) > 0 : false;
       }
    }
 
-   public static final boolean isVideoDecoderCodecSupported(int var0) {
-      return InternalServices.isSoftwareCapable(7) ? isVideoDecoderCodecSupported0(var0) : false;
+   public static final boolean isVideoDecoderCodecSupported(int codec) {
+      return InternalServices.isSoftwareCapable(7) ? isVideoDecoderCodecSupported0(codec) : false;
    }
 
    private static final native boolean isVideoEncoderCodecSupported0(int var0);
 
-   public static final boolean isVideoEncoderCodecSupported(int var0) {
-      return InternalServices.isSoftwareCapable(7) ? isVideoEncoderCodecSupported0(var0) : false;
+   public static final boolean isVideoEncoderCodecSupported(int codec) {
+      return InternalServices.isSoftwareCapable(7) ? isVideoEncoderCodecSupported0(codec) : false;
    }
 
    private static final native boolean isVideoDecoderCodecSupported0(int var0);
@@ -73,9 +83,9 @@ public final class MediaNatives {
 
    public static final native int recordStop();
 
-   static final void removeListener(Application var0, MediaEventListener var1) {
-      if (var0 != null && var1 != null) {
-         var0.removeListener(20, var1);
+   static final void removeListener(Application app, MediaEventListener listener) {
+      if (app != null && listener != null) {
+         app.removeListener(20, listener);
       }
    }
 

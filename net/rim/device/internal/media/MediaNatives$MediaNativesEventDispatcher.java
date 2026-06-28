@@ -5,39 +5,39 @@ import net.rim.vm.Message;
 
 class MediaNatives$MediaNativesEventDispatcher extends EventDispatcher {
    @Override
-   public void dispatch(Message var1, Object var2) {
-      int var3 = var1.getEvent();
-      int var4 = var1.getSubMessage();
-      int var5 = var1.getData0();
-      int var6 = var1.getData1();
-      MediaEventListener var7 = (MediaEventListener)var2;
-      switch (var3) {
+   public void dispatch(Message message, Object oListener) {
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      int data0 = message.getData0();
+      int data1 = message.getData1();
+      MediaEventListener listener = (MediaEventListener)oListener;
+      switch (event) {
          case 8192:
          default:
-            var7.mediaStopped(var5);
+            listener.mediaStopped(data0);
             return;
          case 8193:
-            var7.mediaPauseComplete(var5);
+            listener.mediaPauseComplete(data0);
             return;
          case 8194:
-            var7.mediaError(var5, var4);
+            listener.mediaError(data0, subMessage);
             return;
          case 8195:
-            var7.mediaSeek(var5, var6);
+            listener.mediaSeek(data0, data1);
             return;
          case 8196:
-            var7.mediaLoaded(var5);
+            listener.mediaLoaded(data0);
             return;
          case 8197:
-            var7.mediaStatusUpdate(var5, var6);
+            listener.mediaStatusUpdate(data0, data1);
             return;
          case 8198:
-            Object var8 = var1.getObject0();
-            Object var9 = var1.getObject1();
-            var7.mediaAuthenticationRequired(var5, var8, var9);
+            Object object0 = message.getObject0();
+            Object object1 = message.getObject1();
+            listener.mediaAuthenticationRequired(data0, object0, object1);
             return;
          case 8199:
-            var7.mediaParametersChangedComplete(var5);
+            listener.mediaParametersChangedComplete(data0);
          case 8191:
       }
    }

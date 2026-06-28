@@ -1,12 +1,13 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 public class ChoiceGroup extends Item implements Choice {
-   private VerticalFieldManager _container;
+   private VerticalFieldManager _container = (VerticalFieldManager)(new Object(1152921504606846976L));
    private LabelField _label;
    private BasicChoice _choiceImpl;
 
@@ -14,40 +15,69 @@ public class ChoiceGroup extends Item implements Choice {
       return this._choiceImpl._type;
    }
 
-   public ChoiceGroup(String var1, int var2) {
-   }
+   public ChoiceGroup(String label, int choiceType) {
+      synchronized (Application.getEventLock()) {
+         if (choiceType != 1 && choiceType != 2 && choiceType != 4) {
+            throw new Object();
+         }
 
-   public ChoiceGroup(String var1, int var2, String[] var3, Image[] var4) {
-   }
-
-   ChoiceGroup(int var1, String[] var2, Image[] var3, boolean var4) {
-      this._container = (VerticalFieldManager)(new Object(1152921504606846976L));
-      if (var1 >= 1 && var1 <= 3) {
          this.setPeer(this._container);
-         this.init(null, var1, var2, var3, var4);
+         this.init(label, choiceType, null, null, false);
+      }
+   }
+
+   public ChoiceGroup(String label, int choiceType, String[] stringElements, Image[] imageElements) {
+      synchronized (Application.getEventLock()) {
+         if (choiceType != 1 && choiceType != 2 && choiceType != 4) {
+            throw new Object();
+         }
+
+         this.setPeer(this._container);
+         this.init(label, choiceType, stringElements, imageElements, true);
+      }
+   }
+
+   ChoiceGroup(int choiceType, String[] stringElements, Image[] imageElements, boolean validateElements) {
+      if (choiceType >= 1 && choiceType <= 3) {
+         this.setPeer(this._container);
+         this.init(null, choiceType, stringElements, imageElements, validateElements);
       } else {
          throw new Object();
       }
    }
 
-   private void init(String var1, int var2, String[] var3, Image[] var4, boolean var5) {
+   private void init(String label, int choiceType, String[] stringElements, Image[] imageElements, boolean validateElements) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public void setLabel(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setLabel(String label) {
+      synchronized (Application.getEventLock()) {
+         if (label == null) {
+            if (this._label != null) {
+               this._container.delete(this._label);
+               this._label = null;
+            }
+         } else if (this._label == null) {
+            this._label = (LabelField)(new Object(label));
+            this._container.insert(this._label, 0);
+         } else {
+            this._label.setText(label);
+         }
+      }
    }
 
    @Override
    public String getLabel() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._label == null ? null : this._label.getText();
+      }
    }
 
    @Override
-   public void setLayout(int var1) {
-      super.setLayout(var1);
-      this._choiceImpl.setLayout(var1);
+   public void setLayout(int layout) {
+      super.setLayout(layout);
+      this._choiceImpl.setLayout(layout);
    }
 
    @Override
@@ -56,39 +86,41 @@ public class ChoiceGroup extends Item implements Choice {
    }
 
    @Override
-   Field addToForm(FieldChangeListener var1) {
-      this._choiceImpl.addToForm(var1);
+   Field addToForm(FieldChangeListener changeListener) {
+      this._choiceImpl.addToForm(changeListener);
       return this._container;
    }
 
    @Override
    public int size() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this._choiceImpl.size();
+      }
    }
 
    @Override
-   public String getString(int var1) {
-      return this._choiceImpl.getString(var1);
+   public String getString(int elementNum) {
+      return this._choiceImpl.getString(elementNum);
    }
 
    @Override
-   public Image getImage(int var1) {
-      return this._choiceImpl.getImage(var1);
+   public Image getImage(int elementNum) {
+      return this._choiceImpl.getImage(elementNum);
    }
 
    @Override
-   public int append(String var1, Image var2) {
-      return this._choiceImpl.append(var1, var2);
+   public int append(String stringPart, Image imagePart) {
+      return this._choiceImpl.append(stringPart, imagePart);
    }
 
    @Override
-   public void insert(int var1, String var2, Image var3) {
-      this._choiceImpl.insert(var1, var2, var3);
+   public void insert(int elementNum, String stringElement, Image imageElement) {
+      this._choiceImpl.insert(elementNum, stringElement, imageElement);
    }
 
    @Override
-   public void delete(int var1) {
-      this._choiceImpl.delete(var1);
+   public void delete(int elementNum) {
+      this._choiceImpl.delete(elementNum);
    }
 
    @Override
@@ -97,13 +129,13 @@ public class ChoiceGroup extends Item implements Choice {
    }
 
    @Override
-   public void set(int var1, String var2, Image var3) {
-      this._choiceImpl.set(var1, var2, var3);
+   public void set(int elementNum, String stringPart, Image imagePart) {
+      this._choiceImpl.set(elementNum, stringPart, imagePart);
    }
 
    @Override
-   public boolean isSelected(int var1) {
-      return this._choiceImpl.isSelected(var1);
+   public boolean isSelected(int elementNum) {
+      return this._choiceImpl.isSelected(elementNum);
    }
 
    @Override
@@ -112,23 +144,23 @@ public class ChoiceGroup extends Item implements Choice {
    }
 
    @Override
-   public int getSelectedFlags(boolean[] var1) {
-      return this._choiceImpl.getSelectedFlags(var1);
+   public int getSelectedFlags(boolean[] selectedArray_return) {
+      return this._choiceImpl.getSelectedFlags(selectedArray_return);
    }
 
    @Override
-   public void setSelectedIndex(int var1, boolean var2) {
-      this._choiceImpl.setSelectedIndex(var1, var2);
+   public void setSelectedIndex(int elementNum, boolean selected) {
+      this._choiceImpl.setSelectedIndex(elementNum, selected);
    }
 
    @Override
-   public void setSelectedFlags(boolean[] var1) {
-      this._choiceImpl.setSelectedFlags(var1);
+   public void setSelectedFlags(boolean[] selectedArray) {
+      this._choiceImpl.setSelectedFlags(selectedArray);
    }
 
    @Override
-   public void setFitPolicy(int var1) {
-      this._choiceImpl.setFitPolicy(var1);
+   public void setFitPolicy(int fitPolicy) {
+      this._choiceImpl.setFitPolicy(fitPolicy);
    }
 
    @Override
@@ -137,12 +169,12 @@ public class ChoiceGroup extends Item implements Choice {
    }
 
    @Override
-   public void setFont(int var1, Font var2) {
-      this._choiceImpl.setFont(var1, var2);
+   public void setFont(int elementNum, Font font) {
+      this._choiceImpl.setFont(elementNum, font);
    }
 
    @Override
-   public Font getFont(int var1) {
-      return this._choiceImpl.getFont(var1);
+   public Font getFont(int elementNum) {
+      return this._choiceImpl.getFont(elementNum);
    }
 }

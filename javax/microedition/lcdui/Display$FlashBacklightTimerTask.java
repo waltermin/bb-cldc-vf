@@ -7,8 +7,8 @@ class Display$FlashBacklightTimerTask extends TimerTask {
    int _numIterations;
    int _currentIteration;
 
-   Display$FlashBacklightTimerTask(int var1) {
-      this._numIterations = var1;
+   Display$FlashBacklightTimerTask(int numIterations) {
+      this._numIterations = numIterations;
    }
 
    @Override
@@ -28,8 +28,8 @@ class Display$FlashBacklightTimerTask extends TimerTask {
 
    @Override
    public boolean cancel() {
-      boolean var1 = super.cancel();
+      boolean result = super.cancel();
       Backlight.enable(true);
-      return var1;
+      return result;
    }
 }

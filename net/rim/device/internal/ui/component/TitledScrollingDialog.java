@@ -1,5 +1,6 @@
 package net.rim.device.internal.ui.component;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Font;
@@ -20,16 +21,16 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    protected VerticalIndentFieldManager _scrollingRegion;
    private static final int INDENT_PIXEL_WIDTH;
 
-   protected void setTitle(String var1) {
-      Object var2 = new Object(var1, 64);
-      ((LabelField)var2).setFont(this._boldFont);
-      this.setTitle((Field)var2);
+   protected void setTitle(String dialogTitle) {
+      LabelField dialogTitleField = (LabelField)(new Object(dialogTitle, 64));
+      dialogTitleField.setFont(this._boldFont);
+      this.setTitle(dialogTitleField);
    }
 
-   protected void setTitle(Field var1) {
-      Manager var2 = this.getDelegate();
-      var2.insert(var1, 0);
-      var2.insert((Field)(new Object()), 1);
+   protected void setTitle(Field dialogTitleField) {
+      Manager manager = this.getDelegate();
+      manager.insert(dialogTitleField, 0);
+      manager.insert((Field)(new Object()), 1);
    }
 
    protected void populateDialog() {
@@ -38,34 +39,54 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
       this.addScrollingField(this._ok);
    }
 
-   protected RichTextField addScrollingLabelAndValue(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected RichTextField addScrollingLabelAndValue(String label, String value) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   protected void addScrollingField(Field var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void addScrollingField(Field field) {
+      boolean setFocus = this._scrollingRegion.getFieldCount() == 0;
+      synchronized (Application.getEventLock()) {
+         this._scrollingRegion.add(field);
+         if (setFocus) {
+            this._scrollingRegion.setFocus();
+         }
+      }
    }
 
-   protected void addNonScrollingField(Field var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void addNonScrollingField(Field field, int index) {
+      synchronized (Application.getEventLock()) {
+         int count = this._nonScrollingRegion.getFieldCount();
+         if (count == 0) {
+            this._nonScrollingSeparator = (SeparatorField)(new Object());
+            this.getDelegate().insert(this._nonScrollingSeparator, this._nonScrollingRegion.getIndex() + 1);
+         }
+
+         this._nonScrollingRegion.insert(field, Math.max(index, count));
+      }
    }
 
-   protected void addNonScrollingField(Field var1) {
-      this.addNonScrollingField(var1, this._nonScrollingRegion.getFieldCount());
+   protected void addNonScrollingField(Field field) {
+      this.addNonScrollingField(field, this._nonScrollingRegion.getFieldCount());
    }
 
-   protected void addNonScrollingText(String var1) {
-      Object var2 = new Object(var1, 64);
-      ((LabelField)var2).setFont(this._boldFont);
-      this.addNonScrollingField((Field)var2);
+   protected void addNonScrollingText(String text) {
+      LabelField labelField = (LabelField)(new Object(text, 64));
+      labelField.setFont(this._boldFont);
+      this.addNonScrollingField(labelField);
    }
 
    protected void deleteAllNonScrollingFields() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         this._nonScrollingRegion.deleteAll();
+         if (this._nonScrollingSeparator != null) {
+            this.getDelegate().delete(this._nonScrollingSeparator);
+            this._nonScrollingSeparator = null;
+         }
+      }
    }
 
-   protected boolean handleFieldChanged(Field var1, int var2) {
-      if (var1 == this._ok) {
+   protected boolean handleFieldChanged(Field field, int context) {
+      if (field == this._ok) {
          this.close(0);
          return true;
       } else {
@@ -74,8 +95,8 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      this.handleFieldChanged(var1, var2);
+   public void fieldChanged(Field field, int context) {
+      this.handleFieldChanged(field, context);
    }
 
    public TitledScrollingDialog() {
@@ -83,28 +104,28 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    }
 
    @Override
-   protected void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1) {
+   protected void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached) {
          new TitledScrollingDialog$PopulateDialogThread(this).start();
       }
    }
 
-   public TitledScrollingDialog(long var1) {
-      super((Manager)(new Object(3458764513820540928L)), var1);
+   public TitledScrollingDialog(long style) {
+      super((Manager)(new Object(3458764513820540928L)), style);
       this._boldFont = this._boldFont.derive(this._boldFont.getStyle() | 1);
       this._nonScrollingRegion = (VerticalFieldManager)(new Object(1152921504606846976L));
       this._scrollingRegion = new VerticalIndentFieldManager(1153220571769602048L);
-      Manager var3 = this.getDelegate();
-      var3.add(this._nonScrollingRegion);
-      var3.add(this._scrollingRegion);
+      Manager manager = this.getDelegate();
+      manager.add(this._nonScrollingRegion);
+      manager.add(this._scrollingRegion);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (super.keyChar(var1, var2, var3)) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (super.keyChar(key, status, time)) {
          return true;
-      } else if (var1 == 27) {
+      } else if (key == 27) {
          this.close(-1);
          return true;
       } else {

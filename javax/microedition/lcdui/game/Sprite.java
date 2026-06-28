@@ -37,17 +37,17 @@ public class Sprite extends Layer {
    private static final int Y_FLIP;
    private static final int ALPHA_BITMASK;
 
-   public Sprite(Image var1) {
-      super(var1.getWidth(), var1.getHeight());
-      this.initializeFrames(var1, var1.getWidth(), var1.getHeight(), false);
+   public Sprite(Image image) {
+      super(image.getWidth(), image.getHeight());
+      this.initializeFrames(image, image.getWidth(), image.getHeight(), false);
       this.initCollisionRectBounds();
       this.setTransformImpl(0);
    }
 
-   public Sprite(Image var1, int var2, int var3) {
-      super(var2, var3);
-      if (var2 >= 1 && var3 >= 1 && var1.getWidth() % var2 == 0 && var1.getHeight() % var3 == 0) {
-         this.initializeFrames(var1, var2, var3, false);
+   public Sprite(Image image, int frameWidth, int frameHeight) {
+      super(frameWidth, frameHeight);
+      if (frameWidth >= 1 && frameHeight >= 1 && image.getWidth() % frameWidth == 0 && image.getHeight() % frameHeight == 0) {
+         this.initializeFrames(image, frameWidth, frameHeight, false);
          this.initCollisionRectBounds();
          this.setTransformImpl(0);
       } else {
@@ -55,44 +55,44 @@ public class Sprite extends Layer {
       }
    }
 
-   public Sprite(Sprite var1) {
-      super(var1 != null ? var1.getWidth() : 0, var1 != null ? var1.getHeight() : 0);
-      if (var1 == null) {
+   public Sprite(Sprite s) {
+      super(s != null ? s.getWidth() : 0, s != null ? s.getHeight() : 0);
+      if (s == null) {
          throw new Object();
       }
 
-      this.sourceImage = Image.createImage(var1.sourceImage);
-      this.numberFrames = var1.numberFrames;
+      this.sourceImage = Image.createImage(s.sourceImage);
+      this.numberFrames = s.numberFrames;
       this.frameCoordsX = new int[this.numberFrames];
       this.frameCoordsY = new int[this.numberFrames];
-      System.arraycopy(var1.frameCoordsX, 0, this.frameCoordsX, 0, var1.getRawFrameCount());
-      System.arraycopy(var1.frameCoordsY, 0, this.frameCoordsY, 0, var1.getRawFrameCount());
-      super.x = var1.getX();
-      super.y = var1.getY();
-      this.dRefX = var1.dRefX;
-      this.dRefY = var1.dRefY;
-      this.collisionRectX = var1.collisionRectX;
-      this.collisionRectY = var1.collisionRectY;
-      this.collisionRectWidth = var1.collisionRectWidth;
-      this.collisionRectHeight = var1.collisionRectHeight;
-      this.srcFrameWidth = var1.srcFrameWidth;
-      this.srcFrameHeight = var1.srcFrameHeight;
-      this.setTransformImpl(var1.t_currentTransformation);
-      this.setVisible(var1.isVisible());
-      this.frameSequence = new int[var1.getFrameSequenceLength()];
-      this.setFrameSequence(var1.frameSequence);
-      this.setFrame(var1.getFrame());
-      this.setRefPixelPosition(var1.getRefPixelX(), var1.getRefPixelY());
+      System.arraycopy(s.frameCoordsX, 0, this.frameCoordsX, 0, s.getRawFrameCount());
+      System.arraycopy(s.frameCoordsY, 0, this.frameCoordsY, 0, s.getRawFrameCount());
+      super.x = s.getX();
+      super.y = s.getY();
+      this.dRefX = s.dRefX;
+      this.dRefY = s.dRefY;
+      this.collisionRectX = s.collisionRectX;
+      this.collisionRectY = s.collisionRectY;
+      this.collisionRectWidth = s.collisionRectWidth;
+      this.collisionRectHeight = s.collisionRectHeight;
+      this.srcFrameWidth = s.srcFrameWidth;
+      this.srcFrameHeight = s.srcFrameHeight;
+      this.setTransformImpl(s.t_currentTransformation);
+      this.setVisible(s.isVisible());
+      this.frameSequence = new int[s.getFrameSequenceLength()];
+      this.setFrameSequence(s.frameSequence);
+      this.setFrame(s.getFrame());
+      this.setRefPixelPosition(s.getRefPixelX(), s.getRefPixelY());
    }
 
-   public void defineReferencePixel(int var1, int var2) {
-      this.dRefX = var1;
-      this.dRefY = var2;
+   public void defineReferencePixel(int x, int y) {
+      this.dRefX = x;
+      this.dRefY = y;
    }
 
-   public void setRefPixelPosition(int var1, int var2) {
-      super.x = var1 - this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
-      super.y = var2 - this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
+   public void setRefPixelPosition(int x, int y) {
+      super.x = x - this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
+      super.y = y - this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
    }
 
    public int getRefPixelX() {
@@ -103,9 +103,9 @@ public class Sprite extends Layer {
       return super.y + this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
    }
 
-   public void setFrame(int var1) {
-      if (var1 >= 0 && var1 < this.frameSequence.length) {
-         this.sequenceIndex = var1;
+   public void setFrame(int sequenceIndex) {
+      if (sequenceIndex >= 0 && sequenceIndex < this.frameSequence.length) {
+         this.sequenceIndex = sequenceIndex;
       } else {
          throw new Object();
       }
@@ -136,13 +136,13 @@ public class Sprite extends Layer {
    }
 
    @Override
-   public final void paint(Graphics var1) {
-      if (var1 == null) {
+   public final void paint(Graphics g) {
+      if (g == null) {
          throw new Object();
       }
 
       if (super.visible) {
-         var1.drawRegion(
+         g.drawRegion(
             this.sourceImage,
             this.frameCoordsX[this.frameSequence[this.sequenceIndex]],
             this.frameCoordsY[this.frameSequence[this.sequenceIndex]],
@@ -156,54 +156,54 @@ public class Sprite extends Layer {
       }
    }
 
-   public void setFrameSequence(int[] var1) {
-      if (var1 == null) {
+   public void setFrameSequence(int[] sequence) {
+      if (sequence == null) {
          this.sequenceIndex = 0;
          this.customSequenceDefined = false;
          this.frameSequence = new int[this.numberFrames];
-         int var3 = 0;
+         int i = 0;
 
-         while (var3 < this.numberFrames) {
-            this.frameSequence[var3] = var3++;
+         while (i < this.numberFrames) {
+            this.frameSequence[i] = i++;
          }
       } else {
-         if (var1.length < 1) {
+         if (sequence.length < 1) {
             throw new Object();
          }
 
-         for (int var2 = 0; var2 < var1.length; var2++) {
-            if (var1[var2] < 0 || var1[var2] >= this.numberFrames) {
+         for (int i = 0; i < sequence.length; i++) {
+            if (sequence[i] < 0 || sequence[i] >= this.numberFrames) {
                throw new Object();
             }
          }
 
          this.customSequenceDefined = true;
-         this.frameSequence = new int[var1.length];
-         System.arraycopy(var1, 0, this.frameSequence, 0, var1.length);
+         this.frameSequence = new int[sequence.length];
+         System.arraycopy(sequence, 0, this.frameSequence, 0, sequence.length);
          this.sequenceIndex = 0;
       }
    }
 
-   public void setImage(Image var1, int var2, int var3) {
-      if (var2 >= 1 && var3 >= 1 && var1.getWidth() % var2 == 0 && var1.getHeight() % var3 == 0) {
-         int var4 = var1.getWidth() / var2 * (var1.getHeight() / var3);
-         boolean var5 = true;
-         if (var4 < this.numberFrames) {
-            var5 = false;
+   public void setImage(Image img, int frameWidth, int frameHeight) {
+      if (frameWidth >= 1 && frameHeight >= 1 && img.getWidth() % frameWidth == 0 && img.getHeight() % frameHeight == 0) {
+         int noOfFrames = img.getWidth() / frameWidth * (img.getHeight() / frameHeight);
+         boolean maintainCurFrame = true;
+         if (noOfFrames < this.numberFrames) {
+            maintainCurFrame = false;
             this.customSequenceDefined = false;
          }
 
-         if (this.srcFrameWidth == var2 && this.srcFrameHeight == var3) {
-            this.initializeFrames(var1, var2, var3, var5);
+         if (this.srcFrameWidth == frameWidth && this.srcFrameHeight == frameHeight) {
+            this.initializeFrames(img, frameWidth, frameHeight, maintainCurFrame);
          } else {
-            int var6 = super.x + this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
-            int var7 = super.y + this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
-            this.setWidthImpl(var2);
-            this.setHeightImpl(var3);
-            this.initializeFrames(var1, var2, var3, var5);
+            int oldX = super.x + this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
+            int oldY = super.y + this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
+            this.setWidthImpl(frameWidth);
+            this.setHeightImpl(frameHeight);
+            this.initializeFrames(img, frameWidth, frameHeight, maintainCurFrame);
             this.initCollisionRectBounds();
-            super.x = var6 - this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
-            super.y = var7 - this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
+            super.x = oldX - this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation);
+            super.y = oldY - this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation);
             this.computeTransformedBounds(this.t_currentTransformation);
          }
       } else {
@@ -211,120 +211,129 @@ public class Sprite extends Layer {
       }
    }
 
-   public void defineCollisionRectangle(int var1, int var2, int var3, int var4) {
-      if (var3 >= 0 && var4 >= 0) {
-         this.collisionRectX = var1;
-         this.collisionRectY = var2;
-         this.collisionRectWidth = var3;
-         this.collisionRectHeight = var4;
+   public void defineCollisionRectangle(int x, int y, int width, int height) {
+      if (width >= 0 && height >= 0) {
+         this.collisionRectX = x;
+         this.collisionRectY = y;
+         this.collisionRectWidth = width;
+         this.collisionRectHeight = height;
          this.setTransformImpl(this.t_currentTransformation);
       } else {
          throw new Object();
       }
    }
 
-   public void setTransform(int var1) {
+   public void setTransform(int transform) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   public final boolean collidesWith(Sprite var1, boolean var2) {
-      if (var1.visible && super.visible) {
-         int var3 = var1.x + var1.t_collisionRectX;
-         int var4 = var1.y + var1.t_collisionRectY;
-         int var5 = var3 + var1.t_collisionRectWidth;
-         int var6 = var4 + var1.t_collisionRectHeight;
-         int var7 = super.x + this.t_collisionRectX;
-         int var8 = super.y + this.t_collisionRectY;
-         int var9 = var7 + this.t_collisionRectWidth;
-         int var10 = var8 + this.t_collisionRectHeight;
-         if (!this.intersectRect(var3, var4, var5, var6, var7, var8, var9, var10)) {
+   public final boolean collidesWith(Sprite s, boolean pixelLevel) {
+      if (s.visible && super.visible) {
+         int otherLeft = s.x + s.t_collisionRectX;
+         int otherTop = s.y + s.t_collisionRectY;
+         int otherRight = otherLeft + s.t_collisionRectWidth;
+         int otherBottom = otherTop + s.t_collisionRectHeight;
+         int left = super.x + this.t_collisionRectX;
+         int top = super.y + this.t_collisionRectY;
+         int right = left + this.t_collisionRectWidth;
+         int bottom = top + this.t_collisionRectHeight;
+         if (!this.intersectRect(otherLeft, otherTop, otherRight, otherBottom, left, top, right, bottom)) {
             return false;
          }
 
-         if (!var2) {
+         if (!pixelLevel) {
             return true;
          }
 
          if (this.t_collisionRectX < 0) {
-            var7 = super.x;
+            left = super.x;
          }
 
          if (this.t_collisionRectY < 0) {
-            var8 = super.y;
+            top = super.y;
          }
 
          if (this.t_collisionRectX + this.t_collisionRectWidth > super.width) {
-            var9 = super.x + super.width;
+            right = super.x + super.width;
          }
 
          if (this.t_collisionRectY + this.t_collisionRectHeight > super.height) {
-            var10 = super.y + super.height;
+            bottom = super.y + super.height;
          }
 
-         if (var1.t_collisionRectX < 0) {
-            var3 = var1.x;
+         if (s.t_collisionRectX < 0) {
+            otherLeft = s.x;
          }
 
-         if (var1.t_collisionRectY < 0) {
-            var4 = var1.y;
+         if (s.t_collisionRectY < 0) {
+            otherTop = s.y;
          }
 
-         if (var1.t_collisionRectX + var1.t_collisionRectWidth > var1.width) {
-            var5 = var1.x + var1.width;
+         if (s.t_collisionRectX + s.t_collisionRectWidth > s.width) {
+            otherRight = s.x + s.width;
          }
 
-         if (var1.t_collisionRectY + var1.t_collisionRectHeight > var1.height) {
-            var6 = var1.y + var1.height;
+         if (s.t_collisionRectY + s.t_collisionRectHeight > s.height) {
+            otherBottom = s.y + s.height;
          }
 
-         if (!this.intersectRect(var3, var4, var5, var6, var7, var8, var9, var10)) {
+         if (!this.intersectRect(otherLeft, otherTop, otherRight, otherBottom, left, top, right, bottom)) {
             return false;
          }
 
-         int var11 = var7 < var3 ? var3 : var7;
-         int var12 = var8 < var4 ? var4 : var8;
-         int var13 = var9 < var5 ? var9 : var5;
-         int var14 = var10 < var6 ? var10 : var6;
-         int var15 = Math.abs(var13 - var11);
-         int var16 = Math.abs(var14 - var12);
-         int var17 = this.getImageTopLeftX(var11, var12, var13, var14);
-         int var18 = this.getImageTopLeftY(var11, var12, var13, var14);
-         int var19 = var1.getImageTopLeftX(var11, var12, var13, var14);
-         int var20 = var1.getImageTopLeftY(var11, var12, var13, var14);
+         int intersectLeft = left < otherLeft ? otherLeft : left;
+         int intersectTop = top < otherTop ? otherTop : top;
+         int intersectRight = right < otherRight ? right : otherRight;
+         int intersectBottom = bottom < otherBottom ? bottom : otherBottom;
+         int intersectWidth = Math.abs(intersectRight - intersectLeft);
+         int intersectHeight = Math.abs(intersectBottom - intersectTop);
+         int thisImageXOffset = this.getImageTopLeftX(intersectLeft, intersectTop, intersectRight, intersectBottom);
+         int thisImageYOffset = this.getImageTopLeftY(intersectLeft, intersectTop, intersectRight, intersectBottom);
+         int otherImageXOffset = s.getImageTopLeftX(intersectLeft, intersectTop, intersectRight, intersectBottom);
+         int otherImageYOffset = s.getImageTopLeftY(intersectLeft, intersectTop, intersectRight, intersectBottom);
          return doPixelCollision(
-            var17, var18, var19, var20, this.sourceImage, this.t_currentTransformation, var1.sourceImage, var1.t_currentTransformation, var15, var16
+            thisImageXOffset,
+            thisImageYOffset,
+            otherImageXOffset,
+            otherImageYOffset,
+            this.sourceImage,
+            this.t_currentTransformation,
+            s.sourceImage,
+            s.t_currentTransformation,
+            intersectWidth,
+            intersectHeight
          );
       } else {
          return false;
       }
    }
 
-   public final boolean collidesWith(TiledLayer var1, boolean var2) {
-      if (var1.visible && super.visible) {
-         int var3 = var1.x;
-         int var4 = var1.y;
-         int var5 = var3 + var1.width;
-         int var6 = var4 + var1.height;
-         int var7 = var1.getCellWidth();
-         int var8 = var1.getCellHeight();
-         int var9 = super.x + this.t_collisionRectX;
-         int var10 = super.y + this.t_collisionRectY;
-         int var11 = var9 + this.t_collisionRectWidth;
-         int var12 = var10 + this.t_collisionRectHeight;
-         int var13 = var1.getColumns();
-         int var14 = var1.getRows();
-         if (!this.intersectRect(var3, var4, var5, var6, var9, var10, var11, var12)) {
+   public final boolean collidesWith(TiledLayer t, boolean pixelLevel) {
+      if (t.visible && super.visible) {
+         int tLx1 = t.x;
+         int tLy1 = t.y;
+         int tLx2 = tLx1 + t.width;
+         int tLy2 = tLy1 + t.height;
+         int tW = t.getCellWidth();
+         int tH = t.getCellHeight();
+         int sx1 = super.x + this.t_collisionRectX;
+         int sy1 = super.y + this.t_collisionRectY;
+         int sx2 = sx1 + this.t_collisionRectWidth;
+         int sy2 = sy1 + this.t_collisionRectHeight;
+         int tNumCols = t.getColumns();
+         int tNumRows = t.getRows();
+         if (!this.intersectRect(tLx1, tLy1, tLx2, tLy2, sx1, sy1, sx2, sy2)) {
             return false;
          }
 
-         int var15 = var9 <= var3 ? 0 : (var9 - var3) / var7;
-         int var17 = var10 <= var4 ? 0 : (var10 - var4) / var8;
-         int var16 = var11 < var5 ? (var11 - 1 - var3) / var7 : var13 - 1;
-         int var18 = var12 < var6 ? (var12 - 1 - var4) / var8 : var14 - 1;
-         if (!var2) {
-            for (int var40 = var17; var40 <= var18; var40++) {
-               for (int var41 = var15; var41 <= var16; var41++) {
-                  if (var1.getCell(var41, var40) != 0) {
+         int startCol = sx1 <= tLx1 ? 0 : (sx1 - tLx1) / tW;
+         int startRow = sy1 <= tLy1 ? 0 : (sy1 - tLy1) / tH;
+         int endCol = sx2 < tLx2 ? (sx2 - 1 - tLx1) / tW : tNumCols - 1;
+         int endRow = sy2 < tLy2 ? (sy2 - 1 - tLy1) / tH : tNumRows - 1;
+         if (!pixelLevel) {
+            for (int row = startRow; row <= endRow; row++) {
+               for (int col = startCol; col <= endCol; col++) {
+                  if (t.getCell(col, row) != 0) {
                      return true;
                   }
                }
@@ -333,72 +342,83 @@ public class Sprite extends Layer {
             return false;
          } else {
             if (this.t_collisionRectX < 0) {
-               var9 = super.x;
+               sx1 = super.x;
             }
 
             if (this.t_collisionRectY < 0) {
-               var10 = super.y;
+               sy1 = super.y;
             }
 
             if (this.t_collisionRectX + this.t_collisionRectWidth > super.width) {
-               var11 = super.x + super.width;
+               sx2 = super.x + super.width;
             }
 
             if (this.t_collisionRectY + this.t_collisionRectHeight > super.height) {
-               var12 = super.y + super.height;
+               sy2 = super.y + super.height;
             }
 
-            if (!this.intersectRect(var3, var4, var5, var6, var9, var10, var11, var12)) {
+            if (!this.intersectRect(tLx1, tLy1, tLx2, tLy2, sx1, sy1, sx2, sy2)) {
                return false;
             }
 
-            var15 = var9 <= var3 ? 0 : (var9 - var3) / var7;
-            var17 = var10 <= var4 ? 0 : (var10 - var4) / var8;
-            var16 = var11 < var5 ? (var11 - 1 - var3) / var7 : var13 - 1;
-            var18 = var12 < var6 ? (var12 - 1 - var4) / var8 : var14 - 1;
-            int var19 = var17 * var8 + var4;
-            int var20 = var19 + var8;
+            startCol = sx1 <= tLx1 ? 0 : (sx1 - tLx1) / tW;
+            startRow = sy1 <= tLy1 ? 0 : (sy1 - tLy1) / tH;
+            endCol = sx2 < tLx2 ? (sx2 - 1 - tLx1) / tW : tNumCols - 1;
+            endRow = sy2 < tLy2 ? (sy2 - 1 - tLy1) / tH : tNumRows - 1;
+            int cellTop = startRow * tH + tLy1;
+            int cellBottom = cellTop + tH;
 
-            for (int var22 = var17; var22 <= var18; var20 += var8) {
-               int var23 = var15 * var7 + var3;
-               int var24 = var23 + var7;
+            for (int row = startRow; row <= endRow; cellBottom += tH) {
+               int cellLeft = startCol * tW + tLx1;
+               int cellRight = cellLeft + tW;
 
-               for (int var25 = var15; var25 <= var16; var24 += var7) {
-                  int var21 = var1.getCell(var25, var22);
-                  if (var21 != 0) {
-                     int var26 = var9 < var23 ? var23 : var9;
-                     int var27 = var10 < var19 ? var19 : var10;
-                     int var28 = var11 < var24 ? var11 : var24;
-                     int var29 = var12 < var20 ? var12 : var20;
-                     if (var26 > var28) {
-                        int var30 = var28;
-                        var28 = var26;
-                        var26 = var30;
+               for (int col = startCol; col <= endCol; cellRight += tW) {
+                  int tileIndex = t.getCell(col, row);
+                  if (tileIndex != 0) {
+                     int intersectLeft = sx1 < cellLeft ? cellLeft : sx1;
+                     int intersectTop = sy1 < cellTop ? cellTop : sy1;
+                     int intersectRight = sx2 < cellRight ? sx2 : cellRight;
+                     int intersectBottom = sy2 < cellBottom ? sy2 : cellBottom;
+                     if (intersectLeft > intersectRight) {
+                        int temp = intersectRight;
+                        intersectRight = intersectLeft;
+                        intersectLeft = temp;
                      }
 
-                     if (var27 > var29) {
-                        int var42 = var29;
-                        var29 = var27;
-                        var27 = var42;
+                     if (intersectTop > intersectBottom) {
+                        int temp = intersectBottom;
+                        intersectBottom = intersectTop;
+                        intersectTop = temp;
                      }
 
-                     int var43 = var28 - var26;
-                     int var31 = var29 - var27;
-                     int var32 = this.getImageTopLeftX(var26, var27, var28, var29);
-                     int var33 = this.getImageTopLeftY(var26, var27, var28, var29);
-                     int var34 = var1.tileSetX[var21] + (var26 - var23);
-                     int var35 = var1.tileSetY[var21] + (var27 - var19);
-                     if (doPixelCollision(var32, var33, var34, var35, this.sourceImage, this.t_currentTransformation, var1.sourceImage, 0, var43, var31)) {
+                     int intersectWidth = intersectRight - intersectLeft;
+                     int intersectHeight = intersectBottom - intersectTop;
+                     int image1XOffset = this.getImageTopLeftX(intersectLeft, intersectTop, intersectRight, intersectBottom);
+                     int image1YOffset = this.getImageTopLeftY(intersectLeft, intersectTop, intersectRight, intersectBottom);
+                     int image2XOffset = t.tileSetX[tileIndex] + (intersectLeft - cellLeft);
+                     int image2YOffset = t.tileSetY[tileIndex] + (intersectTop - cellTop);
+                     if (doPixelCollision(
+                        image1XOffset,
+                        image1YOffset,
+                        image2XOffset,
+                        image2YOffset,
+                        this.sourceImage,
+                        this.t_currentTransformation,
+                        t.sourceImage,
+                        0,
+                        intersectWidth,
+                        intersectHeight
+                     )) {
                         return true;
                      }
                   }
 
-                  var25++;
-                  var23 += var7;
+                  col++;
+                  cellLeft += tW;
                }
 
-               var22++;
-               var19 += var8;
+               row++;
+               cellTop += tH;
             }
 
             return false;
@@ -408,72 +428,83 @@ public class Sprite extends Layer {
       }
    }
 
-   public final boolean collidesWith(Image var1, int var2, int var3, boolean var4) {
+   public final boolean collidesWith(Image image, int x, int y, boolean pixelLevel) {
       if (!super.visible) {
          return false;
       }
 
-      int var5 = var2;
-      int var6 = var3;
-      int var7 = var2 + var1.getWidth();
-      int var8 = var3 + var1.getHeight();
-      int var9 = super.x + this.t_collisionRectX;
-      int var10 = super.y + this.t_collisionRectY;
-      int var11 = var9 + this.t_collisionRectWidth;
-      int var12 = var10 + this.t_collisionRectHeight;
-      if (!this.intersectRect(var5, var6, var7, var8, var9, var10, var11, var12)) {
+      int otherLeft = x;
+      int otherTop = y;
+      int otherRight = x + image.getWidth();
+      int otherBottom = y + image.getHeight();
+      int left = super.x + this.t_collisionRectX;
+      int top = super.y + this.t_collisionRectY;
+      int right = left + this.t_collisionRectWidth;
+      int bottom = top + this.t_collisionRectHeight;
+      if (!this.intersectRect(otherLeft, otherTop, otherRight, otherBottom, left, top, right, bottom)) {
          return false;
       }
 
-      if (!var4) {
+      if (!pixelLevel) {
          return true;
       }
 
       if (this.t_collisionRectX < 0) {
-         var9 = super.x;
+         left = super.x;
       }
 
       if (this.t_collisionRectY < 0) {
-         var10 = super.y;
+         top = super.y;
       }
 
       if (this.t_collisionRectX + this.t_collisionRectWidth > super.width) {
-         var11 = super.x + super.width;
+         right = super.x + super.width;
       }
 
       if (this.t_collisionRectY + this.t_collisionRectHeight > super.height) {
-         var12 = super.y + super.height;
+         bottom = super.y + super.height;
       }
 
-      if (!this.intersectRect(var5, var6, var7, var8, var9, var10, var11, var12)) {
+      if (!this.intersectRect(otherLeft, otherTop, otherRight, otherBottom, left, top, right, bottom)) {
          return false;
       }
 
-      int var13 = var9 < var5 ? var5 : var9;
-      int var14 = var10 < var6 ? var6 : var10;
-      int var15 = var11 < var7 ? var11 : var7;
-      int var16 = var12 < var8 ? var12 : var8;
-      int var17 = Math.abs(var15 - var13);
-      int var18 = Math.abs(var16 - var14);
-      int var19 = this.getImageTopLeftX(var13, var14, var15, var16);
-      int var20 = this.getImageTopLeftY(var13, var14, var15, var16);
-      int var21 = var13 - var2;
-      int var22 = var14 - var3;
-      return doPixelCollision(var19, var20, var21, var22, this.sourceImage, this.t_currentTransformation, var1, 0, var17, var18);
+      int intersectLeft = left < otherLeft ? otherLeft : left;
+      int intersectTop = top < otherTop ? otherTop : top;
+      int intersectRight = right < otherRight ? right : otherRight;
+      int intersectBottom = bottom < otherBottom ? bottom : otherBottom;
+      int intersectWidth = Math.abs(intersectRight - intersectLeft);
+      int intersectHeight = Math.abs(intersectBottom - intersectTop);
+      int thisImageXOffset = this.getImageTopLeftX(intersectLeft, intersectTop, intersectRight, intersectBottom);
+      int thisImageYOffset = this.getImageTopLeftY(intersectLeft, intersectTop, intersectRight, intersectBottom);
+      int otherImageXOffset = intersectLeft - x;
+      int otherImageYOffset = intersectTop - y;
+      return doPixelCollision(
+         thisImageXOffset,
+         thisImageYOffset,
+         otherImageXOffset,
+         otherImageYOffset,
+         this.sourceImage,
+         this.t_currentTransformation,
+         image,
+         0,
+         intersectWidth,
+         intersectHeight
+      );
    }
 
-   private void initializeFrames(Image var1, int var2, int var3, boolean var4) {
-      int var5 = var1.getWidth();
-      int var6 = var1.getHeight();
-      int var7 = var5 / var2;
-      int var8 = var6 / var3;
-      this.sourceImage = var1;
-      this.srcFrameWidth = var2;
-      this.srcFrameHeight = var3;
-      this.numberFrames = var7 * var8;
+   private void initializeFrames(Image image, int fWidth, int fHeight, boolean maintainCurFrame) {
+      int imageW = image.getWidth();
+      int imageH = image.getHeight();
+      int numHorizontalFrames = imageW / fWidth;
+      int numVerticalFrames = imageH / fHeight;
+      this.sourceImage = image;
+      this.srcFrameWidth = fWidth;
+      this.srcFrameHeight = fHeight;
+      this.numberFrames = numHorizontalFrames * numVerticalFrames;
       this.frameCoordsX = new int[this.numberFrames];
       this.frameCoordsY = new int[this.numberFrames];
-      if (!var4) {
+      if (!maintainCurFrame) {
          this.sequenceIndex = 0;
       }
 
@@ -481,17 +512,17 @@ public class Sprite extends Layer {
          this.frameSequence = new int[this.numberFrames];
       }
 
-      int var9 = 0;
+      int currentFrame = 0;
 
-      for (int var10 = 0; var10 < var6; var10 += var3) {
-         for (int var11 = 0; var11 < var5; var11 += var2) {
-            this.frameCoordsX[var9] = var11;
-            this.frameCoordsY[var9] = var10;
+      for (int yy = 0; yy < imageH; yy += fHeight) {
+         for (int xx = 0; xx < imageW; xx += fWidth) {
+            this.frameCoordsX[currentFrame] = xx;
+            this.frameCoordsY[currentFrame] = yy;
             if (!this.customSequenceDefined) {
-               this.frameSequence[var9] = var9;
+               this.frameSequence[currentFrame] = currentFrame;
             }
 
-            var9++;
+            currentFrame++;
          }
       }
    }
@@ -503,180 +534,195 @@ public class Sprite extends Layer {
       this.collisionRectHeight = super.height;
    }
 
-   private boolean intersectRect(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8) {
-      return var5 < var3 && var6 < var4 && var7 > var1 && var8 > var2;
+   private boolean intersectRect(int r1x1, int r1y1, int r1x2, int r1y2, int r2x1, int r2y1, int r2x2, int r2y2) {
+      return r2x1 < r1x2 && r2y1 < r1y2 && r2x2 > r1x1 && r2y2 > r1y1;
    }
 
-   private static boolean doPixelCollision(int var0, int var1, int var2, int var3, Image var4, int var5, Image var6, int var7, int var8, int var9) {
-      int var16 = var9 * var8;
-      int[] var17 = new int[var16];
-      int[] var18 = new int[var16];
-      int var10;
-      int var11;
-      int var12;
-      if (0 != (var5 & 4)) {
-         if (0 != (var5 & 1)) {
-            var11 = -var9;
-            var10 = var16 - var9;
+   private static boolean doPixelCollision(
+      int image1XOffset,
+      int image1YOffset,
+      int image2XOffset,
+      int image2YOffset,
+      Image image1,
+      int transform1,
+      Image image2,
+      int transform2,
+      int width,
+      int height
+   ) {
+      int numPixels = height * width;
+      int[] argbData1 = new int[numPixels];
+      int[] argbData2 = new int[numPixels];
+      int startY1;
+      int xIncr1;
+      int yIncr1;
+      if (0 != (transform1 & 4)) {
+         if (0 != (transform1 & 1)) {
+            xIncr1 = -height;
+            startY1 = numPixels - height;
          } else {
-            var11 = var9;
-            var10 = 0;
+            xIncr1 = height;
+            startY1 = 0;
          }
 
-         if (0 != (var5 & 2)) {
-            var12 = -1;
-            var10 += var9 - 1;
+         if (0 != (transform1 & 2)) {
+            yIncr1 = -1;
+            startY1 += height - 1;
          } else {
-            var12 = 1;
+            yIncr1 = 1;
          }
 
-         var4.getRGB(var17, 0, var9, var0, var1, var9, var8);
+         image1.getRGB(argbData1, 0, height, image1XOffset, image1YOffset, height, width);
       } else {
-         if (0 != (var5 & 1)) {
-            var10 = var16 - var8;
-            var12 = -var8;
+         if (0 != (transform1 & 1)) {
+            startY1 = numPixels - width;
+            yIncr1 = -width;
          } else {
-            var10 = 0;
-            var12 = var8;
+            startY1 = 0;
+            yIncr1 = width;
          }
 
-         if (0 != (var5 & 2)) {
-            var11 = -1;
-            var10 += var8 - 1;
+         if (0 != (transform1 & 2)) {
+            xIncr1 = -1;
+            startY1 += width - 1;
          } else {
-            var11 = 1;
+            xIncr1 = 1;
          }
 
-         var4.getRGB(var17, 0, var8, var0, var1, var8, var9);
+         image1.getRGB(argbData1, 0, width, image1XOffset, image1YOffset, width, height);
       }
 
-      int var13;
-      int var14;
-      int var15;
-      if (0 != (var7 & 4)) {
-         if (0 != (var7 & 1)) {
-            var14 = -var9;
-            var13 = var16 - var9;
+      int startY2;
+      int xIncr2;
+      int yIncr2;
+      if (0 != (transform2 & 4)) {
+         if (0 != (transform2 & 1)) {
+            xIncr2 = -height;
+            startY2 = numPixels - height;
          } else {
-            var14 = var9;
-            var13 = 0;
+            xIncr2 = height;
+            startY2 = 0;
          }
 
-         if (0 != (var7 & 2)) {
-            var15 = -1;
-            var13 += var9 - 1;
+         if (0 != (transform2 & 2)) {
+            yIncr2 = -1;
+            startY2 += height - 1;
          } else {
-            var15 = 1;
+            yIncr2 = 1;
          }
 
-         var6.getRGB(var18, 0, var9, var2, var3, var9, var8);
+         image2.getRGB(argbData2, 0, height, image2XOffset, image2YOffset, height, width);
       } else {
-         if (0 != (var7 & 1)) {
-            var13 = var16 - var8;
-            var15 = -var8;
+         if (0 != (transform2 & 1)) {
+            startY2 = numPixels - width;
+            yIncr2 = -width;
          } else {
-            var13 = 0;
-            var15 = var8;
+            startY2 = 0;
+            yIncr2 = width;
          }
 
-         if (0 != (var7 & 2)) {
-            var14 = -1;
-            var13 += var8 - 1;
+         if (0 != (transform2 & 2)) {
+            xIncr2 = -1;
+            startY2 += width - 1;
          } else {
-            var14 = 1;
+            xIncr2 = 1;
          }
 
-         var6.getRGB(var18, 0, var8, var2, var3, var8, var9);
+         image2.getRGB(argbData2, 0, width, image2XOffset, image2YOffset, width, height);
       }
 
-      int var23 = 0;
-      int var21 = var10;
-      int var22 = var13;
+      int numIterRows = 0;
+      int xLocalBegin1 = startY1;
+      int xLocalBegin2 = startY2;
 
-      while (var23 < var9) {
-         int var24 = 0;
-         int var19 = var21;
-         int var20 = var22;
+      while (numIterRows < height) {
+         int numIterColumns = 0;
+         int x1 = xLocalBegin1;
+         int x2 = xLocalBegin2;
 
-         while (var24 < var8) {
-            if ((var17[var19] & 0xFF000000) != 0 && (var18[var20] & 0xFF000000) != 0) {
+         while (numIterColumns < width) {
+            if ((argbData1[x1] & 0xFF000000) != 0 && (argbData2[x2] & 0xFF000000) != 0) {
                return true;
             }
 
-            var19 += var11;
-            var20 += var14;
-            var24++;
+            x1 += xIncr1;
+            x2 += xIncr2;
+            numIterColumns++;
          }
 
-         var21 += var12;
-         var22 += var15;
-         var23++;
+         xLocalBegin1 += yIncr1;
+         xLocalBegin2 += yIncr2;
+         numIterRows++;
       }
 
       return false;
    }
 
-   private int getImageTopLeftX(int var1, int var2, int var3, int var4) {
-      int var5 = 0;
+   private int getImageTopLeftX(int x1, int y1, int x2, int y2) {
+      int retX = 0;
       switch (this.t_currentTransformation) {
          case -1:
             break;
          case 0:
          case 1:
          default:
-            var5 = var1 - super.x;
+            retX = x1 - super.x;
             break;
          case 2:
          case 3:
-            var5 = super.x + super.width - var3;
+            retX = super.x + super.width - x2;
             break;
          case 4:
          case 5:
-            var5 = var2 - super.y;
+            retX = y1 - super.y;
             break;
          case 6:
          case 7:
-            var5 = super.y + super.height - var4;
+            retX = super.y + super.height - y2;
       }
 
-      return var5 + this.frameCoordsX[this.frameSequence[this.sequenceIndex]];
+      return retX + this.frameCoordsX[this.frameSequence[this.sequenceIndex]];
    }
 
-   private int getImageTopLeftY(int var1, int var2, int var3, int var4) {
-      int var5 = 0;
+   private int getImageTopLeftY(int x1, int y1, int x2, int y2) {
+      int retY = 0;
       switch (this.t_currentTransformation) {
          case -1:
             break;
          case 0:
          case 2:
          default:
-            var5 = var2 - super.y;
+            retY = y1 - super.y;
             break;
          case 1:
          case 3:
-            var5 = super.y + super.height - var4;
+            retY = super.y + super.height - y2;
             break;
          case 4:
          case 6:
-            var5 = var1 - super.x;
+            retY = x1 - super.x;
             break;
          case 5:
          case 7:
-            var5 = super.x + super.width - var3;
+            retY = super.x + super.width - x2;
       }
 
-      return var5 + this.frameCoordsY[this.frameSequence[this.sequenceIndex]];
+      return retY + this.frameCoordsY[this.frameSequence[this.sequenceIndex]];
    }
 
-   private void setTransformImpl(int var1) {
-      super.x = super.x + this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation) - this.getTransformedPtX(this.dRefX, this.dRefY, var1);
-      super.y = super.y + this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation) - this.getTransformedPtY(this.dRefX, this.dRefY, var1);
-      this.computeTransformedBounds(var1);
-      this.t_currentTransformation = var1;
+   private void setTransformImpl(int transform) {
+      super.x = super.x
+         + this.getTransformedPtX(this.dRefX, this.dRefY, this.t_currentTransformation)
+         - this.getTransformedPtX(this.dRefX, this.dRefY, transform);
+      super.y = super.y
+         + this.getTransformedPtY(this.dRefX, this.dRefY, this.t_currentTransformation)
+         - this.getTransformedPtY(this.dRefX, this.dRefY, transform);
+      this.computeTransformedBounds(transform);
+      this.t_currentTransformation = transform;
    }
 
-   private void computeTransformedBounds(int var1) {
-      switch (var1) {
+   private void computeTransformedBounds(int transform) {
+      switch (transform) {
          case -1:
             throw new Object();
          case 0:
@@ -746,71 +792,71 @@ public class Sprite extends Layer {
       }
    }
 
-   int getTransformedPtX(int var1, int var2, int var3) {
-      int var4 = 0;
-      switch (var3) {
+   int getTransformedPtX(int x, int y, int transform) {
+      int t_x = 0;
+      switch (transform) {
          case -1:
             throw new Object();
          case 0:
          default:
-            var4 = var1;
+            t_x = x;
             break;
          case 1:
-            var4 = var1;
+            t_x = x;
             break;
          case 2:
-            var4 = this.srcFrameWidth - var1 - 1;
+            t_x = this.srcFrameWidth - x - 1;
             break;
          case 3:
-            var4 = this.srcFrameWidth - var1 - 1;
+            t_x = this.srcFrameWidth - x - 1;
             break;
          case 4:
-            var4 = var2;
+            t_x = y;
             break;
          case 5:
-            var4 = this.srcFrameHeight - var2 - 1;
+            t_x = this.srcFrameHeight - y - 1;
             break;
          case 6:
-            var4 = var2;
+            t_x = y;
             break;
          case 7:
-            var4 = this.srcFrameHeight - var2 - 1;
+            t_x = this.srcFrameHeight - y - 1;
       }
 
-      return var4;
+      return t_x;
    }
 
-   int getTransformedPtY(int var1, int var2, int var3) {
-      int var4 = 0;
-      switch (var3) {
+   int getTransformedPtY(int x, int y, int transform) {
+      int t_y = 0;
+      switch (transform) {
          case -1:
             throw new Object();
          case 0:
          default:
-            var4 = var2;
+            t_y = y;
             break;
          case 1:
-            var4 = this.srcFrameHeight - var2 - 1;
+            t_y = this.srcFrameHeight - y - 1;
             break;
          case 2:
-            var4 = var2;
+            t_y = y;
             break;
          case 3:
-            var4 = this.srcFrameHeight - var2 - 1;
+            t_y = this.srcFrameHeight - y - 1;
             break;
          case 4:
-            var4 = var1;
+            t_y = x;
             break;
          case 5:
-            var4 = var1;
+            t_y = x;
             break;
          case 6:
-            var4 = this.srcFrameWidth - var1 - 1;
+            t_y = this.srcFrameWidth - x - 1;
             break;
          case 7:
-            var4 = this.srcFrameWidth - var1 - 1;
+            t_y = this.srcFrameWidth - x - 1;
       }
 
-      return var4;
+      return t_y;
    }
 }

@@ -93,24 +93,24 @@ public class AttributedString {
    public static final int PICTURE_LINE_BREAK_DEFAULT;
    public static final int MAX_FONT_SIZE;
 
-   public static int fontHeight(long var0) {
-      return (int)((var0 & 63) >> 0);
+   public static int fontHeight(long aAttrib) {
+      return (int)((aAttrib & 63) >> 0);
    }
 
-   public static boolean bold(long var0) {
-      return (var0 & 134217984) != 0;
+   public static boolean bold(long aAttrib) {
+      return (aAttrib & 134217984) != 0;
    }
 
-   public static boolean italic(long var0) {
-      return (var0 & 512) != 0;
+   public static boolean italic(long aAttrib) {
+      return (aAttrib & 512) != 0;
    }
 
-   public static int fontNameIndex(long var0) {
-      return (int)((var0 & 64512) >> 10);
+   public static int fontNameIndex(long aAttrib) {
+      return (int)((aAttrib & 64512) >> 10);
    }
 
-   public static long setForegroundColor(long var0, int var2) {
-      return var0 & -281470681743361L | Ui.convertColorTo16bit(var2) << 32;
+   public static long setForegroundColor(long aAttrib, int aColor) {
+      return aAttrib & -281470681743361L | Ui.convertColorTo16bit(aColor) << 32;
    }
 
    public AttributedString() {
@@ -119,72 +119,72 @@ public class AttributedString {
       this._cursor_run = this._run;
    }
 
-   public AttributedString(String var1) {
-      this.set(var1, 0, 0);
+   public AttributedString(String aText) {
+      this.set(aText, 0, 0);
    }
 
-   public AttributedString(String var1, long var2, long var4) {
-      this.set(var1, var2, var4);
+   public AttributedString(String aText, long aAttrib, long aXAttrib) {
+      this.set(aText, aAttrib, aXAttrib);
    }
 
-   public AttributedString(StringBuffer var1) {
-      this.set(var1.toString(), 0, 0);
+   public AttributedString(StringBuffer aText) {
+      this.set(aText.toString(), 0, 0);
    }
 
-   public AttributedString(StringBufferGap var1) {
-      this.set(var1.toString(), 0, 0);
+   public AttributedString(StringBufferGap aText) {
+      this.set(aText.toString(), 0, 0);
    }
 
-   public AttributedString(AttributedString var1) {
-      this.set(var1.getIterator());
+   public AttributedString(AttributedString aString) {
+      this.set(aString.getIterator());
    }
 
-   public AttributedString(AttributedString var1, int var2, int var3) {
-      this.set(var1.getIterator(var2, var3));
+   public AttributedString(AttributedString aString, int aStart, int aEnd) {
+      this.set(aString.getIterator(aStart, aEnd));
    }
 
-   public void set(String var1) {
-      this.set(var1, 0, 0, 0);
+   public void set(String aText) {
+      this.set(aText, 0, 0, 0);
    }
 
-   public void set(String var1, long var2, long var4) {
-      this.set(var1, var2, var4, 0);
+   public void set(String aText, long aAttrib, long aXAttrib) {
+      this.set(aText, aAttrib, aXAttrib, 0);
    }
 
-   public void set(String var1, long var2, long var4, long var6) {
+   public void set(String aText, long aAttrib, long aXAttrib, long aGlobalAttrib) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void set(AttributedString$Iterator var1) {
+   public void set(AttributedString$Iterator aIter) {
       this._run = null;
       this._text = null;
-      this._length = var1.length();
-      this._global_attrib = var1.getGlobalAttrib();
-      AttributedString$Run var2 = null;
-      this._text = (StringBufferGap)(new Object(var1.text().getText(var1.pos(), this._length)));
+      this._length = aIter.length();
+      this._global_attrib = aIter.getGlobalAttrib();
+      AttributedString$Run p = null;
+      this._text = (StringBufferGap)(new Object(aIter.text().getText(aIter.pos(), this._length)));
 
       do {
-         AttributedString$Run var3 = new AttributedString$Run(var2, null, var1.runLength(), var1.runAttrib(), var1.runXAttrib(), var1.runPictureInfo());
-         if (var2 == null) {
-            this._run = var3;
+         AttributedString$Run new_run = new AttributedString$Run(p, null, aIter.runLength(), aIter.runAttrib(), aIter.runXAttrib(), aIter.runPictureInfo());
+         if (p == null) {
+            this._run = new_run;
          } else {
-            var2._next = var3;
+            p._next = new_run;
          }
 
-         var2 = var3;
-      } while (var1.next());
+         p = new_run;
+      } while (aIter.next());
 
       this._cursor = 0;
       this._cursor_run = this._run;
       this._cursor_run_start = 0;
    }
 
-   public void set(StringBuffer var1) {
-      this.set(var1.toString());
+   public void set(StringBuffer aText) {
+      this.set(aText.toString());
    }
 
-   public void set(StringBufferGap var1) {
-      this.set(var1.toString());
+   public void set(StringBufferGap aText) {
+      this.set(aText.toString());
    }
 
    public String getString() {
@@ -200,228 +200,228 @@ public class AttributedString {
       return this._length;
    }
 
-   public char charAt(int var1) {
-      return this._text.charAt(var1);
+   public char charAt(int aPos) {
+      return this._text.charAt(aPos);
    }
 
-   private void seekRun(int var1) {
-      if (this._cursor != var1) {
-         if (var1 > this._cursor) {
-            while (var1 >= this._cursor_run_start + this._cursor_run._length && this._cursor_run._next != null) {
+   private void seekRun(int aPos) {
+      if (this._cursor != aPos) {
+         if (aPos > this._cursor) {
+            while (aPos >= this._cursor_run_start + this._cursor_run._length && this._cursor_run._next != null) {
                this._cursor_run_start = this._cursor_run_start + this._cursor_run._length;
                this._cursor_run = this._cursor_run._next;
             }
          } else {
-            while (var1 < this._cursor_run_start && this._cursor_run_start > 0) {
+            while (aPos < this._cursor_run_start && this._cursor_run_start > 0) {
                this._cursor_run = this._cursor_run._prev;
                this._cursor_run_start = this._cursor_run_start - this._cursor_run._length;
             }
          }
 
-         this._cursor = var1;
+         this._cursor = aPos;
       }
    }
 
-   public void seek(int var1) {
-      if (var1 >= 0 && var1 <= this._length) {
-         this._text.seek(var1);
-         if (this._cursor != var1) {
-            this.seekRun(var1);
+   public void seek(int aPos) {
+      if (aPos >= 0 && aPos <= this._length) {
+         this._text.seek(aPos);
+         if (this._cursor != aPos) {
+            this.seekRun(aPos);
          }
       } else {
          throw new Object();
       }
    }
 
-   public void setInsertAttrib(long var1) {
-      this._new_attrib = var1;
+   public void setInsertAttrib(long aAttrib) {
+      this._new_attrib = aAttrib;
    }
 
-   public void setInsertXAttrib(long var1) {
-      this._new_xattrib = var1;
+   public void setInsertXAttrib(long aAttrib) {
+      this._new_xattrib = aAttrib;
    }
 
-   public void setGlobalAttrib(long var1, long var3) {
-      this._global_attrib = this._global_attrib & (var3 ^ -1) | var1 & var3;
+   public void setGlobalAttrib(long aAttrib, long aAttribMask) {
+      this._global_attrib = this._global_attrib & (aAttribMask ^ -1) | aAttrib & aAttribMask;
    }
 
    public long getGlobalAttrib() {
       return this._global_attrib;
    }
 
-   private void deleteRun(AttributedString$Run var1) {
+   private void deleteRun(AttributedString$Run aRun) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private void insertRun(AttributedString$Run var1, int var2, long var3, long var5, AttributedString$PictureInfo var7) {
-      AttributedString$Run var8 = var1 == null ? this._run : var1._next;
-      AttributedString$Run var9 = new AttributedString$Run(var1, var8, var2, var3, var5, var7);
-      if (var1 != null) {
-         var1._next = var9;
+   private void insertRun(AttributedString$Run aPrevRun, int aLength, long aAttrib, long aXAttrib, AttributedString$PictureInfo aPictureInfo) {
+      AttributedString$Run next = aPrevRun == null ? this._run : aPrevRun._next;
+      AttributedString$Run new_run = new AttributedString$Run(aPrevRun, next, aLength, aAttrib, aXAttrib, aPictureInfo);
+      if (aPrevRun != null) {
+         aPrevRun._next = new_run;
       } else {
-         this._run = var9;
+         this._run = new_run;
       }
 
-      if (var8 != null) {
-         var8._prev = var9;
+      if (next != null) {
+         next._prev = new_run;
       }
    }
 
-   private void insertAttribRun(int var1, long var2, long var4, long var6, long var8, AttributedString$PictureInfo var10) {
+   private void insertAttribRun(int aLength, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask, AttributedString$PictureInfo aPictureInfo) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void delete(int var1) {
+   public void delete(int aCount) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void insert(char var1) {
-      this._text.insert(var1);
+   public void insert(char aChar) {
+      this._text.insert(aChar);
       this.insertAttribRun(1, this._new_attrib, -1, this._new_xattrib, -1, null);
    }
 
-   public void insert(int var1, char var2) {
-      this.seek(var1);
-      this.insert(var2);
+   public void insert(int aPos, char aChar) {
+      this.seek(aPos);
+      this.insert(aChar);
    }
 
-   public void insert(String var1) {
+   public void insert(String aString) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void insert(StringBuffer var1) {
-      if (var1.length() > 0) {
-         this._text.insert(var1);
-         this.insertAttribRun(var1.length(), this._new_attrib, -1, this._new_xattrib, -1, null);
+   public void insert(StringBuffer aString) {
+      if (aString.length() > 0) {
+         this._text.insert(aString);
+         this.insertAttribRun(aString.length(), this._new_attrib, -1, this._new_xattrib, -1, null);
       }
    }
 
-   public void insert(int var1, String var2) {
-      this.seek(var1);
-      this.insert(var2);
+   public void insert(int aPos, String aString) {
+      this.seek(aPos);
+      this.insert(aString);
    }
 
-   public void insert(int var1, AttributedString var2) {
-      this.replace(var1, var1, var2, 0, var2.length());
+   public void insert(int aPos, AttributedString aString) {
+      this.replace(aPos, aPos, aString, 0, aString.length());
    }
 
-   public void insert(AttributedString$Picture var1) {
+   public void insert(AttributedString$Picture aPicture) {
       this._text.insert('￼');
-      this.insertAttribRun(1, this._new_attrib, -1, this._new_xattrib, -1, var1.getInfo());
+      this.insertAttribRun(1, this._new_attrib, -1, this._new_xattrib, -1, aPicture.getInfo());
    }
 
-   public void insert(int var1, AttributedString$Picture var2) {
-      this.seek(var1);
-      this.insert(var2);
+   public void insert(int aPos, AttributedString$Picture aPicture) {
+      this.seek(aPos);
+      this.insert(aPicture);
    }
 
-   public void replace(int var1, int var2, char var3) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         this.seek(var2);
-         if (var1 < var2) {
-            this.delete(var2 - var1);
+   public void replace(int aStart, int aEnd, char aChar) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         this.seek(aEnd);
+         if (aStart < aEnd) {
+            this.delete(aEnd - aStart);
          }
 
-         this.insert(var3);
+         this.insert(aChar);
       } else {
          throw new Object();
       }
    }
 
-   public void replace(int var1, int var2, String var3) {
+   public void replace(int aStart, int aEnd, String aText) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void replace(int var1, int var2, StringBuffer var3) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         this.seek(var2);
-         if (var1 < var2) {
-            this.delete(var2 - var1);
+   public void replace(int aStart, int aEnd, StringBuffer aText) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         this.seek(aEnd);
+         if (aStart < aEnd) {
+            this.delete(aEnd - aStart);
          }
 
-         if (var3.length() > 0) {
-            this.insert(var3);
+         if (aText.length() > 0) {
+            this.insert(aText);
          }
       } else {
          throw new Object();
       }
    }
 
-   public void replace(int var1, int var2, AttributedString$Iterator var3) {
-      this.replace(var1, var2, var3, -1, -1);
+   public void replace(int aStart, int aEnd, AttributedString$Iterator aIter) {
+      this.replace(aStart, aEnd, aIter, -1, -1);
    }
 
-   public void replace(int var1, int var2, AttributedString$Iterator var3, long var4, long var6) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         this.seek(var2);
-         if (var1 < var2) {
-            this.delete(var2 - var1);
+   public void replace(int aStart, int aEnd, AttributedString$Iterator aIter, long aAttribMask, long aXAttribMask) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         this.seek(aEnd);
+         if (aStart < aEnd) {
+            this.delete(aEnd - aStart);
          }
 
-         if (var3.length() <= 0) {
+         if (aIter.length() <= 0) {
             if (this._length == 0) {
-               this._run._attrib = this._run._attrib & (var4 ^ -1) | var3.runAttrib() & var4;
-               this._run._xAttrib = this._run._xAttrib & (var6 ^ -1) | var3.runXAttrib() & var6;
+               this._run._attrib = this._run._attrib & (aAttribMask ^ -1) | aIter.runAttrib() & aAttribMask;
+               this._run._xAttrib = this._run._xAttrib & (aXAttribMask ^ -1) | aIter.runXAttrib() & aXAttribMask;
             }
          } else {
-            this._text.insert(var3.text().getText(var3.pos(), var3.length()));
+            this._text.insert(aIter.text().getText(aIter.pos(), aIter.length()));
 
             do {
-               this.insertAttribRun(var3.runLength(), var3.runAttrib(), var4, var3.runXAttrib(), var6, var3.runPictureInfo());
-            } while (var3.next());
+               this.insertAttribRun(aIter.runLength(), aIter.runAttrib(), aAttribMask, aIter.runXAttrib(), aXAttribMask, aIter.runPictureInfo());
+            } while (aIter.next());
          }
       } else {
          throw new Object();
       }
    }
 
-   public void replace(int var1, int var2, AttributedString var3, int var4, int var5) {
-      AttributedString$Iterator var6 = var3.getIterator(var4, var5);
-      this.replace(var1, var2, var6);
+   public void replace(int aStart, int aEnd, AttributedString aString, int aStringStart, int aStringEnd) {
+      AttributedString$Iterator iter = aString.getIterator(aStringStart, aStringEnd);
+      this.replace(aStart, aEnd, iter);
    }
 
-   public void replace(int var1, int var2, AttributedString var3) {
-      AttributedString$Iterator var4 = var3.getIterator();
-      this.replace(var1, var2, var4);
+   public void replace(int aStart, int aEnd, AttributedString aString) {
+      AttributedString$Iterator iter = aString.getIterator();
+      this.replace(aStart, aEnd, iter);
    }
 
-   public void delete(int var1, int var2) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         if (var1 < var2) {
-            this.seek(var2);
-            this.delete(var2 - var1);
+   public void delete(int aStart, int aEnd) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         if (aStart < aEnd) {
+            this.seek(aEnd);
+            this.delete(aEnd - aStart);
          }
       } else {
          throw new Object();
       }
    }
 
-   public void setAttrib(int var1, long var2, long var4) {
-      this.setAttrib(var1, var2, var4, 0, 0);
+   public void setAttrib(int aCount, long aAttrib, long aAttribMask) {
+      this.setAttrib(aCount, aAttrib, aAttribMask, 0, 0);
    }
 
-   public void setAttrib(int var1, long var2, long var4, long var6, long var8) {
+   public void setAttrib(int aCount, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setAttrib(int var1, int var2, long var3, long var5) {
-      this.setAttrib(var1, var2, var3, var5, 0, 0);
+   public void setAttrib(int aStart, int aEnd, long aAttrib, long aAttribMask) {
+      this.setAttrib(aStart, aEnd, aAttrib, aAttribMask, 0, 0);
    }
 
-   public void setAttrib(int var1, int var2, long var3, long var5, long var7, long var9) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         int var11 = this._cursor;
-         this.seekRun(var1);
-         this.setAttrib(var2 - var1, var3, var5, var7, var9);
-         this.seekRun(var11);
+   public void setAttrib(int aStart, int aEnd, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         int saved_cursor = this._cursor;
+         this.seekRun(aStart);
+         this.setAttrib(aEnd - aStart, aAttrib, aAttribMask, aXAttrib, aXAttribMask);
+         this.seekRun(saved_cursor);
       } else {
          throw new Object();
       }
    }
 
-   public String getText(int var1, int var2) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._length) {
-         return this._text.getText(var1, var2 - var1);
+   public String getText(int aStart, int aEnd) {
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         return this._text.getText(aStart, aEnd - aStart);
       } else {
          throw new Object();
       }
@@ -431,16 +431,16 @@ public class AttributedString {
       return this._text;
    }
 
-   public void setAttribToZero(int var1, int var2, long var3) {
-      this.setAttrib(var1, var2, 0, var3);
+   public void setAttribToZero(int aStart, int aEnd, long aAttribMask) {
+      this.setAttrib(aStart, aEnd, 0, aAttribMask);
    }
 
    public AttributedString$Iterator getIterator() {
       return new AttributedString$Iterator(this);
    }
 
-   public AttributedString$Iterator getIterator(int var1, int var2) {
-      return new AttributedString$Iterator(this, var1, var2);
+   public AttributedString$Iterator getIterator(int aStart, int aEnd) {
+      return new AttributedString$Iterator(this, aStart, aEnd);
    }
 
    public void assertValid() {
@@ -461,28 +461,28 @@ public class AttributedString {
       }
 
       if (this._cursor >= this._cursor_run_start && this._cursor <= this._cursor_run_start + this._cursor_run._length) {
-         AttributedString$Run var1 = this._run;
-         int var2 = 0;
-         int var3 = 0;
+         AttributedString$Run r = this._run;
+         int l = 0;
+         int s = 0;
 
-         while (var1 != null) {
-            if (var1 == this._cursor_run) {
-               var3 = var2;
+         while (r != null) {
+            if (r == this._cursor_run) {
+               s = l;
             }
 
-            if (var1._pictureInfo != null && var1._length != 1) {
+            if (r._pictureInfo != null && r._length != 1) {
                throw new Object();
             }
 
-            var2 += var1._length;
-            var1 = var1._next;
+            l += r._length;
+            r = r._next;
          }
 
-         if (var3 != this._cursor_run_start) {
+         if (s != this._cursor_run_start) {
             throw new Object();
          }
 
-         if (var2 != this._length) {
+         if (l != this._length) {
             throw new Object();
          }
       } else {

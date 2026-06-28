@@ -14,8 +14,8 @@ public class ChartRenderer {
    private int _preferredWidth;
    private int _preferredHeight;
 
-   protected ChartRenderer(ChartField var1) {
-      this._field = var1;
+   protected ChartRenderer(ChartField field) {
+      this._field = field;
    }
 
    public Axis getDomainAxis() {
@@ -54,11 +54,11 @@ public class ChartRenderer {
       return this._width;
    }
 
-   public void layout(int var1, int var2) {
+   public void layout(int _1, int _2) {
       throw null;
    }
 
-   public void paint(Graphics var1) {
+   public void paint(Graphics _1) {
       throw null;
    }
 
@@ -66,30 +66,30 @@ public class ChartRenderer {
       return this._dataset;
    }
 
-   public void setAxis(Axis var1, Axis var2) {
-      this._domain = var1;
-      this._range = var2;
+   public void setAxis(Axis domain, Axis range) {
+      this._domain = domain;
+      this._range = range;
    }
 
-   public void setDataset(XYDataset var1) {
+   public void setDataset(XYDataset dataset) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected void setExtent(int var1, int var2) {
-      this._width = var1;
-      this._height = var2;
+   protected void setExtent(int width, int height) {
+      this._width = width;
+      this._height = height;
    }
 
-   public void setPosition(int var1, int var2) {
-      this._x = var1;
-      this._y = var2;
+   public void setPosition(int x, int y) {
+      this._x = x;
+      this._y = y;
    }
 
-   public void setPreferredHeight(int var1) {
+   public void setPreferredHeight(int height) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setPreferredWidth(int var1) {
+   public void setPreferredWidth(int width) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

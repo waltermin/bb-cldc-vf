@@ -17,27 +17,27 @@ public class MediaStreamingManager {
          return null;
       }
 
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      return (MediaStreamingManager)var0.waitFor(8461041122205944746L);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      return (MediaStreamingManager)ar.waitFor(8461041122205944746L);
    }
 
-   public void addListener(MediaStreamingListener var1) {
+   public void addListener(MediaStreamingListener _1) {
       throw null;
    }
 
-   public MediaStreamingManager$StreamingSession recordStream(MediaStreamingCallback var1, RingBuffer var2, int var3, int var4) {
+   public MediaStreamingManager$StreamingSession recordStream(MediaStreamingCallback _1, RingBuffer _2, int _3, int _4) {
       throw null;
    }
 
-   public MediaStreamingManager$StreamingSession openStream(MediaStreamingCallback var1, RingBuffer var2, int var3, int var4, int var5, boolean var6) {
+   public MediaStreamingManager$StreamingSession openStream(MediaStreamingCallback _1, RingBuffer _2, int _3, int _4, int _5, boolean _6) {
       throw null;
    }
 
-   public MediaStreamingManager$StreamingSession playStream(MediaStreamingCallback var1, RingBuffer var2, int var3, int var4, int var5, int var6) {
+   public MediaStreamingManager$StreamingSession playStream(MediaStreamingCallback _1, RingBuffer _2, int _3, int _4, int _5, int _6) {
       throw null;
    }
 
-   public MediaStreamingManager$StreamingSession reserveSession(int var1, int var2) {
+   public MediaStreamingManager$StreamingSession reserveSession(int _1, int _2) {
       throw null;
    }
 

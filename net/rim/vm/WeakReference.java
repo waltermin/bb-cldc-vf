@@ -6,8 +6,8 @@ public class WeakReference {
 
    private native void register();
 
-   public WeakReference(Object var1) {
-      this.reference = var1;
+   public WeakReference(Object object) {
+      this.reference = object;
       this.register();
    }
 
@@ -15,7 +15,7 @@ public class WeakReference {
       return this.reference;
    }
 
-   public void set(Object var1) {
+   public void set(Object object) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

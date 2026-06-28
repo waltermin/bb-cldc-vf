@@ -7,47 +7,47 @@ class Weights {
    int _right;
    int[] _weightsFP;
 
-   Weights(Filter var1, int var2, int var3, int var4, int var5) {
-      this._left = var2;
-      this._right = var3;
-      this._weightsFP = new int[var3 - var2 + 1];
-      int var6 = 0;
+   Weights(Filter filter, int left, int right, int centerFP, int fscaleFP) {
+      this._left = left;
+      this._right = right;
+      this._weightsFP = new int[right - left + 1];
+      int sumFP = 0;
 
-      for (int var7 = this._left; var7 <= this._right; var7++) {
-         int var8 = Fixed32.mul(var5, var1.weightFP(Fixed32.mul(var5, var4 - Fixed32.toFP(var7))));
-         this._weightsFP[var7 - this._left] = var8;
-         var6 += var8;
+      for (int iSrc = this._left; iSrc <= this._right; iSrc++) {
+         int weightFP = Fixed32.mul(fscaleFP, filter.weightFP(Fixed32.mul(fscaleFP, centerFP - Fixed32.toFP(iSrc))));
+         this._weightsFP[iSrc - this._left] = weightFP;
+         sumFP += weightFP;
       }
 
-      for (int var9 = this._left; var9 <= this._right; var9++) {
-         this._weightsFP[var9 - this._left] = Fixed32.div(this._weightsFP[var9 - this._left], var6);
+      for (int iSrc = this._left; iSrc <= this._right; iSrc++) {
+         this._weightsFP[iSrc - this._left] = Fixed32.div(this._weightsFP[iSrc - this._left], sumFP);
       }
    }
 
-   int filter(Fetcher var1) {
-      int var2 = 0;
-      int var3 = 0;
-      int var4 = 0;
-      int var5 = 0;
+   int filter(Fetcher fetcher) {
+      int aFP = 0;
+      int rFP = 0;
+      int gFP = 0;
+      int bFP = 0;
 
-      for (int var6 = this._left; var6 <= this._right; var6++) {
-         int var7 = var1.get(var6);
-         int var8 = this._weightsFP[var6 - this._left];
-         var5 += (var7 & 0xFF) * var8;
-         var4 += (var7 >> 8 & 0xFF) * var8;
-         var3 += (var7 >> 16 & 0xFF) * var8;
-         var2 += (var7 >> 24 & 0xFF) * var8;
+      for (int i = this._left; i <= this._right; i++) {
+         int pixel = fetcher.get(i);
+         int weightFP = this._weightsFP[i - this._left];
+         bFP += (pixel & 0xFF) * weightFP;
+         gFP += (pixel >> 8 & 0xFF) * weightFP;
+         rFP += (pixel >> 16 & 0xFF) * weightFP;
+         aFP += (pixel >> 24 & 0xFF) * weightFP;
       }
 
-      return this.clampFP(var2) << 24 | this.clampFP(var3) << 16 | this.clampFP(var4) << 8 | this.clampFP(var5);
+      return this.clampFP(aFP) << 24 | this.clampFP(rFP) << 16 | this.clampFP(gFP) << 8 | this.clampFP(bFP);
    }
 
-   int clampFP(int var1) {
-      int var2 = Fixed32.toInt(var1);
-      if (var2 < 0) {
+   int clampFP(int dFP) {
+      int i = Fixed32.toInt(dFP);
+      if (i < 0) {
          return 0;
       } else {
-         return var2 > 255 ? 255 : var2;
+         return i > 255 ? 255 : i;
       }
    }
 }

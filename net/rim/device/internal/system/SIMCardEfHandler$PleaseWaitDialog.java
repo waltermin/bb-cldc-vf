@@ -9,7 +9,7 @@ final class SIMCardEfHandler$PleaseWaitDialog extends Screen {
    }
 
    @Override
-   protected final void sublayout(int var1, int var2) {
+   protected final void sublayout(int width, int height) {
       this.setPosition(0, 0);
       this.setExtent(0, 0);
    }

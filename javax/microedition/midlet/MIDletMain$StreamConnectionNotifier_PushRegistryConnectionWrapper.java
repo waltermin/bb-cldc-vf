@@ -14,14 +14,22 @@ class MIDletMain$StreamConnectionNotifier_PushRegistryConnectionWrapper implemen
 
    @Override
    public StreamConnection acceptAndOpen() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         if (this._streamConnection != null) {
+            StreamConnection sc = this._streamConnection;
+            this._streamConnection = null;
+            return sc;
+         }
+      }
+
+      return this._scn.acceptAndOpen();
    }
 
-   void pushBack(StreamConnection var1) {
+   void pushBack(StreamConnection sc) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public MIDletMain$StreamConnectionNotifier_PushRegistryConnectionWrapper(StreamConnectionNotifier var1) {
-      this._scn = var1;
+   public MIDletMain$StreamConnectionNotifier_PushRegistryConnectionWrapper(StreamConnectionNotifier impl) {
+      this._scn = impl;
    }
 }

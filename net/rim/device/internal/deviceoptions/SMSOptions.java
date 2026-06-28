@@ -26,24 +26,24 @@ public final class SMSOptions {
       }
    }
 
-   private static final void commit(boolean var0) {
+   private static final void commit(boolean notifyOfChanges) {
       _persistentObject.commit();
-      if (var0) {
+      if (notifyOfChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(6063360555319689575L);
       }
    }
 
-   public static final byte[] getVoicemailIndicators(int var0) {
-      return var0 == _smsOptionsData._imsiCRC ? _smsOptionsData._voicemailIndicators : new byte[4];
+   public static final byte[] getVoicemailIndicators(int imsiCRC) {
+      return imsiCRC == _smsOptionsData._imsiCRC ? _smsOptionsData._voicemailIndicators : new byte[4];
    }
 
    static final byte[] getVoicemailIndicators() {
       return _smsOptionsData._voicemailIndicators;
    }
 
-   public static final void setVoicemailIndicators(byte[] var0, int var1) {
-      _smsOptionsData._voicemailIndicators = var0;
-      _smsOptionsData._imsiCRC = var1;
+   public static final void setVoicemailIndicators(byte[] voicemailIndicators, int imsiCRC) {
+      _smsOptionsData._voicemailIndicators = voicemailIndicators;
+      _smsOptionsData._imsiCRC = imsiCRC;
       commit(false);
    }
 
@@ -51,10 +51,10 @@ public final class SMSOptions {
       return _smsOptionsData._smsRoute;
    }
 
-   public static final void setRoute(int var0) {
-      _smsOptionsData._smsRoute = var0;
+   public static final void setRoute(int route) {
+      _smsOptionsData._smsRoute = route;
       if (RadioInfo.areWAFsSupported(1)) {
-         RadioInternal.smsSetRoute(var0);
+         RadioInternal.smsSetRoute(route);
       }
 
       commit(true);
@@ -64,8 +64,8 @@ public final class SMSOptions {
       return _smsOptionsData._deliveryReports;
    }
 
-   public static final void setDeliveryReports(boolean var0) {
-      _smsOptionsData._deliveryReports = var0;
+   public static final void setDeliveryReports(boolean deliveryReports) {
+      _smsOptionsData._deliveryReports = deliveryReports;
       commit(true);
    }
 
@@ -73,8 +73,8 @@ public final class SMSOptions {
       return _smsOptionsData._multipleRecipients;
    }
 
-   public static final void setMultipleRecipients(boolean var0) {
-      _smsOptionsData._multipleRecipients = var0;
+   public static final void setMultipleRecipients(boolean multipleRecipients) {
+      _smsOptionsData._multipleRecipients = multipleRecipients;
       commit(true);
    }
 
@@ -82,10 +82,10 @@ public final class SMSOptions {
       return SIMCard.isSupported() ? _smsOptionsData._storeOnSIM : false;
    }
 
-   public static final void setStoreOnSIM(boolean var0) {
-      _smsOptionsData._storeOnSIM = var0;
+   public static final void setStoreOnSIM(boolean storeOnSIM) {
+      _smsOptionsData._storeOnSIM = storeOnSIM;
       if (RadioInfo.areWAFsSupported(1)) {
-         RadioInternal.smsStoreOnSIM(var0);
+         RadioInternal.smsStoreOnSIM(storeOnSIM);
       }
 
       commit(true);
@@ -99,13 +99,13 @@ public final class SMSOptions {
       return _smsOptionsData._enableCellBroadcast;
    }
 
-   public static final void setEnableCellBroadcast(boolean var0) {
-      _smsOptionsData._enableCellBroadcast = var0;
+   public static final void setEnableCellBroadcast(boolean enableCellBroadcast) {
+      _smsOptionsData._enableCellBroadcast = enableCellBroadcast;
       commit(true);
    }
 
-   public static final void setDisableAutoText(boolean var0) {
-      _smsOptionsData._disableAutoText = var0;
+   public static final void setDisableAutoText(boolean disableAutoText) {
+      _smsOptionsData._disableAutoText = disableAutoText;
       commit(true);
    }
 
@@ -113,8 +113,8 @@ public final class SMSOptions {
       return _smsOptionsData._numPreviousItems;
    }
 
-   public static final void setNumPreviousItems(int var0) {
-      _smsOptionsData._numPreviousItems = var0;
+   public static final void setNumPreviousItems(int numPreviousItems) {
+      _smsOptionsData._numPreviousItems = numPreviousItems;
       commit(true);
    }
 
@@ -122,13 +122,13 @@ public final class SMSOptions {
       return _smsOptionsData._presetUiId;
    }
 
-   public static final void setUiId(int var0, boolean var1) {
-      if (!_smsOptionsData._smsUiPreset || var1) {
+   public static final void setUiId(int uiId, boolean forceSetting) {
+      if (!_smsOptionsData._smsUiPreset || forceSetting) {
          _smsOptionsData._smsUiPreset = true;
-         boolean var2 = _smsOptionsData._presetUiId != var0;
-         _smsOptionsData._presetUiId = var0;
+         boolean postEvent = _smsOptionsData._presetUiId != uiId;
+         _smsOptionsData._presetUiId = uiId;
          commit(false);
-         if (var2) {
+         if (postEvent) {
             RIMGlobalMessagePoster.postGlobalEvent(7884295420352689779L);
          }
       }
@@ -138,10 +138,10 @@ public final class SMSOptions {
       return _smsOptionsData._messageListUiId;
    }
 
-   public static final void setMessageListUiId(int var0, boolean var1) {
-      if (!_smsOptionsData._messageListUiPreset || var1) {
+   public static final void setMessageListUiId(int messageListUiId, boolean forceSetting) {
+      if (!_smsOptionsData._messageListUiPreset || forceSetting) {
          _smsOptionsData._messageListUiPreset = true;
-         _smsOptionsData._messageListUiId = var0;
+         _smsOptionsData._messageListUiId = messageListUiId;
          commit(false);
       }
    }
@@ -150,8 +150,8 @@ public final class SMSOptions {
       return _smsOptionsData._fallbackMessageCoding;
    }
 
-   public static final void setFallbackCoding(int var0) {
-      _smsOptionsData._fallbackMessageCoding = var0;
+   public static final void setFallbackCoding(int coding) {
+      _smsOptionsData._fallbackMessageCoding = coding;
       commit(true);
    }
 }

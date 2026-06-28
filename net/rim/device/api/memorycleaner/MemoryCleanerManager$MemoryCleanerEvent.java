@@ -2,6 +2,7 @@ package net.rim.device.api.memorycleaner;
 
 import net.rim.device.api.listener.Event;
 import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.Phone;
 import net.rim.device.internal.compress.CompressUtilities;
 import net.rim.device.internal.system.BitmapCache;
 import net.rim.device.internal.system.Security;
@@ -11,19 +12,30 @@ class MemoryCleanerManager$MemoryCleanerEvent implements Event {
    boolean _somethingCleaned;
    int _event;
 
-   MemoryCleanerManager$MemoryCleanerEvent(int var1) {
-      this._event = var1;
+   MemoryCleanerManager$MemoryCleanerEvent(int event) {
+      this._event = event;
    }
 
    @Override
    public Thread preUpdateEventListener() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (Phone.isSupported()) {
+         Phone phone = Phone.getInstance();
+
+         while (phone.isActive()) {
+            try {
+               Thread.sleep(3000);
+            } catch (InterruptedException var3) {
+            }
+         }
+      }
+
+      return null;
    }
 
    @Override
-   public Thread updateEventListener(Object var1) {
-      MemoryCleanerListener var2 = (MemoryCleanerListener)var1;
-      this._somethingCleaned = this._somethingCleaned | var2.cleanNow(this._event);
+   public Thread updateEventListener(Object listener) {
+      MemoryCleanerListener memoryCleanerListener = (MemoryCleanerListener)listener;
+      this._somethingCleaned = this._somethingCleaned | memoryCleanerListener.cleanNow(this._event);
       return null;
    }
 
@@ -31,10 +43,10 @@ class MemoryCleanerManager$MemoryCleanerEvent implements Event {
    public Thread postUpdateEventListener() {
       this._somethingCleaned = this._somethingCleaned | Security.getInstance().cleanNow(this._event);
       if ((this._somethingCleaned || Memory.anyPlaintext()) && this._event != 2 && this._event != 3 && this._event != 5) {
-         int var1 = this._event < MemoryCleanerManager.EVENT_LOGGER_CODES.length
+         int code = this._event < MemoryCleanerManager.EVENT_LOGGER_CODES.length
             ? MemoryCleanerManager.EVENT_LOGGER_CODES[this._event]
             : 808464432 + (this._event / 10 << 8) + this._event % 10;
-         EventLogger.logEvent(-3818033069674138067L, var1);
+         EventLogger.logEvent(-3818033069674138067L, code);
          if (!Memory.anyPersistentPlaintext()) {
             Memory.fullGC();
          } else {

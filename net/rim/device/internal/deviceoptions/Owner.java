@@ -18,11 +18,11 @@ public final class Owner {
       return _ownerData._name;
    }
 
-   public static final boolean setOwnerName(String var0) {
-      return setOwnerName(var0, false);
+   public static final boolean setOwnerName(String name) {
+      return setOwnerName(name, false);
    }
 
-   public static final boolean setOwnerName(String var0, boolean var1) {
+   public static final boolean setOwnerName(String name, boolean force) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -30,11 +30,11 @@ public final class Owner {
       return _ownerData._info;
    }
 
-   public static final boolean setOwnerInfo(String var0) {
-      return setOwnerInfo(var0, false);
+   public static final boolean setOwnerInfo(String info) {
+      return setOwnerInfo(info, false);
    }
 
-   public static final boolean setOwnerInfo(String var0, boolean var1) {
+   public static final boolean setOwnerInfo(String info, boolean force) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -42,9 +42,9 @@ public final class Owner {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void commit(boolean var0) {
+   private static final void commit(boolean notifyOfChanges) {
       _persistentObject.commit();
-      if (var0) {
+      if (notifyOfChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(-3297167379286550693L);
       }
    }

@@ -12,16 +12,16 @@ public class MenuScreenFactory {
    }
 
    public static MenuList createListFieldWithDefault() {
-      MenuList var0 = null;
+      MenuList list = null;
       if (_instance._factory != null) {
-         var0 = _instance._factory.createListField();
+         list = _instance._factory.createListField();
       }
 
-      if (var0 == null) {
-         var0 = new DefaultMenuListField();
+      if (list == null) {
+         list = new DefaultMenuListField();
       }
 
-      return var0;
+      return list;
    }
 
    protected MenuScreen createScreen() {
@@ -29,23 +29,23 @@ public class MenuScreenFactory {
    }
 
    public static MenuScreen createScreenWithDefault() {
-      MenuScreen var0 = null;
+      MenuScreen screen = null;
       if (_instance._factory != null) {
-         var0 = _instance._factory.createScreen();
+         screen = _instance._factory.createScreen();
       }
 
-      if (var0 == null) {
-         var0 = new DefaultMenuScreen();
+      if (screen == null) {
+         screen = new DefaultMenuScreen();
       }
 
-      return var0;
+      return screen;
    }
 
    public static MenuScreenFactory getFactory() {
       return _instance._factory;
    }
 
-   public static void setFactory(MenuScreenFactory var0) {
-      _instance._factory = var0;
+   public static void setFactory(MenuScreenFactory factory) {
+      _instance._factory = factory;
    }
 }

@@ -144,49 +144,49 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._isUnicodeInputAllowed;
    }
 
-   public void setAllowUnicodeInput(boolean var1) {
-      if (this._isUnicodeInputAllowed != var1) {
-         this._isUnicodeInputAllowed = var1;
+   public void setAllowUnicodeInput(boolean allow) {
+      if (this._isUnicodeInputAllowed != allow) {
+         this._isUnicodeInputAllowed = allow;
          if (this._labelSet != null) {
             this.setLabel(this._labelSet);
          }
       }
    }
 
-   protected void findDefaultDirectionality(String var1) {
+   protected void findDefaultDirectionality(String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   TextFilter getFilterFromStyle(long var1) {
+   TextFilter getFilterFromStyle(long style) {
       return null;
    }
 
    protected void updateInputStyle() {
-      Object var1 = this.getInputContext().getInputMethodControlObject();
-      ((SLControlObject)var1).actionPerformed(38, null);
-      int var2 = (int)this.getStyle();
+      SLControlObject controlObject = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+      controlObject.actionPerformed(38, null);
+      int style = (int)this.getStyle();
       if (this._filter != null) {
-         var2 = (int)(var2 | this._filter.getPreferredInputStyle());
+         style = (int)(style | this._filter.getPreferredInputStyle());
       }
 
-      ((SLControlObject)var1).setTextInputStyle(var2);
-      ((SLControlObject)var1).setFilter(this._filter);
+      controlObject.setTextInputStyle(style);
+      controlObject.setFilter(this._filter);
    }
 
    public int getTextInputStyle() {
-      int var1 = (int)this.getStyle();
+      int style = (int)this.getStyle();
       if (this._filter != null) {
-         var1 = (int)(var1 | this._filter.getPreferredInputStyle());
+         style = (int)(style | this._filter.getPreferredInputStyle());
       }
 
-      return var1;
+      return style;
    }
 
-   final void fireInputMethodTextChanged(InputMethodEvent var1) {
-      Object[] var2 = this._textChangeListeners;
-      if (var2 != null) {
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            ((TextChangeListener)var2[var3]).inputMethodTextChanged(this, var1);
+   final void fireInputMethodTextChanged(InputMethodEvent event) {
+      Object[] listeners = this._textChangeListeners;
+      if (listeners != null) {
+         for (int index = 0; index < listeners.length; index++) {
+            ((TextChangeListener)listeners[index]).inputMethodTextChanged(this, event);
          }
       }
    }
@@ -195,28 +195,56 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._convertedCharactersCount;
    }
 
-   final void fireTextChangeEvent(int var1) {
-      Object[] var2 = this._textChangeListeners;
-      if (var2 != null) {
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            ((TextChangeListener)var2[var3]).textValueChanged(this, var1);
+   final void fireTextChangeEvent(int eventID) {
+      Object[] listeners = this._textChangeListeners;
+      if (listeners != null) {
+         for (int index = 0; index < listeners.length; index++) {
+            ((TextChangeListener)listeners[index]).textValueChanged(this, eventID);
          }
       }
    }
 
-   protected synchronized void hitTest(int var1, XYRect var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected synchronized void hitTest(int aIndex, XYRect aResult) {
+      if (aIndex < 0 || aIndex > this._text.length()) {
+         throw new Object();
+      }
+
+      if (this._isPreLayout) {
+         aResult.set(0, 0, 0, 0);
+      } else {
+         ArticInterface$LineInfo info = this.getLineInfoForDocPos(aIndex, true);
+
+         try {
+            ArticInterface.DocPosToCaret(aResult, this._text, info._line, info._start, info._top, aIndex, true);
+         } catch (IllegalStateException e1) {
+            aResult.set(0, 0, 0, 0);
+            e1.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, aIndex, true, 0, 0, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         } catch (IllegalArgumentException e2) {
+            aResult.set(0, 0, 0, 0);
+            e2.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, aIndex, true, 0, 0, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         }
+
+         aResult.height = aResult.y + aResult.height - info._top;
+         aResult.y = info._top;
+         aResult.width = 0;
+      }
    }
 
-   public final synchronized void removeTextChangeListener(TextChangeListener var1) {
-      this._textChangeListeners = ListenerUtilities.removeListener(this._textChangeListeners, var1);
+   public final synchronized void removeTextChangeListener(TextChangeListener listener) {
+      this._textChangeListeners = ListenerUtilities.removeListener(this._textChangeListeners, listener);
    }
 
-   public final synchronized void addTextChangeListener(TextChangeListener var1) {
-      this._textChangeListeners = ListenerUtilities.addListener(this._textChangeListeners, var1);
+   public final synchronized void addTextChangeListener(TextChangeListener listener) {
+      this._textChangeListeners = ListenerUtilities.addListener(this._textChangeListeners, listener);
    }
 
-   public void setAdjustAlignments(boolean var1) {
+   public void setAdjustAlignments(boolean adjustAlignments) {
    }
 
    protected void endLayoutUpdate() {
@@ -231,20 +259,30 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       }
    }
 
-   public void setPreLayoutInternal(boolean var1) {
+   public void setPreLayoutInternal(boolean b) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
-      this._isPreLayout = var1;
+      this._isPreLayout = b;
    }
 
-   protected synchronized int replace(int var1, int var2, AttributedString$Iterator var3, long var4, long var6, int var8, int var9, boolean var10, int var11) {
+   protected synchronized int replace(
+      int aStart,
+      int aEnd,
+      AttributedString$Iterator aIterator,
+      long aIteratorMask,
+      long aIteratorXMask,
+      int aCommittedLen,
+      int aPosInsideComposedText,
+      boolean aMoveCursor,
+      int aContext
+   ) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public int replace(int var1, int var2, AttributedString$Iterator var3, long var4, long var6) {
-      return this.replace(var1, var2, var3, var4, var6, var3.length(), 0, true, 0);
+   public int replace(int aStart, int aEnd, AttributedString$Iterator aIterator, long aIteratorMask, long aIteratorXMask) {
+      return this.replace(aStart, aEnd, aIterator, aIteratorMask, aIteratorXMask, aIterator.length(), 0, true, 0);
    }
 
-   public void insert(int var1, AttributedString$Iterator var2, long var3, long var5) {
+   public void insert(int aPos, AttributedString$Iterator aIterator, long aIteratorAttrMask, long aIteratorXAttribMask) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -256,18 +294,18 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       this._focusOffset = -1;
    }
 
-   public void setAttrib(int var1, int var2, long var3, long var5, long var7, long var9) {
-      int var11 = var1;
-      int var12 = var2 - var1;
-      if (var12 < 0) {
-         var11 = var2;
-         var12 = -var12;
+   public void setAttrib(int aStartPos, int aEndPos, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask) {
+      int pos = aStartPos;
+      int count = aEndPos - aStartPos;
+      if (count < 0) {
+         pos = aEndPos;
+         count = -count;
       }
 
-      this._text.seek(var11);
-      this._text.setAttrib(var12, var3, var5, var7, var9);
-      this.update(var11, var12, var12, 0, false, false);
-      if (this._cursor >= var1 && this._cursor <= var2) {
+      this._text.seek(pos);
+      this._text.setAttrib(count, aAttrib, aAttribMask, aXAttrib, aXAttribMask);
+      this.update(pos, count, count, 0, false, false);
+      if (this._cursor >= aStartPos && this._cursor <= aEndPos) {
          this.setInsertionAttributesToSelection();
       }
    }
@@ -276,86 +314,86 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._composedEnd - this._composedStart;
    }
 
-   public void deleteAttrib(long var1) {
-      this.setAttrib(this._cursor, this._anchor, 0, var1, 0, 0);
+   public void deleteAttrib(long aAttribMask) {
+      this.setAttrib(this._cursor, this._anchor, 0, aAttribMask, 0, 0);
    }
 
-   public void setAttrib(long var1, long var3) {
-      this.setAttrib(this._cursor, this._anchor, var1, var3, 0, 0);
+   public void setAttrib(long aAttrib, long aAttribMask) {
+      this.setAttrib(this._cursor, this._anchor, aAttrib, aAttribMask, 0, 0);
    }
 
-   public void setFontHeight(int var1) {
-      this.setAttrib(this._cursor, this._anchor, var1 << 0, 63, 0, 0);
+   public void setFontHeight(int height) {
+      this.setAttrib(this._cursor, this._anchor, height << 0, 63, 0, 0);
    }
 
-   protected synchronized int backspace(int var1, int var2) {
-      if (this._cursor - var1 < this._labelLength) {
-         var1 = this._cursor - this._labelLength;
+   protected synchronized int backspace(int count, int context) {
+      if (this._cursor - count < this._labelLength) {
+         count = this._cursor - this._labelLength;
       }
 
-      if ((var2 & -2147483648) == 0 && !this.isEditable()) {
+      if ((context & -2147483648) == 0 && !this.isEditable()) {
          return 0;
       }
 
-      if (var1 == 0) {
+      if (count == 0) {
          return 0;
       }
 
-      if (this._cursor < var1) {
-         var1 -= this._cursor;
+      if (this._cursor < count) {
+         count -= this._cursor;
       }
 
-      String var3 = this._text.getText(this._cursor - var1, this._cursor);
-      this._text.delete(this._cursor - var1, this._cursor);
-      this.update(this._cursor - var1, var1, 0, 0, true, true);
+      String textBefore = this._text.getText(this._cursor - count, this._cursor);
+      this._text.delete(this._cursor - count, this._cursor);
+      this.update(this._cursor - count, count, 0, 0, true, true);
       if (Ui.isTTSEnabled()) {
-         this.accessibleEventOccurred(2, var3, null, this);
+         this.accessibleEventOccurred(2, textBefore, null, this);
       }
 
-      this.fieldChangeNotify(var2);
-      return var1;
+      this.fieldChangeNotify(context);
+      return count;
    }
 
    protected synchronized boolean backspace() {
-      boolean var1 = false;
+      boolean backspaceProcessed = false;
       if (this.isSelecting()) {
-         var1 = this.deleteSelectedText() != 0;
+         backspaceProcessed = this.deleteSelectedText() != 0;
       } else if (this._cursor != this._labelLength) {
-         String var2 = this._text.getText(this._cursor - 1, this._cursor);
+         String textBefore = this._text.getText(this._cursor - 1, this._cursor);
          this._text.delete(this._cursor - 1, this._cursor);
          this.update(this._cursor - 1, 1, 0, 0, true, true);
          if (Ui.isTTSEnabled()) {
-            this.accessibleEventOccurred(2, var2, null, this);
+            this.accessibleEventOccurred(2, textBefore, null, this);
          }
 
          this.fieldChangeNotify(0);
-         var1 = true;
+         backspaceProcessed = true;
       }
 
       if (this._latestCommittedEnd != this._latestCommittedStart && this._latestCommittedEnd > this._cursor) {
          this.resetLatestCommittedText();
       }
 
-      return var1;
+      return backspaceProcessed;
    }
 
    public Screen dependentScreen() {
       return this._dependentScreen;
    }
 
-   public int backspace(int var1) {
-      return this.backspace(var1, Integer.MIN_VALUE);
+   public int backspace(int count) {
+      return this.backspace(count, Integer.MIN_VALUE);
    }
 
-   public char charAt(int var1) {
-      if (var1 < 0) {
+   public char charAt(int offset) {
+      if (offset < 0) {
          throw new Object();
       } else {
-         return this._text.charAt(var1 + this._labelLength);
+         return this._text.charAt(offset + this._labelLength);
       }
    }
 
-   public void clear(int var1) {
+   public void clear(int context) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -365,12 +403,12 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       }
    }
 
-   protected char convert(char var1, int var2) {
+   protected char convert(char key, int status) {
       if (this._filter != null) {
-         var1 = this._filter.convert(var1, this.getTextAbstractString(), this.getCursorPosition(), var2);
+         key = this._filter.convert(key, this.getTextAbstractString(), this.getCursorPosition(), status);
       }
 
-      return var1;
+      return key;
    }
 
    public boolean isInMoveFocus() {
@@ -385,12 +423,12 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._text.getText(this._labelLength, this.getDisplayTextLength());
    }
 
-   public synchronized String getText(int var1, int var2) {
-      return this._text.getText(var1, var1 + var2);
+   public synchronized String getText(int offset, int length) {
+      return this._text.getText(offset, offset + length);
    }
 
-   public synchronized void getText(int var1, int var2, char[] var3, int var4) {
-      this._text.getText().getText(var1 + this._labelLength, var2 + this._labelLength, var3, var4);
+   public synchronized void getText(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+      this._text.getText().getText(srcBegin + this._labelLength, srcEnd + this._labelLength, dst, dstBegin);
    }
 
    public AbstractString getTextAbstractString() {
@@ -405,47 +443,47 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this.getDecodedTextLength(this.getLabelLength(), this._text.length());
    }
 
-   public int getDecodedTextLength(int var1, int var2) {
-      return var2 - var1;
+   public int getDecodedTextLength(int start, int end) {
+      return end - start;
    }
 
-   public int insert(String var1) {
-      return this.insert(var1, Integer.MIN_VALUE, true, true);
+   public int insert(String text) {
+      return this.insert(text, Integer.MIN_VALUE, true, true);
    }
 
-   public void insert(AttributedString$Picture var1) {
-      this.insert(null, var1, Integer.MIN_VALUE, false, false);
+   public void insert(AttributedString$Picture picture) {
+      this.insert(null, picture, Integer.MIN_VALUE, false, false);
    }
 
-   protected int insert(String var1, int var2) {
-      return this.insert(var1, null, var2, true, true);
+   protected int insert(String text, int context) {
+      return this.insert(text, null, context, true, true);
    }
 
-   public int insert(String var1, int var2, boolean var3, boolean var4) {
-      return this.insert(var1, null, var2, var3, var4);
+   public int insert(String text, int context, boolean stripInvalid, boolean validateText) {
+      return this.insert(text, null, context, stripInvalid, validateText);
    }
 
-   public synchronized int insert(String var1, AttributedString$Picture var2, int var3, boolean var4, boolean var5) {
+   public synchronized int insert(String text, AttributedString$Picture picture, int context, boolean stripInvalid, boolean validateText) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   int getLayoutWidth(int var1) {
-      return var1;
+   int getLayoutWidth(int width) {
+      return width;
    }
 
-   void handleLinesAfterFormat(FormatParams var1) {
-      this._lineCount = var1._lineCount;
+   void handleLinesAfterFormat(FormatParams params) {
+      this._lineCount = params._lineCount;
    }
 
    protected int getMaxLinesToFormat() {
       return Math.max(20, Display.getHeight() / this.getFont().getHeight() + 1);
    }
 
-   public void inMoveFocus(boolean var1) {
+   public void inMoveFocus(boolean enable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected void setCursorPositionSet(boolean var1) {
+   protected void setCursorPositionSet(boolean set) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -453,17 +491,17 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this.getDecodedTextLength() >= this._maxNumChars;
    }
 
-   protected void update(int var1) {
+   protected void update(int delta) {
    }
 
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
    }
 
-   public synchronized void setMaxSize(int var1) {
+   public synchronized void setMaxSize(int maxSize) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   public void setCursorPosition(int var1) {
+   public void setCursorPosition(int offset) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
@@ -471,7 +509,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._cursor - this._labelLength;
    }
 
-   public void setFilter(TextFilter var1) {
+   public void setFilter(TextFilter filter) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -479,206 +517,206 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._filter;
    }
 
-   public void setText(String var1) {
-      this.setText(var1, Integer.MIN_VALUE);
+   public void setText(String text) {
+      this.setText(text, Integer.MIN_VALUE);
    }
 
-   protected void setText(String var1, int var2) {
-      this.setTextInternal(var1, var2, true);
+   protected void setText(String text, int context) {
+      this.setTextInternal(text, context, true);
    }
 
-   public void setAttributedText(AttributedString var1) {
+   public void setAttributedText(AttributedString text) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected boolean validate(char var1) {
-      if ((var1 > 31 || var1 == '\n') && (127 > var1 || var1 > 159)) {
-         return this._filter != null ? this._filter.validate(var1, this.getTextAbstractString(), this.getCursorPosition()) : true;
+   protected boolean validate(char character) {
+      if ((character > 31 || character == '\n') && (127 > character || character > 159)) {
+         return this._filter != null ? this._filter.validate(character, this.getTextAbstractString(), this.getCursorPosition()) : true;
       } else {
          return false;
       }
    }
 
-   protected boolean validate(String var1) {
+   protected boolean validate(String text) {
       if (this._filter != null) {
-         this._stringData.reset(var1);
+         this._stringData.reset(text);
          return this._filter.validate(this._stringData);
       } else {
          return true;
       }
    }
 
-   protected int getLineTop(int var1) {
-      int var2 = 0;
-      if (var1 >= 0 && var1 <= this._lineCount) {
-         int var3 = 0;
+   protected int getLineTop(int aIndex) {
+      int y = 0;
+      if (aIndex >= 0 && aIndex <= this._lineCount) {
+         int i = 0;
 
-         for (ArticInterface$Line var4 = this._lineList; var4 != null && var3 < var1; var3++) {
-            var2 += var4._boundsBottom - var4._boundsTop;
-            var4 = var4._next;
+         for (ArticInterface$Line currentLine = this._lineList; currentLine != null && i < aIndex; i++) {
+            y += currentLine._boundsBottom - currentLine._boundsTop;
+            currentLine = currentLine._next;
          }
 
-         return var2;
+         return y;
       } else {
          throw new Object();
       }
    }
 
-   protected int getLineTop(ArticInterface$Line var1) {
-      int var2 = 0;
+   protected int getLineTop(ArticInterface$Line aLine) {
+      int y = 0;
 
-      for (ArticInterface$Line var3 = this._lineList; var3 != var1; var3 = var3._next) {
-         var2 += var3._boundsBottom - var3._boundsTop;
+      for (ArticInterface$Line currentLine = this._lineList; currentLine != aLine; currentLine = currentLine._next) {
+         y += currentLine._boundsBottom - currentLine._boundsTop;
       }
 
-      return var2;
+      return y;
    }
 
-   protected int getDisplayLinePosition(int var1) {
-      return this.getLineTop(var1);
+   protected int getDisplayLinePosition(int aIndex) {
+      return this.getLineTop(aIndex);
    }
 
-   public ArticInterface$LineInfo getLineInfoForYPos(int var1) {
+   public ArticInterface$LineInfo getLineInfoForYPos(int aY) {
       this._tempLineInfo._start = this._cursorLineStart;
       this._tempLineInfo._top = this._cursorLineTop;
       this._tempLineInfo._line = this._cursorLine;
-      Formatter.getLineInfoForYPos(var1, this._tempLineInfo);
+      Formatter.getLineInfoForYPos(aY, this._tempLineInfo);
       return this._tempLineInfo;
    }
 
-   public ArticInterface$LineInfo getLineInfoForDocPos(int var1, boolean var2) {
+   public ArticInterface$LineInfo getLineInfoForDocPos(int aDocPos, boolean aLeadingEdge) {
       this._tempLineInfo._line = this._cursorLine;
       this._tempLineInfo._start = this._cursorLineStart;
       this._tempLineInfo._top = this._cursorLineTop;
-      Formatter.getLineInfoForDocPos(var1, var2, this._lineList, this._tempLineInfo, true);
+      Formatter.getLineInfoForDocPos(aDocPos, aLeadingEdge, this._lineList, this._tempLineInfo, true);
       return this._tempLineInfo;
    }
 
-   public void setSelection(int var1, boolean var2, int var3) {
-      this.setSelection(var1, var2, var3, true);
+   public void setSelection(int aNewCursor, boolean aNewCursorLeadingEdge, int aNewAnchor) {
+      this.setSelection(aNewCursor, aNewCursorLeadingEdge, aNewAnchor, true);
    }
 
-   protected synchronized int scrollHorizontally(int var1) {
-      int var2 = this.getLabelLength();
+   protected synchronized int scrollHorizontally(int amount) {
+      int labelLength = this.getLabelLength();
       if ((this._cursorLine._flags & 16) != 0) {
-         var1 = -var1;
+         amount = -amount;
       }
 
-      if ((this._cursor != var2 || var1 >= 0) && (this._cursor != this.getDisplayTextLength() || var1 <= 0)) {
+      if ((this._cursor != labelLength || amount >= 0) && (this._cursor != this.getDisplayTextLength() || amount <= 0)) {
          this._tempDocPosInfo.set(this._cursor, this._cursorLeadingEdge);
-         int var3 = ArticInterface.AdjustDocPos(this._text.getText(), this._tempDocPosInfo, var1);
-         int var4 = this._tempDocPosInfo._index;
-         int var5 = var1 - var3;
-         if (var4 < var2) {
-            var5 += var4 - var2;
-            var4 = var2;
-         } else if (var4 < this.getDisplayTextLength()) {
-            int var6 = 0;
-            this.getLineInfoForDocPos(var4, this._cursorLeadingEdge);
-            ArticInterface$Line var7 = this._tempLineInfo._line;
-            int var8 = this._tempLineInfo._start;
-            int var9 = this.getRightMargin();
-            if (var1 < 0) {
+         int usedAmount = ArticInterface.AdjustDocPos(this._text.getText(), this._tempDocPosInfo, amount);
+         int new_cursor = this._tempDocPosInfo._index;
+         int result = amount - usedAmount;
+         if (new_cursor < labelLength) {
+            result += new_cursor - labelLength;
+            new_cursor = labelLength;
+         } else if (new_cursor < this.getDisplayTextLength()) {
+            int focus_x = 0;
+            this.getLineInfoForDocPos(new_cursor, this._cursorLeadingEdge);
+            ArticInterface$Line cursorLine = this._tempLineInfo._line;
+            int cursorLineStart = this._tempLineInfo._start;
+            int rightMargin = this.getRightMargin();
+            if (amount < 0) {
                while (true) {
-                  var6 = this.getCaretX(var4, this._cursorLeadingEdge);
-                  if (var4 == var8 || var6 <= var9) {
+                  focus_x = this.getCaretX(new_cursor, this._cursorLeadingEdge);
+                  if (new_cursor == cursorLineStart || focus_x <= rightMargin) {
                      break;
                   }
 
-                  var4--;
+                  new_cursor--;
                }
             } else {
-               var6 = this.getCaretX(var4, this._cursorLeadingEdge);
-               if (var6 > var9) {
-                  if (var7._next == null) {
+               focus_x = this.getCaretX(new_cursor, this._cursorLeadingEdge);
+               if (focus_x > rightMargin) {
+                  if (cursorLine._next == null) {
                      while (true) {
-                        var6 = this.getCaretX(var4, this._cursorLeadingEdge);
-                        if (var4 == var8) {
+                        focus_x = this.getCaretX(new_cursor, this._cursorLeadingEdge);
+                        if (new_cursor == cursorLineStart) {
                            return 1;
                         }
 
-                        if (var6 <= var9) {
+                        if (focus_x <= rightMargin) {
                            return 1;
                         }
 
-                        var4--;
+                        new_cursor--;
                      }
                   }
 
-                  var4 = var8 + this.getLineLength(var7);
-                  boolean var11 = false;
+                  new_cursor = cursorLineStart + this.getLineLength(cursorLine);
+                  int var11 = false;
                }
             }
          }
 
-         boolean var14 = true;
-         if (this.posIsAtBidiBorder(var4, false)) {
-            var14 = var1 < 0;
+         boolean newLeadingEdge = true;
+         if (this.posIsAtBidiBorder(new_cursor, false)) {
+            newLeadingEdge = amount < 0;
          }
 
          if (this._selecting) {
-            this.setSelection(var4, var14, this._anchor, true);
+            this.setSelection(new_cursor, newLeadingEdge, this._anchor, true);
          } else {
-            this.setSelection(var4, var14, var4, true);
+            this.setSelection(new_cursor, newLeadingEdge, new_cursor, true);
          }
 
-         return var5;
+         return result;
       } else {
-         return this._selecting ? 0 : var1;
+         return this._selecting ? 0 : amount;
       }
    }
 
-   protected synchronized int scrollVertically(int var1) {
+   protected synchronized int scrollVertically(int amount) {
       if (this.isComposedTextExist()) {
          return 0;
       }
 
-      int var2 = this.getLabelLength();
-      ArticInterface$LineInfo var3 = this.getCursorLine();
-      int var4 = var3._top;
-      ArticInterface$Line var5 = var3._line;
-      int var6 = var4;
-      int var7 = var3._start;
-      boolean var8 = false;
-      int var9 = var1;
-      if (var1 >= 0) {
-         for (int var10 = 0; var10 < var1 && var5._next != null; var10++) {
-            var6 += var5._boundsBottom - var5._boundsTop;
-            var5 = var5._next;
-            var9--;
+      int labelLength = this.getLabelLength();
+      ArticInterface$LineInfo cursorLineInfo = this.getCursorLine();
+      int cursorLineTop = cursorLineInfo._top;
+      ArticInterface$Line endLine = cursorLineInfo._line;
+      int endLineTop = cursorLineTop;
+      int endLineStart = cursorLineInfo._start;
+      boolean isOffTheBottom = false;
+      int amountRemain1 = amount;
+      if (amount >= 0) {
+         for (int index = 0; index < amount && endLine._next != null; index++) {
+            endLineTop += endLine._boundsBottom - endLine._boundsTop;
+            endLine = endLine._next;
+            amountRemain1--;
          }
 
-         var8 = var9 > 0;
+         isOffTheBottom = amountRemain1 > 0;
       } else {
-         for (int var12 = var1; var12 < 0 && var6 > this._lastLabelLineTop && var7 > var2; var12++) {
-            var5 = var5._prev;
-            var6 -= var5._boundsBottom - var5._boundsTop;
-            var9++;
-            var7 -= var5._textLength + var5._skippedCharacters;
+         for (int index = amount; index < 0 && endLineTop > this._lastLabelLineTop && endLineStart > labelLength; index++) {
+            endLine = endLine._prev;
+            endLineTop -= endLine._boundsBottom - endLine._boundsTop;
+            amountRemain1++;
+            endLineStart -= endLine._textLength + endLine._skippedCharacters;
          }
       }
 
-      while (var6 < this._lastLabelLineTop) {
-         if (var5 == null) {
+      while (endLineTop < this._lastLabelLineTop) {
+         if (endLine == null) {
             throw new Object();
          }
 
-         var6 += var5._boundsBottom - var5._boundsTop;
-         var5 = var5._next;
+         endLineTop += endLine._boundsBottom - endLine._boundsTop;
+         endLine = endLine._next;
       }
 
-      int var13 = 0;
-      if (var1 < 0 && (var9 < 0 || this._cursor == var2) && var5 != null) {
-         this.setPreferredXToLineStartOrEnd(var5, true);
+      int amountRemain = 0;
+      if (amount < 0 && (amountRemain1 < 0 || this._cursor == labelLength) && endLine != null) {
+         this.setPreferredXToLineStartOrEnd(endLine, true);
          if (!this._selecting) {
-            var13 = var9;
+            amountRemain = amountRemain1;
          }
       }
 
-      if (var8) {
-         this.setPreferredXToLineStartOrEnd(var5, false);
+      if (isOffTheBottom) {
+         this.setPreferredXToLineStartOrEnd(endLine, false);
          if (!this._selecting && ((this.getStyle() & 4096) == 0 || this._cursor == this.getDisplayTextLength())) {
-            var13 = var9;
+            amountRemain = amountRemain1;
          }
       }
 
@@ -686,19 +724,19 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          this._preferredXCoord = this.getCaretX(this._cursor, this._cursorLeadingEdge);
       }
 
-      this.getDocPos(this._preferredXCoord, var6, this._tempDocPosInfo);
-      int var11 = Math.max(this._tempDocPosInfo._index, var2);
+      this.getDocPos(this._preferredXCoord, endLineTop, this._tempDocPosInfo);
+      int pos = Math.max(this._tempDocPosInfo._index, labelLength);
       if (this._selecting) {
-         this.setSelection(var11, this._tempDocPosInfo._leadingEdge, this._anchor, false);
+         this.setSelection(pos, this._tempDocPosInfo._leadingEdge, this._anchor, false);
       } else {
-         this.setSelection(var11, this._tempDocPosInfo._leadingEdge, var11, false);
+         this.setSelection(pos, this._tempDocPosInfo._leadingEdge, pos, false);
       }
 
-      return var13;
+      return amountRemain;
    }
 
-   protected void setFormatFlags(int var1) {
-      this._formatParams.setFormatFlags(var1);
+   protected void setFormatFlags(int flags) {
+      this._formatParams.setFormatFlags(flags);
    }
 
    protected void setDefaultInsertionAttributes() {
@@ -706,56 +744,98 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    protected long getDefaultFontAttributes() {
-      long var1 = Ui.getAttributesFromFont(this.getFont()) | 536870912 | Ui.DEFAULT_COLOR_ATTRIBS;
+      long attribs = Ui.getAttributesFromFont(this.getFont()) | 536870912 | Ui.DEFAULT_COLOR_ATTRIBS;
       if (this._isDefaultR2L) {
-         var1 |= 16777216;
+         attribs |= 16777216;
       }
 
-      return var1;
+      return attribs;
    }
 
-   synchronized void getCaretRect(int var1, boolean var2, XYRect var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   synchronized void getCaretRect(int aDocPos, boolean aLeadingEdge, XYRect aCaret) {
+      if (this._lineCount == 0) {
+         throw new Object();
+      }
+
+      if (this._isPreLayout) {
+         aCaret.set(0, 0, 0, 0);
+      } else {
+         try {
+            ArticInterface.DocPosToCaret(aCaret, this._text, this._cursorLine, this._cursorLineStart, this._cursorLineTop, aDocPos, aLeadingEdge);
+         } catch (IllegalStateException e1) {
+            aCaret.set(0, 0, 0, 0);
+            e1.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, aDocPos, aLeadingEdge, 0, 0, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         } catch (IllegalArgumentException e2) {
+            aCaret.set(0, 0, 0, 0);
+            e2.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, aDocPos, aLeadingEdge, 0, 0, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         }
+      }
    }
 
-   void getDocPos(int var1, int var2, TextHitInfo var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   void getDocPos(int aX, int aY, TextHitInfo aDocPosInfo) {
+      if (this._lineCount == 0) {
+         throw new Object();
+      }
+
+      if (this._isPreLayout) {
+         aDocPosInfo.set(0, true);
+      } else {
+         try {
+            ArticInterface.PointToDocPos(aDocPosInfo, null, this._text, this._cursorLine, this._cursorLineStart, this._cursorLineTop, aX, aY);
+         } catch (IllegalStateException e1) {
+            e1.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, -1, false, aX, aY, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         } catch (IllegalArgumentException e2) {
+            e2.printStackTrace();
+            Formatter.reportArticException(
+               this._text, 0, null, -1, false, aX, aY, 0, this._cursorLineStart, this._cursorLineTop, this._cursorLine, this._lineList
+            );
+         }
+      }
    }
 
-   protected void highlightSelectedArea(Graphics var1, boolean var2, int var3, int var4) {
-      XYRect var5 = this.getContentRect();
-      XYRect var6 = var1.getClippingRect();
-      if (var5.width >= var6.x && 0 <= var6.X2() && var5.height >= var6.y && 0 <= var6.Y2()) {
-         if (var3 > var4) {
-            int var7 = var3;
-            var3 = var4;
-            var4 = var7;
+   protected void highlightSelectedArea(Graphics graphics, boolean on, int selectionStart, int selectionEnd) {
+      XYRect extent = this.getContentRect();
+      XYRect clip = graphics.getClippingRect();
+      if (extent.width >= clip.x && 0 <= clip.X2() && extent.height >= clip.y && 0 <= clip.Y2()) {
+         if (selectionStart > selectionEnd) {
+            int temp = selectionStart;
+            selectionStart = selectionEnd;
+            selectionEnd = temp;
          }
 
-         ArticInterface$LineInfo var18 = this.getLineInfoForYPos(var6.y + var6.height);
-         int var8 = var18._start + var18._line._textLength + var18._line._skippedCharacters;
-         int var9 = Math.min(var4 - 1, var8);
-         this.hitTest(var9, this._tempRect);
-         int var10 = this._tempRect.y;
-         var18 = this.getLineInfoForYPos(var6.y);
-         int var11 = var18._start;
-         var3 = Math.max(var3, var11);
-         if (var3 != var11) {
-            var18 = this.getLineInfoForDocPos(var3, true);
+         ArticInterface$LineInfo info = this.getLineInfoForYPos(clip.y + clip.height);
+         int endLineEnd = info._start + info._line._textLength + info._line._skippedCharacters;
+         int clippedSelectionEnd = Math.min(selectionEnd - 1, endLineEnd);
+         this.hitTest(clippedSelectionEnd, this._tempRect);
+         int endLineTop = this._tempRect.y;
+         info = this.getLineInfoForYPos(clip.y);
+         int lineStart = info._start;
+         selectionStart = Math.max(selectionStart, lineStart);
+         if (selectionStart != lineStart) {
+            info = this.getLineInfoForDocPos(selectionStart, true);
          }
 
-         ArticInterface$Line var12 = var18._line;
-         int var13 = var18._top;
-         int var14 = var18._start;
+         ArticInterface$Line line = info._line;
+         int y = info._top;
+         int offset = info._start;
 
-         while (var13 <= var10 && var12 != null) {
-            int var15 = var14 <= var3 ? var3 : var14;
-            int var16 = var14 + var12._textLength > var4 ? var4 : var14 + var12._textLength;
-            Formatter.getTextBounds(var15, var16, this._tempRect, var12, var14, var13);
-            this.drawHighlightRegion(var1, 2, var2, this._tempRect.x, this._tempRect.y, this._tempRect.width, this._tempRect.height);
-            var13 += this._tempRect.height;
-            var14 += var12._textLength + var12._skippedCharacters;
-            var12 = var12._next;
+         while (y <= endLineTop && line != null) {
+            int offset1 = offset <= selectionStart ? selectionStart : offset;
+            int offset2 = offset + line._textLength > selectionEnd ? selectionEnd : offset + line._textLength;
+            Formatter.getTextBounds(offset1, offset2, this._tempRect, line, offset, y);
+            this.drawHighlightRegion(graphics, 2, on, this._tempRect.x, this._tempRect.y, this._tempRect.width, this._tempRect.height);
+            y += this._tempRect.height;
+            offset += line._textLength + line._skippedCharacters;
+            line = line._next;
          }
       }
    }
@@ -764,13 +844,13 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       UiApplication.getUiApplication().invokeLater(new TextField$4(this));
    }
 
-   public void setPasteable(boolean var1) {
+   public void setPasteable(boolean pasteable) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   protected boolean insert(char var1, int var2) {
-      var1 = this.convert(var1, var2);
-      if (!this.validate(var1)) {
+   protected boolean insert(char key, int status) {
+      key = this.convert(key, status);
+      if (!this.validate(key)) {
          return false;
       }
 
@@ -783,15 +863,15 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          return false;
       }
 
-      if (this.validate(var1)) {
-         this._text.insert(this._cursor, var1);
+      if (this.validate(key)) {
+         this._text.insert(this._cursor, key);
          if (this._latestCommittedEnd - this._latestCommittedStart > 0 && this._latestCommittedEnd > this._cursor) {
             this.resetLatestCommittedText();
          }
 
          this.update(this._cursor, 0, 1, 1, true, true);
          if (Ui.isTTSEnabled()) {
-            this.accessibleEventOccurred(2, null, String.valueOf(var1), this);
+            this.accessibleEventOccurred(2, null, String.valueOf(key), this);
          }
 
          this.fieldChangeNotify(0);
@@ -817,9 +897,9 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    protected void displayFieldFullMessage() {
       if (this._lastFieldFull + 2000 < System.currentTimeMillis()) {
          this._lastFieldFull = System.currentTimeMillis();
-         Screen var1 = this.getScreen();
-         if (var1 != null && this._fieldFullMsgInvoker == null) {
-            this._fieldFullMsgInvoker = new TextField$5(this, var1);
+         Screen screen = this.getScreen();
+         if (screen != null && this._fieldFullMsgInvoker == null) {
+            this._fieldFullMsgInvoker = new TextField$5(this, screen);
             Application.getApplication().invokeLater(this._fieldFullMsgInvoker);
          }
       }
@@ -837,15 +917,15 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return this._text.length();
    }
 
-   public void setCaretPosition(int var1) {
-      this.setCursorPosition(var1 - this._labelLength, 0);
+   public void setCaretPosition(int offset) {
+      this.setCursorPosition(offset - this._labelLength, 0);
    }
 
-   protected void setCursorPosition(int var1, int var2) {
-      var1 += this._labelLength;
-      if (var1 >= this._labelLength && this.getDisplayTextLength() >= var1) {
-         this._text.getText().seek(var1);
-         this.setCursorPosition(var1, true, var2);
+   protected void setCursorPosition(int offset, int context) {
+      offset += this._labelLength;
+      if (offset >= this._labelLength && this.getDisplayTextLength() >= offset) {
+         this._text.getText().seek(offset);
+         this.setCursorPosition(offset, true, context);
       } else {
          throw new Object();
       }
@@ -856,18 +936,18 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void setLabel(String var1) {
+   public void setLabel(String newLabel) {
       this.resetComposedText();
-      int var2 = this._labelLength;
-      var1 = this.handleLabelOwnLine(var1);
-      Object var3 = new Object(var1, this.getDefaultFontAttributes(), 0);
-      AttributedString$Iterator var4 = ((AttributedString)var3).getIterator();
-      this.replace(0, var2, var4, -1, -1, var4.length(), 0, true, Integer.MIN_VALUE);
+      int oldLabelLength = this._labelLength;
+      newLabel = this.handleLabelOwnLine(newLabel);
+      AttributedString attribStr = (AttributedString)(new Object(newLabel, this.getDefaultFontAttributes(), 0));
+      AttributedString$Iterator iter = attribStr.getIterator();
+      this.replace(0, oldLabelLength, iter, -1, -1, iter.length(), 0, true, Integer.MIN_VALUE);
       if (!this._isPreLayout) {
          this.layoutLabel();
       }
@@ -881,18 +961,18 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public AttributedTextIterator getCommittedText(int var1, int var2, String[] var3) {
+   public AttributedTextIterator getCommittedText(int beginIndex, int endIndex, String[] attributes) {
       return null;
    }
 
    @Override
-   public AttributedTextIterator getText(int var1, int var2, boolean var3) {
+   public AttributedTextIterator getText(int start, int end, boolean makeUncommitted) {
       return null;
    }
 
    @Override
-   public int drawText(Graphics var1, int var2, int var3, int var4, int var5, DrawTextParam var6) {
-      var1.drawText(this._text.getText(), var2, var3, var4, var5, var6, null);
+   public int drawText(Graphics graphics, int offset, int length, int x, int y, DrawTextParam drawTextParam) {
+      graphics.drawText(this._text.getText(), offset, length, x, y, drawTextParam, null);
       return 0;
    }
 
@@ -932,7 +1012,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public TextHitInfo getLocationOffset(int var1, int var2) {
+   public TextHitInfo getLocationOffset(int x, int y) {
       return null;
    }
 
@@ -977,11 +1057,11 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void setComposedText(int var1, int var2) {
-      if (var1 >= 0 && var1 <= var2 && var2 <= this._text.length()) {
-         this._composedStart = var1;
-         this._composedEnd = var2;
-         if (this._cursor < var1 || this._cursor > var2 + 1) {
+   public void setComposedText(int start, int end) {
+      if (start >= 0 && start <= end && end <= this._text.length()) {
+         this._composedStart = start;
+         this._composedEnd = end;
+         if (this._cursor < start || this._cursor > end + 1) {
             this.setCaretPosition(this._composedStart);
          }
       } else {
@@ -990,66 +1070,66 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void getTextLocation(TextHitInfo var1, XYRect var2) {
+   public void getTextLocation(TextHitInfo offset, XYRect aResult) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
    public Object getIMCookieCache() {
-      Object var1 = this._imCookie;
+      Object result = this._imCookie;
       this._imCookie = null;
-      return var1;
+      return result;
    }
 
    @Override
-   public String getAfterIndex(int var1, int var2) {
+   public String getAfterIndex(int part, int index) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public String getAtIndex(int var1, int var2) {
+   public String getAtIndex(int part, int index) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public String getBeforeIndex(int var1, int var2) {
-      int var3 = 0;
-      int var4 = 0;
-      String var5 = this._text.toString();
-      switch (var1) {
+   public String getBeforeIndex(int part, int index) {
+      int start = 0;
+      int end = 0;
+      String simpleText = this._text.toString();
+      switch (part) {
          case -1:
             if (this.getDisplayLineCount() > 1) {
-               int var9 = this.getLineInfoForDocPos(var2, false)._start;
-               if (--var9 >= 0) {
-                  ArticInterface$Line var11 = this.getLineInfoForDocPos(var9, false)._line;
-                  var3 = var11 == null ? 0 : this.getLineInfoForDocPos(var9, false)._start;
-                  var4 = var11 == null ? 0 : var3 + var11._textLength;
+               int current = this.getLineInfoForDocPos(index, false)._start;
+               if (--current >= 0) {
+                  ArticInterface$Line line = this.getLineInfoForDocPos(current, false)._line;
+                  start = line == null ? 0 : this.getLineInfoForDocPos(current, false)._start;
+                  end = line == null ? 0 : start + line._textLength;
                }
             }
             break;
          case 0:
          default:
-            if (var2 != 0) {
-               var3 = var2 - 1;
-               var4 = var2;
+            if (index != 0) {
+               start = index - 1;
+               end = index;
             }
             break;
          case 1:
-            BreakIterator var6 = BreakIterator.getInstance(1, Locale.getDefault());
-            var6.setText(var5);
-            int var7 = var6.preceding(var2 + 1);
-            if (var7 != Integer.MAX_VALUE) {
-               int var8 = var6.preceding(var7 - 1);
-               var3 = var8 == Integer.MAX_VALUE ? 0 : var8;
-               var4 = var7;
+            BreakIterator boundary = BreakIterator.getInstance(1, Locale.getDefault());
+            boundary.setText(simpleText);
+            int startResult = boundary.preceding(index + 1);
+            if (startResult != Integer.MAX_VALUE) {
+               int proceeding = boundary.preceding(startResult - 1);
+               start = proceeding == Integer.MAX_VALUE ? 0 : proceeding;
+               end = startResult;
             }
       }
 
-      return this._text.getText(var3, var4);
+      return this._text.getText(start, end);
    }
 
    @Override
-   protected boolean navigationUnclick(int var1, int var2) {
+   protected boolean navigationUnclick(int status, int time) {
       if (this._navigationClickHandled) {
          this._navigationClickHandled = false;
          return true;
@@ -1060,12 +1140,12 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public int getPreferredHeight() {
-      int var1 = this.getFont().getHeight();
+      int height = this.getFont().getHeight();
       if (this._isLabelOwnLine) {
-         var1 *= 2;
+         height *= 2;
       }
 
-      return var1;
+      return height;
    }
 
    private synchronized void setAutoSelectFullText() {
@@ -1078,84 +1158,84 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      int var4 = 0;
-      int var5 = this._cursor;
+   protected int moveFocus(int amount, int status, int time) {
+      int result = 0;
+      int cursorBeforeMove = this._cursor;
       if (this._selecting) {
-         if ((var2 & 1) == 0 && (!Trackball.isSupported() || (var2 & 65536) == 0)) {
-            if (0 == (var2 & 2)) {
-               this.scrollVertically(var1);
-            } else if (Trackball.isSupported() && (var2 & 65536) == 0) {
-               this.scrollVertically(var1);
+         if ((status & 1) == 0 && (!Trackball.isSupported() || (status & 65536) == 0)) {
+            if (0 == (status & 2)) {
+               this.scrollVertically(amount);
+            } else if (Trackball.isSupported() && (status & 65536) == 0) {
+               this.scrollVertically(amount);
             } else {
-               this.scrollHorizontally(var1);
+               this.scrollHorizontally(amount);
             }
          } else {
-            this.scrollHorizontally(var1);
+            this.scrollHorizontally(amount);
          }
 
-         if (this._isAutoSelectModeOn && 0 == (var2 & 2)) {
+         if (this._isAutoSelectModeOn && 0 == (status & 2)) {
             this.select(false);
          }
-      } else if (0 != (var2 & 2)) {
+      } else if (0 != (status & 2)) {
          if (this.isSelectable()) {
             this.select(true);
          }
-      } else if ((var2 & 1) == 0 && (!Trackball.isSupported() || (var2 & 65536) == 0)) {
-         var4 = this.scrollVertically(var1);
+      } else if ((status & 1) == 0 && (!Trackball.isSupported() || (status & 65536) == 0)) {
+         result = this.scrollVertically(amount);
       } else {
-         var4 = this.scrollHorizontally(var1);
+         result = this.scrollHorizontally(amount);
       }
 
       this._text.getText().seek(this._cursor);
-      if (var1 != var4 && Ui.isTTSEnabled()) {
-         AccessibleEventDispatcher.dispatchAccessibleEvent(3, new Object(var5), new Object(this._cursor), this);
+      if (amount != result && Ui.isTTSEnabled()) {
+         AccessibleEventDispatcher.dispatchAccessibleEvent(3, new Object(cursorBeforeMove), new Object(this._cursor), this);
       }
 
-      return var4;
+      return result;
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
-      var1 = MathUtilities.clamp(0, var1, this.getRightMargin() - 1);
-      var2 = MathUtilities.clamp(0, var2, this.getBottomMargin() - 1);
-      ArticInterface$LineInfo var5 = this.getLineInfoForYPos(var2);
-      int var6 = var5._top;
-      int var7 = 0;
-      ArticInterface$Line var8 = this._cursorLine;
-      int var9 = this._cursorLineTop;
-      if (var6 < var9) {
+   protected void moveFocus(int x, int y, int status, int time) {
+      x = MathUtilities.clamp(0, x, this.getRightMargin() - 1);
+      y = MathUtilities.clamp(0, y, this.getBottomMargin() - 1);
+      ArticInterface$LineInfo info = this.getLineInfoForYPos(y);
+      int lineTop = info._top;
+      int amount = 0;
+      ArticInterface$Line line = this._cursorLine;
+      int top = this._cursorLineTop;
+      if (lineTop < top) {
          while (true) {
-            if (var6 >= var9 || var8._prev == null) {
-               if (var9 != var2 && var8._next != null && (var3 & 512) != 0) {
-                  var7++;
+            if (lineTop >= top || line._prev == null) {
+               if (top != y && line._next != null && (status & 512) != 0) {
+                  amount++;
                }
                break;
             }
 
-            var8 = var8._prev;
-            var9 -= var8._boundsBottom - var8._boundsTop;
-            var7--;
+            line = line._prev;
+            top -= line._boundsBottom - line._boundsTop;
+            amount--;
          }
       } else {
-         while (var8 != null && var6 >= var9 + var8._boundsBottom - var8._boundsTop) {
-            var9 += var8._boundsBottom - var8._boundsTop;
-            var8 = var8._next;
-            var7++;
+         while (line != null && lineTop >= top + line._boundsBottom - line._boundsTop) {
+            top += line._boundsBottom - line._boundsTop;
+            line = line._next;
+            amount++;
          }
 
-         if (var9 != var2 && var8 != null && var8._next != null && (var3 & 512) != 0) {
-            var7++;
+         if (top != y && line != null && line._next != null && (status & 512) != 0) {
+            amount++;
          }
       }
 
-      this.moveFocus(var7, var3, var4);
+      this.moveFocus(amount, status, time);
       this._text.getText().seek(this._cursor);
    }
 
    @Override
-   protected void onFocus(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void onFocus(int direction) {
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
@@ -1169,7 +1249,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void select(boolean var1) {
+   public void select(boolean enable) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -1194,12 +1274,12 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public synchronized void getFocusRect(XYRect var1) {
+   public synchronized void getFocusRect(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void getFocusRectPhantom(XYRect var1) {
+   public void getFocusRectPhantom(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -1209,31 +1289,31 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private synchronized int getLastSpaceWidth() {
-      char var1 = ' ';
-      int var3 = this._text.length();
-      if (var3 == 0) {
-         Font var5 = this.getFont();
-         return var5.getBounds(var1);
+      char ch = ' ';
+      int len = this._text.length();
+      if (len == 0) {
+         Font font = this.getFont();
+         return font.getBounds(ch);
       } else {
-         this._iterator.set(var3 - 1, var3);
-         Font var2 = Ui.getFontFromAttributes(this._iterator.runAttrib(), this.getFont());
-         this.getCaretRect(var3, false, this._tempRect);
-         ArticInterface$Line var4 = this.getLineInfoForDocPos(var3, false)._line;
-         int var10000 = var2.getBounds(var1);
-         return this._tempRect.x <= var4._boundsLeft ? var10000 + (var4._boundsLeft - this._tempRect.x) : var10000 + (this._tempRect.x - var4._boundsRight);
+         this._iterator.set(len - 1, len);
+         Font font = Ui.getFontFromAttributes(this._iterator.runAttrib(), this.getFont());
+         this.getCaretRect(len, false, this._tempRect);
+         ArticInterface$Line line = this.getLineInfoForDocPos(len, false)._line;
+         int var10000 = font.getBounds(ch);
+         return this._tempRect.x <= line._boundsLeft ? var10000 + (line._boundsLeft - this._tempRect.x) : var10000 + (this._tempRect.x - line._boundsRight);
       }
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+   private static long validateStyle(long style) {
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0;
+      return style;
    }
 
    private void handleIMReset() {
@@ -1241,78 +1321,78 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private void setPreferredXToLineStartOrEnd(ArticInterface$Line var1, boolean var2) {
+   private void setPreferredXToLineStartOrEnd(ArticInterface$Line line, boolean isLineStart) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private void setFontInsertionAttributes(long var1) {
-      this._insertionAttrib = var1;
+   private void setFontInsertionAttributes(long attribs) {
+      this._insertionAttrib = attribs;
       this._text.setInsertAttrib(this._insertionAttrib);
    }
 
-   private String convert(String var1, int var2) {
+   private String convert(String original, int insertPos) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      if (var1 >= 0 && var2 >= 0) {
-         Font var3 = this.getFont();
-         int var4 = var1 == Display.getWidth() ? var1 - 1 : var1;
-         if (this._font != var3 || ThemeManager.getGeneration() != this._themeGeneration || this._width != var4) {
+   protected void layout(int width, int height) {
+      if (width >= 0 && height >= 0) {
+         Font font = this.getFont();
+         int adjustedWidth = width == Display.getWidth() ? width - 1 : width;
+         if (this._font != font || ThemeManager.getGeneration() != this._themeGeneration || this._width != adjustedWidth) {
             this._themeGeneration = ThemeManager.getGeneration();
             this._isPreLayout = true;
-            this._width = var4;
+            this._width = adjustedWidth;
          }
 
          if (this._isPreLayout) {
             this._inLayout = true;
-            this.setFontInternal(var3);
+            this.setFontInternal(font);
             this._isPreLayout = false;
             this.update(0, this._lastFormatLength, this._text.length(), this._text.length(), false, true);
             this._inLayout = false;
             this.layoutLabel();
          }
 
-         int var5 = this.getLineTop(this._lineCount);
-         var4 = this.getLayoutWidth(var1);
-         this.setExtent(var4, var5);
+         int sumOfHeights = this.getLineTop(this._lineCount);
+         adjustedWidth = this.getLayoutWidth(width);
+         this.setExtent(adjustedWidth, sumOfHeights);
       } else {
          throw new Object();
       }
    }
 
    @Override
-   protected synchronized void paint(Graphics var1) {
-      XYRect var2 = var1.getClippingRect();
-      DrawTextParam var3 = Ui.getTmpDrawTextParam();
-      var3.iAlignment = 8;
-      var3.iDrawNonPrintableCharacters = false;
+   protected synchronized void paint(Graphics aGraphics) {
+      XYRect clip = aGraphics.getClippingRect();
+      DrawTextParam drawTextParam = Ui.getTmpDrawTextParam();
+      drawTextParam.iAlignment = 8;
+      drawTextParam.iDrawNonPrintableCharacters = false;
       if (this.getWidth() > 0) {
-         var3.iMaxAdvance = this.getRightMargin();
+         drawTextParam.iMaxAdvance = this.getRightMargin();
       }
 
-      boolean var4 = var1.isDrawingStyleSet(8);
-      boolean var5 = var1.isDrawingStyleSet(16);
-      if (this.isStyle(137438953472L) && !var4 && !var5) {
-         int var6 = var1.getColor();
+      boolean drawFocus = aGraphics.isDrawingStyleSet(8);
+      boolean drawSelect = aGraphics.isDrawingStyleSet(16);
+      if (this.isStyle(137438953472L) && !drawFocus && !drawSelect) {
+         int oldColor = aGraphics.getColor();
          if (this.isEditable()) {
-            var1.setColor(ThemeAttributeSet.getColor(this, 0));
+            aGraphics.setColor(ThemeAttributeSet.getColor(this, 0));
          } else {
-            var1.setColor(13882323);
+            aGraphics.setColor(13882323);
          }
 
-         var1.fillRect(var2.x, var2.y, var2.width, var2.height);
-         var1.setColor(var6);
+         aGraphics.fillRect(clip.x, clip.y, clip.width, clip.height);
+         aGraphics.setColor(oldColor);
       }
 
-      ArticInterface$LineInfo var7 = this.getLineInfoForYPos(var2.y);
-      Formatter.paint(var1, var3, var7, this._iterator, this, this);
-      Ui.returnTmpDrawTextParam(var3);
+      ArticInterface$LineInfo info = this.getLineInfoForYPos(clip.y);
+      Formatter.paint(aGraphics, drawTextParam, info, this._iterator, this, this);
+      Ui.returnTmpDrawTextParam(drawTextParam);
    }
 
    private void resetLatestCommittedText() {
@@ -1323,17 +1403,17 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void setTextInternal(String var1, int var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void setTextInternal(String text, int context, boolean validate) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void actionPerformed(int var1, Object var2) {
-      if ((var1 & 0xFF) > 0) {
-         switch (var1 & 0xFF) {
+   public void actionPerformed(int action, Object parameter) {
+      if ((action & 0xFF) > 0) {
+         switch (action & 0xFF) {
             case 112:
-               if (var2 != null && var2 instanceof Object) {
-                  this.fillInternalDebugInfo((StringBuffer)var2);
+               if (parameter != null && parameter instanceof Object) {
+                  this.fillInternalDebugInfo((StringBuffer)parameter);
                }
                break;
             case 113:
@@ -1353,7 +1433,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       }
    }
 
-   private void setCursorPosition(int var1, boolean var2, int var3) {
+   private void setCursorPosition(int aDocPos, boolean aLeadingEdge, int aContext) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -1363,18 +1443,18 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      if (super.keyControl(var1, var2, var3)) {
+   protected boolean keyControl(char key, int status, int time) {
+      if (super.keyControl(key, status, time)) {
          return true;
       }
 
       if (!this.isEditable()) {
-         return this.isSelecting() && var1 == '\n';
+         return this.isSelecting() && key == '\n';
       }
 
-      switch (var1) {
+      switch (key) {
          case '\b':
-            if (0 != (var2 & 1)) {
+            if (0 != (status & 1)) {
                this.selectionDelete();
                return true;
             }
@@ -1392,27 +1472,27 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
                this._dependentScreen = SymbolScreen.getSymbolScreen();
                return true;
             } else {
-               if (!this.insert(var1, var2) && !this.isFieldFull()) {
+               if (!this.insert(key, status) && !this.isFieldFull()) {
                   return false;
                }
 
                return true;
             }
          default:
-            char var4 = this.convert(var1, var2);
-            return this.validate(var4) ? this.insert(var4, var2) || this.isFieldFull() : false;
+            char newkey = this.convert(key, status);
+            return this.validate(newkey) ? this.insert(newkey, status) || this.isFieldFull() : false;
       }
    }
 
    @Override
-   public void selectionCopy(Clipboard var1) {
-      int var2 = Math.min(this._cursor, this._anchor);
-      int var3 = Math.max(this._cursor, this._anchor);
-      int var4 = var3 - var2;
-      if (var4 > 0) {
-         var1.put(this.getText(var2, var4));
+   public void selectionCopy(Clipboard cb) {
+      int start = Math.min(this._cursor, this._anchor);
+      int end = Math.max(this._cursor, this._anchor);
+      int length = end - start;
+      if (length > 0) {
+         cb.put(this.getText(start, length));
       } else {
-         var1.put(null);
+         cb.put(null);
       }
    }
 
@@ -1421,58 +1501,58 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       if (this.isSelecting()) {
          this.deleteSelectedText();
       } else if (this._cursor != this.getDisplayTextLength()) {
-         String var1 = this._text.getText(this._cursor, this._cursor + 1);
+         String textBefore = this._text.getText(this._cursor, this._cursor + 1);
          this._text.delete(this._cursor, this._cursor + 1);
          this.update(this._cursor, 1, 0, 0, true, true);
          if (Ui.isTTSEnabled()) {
-            this.accessibleEventOccurred(2, var1, null, this);
+            this.accessibleEventOccurred(2, textBefore, null, this);
          }
 
          this.fieldChangeNotify(0);
       }
    }
 
-   private boolean posIsAtBidiBorder(int var1, boolean var2) {
-      ArticInterface$LineInfo var3 = this.getLineInfoForDocPos(var1, true);
-      ArticInterface$Line var4 = var3._line;
-      int var5 = var3._start;
-      boolean var6 = false;
-      if (var5 == var1) {
-         if (!var2 || (var4._flags & 1) != 0) {
+   private boolean posIsAtBidiBorder(int pos, boolean checkPrevLine) {
+      ArticInterface$LineInfo info = this.getLineInfoForDocPos(pos, true);
+      ArticInterface$Line line = info._line;
+      int lineStart = info._start;
+      boolean prevBidiIsR2L = false;
+      if (lineStart == pos) {
+         if (!checkPrevLine || (line._flags & 1) != 0) {
             return false;
          }
 
-         ArticInterface$LayoutRun var7 = var4._prev._layoutRun[var4._prev._layoutRun.length - 1];
-         var6 = (var7._flags & 2) != 0;
+         ArticInterface$LayoutRun prevRun = line._prev._layoutRun[line._prev._layoutRun.length - 1];
+         prevBidiIsR2L = (prevRun._flags & 2) != 0;
       }
 
-      int var12 = var4._layoutRun == null ? 0 : var4._layoutRun.length;
+      int runs = line._layoutRun == null ? 0 : line._layoutRun.length;
 
-      for (int var8 = 0; var8 < var12; var8++) {
-         ArticInterface$LayoutRun var9 = var4._layoutRun[var8];
-         int var10 = var5 + var9._textStart;
-         if (var10 > var1) {
+      for (int j = 0; j < runs; j++) {
+         ArticInterface$LayoutRun run = line._layoutRun[j];
+         int runStart = lineStart + run._textStart;
+         if (runStart > pos) {
             return false;
          }
 
-         if (var10 == var1) {
-            boolean var11 = (var9._flags & 2) != 0;
-            if (var6 != var11) {
+         if (runStart == pos) {
+            boolean nextBidiIsR2L = (run._flags & 2) != 0;
+            if (prevBidiIsR2L != nextBidiIsR2L) {
                return true;
             }
 
             return false;
          }
 
-         if (var10 + var9._textLength == var1) {
-            var6 = (var9._flags & 2) != 0;
+         if (runStart + run._textLength == pos) {
+            prevBidiIsR2L = (run._flags & 2) != 0;
          }
       }
 
       return false;
    }
 
-   private synchronized void update(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
+   private synchronized void update(int aStart, int aLength, int aNewLength, int aCursorOffset, boolean aMoveCursor, boolean aIsInsertionOrDeletion) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
@@ -1482,16 +1562,16 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       }
    }
 
-   private String removeNewlines(String var1) {
+   private String removeNewlines(String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void removeNewlines(AttributedString var1) {
-      int var2 = var1.length();
+   private void removeNewlines(AttributedString str) {
+      int l = str.length();
 
-      for (int var3 = var2 - 1; var3 >= 0; var3--) {
-         if (var1.charAt(var3) == '\n') {
-            var1.delete(var3, var3 + 1);
+      for (int i = l - 1; i >= 0; i--) {
+         if (str.charAt(i) == '\n') {
+            str.delete(i, i + 1);
          }
       }
    }
@@ -1502,9 +1582,9 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    private void resetComposedText() {
       if (this.isComposedTextExist()) {
-         InputContext var1 = this.getInputContext();
-         if (var1.getInputComponent() == this) {
-            var1.endComposition();
+         InputContext imcontext = this.getInputContext();
+         if (imcontext.getInputComponent() == this) {
+            imcontext.endComposition();
          }
       }
    }
@@ -1513,8 +1593,8 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private int getCaretX(int var1, boolean var2) {
-      this.getCaretRect(var1, var2, this._tempRect);
+   private int getCaretX(int docPos, boolean leadingEdge) {
+      this.getCaretRect(docPos, leadingEdge, this._tempRect);
       return this._tempRect.x;
    }
 
@@ -1525,69 +1605,69 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   protected void fieldChangeNotify(int var1) {
+   protected void fieldChangeNotify(int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
-   private String handleLabelOwnLine(String var1) {
+   private String handleLabelOwnLine(String labelSet) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final int getLineLength(ArticInterface$Line var1) {
-      return var1._textLength + var1._skippedCharacters;
+   private final int getLineLength(ArticInterface$Line aLine) {
+      return aLine._textLength + aLine._skippedCharacters;
    }
 
    private void layoutLabel() {
-      int var1 = 0;
+      int offset = 0;
       this._lastLabelLineTop = 0;
 
-      ArticInterface$Line var2;
-      for (var2 = this._lineList; var2 != null; var2 = var2._next) {
-         var1 += this.getLineLength(var2);
-         if (var1 >= this._labelLength) {
+      ArticInterface$Line currentLine;
+      for (currentLine = this._lineList; currentLine != null; currentLine = currentLine._next) {
+         offset += this.getLineLength(currentLine);
+         if (offset >= this._labelLength) {
             break;
          }
 
-         this._lastLabelLineTop = this._lastLabelLineTop + (var2._boundsBottom - var2._boundsTop);
+         this._lastLabelLineTop = this._lastLabelLineTop + (currentLine._boundsBottom - currentLine._boundsTop);
       }
 
-      if (this._labelLength > 0 && var2 != null && this._text.charAt(this._labelLength - 1) == '\n') {
-         this._lastLabelLineTop = this._lastLabelLineTop + (var2._boundsBottom - var2._boundsTop);
+      if (this._labelLength > 0 && currentLine != null && this._text.charAt(this._labelLength - 1) == '\n') {
+         this._lastLabelLineTop = this._lastLabelLineTop + (currentLine._boundsBottom - currentLine._boundsTop);
       }
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
+   protected void makeContextMenu(ContextMenu contextMenu) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private void adjustCursorAfterTextChange(FormatParams var1) {
+   private void adjustCursorAfterTextChange(FormatParams params) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private synchronized void setSelection(int var1, boolean var2, int var3, boolean var4) {
+   private synchronized void setSelection(int aNewCursor, boolean aNewCursorLeadingEdge, int aNewAnchor, boolean setPrefferredX) {
       if (this._lineCount == 0) {
          throw new Object();
       }
 
       if (this._width == -1) {
-         this._cursor = var1;
-         this._cursorLeadingEdge = var2;
-         this._anchor = var3;
+         this._cursor = aNewCursor;
+         this._cursorLeadingEdge = aNewCursorLeadingEdge;
+         this._anchor = aNewAnchor;
       } else {
          if (!this._formatParams._isFormatComplete) {
-            int var5 = Math.max(20, Display.getHeight() / this.getFont().getHeight() + 1) * (this.getWidth() / this.getFont().getAdvance(' '));
-            int var6 = Math.max(var1, var3) + var5;
-            int var7 = this._formatParams.getNextStartPosToFormat();
-            if (var6 > var7 && this._formatThreadId != -1) {
+            int maxCharsPerPage = Math.max(20, Display.getHeight() / this.getFont().getHeight() + 1) * (this.getWidth() / this.getFont().getAdvance(' '));
+            int formatToPos = Math.max(aNewCursor, aNewAnchor) + maxCharsPerPage;
+            int nextPosToFormat = this._formatParams.getNextStartPosToFormat();
+            if (formatToPos > nextPosToFormat && this._formatThreadId != -1) {
                Application.getApplication().cancelInvokeLater(this._formatThreadId);
             }
 
-            while (!this._formatParams._isFormatComplete && var6 > var7) {
+            while (!this._formatParams._isFormatComplete && formatToPos > nextPosToFormat) {
                Formatter.incrementalFormat(
                   this._formatParams, this, this._width, this._text, this._cursor, this._cursorLeadingEdge, this._anchor, !this._inLayout
                );
-               var7 = this._formatParams.getNextStartPosToFormat();
+               nextPosToFormat = this._formatParams.getNextStartPosToFormat();
                this.handleLinesAfterFormat(this._formatParams);
                if (!this._inLayout && this._formatParams._invalidRect.height == Integer.MAX_VALUE) {
                   this.updateLayout();
@@ -1598,76 +1678,78 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          }
 
          this._formatParams.initCursorLine(this._cursorLine, this._cursorLineStart, this._cursorLineTop);
-         XYRect var8 = this._formatParams._invalidRect;
-         var8.set(this._focus_x, this._focus_y, this._focus_width, this._focus_height);
-         this._lineList = Formatter.setSelection(this._lineList, this._anchor, this._cursor, var3, var1, var2, this._width, this._text, this._formatParams);
+         XYRect invalid = this._formatParams._invalidRect;
+         invalid.set(this._focus_x, this._focus_y, this._focus_width, this._focus_height);
+         this._lineList = Formatter.setSelection(
+            this._lineList, this._anchor, this._cursor, aNewAnchor, aNewCursor, aNewCursorLeadingEdge, this._width, this._text, this._formatParams
+         );
          this._cursorLineStart = this._formatParams._cursorLineInfo._start;
          this._cursorLineTop = this._formatParams._cursorLineInfo._top;
          this._cursorLine = this._formatParams._cursorLineInfo._line;
-         this._cursor = var1;
-         this._cursorLeadingEdge = var2;
-         this._anchor = var3;
+         this._cursor = aNewCursor;
+         this._cursorLeadingEdge = aNewCursorLeadingEdge;
+         this._anchor = aNewAnchor;
          this._cursorIsAtBidiBorder = this.posIsAtBidiBorder(this._cursor, true);
-         if (var4) {
+         if (setPrefferredX) {
             this._preferredXCoord = this.getCaretX(this._cursor, this._cursorLeadingEdge);
          }
 
-         this.invalidate(var8.x, var8.y, var8.width, var8.height);
+         this.invalidate(invalid.x, invalid.y, invalid.width, invalid.height);
          this.handleCursorPositionChanged();
       }
    }
 
    @Override
-   public void setFont(Font var1) {
-      if (this.getFontIfSet() != var1) {
-         super.setFont(var1);
+   public void setFont(Font font) {
+      if (this.getFontIfSet() != font) {
+         super.setFont(font);
       }
 
-      if (this._font != var1) {
-         this.setFontInternal(var1);
+      if (this._font != font) {
+         this.setFontInternal(font);
       }
    }
 
-   private void setFontInternal(Font var1) {
-      long var2 = 134283263;
-      long var4 = this.getDefaultFontAttributes();
-      if ((var4 & 786432) != 0) {
-         var2 |= 786432;
+   private void setFontInternal(Font font) {
+      long SET_FONT_ATTRIB_MASK = 134283263;
+      long defaultFontAttribs = this.getDefaultFontAttributes();
+      if ((defaultFontAttribs & 786432) != 0) {
+         SET_FONT_ATTRIB_MASK |= 786432;
       }
 
       this.invalidateFocusRect();
       this.startLayoutUpdate();
-      AttributedString$Iterator var6 = this._text.getIterator();
-      int var7 = 0;
+      AttributedString$Iterator iterator = this._text.getIterator();
+      int start = 0;
 
       do {
-         int var8 = var7 + var6.runLength();
-         if ((var6.runAttrib() & 536870912) != 0) {
-            this.setAttrib(var7, var8, var4, var2, 0, 0);
+         int end = start + iterator.runLength();
+         if ((iterator.runAttrib() & 536870912) != 0) {
+            this.setAttrib(start, end, defaultFontAttribs, SET_FONT_ATTRIB_MASK, 0, 0);
          }
 
-         var7 = var8;
-      } while (var6.next());
+         start = end;
+      } while (iterator.next());
 
       this.endLayoutUpdate();
-      this._font = var1;
+      this._font = font;
       this.setInsertionAttributesToSelection();
-      long var10 = 0;
+      long hanStyle = 0;
       switch (this.getFont().getStyle() & 7168) {
          case 1024:
-            var10 = 1;
+            hanStyle = 1;
             break;
          case 2048:
-            var10 = 2;
+            hanStyle = 2;
             break;
          case 3072:
-            var10 = 3;
+            hanStyle = 3;
             break;
          case 4096:
-            var10 = 4;
+            hanStyle = 4;
       }
 
-      this._text.setGlobalAttrib(var10, 7);
+      this._text.setGlobalAttrib(hanStyle, 7);
    }
 
    private synchronized void incrementalFormat() {
@@ -1680,24 +1762,24 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       this.spawnDelayedFormatting();
    }
 
-   public TextField(String var1, String var2, int var3, long var4) {
+   public TextField(String label, String initialValue, int maxNumChars, long style) {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public int caretPositionChanged(InputMethodEvent var1) {
-      switch (var1.getID()) {
+   public int caretPositionChanged(InputMethodEvent event) {
+      switch (event.getID()) {
          case 1100:
          case 1103:
             break;
          case 1101:
          default:
             if (this.isComposedTextExist()) {
-               this.setCaretPosition(this._composedStart + var1.getCaret()._index);
+               this.setCaretPosition(this._composedStart + event.getCaret()._index);
                this.update(this._cursor, 0, 0, 0, true, false);
                this.fieldChangeNotify(0);
                return 0;
@@ -1705,14 +1787,14 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
             break;
          case 1102:
             if (!this.isComposedTextExist()) {
-               this.setCaretPosition(var1.getCaret()._index);
+               this.setCaretPosition(event.getCaret()._index);
                this.update(this._cursor, 0, 0, 0, true, false);
                this.fieldChangeNotify(0);
                return 0;
             }
             break;
          case 1104:
-            this._caretShape = (byte)var1.getModifiers();
+            this._caretShape = (byte)event.getModifiers();
             this.invalidate(this._focus_x, this._focus_y, this._focus_width, this._focus_height);
       }
 
@@ -1720,20 +1802,20 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void setIMCookieCache(Object var1) {
+   public void setIMCookieCache(Object cookie) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private void updateCursorAfterFormat(FormatParams var1) {
-      this._cursorLine = var1._cursorLineInfo._line;
-      this._cursorLineStart = var1._cursorLineInfo._start;
-      this._cursorLineTop = var1._cursorLineInfo._top;
-      boolean var2 = this.posIsAtBidiBorder(this._cursor, true);
+   private void updateCursorAfterFormat(FormatParams param) {
+      this._cursorLine = param._cursorLineInfo._line;
+      this._cursorLineStart = param._cursorLineInfo._start;
+      this._cursorLineTop = param._cursorLineInfo._top;
+      boolean cursorIsAtBidiBorder = this.posIsAtBidiBorder(this._cursor, true);
       if (this._cursorLineStart == this._cursor) {
          this._cursorLeadingEdge = true;
-      } else if (var2 && !this._cursorIsAtBidiBorder && this._formatParams._moveCursor) {
+      } else if (cursorIsAtBidiBorder && !this._cursorIsAtBidiBorder && this._formatParams._moveCursor) {
          this._cursorLeadingEdge = this._formatParams._isBackspace;
-      } else if (!var2) {
+      } else if (!cursorIsAtBidiBorder) {
          this._cursorLeadingEdge = true;
       }
 
@@ -1741,7 +1823,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       this._cursorLine = this._tempLineInfo._line;
       this._cursorLineStart = this._tempLineInfo._start;
       this._cursorLineTop = this._tempLineInfo._top;
-      this._cursorIsAtBidiBorder = var2;
+      this._cursorIsAtBidiBorder = cursorIsAtBidiBorder;
    }
 
    private void setInsertionAttributesToSelection() {
@@ -1754,31 +1836,31 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private long getInsertionAttributesOfSelection() {
-      int var1 = this._cursor;
+      int pos = this._cursor;
       if (this._cursor > this._labelLength
          && this._cursor >= this._anchor
          && (this._composedStart == this._composedEnd || this._cursor > this._composedStart)
          && (this._cursor > this._cursorLineStart || (this._cursorLine._flags & 1) == 0)) {
-         var1--;
+         pos--;
       }
 
-      this._iterator.set(var1, var1);
-      long var2 = this._iterator.runAttrib();
+      this._iterator.set(pos, pos);
+      long insertionAttrib = this._iterator.runAttrib();
       if (this._composedStart != this._composedEnd) {
-         var2 = var2 & (this._composedTextAttributeMask ^ -1) | this._insertionAttrib & this._composedTextAttributeMask;
+         insertionAttrib = insertionAttrib & (this._composedTextAttributeMask ^ -1) | this._insertionAttrib & this._composedTextAttributeMask;
       }
 
-      long var4 = this._iterator.runXAttrib();
-      if ((var4 & 65504) != 0) {
-         var2 &= -786433;
+      long insertionXAttrib = this._iterator.runXAttrib();
+      if ((insertionXAttrib & 65504) != 0) {
+         insertionAttrib &= -786433;
       }
 
-      return var2;
+      return insertionAttrib;
    }
 
    @Override
-   public synchronized int inputMethodTextChanged(InputMethodEvent var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized int inputMethodTextChanged(InputMethodEvent event) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
@@ -1803,18 +1885,18 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public void dispatchEvent(Event var1) {
+   public void dispatchEvent(Event rEvent) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      this.getDocPos(var1, var2, this._tempDocPosInfo);
-      int var5 = Math.max(this._tempDocPosInfo._index, this.getLabelLength());
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      this.getDocPos(x, y, this._tempDocPosInfo);
+      int pos = Math.max(this._tempDocPosInfo._index, this.getLabelLength());
       if (this._selecting) {
-         this.setSelection(var5, this._tempDocPosInfo._leadingEdge, this._anchor, false);
+         this.setSelection(pos, this._tempDocPosInfo._leadingEdge, this._anchor, false);
       } else {
-         this.setSelection(var5, this._tempDocPosInfo._leadingEdge, var5, false);
+         this.setSelection(pos, this._tempDocPosInfo._leadingEdge, pos, false);
       }
 
       this.getFocusRect(this._tempRect);
@@ -1823,29 +1905,29 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    @Override
-   public boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
-      EventHandler var6 = EventHandler.getInstance();
-      switch (var1) {
+   public boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
+      EventHandler handler = EventHandler.getInstance();
+      switch (event) {
          case 516:
          case 6914:
-            boolean var7 = this.isInputMethodEnabled() && this.isEditable();
-            return (var6.processKeyEvent(516, 0, '\u0000', var4, var5, var7) & 65536) == 65536;
+            boolean input = this.isInputMethodEnabled() && this.isEditable();
+            return (handler.processKeyEvent(516, 0, '\u0000', status, time, input) & 65536) == 65536;
          default:
-            return var6.processNavigationEvent(var1, var2, var3, var4, var5);
+            return handler.processNavigationEvent(event, dx, dy, status, time);
       }
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      EventHandler var5 = EventHandler.getInstance();
-      boolean var6 = this.isInputMethodEnabled() && this.isEditable();
-      return var5.processKeyEvent(var1, var3, var2, var3, var4, var6);
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      EventHandler handler = EventHandler.getInstance();
+      boolean input = this.isInputMethodEnabled() && this.isEditable();
+      return handler.processKeyEvent(event, keycode, key, keycode, time, input);
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      boolean var3 = false;
-      int var4 = this._focus_width;
+   protected void drawFocus(Graphics graphics, boolean on) {
+      boolean outline = false;
+      int width = this._focus_width;
       if (this._composedStart != this._composedEnd) {
          switch (this._caretShape) {
             case -1:
@@ -1855,10 +1937,10 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
             default:
                return;
             case 2:
-               var3 = true;
+               outline = true;
                break;
             case 3:
-               var4 = 2;
+               width = 2;
                break;
             case 4:
                if (this._composed_highlighted) {
@@ -1867,29 +1949,29 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          }
       }
 
-      int var5 = this._focus_x;
-      int var6 = this._focus_y;
-      int var7 = this._focus_height;
+      int x = this._focus_x;
+      int y = this._focus_y;
+      int height = this._focus_height;
       if (this._selecting) {
-         var6 += var7 + 1 >> 1;
-         var7 >>= 1;
+         y += height + 1 >> 1;
+         height >>= 1;
       }
 
-      if (var3) {
-         int var8 = var1.getColor();
-         var1.setColor(ThemeAttributeSet.getColor(this, 2));
-         var1.drawRect(var5, var6, var4, var7);
-         var1.setColor(ThemeAttributeSet.getColor(this, 1));
-         this.paint(var1);
-         var1.setColor(var8);
+      if (outline) {
+         int color = graphics.getColor();
+         graphics.setColor(ThemeAttributeSet.getColor(this, 2));
+         graphics.drawRect(x, y, width, height);
+         graphics.setColor(ThemeAttributeSet.getColor(this, 1));
+         this.paint(graphics);
+         graphics.setColor(color);
       } else {
-         this.drawHighlightRegion(var1, 1, var2, var5, var6, var4, var7);
+         this.drawHighlightRegion(graphics, 1, on, x, y, width, height);
       }
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
-      if (super.navigationClick(var1, var2)) {
+   protected boolean navigationClick(int status, int time) {
+      if (super.navigationClick(status, time)) {
          this._navigationClickHandled = true;
          return true;
       } else {
@@ -1897,20 +1979,20 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       }
    }
 
-   public TextField(String var1, String var2) {
-      this(var1, var2, 1000000, 0);
+   public TextField(String label, String initialValue) {
+      this(label, initialValue, 1000000, 0);
    }
 
-   private boolean isDirectionalityR2L(String var1) {
+   private boolean isDirectionalityR2L(String text) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void fillInternalDebugInfo(StringBuffer var1) {
+   private void fillInternalDebugInfo(StringBuffer result) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public TextField(long var1) {
-      this(null, null, 1000000, var1);
+   public TextField(long style) {
+      this(null, null, 1000000, style);
    }
 
    public TextField() {
@@ -1918,14 +2000,14 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private int getRightMargin() {
-      Manager var1 = this.getManager();
-      int var2 = var1 == null ? 0 : var1.getHorizontalScroll();
-      return var2 + this.getWidth() - this.getPaddingLeft() - this.getPaddingRight();
+      Manager m = this.getManager();
+      int hscroll = m == null ? 0 : m.getHorizontalScroll();
+      return hscroll + this.getWidth() - this.getPaddingLeft() - this.getPaddingRight();
    }
 
    private int getBottomMargin() {
-      Manager var1 = this.getManager();
-      int var2 = var1 == null ? 0 : var1.getVerticalScroll();
-      return var2 + this.getHeight() - this.getPaddingTop() - this.getPaddingBottom();
+      Manager m = this.getManager();
+      int hscroll = m == null ? 0 : m.getVerticalScroll();
+      return hscroll + this.getHeight() - this.getPaddingTop() - this.getPaddingBottom();
    }
 }

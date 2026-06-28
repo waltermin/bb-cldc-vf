@@ -1,9 +1,12 @@
 package net.rim.device.internal.system;
 
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioStatusListener;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.vm.PersistentInteger;
 
 public final class DataServices implements RadioStatusListener, SystemListener2 {
    private int _mode;
@@ -34,11 +37,11 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
          return _instance;
       }
 
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      _instance = (DataServices)var0.getOrWaitFor(-3556743465989743742L);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      _instance = (DataServices)ar.getOrWaitFor(-3556743465989743742L);
       if (_instance == null) {
          _instance = new DataServices();
-         var0.put(-3556743465989743742L, _instance);
+         ar.put(-3556743465989743742L, _instance);
       }
 
       return _instance;
@@ -51,29 +54,65 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
       return this.isDataServicesEnabled(1, 1);
    }
 
-   public final boolean isDataServicesEnabled(int var1) {
-      return this.isDataServicesEnabled(var1, 0);
+   public final boolean isDataServicesEnabled(int linkType) {
+      return this.isDataServicesEnabled(linkType, 0);
    }
 
-   public final boolean isDataServicesEnabled(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean isDataServicesEnabled(int linkType, int connectionType) {
+      synchronized (this) {
+         switch (linkType) {
+            case 0:
+               throw new Object();
+            case 1:
+            default:
+               switch (connectionType) {
+                  case -1:
+                     return false;
+                  case 0:
+                  case 1:
+                  case 2:
+                  default:
+                     return this._mode == 1 || this._mode == 0 || this._mode == 3 && !this._roaming;
+               }
+            case 2:
+               switch (connectionType) {
+                  case -1:
+                     return false;
+                  case 0:
+                     return this._mode != 2 && (this._modeWiFiRelay == 1 || this._modeWiFiRouter == 1);
+                  case 1:
+                  default:
+                     return this._mode != 2 && this._modeWiFiRelay == 1;
+                  case 2:
+                     return this._mode != 2 && this._modeWiFiRouter == 1;
+               }
+            case 3:
+               switch (connectionType) {
+                  case 0:
+                  case 2:
+                     return true;
+                  default:
+                     return false;
+               }
+         }
+      }
    }
 
    public final int getMode() {
       return this.getMode(1, 1);
    }
 
-   public final int getMode(int var1) {
-      return this.getMode(var1, 0);
+   public final int getMode(int linkType) {
+      return this.getMode(linkType, 0);
    }
 
-   public final int getMode(int var1, int var2) {
-      switch (var1) {
+   public final int getMode(int linkType, int connectionType) {
+      switch (linkType) {
          case 0:
             throw new Object();
          case 1:
          default:
-            switch (var2) {
+            switch (connectionType) {
                case -1:
                   return 2;
                case 0:
@@ -83,7 +122,7 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
                   return this._mode;
             }
          case 2:
-            switch (var2) {
+            switch (connectionType) {
                case -1:
                   return 2;
                case 0:
@@ -99,7 +138,7 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
                   return this._modeWiFiRouter;
             }
          case 3:
-            switch (var2) {
+            switch (connectionType) {
                case 0:
                case 2:
                   return 1;
@@ -109,47 +148,97 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
       }
    }
 
-   public final void setMode(int var1) {
-      this.setMode(var1, 1, 1);
+   public final void setMode(int mode) {
+      this.setMode(mode, 1, 1);
    }
 
-   public final void setMode(int var1, int var2, int var3) {
-      switch (var2) {
+   public final void setMode(int mode, int linkType, int connectionType) {
+      switch (linkType) {
          case 0:
             return;
          case 1:
          default:
-            this.setModeRF(var1, 1);
+            this.setModeRF(mode, 1);
             return;
          case 2:
-            this.setModeWiFi(var1, var3);
+            this.setModeWiFi(mode, connectionType);
       }
    }
 
-   private final void setModeRF(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void setModeRF(int mode, int connectionType) {
+      synchronized (this) {
+         if (this._mode == mode) {
+            return;
+         }
+
+         this._mode = mode;
+      }
+
+      EventLogger.logEvent(-3556743465989743742L, 1296252208 + mode);
+      PersistentInteger.set(PERSIST_ID_MODE_RF, mode);
+      RadioInternal.setDataServiceMode(mode);
+      RIMGlobalMessagePoster.postGlobalEvent(-3556743465989743742L, 1, mode);
    }
 
-   private final void setModeWiFi(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void setModeWiFi(int mode, int connectionType) {
+      switch (connectionType) {
+         case 0:
+            return;
+         case 1:
+            synchronized (this) {
+               if (this._modeWiFiRelay == mode) {
+                  return;
+               }
+
+               this._modeWiFiRelay = mode;
+            }
+
+            EventLogger.logEvent(-3556743465989743742L, 1464089904 + mode);
+            PersistentInteger.set(PERSIST_ID_MODE_WIFI_RELAY, mode);
+            break;
+         case 2:
+         default:
+            synchronized (this) {
+               if (this._modeWiFiRouter == mode) {
+                  return;
+               }
+
+               this._modeWiFiRouter = mode;
+            }
+
+            EventLogger.logEvent(-3556743465989743742L, 1162100016 + mode);
+            PersistentInteger.set(PERSIST_ID_MODE_WIFI_ROUTER, mode);
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(-3556743465989743742L, 2, mode);
    }
 
    public final boolean getRoaming() {
       return this._roaming;
    }
 
-   private final void setRoaming(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void setRoaming(int service) {
+      boolean roaming = (service & 24) != 0;
+      synchronized (this) {
+         if (this._roaming == roaming) {
+            return;
+         }
+
+         this._roaming = roaming;
+      }
+
+      EventLogger.logEvent(-3556743465989743742L, 1380793648 + (roaming ? 1 : 0));
+      RIMGlobalMessagePoster.postGlobalEvent(-3556743465989743742L);
    }
 
    @Override
-   public final void networkStarted(int var1, int var2) {
-      this.setRoaming(var2);
+   public final void networkStarted(int networkId, int service) {
+      this.setRoaming(service);
    }
 
    @Override
-   public final void networkServiceChange(int var1, int var2) {
-      this.setRoaming(var2);
+   public final void networkServiceChange(int networkId, int service) {
+      this.setRoaming(service);
    }
 
    @Override
@@ -169,7 +258,7 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
    }
 
    @Override
-   public final void signalLevel(int var1) {
+   public final void signalLevel(int level) {
    }
 
    @Override
@@ -177,15 +266,15 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
    }
 
    @Override
-   public final void pdpStateChange(int var1, int var2, int var3) {
+   public final void pdpStateChange(int apn, int state, int cause) {
    }
 
    @Override
-   public final void networkStateChange(int var1) {
+   public final void networkStateChange(int state) {
    }
 
    @Override
-   public final void networkScanComplete(boolean var1) {
+   public final void networkScanComplete(boolean success) {
    }
 
    @Override
@@ -201,22 +290,22 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
    }
 
    @Override
-   public final void batteryStatusChange(int var1) {
+   public final void batteryStatusChange(int status) {
    }
 
    @Override
-   public final void powerOffRequested(int var1) {
+   public final void powerOffRequested(int reason) {
    }
 
    @Override
-   public final void cradleMismatch(boolean var1) {
+   public final void cradleMismatch(boolean mismatch) {
    }
 
    @Override
-   public final void backlightStateChange(boolean var1) {
+   public final void backlightStateChange(boolean on) {
    }
 
    @Override
-   public final void usbConnectionStateChange(int var1) {
+   public final void usbConnectionStateChange(int state) {
    }
 }

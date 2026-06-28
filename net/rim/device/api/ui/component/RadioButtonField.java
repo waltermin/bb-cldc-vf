@@ -30,8 +30,8 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    public static final long NO_USE_ALL_WIDTH;
    private static MenuItem _changeOptionsItem;
 
-   public void setSelected(boolean var1) {
-      this.setSelected(var1, Integer.MIN_VALUE);
+   public void setSelected(boolean selected) {
+      this.setSelected(selected, Integer.MIN_VALUE);
    }
 
    public RadioButtonGroup getGroup() {
@@ -39,31 +39,35 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    }
 
    public boolean isSelected() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         return this._group.getSelectedIndex() == this._index;
+      } catch (NullPointerException npe) {
+         throw new Object();
+      }
    }
 
-   void selectionChange(int var1) {
+   void selectionChange(int context) {
       this.invalidate();
-      this.fieldChangeNotify(var1);
+      this.fieldChangeNotify(context);
    }
 
-   public void setImage(Bitmap var1) {
+   public void setImage(Bitmap image) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setOptionsMenuText(String var1) {
+   public void setOptionsMenuText(String optionsMenuText) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void setLabel(String var1) {
-      this._label = var1;
-      this._text.setText(var1);
+   public void setLabel(String label) {
+      this._label = label;
+      this._text.setText(label);
       this.updateLayout();
       this.invalidate();
    }
@@ -74,15 +78,15 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      var1.set(0, 0, this._iconWidth, this._iconHeight);
+   public void getFocusRect(XYRect rect) {
+      rect.set(0, 0, this._iconWidth, this._iconHeight);
    }
 
    @Override
    public int getPreferredHeight() {
-      int var1 = this.getFont().getHeight();
-      int var2 = SystemIcon.COLLECTION.getHeight(var1, var1);
-      return Math.max(var1, var2);
+      int fontHeight = this.getFont().getHeight();
+      int iconHeight = SystemIcon.COLLECTION.getHeight(fontHeight, fontHeight);
+      return Math.max(fontHeight, iconHeight);
    }
 
    @Override
@@ -90,13 +94,13 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public RadioButtonField(String var1) {
-      this(var1, null, false, 0);
+   public RadioButtonField(String label) {
+      this(label, null, false, 0);
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             this.setSelected(true, 0);
             return true;
@@ -105,54 +109,54 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
       }
    }
 
-   public RadioButtonField(String var1, RadioButtonGroup var2, boolean var3) {
-      this(var1, var2, var3, 0);
+   public RadioButtonField(String label, RadioButtonGroup group, boolean selected) {
+      this(label, group, selected, 0);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      boolean var4 = false;
+   protected boolean keyChar(char key, int status, int time) {
+      boolean result = false;
       if (this.isEditable()) {
-         switch (var1) {
+         switch (key) {
             case '\n':
             case ' ':
                this.setSelected(true, 0);
-               var4 = true;
+               result = true;
                if (Ui.isTTSEnabled()) {
                   super.accessibleEventOccurred(1, new Object(2), new Object(4), this);
                }
          }
       }
 
-      return var4;
+      return result;
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      if (this.isEditable() && Keypad.key(var1) == 71 && InternalServices.isReducedFormFactor()) {
+   protected boolean keyDown(int keycode, int time) {
+      if (this.isEditable() && Keypad.key(keycode) == 71 && InternalServices.isReducedFormFactor()) {
          this.setSelected(true, 0);
          return true;
       } else {
-         return super.keyDown(var1, var2);
+         return super.keyDown(keycode, time);
       }
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
-      super.makeContextMenu(var1);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      super.makeContextMenu(contextMenu);
       if (Ui.getMode() < 2 && this.isEditable()) {
          if (this._optionsMenuText == null) {
-            var1.addItem(_changeOptionsItem);
+            contextMenu.addItem(_changeOptionsItem);
             return;
          }
 
-         RadioButtonField$ChangeOptionMenuItem var2 = new RadioButtonField$ChangeOptionMenuItem(this._optionsMenuText);
-         var1.addItem(var2);
+         MenuItem item = new RadioButtonField$ChangeOptionMenuItem(this._optionsMenuText);
+         contextMenu.addItem(item);
       }
    }
 
@@ -165,31 +169,31 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      int var2 = this.getIconIndex();
+   protected void paint(Graphics graphics) {
+      int index = this.getIconIndex();
       if (this.isFocus() && SystemIcon.COLLECTION.containsIcon(this._iconHeight, this.getIconIndex() + 12)) {
-         var2 += 12;
+         index += 12;
       }
 
-      int var3 = this._iconWidth;
-      int var4 = 0;
-      SystemIcon.COLLECTION.paint(var1, 0, 0, this._iconWidth, this._iconHeight, var2);
+      int x_pos = this._iconWidth;
+      int imgHeight = 0;
+      SystemIcon.COLLECTION.paint(graphics, 0, 0, this._iconWidth, this._iconHeight, index);
       if (this._image != null) {
-         var4 = this._image.getHeight();
-         var1.drawBitmap(var3, 0, this._image.getWidth(), var4, this._image, 0, 0);
+         imgHeight = this._image.getHeight();
+         graphics.drawBitmap(x_pos, 0, this._image.getWidth(), imgHeight, this._image, 0, 0);
       }
 
-      this._text.paintSelf(var1);
+      this._text.paintSelf(graphics);
    }
 
-   public RadioButtonField(String var1, RadioButtonGroup var2, boolean var3, long var4) {
-      super(verifyStyle(var4));
+   public RadioButtonField(String label, RadioButtonGroup group, boolean selected, long style) {
+      super(verifyStyle(style));
       this.setTag(TAG);
-      this.setLabel(var1);
-      if (var2 != null) {
-         var2.add(this);
-         if (var3) {
-            var2.setSelectedIndex(this._index);
+      this.setLabel(label);
+      if (group != null) {
+         group.add(this);
+         if (selected) {
+            group.setSelectedIndex(this._index);
          }
       }
    }
@@ -206,18 +210,18 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
       this.invalidate();
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
       if (!SystemIcon.COLLECTION.containsIcon(this._iconHeight, this.getIconIndex() + 12)) {
          this.getFocusRect(this._focus);
-         var1.invert(this._focus);
-         int var3 = this.getFont().getHeight();
-         var1.invert(this._focus.x, this._focus.y + var3, this._focus.width - 1, this._focus.height - var3);
+         graphics.invert(this._focus);
+         int fontheight = this.getFont().getHeight();
+         graphics.invert(this._focus.x, this._focus.y + fontheight, this._focus.width - 1, this._focus.height - fontheight);
       }
    }
 
@@ -225,39 +229,39 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
       this(null, null, false, 0);
    }
 
-   private void setSelected(boolean var1, int var2) {
+   private void setSelected(boolean selected, int context) {
       if (this._group == null) {
          throw new Object();
       }
 
-      if (var1) {
-         this._group.setSelectedIndex(this._index, var2);
+      if (selected) {
+         this._group.setSelectedIndex(this._index, context);
       } else if (this.isSelected()) {
-         this._group.setSelectedIndex(-1, var2);
+         this._group.setSelectedIndex(-1, context);
       }
 
       this.invalidate();
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       if (Ui.isTTSEnabled()) {
          super.accessibleEventOccurred(1, new Object(2), new Object(4), this);
       }
 
-      return super.trackwheelClick(var1, var2);
+      return super.trackwheelClick(status, time);
    }
 
-   private static long verifyStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long verifyStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override

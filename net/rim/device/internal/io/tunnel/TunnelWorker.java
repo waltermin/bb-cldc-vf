@@ -9,11 +9,11 @@ public final class TunnelWorker implements TunnelListener {
    private int _tunnelCode;
    private static final int TUNNEL_OPEN_TIMEOUT;
 
-   public final Tunnel open(TunnelConfig var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final Tunnel open(TunnelConfig config) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void timeout(long var1) {
+   private final void timeout(long quitTime) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -26,7 +26,11 @@ public final class TunnelWorker implements TunnelListener {
    }
 
    @Override
-   public final void statusChanged(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void statusChanged(int status, int code) {
+      synchronized (this) {
+         this._tunnelState = status;
+         this._tunnelCode = code;
+         super.notify();
+      }
    }
 }

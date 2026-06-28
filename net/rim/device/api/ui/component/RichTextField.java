@@ -27,15 +27,15 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    private static final long LEGACY_FONT_INDEX_ATTRIB_MASK;
    private static final int LEGACY_FONT_INDEX_ATTRIB_SHIFT;
 
-   public void setText(String var1, int[] var2, byte[] var3, Font[] var4) {
-      this.setText(var1, var2, var3, var4, null);
+   public void setText(String text, int[] offsets, byte[] attributes, Font[] fonts) {
+      this.setText(text, offsets, attributes, fonts, null);
    }
 
-   public void setText(String var1, int[] var2, byte[] var3, Font[] var4, Object[] var5) {
+   public void setText(String text, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   protected void setText(AttributedString var1, int[] var2, byte[] var3, Font[] var4, Object[] var5) {
+   protected void setText(AttributedString attribText, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies) {
       throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
@@ -47,52 +47,52 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       return this._arSupport.getRunStart();
    }
 
-   void setFont(int var1, Font var2) {
+   void setFont(int index, Font font) {
       if (!this._legacyArraysUpdated) {
          this.initLegacyArrays();
       }
 
-      this._fonts[var1] = var2;
+      this._fonts[index] = font;
       this.convertOffsetsToAttribString(null, 0, this._offset_no - 1, this._offsets, this._attributes, this._fonts);
    }
 
-   public int getRegion(int var1) {
-      if (var1 == super._text.length() && var1 != 0) {
-         var1--;
+   public int getRegion(int offset) {
+      if (offset == super._text.length() && offset != 0) {
+         offset--;
       }
 
-      return this._arSupport.getRegion(var1);
+      return this._arSupport.getRegion(offset);
    }
 
    public Object getRegionCookie() {
       return this._arSupport.getCookieWithFocus(this.getCaretPosition());
    }
 
-   public Object getRegionCookie(int var1) {
-      return null != this._cookies && this._cookies.length != 0 && var1 >= 0 ? this._cookies[var1] : null;
+   public Object getRegionCookie(int region) {
+      return null != this._cookies && this._cookies.length != 0 && region >= 0 ? this._cookies[region] : null;
    }
 
    public String getRegionText() {
       return this._arSupport.getCurrentRegionText(this.getCaretPosition(), super._text);
    }
 
-   public String getRegionText(int var1) {
-      return this._arSupport.getRegionText(var1, super._text);
+   public String getRegionText(int region) {
+      return this._arSupport.getRegionText(region, super._text);
    }
 
    public Font getRegionFont() {
       return Ui.getFontFromAttributes(super._insertionAttrib, this.getFont());
    }
 
-   public Font getRegionFont(int var1) {
-      return !this._arSupport.adjustCurrentRunForIndex(var1) ? null : Ui.getFontFromAttributes(this._arSupport.getRunAttrib(), this.getFont());
+   public Font getRegionFont(int region) {
+      return !this._arSupport.adjustCurrentRunForIndex(region) ? null : Ui.getFontFromAttributes(this._arSupport.getRunAttrib(), this.getFont());
    }
 
    protected Font[] getFonts() {
       return this.getFonts(true);
    }
 
-   protected Font[] getFonts(boolean var1) {
+   protected Font[] getFonts(boolean convertDefaultFonts) {
       if (!this._legacyArraysUpdated) {
          this.initLegacyArrays();
       }
@@ -101,17 +101,17 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
          return null;
       }
 
-      Font[] var2 = new Font[this._fonts.length];
-      System.arraycopy(this._fonts, 0, var2, 0, this._fonts.length);
-      if (var1) {
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            if (var2[var3] == null) {
-               var2[var3] = this.getFont();
+      Font[] fonts = new Font[this._fonts.length];
+      System.arraycopy(this._fonts, 0, fonts, 0, this._fonts.length);
+      if (convertDefaultFonts) {
+         for (int i = 0; i < fonts.length; i++) {
+            if (fonts[i] == null) {
+               fonts[i] = this.getFont();
             }
          }
       }
 
-      return var2;
+      return fonts;
    }
 
    protected int[] getOffsets() {
@@ -130,17 +130,17 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       return Arrays.copy(this._attributes);
    }
 
-   public void setAttribute(int var1, int var2) {
+   public void setAttribute(int index, int attribute) {
       if (!this._legacyArraysUpdated) {
          this.initLegacyArrays();
       }
 
-      if (var2 >= 0 && var2 < this._fonts.length) {
-         if (this._attributes[var1] != (byte)var2) {
-            this._attributes[var1] = (byte)var2;
-            long var3 = this._fonts[var2] == null ? this.getDefaultFontAttributes() : Ui.getAttributesFromFont(this._fonts[var2]);
-            long var5 = (long)var2 << 16;
-            this.setAttrib(this._offsets[var1], this._offsets[var1 + 1], var3, 675086335, var5, 16711680);
+      if (attribute >= 0 && attribute < this._fonts.length) {
+         if (this._attributes[index] != (byte)attribute) {
+            this._attributes[index] = (byte)attribute;
+            long attrib = this._fonts[attribute] == null ? this.getDefaultFontAttributes() : Ui.getAttributesFromFont(this._fonts[attribute]);
+            long xAttrib = (long)attribute << 16;
+            this.setAttrib(this._offsets[index], this._offsets[index + 1], attrib, 675086335, xAttrib, 16711680);
             this.updateLayout();
          }
       } else {
@@ -148,30 +148,30 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       }
    }
 
-   public synchronized void setAttributes(int[] var1, int[] var2) {
+   public synchronized void setAttributes(int[] colorForeground, int[] colorBackground) {
       if (!this._legacyArraysUpdated) {
          this.initLegacyArrays();
       }
 
-      if (var1 != null && var1.length != this._fonts.length) {
+      if (colorForeground != null && colorForeground.length != this._fonts.length) {
          throw new Object();
       }
 
-      if (var2 != null && var2.length != this._fonts.length) {
+      if (colorBackground != null && colorBackground.length != this._fonts.length) {
          throw new Object();
       }
 
-      this._colorForeground = Arrays.copy(var1);
-      this._colorBackground = Arrays.copy(var2);
+      this._colorForeground = Arrays.copy(colorForeground);
+      this._colorBackground = Arrays.copy(colorBackground);
       this.startLayoutUpdate();
 
-      for (int var3 = 0; var3 < this._offset_no - 1; var3++) {
-         long var4 = 0;
-         byte var6 = this._attributes[var3];
-         long var7 = var1 != null && var1[var6] != -1 ? Ui.convertColorTo16bit(var1[var6]) : Ui.DEFAULT_16BIT_COLOR;
-         long var9 = var2 != null && var2[var6] != -1 ? Ui.convertColorTo16bit(var2[var6]) : Ui.DEFAULT_16BIT_COLOR;
-         var4 |= var7 << 32 | var9 << 48;
-         super._text.setAttrib(this._offsets[var3], this._offsets[var3 + 1], var4, -4294967296L, 0, 0);
+      for (int i = 0; i < this._offset_no - 1; i++) {
+         long attrib = 0;
+         int id = this._attributes[i];
+         long foreground = colorForeground != null && colorForeground[id] != -1 ? Ui.convertColorTo16bit(colorForeground[id]) : Ui.DEFAULT_16BIT_COLOR;
+         long background = colorBackground != null && colorBackground[id] != -1 ? Ui.convertColorTo16bit(colorBackground[id]) : Ui.DEFAULT_16BIT_COLOR;
+         attrib |= foreground << 32 | background << 48;
+         super._text.setAttrib(this._offsets[i], this._offsets[i + 1], attrib, -4294967296L, 0, 0);
       }
 
       this.endLayoutUpdate();
@@ -185,26 +185,26 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       return Arrays.copy(this._colorBackground);
    }
 
-   protected void appendFonts(Font[] var1) {
-      if (var1 != null && var1.length != 0) {
+   protected void appendFonts(Font[] fonts) {
+      if (fonts != null && fonts.length != 0) {
          if (!this._legacyArraysUpdated) {
             this.initLegacyArrays();
          }
 
-         int var2 = var1.length;
+         int newFontCount = fonts.length;
          if (this._fonts == null) {
-            this._fonts = new Font[var2];
-            System.arraycopy(var1, 0, this._fonts, 0, var2);
+            this._fonts = new Font[newFontCount];
+            System.arraycopy(fonts, 0, this._fonts, 0, newFontCount);
          } else {
-            int var3 = this._fonts.length;
-            Array.resize(this._fonts, var3 + var2);
-            System.arraycopy(var1, 0, this._fonts, var3, var2);
+            int oldFontCount = this._fonts.length;
+            Array.resize(this._fonts, oldFontCount + newFontCount);
+            System.arraycopy(fonts, 0, this._fonts, oldFontCount, newFontCount);
          }
       }
    }
 
-   protected int append(String var1, int[] var2, int[] var3, byte[] var4) {
-      if (var1 == null) {
+   protected int append(String text, int[] offsets, int[] lengths, byte[] attr) {
+      if (text == null) {
          return 0;
       }
 
@@ -212,77 +212,77 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
          this.initLegacyArrays();
       }
 
-      this.vetArguments(var1, var2, var3, var4);
-      int var6 = super._text.length();
-      int[] var5;
-      if (var3 == null) {
-         var5 = this.insertText(var1, var2);
+      this.vetArguments(text, offsets, lengths, attr);
+      int textLength = super._text.length();
+      int[] newOffsets;
+      if (lengths == null) {
+         newOffsets = this.insertText(text, offsets);
       } else {
-         var5 = this.insertText(var1, var2, var3);
+         newOffsets = this.insertText(text, offsets, lengths);
       }
 
-      int var7 = super._text.length() - var6;
-      if (var7 > 0) {
-         this.addOffsetAndAttributes(var5, var4);
-         int var8 = this._offset_no - var5.length - 1;
-         this.convertOffsetsToAttribString(null, var8, this._offset_no - 1, this._offsets, this._attributes, this._fonts);
+      int deltaLength = super._text.length() - textLength;
+      if (deltaLength > 0) {
+         this.addOffsetAndAttributes(newOffsets, attr);
+         int startOffset = this._offset_no - newOffsets.length - 1;
+         this.convertOffsetsToAttribString(null, startOffset, this._offset_no - 1, this._offsets, this._attributes, this._fonts);
       }
 
       this.fireTextChangeEvent(0);
-      return var7;
+      return deltaLength;
    }
 
-   protected void setFont(int[] var1, Font[] var2) {
+   protected void setFont(int[] index, Font[] fonts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public boolean regionsHaveSameCookie(int var1, int var2) {
+   public boolean regionsHaveSameCookie(int regionId1, int regionId2) {
       return false;
    }
 
    @Override
-   public Object getCookie(int var1) {
+   public Object getCookie(int id) {
       return null;
    }
 
    @Override
-   public boolean isCookieValid(int var1) {
+   public boolean isCookieValid(int id) {
       return true;
    }
 
-   private void setCookies(Object[] var1) {
-      if (var1 != null) {
-         this._cookies = new Object[var1.length];
-         System.arraycopy(var1, 0, this._cookies, 0, var1.length);
+   private void setCookies(Object[] cookies) {
+      if (cookies != null) {
+         this._cookies = new Object[cookies.length];
+         System.arraycopy(cookies, 0, this._cookies, 0, cookies.length);
       } else {
          this._cookies = null;
       }
    }
 
-   private void vetOffsets(String var1, int[] var2) {
+   private void vetOffsets(String text, int[] offsets) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void vetAttributes(byte[] var1, Font[] var2) {
+   private void vetAttributes(byte[] attributes, Font[] fonts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (super.keyChar(var1, var2, var3)) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (super.keyChar(key, status, time)) {
          return true;
       }
 
-      if (this.isSelecting() && var1 == '\n') {
+      if (this.isSelecting() && key == '\n') {
          return true;
       }
 
-      switch (var1) {
+      switch (key) {
          case ' ':
-            if ((var2 & 1) == 0) {
-               int var4 = (var2 & 2) == 0 ? 512 : 256;
-               this.getScreen().scroll(var4);
+            if ((status & 1) == 0) {
+               int direction = (status & 2) == 0 ? 512 : 256;
+               this.getScreen().scroll(direction);
                return true;
             }
          default:
@@ -291,158 +291,158 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    @Override
-   public int moveFocus(int var1, int var2, int var3) {
-      return super._text.length() == 0 ? var1 : super.moveFocus(var1, var2, var3);
+   public int moveFocus(int amount, int status, int time) {
+      return super._text.length() == 0 ? amount : super.moveFocus(amount, status, time);
    }
 
    @Override
-   public void setText(String var1) {
-      super.setText(var1);
+   public void setText(String text) {
+      super.setText(text);
       this.setCookies(null);
    }
 
-   private static long validateStyle(long var0) {
-      var0 &= -13510798882111489L;
-      var0 |= 9007199254740992L;
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long validateStyle(long style) {
+      style &= -13510798882111489L;
+      style |= 9007199254740992L;
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override
    protected long getDefaultFontAttributes() {
-      long var1 = super.getDefaultFontAttributes();
+      long attrib = super.getDefaultFontAttributes();
       if (this.isStyle(524288)) {
-         return var1 | 4194304;
+         return attrib | 4194304;
       }
 
       if (this.isStyle(262144)) {
-         var1 |= 12582912;
+         attrib |= 12582912;
       }
 
-      return var1;
+      return attrib;
    }
 
    private void initLegacyArrays() {
-      byte var1 = 10;
-      byte var2 = var1;
-      int[] var3 = new int[var2];
-      byte[] var4 = new byte[var2];
-      Font[] var5 = new Font[var2];
-      int var6 = 0;
-      var3[0] = 0;
-      int var7 = 0;
+      int INC = 10;
+      int arraySize = INC;
+      int[] offsets = new int[arraySize];
+      byte[] attributes = new byte[arraySize];
+      Font[] fonts = new Font[arraySize];
+      int offsetCount = 0;
+      offsets[0] = 0;
+      int maxFontIndex = 0;
 
-      while (this._arSupport.adjustCurrentRunForIndex(var6)) {
-         if (var6 + 1 == var2) {
-            var2 += var1;
-            Array.resize(var3, var2);
-            Array.resize(var4, var2);
-            Array.resize(var5, var2);
+      while (this._arSupport.adjustCurrentRunForIndex(offsetCount)) {
+         if (offsetCount + 1 == arraySize) {
+            arraySize += INC;
+            Array.resize(offsets, arraySize);
+            Array.resize(attributes, arraySize);
+            Array.resize(fonts, arraySize);
          }
 
-         var3[var6 + 1] = this._arSupport.getRunEnd();
+         offsets[offsetCount + 1] = this._arSupport.getRunEnd();
          if (this._legacyAttributesUsed) {
-            byte var8 = (byte)((this._arSupport.getRunXAttrib() & 16711680) >> 16);
-            var4[var6] = var8;
+            byte fontIndex = (byte)((this._arSupport.getRunXAttrib() & 16711680) >> 16);
+            attributes[offsetCount] = fontIndex;
          } else {
-            Font var10 = Ui.getFontFromAttributes(this._arSupport.getRunAttrib(), this.getFont());
-            var4[var6] = this.findFontIndex(var5, var10);
+            Font font = Ui.getFontFromAttributes(this._arSupport.getRunAttrib(), this.getFont());
+            attributes[offsetCount] = this.findFontIndex(fonts, font);
          }
 
-         var7 = Math.max(var7, var4[var6]);
-         var6++;
+         maxFontIndex = Math.max(maxFontIndex, attributes[offsetCount]);
+         offsetCount++;
       }
 
-      this._offsets = Arrays.copy(var3, 0, ++var6);
-      this._attributes = Arrays.copy(var4, 0, var6 - 1);
+      this._offsets = Arrays.copy(offsets, 0, ++offsetCount);
+      this._attributes = Arrays.copy(attributes, 0, offsetCount - 1);
       if (this._fonts == null || !this._legacyAttributesUsed) {
-         this._fonts = new Font[var7 + 1];
-         System.arraycopy(var5, 0, this._fonts, 0, var7 + 1);
+         this._fonts = new Font[maxFontIndex + 1];
+         System.arraycopy(fonts, 0, this._fonts, 0, maxFontIndex + 1);
       }
 
-      this._offset_no = var6;
+      this._offset_no = offsetCount;
       this._legacyArraysUpdated = true;
    }
 
-   private byte findFontIndex(Font[] var1, Font var2) {
-      byte var3;
-      for (var3 = 0; var1[var3] != null; var3++) {
-         if (var1[var3] == var2) {
-            return var3;
+   private byte findFontIndex(Font[] fonts, Font font) {
+      byte index;
+      for (index = 0; fonts[index] != null; index++) {
+         if (fonts[index] == font) {
+            return index;
          }
       }
 
-      var1[var3] = var2;
-      return var3;
+      fonts[index] = font;
+      return index;
    }
 
    public RichTextField() {
    }
 
-   public RichTextField(long var1) {
+   public RichTextField(long style) {
    }
 
-   private synchronized int[] insertText(String var1, int[] var2, int[] var3) {
-      int var4 = var2.length;
-      int var5 = super._text.length();
-      int[] var6 = new int[var4];
+   private synchronized int[] insertText(String text, int[] offsets, int[] lengths) {
+      int offsetsArrayLength = offsets.length;
+      int newLength = super._text.length();
+      int[] newOffsets = new int[offsetsArrayLength];
 
-      for (int var7 = 0; var7 < var4; var7++) {
-         super._text.insert(var5, var1.substring(var2[var7], var2[var7] + var3[var7]));
-         var5 += var3[var7];
-         var6[var7] = var5;
+      for (int i = 0; i < offsetsArrayLength; i++) {
+         super._text.insert(newLength, text.substring(offsets[i], offsets[i] + lengths[i]));
+         newLength += lengths[i];
+         newOffsets[i] = newLength;
       }
 
-      return var6;
+      return newOffsets;
    }
 
-   private synchronized int[] insertText(String var1, int[] var2) {
-      int var3 = var2.length - 1;
-      int var4 = super._text.length();
-      int[] var5 = new int[var3];
+   private synchronized int[] insertText(String text, int[] offsets) {
+      int offsetsArrayLength = offsets.length - 1;
+      int newLength = super._text.length();
+      int[] newOffsets = new int[offsetsArrayLength];
 
-      for (int var6 = 0; var6 < var3; var6++) {
-         super._text.insert(var4, var1.substring(var2[var6], var2[var6 + 1]));
-         int var7 = var2[var6 + 1] - var2[var6];
-         var4 += var7;
-         var5[var6] = var4;
+      for (int i = 0; i < offsetsArrayLength; i++) {
+         super._text.insert(newLength, text.substring(offsets[i], offsets[i + 1]));
+         int tempLen = offsets[i + 1] - offsets[i];
+         newLength += tempLen;
+         newOffsets[i] = newLength;
       }
 
-      return var5;
+      return newOffsets;
    }
 
-   private void addOffsetAndAttributes(int[] var1, byte[] var2) {
-      int var3 = this._offset_no;
-      int var4 = this._attributes.length;
-      if (var3 == 2 && this._offsets[0] == this._offsets[1]) {
-         var3--;
-         var4--;
+   private void addOffsetAndAttributes(int[] offsets, byte[] attributes) {
+      int offsetsLength = this._offset_no;
+      int attributesLength = this._attributes.length;
+      if (offsetsLength == 2 && this._offsets[0] == this._offsets[1]) {
+         offsetsLength--;
+         attributesLength--;
          this._offset_no--;
       }
 
-      Array.resize(this._offsets, var3 + var1.length);
-      this._offset_no += var1.length;
-      System.arraycopy(var1, 0, this._offsets, var3, var1.length);
-      Array.resize(this._attributes, var4 + var2.length);
-      System.arraycopy(var2, 0, this._attributes, var4, var2.length);
+      Array.resize(this._offsets, offsetsLength + offsets.length);
+      this._offset_no += offsets.length;
+      System.arraycopy(offsets, 0, this._offsets, offsetsLength, offsets.length);
+      Array.resize(this._attributes, attributesLength + attributes.length);
+      System.arraycopy(attributes, 0, this._attributes, attributesLength, attributes.length);
    }
 
-   private void vetArguments(String var1, int[] var2, int[] var3, byte[] var4) {
+   private void vetArguments(String text, int[] offsets, int[] lengths, byte[] attr) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public RichTextField(String var1) {
-      this(var1, 0);
+   public RichTextField(String text) {
+      this(text, 0);
    }
 
-   public RichTextField(String var1, int[] var2, byte[] var3, Font[] var4, Object[] var5, long var6) {
-      super(validateStyle(var6));
+   public RichTextField(String text, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies, long style) {
+      super(validateStyle(style));
       this._legacyArraysUpdated = false;
       this._legacyAttributesUsed = false;
-      this.setText(var1, var2, var3, var4, var5);
+      this.setText(text, offsets, attributes, fonts, cookies);
       this._arSupport = (ActiveRegionSupport)(new Object(super._text.getIterator(), this));
    }
 
@@ -452,12 +452,12 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    @Override
-   int getLayoutWidth(int var1) {
-      return this.isStyle(67108864) ? this._layoutWidth : var1;
+   int getLayoutWidth(int width) {
+      return this.isStyle(67108864) ? this._layoutWidth : width;
    }
 
    @Override
-   void handleLinesAfterFormat(FormatParams var1) {
+   void handleLinesAfterFormat(FormatParams params) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -466,24 +466,24 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       return this.isStyle(67108864) && (this.isStyle(262144) || this.isStyle(524288)) ? Integer.MAX_VALUE : super.getMaxLinesToFormat();
    }
 
-   private synchronized void convertOffsetsToAttribString(AttributedString var1, int var2, int var3, int[] var4, byte[] var5, Font[] var6) {
+   private synchronized void convertOffsetsToAttribString(AttributedString str, int start, int end, int[] offsets, byte[] attributes, Font[] fonts) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
-      super.notifyTextChanged(var1, var2);
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
+      super.notifyTextChanged(aParams, aIsInsertionOrDeletion);
       this._arSupport.init();
-      if (var2) {
+      if (aIsInsertionOrDeletion) {
          this._legacyArraysUpdated = false;
       }
    }
 
-   public RichTextField(String var1, int[] var2, byte[] var3, Font[] var4, long var5) {
-      this(var1, var2, var3, var4, null, var5);
+   public RichTextField(String text, int[] offsets, byte[] attributes, Font[] fonts, long style) {
+      this(text, offsets, attributes, fonts, null, style);
    }
 
-   public RichTextField(String var1, long var2) {
+   public RichTextField(String text, long style) {
    }
 
    @Override
@@ -497,22 +497,22 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setCursorPosition(int var1) {
+   public void setCursorPosition(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public String getText(int var1, int var2) {
+   public String getText(int offset, int length) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -527,12 +527,12 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    @Override
-   public char charAt(int var1) {
+   public char charAt(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setFont(Font var1) {
+   public void setFont(Font font) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 }

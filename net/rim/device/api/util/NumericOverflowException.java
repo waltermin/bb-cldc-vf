@@ -4,6 +4,6 @@ public class NumericOverflowException extends RuntimeException {
    public NumericOverflowException() {
    }
 
-   public NumericOverflowException(String var1) {
+   public NumericOverflowException(String message) {
    }
 }

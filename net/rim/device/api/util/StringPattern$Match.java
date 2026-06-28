@@ -6,10 +6,10 @@ public class StringPattern$Match {
    public long id;
    public int prefixLength;
 
-   public void setMatch(StringPattern$Match var1) {
-      this.beginIndex = var1.beginIndex;
-      this.endIndex = var1.endIndex;
-      this.id = var1.id;
-      this.prefixLength = var1.prefixLength;
+   public void setMatch(StringPattern$Match match) {
+      this.beginIndex = match.beginIndex;
+      this.endIndex = match.endIndex;
+      this.id = match.id;
+      this.prefixLength = match.prefixLength;
    }
 }

@@ -27,11 +27,11 @@ public final class ApplicationProcess extends Process implements Runnable {
    private static final int LAST_MESSAGE_STREAMING_SESSION_WATERMARK;
    private static final int LAST_MESSAGE_MEDIA_STATUS;
 
-   ApplicationProcess(ApplicationManagerImpl var1, ApplicationDescriptor var2, boolean var3) {
-      this._appManager = var1;
-      this._descriptor = var2;
-      this._grabForegroundOnStartup = var3;
-      this._isRIMProcess = ControlledAccess.verifyRRISignature(var2.getModuleHandle());
+   ApplicationProcess(ApplicationManagerImpl appManager, ApplicationDescriptor descriptor, boolean grabForegroundOnStartup) {
+      this._appManager = appManager;
+      this._descriptor = descriptor;
+      this._grabForegroundOnStartup = grabForegroundOnStartup;
+      this._isRIMProcess = ControlledAccess.verifyRRISignature(descriptor.getModuleHandle());
    }
 
    final ApplicationManagerImpl getApplicationManager() {
@@ -50,24 +50,24 @@ public final class ApplicationProcess extends Process implements Runnable {
       return this._isRIMProcess;
    }
 
-   public final synchronized void addCleanupRunnable(Runnable var1) {
+   public final synchronized void addCleanupRunnable(Runnable runnable) {
       if (this._cleanupRunnables == null) {
          this._cleanupRunnables = (Vector)(new Object());
       }
 
-      this._cleanupRunnables.addElement(var1);
+      this._cleanupRunnables.addElement(runnable);
    }
 
-   public final synchronized void removeCleanupRunnable(Runnable var1) {
+   public final synchronized void removeCleanupRunnable(Runnable runnable) {
       if (this._cleanupRunnables != null) {
-         this._cleanupRunnables.removeElement(var1);
+         this._cleanupRunnables.removeElement(runnable);
          if (this._cleanupRunnables.size() == 0) {
             this._cleanupRunnables = null;
          }
       }
    }
 
-   final void appStarted(Application var1) {
+   final void appStarted(Application app) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -75,20 +75,28 @@ public final class ApplicationProcess extends Process implements Runnable {
       return this._app;
    }
 
-   final void setAcceptsEvents(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void setAcceptsEvents(boolean on) {
+      if (this.isAlive()) {
+         synchronized (super._messageQueue) {
+            if (!on) {
+               super._messageQueue.flush();
+            }
+
+            this._acceptsEvents = on;
+         }
+      }
    }
 
-   final void postMessage(Message var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void postMessage(Message message) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   static final void logMessageQueueOverflow(MessageQueue var0, String var1) {
-      System.out.println(var1);
-      EventLogger.logEvent(-7509200465648525729L, var1.getBytes());
-      var1 = var0.toString();
-      System.out.println(var1);
-      EventLogger.logEvent(-7509200465648525729L, var1.getBytes());
+   static final void logMessageQueueOverflow(MessageQueue msgQueue, String msg) {
+      System.out.println(msg);
+      EventLogger.logEvent(-7509200465648525729L, msg.getBytes());
+      msg = msgQueue.toString();
+      System.out.println(msg);
+      EventLogger.logEvent(-7509200465648525729L, msg.getBytes());
       DebugSupport.logStackTraces();
    }
 
@@ -96,24 +104,31 @@ public final class ApplicationProcess extends Process implements Runnable {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void getMessage(Message var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void getMessage(Message message) {
+      synchronized (super._messageQueue) {
+         if (!this._isHandlingEvents) {
+            this._isHandlingEvents = true;
+            super._messageQueue.setProcessState(1);
+         }
+
+         super._messageQueue.dequeue(message, true);
+      }
    }
 
    public final boolean acceptsForeground() {
       return this.isAlive() && this._app != null && this._app.acceptsForeground();
    }
 
-   final int getOSTimerId(int var1) {
-      return this.getProcessId() & 134217727 | var1 << 27;
+   final int getOSTimerId(int processTimerId) {
+      return this.getProcessId() & 134217727 | processTimerId << 27;
    }
 
-   static final int getProcessTimerId(int var0) {
-      return var0 >> 27 & 31;
+   static final int getProcessTimerId(int osTimerId) {
+      return osTimerId >> 27 & 31;
    }
 
-   static final int getProcessIdFromOSTimerId(int var0) {
-      return var0 & 134217727;
+   static final int getProcessIdFromOSTimerId(int osTimerId) {
+      return osTimerId & 134217727;
    }
 
    final void cleanup() {
@@ -122,6 +137,6 @@ public final class ApplicationProcess extends Process implements Runnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

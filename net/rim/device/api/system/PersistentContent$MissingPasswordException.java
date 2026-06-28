@@ -4,7 +4,7 @@ final class PersistentContent$MissingPasswordException extends RuntimeException 
    private PersistentContent$MissingPasswordException() {
    }
 
-   PersistentContent$MissingPasswordException(PersistentContent$1 var1) {
+   PersistentContent$MissingPasswordException(PersistentContent$1 x0) {
       this();
    }
 }

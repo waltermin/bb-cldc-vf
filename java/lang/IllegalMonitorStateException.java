@@ -4,6 +4,6 @@ public class IllegalMonitorStateException extends RuntimeException {
    public IllegalMonitorStateException() {
    }
 
-   public IllegalMonitorStateException(String var1) {
+   public IllegalMonitorStateException(String s) {
    }
 }

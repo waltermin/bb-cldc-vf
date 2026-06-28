@@ -17,38 +17,38 @@ public class FrameLayout extends Manager implements FocusChangeListener {
       this(0);
    }
 
-   public FrameLayout(long var1) {
-      super(var1);
+   public FrameLayout(long style) {
+      super(style);
    }
 
    @Override
-   public int getFieldAtLocation(int var1, int var2) {
-      var1 = MathUtilities.clamp(3, var1, this.getWidth() - 3);
-      var2 = MathUtilities.clamp(3, var2, this.getHeight() - 3);
-      return super.getFieldAtLocation(var1, var2);
+   public int getFieldAtLocation(int x, int y) {
+      x = MathUtilities.clamp(3, x, this.getWidth() - 3);
+      y = MathUtilities.clamp(3, y, this.getHeight() - 3);
+      return super.getFieldAtLocation(x, y);
    }
 
    @Override
-   public int getFieldClosestToLocation(int var1, int var2, int var3) {
-      var1 = MathUtilities.clamp(3, var1, this.getWidth() - 3);
-      var2 = MathUtilities.clamp(3, var2, this.getHeight() - 3);
-      return super.getFieldClosestToLocation(var1, var2, var3);
+   public int getFieldClosestToLocation(int x, int y, int status) {
+      x = MathUtilities.clamp(3, x, this.getWidth() - 3);
+      y = MathUtilities.clamp(3, y, this.getHeight() - 3);
+      return super.getFieldClosestToLocation(x, y, status);
    }
 
    @Override
-   public void add(Field var1) {
+   public void add(Field field) {
       this.deleteAll();
-      super.add(var1);
-      var1.setFocusListener(null);
-      var1.setFocusListener(this);
+      super.add(field);
+      field.setFocusListener(null);
+      field.setFocusListener(this);
    }
 
    @Override
-   public void insert(Field var1, int var2) {
+   public void insert(Field field, int index) {
       this.deleteAll();
-      super.add(var1);
-      var1.setFocusListener(null);
-      var1.setFocusListener(this);
+      super.add(field);
+      field.setFocusListener(null);
+      field.setFocusListener(this);
    }
 
    @Override
@@ -62,44 +62,44 @@ public class FrameLayout extends Manager implements FocusChangeListener {
    }
 
    @Override
-   protected void subpaint(Graphics var1) {
-      int var2 = this.getVirtualWidth();
-      int var3 = this.getVirtualHeight();
-      int var4 = this.getVerticalScroll();
-      int var5 = this.getHorizontalScroll();
-      var1.pushContext(-var5, -var4, var2, var3, -var5, -var4);
+   protected void subpaint(Graphics graphics) {
+      int virtualWidth = this.getVirtualWidth();
+      int virtualHeight = this.getVirtualHeight();
+      int verticalScroll = this.getVerticalScroll();
+      int horizontalScroll = this.getHorizontalScroll();
+      graphics.pushContext(-horizontalScroll, -verticalScroll, virtualWidth, virtualHeight, -horizontalScroll, -verticalScroll);
       if (this.isStyle(1)) {
-         var1.drawRoundRect(1, 1, var2 - 2, var3 - 2, 4, 4);
+         graphics.drawRoundRect(1, 1, virtualWidth - 2, virtualHeight - 2, 4, 4);
       } else {
-         var1.drawRect(1, 1, var2 - 2, var3 - 2);
+         graphics.drawRect(1, 1, virtualWidth - 2, virtualHeight - 2);
       }
 
       if (this.getFieldWithFocus() != null) {
          if (this.isStyle(1)) {
-            var1.drawRoundRect(0, 0, var2, var3, 4, 4);
+            graphics.drawRoundRect(0, 0, virtualWidth, virtualHeight, 4, 4);
          } else {
-            var1.drawRect(0, 0, var2, var3);
+            graphics.drawRect(0, 0, virtualWidth, virtualHeight);
          }
       }
 
-      var1.popContext();
-      super.subpaint(var1);
+      graphics.popContext();
+      super.subpaint(graphics);
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      Field var3 = this.getField(0);
-      this.setPositionChild(var3, 3, 3);
-      this.layoutChild(var3, Math.max(var1 - 4 - 2, 0), Math.max(var2 - 4 - 2, 0));
-      int var4 = var3.getHeight() + 4 + 2;
-      int var5 = var3.getWidth() + 4 + 2;
-      this.setExtent(Math.min(var1, var5), var4);
-      this.setVirtualExtent(var5, var4);
+   protected void sublayout(int width, int height) {
+      Field field = this.getField(0);
+      this.setPositionChild(field, 3, 3);
+      this.layoutChild(field, Math.max(width - 4 - 2, 0), Math.max(height - 4 - 2, 0));
+      int virtualHeight = field.getHeight() + 4 + 2;
+      int virtualWidth = field.getWidth() + 4 + 2;
+      this.setExtent(Math.min(width, virtualWidth), virtualHeight);
+      this.setVirtualExtent(virtualWidth, virtualHeight);
    }
 
    @Override
-   public void focusChanged(Field var1, int var2) {
-      if (var1 == this.getField(0)) {
+   public void focusChanged(Field field, int eventType) {
+      if (field == this.getField(0)) {
          this.invalidate();
       }
    }

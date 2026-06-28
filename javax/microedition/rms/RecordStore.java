@@ -10,40 +10,60 @@ public class RecordStore {
    public static final int AUTHMODE_ANY;
    static final int AUTHMODE_ANY_RO;
 
-   RecordStore(RecordStoreData var1) {
-      this._recordStoreData = var1;
+   RecordStore(RecordStoreData recordStoreData) {
+      this._recordStoreData = recordStoreData;
       this._eventGenerator = new RecordStore$RSRecordEventGenerator(this);
    }
 
-   private static void validateRecordStoreName(String var0) {
+   private static void validateRecordStoreName(String recordStoreName) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static void deleteRecordStore(String var0) {
-      validateRecordStoreName(var0);
-      RecordStoreManager.deleteRecordStore(var0);
+   public static void deleteRecordStore(String recordStoreName) {
+      validateRecordStoreName(recordStoreName);
+      RecordStoreManager.deleteRecordStore(recordStoreName);
    }
 
-   public static RecordStore openRecordStore(String var0, boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static RecordStore openRecordStore(String var0, boolean var1, int var2, boolean var3) {
-      RecordStore var4 = openRecordStore(var0, var1);
-      var4.setMode(var2, var3);
-      return var4;
+   public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary, int authmode, boolean writable) {
+      RecordStore rs = openRecordStore(recordStoreName, createIfNecessary);
+      rs.setMode(authmode, writable);
+      return rs;
    }
 
-   public static RecordStore openRecordStore(String var0, String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static RecordStore openRecordStore(String recordStoreName, String vendorName, String suiteName) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setMode(int var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setMode(int authmode, boolean writable) {
+      synchronized (this) {
+         if (!RecordStoreManager.checkOwner(this)) {
+            throw new Object();
+         }
+
+         if (authmode != 0 && authmode != 1) {
+            throw new Object();
+         }
+
+         if (authmode == 1 && !writable) {
+            authmode = 2;
+         }
+
+         this._recordStoreData.setAuthMode(authmode);
+      }
    }
 
    public void closeRecordStore() {
-      throw new RuntimeException("cod2jar: exception table");
+      this.mustBeOpen();
+      synchronized (this) {
+         this._openCount--;
+         if (this._openCount == 0) {
+            this._eventGenerator._listeners = null;
+         }
+      }
    }
 
    public static String[] listRecordStores() {
@@ -95,84 +115,85 @@ public class RecordStore {
       return this._recordStoreData.getNextRecordID();
    }
 
-   public int addRecord(byte[] var1, int var2, int var3) {
+   public int addRecord(byte[] data, int offset, int numBytes) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
          throw new Object();
       }
 
-      int var4 = this._recordStoreData.addRecord(var1, var2, var3);
-      this._eventGenerator.notifyRecordAdded(this, var4);
-      return var4;
+      int id = this._recordStoreData.addRecord(data, offset, numBytes);
+      this._eventGenerator.notifyRecordAdded(this, id);
+      return id;
    }
 
-   public void addRecordListener(RecordListener var1) {
-      this._eventGenerator.addRecordListener(var1);
+   public void addRecordListener(RecordListener listener) {
+      this._eventGenerator.addRecordListener(listener);
    }
 
-   public void removeRecordListener(RecordListener var1) {
-      this._eventGenerator.removeRecordListener(var1);
+   public void removeRecordListener(RecordListener listener) {
+      this._eventGenerator.removeRecordListener(listener);
    }
 
-   public void deleteRecord(int var1) {
+   public void deleteRecord(int recordId) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
          throw new Object();
       }
 
-      this._recordStoreData.deleteRecord(var1);
-      this._eventGenerator.notifyRecordDeleted(this, var1);
+      this._recordStoreData.deleteRecord(recordId);
+      this._eventGenerator.notifyRecordDeleted(this, recordId);
    }
 
-   public int getRecordSize(int var1) {
+   public int getRecordSize(int recordId) {
       this.mustBeOpen();
-      return this._recordStoreData.getRecordSize(var1);
+      return this._recordStoreData.getRecordSize(recordId);
    }
 
-   public int getRecord(int var1, byte[] var2, int var3) {
+   public int getRecord(int recordId, byte[] buffer, int offset) {
       this.mustBeOpen();
-      return this._recordStoreData.getRecord(var1, var2, var3);
+      return this._recordStoreData.getRecord(recordId, buffer, offset);
    }
 
-   public byte[] getRecord(int var1) {
+   public byte[] getRecord(int recordId) {
       this.mustBeOpen();
-      return this._recordStoreData.getRecord(var1);
+      return this._recordStoreData.getRecord(recordId);
    }
 
-   byte[] getRecordReadOnly(int var1) {
-      return this._recordStoreData.getRecordReadOnly(var1);
+   byte[] getRecordReadOnly(int recordId) {
+      return this._recordStoreData.getRecordReadOnly(recordId);
    }
 
-   public void setRecord(int var1, byte[] var2, int var3, int var4) {
+   public void setRecord(int recordId, byte[] newData, int offset, int numBytes) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
          throw new Object();
       }
 
-      this._recordStoreData.setRecord(var1, var2, var3, var4);
-      this._eventGenerator.notifyRecordChanged(this, var1);
+      this._recordStoreData.setRecord(recordId, newData, offset, numBytes);
+      this._eventGenerator.notifyRecordChanged(this, recordId);
    }
 
-   synchronized void loadRecordIDs(int[] var1) {
-      this._recordStoreData.loadRecordIDs(var1);
+   synchronized void loadRecordIDs(int[] recordIds) {
+      this._recordStoreData.loadRecordIDs(recordIds);
    }
 
-   public RecordEnumeration enumerateRecords(RecordFilter var1, RecordComparator var2, boolean var3) {
+   public RecordEnumeration enumerateRecords(RecordFilter filter, RecordComparator comparator, boolean keepUpdated) {
       this.mustBeOpen();
-      if (var1 == null && var2 == null) {
-         return new AllRecordEnumeration(this, var3);
+      if (filter == null && comparator == null) {
+         BaseRecordEnumeration enumeration = new AllRecordEnumeration(this, keepUpdated);
+         return enumeration;
       }
 
-      RecordEventGenerator var4 = this._eventGenerator;
-      if (var1 != null) {
-         var4 = new FilterRecordEnumeration(this, var4, var1, var3);
+      RecordEventGenerator enumeration = this._eventGenerator;
+      if (filter != null) {
+         enumeration = new FilterRecordEnumeration(this, enumeration, filter, keepUpdated);
       }
 
-      if (var2 != null) {
-         var4 = new SortRecordEnumeration(this, var4, var2, var3);
+      if (comparator != null) {
+         enumeration = new SortRecordEnumeration(this, enumeration, comparator, keepUpdated);
       }
 
-      return (RecordEnumeration)var4;
+      return (RecordEnumeration)enumeration;
    }
 
    private boolean checkWritable() {

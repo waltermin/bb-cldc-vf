@@ -6,9 +6,9 @@ class Screen$PagingFocusSelector implements Screen$FocusSelector {
    private boolean _success;
    private static Screen$PagingFocusSelector _selector;
 
-   public static Screen$PagingFocusSelector getSelector(Screen var0, int var1) {
-      _selector._screen = var0;
-      _selector._status = var1;
+   public static Screen$PagingFocusSelector getSelector(Screen screen, int status) {
+      _selector._screen = screen;
+      _selector._status = status;
       return _selector;
    }
 

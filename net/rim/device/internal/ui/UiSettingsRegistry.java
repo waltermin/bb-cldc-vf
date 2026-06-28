@@ -4,19 +4,19 @@ public class UiSettingsRegistry {
    private UiSettingsRegistry() {
    }
 
-   public static int getParamInt(long var0, int var2) {
-      return UiOptionsRegistry.getInstance().getInt(var0);
+   public static int getParamInt(long key, int def) {
+      return UiOptionsRegistry.getInstance().getInt(key);
    }
 
-   public static String getParamString(long var0) {
-      return UiOptionsRegistry.getInstance().getString(var0);
+   public static String getParamString(long key) {
+      return UiOptionsRegistry.getInstance().getString(key);
    }
 
-   public static void setParamInt(long var0, int var2) {
-      UiOptionsRegistry.getInstance().setInt(var0, var2);
+   public static void setParamInt(long key, int value) {
+      UiOptionsRegistry.getInstance().setInt(key, value);
    }
 
-   public static void setParamString(long var0, String var2) {
-      UiOptionsRegistry.getInstance().setString(var0, var2);
+   public static void setParamString(long key, String value) {
+      UiOptionsRegistry.getInstance().setString(key, value);
    }
 }

@@ -6,9 +6,9 @@ import net.rim.device.internal.ui.BackingStore;
 class UiEngineImpl$ProxyScreen extends Screen {
    Screen _screen;
 
-   public UiEngineImpl$ProxyScreen(Screen var1) {
-      super((Manager)(new Object()), !var1.isTransparent() && !var1.isTransparentBorder() ? 0 : 68719476736L);
-      this._screen = var1;
+   public UiEngineImpl$ProxyScreen(Screen screen) {
+      super((Manager)(new Object()), !screen.isTransparent() && !screen.isTransparentBorder() ? 0 : 68719476736L);
+      this._screen = screen;
       this.setAcceptsInput(this._screen.acceptsInput());
    }
 
@@ -17,14 +17,14 @@ class UiEngineImpl$ProxyScreen extends Screen {
    }
 
    public void updateInvalid() {
-      BackingStore var1 = this._screen.getBackingStore();
-      if (var1 != null) {
-         XYRect var2 = Ui.getTmpXYRect();
-         var1.getTotalDirty(var2);
-         XYRect var3 = this._screen.getExtent();
-         var2.translate(var3.x, var3.y);
-         this.getInvalid().unionNoEmpty(var2);
-         Ui.returnTmpXYRect(var2);
+      BackingStore backingStore = this._screen.getBackingStore();
+      if (backingStore != null) {
+         XYRect totalDirty = Ui.getTmpXYRect();
+         backingStore.getTotalDirty(totalDirty);
+         XYRect extent = this._screen.getExtent();
+         totalDirty.translate(extent.x, extent.y);
+         this.getInvalid().unionNoEmpty(totalDirty);
+         Ui.returnTmpXYRect(totalDirty);
       }
    }
 
@@ -34,17 +34,17 @@ class UiEngineImpl$ProxyScreen extends Screen {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      BackingStore var2 = this._screen.getBackingStore();
-      if (var2 != null && !this.shouldNotPaint()) {
-         int var3 = this._screen.getExtent().x - var1.getTranslateX();
-         int var4 = this._screen.getExtent().y - var1.getTranslateY();
-         if (var3 <= 0 && var4 <= 0) {
-            var2.paint(var1, 0, 0);
+   protected void paint(Graphics graphics) {
+      BackingStore backingStore = this._screen.getBackingStore();
+      if (backingStore != null && !this.shouldNotPaint()) {
+         int overIndentX = this._screen.getExtent().x - graphics.getTranslateX();
+         int overIndentY = this._screen.getExtent().y - graphics.getTranslateY();
+         if (overIndentX <= 0 && overIndentY <= 0) {
+            backingStore.paint(graphics, 0, 0);
          } else {
-            var1.pushContext(var1.getClippingRect(), var3, var4);
-            var2.paint(var1, 0, 0);
-            var1.popContext();
+            graphics.pushContext(graphics.getClippingRect(), overIndentX, overIndentY);
+            backingStore.paint(graphics, 0, 0);
+            graphics.popContext();
          }
       }
    }
@@ -57,13 +57,13 @@ class UiEngineImpl$ProxyScreen extends Screen {
    }
 
    @Override
-   protected void paintBackground(Graphics var1) {
+   protected void paintBackground(Graphics graphics) {
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      XYRect var3 = this._screen.getExtent();
-      this.setExtent(var3.width, var3.height);
-      this.setPosition(var3.x, var3.y);
+   protected void sublayout(int width, int height) {
+      XYRect wrappedExtent = this._screen.getExtent();
+      this.setExtent(wrappedExtent.width, wrappedExtent.height);
+      this.setPosition(wrappedExtent.x, wrappedExtent.y);
    }
 }

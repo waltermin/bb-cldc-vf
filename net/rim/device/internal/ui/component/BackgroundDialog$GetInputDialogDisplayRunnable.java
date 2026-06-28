@@ -6,11 +6,11 @@ class BackgroundDialog$GetInputDialogDisplayRunnable extends BackgroundDialog$Di
    private int _maxLength;
    private int _type;
 
-   BackgroundDialog$GetInputDialogDisplayRunnable(String var1, int var2, int var3, int var4) {
-      this._label = var1;
-      this._minLength = var2;
-      this._maxLength = var3;
-      this._type = var4;
+   BackgroundDialog$GetInputDialogDisplayRunnable(String label, int minLength, int maxLength, int type) {
+      this._label = label;
+      this._minLength = minLength;
+      this._maxLength = maxLength;
+      this._type = type;
    }
 
    @Override

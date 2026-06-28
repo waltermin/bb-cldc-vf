@@ -16,12 +16,26 @@ public class PlayerRegistry {
    private PlayerRegistry() {
    }
 
-   public static Player createPlayer(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Player createPlayer(String contentType) {
+      String classname = (String)_classnames.get(contentType);
+      if (classname != null) {
+         try {
+            Player player = (Player)Class.forName(classname).newInstance();
+            return player;
+         } catch (Exception e) {
+            throw new Object(e.getMessage());
+         }
+      } else {
+         return null;
+      }
    }
 
-   public static void register(String var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static void register(String contentType, String classname) {
+      synchronized (_classnames) {
+         if (!_classnames.containsKey(contentType)) {
+            _classnames.put(contentType, classname);
+         }
+      }
    }
 
    public static MMAPIConnector getMMAPIConnector() {

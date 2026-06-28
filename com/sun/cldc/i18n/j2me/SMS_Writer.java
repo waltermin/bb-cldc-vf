@@ -4,9 +4,9 @@ import com.sun.cldc.i18n.StreamWriter;
 
 public final class SMS_Writer extends StreamWriter {
    @Override
-   public final void write(int var1) {
+   public final void write(int c) {
       byte var2;
-      switch (var1) {
+      switch (c) {
          case 10:
             var2 = 10;
             break;
@@ -435,41 +435,41 @@ public final class SMS_Writer extends StreamWriter {
    }
 
    @Override
-   public final void write(char[] var1, int var2, int var3) {
-      while (var3-- > 0) {
-         this.write(var1[var2++]);
+   public final void write(char[] cbuf, int off, int len) {
+      while (len-- > 0) {
+         this.write(cbuf[off++]);
       }
    }
 
    @Override
-   public final void write(String var1, int var2, int var3) {
+   public final void write(String str, int off, int len) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public final int sizeOf(char[] var1, int var2, int var3) {
-      int var4 = 0;
+   public final int sizeOf(char[] array, int offset, int length) {
+      int size = 0;
 
-      while (var3-- > 0) {
-         char var5 = var1[var2++];
-         switch (var5) {
-            case '\f':
-            case '[':
-            case '\\':
-            case ']':
-            case '^':
-            case '{':
-            case '|':
-            case '}':
-            case '~':
-            case '€':
-               var4++;
+      while (length-- > 0) {
+         int ch = array[offset++];
+         switch (ch) {
+            case 12:
+            case 91:
+            case 92:
+            case 93:
+            case 94:
+            case 123:
+            case 124:
+            case 125:
+            case 126:
+            case 8364:
+               size++;
             default:
-               var4++;
-            case '\r':
+               size++;
+            case 13:
          }
       }
 
-      return var4;
+      return size;
    }
 }

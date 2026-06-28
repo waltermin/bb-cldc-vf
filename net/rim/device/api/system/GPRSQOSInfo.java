@@ -56,29 +56,29 @@ public final class GPRSQOSInfo implements QOSInfo {
       this(0, 0, 0, 0, 0);
    }
 
-   public GPRSQOSInfo(int var1, int var2, int var3, int var4, int var5) {
-      this.setPrecedenceClass(var1);
-      this.setReliabilityClass(var2);
-      this.setDelayClass(var3);
-      this.setPeakThroughputClass(var4);
-      this.setMeanThroughputClass(var5);
+   public GPRSQOSInfo(int pre, int rel, int del, int peakTp, int meanTp) {
+      this.setPrecedenceClass(pre);
+      this.setReliabilityClass(rel);
+      this.setDelayClass(del);
+      this.setPeakThroughputClass(peakTp);
+      this.setMeanThroughputClass(meanTp);
    }
 
-   public GPRSQOSInfo(GPRSQOSInfo var1) {
-      this._preClass = var1._preClass;
-      this._relClass = var1._relClass;
-      this._delClass = var1._delClass;
-      this._peakTPClass = var1._peakTPClass;
-      this._meanTPClass = var1._meanTPClass;
+   public GPRSQOSInfo(GPRSQOSInfo qos) {
+      this._preClass = qos._preClass;
+      this._relClass = qos._relClass;
+      this._delClass = qos._delClass;
+      this._peakTPClass = qos._peakTPClass;
+      this._meanTPClass = qos._meanTPClass;
    }
 
    public final int getPrecedenceClass() {
       return this._preClass;
    }
 
-   public final void setPrecedenceClass(int var1) {
-      if (var1 >= 0 && var1 <= 3) {
-         this._preClass = var1;
+   public final void setPrecedenceClass(int i) {
+      if (i >= 0 && i <= 3) {
+         this._preClass = i;
       } else {
          throw new Object();
       }
@@ -88,9 +88,9 @@ public final class GPRSQOSInfo implements QOSInfo {
       return this._relClass;
    }
 
-   public final void setReliabilityClass(int var1) {
-      if (var1 >= 0 && var1 <= 5) {
-         this._relClass = var1;
+   public final void setReliabilityClass(int i) {
+      if (i >= 0 && i <= 5) {
+         this._relClass = i;
       } else {
          throw new Object();
       }
@@ -100,9 +100,9 @@ public final class GPRSQOSInfo implements QOSInfo {
       return this._delClass;
    }
 
-   public final void setDelayClass(int var1) {
-      if (var1 >= 0 && var1 <= 4) {
-         this._delClass = var1;
+   public final void setDelayClass(int i) {
+      if (i >= 0 && i <= 4) {
+         this._delClass = i;
       } else {
          throw new Object();
       }
@@ -112,9 +112,9 @@ public final class GPRSQOSInfo implements QOSInfo {
       return this._peakTPClass;
    }
 
-   public final void setPeakThroughputClass(int var1) {
-      if (var1 >= 0 && var1 <= 9) {
-         this._peakTPClass = var1;
+   public final void setPeakThroughputClass(int i) {
+      if (i >= 0 && i <= 9) {
+         this._peakTPClass = i;
       } else {
          throw new Object();
       }
@@ -124,16 +124,16 @@ public final class GPRSQOSInfo implements QOSInfo {
       return this._meanTPClass;
    }
 
-   public final void setMeanThroughputClass(int var1) {
-      if ((var1 < 0 || var1 > 18) && var1 != 31) {
+   public final void setMeanThroughputClass(int i) {
+      if ((i < 0 || i > 18) && i != 31) {
          throw new Object();
       }
 
-      this._meanTPClass = var1;
+      this._meanTPClass = i;
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object object) {
       throw new RuntimeException("cod2jar: type check");
    }
 

@@ -4,6 +4,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Graphics;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.XYRect;
 
@@ -54,16 +55,16 @@ public final class Lcdui {
       _impl._midpGraphics = null;
    }
 
-   public static final void setMIDPGraphics(Graphics var0) {
-      _impl._midpGraphics = var0;
+   public static final void setMIDPGraphics(Graphics graphics) {
+      _impl._midpGraphics = graphics;
    }
 
    public static final Graphics getMIDPGraphics() {
       return _impl._midpGraphics;
    }
 
-   public static final void setSuppressKeyEvents(boolean var0) {
-      _impl._suppressKeyEvents = var0;
+   public static final void setSuppressKeyEvents(boolean b) {
+      _impl._suppressKeyEvents = b;
    }
 
    public static final boolean getSuppressKeyEvents() {
@@ -78,40 +79,40 @@ public final class Lcdui {
       return _impl._currentKeyStates;
    }
 
-   public static final void setKeyDownHistory(int var0) {
-      _impl._keyDownHistory = var0;
+   public static final void setKeyDownHistory(int keyDownHistory) {
+      _impl._keyDownHistory = keyDownHistory;
    }
 
-   public static final void setCurrentKeyStates(int var0) {
-      _impl._currentKeyStates = var0;
+   public static final void setCurrentKeyStates(int currentKeyStates) {
+      _impl._currentKeyStates = currentKeyStates;
    }
 
-   public static final void setInvokeLaterCallback(Runnable var0, Object var1) {
+   public static final void setInvokeLaterCallback(Runnable runnable, Object notifier) {
       _impl._callbackType = 7;
-      _impl._runnable = var0;
-      _impl._notifier = var1;
+      _impl._runnable = runnable;
+      _impl._notifier = notifier;
    }
 
-   public static final void setPaintCallback(net.rim.device.api.ui.Graphics var0, Screen var1, Callbacks var2) {
-      XYRect var3 = var0.getClippingRect();
+   public static final void setPaintCallback(net.rim.device.api.ui.Graphics g, Screen s, Callbacks callback) {
+      XYRect clip = g.getClippingRect();
       _impl._paintCallback = true;
-      _impl._screen = var1;
-      _impl._paintCallbacks = var2;
-      _impl._invalid.union(var3);
+      _impl._screen = s;
+      _impl._paintCallbacks = callback;
+      _impl._invalid.union(clip);
    }
 
-   public static final void setKeyCallback(int var0, Callbacks var1, int var2) {
-      _impl._callbackType = var0;
-      _impl._keyCallbacks = var1;
-      _impl._keycode = var2;
+   public static final void setKeyCallback(int type, Callbacks callback, int keycode) {
+      _impl._callbackType = type;
+      _impl._keyCallbacks = callback;
+      _impl._keycode = keycode;
    }
 
-   public static final void setCommandActionCallback(CommandListener var0, Command var1, Displayable var2) {
+   public static final void setCommandActionCallback(CommandListener commandListener, Command command, Displayable displayable) {
       _impl._callbackState = 0;
       _impl._callbackType = 6;
-      _impl._commandListener = var0;
-      _impl._command = var1;
-      _impl._displayable = var2;
+      _impl._commandListener = commandListener;
+      _impl._command = command;
+      _impl._displayable = displayable;
    }
 
    public static final void runCallback() {
@@ -119,7 +120,48 @@ public final class Lcdui {
    }
 
    private final void runCallback0() {
-      throw new RuntimeException("cod2jar: exception table");
+      int callbackType = this._callbackType;
+      this._callbackType = 0;
+      switch (callbackType) {
+         case 2:
+         case 3:
+         case 4:
+         case 5:
+         default:
+            this._keyCallbacks.keyCallback(callbackType, this._keycode);
+            this._keyCallbacks = null;
+            return;
+         case 6:
+            if (this._commandListener != null && this._callbackState == 0) {
+               this._callbackState = 1;
+               if (this._displayable instanceof Object) {
+                  synchronized (getEventDeliveryLock()) {
+                     this._commandListener.commandAction(this._command, this._displayable);
+                  }
+               } else {
+                  this._commandListener.commandAction(this._command, this._displayable);
+               }
+            }
+
+            this._commandListener = null;
+            this._command = null;
+            this._displayable = null;
+            return;
+         case 7:
+            if (this._runnable != null) {
+               synchronized (getEventDeliveryLock()) {
+                  this._runnable.run();
+               }
+
+               if (this._notifier != null) {
+                  synchronized (this._notifier) {
+                     this._notifier.notifyAll();
+                     return;
+                  }
+               }
+            }
+         case 1:
+      }
    }
 
    public static final Object getEventDeliveryLock() {
@@ -131,6 +173,19 @@ public final class Lcdui {
    }
 
    private final void runPaintCallback0() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._paintCallback) {
+         net.rim.device.api.ui.Graphics g;
+         synchronized (Application.getEventLock()) {
+            g = this._screen.getGraphics();
+         }
+
+         g.pushContext(this._invalid, 0, 0);
+         this._paintCallbacks.paintCallback(g);
+         this._screen.updateDisplay();
+         this._paintCallback = false;
+         this._screen = null;
+         this._paintCallbacks = null;
+         this._invalid.set(0, 0, 0, 0);
+      }
    }
 }

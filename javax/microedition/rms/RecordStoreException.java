@@ -4,6 +4,6 @@ public class RecordStoreException extends Exception {
    public RecordStoreException() {
    }
 
-   public RecordStoreException(String var1) {
+   public RecordStoreException(String s) {
    }
 }

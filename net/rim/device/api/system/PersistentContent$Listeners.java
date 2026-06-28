@@ -10,36 +10,36 @@ final class PersistentContent$Listeners {
    private int _modeGeneration;
    private Application _proxy;
 
-   PersistentContent$Listeners(int var1, int var2) {
-      this._state = var1;
-      this._modeGeneration = var2;
+   PersistentContent$Listeners(int state, int modeGeneration) {
+      this._state = state;
+      this._modeGeneration = modeGeneration;
       this._proxy = Proxy.getInstance();
    }
 
-   final void addIndicator(PersistentContentListener var1) {
-      this._indicator = new PersistentContent$Listeners$Indicator(this, var1);
+   final void addIndicator(PersistentContentListener listener) {
+      this._indicator = new PersistentContent$Listeners$Indicator(this, listener);
    }
 
    final void updateStateIndicator() {
       this.updateStateIndicator(this._state);
    }
 
-   private final void updateStateIndicator(int var1) {
+   private final void updateStateIndicator(int state) {
       if (this._indicator != null) {
-         this._indicator.update(var1);
+         this._indicator.update(state);
       }
    }
 
-   final void add(PersistentContentListener var1, boolean var2) {
-      this._listeners.add(var1, var2);
+   final void add(PersistentContentListener listener, boolean weakListener) {
+      this._listeners.add(listener, weakListener);
    }
 
-   final void remove(PersistentContentListener var1) {
-      this._listeners.remove(var1);
+   final void remove(PersistentContentListener listener) {
+      this._listeners.remove(listener);
    }
 
-   final boolean isListener(PersistentContentListener var1) {
-      return this._listeners.isListener(var1);
+   final boolean isListener(PersistentContentListener listener) {
+      return this._listeners.isListener(listener);
    }
 
    final int getState() {
@@ -50,23 +50,27 @@ final class PersistentContent$Listeners {
       return this._listeners.isUpdateComplete();
    }
 
-   final void stateChanged(int var1, int var2) {
-      this.updateStateIndicator(var1);
-      if (this._state != var1) {
-         this._state = var1;
+   final void stateChanged(int newState, int lockGeneration) {
+      this.updateStateIndicator(newState);
+      if (this._state != newState) {
+         this._state = newState;
          this._proxy
-            .invokeLater(new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$StateChangeEvent(var1, var2), true));
+            .invokeLater(
+               new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$StateChangeEvent(newState, lockGeneration), true)
+            );
       }
    }
 
-   final void lockChanged(int var1) {
-      this._proxy.invokeLater(new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$LockChangeEvent(var1), false));
+   final void lockChanged(int lockGeneration) {
+      this._proxy
+         .invokeLater(new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$LockChangeEvent(lockGeneration), false));
    }
 
-   final void modeChanged(int var1) {
-      if (this._modeGeneration != var1) {
-         this._modeGeneration = var1;
-         this._proxy.invokeLater(new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$ModeChangeEvent(var1), true));
+   final void modeChanged(int modeGeneration) {
+      if (this._modeGeneration != modeGeneration) {
+         this._modeGeneration = modeGeneration;
+         this._proxy
+            .invokeLater(new PersistentContent$Listeners$EventLauncher(this._listeners, new PersistentContent$Listeners$ModeChangeEvent(modeGeneration), true));
       }
    }
 }

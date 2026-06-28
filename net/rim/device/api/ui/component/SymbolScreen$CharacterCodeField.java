@@ -23,9 +23,9 @@ class SymbolScreen$CharacterCodeField extends Field {
    private int _colour;
    private final SymbolScreen this$0;
 
-   SymbolScreen$CharacterCodeField(SymbolScreen var1, int var2, Font var3) {
+   SymbolScreen$CharacterCodeField(SymbolScreen _1, int type, Font font) {
       super(0);
-      this.this$0 = var1;
+      this.this$0 = _1;
       this._buf = (StringBuffer)(new Object());
       this._type = 0;
       this._charCode = -1;
@@ -38,41 +38,41 @@ class SymbolScreen$CharacterCodeField extends Field {
       this.COLOUR_ERROR = 16711680;
       this.COLOUR_NORMAL = 0;
       this._colour = this.COLOUR_NORMAL;
-      this._f = var3;
-      this.setFont(var3);
-      this.setType(var2);
+      this._f = font;
+      this.setFont(font);
+      this.setType(type);
    }
 
-   public void setType(int var1) {
+   public void setType(int type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean setCode(int var1) {
-      this._charCode = var1;
-      int var2 = var1 >>> 8 & 0xFF;
-      var1 &= 255;
-      boolean var3 = false;
+   public boolean setCode(int code) {
+      this._charCode = code;
+      int first = code >>> 8 & 0xFF;
+      code &= 255;
+      boolean odd = false;
       this._row = 1;
       this._cell = 1;
-      if ((129 <= var2 && var2 <= 239 || 250 <= var2 && var2 <= 252) && 64 <= var1 && var1 <= 252) {
-         if (var1 <= 158) {
-            var3 = true;
-            if (var1 <= 126) {
-               this._cell = var1 - 63;
+      if ((129 <= first && first <= 239 || 250 <= first && first <= 252) && 64 <= code && code <= 252) {
+         if (code <= 158) {
+            odd = true;
+            if (code <= 126) {
+               this._cell = code - 63;
             } else {
-               this._cell = var1 - 64;
+               this._cell = code - 64;
             }
          } else {
-            this._cell = var1 - 158;
+            this._cell = code - 158;
          }
 
-         if (var2 <= 159) {
-            this._row = (var2 - 128) * 2;
-         } else if (224 <= var2) {
-            this._row = (var2 - 192) * 2;
+         if (first <= 159) {
+            this._row = (first - 128) * 2;
+         } else if (224 <= first) {
+            this._row = (first - 192) * 2;
          }
 
-         if (var3) {
+         if (odd) {
             this._row--;
          }
 
@@ -88,7 +88,7 @@ class SymbolScreen$CharacterCodeField extends Field {
       return this._charCode;
    }
 
-   public void setHeight(int var1) {
+   public void setHeight(int height) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -108,32 +108,32 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this.setExtent(this._width, this._height);
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      int var2 = this._f.getBounds(this._buf);
-      if (var2 > this._width) {
-         var2 = this._width;
+   protected void paint(Graphics graphics) {
+      int textWidth = this._f.getBounds(this._buf);
+      if (textWidth > this._width) {
+         textWidth = this._width;
       }
 
-      var1.drawRoundRect(0, 0, this._width, this._height, this._width / 10, this._width / 10);
-      var1.setColor(this._colour);
-      var1.drawText(this._buf, 0, this._buf.length(), (this._width - var2) / 2, (this._height - this._f.getHeight()) / 2, 0, this._width);
-      var1.setColor(this.COLOUR_NORMAL);
+      graphics.drawRoundRect(0, 0, this._width, this._height, this._width / 10, this._width / 10);
+      graphics.setColor(this._colour);
+      graphics.drawText(this._buf, 0, this._buf.length(), (this._width - textWidth) / 2, (this._height - this._f.getHeight()) / 2, 0, this._width);
+      graphics.setColor(this.COLOUR_NORMAL);
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      if (var1 == 513) {
-         if (var2 != 0) {
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      if (event == 513) {
+         if (key != 0) {
             return 0;
          }
 
-         char var5 = (char)(var3 >>> 16);
-         switch (var5) {
+         char ch = (char)(keycode >>> 16);
+         switch (ch) {
             case '\n':
                this.enter();
                return 0;
@@ -142,20 +142,20 @@ class SymbolScreen$CharacterCodeField extends Field {
                this.this$0.close();
                return 0;
             case '\u007f':
-               this.this$0._symbols.keyDown(var3, var4);
+               this.this$0._symbols.keyDown(keycode, time);
                return 0;
          }
 
-         if (var5 != '\b' && (var3 & 2) == 0 && (var3 & 1) == 0 && var5 != 'A' && var5 != 'B') {
-            var5 = Keypad.getAltedChar(var5);
+         if (ch != '\b' && (keycode & 2) == 0 && (keycode & 1) == 0 && ch != 'A' && ch != 'B') {
+            ch = Keypad.getAltedChar(ch);
          }
 
-         if (var5 > 'ﻠ') {
-            var5 -= 'ﻠ';
+         if (ch > 'ﻠ') {
+            ch -= 'ﻠ';
          }
 
-         if (var5 != '\b' && (var5 < '0' || var5 > '9') && (this._type == 0 || this._type == 3 || var5 < 'A' || var5 > 'F')) {
-            return this.this$0._symbols.processKeyEvent(var1, var2, var3, var4);
+         if (ch != '\b' && (ch < '0' || ch > '9') && (this._type == 0 || this._type == 3 || ch < 'A' || ch > 'F')) {
+            return this.this$0._symbols.processKeyEvent(event, key, keycode, time);
          }
 
          if (!this._isInput) {
@@ -164,13 +164,13 @@ class SymbolScreen$CharacterCodeField extends Field {
             this._isInput = true;
          }
 
-         int var6 = this._buf.length();
-         if (var5 == '\b') {
-            if (var6 > 0) {
-               this._buf.deleteCharAt(var6 - 1);
+         int len = this._buf.length();
+         if (ch == '\b') {
+            if (len > 0) {
+               this._buf.deleteCharAt(len - 1);
             }
          } else {
-            this._buf.append(var5);
+            this._buf.append(ch);
          }
 
          this.invalidate();
@@ -183,7 +183,7 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       return this.enter();
    }
 
@@ -205,7 +205,7 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    @Override
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
+   protected boolean trackwheelRoll(int amount, int status, int time) {
       if (this._isInput) {
          this.restoreBuf();
          this._isInput = false;
@@ -213,8 +213,8 @@ class SymbolScreen$CharacterCodeField extends Field {
          return false;
       }
 
-      if ((var2 & 1) == 0) {
-         return super.trackwheelRoll(var1, var2, var3);
+      if ((status & 1) == 0) {
+         return super.trackwheelRoll(amount, status, time);
       }
 
       switch (this._type) {
@@ -223,7 +223,7 @@ class SymbolScreen$CharacterCodeField extends Field {
          case 0:
          default:
             if (this._row > 0 && this._cell > 0) {
-               this._cell += var1;
+               this._cell += amount;
                if (this._cell > 94) {
                   this._cell %= 94;
                   if (this._row >= 92 && (this._row < 115 || this._row >= 120)) {
@@ -257,7 +257,7 @@ class SymbolScreen$CharacterCodeField extends Field {
          case 1:
          case 2:
             if (this._charCode >= 0) {
-               this._charCode += var1;
+               this._charCode += amount;
                if (this._charCode > 65535) {
                   this._charCode = 65535;
                }
@@ -273,90 +273,90 @@ class SymbolScreen$CharacterCodeField extends Field {
       return true;
    }
 
-   public boolean processInputCode(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean processInputCode(boolean fromBuffer) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public int unicodeToSJIS(char var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public int unicodeToSJIS(char unicode) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private int convertDecToInt(StringBuffer var1, int var2, int var3) {
-      int var4 = var1.length();
-      if (var2 >= var4) {
+   private int convertDecToInt(StringBuffer buf, int begin, int length) {
+      int len = buf.length();
+      if (begin >= len) {
          return -1;
       }
 
-      if (var2 + var3 < var4) {
-         var4 = var2 + var3;
+      if (begin + length < len) {
+         len = begin + length;
       }
 
-      int var6 = 0;
+      int result = 0;
 
-      for (int var7 = var2; var7 < var4; var7++) {
-         var6 *= 10;
-         char var5 = this._buf.charAt(var7);
-         if ('0' > var5 || var5 > '9') {
+      for (int i = begin; i < len; i++) {
+         result *= 10;
+         int ch = this._buf.charAt(i);
+         if (48 > ch || ch > 57) {
             return -1;
          }
 
-         var6 += var5 - '0';
+         result += ch - 48;
       }
 
-      return var6;
+      return result;
    }
 
-   private int convertHexToInt(StringBuffer var1, int var2, int var3) {
-      int var4 = var1.length();
-      if (var2 >= var4) {
+   private int convertHexToInt(StringBuffer buf, int begin, int length) {
+      int len = buf.length();
+      if (begin >= len) {
          return -1;
       }
 
-      if (var2 + var3 < var4) {
-         var4 = var2 + var3;
+      if (begin + length < len) {
+         len = begin + length;
       }
 
-      int var6 = 0;
+      int result = 0;
 
-      for (int var7 = var2; var7 < var4; var7++) {
-         var6 <<= 4;
-         int var5 = this.convertHexCharToDigit(var1.charAt(var7));
-         if (var5 < 0) {
+      for (int i = begin; i < len; i++) {
+         result <<= 4;
+         int digit = this.convertHexCharToDigit(buf.charAt(i));
+         if (digit < 0) {
             return -1;
          }
 
-         var6 += var5;
+         result += digit;
       }
 
-      return var6;
+      return result;
    }
 
-   private int convertHexCharToDigit(char var1) {
-      if ('0' <= var1 && var1 <= '9') {
-         return var1 - 48;
+   private int convertHexCharToDigit(char ch) {
+      if ('0' <= ch && ch <= '9') {
+         return ch - 48;
       } else {
-         return 65 <= var1 && var1 <= 70 ? var1 - 55 : -1;
+         return 65 <= ch && ch <= 70 ? ch - 55 : -1;
       }
    }
 
-   private void convertIntToBuf(int var1, StringBuffer var2) {
-      char var3 = '\uf000';
+   private void convertIntToBuf(int n, StringBuffer buf) {
+      int mask = 61440;
 
-      for (int var6 = 3; var6 >= 0; var6--) {
-         int var4 = (var1 & var3) >>> var6 * 4;
-         var3 >>>= 4;
-         char var5 = (char)(var4 <= 9 ? 48 + var4 : 55 + var4);
-         var2.append(var5);
+      for (int i = 3; i >= 0; i--) {
+         int digit = (n & mask) >>> i * 4;
+         mask >>>= 4;
+         char ch = (char)(digit <= 9 ? 48 + digit : 55 + digit);
+         buf.append(ch);
       }
    }
 
-   private void convert2DecToBuf(int var1, StringBuffer var2) {
-      if (var1 >= 0 && var1 <= 99) {
-         if (var1 <= 9) {
+   private void convert2DecToBuf(int n, StringBuffer buf) {
+      if (n >= 0 && n <= 99) {
+         if (n <= 9) {
             this._buf.append('0');
          }
 
-         this._buf.append(var1);
+         this._buf.append(n);
       } else {
          this._buf.append('?');
          this._buf.append('?');

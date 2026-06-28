@@ -3,12 +3,12 @@ package net.rim.device.api.system;
 final class MyWLANConnectionListener implements WLANListenerInternal {
    private WLANConnectionListener _listener;
 
-   MyWLANConnectionListener(WLANConnectionListener var1) {
-      this._listener = var1;
+   MyWLANConnectionListener(WLANConnectionListener listener) {
+      this._listener = listener;
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object o) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -18,16 +18,16 @@ final class MyWLANConnectionListener implements WLANListenerInternal {
    }
 
    @Override
-   public final void networkFail(int var1, int var2, int var3) {
-      this._listener.networkDisconnected(var1);
+   public final void networkFail(int status, int error, int extendedInfo) {
+      this._listener.networkDisconnected(status);
    }
 
    @Override
-   public final void radioStatus(boolean var1) {
+   public final void radioStatus(boolean started) {
    }
 
    @Override
-   public final void networkFound(int var1) {
+   public final void networkFound(int handle) {
    }
 
    @Override

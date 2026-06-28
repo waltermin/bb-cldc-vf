@@ -28,7 +28,7 @@ public class TimeZoneDataObject implements Persistable, SyncObject {
    boolean _hidden;
    private static TimeZoneDataObject$TimeZoneDataObjectComparator _comparator;
 
-   void setBuiltInIndex(int var1) {
+   void setBuiltInIndex(int builtInIndex) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -118,45 +118,45 @@ public class TimeZoneDataObject implements Persistable, SyncObject {
    }
 
    public TimeZoneDataObject(
-      int var1,
-      int var2,
-      String var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      int var14,
-      int var15,
-      String var16,
-      String var17,
-      int var18,
-      boolean var19
+      int uid,
+      int tzid,
+      String zoneStringID,
+      int gmtOffset,
+      int dstAmount,
+      int dstStartMode,
+      int dstStartMonth,
+      int dstStartDayOfWeek,
+      int dstStartDay,
+      int dstStartTime,
+      int dstEndMode,
+      int dstEndMonth,
+      int dstEndDayOfWeek,
+      int dstEndDay,
+      int dstEndTime,
+      String defaultLongDescription,
+      String defaultShortDescription,
+      int mappedTZID,
+      boolean hidden
    ) {
-      this._uid = var1;
-      this._tzid = var2;
-      this._zoneStringID = var3;
-      this._gmtOffset = var4;
-      this._dstAmount = var5;
-      this._dstStartMode = var6;
-      this._dstStartMonth = var7;
-      this._dstStartDayOfWeek = var8;
-      this._dstStartDay = var9;
-      this._dstStartTime = var10;
-      this._dstEndMode = var11;
-      this._dstEndMonth = var12;
-      this._dstEndDayOfWeek = var13;
-      this._dstEndDay = var14;
-      this._dstEndTime = var15;
-      this._defaultLongDescription = var16;
-      this._defaultShortDescription = var17;
-      this._mappedTZID = var18;
-      this._hidden = var19;
+      this._uid = uid;
+      this._tzid = tzid;
+      this._zoneStringID = zoneStringID;
+      this._gmtOffset = gmtOffset;
+      this._dstAmount = dstAmount;
+      this._dstStartMode = dstStartMode;
+      this._dstStartMonth = dstStartMonth;
+      this._dstStartDayOfWeek = dstStartDayOfWeek;
+      this._dstStartDay = dstStartDay;
+      this._dstStartTime = dstStartTime;
+      this._dstEndMode = dstEndMode;
+      this._dstEndMonth = dstEndMonth;
+      this._dstEndDayOfWeek = dstEndDayOfWeek;
+      this._dstEndDay = dstEndDay;
+      this._dstEndTime = dstEndTime;
+      this._defaultLongDescription = defaultLongDescription;
+      this._defaultShortDescription = defaultShortDescription;
+      this._mappedTZID = mappedTZID;
+      this._hidden = hidden;
    }
 
    public static Comparator getComparator() {
@@ -164,25 +164,45 @@ public class TimeZoneDataObject implements Persistable, SyncObject {
    }
 
    public TimeZoneDataObject(
-      int var1,
-      String var2,
-      int var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      int var14,
-      String var15,
-      String var16,
-      int var17,
-      boolean var18
+      int tzid,
+      String zoneStringID,
+      int gmtOffset,
+      int dstAmount,
+      int dstStartMode,
+      int dstStartMonth,
+      int dstStartDayOfWeek,
+      int dstStartDay,
+      int dstStartTime,
+      int dstEndMode,
+      int dstEndMonth,
+      int dstEndDayOfWeek,
+      int dstEndDay,
+      int dstEndTime,
+      String defaultLongDescription,
+      String defaultShortDescription,
+      int mappedTZID,
+      boolean hidden
    ) {
-      this(UIDGenerator.getUID(), var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16, var17, var18);
+      this(
+         UIDGenerator.getUID(),
+         tzid,
+         zoneStringID,
+         gmtOffset,
+         dstAmount,
+         dstStartMode,
+         dstStartMonth,
+         dstStartDayOfWeek,
+         dstStartDay,
+         dstStartTime,
+         dstEndMode,
+         dstEndMonth,
+         dstEndDayOfWeek,
+         dstEndDay,
+         dstEndTime,
+         defaultLongDescription,
+         defaultShortDescription,
+         mappedTZID,
+         hidden
+      );
    }
 }

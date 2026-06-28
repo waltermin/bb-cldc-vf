@@ -7,19 +7,19 @@ public class Vector {
    protected int elementCount;
    protected int capacityIncrement;
 
-   public Vector(int var1, int var2) {
+   public Vector(int initialCapacity, int capacityIncrement) {
    }
 
-   public Vector(int var1) {
-      this(var1, 0);
+   public Vector(int initialCapacity) {
+      this(initialCapacity, 0);
    }
 
    public Vector() {
       this(4);
    }
 
-   public synchronized void copyInto(Object[] var1) {
-      System.arraycopy(this.elementData, 0, var1, 0, this.elementCount);
+   public synchronized void copyInto(Object[] anArray) {
+      System.arraycopy(this.elementData, 0, anArray, 0, this.elementCount);
    }
 
    public synchronized void trimToSize() {
@@ -28,38 +28,38 @@ public class Vector {
       }
    }
 
-   public synchronized void ensureCapacity(int var1) {
-      if (var1 > this.elementData.length) {
-         this.ensureCapacityHelper(var1, true);
+   public synchronized void ensureCapacity(int minCapacity) {
+      if (minCapacity > this.elementData.length) {
+         this.ensureCapacityHelper(minCapacity, true);
       }
    }
 
-   private void ensureCapacityHelper(int var1, boolean var2) {
-      int var3 = this.elementData.length;
-      int var4 = this.capacityIncrement > 0 ? var3 + this.capacityIncrement : var3 * 2;
-      if (var4 < var1) {
-         var4 = var1;
+   private void ensureCapacityHelper(int minCapacity, boolean forceNew) {
+      int oldCapacity = this.elementData.length;
+      int newCapacity = this.capacityIncrement > 0 ? oldCapacity + this.capacityIncrement : oldCapacity * 2;
+      if (newCapacity < minCapacity) {
+         newCapacity = minCapacity;
       }
 
-      if (var2) {
-         Object[] var5 = new Object[var4];
-         System.arraycopy(this.elementData, 0, var5, 0, Math.min(var5.length, this.elementData.length));
-         this.elementData = var5;
+      if (forceNew) {
+         Object[] newData = new Object[newCapacity];
+         System.arraycopy(this.elementData, 0, newData, 0, Math.min(newData.length, this.elementData.length));
+         this.elementData = newData;
       } else {
-         Array.resize(this.elementData, var4);
+         Array.resize(this.elementData, newCapacity);
       }
    }
 
-   public synchronized void setSize(int var1) {
-      if (var1 > this.elementCount && var1 > this.elementData.length) {
-         this.ensureCapacityHelper(var1, false);
+   public synchronized void setSize(int newSize) {
+      if (newSize > this.elementCount && newSize > this.elementData.length) {
+         this.ensureCapacityHelper(newSize, false);
       } else {
-         for (int var2 = var1; var2 < this.elementCount; var2++) {
-            this.elementData[var2] = null;
+         for (int i = newSize; i < this.elementCount; i++) {
+            this.elementData[i] = null;
          }
       }
 
-      this.elementCount = var1;
+      this.elementCount = newSize;
    }
 
    public int capacity() {
@@ -78,25 +78,25 @@ public class Vector {
       return (Enumeration)(new Object(this));
    }
 
-   public boolean contains(Object var1) {
-      return this.indexOf(var1, 0) >= 0;
+   public boolean contains(Object elem) {
+      return this.indexOf(elem, 0) >= 0;
    }
 
-   public int indexOf(Object var1) {
-      return this.indexOf(var1, 0);
+   public int indexOf(Object elem) {
+      return this.indexOf(elem, 0);
    }
 
-   public synchronized int indexOf(Object var1, int var2) {
-      if (var1 == null) {
-         for (int var3 = var2; var3 < this.elementCount; var3++) {
-            if (this.elementData[var3] == null) {
-               return var3;
+   public synchronized int indexOf(Object elem, int index) {
+      if (elem == null) {
+         for (int i = index; i < this.elementCount; i++) {
+            if (this.elementData[i] == null) {
+               return i;
             }
          }
       } else {
-         for (int var4 = var2; var4 < this.elementCount; var4++) {
-            if (var1.equals(this.elementData[var4])) {
-               return var4;
+         for (int i = index; i < this.elementCount; i++) {
+            if (elem.equals(this.elementData[i])) {
+               return i;
             }
          }
       }
@@ -104,16 +104,16 @@ public class Vector {
       return -1;
    }
 
-   public int lastIndexOf(Object var1) {
-      return this.lastIndexOf(var1, this.elementCount - 1);
+   public int lastIndexOf(Object elem) {
+      return this.lastIndexOf(elem, this.elementCount - 1);
    }
 
-   public synchronized int lastIndexOf(Object var1, int var2) {
+   public synchronized int lastIndexOf(Object elem, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized Object elementAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized Object elementAt(int index) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    public synchronized Object firstElement() {
@@ -132,26 +132,26 @@ public class Vector {
       }
    }
 
-   public synchronized void setElementAt(Object var1, int var2) {
+   public synchronized void setElementAt(Object obj, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized void removeElementAt(int var1) {
+   public synchronized void removeElementAt(int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized void insertElementAt(Object var1, int var2) {
+   public synchronized void insertElementAt(Object obj, int index) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public synchronized void addElement(Object var1) {
+   public synchronized void addElement(Object obj) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public synchronized boolean removeElement(Object var1) {
-      int var2 = this.indexOf(var1);
-      if (var2 >= 0) {
-         this.removeElementAt(var2);
+   public synchronized boolean removeElement(Object obj) {
+      int i = this.indexOf(obj);
+      if (i >= 0) {
+         this.removeElementAt(i);
          return true;
       } else {
          return false;
@@ -159,8 +159,8 @@ public class Vector {
    }
 
    public synchronized void removeAllElements() {
-      for (int var1 = 0; var1 < this.elementCount; var1++) {
-         this.elementData[var1] = null;
+      for (int i = 0; i < this.elementCount; i++) {
+         this.elementData[i] = null;
       }
 
       this.elementCount = 0;

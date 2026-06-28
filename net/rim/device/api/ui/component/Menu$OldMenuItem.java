@@ -6,10 +6,10 @@ class Menu$OldMenuItem extends MenuItem {
    Object _cookie;
    int _id;
 
-   public Menu$OldMenuItem(String var1, Object var2, int var3) {
-      super(var1, 0, 0);
-      this._cookie = var2;
-      this._id = var3;
+   public Menu$OldMenuItem(String text, Object cookie, int id) {
+      super(text, 0, 0);
+      this._cookie = cookie;
+      this._id = id;
    }
 
    public Object getCookie() {

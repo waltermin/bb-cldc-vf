@@ -1,5 +1,9 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.itpolicy.ITPolicy;
+import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.system.ITPolicyInternal;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.Security;
 import net.rim.vm.TraceBack;
@@ -38,17 +42,17 @@ public final class DeviceInfo {
    }
 
    public static final int getOSVersion() {
-      int[] var0 = InternalServices.parsePlatformVersionString(getPlatformVersion());
-      if (var0 != null && var0.length == 4) {
-         int var1 = 0;
+      int[] array = InternalServices.parsePlatformVersionString(getPlatformVersion());
+      if (array != null && array.length == 4) {
+         int version = 0;
 
-         for (int var2 = 3; var2 >= 0; var2--) {
-            if (var0[var2] <= 255) {
-               var1 += (var0[3 - var2] & 0xFF) << var2 * 8;
+         for (int i = 3; i >= 0; i--) {
+            if (array[i] <= 255) {
+               version += (array[3 - i] & 0xFF) << i * 8;
             }
          }
 
-         return var1;
+         return version;
       } else {
          return 0;
       }
@@ -79,8 +83,8 @@ public final class DeviceInfo {
    public static final native int getBatteryTemperature();
 
    public static final boolean isPasswordEnabled() {
-      Security var0 = Security.getInstance();
-      return var0 != null ? var0.isPasswordEnabled() : false;
+      Security s = Security.getInstance();
+      return s != null ? s.isPasswordEnabled() : false;
    }
 
    public static final native String getManufacturerName();
@@ -93,8 +97,20 @@ public final class DeviceInfo {
       return canResetIdleTime(TraceBack.getCallingModule(0));
    }
 
-   public static final boolean canResetIdleTime(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean canResetIdleTime(int callingModule) {
+      boolean result = false;
+      boolean allowResetIdleTimePolicyDefault = !ITPolicyInternal.isITPolicyEnabled();
+      if (ITPolicy.getBoolean(24, 76, allowResetIdleTimePolicyDefault)
+         && !ControlledAccess.verifyCodeModuleSignature(callingModule, 51)
+         && ControlledAccess.verifySignatures(true, 5526098)) {
+         try {
+            ApplicationControl.assertIdleTimerPermitted(true, CommonResource.getBundle(), 10166);
+            return true;
+         } catch (ControlledAccessException var4) {
+         }
+      }
+
+      return result;
    }
 
    public static final int getLockTimeout() {

@@ -6,8 +6,8 @@ import javax.microedition.media.Controllable;
 public class DataSource implements Controllable {
    private String _locator;
 
-   public DataSource(String var1) {
-      this._locator = var1;
+   public DataSource(String locator) {
+      this._locator = locator;
    }
 
    public String getLocator() {
@@ -39,7 +39,7 @@ public class DataSource implements Controllable {
    }
 
    @Override
-   public Control getControl(String var1) {
+   public Control getControl(String _1) {
       throw null;
    }
 

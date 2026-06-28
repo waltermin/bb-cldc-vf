@@ -1,5 +1,6 @@
 package javax.microedition.rms;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.internal.rms.RecordStoreData;
@@ -16,20 +17,65 @@ class RecordStoreManager implements RecordStoreManagerProxy {
    private RecordStoreManager() {
    }
 
-   static RecordStore getRecordStore(String var0, boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   static RecordStore getRecordStore(String recordStoreName, boolean createIfNecessary) {
+      RecordStoreData recordStoreData;
+      synchronized (_midletStores) {
+         recordStoreData = (RecordStoreData)_midletStores.get(recordStoreName);
+         if (recordStoreData == null) {
+            if (!createIfNecessary) {
+               throw new RecordStoreNotFoundException(recordStoreName);
+            }
+
+            recordStoreData = (RecordStoreData)(new Object(recordStoreName));
+            _midletStores.put(recordStoreName, recordStoreData);
+            PersistentObject.commit(_midletStores);
+         }
+      }
+
+      synchronized (_activeStores) {
+         RecordStore recordStore = (RecordStore)_activeStores.get(recordStoreData);
+         if (recordStore == null) {
+            recordStore = new RecordStore(recordStoreData);
+            _activeStores.put(recordStoreData, recordStore);
+         }
+
+         return recordStore;
+      }
    }
 
-   static RecordStore getRecordStore(String var0, String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static RecordStore getRecordStore(String recordStoreName, String vendorName, String suiteName) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   static void deleteRecordStore(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static void deleteRecordStore(String recordStoreName) {
+      synchronized (_activeStores) {
+         RecordStore recordStore = getRecordStore(recordStoreName, false);
+         if (recordStore.isOpen()) {
+            throw new RecordStoreException(recordStoreName);
+         }
+
+         _activeStores.remove(recordStore._recordStoreData);
+         synchronized (_midletStores) {
+            _midletStores.remove(recordStoreName);
+            PersistentObject.commit(_midletStores);
+         }
+      }
    }
 
    static String[] getRecordStoreList() {
-      throw new RuntimeException("cod2jar: exception table");
+      String[] list = null;
+      synchronized (_midletStores) {
+         Enumeration keys = _midletStores.keys();
+         if (_midletStores.size() > 0) {
+            list = new String[_midletStores.size()];
+
+            for (int i = 0; keys.hasMoreElements(); i++) {
+               list[i] = (String)keys.nextElement();
+            }
+         }
+
+         return list;
+      }
    }
 
    static void commit() {
@@ -37,30 +83,30 @@ class RecordStoreManager implements RecordStoreManagerProxy {
    }
 
    @Override
-   public void commit(RecordStoreData var1) {
-      PersistentObject.commit(var1);
+   public void commit(RecordStoreData recordStoreData) {
+      PersistentObject.commit(recordStoreData);
    }
 
-   static boolean checkOwner(RecordStore var0) {
+   static boolean checkOwner(RecordStore recordStore) {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
-   private static String generateMidletSuiteHashKey(boolean var0) {
+   private static String generateMidletSuiteHashKey(boolean includeVendorName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void deleteRecordStores(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void deleteRecordStores(String midletSuiteName, String midletSuiteVendor) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public boolean recordStoresExistForSuite(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean recordStoresExistForSuite(String midletSuiteName, String midletSuiteVendor) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public RecordStore createRecordStore(RecordStoreData var1) {
-      return new RecordStore(var1);
+   public RecordStore createRecordStore(RecordStoreData data) {
+      return new RecordStore(data);
    }
 }

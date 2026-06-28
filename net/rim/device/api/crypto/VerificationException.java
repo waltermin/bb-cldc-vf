@@ -4,6 +4,6 @@ public class VerificationException extends CryptoException {
    public VerificationException() {
    }
 
-   public VerificationException(String var1) {
+   public VerificationException(String msg) {
    }
 }

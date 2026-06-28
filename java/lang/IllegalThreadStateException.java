@@ -4,6 +4,6 @@ public class IllegalThreadStateException extends IllegalArgumentException {
    public IllegalThreadStateException() {
    }
 
-   public IllegalThreadStateException(String var1) {
+   public IllegalThreadStateException(String s) {
    }
 }

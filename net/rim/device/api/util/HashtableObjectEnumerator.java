@@ -3,28 +3,28 @@ package net.rim.device.api.util;
 final class HashtableObjectEnumerator extends ObjectEnumerator {
    private Object _empty;
 
-   HashtableObjectEnumerator(Object[] var1, Object var2) {
-      super(var1);
-      this.resetEnumeration(var1, var2);
+   HashtableObjectEnumerator(Object[] table, Object empty) {
+      super(table);
+      this.resetEnumeration(table, empty);
    }
 
-   final void resetEnumeration(Object[] var1, Object var2) {
-      this.resetEnumeration(var1);
-      this._empty = var2;
+   final void resetEnumeration(Object[] table, Object empty) {
+      this.resetEnumeration(table);
+      this._empty = empty;
    }
 
    @Override
    protected final boolean getNextElement() {
-      int var1 = super._index;
+      int i = super._index;
 
-      for (int var2 = super._elements.length; var1 < var2; var1++) {
-         if (super._elements[var1] != null && super._elements[var1] != this._empty) {
-            super._index = var1;
+      for (int len = super._elements.length; i < len; i++) {
+         if (super._elements[i] != null && super._elements[i] != this._empty) {
+            super._index = i;
             return true;
          }
       }
 
-      super._index = var1;
+      super._index = i;
       return false;
    }
 }

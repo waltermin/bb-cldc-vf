@@ -1,5 +1,7 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
+
 public class UdpAddress extends DatagramAddressBase {
    protected int _ipAddress;
    protected int _destPort;
@@ -18,41 +20,47 @@ public class UdpAddress extends DatagramAddressBase {
       this.init(-1, -1, -1, null, -1);
    }
 
-   public UdpAddress(byte[] var1, int var2, int var3, String var4, int var5) {
-      this.init(var1 != null ? DatagramAddressBase.readInt(var1, 0) : -1, var2, var3, var4, var5);
+   public UdpAddress(byte[] ipAddress, int destPort, int srcPort, String apn, int type) {
+      this.init(ipAddress != null ? DatagramAddressBase.readInt(ipAddress, 0) : -1, destPort, srcPort, apn, type);
    }
 
-   public UdpAddress(byte[] var1, int var2, int var3, String var4, int var5, int var6, int var7) {
-      this.init(var1 != null ? DatagramAddressBase.readInt(var1, 0) : -1, var2, var3, var4 != null ? var4.substring(var5, var5 + var6) : null, var7);
+   public UdpAddress(byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength, int type) {
+      this.init(
+         ipAddress != null ? DatagramAddressBase.readInt(ipAddress, 0) : -1,
+         destPort,
+         srcPort,
+         apn != null ? apn.substring(apnOffset, apnOffset + apnLength) : null,
+         type
+      );
    }
 
-   public UdpAddress(int var1, int var2, int var3, String var4, int var5) {
-      this.init(var1, var2, var3, var4, var5);
+   public UdpAddress(int ipAddress, int destPort, int srcPort, String apn, int type) {
+      this.init(ipAddress, destPort, srcPort, apn, type);
    }
 
-   public UdpAddress(int var1, int var2, int var3, String var4, int var5, int var6, int var7) {
-      this.init(var1, var2, var3, var4 != null ? var4.substring(var5, var5 + var6) : null, var7);
+   public UdpAddress(int ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength, int type) {
+      this.init(ipAddress, destPort, srcPort, apn != null ? apn.substring(apnOffset, apnOffset + apnLength) : null, type);
    }
 
-   public UdpAddress(DatagramAddressBase var1) {
+   public UdpAddress(DatagramAddressBase addressBase) {
    }
 
-   public UdpAddress(String var1) {
-      this.setAddress(var1);
+   public UdpAddress(String address) {
+      this.setAddress(address);
    }
 
-   private void init(int var1, int var2, int var3, String var4, int var5) {
+   private void init(int ipAddress, int destPort, int srcPort, String apn, int type) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public byte[] getIpAddress() {
-      byte[] var1 = null;
+      byte[] ipAddress = null;
       if (this._ipAddress != -1) {
-         var1 = new byte[4];
-         DatagramAddressBase.writeInt(var1, 0, this._ipAddress);
+         ipAddress = new byte[4];
+         DatagramAddressBase.writeInt(ipAddress, 0, this._ipAddress);
       }
 
-      return var1;
+      return ipAddress;
    }
 
    public int getIpAddressInt() {
@@ -71,7 +79,7 @@ public class UdpAddress extends DatagramAddressBase {
       return this._apn;
    }
 
-   public void setApn(String var1) {
+   public void setApn(String apn) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -79,7 +87,7 @@ public class UdpAddress extends DatagramAddressBase {
       return this._apnUsername;
    }
 
-   public void setApnUsername(String var1) {
+   public void setApnUsername(String apnUsername) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -87,15 +95,15 @@ public class UdpAddress extends DatagramAddressBase {
       return this._apnPassword;
    }
 
-   public void setApnPassword(String var1) {
+   public void setApnPassword(String apnPassword) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setSrcPort(int var1) {
+   public void setSrcPort(int srcPort) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setDestPort(int var1) {
+   public void setDestPort(int destPort) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -112,24 +120,27 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    @Override
-   public void setAddress(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setAddress(String address) {
+      try {
+         setAddress(this, address, false, true);
+      } catch (IOException var3) {
+      }
    }
 
-   public static final String resolveAddress(String var0) {
-      return setAddress(null, var0, true, false);
+   public static final String resolveAddress(String address) {
+      return setAddress(null, address, true, false);
    }
 
-   private static final String setAddress(UdpAddress var0, String var1, boolean var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final String setAddress(UdpAddress udpAddress, String address, boolean resolve, boolean parse) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
    public String getAddress() {
       if (super._address == null) {
-         byte[] var1 = new byte[4];
-         DatagramAddressBase.writeInt(var1, 0, this._ipAddress);
-         super._address = makeAddress(false, var1, this._destPort, this._srcPort, this._apn, this._type, this._apnUsername, this._apnPassword);
+         byte[] ipAddress = new byte[4];
+         DatagramAddressBase.writeInt(ipAddress, 0, this._ipAddress);
+         super._address = makeAddress(false, ipAddress, this._destPort, this._srcPort, this._apn, this._type, this._apnUsername, this._apnPassword);
       }
 
       return super._address;
@@ -137,79 +148,83 @@ public class UdpAddress extends DatagramAddressBase {
 
    @Override
    public void swap() {
-      int var1 = this._destPort;
+      int port = this._destPort;
       this._destPort = this._srcPort;
-      this._srcPort = var1;
+      this._srcPort = port;
       super._address = null;
    }
 
    @Override
-   public boolean equals(Object var1) {
+   public boolean equals(Object addressBase) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public int hashCode() {
-      int var1 = 7;
-      var1 = 31 * var1 + this._ipAddress;
-      var1 = 31 * var1 + this._destPort;
-      var1 = 31 * var1 + this._srcPort;
+      int hash = 7;
+      hash = 31 * hash + this._ipAddress;
+      hash = 31 * hash + this._destPort;
+      hash = 31 * hash + this._srcPort;
       if (this._apn != null) {
-         var1 = 31 * var1 + this._apn.hashCode();
+         hash = 31 * hash + this._apn.hashCode();
       }
 
-      return 31 * var1 + this._type;
+      return 31 * hash + this._type;
    }
 
-   public boolean compareApn(String var1, int var2, int var3) {
+   public boolean compareApn(String apn, int apnOffset, int apnLength) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static String makeAddress(boolean var0, byte[] var1, int var2, int var3, String var4, int var5) {
-      return makeAddress(var0, var1, var2, var3, var4, var5, null, null);
+   public static String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type) {
+      return makeAddress(open, ipAddress, destPort, srcPort, apn, type, null, null);
    }
 
-   public static String makeAddress(boolean var0, byte[] var1, int var2, int var3, String var4, int var5, int var6, int var7) {
-      return makeAddress(var0, var1, var2, var3, var4 != null ? var4.substring(var5, var5 + var6) : null, var7, null, null);
+   public static String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength, int type) {
+      return makeAddress(open, ipAddress, destPort, srcPort, apn != null ? apn.substring(apnOffset, apnOffset + apnLength) : null, type, null, null);
    }
 
-   public static String makeAddress(boolean var0, byte[] var1, int var2, int var3, String var4, int var5, String var6, String var7) {
-      Object var8 = new Object(128);
-      appendAddress((StringBuffer)var8, var0, var1, var2, var3, var4, var5, var6, var7);
-      return ((StringBuffer)var8).toString();
+   public static String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type, String apnUsername, String apnPassword) {
+      StringBuffer buf = (StringBuffer)(new Object(128));
+      appendAddress(buf, open, ipAddress, destPort, srcPort, apn, type, apnUsername, apnPassword);
+      return buf.toString();
    }
 
-   public static void appendAddress(StringBuffer var0, boolean var1, byte[] var2, int var3, int var4, String var5, int var6, int var7, int var8) {
-      appendAddress(var0, var1, var2, var3, var4, var5 != null ? var5.substring(var6, var6 + var7) : null, var8, null, null);
+   public static void appendAddress(
+      StringBuffer buf, boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength, int type
+   ) {
+      appendAddress(buf, open, ipAddress, destPort, srcPort, apn != null ? apn.substring(apnOffset, apnOffset + apnLength) : null, type, null, null);
    }
 
-   public static void appendAddress(StringBuffer var0, boolean var1, byte[] var2, int var3, int var4, String var5, int var6) {
-      appendAddress(var0, var1, var2, var3, var4, var5, var6, null, null);
+   public static void appendAddress(StringBuffer buf, boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type) {
+      appendAddress(buf, open, ipAddress, destPort, srcPort, apn, type, null, null);
    }
 
-   private static void appendAddress(StringBuffer var0, boolean var1, byte[] var2, int var3, int var4, String var5, int var6, String var7, String var8) {
+   private static void appendAddress(
+      StringBuffer buf, boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type, String apnUsername, String apnPassword
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static byte[] parseIpAddress(String var0, int var1) {
-      byte[] var2 = new byte[4];
-      DatagramAddressBase.writeInt(var2, 0, DatagramAddressBase.parseIpAddressInt(var0, var1));
-      return var2;
+   public static byte[] parseIpAddress(String address, int offset) {
+      byte[] ipAddress = new byte[4];
+      DatagramAddressBase.writeInt(ipAddress, 0, DatagramAddressBase.parseIpAddressInt(address, offset));
+      return ipAddress;
    }
 
-   public static String[] retrieveApnSettings(String var0) {
+   public static String[] retrieveApnSettings(String address) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   protected static String parseApn(String var0, int var1) {
+   protected static String parseApn(String address, int offset) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   protected static int parseApnCredentials(String var0, int var1, String[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected static int parseApnCredentials(String address, int offset, String[] types) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static byte[] resolveAddress(String var0, String var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static byte[] resolveAddress(String address, String apn, boolean randomize) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

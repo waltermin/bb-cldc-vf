@@ -4,38 +4,38 @@ final class ObjectArraySortParallelLong {
    private ObjectArraySortParallelLong() {
    }
 
-   private static final int rangeCheck(int var0, int var1, int var2) {
-      if (var1 > var2) {
+   private static final int rangeCheck(int arrayLen, int from, int to) {
+      if (from > to) {
          throw new Object();
-      } else if (var1 < 0) {
-         throw new Object(var1);
-      } else if (var2 > var0) {
-         throw new Object(var2);
+      } else if (from < 0) {
+         throw new Object(from);
+      } else if (to > arrayLen) {
+         throw new Object(to);
       } else {
-         return var2 - var1;
+         return to - from;
       }
    }
 
-   public static final void sort(Object[] var0, int var1, int var2, long[] var3, Comparator var4) {
+   public static final void sort(Object[] a, int from, int to, long[] parallel, Comparator comparator) {
       throw new RuntimeException("cod2jar: stack imbalance");
    }
 
-   private static final boolean exchange(Object[] var0, long[] var1, Comparator var2, int var3, int var4) {
-      Object var5 = var0[var3];
-      Object var6 = var0[var4];
-      if (var2.compare(var5, var6) > 0) {
-         var0[var3] = var6;
-         var0[var4] = var5;
-         long var7 = var1[var3];
-         var1[var3] = var1[var4];
-         var1[var4] = var7;
+   private static final boolean exchange(Object[] a, long[] parallel, Comparator comparator, int x1, int x2) {
+      Object t1 = a[x1];
+      Object t2 = a[x2];
+      if (comparator.compare(t1, t2) > 0) {
+         a[x1] = t2;
+         a[x2] = t1;
+         long tempObj = parallel[x1];
+         parallel[x1] = parallel[x2];
+         parallel[x2] = tempObj;
          return true;
       } else {
          return false;
       }
    }
 
-   private static final void mergeSort(Object[] var0, Object[] var1, long[] var2, long[] var3, Comparator var4, int var5, int var6) {
+   private static final void mergeSort(Object[] a, Object[] aux, long[] parallel, long[] auxParallel, Comparator comparator, int from, int length) {
       throw new RuntimeException("cod2jar: stack imbalance");
    }
 }

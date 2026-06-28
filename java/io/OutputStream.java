@@ -1,26 +1,26 @@
 package java.io;
 
 public class OutputStream {
-   public void write(int var1) {
+   public void write(int _1) {
       throw null;
    }
 
-   public void write(byte[] var1) {
-      this.write(var1, 0, var1.length);
+   public void write(byte[] b) {
+      this.write(b, 0, b.length);
    }
 
-   public void write(byte[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public void write(byte[] b, int off, int len) {
+      if (b == null) {
          throw new NullPointerException();
       }
 
-      if (var2 < 0 || var2 > var1.length || var3 < 0 || var2 + var3 > var1.length || var2 + var3 < 0) {
+      if (off < 0 || off > b.length || len < 0 || off + len > b.length || off + len < 0) {
          throw new IndexOutOfBoundsException();
       }
 
-      if (var3 != 0) {
-         for (int var4 = 0; var4 < var3; var4++) {
-            this.write(var1[var2 + var4]);
+      if (len != 0) {
+         for (int i = 0; i < len; i++) {
+            this.write(b[off + i]);
          }
       }
    }

@@ -11,16 +11,16 @@ public class PopupScreen extends Screen {
    private static Tag TAG;
    private static final int SCALE_FACTOR;
 
-   public PopupScreen(Manager var1) {
-      this(var1, 0);
+   public PopupScreen(Manager delegate) {
+      this(delegate, 0);
    }
 
-   public PopupScreen(Manager var1, long var2) {
-      super(var1, var2);
+   public PopupScreen(Manager delegate, long style) {
+      super(delegate, style);
       this.setTag(TAG);
-      int var4 = Display.getWidth() * 5 / 100;
-      int var5 = Display.getHeight() * 5 / 100;
-      this.setMargin(var5, var4, var5, var4);
+      int marginHorizontal = Display.getWidth() * 5 / 100;
+      int marginVertical = Display.getHeight() * 5 / 100;
+      this.setMargin(marginVertical, marginHorizontal, marginVertical, marginHorizontal);
    }
 
    @Override
@@ -29,20 +29,20 @@ public class PopupScreen extends Screen {
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      var1 -= this.getMarginLeft() + this.getMarginRight();
-      var2 -= this.getMarginTop() + this.getMarginBottom();
+   protected void sublayout(int width, int height) {
+      width -= this.getMarginLeft() + this.getMarginRight();
+      height -= this.getMarginTop() + this.getMarginBottom();
       this.setPositionDelegate(0, 0);
-      this.layoutDelegate(var1, var2);
-      XYRect var3 = this.getDelegate().getExtent();
-      int var4 = var1 - var3.width >> 1;
-      int var5 = var2 - var3.height >> 1;
-      this.setPosition(var4 + this.getMarginLeft(), var5 + this.getMarginTop());
-      this.setExtent(var3.width, var3.height);
+      this.layoutDelegate(width, height);
+      XYRect fmExtent = this.getDelegate().getExtent();
+      int newX = width - fmExtent.width >> 1;
+      int newY = height - fmExtent.height >> 1;
+      this.setPosition(newX + this.getMarginLeft(), newY + this.getMarginTop());
+      this.setExtent(fmExtent.width, fmExtent.height);
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 }

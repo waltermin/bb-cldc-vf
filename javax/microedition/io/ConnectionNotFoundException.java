@@ -6,6 +6,6 @@ public class ConnectionNotFoundException extends IOException {
    public ConnectionNotFoundException() {
    }
 
-   public ConnectionNotFoundException(String var1) {
+   public ConnectionNotFoundException(String s) {
    }
 }

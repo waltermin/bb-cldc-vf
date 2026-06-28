@@ -10,29 +10,29 @@ public final class FileOutputStream extends OutputStream {
    private int _available;
    private Runnable _cleanupRunnable;
 
-   public FileOutputStream(int var1, String var2) {
+   public FileOutputStream(int fs, String fileName) {
    }
 
    @Override
-   public final synchronized void write(int var1) {
+   public final synchronized void write(int b) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public final synchronized void write(byte[] var1, int var2, int var3) {
-      if (var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         int var4 = 0;
+   public final synchronized void write(byte[] b, int off, int len) {
+      if (off >= 0 && len >= 0 && b.length - len >= off) {
+         int bytesCopied = 0;
 
-         while (var4 < var3) {
+         while (bytesCopied < len) {
             if (this._available == 0) {
                this.flush();
             }
 
-            int var5 = Math.min(this._available, var3 - var4);
-            System.arraycopy(var1, var2 + var4, this._buffer, this._offset, var5);
-            var4 += var5;
-            this._available -= var5;
-            this._offset += var5;
+            int bytesToCopy = Math.min(this._available, len - bytesCopied);
+            System.arraycopy(b, off + bytesCopied, this._buffer, this._offset, bytesToCopy);
+            bytesCopied += bytesToCopy;
+            this._available -= bytesToCopy;
+            this._offset += bytesToCopy;
          }
       } else {
          throw new Object();
@@ -41,7 +41,7 @@ public final class FileOutputStream extends OutputStream {
 
    @Override
    public final synchronized void flush() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override

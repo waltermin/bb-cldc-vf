@@ -3,10 +3,10 @@ package net.rim.device.api.system;
 public final class BMPEncodedImage extends EncodedImage {
    private BMPEncodedImage$BMPImageInfo _bmpInfo;
 
-   BMPEncodedImage(byte[] var1, int var2, int var3) {
-      super._data = var1;
-      super._offset = var2;
-      super._length = var3;
+   BMPEncodedImage(byte[] data, int offset, int length) {
+      super._data = data;
+      super._offset = offset;
+      super._length = length;
       this.init();
    }
 
@@ -22,8 +22,8 @@ public final class BMPEncodedImage extends EncodedImage {
       super._frameInfo[0].hasTransparency = this._bmpInfo.hasTransparency;
    }
 
-   BMPEncodedImage(String var1) {
-      super._filename = var1;
+   BMPEncodedImage(String filename) {
+      super._filename = filename;
       this.init();
    }
 
@@ -32,8 +32,8 @@ public final class BMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getBitmapType(int var1) {
-      if (var1 >= 0 && var1 < super._info.frameCount) {
+   public final int getBitmapType(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return Bitmap.DEFAULT_TYPE;
       } else {
          throw new Object();
@@ -41,8 +41,8 @@ public final class BMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getAlphaType(int var1) {
-      if (var1 >= 0 && var1 < super._info.frameCount) {
+   public final int getAlphaType(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
          throw new Object();
@@ -50,17 +50,17 @@ public final class BMPEncodedImage extends EncodedImage {
    }
 
    @Override
-   final Bitmap getBitmapImpl(int var1) {
-      if (var1 != 0) {
+   final Bitmap getBitmapImpl(int frameIndex) {
+      if (frameIndex != 0) {
          throw new Object();
       }
 
-      boolean var2 = (super._decodeMode & 4) != 0;
-      int var3 = this.getScaledWidth();
-      int var4 = this.getScaledHeight();
-      Bitmap var5 = new Bitmap(this.getBitmapType(var1), var3, var4, null, var2, false);
-      this.getBMPImage(var5, super._scaleX, super._scaleY, super._decodeMode);
-      return var5;
+      boolean readonly = (super._decodeMode & 4) != 0;
+      int width = this.getScaledWidth();
+      int height = this.getScaledHeight();
+      Bitmap bitmap = new Bitmap(this.getBitmapType(frameIndex), width, height, null, readonly, false);
+      this.getBMPImage(bitmap, super._scaleX, super._scaleY, super._decodeMode);
+      return bitmap;
    }
 
    static final native boolean isBMPSupported();

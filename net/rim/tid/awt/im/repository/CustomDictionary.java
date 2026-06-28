@@ -13,35 +13,35 @@ public class CustomDictionary implements ReadableSet, CollectionEventSource {
    public static final byte EXTRACTED_WORDS;
    public static final byte REJECTED_WORDS;
 
-   public Object add(Object var1) {
-      this._listeners.fireElementAdded(this, var1);
-      return var1;
+   public Object add(Object newEntry) {
+      this._listeners.fireElementAdded(this, newEntry);
+      return newEntry;
    }
 
-   public void remove(Object var1) {
-      this._listeners.fireElementRemoved(this, var1);
+   public void remove(Object removeEntry) {
+      this._listeners.fireElementRemoved(this, removeEntry);
    }
 
-   public boolean isInRepository(Object var1) {
+   public boolean isInRepository(Object _1) {
       throw null;
    }
 
-   public Object find(Object var1) {
+   public Object find(Object entry) {
       return null;
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._listeners.addCollectionListener(var1);
+   public void addCollectionListener(Object listener) {
+      this._listeners.addCollectionListener(listener);
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._listeners.addCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._listeners.addCollectionListener(listener);
    }
 
    @Override
-   public int getElements(Object[] var1) {
+   public int getElements(Object[] _1) {
       throw null;
    }
 
@@ -51,7 +51,7 @@ public class CustomDictionary implements ReadableSet, CollectionEventSource {
    }
 
    @Override
-   public boolean contains(Object var1) {
+   public boolean contains(Object _1) {
       throw null;
    }
 

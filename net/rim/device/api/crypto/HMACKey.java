@@ -40,52 +40,66 @@ public final class HMACKey implements SymmetricKey, Persistable {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void initialize(HMACCryptoToken var1, int var2) {
-      if (var1 != null && var2 >= 0) {
-         this.initialize(var1, var1.createKey(var2));
+   private final void initialize(HMACCryptoToken cryptoToken, int length) {
+      if (cryptoToken != null && length >= 0) {
+         this.initialize(cryptoToken, cryptoToken.createKey(length));
       } else {
          throw new Object();
       }
    }
 
-   private final void intialize(HMACCryptoToken var1, byte[] var2, int var3, int var4) {
-      if (var1 != null && var2 != null && var3 >= 0 && var4 >= 0 && var2.length - var4 >= var3) {
-         this.initialize(var1, var1.injectKey(var2, var3, var4));
+   private final void intialize(HMACCryptoToken cryptoToken, byte[] data, int offset, int length) {
+      if (cryptoToken != null && data != null && offset >= 0 && length >= 0 && data.length - length >= offset) {
+         this.initialize(cryptoToken, cryptoToken.injectKey(data, offset, length));
       } else {
          throw new Object();
       }
    }
 
-   private final void initialize(HMACCryptoToken var1, CryptoTokenMACKeyData var2) {
-      if (var1 != null && var2 != null) {
-         this._cryptoToken = var1;
-         this._cryptoTokenData = var2;
+   private final void initialize(HMACCryptoToken cryptoToken, CryptoTokenMACKeyData cryptoTokenData) {
+      if (cryptoToken != null && cryptoTokenData != null) {
+         this._cryptoToken = cryptoToken;
+         this._cryptoTokenData = cryptoTokenData;
          this.setHashCode();
       } else {
          throw new Object();
       }
    }
 
-   public HMACKey(HMACCryptoToken var1, CryptoTokenMACKeyData var2) {
-      this.initialize(var1, var2);
+   public HMACKey(HMACCryptoToken cryptoToken, CryptoTokenMACKeyData cryptoTokenData) {
+      this.initialize(cryptoToken, cryptoTokenData);
    }
 
-   public HMACKey(HMACCryptoToken var1, byte[] var2, int var3, int var4) {
-      this.intialize(var1, var2, var3, var4);
+   public HMACKey(HMACCryptoToken cryptoToken, byte[] data, int offset, int length) {
+      this.intialize(cryptoToken, data, offset, length);
    }
 
-   public HMACKey(HMACCryptoToken var1, int var2) {
-      this.initialize(var1, var2);
+   public HMACKey(HMACCryptoToken cryptoToken, int length) {
+      this.initialize(cryptoToken, length);
    }
 
-   public HMACKey(byte[] var1) {
-      this(var1, 0, var1 == null ? 0 : var1.length);
+   public HMACKey(byte[] data) {
+      this(data, 0, data == null ? 0 : data.length);
    }
 
-   public HMACKey(byte[] var1, int var2, int var3) {
+   public HMACKey(byte[] data, int offset, int length) {
+      try {
+         this.intialize(SoftwareHMACCryptoToken.getInstance(), data, offset, length);
+      } catch (CryptoTokenException e) {
+         throw new Object(e.toString());
+      } catch (CryptoUnsupportedOperationException e) {
+         throw new Object(e.toString());
+      }
    }
 
-   public HMACKey(int var1) {
+   public HMACKey(int length) {
+      try {
+         this.initialize(SoftwareHMACCryptoToken.getInstance(), length);
+      } catch (CryptoTokenException e) {
+         throw new Object(e.toString());
+      } catch (CryptoUnsupportedOperationException e) {
+         throw new Object(e.toString());
+      }
    }
 
    public HMACKey() {
@@ -105,7 +119,7 @@ public final class HMACKey implements SymmetricKey, Persistable {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

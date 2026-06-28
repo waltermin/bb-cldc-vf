@@ -1,12 +1,21 @@
 package net.rim.device.cldc.io.dns;
 
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
+import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.system.UDPPacketListener;
+import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.io.PortAssigner;
+import net.rim.device.internal.system.RadioInternal;
 import net.rim.device.internal.system.SimulatorServices;
 
 public class DNSResolverIPv4 implements UDPPacketListener {
@@ -22,167 +31,199 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    private static final int DNS_QUERY_UDP_PORT;
    private static DNSResolverIPv4 _instance;
 
-   public int getAddressByHostname(String var1, DNSListener var2) {
-      return this.getAddressByHostname(var1, var2, 0);
+   public int getAddressByHostname(String hostname, DNSListener listener) {
+      return this.getAddressByHostname(hostname, listener, 0);
    }
 
-   public Vector getAddressByHostname(String var1) {
-      return this.getAddressByHostname(var1, 0);
+   public Vector getAddressByHostname(String hostname) {
+      return this.getAddressByHostname(hostname, 0);
    }
 
-   public int getAddressByHostname(String var1, DNSListener var2, String var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public Vector getAddressByHostname(String var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public int getAddressByHostname(String var1, DNSListener var2, int var3) {
-      if (var2 == null) {
-         throw new Object();
-      }
-
-      DNSRequest var4 = new DNSRequest(var1, var2, var3);
-      this.prepRequest(var4, true);
-      this._thread.addRequest(var4);
-      return var4.getPacketId();
-   }
-
-   public Vector getAddressByHostname(String var1, int var2) {
+   public int getAddressByHostname(String hostname, DNSListener listener, String apn) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public int getHostnameByAddress(byte[] var1, DNSListener var2) {
-      return this.getHostnameByAddress(var1, var2, 0);
+   public Vector getAddressByHostname(String hostname, String apn) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public Vector getHostnameByAddress(byte[] var1) {
-      return this.getHostnameByAddress(var1, 0);
-   }
-
-   public int getHostnameByAddress(byte[] var1, DNSListener var2, String var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public Vector getHostnameByAddress(byte[] var1, String var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public int getHostnameByAddress(byte[] var1, DNSListener var2, int var3) {
-      if (var2 == null) {
+   public int getAddressByHostname(String hostname, DNSListener listener, int apnId) {
+      if (listener == null) {
          throw new Object();
       }
 
-      DNSRequest var4 = new DNSRequest(var1, var2, var3);
-      this.prepRequest(var4, true);
-      this._thread.addRequest(var4);
-      return var4.getPacketId();
+      DNSRequest req = new DNSRequest(hostname, listener, apnId);
+      this.prepRequest(req, true);
+      this._thread.addRequest(req);
+      return req.getPacketId();
    }
 
-   public Vector getHostnameByAddress(byte[] var1, int var2) {
-      DNSRequest var3 = new DNSRequest(var1, null, var2);
-      this.prepRequest(var3, true);
-      Vector var4 = this.executeQuery(var3);
-      if (var3.getStatus() != 11) {
-         throw new DNSException(var3.getStatus());
-      } else {
-         return var4;
-      }
+   public Vector getAddressByHostname(String hostname, int apnId) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public Vector doBlockingQuery(DNSRequest var1) {
-      this.prepRequest(var1, false);
-      Vector var3 = this.executeQuery(var1);
-      int var2 = var1.getQueryType() == 1 ? 1 : 11;
-      if (var1.getStatus() != var2) {
-         throw new DNSException(var1.getStatus());
-      } else {
-         return var3;
-      }
+   public int getHostnameByAddress(byte[] ipAddr, DNSListener listener) {
+      return this.getHostnameByAddress(ipAddr, listener, 0);
    }
 
-   public int doQuery(DNSRequest var1) {
-      if (var1.getListener() == null) {
+   public Vector getHostnameByAddress(byte[] ipAddr) {
+      return this.getHostnameByAddress(ipAddr, 0);
+   }
+
+   public int getHostnameByAddress(byte[] ipAddr, DNSListener listener, String apn) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public Vector getHostnameByAddress(byte[] ipAddr, String apn) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public int getHostnameByAddress(byte[] ipAddr, DNSListener listener, int apnId) {
+      if (listener == null) {
          throw new Object();
       }
 
-      this.prepRequest(var1, false);
-      this._thread.addRequest(var1);
-      return var1.getPacketId();
+      DNSRequest req = new DNSRequest(ipAddr, listener, apnId);
+      this.prepRequest(req, true);
+      this._thread.addRequest(req);
+      return req.getPacketId();
    }
 
-   public void clearResultFromCache(String var1, Object var2) {
-      this._cache.removeFromCache(var1, var2);
+   public Vector getHostnameByAddress(byte[] ipAddr, int apnId) {
+      DNSRequest req = new DNSRequest(ipAddr, null, apnId);
+      this.prepRequest(req, true);
+      Vector results = this.executeQuery(req);
+      if (req.getStatus() != 11) {
+         throw new DNSException(req.getStatus());
+      } else {
+         return results;
+      }
+   }
+
+   public Vector doBlockingQuery(DNSRequest req) {
+      this.prepRequest(req, false);
+      Vector results = this.executeQuery(req);
+      int status = req.getQueryType() == 1 ? 1 : 11;
+      if (req.getStatus() != status) {
+         throw new DNSException(req.getStatus());
+      } else {
+         return results;
+      }
+   }
+
+   public int doQuery(DNSRequest req) {
+      if (req.getListener() == null) {
+         throw new Object();
+      }
+
+      this.prepRequest(req, false);
+      this._thread.addRequest(req);
+      return req.getPacketId();
+   }
+
+   public void clearResultFromCache(String queryString, Object result) {
+      this._cache.removeFromCache(queryString, result);
    }
 
    public DNSCache getCache() {
       return this._cache;
    }
 
-   public void setup(long var1, Object var3) {
-      if (var1 == -3533413171973668650L) {
+   public void setup(long guid, Object value) {
+      if (guid == -3533413171973668650L) {
          this.RECURSION_ENABLED = 0;
       } else {
-         if (var1 == -797472996234301532L) {
+         if (guid == -797472996234301532L) {
             this.RECURSION_ENABLED = 256;
          }
       }
    }
 
    @Override
-   public void packetStatus(int var1, int var2) {
+   public void packetStatus(int packetId, int status) {
    }
 
    @Override
-   public void packetReceived(UDPPacketHeader var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void packetReceived(UDPPacketHeader header, byte[] data) {
+      if (header.getSourcePort() == 53 && this.isMatchingPort(header.getDestinationPort())) {
+         if (data.length >= 12) {
+            DNSMessageIPv4 answer;
+            try {
+               answer = new DNSMessageIPv4();
+               answer.readMessage((DataBuffer)(new Object(data, 0, data.length, true)));
+            } catch (EOFException e) {
+               return;
+            }
+
+            DNSRequest req = (DNSRequest)this._packetIDtoDNSData.get(answer.getID() & 65535);
+            if (req != null) {
+               EventLogger.logEvent(1197736374800106759L, 1381528436, 4);
+               synchronized (req) {
+                  req.setAnswer(answer);
+                  req.setStatus(12);
+                  req.notify();
+               }
+            }
+         }
+      }
    }
 
    @Override
-   public void packetNotSent(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void packetNotSent(int packetId, int networkId) {
+      DNSRequest req;
+      synchronized (this._radioIDtoDNSData) {
+         req = (DNSRequest)this._radioIDtoDNSData.remove(packetId);
+      }
+
+      if (req != null) {
+         synchronized (req) {
+            req.setStatus(4);
+            req.notify();
+         }
+      }
    }
 
    @Override
-   public void packetSent(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void packetSent(int packetId, int networkId) {
+      synchronized (this._radioIDtoDNSData) {
+         this._radioIDtoDNSData.remove(packetId);
+      }
    }
 
-   private DNSRequest processResponse(DNSRequest var1) {
-      Object var2 = null;
-      switch (var1.getAnswer().getRcode()) {
+   private DNSRequest processResponse(DNSRequest req) {
+      Vector results = null;
+      switch (req.getAnswer().getRcode()) {
          case 0:
          default:
-            this._cache.addToCache(var1);
-            var2 = new Object();
-            var1.setStatus(10);
-            boolean var4 = false;
-            int var5 = var1.getQueryType() == 1 ? 1 : 12;
-            Vector var6 = var1.getAnswer().getAnswers();
-            int var7 = var6.size();
+            this._cache.addToCache(req);
+            results = (Vector)(new Object());
+            req.setStatus(10);
+            boolean cnameSpecified = false;
+            int desiredType = req.getQueryType() == 1 ? 1 : 12;
+            Vector answers = req.getAnswer().getAnswers();
+            int answersSize = answers.size();
 
-            for (int var8 = 0; var8 < var7; var8++) {
-               DNSMessageIPv4Resource var3 = (DNSMessageIPv4Resource)var6.elementAt(var8);
-               if (var3.getType() == var5) {
-                  ((Vector)var2).addElement(var3.getData());
-               } else if (var3.getType() == 5) {
-                  var4 = true;
+            for (int i = 0; i < answersSize; i++) {
+               DNSMessageIPv4Resource record = (DNSMessageIPv4Resource)answers.elementAt(i);
+               if (record.getType() == desiredType) {
+                  results.addElement(record.getData());
+               } else if (record.getType() == 5) {
+                  cnameSpecified = true;
                }
             }
 
-            if (((Vector)var2).size() != 0) {
+            if (results.size() != 0) {
                EventLogger.logEvent(1197736374800106759L, 1382380625, 0);
-               return this.endQuery(var1, var1.getQueryType() == 1 ? 1 : 11, (Vector)var2);
+               return this.endQuery(req, req.getQueryType() == 1 ? 1 : 11, results);
             } else {
-               DNSRequest var10 = null;
-               if (var4) {
+               DNSRequest newReq = null;
+               if (cnameSpecified) {
                   EventLogger.logEvent(1197736374800106759L, 1130458705, 0);
-                  if (var1.getCnameAttempts() < 9) {
-                     var1.setCnameAttempts(var1.getCnameAttempts() + 1);
-                     var10 = this.setupAliasQuery(var1);
-                     if (var10 != null) {
-                        var10.setCnameAttempts(var1.getCnameAttempts() + 1);
+                  if (req.getCnameAttempts() < 9) {
+                     req.setCnameAttempts(req.getCnameAttempts() + 1);
+                     newReq = this.setupAliasQuery(req);
+                     if (newReq != null) {
+                        newReq.setCnameAttempts(req.getCnameAttempts() + 1);
                      } else {
                         EventLogger.logEvent(1197736374800106759L, 1130458705, 3);
                      }
@@ -191,11 +232,11 @@ public class DNSResolverIPv4 implements UDPPacketListener {
                   }
                } else {
                   EventLogger.logEvent(1197736374800106759L, 1382377041, 0);
-                  if (var1.getReferralAttempts() < 21) {
-                     var1.setReferralAttempts(var1.getReferralAttempts() + 1);
-                     var10 = this.setupReferredQuery(var1);
-                     if (var10 != null) {
-                        var10.setReferralAttempts(var1.getReferralAttempts() + 1);
+                  if (req.getReferralAttempts() < 21) {
+                     req.setReferralAttempts(req.getReferralAttempts() + 1);
+                     newReq = this.setupReferredQuery(req);
+                     if (newReq != null) {
+                        newReq.setReferralAttempts(req.getReferralAttempts() + 1);
                      } else {
                         EventLogger.logEvent(1197736374800106759L, 1382377041, 3);
                      }
@@ -204,122 +245,243 @@ public class DNSResolverIPv4 implements UDPPacketListener {
                   }
                }
 
-               if (var10 != null) {
-                  return var10;
+               if (newReq != null) {
+                  return newReq;
                }
 
                EventLogger.logEvent(1197736374800106759L, 1165128273, 0);
-               return this.endQuery(var1, 10, null);
+               return this.endQuery(req, 10, null);
             }
          case 1:
-            return this.endQuery(var1, 5, null);
+            return this.endQuery(req, 5, null);
          case 2:
-            return this.endQuery(var1, 6, null);
+            return this.endQuery(req, 6, null);
          case 3:
-            return this.endQuery(var1, 7, null);
+            return this.endQuery(req, 7, null);
          case 4:
-            return this.endQuery(var1, 8, null);
+            return this.endQuery(req, 8, null);
          case 5:
-            var1 = this.endQuery(var1, 9, null);
+            req = this.endQuery(req, 9, null);
          case -1:
-            return var1;
+            return req;
       }
    }
 
-   private DNSRequest endQuery(DNSRequest var1, int var2, Vector var3) {
+   private DNSRequest endQuery(DNSRequest req, int status, Vector results) {
       while (true) {
-         int var4 = var1.getQueryType() == 1 ? 1 : 11;
-         switch (var2) {
+         int successStatus = req.getQueryType() == 1 ? 1 : 11;
+         switch (status) {
             case 2:
-               byte[] var5 = var1.getCurrentIp();
-               String var6 = var1.getCurrentNsName();
-               if (var6 != null) {
-                  this._cache.removeFromCache(var6, var5);
+               byte[] nsIp = req.getCurrentIp();
+               String nsName = req.getCurrentNsName();
+               if (nsName != null) {
+                  this._cache.removeFromCache(nsName, nsIp);
                }
                break;
             case 6:
             case 7:
-               if (this.setupNextAttempt(var1)) {
-                  return var1;
+               if (this.setupNextAttempt(req)) {
+                  return req;
                }
 
-               if (var2 == 7 && var1.getAnswer() != null && var1.getAnswer().getAA() == 1024) {
-                  this._cache.addNameError(var1);
+               if (status == 7 && req.getAnswer() != null && req.getAnswer().getAA() == 1024) {
+                  this._cache.addNameError(req);
                }
                break;
             default:
-               if (var2 == var4 && (var3 == null || var3.size() == 0)) {
-                  var2 = 10;
-                  var3 = null;
+               if (status == successStatus && (results == null || results.size() == 0)) {
+                  status = 10;
+                  results = null;
                }
          }
 
-         var1.setStatus(var2);
-         var1.setResult(var3);
-         this.dispatchEvent(var1, var2, var3);
-         if (var2 != var4 && this.setupForSecondary(var1)) {
-            return var1;
+         req.setStatus(status);
+         req.setResult(results);
+         this.dispatchEvent(req, status, results);
+         if (status != successStatus && this.setupForSecondary(req)) {
+            return req;
          }
 
-         this._packetIDtoDNSData.remove(var1.getPacketId());
-         var1.setDone(true);
-         if (var1.getPreviousRequest() == null) {
-            return var1;
+         this._packetIDtoDNSData.remove(req.getPacketId());
+         req.setDone(true);
+         if (req.getPreviousRequest() == null) {
+            return req;
          }
 
-         var1 = var1.getPreviousRequest();
+         req = req.getPreviousRequest();
       }
    }
 
-   private void doRawQuery(DNSRequest var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void doRawQuery(DNSRequest req) {
+      while (true) {
+         DataBuffer buffer = (DataBuffer)(new Object(true));
+         DNSMessageIPv4Question question = (DNSMessageIPv4Question)req.getQuery().getQuestions().elementAt(0);
+         String name = req.getQueryString();
+         if (req.isFlagSet(1)) {
+            name = addAPNToName(name, req.getApnId());
+         }
+
+         question.setQname(name);
+
+         try {
+            req.getQuery().writeMessage(buffer);
+            buffer.trim();
+         } catch (IOException ioe) {
+            this.failRequest(req, -2);
+            continue;
+         }
+
+         byte[] addr = req.getCurrentIp();
+         if (addr == null) {
+            this.failRequest(req, -4);
+         } else {
+            UDPPacketHeader udpHeader = this.makeUDPPacketHeader(addr, req.getSrcPort(), req.getApnId());
+
+            try {
+               EventLogger.logEvent(1197736374800106759L, 1415082868, 4);
+               req.setStatus(0);
+               synchronized (this._radioIDtoDNSData) {
+                  int currentPacketID = RadioInternal.sendPacket(udpHeader, buffer.getArray());
+                  if (currentPacketID >= 0) {
+                     this._radioIDtoDNSData.put(currentPacketID, req);
+                     return;
+                  }
+
+                  EventLogger.logEvent(1197736374800106759L, 1415082868, 3);
+                  this.failRequest(req, -100 + currentPacketID);
+               }
+            } catch (RadioException var10) {
+               EventLogger.logEvent(1197736374800106759L, 1415082868, 2);
+               this.failRequest(req, -3);
+            }
+         }
+      }
    }
 
-   private DNSRequest lookInCache(DNSRequest var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private DNSRequest lookInCache(DNSRequest req) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void doSimulatorWorkaround(DNSRequest var1) {
-      String var2 = var1.getQueryString();
-      Object var3 = null;
-      Object[] var4;
-      byte var5;
-      switch (var1.getQueryType()) {
+   private void doSimulatorWorkaround(DNSRequest req) {
+      String str = req.getQueryString();
+      Vector v = null;
+      Object[] results;
+      int resultStatus;
+      switch (req.getQueryType()) {
          case 1:
-            var4 = SimulatorServices.dnsLookup(var2, true);
-            var5 = 1;
+            results = SimulatorServices.dnsLookup(str, true);
+            resultStatus = 1;
             break;
          case 12:
-            var4 = SimulatorServices.dnsLookup(var2, false);
-            var5 = 11;
+            results = SimulatorServices.dnsLookup(str, false);
+            resultStatus = 11;
             break;
          default:
             throw new DNSException(-1);
       }
 
-      if (var4 != null) {
-         var3 = new Object(var4.length);
+      if (results != null) {
+         v = (Vector)(new Object(results.length));
 
-         for (int var6 = 0; var6 < var4.length; var6++) {
-            ((Vector)var3).addElement(var4[var6]);
+         for (int i = 0; i < results.length; i++) {
+            v.addElement(results[i]);
          }
       } else {
-         var5 = 7;
+         resultStatus = 7;
       }
 
-      var1.setFlag(-1);
-      this.endQuery(var1, var5, (Vector)var3);
+      req.setFlag(-1);
+      this.endQuery(req, resultStatus, v);
    }
 
-   private Vector executeQuery(DNSRequest var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private Vector executeQuery(DNSRequest req) {
+      if (DeviceInfo.isSimulator() && req._doSimulatorHack) {
+         this.doSimulatorWorkaround(req);
+         return req.getResult();
+      }
+
+      boolean registered = false;
+      boolean var14 = false /* VF: Semaphore variable */;
+
+      try {
+         var14 = true;
+         this.incrementQueryCount();
+
+         try {
+            PortAssigner.getInstance(17).registerConnection(req.getSrcPort(), RadioInfo.getAccessPointName(req.getApnId()));
+            registered = true;
+         } catch (Exception e) {
+            EventLogger.logEvent(1197736374800106759L, 1413836914, 2);
+            throw new DNSException(e.getMessage());
+         }
+
+         while (true) {
+            if (req.isDone()) {
+               var14 = false;
+               break;
+            }
+
+            req = this.lookInCache(req);
+            if (req.isDone()) {
+               var14 = false;
+               break;
+            }
+
+            EventLogger.logEvent(1197736374800106759L, 1148089169, req.getApnId(), 10, 0);
+            this.doRawQuery(req);
+            synchronized (req) {
+               if (req.getStatus() == 0) {
+                  try {
+                     req.wait(req.getTimeout());
+                  } catch (InterruptedException var17) {
+                  }
+
+                  if (req.getStatus() == 0) {
+                     EventLogger.logEvent(1197736374800106759L, 1148089172, req.getApnId(), 10, 3);
+                     req = this.endQuery(req, 2, null);
+                     continue;
+                  }
+
+                  if (req.getStatus() == 4) {
+                     this.failRequest(req, 4);
+                     continue;
+                  }
+               }
+            }
+
+            EventLogger.logEvent(1197736374800106759L, 1148089170, req.getApnId(), 10, 0);
+            req = this.processResponse(req);
+         }
+      } finally {
+         if (var14) {
+            this.decrementQueryCount();
+            if (registered) {
+               try {
+                  PortAssigner.getInstance(17).deregisterConnection(req.getSrcPort(), RadioInfo.getAccessPointName(req.getApnId()));
+               } catch (Exception var15) {
+               }
+            }
+         }
+      }
+
+      this.decrementQueryCount();
+      if (registered) {
+         try {
+            PortAssigner.getInstance(17).deregisterConnection(req.getSrcPort(), RadioInfo.getAccessPointName(req.getApnId()));
+         } catch (Exception var16) {
+         }
+      }
+
+      return req.getResult();
    }
 
-   private boolean isMatchingPort(int var1) {
-      Enumeration var2 = this._packetIDtoDNSData.elements();
+   private boolean isMatchingPort(int port) {
+      Enumeration data = this._packetIDtoDNSData.elements();
 
-      while (var2.hasMoreElements()) {
-         if (((DNSRequest)var2.nextElement()).getSrcPort() == var1) {
+      while (data.hasMoreElements()) {
+         if (((DNSRequest)data.nextElement()).getSrcPort() == port) {
             return true;
          }
       }
@@ -327,13 +489,13 @@ public class DNSResolverIPv4 implements UDPPacketListener {
       return false;
    }
 
-   private boolean setupForSecondary(DNSRequest var1) {
-      if (!var1.isFlagSet(2)) {
-         byte[] var2 = var1.getSecondaryDnsIp();
-         if (var2 != null) {
-            var1.clearFlag(1);
-            var1.setFlag(2);
-            var1.setCurrentIpSettings(var2, null);
+   private boolean setupForSecondary(DNSRequest req) {
+      if (!req.isFlagSet(2)) {
+         byte[] addr = req.getSecondaryDnsIp();
+         if (addr != null) {
+            req.clearFlag(1);
+            req.setFlag(2);
+            req.setCurrentIpSettings(addr, null);
             return true;
          }
       }
@@ -341,56 +503,56 @@ public class DNSResolverIPv4 implements UDPPacketListener {
       return false;
    }
 
-   private void failRequest(DNSRequest var1, int var2) {
-      if (!var1.isFlagSet(2)) {
-         var1.setFlag(2);
+   private void failRequest(DNSRequest req, int status) {
+      if (!req.isFlagSet(2)) {
+         req.setFlag(2);
       } else {
-         var1.setStatus(var2);
-         throw new DNSException(var2);
+         req.setStatus(status);
+         throw new DNSException(status);
       }
    }
 
-   private static String addAPNToName(String var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static String addAPNToName(String name, int apnID) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private synchronized int getNextPacketId() {
-      int var1 = _packetID;
+      int id = _packetID;
       _packetID = _packetID + 1 & 65535;
-      return var1;
+      return id;
    }
 
-   private void dispatchEvent(DNSRequest var1, int var2, Vector var3) {
-      if (var1 != null && var1.getListener() != null) {
-         var1.getListener().DNSEvent(var1.getPacketId(), var2, var3);
+   private void dispatchEvent(DNSRequest req, int type, Vector result) {
+      if (req != null && req.getListener() != null) {
+         req.getListener().DNSEvent(req.getPacketId(), type, result);
       }
    }
 
-   private void prepRequest(DNSRequest var1, boolean var2) {
-      int var3 = this.getNextPacketId();
-      var1.setPacketId(var3);
-      var1.getQuery().setRD(this.RECURSION_ENABLED);
-      var1.setTimestamp(DNSCache.getCurrentTime());
-      var1._doSimulatorHack = var2;
-      byte[] var4 = var1.getPrimaryDnsIp();
-      if (var4 == null) {
-         var1.setFlag(2);
-         var4 = var1.getSecondaryDnsIp();
+   private void prepRequest(DNSRequest req, boolean doSimHack) {
+      int packetId = this.getNextPacketId();
+      req.setPacketId(packetId);
+      req.getQuery().setRD(this.RECURSION_ENABLED);
+      req.setTimestamp(DNSCache.getCurrentTime());
+      req._doSimulatorHack = doSimHack;
+      byte[] addr = req.getPrimaryDnsIp();
+      if (addr == null) {
+         req.setFlag(2);
+         addr = req.getSecondaryDnsIp();
       }
 
-      var1.setCurrentIpSettings(var4, null);
-      this._packetIDtoDNSData.put(var3, var1);
+      req.setCurrentIpSettings(addr, null);
+      this._packetIDtoDNSData.put(packetId, req);
    }
 
-   private DNSRequest chainQuery(DNSRequest var1, String var2) {
-      DNSRequest var3 = new DNSRequest(var2, null, var1.getApnId(), var1.getCurrentIp(), null, var1.getSrcPort());
-      var3.setPreviousRequest(var1);
-      if (!var1.isFlagSet(2)) {
-         var3.setSecondaryDnsIp(var1.getSecondaryDnsIp());
+   private DNSRequest chainQuery(DNSRequest req, String hostname) {
+      DNSRequest newReq = new DNSRequest(hostname, null, req.getApnId(), req.getCurrentIp(), null, req.getSrcPort());
+      newReq.setPreviousRequest(req);
+      if (!req.isFlagSet(2)) {
+         newReq.setSecondaryDnsIp(req.getSecondaryDnsIp());
       }
 
-      this.prepRequest(var3, var1._doSimulatorHack);
-      return var3;
+      this.prepRequest(newReq, req._doSimulatorHack);
+      return newReq;
    }
 
    private synchronized void incrementQueryCount() {
@@ -401,50 +563,63 @@ public class DNSResolverIPv4 implements UDPPacketListener {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private UDPPacketHeader makeUDPPacketHeader(byte[] var1, int var2, int var3) {
-      Object var4 = new Object();
-      ((UDPPacketHeader)var4).setDestinationAddress(var1);
-      ((UDPPacketHeader)var4).setSourcePort(var2);
-      ((UDPPacketHeader)var4).setDestinationPort(53);
-      ((UDPPacketHeader)var4).setAccessPointNumber(var3);
-      return (UDPPacketHeader)var4;
+   private UDPPacketHeader makeUDPPacketHeader(byte[] destAddr, int srcPort, int apn) {
+      UDPPacketHeader udpHeader = (UDPPacketHeader)(new Object());
+      udpHeader.setDestinationAddress(destAddr);
+      udpHeader.setSourcePort(srcPort);
+      udpHeader.setDestinationPort(53);
+      udpHeader.setAccessPointNumber(apn);
+      return udpHeader;
    }
 
    public static DNSResolverIPv4 instance() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (_instance != null) {
+         return _instance;
+      }
+
+      ApplicationRegistry reg = ApplicationRegistry.getApplicationRegistry();
+      synchronized (reg) {
+         _instance = (DNSResolverIPv4)reg.get(1197736374800106759L);
+         if (_instance == null) {
+            _instance = new DNSResolverIPv4();
+            reg.put(1197736374800106759L, _instance);
+         }
+      }
+
+      return _instance;
    }
 
    private DNSResolverIPv4() {
    }
 
-   private DNSRequest setupReferredQuery(DNSRequest var1) {
+   private DNSRequest setupReferredQuery(DNSRequest req) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private DNSRequest setupAliasQuery(DNSRequest var1) {
-      Vector var3 = var1.getAnswer().getAnswers();
-      Object var4 = null;
-      Object var5 = var1.getQueryString();
-      int var6 = var3.size();
-      String var7 = null;
+   private DNSRequest setupAliasQuery(DNSRequest req) {
+      Vector answers = req.getAnswer().getAnswers();
+      String nsName = null;
+      String orgName = req.getQueryString();
+      int answerSize = answers.size();
+      String name = null;
 
-      for (int var8 = 0; var8 < var6; var8++) {
-         DNSMessageIPv4Resource var2 = (DNSMessageIPv4Resource)var3.elementAt(var8);
-         if (var2.getType() == 5) {
-            var7 = var2.getName();
-            if (!StringUtilities.strEqual((String)var5, var7)) {
+      for (int i = 0; i < answerSize; i++) {
+         DNSMessageIPv4Resource answer = (DNSMessageIPv4Resource)answers.elementAt(i);
+         if (answer.getType() == 5) {
+            name = answer.getName();
+            if (!StringUtilities.strEqual(orgName, name)) {
                break;
             }
 
-            var5 = var2.getData();
-            var4 = var5;
+            orgName = (String)answer.getData();
+            nsName = orgName;
          }
       }
 
-      return var4 != null ? this.chainQuery(var1, (String)var4) : null;
+      return nsName != null ? this.chainQuery(req, nsName) : null;
    }
 
-   private boolean setupNextAttempt(DNSRequest var1) {
+   private boolean setupNextAttempt(DNSRequest req) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

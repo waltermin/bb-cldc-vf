@@ -19,8 +19,8 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
    private static final int GROW_SIZE;
 
    @Override
-   public void loadFrom(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void loadFrom(Object collection) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    protected void reset() {
@@ -29,46 +29,46 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
       Array.resize(this._keyArray, 20);
    }
 
-   protected void mergeCollection(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void mergeCollection(Object collection) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public long getKey(int var1) {
-      if (var1 >= this._numElements) {
+   public long getKey(int offset) {
+      if (offset >= this._numElements) {
          throw new Object();
       } else {
-         return this._keyArray[var1];
+         return this._keyArray[offset];
       }
    }
 
    @Override
-   public int getAt(int var1, int var2, long[] var3, int var4) {
-      if (var1 >= 0 && var1 <= this._numElements) {
-         if (var2 < 0) {
-            var2 = 0;
-         } else if (var2 + var1 > this._numElements) {
-            var2 = this._numElements - var1;
+   public int getAt(int offset, int length, long[] keys, int destIndex) {
+      if (offset >= 0 && offset <= this._numElements) {
+         if (length < 0) {
+            length = 0;
+         } else if (length + offset > this._numElements) {
+            length = this._numElements - offset;
          }
 
-         if (var2 != 0) {
-            if (var3.length < var2 + var4) {
-               Array.resize(var3, var2 + var4);
+         if (length != 0) {
+            if (keys.length < length + destIndex) {
+               Array.resize(keys, length + destIndex);
             }
 
-            System.arraycopy(this._keyArray, var1, var3, var4, var2);
+            System.arraycopy(this._keyArray, offset, keys, destIndex, length);
          }
 
-         return var2;
+         return length;
       } else {
          throw new Object();
       }
    }
 
    @Override
-   public int getIndex(long var1) {
-      for (int var3 = 0; var3 < this._numElements; var3++) {
-         if (this._keyArray[var3] == var1) {
-            return var3;
+   public int getIndex(long key) {
+      for (int i = 0; i < this._numElements; i++) {
+         if (this._keyArray[i] == key) {
+            return i;
          }
       }
 
@@ -76,38 +76,54 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
    }
 
    @Override
-   public long getLongAt(int var1) {
-      return this._keyArray[var1];
+   public long getLongAt(int index) {
+      return this._keyArray[index];
    }
 
    @Override
-   public void reset(Collection var1) {
-      this.loadFrom(var1);
+   public void reset(Collection collection) {
+      this.loadFrom(collection);
    }
 
    @Override
-   public void elementAdded(Collection var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementAdded(Collection collection, Object element) {
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    @Override
-   public void elementUpdated(Collection var1, Object var2, Object var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementUpdated(Collection collection, Object oldElement, Object newElement) {
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    @Override
-   public void elementRemoved(Collection var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void elementRemoved(Collection collection, Object element) {
+      boolean needToFireEvent = false;
+      synchronized (this) {
+         int index = this.getIndex(element);
+         if (index != -1) {
+            if (index < this._numElements - 1) {
+               System.arraycopy(this._dataArray, index + 1, this._dataArray, index, this._numElements - index - 1);
+               System.arraycopy(this._keyArray, index + 1, this._keyArray, index, this._numElements - index - 1);
+            }
+
+            this._numElements--;
+            needToFireEvent = true;
+         }
+      }
+
+      if (needToFireEvent) {
+         this._collectionNotifier.fireElementRemoved(this, element);
+      }
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._collectionNotifier.addCollectionListener(var1);
+   public void addCollectionListener(Object listener) {
+      this._collectionNotifier.addCollectionListener(listener);
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._collectionNotifier.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._collectionNotifier.removeCollectionListener(listener);
    }
 
    @Override
@@ -116,71 +132,71 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
    }
 
    @Override
-   public int getAt(int var1, int var2, Object[] var3, int var4) {
-      if (var1 >= 0 && var1 <= this._numElements) {
-         if (var2 < 0) {
-            var2 = 0;
-         } else if (var2 + var1 > this._numElements) {
-            var2 = this._numElements - var1;
+   public int getAt(int offset, int length, Object[] data, int destIndex) {
+      if (offset >= 0 && offset <= this._numElements) {
+         if (length < 0) {
+            length = 0;
+         } else if (length + offset > this._numElements) {
+            length = this._numElements - offset;
          }
 
-         if (var2 != 0) {
-            if (var3.length < var2 + var4) {
-               Array.resize(var3, var2 + var4);
+         if (length != 0) {
+            if (data.length < length + destIndex) {
+               Array.resize(data, length + destIndex);
             }
 
-            System.arraycopy(this._dataArray, var1, var3, var4, var2);
+            System.arraycopy(this._dataArray, offset, data, destIndex, length);
          }
 
-         return var2;
+         return length;
       } else {
          throw new Object();
       }
    }
 
    @Override
-   public Object getAt(int var1) {
-      if (var1 >= this._numElements) {
+   public Object getAt(int offset) {
+      if (offset >= this._numElements) {
          throw new Object();
       } else {
-         return this._dataArray[var1];
+         return this._dataArray[offset];
       }
    }
 
    @Override
-   public int getIndex(Object var1) {
-      for (int var2 = 0; var2 < this._numElements; var2++) {
-         if (this._dataArray[var2] == var1) {
-            return var2;
+   public int getIndex(Object element) {
+      for (int i = 0; i < this._numElements; i++) {
+         if (this._dataArray[i] == element) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   public LongSortedReadableList(LongKeyProviderAdaptor var1) {
-      if (var1 == null) {
+   public LongSortedReadableList(LongKeyProviderAdaptor adaptor) {
+      if (adaptor == null) {
          throw new Object();
       }
 
-      this._keyProvider = var1;
+      this._keyProvider = adaptor;
    }
 
-   public LongSortedReadableList(CollectionEventSource var1, LongKeyProviderAdaptor var2) {
-      this(var2);
-      if (!(var1 instanceof ReadableList) && !(var1 instanceof ReadableSet)) {
+   public LongSortedReadableList(CollectionEventSource sourceCollection, LongKeyProviderAdaptor adaptor) {
+      this(adaptor);
+      if (!(sourceCollection instanceof ReadableList) && !(sourceCollection instanceof ReadableSet)) {
          throw new Object();
       }
 
-      var1.addCollectionListener(this);
-      this.mergeCollection(var1);
+      sourceCollection.addCollectionListener(this);
+      this.mergeCollection(sourceCollection);
    }
 
-   private void makeRoomFor(int var1) {
-      if (var1 > this._dataArray.length) {
-         int var2 = var1 + 20;
-         Array.resize(this._dataArray, var2);
-         Array.resize(this._keyArray, var2);
+   private void makeRoomFor(int numItems) {
+      if (numItems > this._dataArray.length) {
+         int currentSize = numItems + 20;
+         Array.resize(this._dataArray, currentSize);
+         Array.resize(this._keyArray, currentSize);
       }
    }
 }

@@ -6,8 +6,8 @@ public final class DNSMessageIPv4Resource$MINFOData {
    public String rMailBox;
    public String eMailBox;
 
-   public DNSMessageIPv4Resource$MINFOData(DataBuffer var1) {
-      this.rMailBox = DNSMessageIPv4.readDomainName(var1);
-      this.eMailBox = DNSMessageIPv4.readDomainName(var1);
+   public DNSMessageIPv4Resource$MINFOData(DataBuffer db) {
+      this.rMailBox = DNSMessageIPv4.readDomainName(db);
+      this.eMailBox = DNSMessageIPv4.readDomainName(db);
    }
 }

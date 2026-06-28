@@ -1,8 +1,10 @@
 package javax.microedition.lcdui;
 
 import javax.microedition.media.Player;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Trackball;
+import net.rim.device.api.ui.XYRect;
 import net.rim.device.internal.lcdui.Callbacks;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
@@ -18,7 +20,7 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    private boolean _dirty = false;
    private Player _player;
 
-   public void setCanvas(Canvas var1) {
+   public void setCanvas(Canvas canvas) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -27,22 +29,84 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   public void keyCallback(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void keyCallback(int type, int keycode) {
+      boolean suppressKeyEvents = Lcdui.getSuppressKeyEvents();
+      int gameAction = this._canvas.getGameAction(keycode);
+      switch (type) {
+         case 1:
+            break;
+         case 2:
+         default:
+            if (!suppressKeyEvents) {
+               synchronized (Lcdui.getEventDeliveryLock()) {
+                  this._canvas.keyPressed(keycode);
+               }
+            }
+
+            int currentKeyStates = Lcdui.getCurrentKeyStates();
+            int keyDownHistory = Lcdui.getKeyDownHistory();
+            Lcdui.setCurrentKeyStates(currentKeyStates | 1 << gameAction);
+            Lcdui.setKeyDownHistory(keyDownHistory | 1 << gameAction);
+            return;
+         case 3:
+            if (!suppressKeyEvents) {
+               synchronized (Lcdui.getEventDeliveryLock()) {
+                  this._canvas.keyRepeated(keycode);
+                  return;
+               }
+            }
+            break;
+         case 4:
+            if (!suppressKeyEvents) {
+               synchronized (Lcdui.getEventDeliveryLock()) {
+                  this._canvas.keyReleased(keycode);
+               }
+            }
+
+            int currentKeyStates = Lcdui.getCurrentKeyStates();
+            Lcdui.setCurrentKeyStates(currentKeyStates & ~(1 << gameAction));
+            return;
+         case 5:
+            if (!suppressKeyEvents) {
+               synchronized (Lcdui.getEventDeliveryLock()) {
+                  this._canvas.keyPressed(keycode);
+                  this._canvas.keyReleased(keycode);
+                  return;
+               }
+            }
+      }
    }
 
    @Override
-   public void paintCallback(net.rim.device.api.ui.Graphics var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void paintCallback(net.rim.device.api.ui.Graphics graphics) {
+      if (this._clearBackground) {
+         graphics.clear();
+         this._clearBackground = false;
+      }
+
+      this._graphics.setGraphics(graphics, false);
+      synchronized (Application.getEventLock()) {
+         super.paint(graphics);
+      }
+
+      XYRect areaExtent = this.getDisplayableAreaExtent();
+      this._graphics.translate(areaExtent.x, areaExtent.y);
+      Lcdui.setMIDPGraphics(this._graphics);
+      synchronized (Lcdui.getEventDeliveryLock()) {
+         this._canvas.paint(this._graphics);
+      }
+
+      this._dirty = false;
+      this._graphics.translate(-areaExtent.x, -areaExtent.y);
    }
 
    @Override
-   public void setPlayer(Player var1) {
+   public void setPlayer(Player player) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void resizeComponent(int var1, int var2) {
+   public void resizeComponent(int width, int height) {
    }
 
    @Override
@@ -51,7 +115,7 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   public void setComponent(Object var1) {
+   public void setComponent(Object component) {
    }
 
    @Override
@@ -67,8 +131,8 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
       this.toggleVideoVisibility(false);
    }
 
-   private void toggleVideoVisibility(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void toggleVideoVisibility(boolean visible) {
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
@@ -77,19 +141,19 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
-      if (var1 > 0) {
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
+      if (dx > 0) {
          Lcdui.setKeyCallback(5, this, 5);
-      } else if (var1 < 0) {
+      } else if (dx < 0) {
          Lcdui.setKeyCallback(5, this, 2);
       }
 
-      if (var2 < 0) {
+      if (dy < 0) {
          Lcdui.setKeyCallback(5, this, 1);
          return true;
       }
 
-      if (var2 > 0) {
+      if (dy > 0) {
          Lcdui.setKeyCallback(5, this, 6);
       }
 
@@ -97,19 +161,19 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   protected boolean navigationClick(int var1, int var2) {
+   protected boolean navigationClick(int status, int time) {
       if (Trackball.isSupported()) {
          Lcdui.setKeyCallback(5, this, -8);
          return true;
       } else {
-         return super.navigationClick(var1, var2);
+         return super.navigationClick(status, time);
       }
    }
 
    @Override
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
-      if (var1 < 0) {
-         if ((var2 & 1) > 0) {
+   protected boolean trackwheelRoll(int amount, int status, int time) {
+      if (amount < 0) {
+         if ((status & 1) > 0) {
             Lcdui.setKeyCallback(5, this, 2);
             return true;
          } else {
@@ -117,8 +181,8 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
             return true;
          }
       } else {
-         if (var1 > 0) {
-            if ((var2 & 1) > 0) {
+         if (amount > 0) {
+            if ((status & 1) > 0) {
                Lcdui.setKeyCallback(5, this, 5);
                return true;
             }
@@ -131,23 +195,23 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   public boolean dispatchKeyEvent(int var1, char var2, int var3, int var4) {
-      switch (var2) {
+   public boolean dispatchKeyEvent(int event, char key, int status, int time) {
+      switch (key) {
          case '\u0095':
-            return super.dispatchKeyEvent(var1, var2, var3, var4);
+            return super.dispatchKeyEvent(event, key, status, time);
          case '\u0096':
          case '\u0097':
          default:
             this.restartTickerTimer();
-            Lcdui.setKeyCallback(5, this, var2 == 150 ? -150 : -151);
+            Lcdui.setKeyCallback(5, this, key == 150 ? -150 : -151);
             return true;
       }
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       if (Keypad.hasSendEndKeys()) {
-         switch (Keypad.key(var1)) {
+         switch (Keypad.key(keycode)) {
             case 17:
             case 18:
             case 4098:
@@ -161,26 +225,26 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
          }
       }
 
-      char var3 = Keypad.map(var1);
-      if (var3 == 27) {
+      char c = Keypad.map(keycode);
+      if (c == 27) {
          return false;
       }
 
-      if (0 != var3) {
+      if (0 != c) {
          if (InternalServices.isReducedFormFactor()) {
-            var3 = this.getCharmRemappedCharacter(var3);
+            c = this.getCharmRemappedCharacter(c);
          }
 
-         Lcdui.setKeyCallback(2, this, var3);
+         Lcdui.setKeyCallback(2, this, c);
       }
 
       return true;
    }
 
    @Override
-   protected boolean keyUp(int var1, int var2) {
+   protected boolean keyUp(int keycode, int time) {
       if (Keypad.hasSendEndKeys()) {
-         switch (Keypad.key(var1)) {
+         switch (Keypad.key(keycode)) {
             case 16:
             case 20:
                break;
@@ -197,24 +261,24 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
          }
       }
 
-      char var3 = Keypad.map(var1);
-      if (0 != var3) {
+      char c = Keypad.map(keycode);
+      if (0 != c) {
          if (InternalServices.isReducedFormFactor()) {
-            var3 = this.getCharmRemappedCharacter(var3);
+            c = this.getCharmRemappedCharacter(c);
          }
 
-         Lcdui.setKeyCallback(4, this, var3);
+         Lcdui.setKeyCallback(4, this, c);
       }
 
       return true;
    }
 
-   private char getCharmRemappedCharacter(char var1) {
-      if (var1 != '*' && var1 != '#' && (var1 < '0' || var1 > '9')) {
-         char var2 = Keypad.getAltedChar(var1);
-         return var2 != '*' && var2 != '#' && (var2 < '0' || var2 > '9') ? var1 : var2;
+   private char getCharmRemappedCharacter(char c) {
+      if (c != '*' && c != '#' && (c < '0' || c > '9')) {
+         char altedChar = Keypad.getAltedChar(c);
+         return altedChar != '*' && altedChar != '#' && (altedChar < '0' || altedChar > '9') ? c : altedChar;
       } else {
-         return Keypad.getUnaltedChar(var1);
+         return Keypad.getUnaltedChar(c);
       }
    }
 
@@ -233,24 +297,24 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    @Override
-   public void paint(net.rim.device.api.ui.Graphics var1) {
+   public void paint(net.rim.device.api.ui.Graphics graphics) {
       if (this._firstPaint) {
-         var1.clear();
-         this.paintCallback(var1);
+         graphics.clear();
+         this.paintCallback(graphics);
          this._firstPaint = false;
       } else {
-         Lcdui.setPaintCallback(var1, this, this);
+         Lcdui.setPaintCallback(graphics, this, this);
       }
    }
 
    @Override
-   public void paintBackground(net.rim.device.api.ui.Graphics var1) {
+   public void paintBackground(net.rim.device.api.ui.Graphics graphics) {
    }
 
    @Override
-   protected void onVisibilityChange(boolean var1) {
-      super.onVisibilityChange(var1);
-      this.toggleVideoVisibility(var1);
+   protected void onVisibilityChange(boolean visible) {
+      super.onVisibilityChange(visible);
+      this.toggleVideoVisibility(visible);
    }
 
    @Override

@@ -17,17 +17,17 @@ public class DebugSupport {
 
    private static native void logToFile(byte[] var0, byte[] var1);
 
-   public static void log(String var0, String var1) {
-      logToFile(var0.getBytes(), var1.getBytes());
+   public static void log(String file, String str) {
+      logToFile(file.getBytes(), str.getBytes());
    }
 
    public static native void addProfileCount(long var0);
 
-   public static InputStream getInputStream(String var0) {
+   public static InputStream getInputStream(String filename) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static OutputStream getOutputStream(String var0) {
+   public static OutputStream getOutputStream(String filename) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

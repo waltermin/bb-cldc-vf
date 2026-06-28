@@ -14,7 +14,7 @@ class DialogFieldManager$FocusNullField extends NullField {
       return this._canFocus;
    }
 
-   DialogFieldManager$FocusNullField(DialogFieldManager$1 var1) {
+   DialogFieldManager$FocusNullField(DialogFieldManager$1 x0) {
       this();
    }
 }

@@ -3,6 +3,10 @@ package javax.microedition.lcdui.game;
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.internal.lcdui.Lcdui;
+import net.rim.device.internal.ui.MIDletApplication;
 
 public class GameCanvas extends Canvas {
    private Image offscreen_buffer;
@@ -18,7 +22,11 @@ public class GameCanvas extends Canvas {
    private static final int FULLSCREEN_HEIGHT;
    private static final int FULLSCREEN_WIDTH;
 
-   protected GameCanvas(boolean var1) {
+   protected GameCanvas(boolean suppressKeyEvents) {
+      this.offscreen_buffer = Image.createImage(FULLSCREEN_WIDTH, FULLSCREEN_HEIGHT);
+      synchronized (Application.getEventLock()) {
+         Lcdui.setSuppressKeyEvents(suppressKeyEvents);
+      }
    }
 
    protected Graphics getGraphics() {
@@ -26,16 +34,35 @@ public class GameCanvas extends Canvas {
    }
 
    public int getKeyStates() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this.isShown()) {
+         synchronized (Application.getEventLock()) {
+            int result = Lcdui.getCurrentKeyStates() | Lcdui.getKeyDownHistory();
+            Lcdui.setKeyDownHistory(0);
+            return result;
+         }
+      } else {
+         return 0;
+      }
    }
 
    @Override
-   public void paint(Graphics var1) {
-      var1.drawImage(this.offscreen_buffer, 0, 0, 20);
+   public void paint(Graphics g) {
+      g.drawImage(this.offscreen_buffer, 0, 0, 20);
    }
 
-   public void flushGraphics(int var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void flushGraphics(int x, int y, int width, int height) {
+      if (width >= 1 && height >= 1 && this.isShown()) {
+         MIDletApplication app = (MIDletApplication)UiApplication.getUiApplication();
+         if (app != null) {
+            synchronized (Application.getEventLock()) {
+               Graphics g = Lcdui.getMIDPGraphics();
+               if (g != null) {
+                  g.drawImage(this.offscreen_buffer, 0, 0, 20);
+                  app.updateDisplay();
+               }
+            }
+         }
+      }
    }
 
    public void flushGraphics() {

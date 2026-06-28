@@ -12,7 +12,7 @@ public final class DNSMessageIPv4Resource {
    private byte[] _rdata;
    private Object _data;
 
-   public final void setName(String var1) {
+   public final void setName(String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -20,7 +20,7 @@ public final class DNSMessageIPv4Resource {
       return this._name;
    }
 
-   public final void setType(int var1) {
+   public final void setType(int type) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -28,7 +28,7 @@ public final class DNSMessageIPv4Resource {
       return this._type;
    }
 
-   public final void setClazz(int var1) {
+   public final void setClazz(int clazz) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -36,7 +36,7 @@ public final class DNSMessageIPv4Resource {
       return this._class;
    }
 
-   public final void setTTL(int var1) {
+   public final void setTTL(int ttl) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -44,7 +44,7 @@ public final class DNSMessageIPv4Resource {
       return this._ttl;
    }
 
-   public final void setRDLength(int var1) {
+   public final void setRDLength(int rdlength) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -52,7 +52,7 @@ public final class DNSMessageIPv4Resource {
       return this._rdlength;
    }
 
-   public final void setRData(byte[] var1) {
+   public final void setRData(byte[] rdata) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -60,25 +60,25 @@ public final class DNSMessageIPv4Resource {
       return this._rdata;
    }
 
-   final void writeResource(DataBuffer var1) {
-      DNSMessageIPv4.writeDomainName(var1, this._name);
-      var1.writeShort(this._type);
-      var1.writeShort(this._class);
-      var1.writeInt(this._ttl);
-      var1.writeShort(this._rdlength);
-      var1.write(this._rdata, 0, this._rdlength);
+   final void writeResource(DataBuffer db) {
+      DNSMessageIPv4.writeDomainName(db, this._name);
+      db.writeShort(this._type);
+      db.writeShort(this._class);
+      db.writeInt(this._ttl);
+      db.writeShort(this._rdlength);
+      db.write(this._rdata, 0, this._rdlength);
    }
 
-   final void readResource(DataBuffer var1) {
-      this._name = DNSMessageIPv4.readDomainName(var1);
-      this._type = var1.readShort();
-      this._class = var1.readShort();
-      this._ttl = var1.readInt();
-      this._rdlength = var1.readShort();
-      int var2 = var1.getPosition();
+   final void readResource(DataBuffer db) {
+      this._name = DNSMessageIPv4.readDomainName(db);
+      this._type = db.readShort();
+      this._class = db.readShort();
+      this._ttl = db.readInt();
+      this._rdlength = db.readShort();
+      int rdataPos = db.getPosition();
       this._rdata = new byte[this._rdlength];
-      var1.readFully(this._rdata);
-      var1.setPosition(var2);
+      db.readFully(this._rdata);
+      db.setPosition(rdataPos);
       switch (this._type) {
          case 1:
          case 3:
@@ -87,40 +87,40 @@ public final class DNSMessageIPv4Resource {
          case 8:
          case 9:
          case 10:
-            var1.skipBytes(this._rdlength);
+            db.skipBytes(this._rdlength);
             this._data = this._rdata;
             return;
          case 2:
          case 5:
          case 12:
          default:
-            this._data = DNSMessageIPv4.readDomainName(var1);
+            this._data = DNSMessageIPv4.readDomainName(db);
             return;
          case 6:
-            this._data = new DNSMessageIPv4Resource$SOAData(var1);
+            this._data = new DNSMessageIPv4Resource$SOAData(db);
             return;
          case 11:
-            this._data = new DNSMessageIPv4Resource$WKSData(var1, this._rdlength);
+            this._data = new DNSMessageIPv4Resource$WKSData(db, this._rdlength);
             return;
          case 13:
          case 16:
-            int var3 = this._rdlength;
-            Object var4 = new Object();
+            int length = this._rdlength;
+            Vector v = (Vector)(new Object());
 
-            while (var3 > 0) {
-               byte[] var5 = new byte[var1.readUnsignedByte()];
-               var1.readFully(var5);
-               ((Vector)var4).addElement(var5);
-               var3 -= 1 + var5.length;
+            while (length > 0) {
+               byte[] array = new byte[db.readUnsignedByte()];
+               db.readFully(array);
+               v.addElement(array);
+               length -= 1 + array.length;
             }
 
-            this._data = var4;
+            this._data = v;
             return;
          case 14:
-            this._data = new DNSMessageIPv4Resource$MINFOData(var1);
+            this._data = new DNSMessageIPv4Resource$MINFOData(db);
             return;
          case 15:
-            this._data = new DNSMessageIPv4Resource$MXData(var1);
+            this._data = new DNSMessageIPv4Resource$MXData(db);
       }
    }
 

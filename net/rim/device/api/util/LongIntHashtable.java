@@ -12,19 +12,19 @@ public class LongIntHashtable implements Persistable {
    private static final int _loadFactorMul;
    private static final int _loadFactorRShift;
 
-   public LongIntHashtable(int var1) {
-      if (var1 < 0) {
+   public LongIntHashtable(int initialCapacity) {
+      if (initialCapacity < 0) {
          throw new Object();
       }
 
-      if (var1 < 1) {
-         var1 = 1;
+      if (initialCapacity < 1) {
+         initialCapacity = 1;
       }
 
-      this._key = new long[var1];
-      this._value = new int[var1];
-      this._occupied = new byte[var1];
-      this._threshold = var1 * 3 >> 2;
+      this._key = new long[initialCapacity];
+      this._value = new int[initialCapacity];
+      this._occupied = new byte[initialCapacity];
+      this._threshold = initialCapacity * 3 >> 2;
    }
 
    public LongIntHashtable() {
@@ -47,13 +47,13 @@ public class LongIntHashtable implements Persistable {
       return (IntEnumeration)(new Object(this._value, this._occupied));
    }
 
-   public synchronized boolean contains(int var1) {
-      byte[] var2 = this._occupied;
-      int[] var3 = this._value;
-      int var4 = var3.length;
+   public synchronized boolean contains(int value) {
+      byte[] occupied = this._occupied;
+      int[] values = this._value;
+      int len = values.length;
 
-      while (--var4 >= 0) {
-         if (var2[var4] == 1 && var3[var4] == var1) {
+      while (--len >= 0) {
+         if (occupied[len] == 1 && values[len] == value) {
             return true;
          }
       }
@@ -61,147 +61,147 @@ public class LongIntHashtable implements Persistable {
       return false;
    }
 
-   public synchronized boolean containsKey(long var1) {
-      int var3 = this.find(var1);
-      return this._occupied[var3] == 1;
+   public synchronized boolean containsKey(long key) {
+      int index = this.find(key);
+      return this._occupied[index] == 1;
    }
 
    public synchronized void clear() {
-      int var1 = this._key.length;
+      int len = this._key.length;
 
-      while (--var1 >= 0) {
-         this._occupied[var1] = 0;
+      while (--len >= 0) {
+         this._occupied[len] = 0;
       }
 
       this._numberOfKeys = 0;
    }
 
-   public synchronized int remove(long var1) {
-      int var3 = this.find(var1);
-      if (this._occupied[var3] != 1) {
+   public synchronized int remove(long key) {
+      int index = this.find(key);
+      if (this._occupied[index] != 1) {
          return -1;
       }
 
-      int var4 = this._value[var3];
+      int result = this._value[index];
       this._numberOfKeys--;
       if (this._numberOfKeys == 0) {
-         this._occupied[var3] = 0;
+         this._occupied[index] = 0;
       } else {
-         this._occupied[var3] = 2;
+         this._occupied[index] = 2;
       }
 
-      return var4;
+      return result;
    }
 
-   public synchronized int get(long var1) {
-      int var3 = this.find(var1);
-      return this._occupied[var3] != 1 ? -1 : this._value[var3];
+   public synchronized int get(long key) {
+      int index = this.find(key);
+      return this._occupied[index] != 1 ? -1 : this._value[index];
    }
 
    protected void rehash() {
-      long[] var1 = this._key;
-      int var2 = var1.length;
-      int var3 = (var2 << 1) + 1;
-      int[] var4 = this._value;
-      long[] var5 = new long[var3];
-      int[] var6 = new int[var3];
-      byte[] var7 = this._occupied;
-      byte[] var8 = new byte[var3];
-      this._key = var5;
-      this._value = var6;
-      this._occupied = var8;
-      this._threshold = var3 * 3 >> 2;
+      long[] keys = this._key;
+      int len = keys.length;
+      int newlen = (len << 1) + 1;
+      int[] values = this._value;
+      long[] newkey = new long[newlen];
+      int[] newvalue = new int[newlen];
+      byte[] occupied = this._occupied;
+      byte[] newoccupied = new byte[newlen];
+      this._key = newkey;
+      this._value = newvalue;
+      this._occupied = newoccupied;
+      this._threshold = newlen * 3 >> 2;
 
-      while (--var2 >= 0) {
-         if (var7[var2] == 1) {
-            long var9 = var1[var2];
-            int var11 = this.find(var9);
-            var5[var11] = var9;
-            var6[var11] = var4[var2];
-            var8[var11] = 1;
+      while (--len >= 0) {
+         if (occupied[len] == 1) {
+            long key = keys[len];
+            int index = this.find(key);
+            newkey[index] = key;
+            newvalue[index] = values[len];
+            newoccupied[index] = 1;
          }
       }
    }
 
-   public synchronized int put(long var1, int var3) {
+   public synchronized int put(long key, int value) {
       if (this._numberOfKeys + 1 > this._threshold) {
          this.rehash();
       }
 
-      int var4 = this.find(var1);
-      int var5;
-      if (this._occupied[var4] == 1) {
-         var5 = this._value[var4];
+      int index = this.find(key);
+      int result;
+      if (this._occupied[index] == 1) {
+         result = this._value[index];
       } else {
          this._numberOfKeys++;
-         var5 = -1;
+         result = -1;
       }
 
-      this._occupied[var4] = 1;
-      this._key[var4] = var1;
-      this._value[var4] = var3;
-      return var5;
+      this._occupied[index] = 1;
+      this._key[index] = key;
+      this._value[index] = value;
+      return result;
    }
 
-   private int find(long var1) {
-      byte[] var3 = this._occupied;
-      long[] var4 = this._key;
-      int var5 = (int)(var1 ^ var1 >> 32);
-      int var6 = var4.length;
-      int var7 = (var5 & 2147483647) % var6;
-      int var8 = var6;
-      int var9 = -1;
-      int var10 = 0;
+   private int find(long key) {
+      byte[] occupied = this._occupied;
+      long[] keys = this._key;
+      int hashcode = (int)(key ^ key >> 32);
+      int modulus = keys.length;
+      int h1 = (hashcode & 2147483647) % modulus;
+      int h2 = modulus;
+      int foundgap = -1;
+      int count = 0;
 
       label52:
       while (true) {
-         int var11 = var7;
+         int i = h1;
 
-         while (var3[var11] != 0) {
-            if (var3[var11] != 2) {
-               if (var4[var11] == var1) {
-                  return var11;
+         while (occupied[i] != 0) {
+            if (occupied[i] != 2) {
+               if (keys[i] == key) {
+                  return i;
                }
-            } else if (var9 == -1) {
-               var9 = var11;
+            } else if (foundgap == -1) {
+               foundgap = i;
             }
 
-            var11 += var8;
-            if (var11 >= var6) {
-               if (var8 >= var6) {
-                  if (var6 > 3) {
-                     var8 = (var5 >>> 1) % (var6 - 1) + 1;
+            i += h2;
+            if (i >= modulus) {
+               if (h2 >= modulus) {
+                  if (modulus > 3) {
+                     h2 = (hashcode >>> 1) % (modulus - 1) + 1;
                   } else {
-                     var8 = (var5 >>> 1) % var6;
+                     h2 = (hashcode >>> 1) % modulus;
                   }
 
-                  var11 = var11 - var6 + var8;
-                  if (var11 < var6) {
-                     var11 += var6;
+                  i = i - modulus + h2;
+                  if (i < modulus) {
+                     i += modulus;
                   }
                }
 
-               var11 -= var6;
+               i -= modulus;
             }
 
-            var10++;
-            if (var11 == var7) {
-               if (++var7 >= var6) {
-                  var7 = 0;
+            count++;
+            if (i == h1) {
+               if (++h1 >= modulus) {
+                  h1 = 0;
                }
 
-               if (var10 >= var6) {
-                  return var9;
+               if (count >= modulus) {
+                  return foundgap;
                }
                continue label52;
             }
          }
 
-         if (var9 != -1) {
-            return var9;
+         if (foundgap != -1) {
+            return foundgap;
          }
 
-         return var11;
+         return i;
       }
    }
 }

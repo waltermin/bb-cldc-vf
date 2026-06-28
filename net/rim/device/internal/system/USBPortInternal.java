@@ -14,7 +14,7 @@ public final class USBPortInternal extends IOPort {
       return InternalServices.isDeviceCapable(1);
    }
 
-   public USBPortInternal(int var1) {
+   public USBPortInternal(int channel) {
    }
 
    @Override
@@ -23,28 +23,28 @@ public final class USBPortInternal extends IOPort {
    }
 
    @Override
-   public final int write(byte[] var1) {
-      return this.write(var1, 0, var1.length);
+   public final int write(byte[] data) {
+      return this.write(data, 0, data.length);
    }
 
    @Override
-   public final synchronized int write(byte[] var1, int var2, int var3) {
-      return write(this._channel, var1, var2, var3);
+   public final synchronized int write(byte[] data, int offset, int length) {
+      return write(this._channel, data, offset, length);
    }
 
    @Override
-   public final synchronized int write(int var1) {
-      return write(this._channel, var1);
+   public final synchronized int write(int b) {
+      return write(this._channel, b);
    }
 
    @Override
-   public final int read(byte[] var1) {
+   public final int read(byte[] data) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
-      return read(this._channel, var1, var2, var3);
+   public final int read(byte[] data, int offset, int length) {
+      return read(this._channel, data, offset, length);
    }
 
    @Override
@@ -52,14 +52,14 @@ public final class USBPortInternal extends IOPort {
       return read(this._channel);
    }
 
-   public static final int registerChannel(String var0, int var1, int var2) {
-      return registerChannelImpl(var0, var1, var2);
+   public static final int registerChannel(String name, int maxRxSize, int maxTxSize) {
+      return registerChannelImpl(name, maxRxSize, maxTxSize);
    }
 
    private static final native int registerChannelImpl(String var0, int var1, int var2);
 
-   public static final void deregisterChannel(int var0) {
-      deregisterChannelImpl(var0);
+   public static final void deregisterChannel(int channel) {
+      deregisterChannelImpl(channel);
    }
 
    private static final native void deregisterChannelImpl(int var0);

@@ -25,18 +25,18 @@ public final class IDENInfo {
       return getInfo()._imei;
    }
 
-   public static final String imeiToString(byte[] var0) {
-      if (var0 == null) {
+   public static final String imeiToString(byte[] imei) {
+      if (imei == null) {
          return null;
       }
 
-      Object var1 = new Object();
+      StringBuffer sb = (StringBuffer)(new Object());
 
-      for (int var2 = 0; var2 < var0.length; var2++) {
-         ((StringBuffer)var1).append((char)(var0[var2] + 48));
+      for (int i = 0; i < imei.length; i++) {
+         sb.append((char)(imei[i] + 48));
       }
 
-      return ((StringBuffer)var1).toString();
+      return sb.toString();
    }
 
    public static final String getRegistrationAddress() {
@@ -56,9 +56,9 @@ public final class IDENInfo {
    }
 
    public static final IDENInfo$IDENCellInfo getCellInfo() {
-      IDENInfo$IDENCellInfo var0 = new IDENInfo$IDENCellInfo(null);
-      getCellInfo(var0);
-      return var0;
+      IDENInfo$IDENCellInfo cellInfo = new IDENInfo$IDENCellInfo(null);
+      getCellInfo(cellInfo);
+      return cellInfo;
    }
 
    public static final native int getSQELevel();

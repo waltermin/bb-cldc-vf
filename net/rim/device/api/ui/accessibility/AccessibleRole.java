@@ -35,7 +35,7 @@ public class AccessibleRole {
    public static final int MONTH_FIELD;
    private static ResourceBundleFamily _rb;
 
-   public static String toDisplayString(int var0) {
-      return _rb.getString(var0);
+   public static String toDisplayString(int role) {
+      return _rb.getString(role);
    }
 }

@@ -8,12 +8,12 @@ public class RTPRegistry {
    private RTPRegistry() {
    }
 
-   public static void setRTPSystem(RTPSystem var0) {
+   public static void setRTPSystem(RTPSystem rtpSystem) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static RTPSystem getRTPSystem() {
-      ApplicationRegistry var2 = ApplicationRegistry.getApplicationRegistry();
-      return (RTPSystem)var2.waitFor(6854459907021350219L);
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      return (RTPSystem)applicationRegistry.waitFor(6854459907021350219L);
    }
 }

@@ -21,55 +21,55 @@ public class CodeStore {
 
    public static native int getDependencyModuleHandle(int var0, int var1);
 
-   public static byte[] addDRMTrailers(byte[] var0) {
+   public static byte[] addDRMTrailers(byte[] codfile) {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   public static boolean checkDRMTrailer(int var0) {
-      int var1 = 0;
+   public static boolean checkDRMTrailer(int moduleHandle) {
+      int i = 0;
 
       while (true) {
-         byte[] var2 = CodeModuleManager.getModuleTrailer(var0, 4, var1);
-         if (var2 == null) {
-            return var1 == 0;
+         byte[] trailer = CodeModuleManager.getModuleTrailer(moduleHandle, 4, i);
+         if (trailer == null) {
+            return i == 0;
          }
 
-         if (DRMServices.checkTrailerBytes(var2)) {
+         if (DRMServices.checkTrailerBytes(trailer)) {
             return true;
          }
 
-         var1++;
+         i++;
       }
    }
 
-   public static void assertIsPartOfCurrentApp(int var0) {
-      if (!isPartOfCurrentApp(var0)) {
+   public static void assertIsPartOfCurrentApp(int caller) {
+      if (!isPartOfCurrentApp(caller)) {
          throw new Object();
       }
    }
 
    public static void generateDependencyList() {
       if (_dependencyList == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _dependencyList = (CodeStore$DependencyList)var0.getOrWaitFor(ID);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _dependencyList = (CodeStore$DependencyList)ar.getOrWaitFor(ID);
          if (_dependencyList == null) {
             _dependencyList = new CodeStore$DependencyList();
-            var0.put(ID, _dependencyList);
+            ar.put(ID, _dependencyList);
          }
       }
    }
 
-   public static boolean isPartOfCurrentApp(int var0) {
-      if (var0 == 0) {
+   public static boolean isPartOfCurrentApp(int caller) {
+      if (caller == 0) {
          return true;
       }
 
-      int var1 = Process.currentProcess().getModuleHandle();
-      if (var1 == var0) {
+      int processModuleHandle = Process.currentProcess().getModuleHandle();
+      if (processModuleHandle == caller) {
          return true;
       }
 
       generateDependencyList();
-      return _dependencyList.isDependency(var1, var0);
+      return _dependencyList.isDependency(processModuleHandle, caller);
    }
 }

@@ -31,76 +31,76 @@ public class KeywordFilteredListFinder extends BasicEditField {
       this._acceptYomiSearch = false;
    }
 
-   public KeywordFilteredListFinder(long var1) {
-      super(var1);
+   public KeywordFilteredListFinder(long style) {
+      super(style);
       this._displayUpperCaseCharsInSearchText = true;
       this._allowSpacesInSearchText = true;
       this._acceptYomiSearch = false;
    }
 
-   public KeywordFilteredListFinder(String var1) {
-      this(var1, null, true);
+   public KeywordFilteredListFinder(String text) {
+      this(text, null, true);
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
    }
 
-   public KeywordFilteredListFinder(String var1, long var2) {
-      this(var1, null, true, var2);
+   public KeywordFilteredListFinder(String text, long complementarySearchFieldStyle) {
+      this(text, null, true, complementarySearchFieldStyle);
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
    }
 
-   public KeywordFilteredListFinder(String var1, String var2, boolean var3) {
-      this(var1, var2, var3, 0);
+   public KeywordFilteredListFinder(String text, String findLabel, boolean showCaretOnEmptySearch) {
+      this(text, findLabel, showCaretOnEmptySearch, 0);
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
    }
 
-   public KeywordFilteredListFinder(String var1, String var2, boolean var3, long var4) {
+   public KeywordFilteredListFinder(String text, String findLabel, boolean showCaretOnEmptySearch, long complementarySearchFieldStyle) {
    }
 
    private String composeLanguageAdjustedPattern() {
       if (this._acceptYomiSearch && this.getInputContext().getActiveInputMethodID() == 512) {
-         Object var1 = new Object();
-         AttributedString var2 = this.getAttributedText();
-         int var3 = this.getComposedTextEnd();
-         boolean var4 = false;
+         StringBuffer compositeSearchPattern = (StringBuffer)(new Object());
+         AttributedString attributedString = this.getAttributedText();
+         int composedTextEnd = this.getComposedTextEnd();
+         boolean hasHanSymbols = false;
 
-         for (int var5 = this.getLabelLength(); var5 < var3; var5++) {
-            char var6 = var2.charAt(var5);
-            var4 |= CharacterUtilities.isHan(var6);
-            ((StringBuffer)var1).append(var6);
+         for (int i = this.getLabelLength(); i < composedTextEnd; i++) {
+            char ch = attributedString.charAt(i);
+            hasHanSymbols |= CharacterUtilities.isHan(ch);
+            compositeSearchPattern.append(ch);
          }
 
-         if (var4) {
-            int var7 = ((StringBuffer)var1).length();
-            int var8 = KanaConversionUtils.kanaToHalfWidth((StringBuffer)var1, 0, ((StringBuffer)var1).length(), (StringBuffer)var1);
-            if (var8 != var7) {
-               ((StringBuffer)var1).setLength(var7);
+         if (hasHanSymbols) {
+            int lengthBefore = compositeSearchPattern.length();
+            int converted = KanaConversionUtils.kanaToHalfWidth(compositeSearchPattern, 0, compositeSearchPattern.length(), compositeSearchPattern);
+            if (converted != lengthBefore) {
+               compositeSearchPattern.setLength(lengthBefore);
             } else {
-               ((StringBuffer)var1).delete(0, var7);
+               compositeSearchPattern.delete(0, lengthBefore);
             }
          }
 
-         return ((StringBuffer)var1).toString();
+         return compositeSearchPattern.toString();
       } else {
          return null;
       }
    }
 
-   private String composeSearchPattern(InputMethodEvent var1) {
-      String var2 = this.composeLanguageAdjustedPattern();
-      if (var2 != null) {
-         return var2;
+   private String composeSearchPattern(InputMethodEvent event) {
+      String langPattern = this.composeLanguageAdjustedPattern();
+      if (langPattern != null) {
+         return langPattern;
       }
 
-      int var3 = super.getLabelLength();
-      return super.getText(var3, this.getComposedTextStart() - var3 + var1.getConvertedCharacterCount());
+      int labelLen = super.getLabelLength();
+      return super.getText(labelLen, this.getComposedTextStart() - labelLen + event.getConvertedCharacterCount());
    }
 
    @Override
-   public void focusChangeNotify(int var1) {
-      boolean var2 = this._preventCall;
+   public void focusChangeNotify(int action) {
+      boolean value = this._preventCall;
       this._preventCall = true;
-      super.focusChangeNotify(var1);
-      this._preventCall = var2;
+      super.focusChangeNotify(action);
+      this._preventCall = value;
    }
 
    public boolean getFocusIndicatorEnabled() {
@@ -115,12 +115,12 @@ public class KeywordFilteredListFinder extends BasicEditField {
       return super.getText(super.getLabelLength(), super.getCursorPosition());
    }
 
-   private void initiateSearch(String var1) {
-      this._listField.initiateSearch(var1);
+   private void initiateSearch(String pattern) {
+      this._listField.initiateSearch(pattern);
    }
 
    @Override
-   public int inputMethodTextChanged(InputMethodEvent var1) {
+   public int inputMethodTextChanged(InputMethodEvent event) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -130,39 +130,39 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      return var1 == 128 ? super.keyControl(var1, var2, var3) : false;
+   protected boolean keyControl(char key, int status, int time) {
+      return key == 128 ? super.keyControl(key, status, time) : false;
    }
 
-   public void linkToField(KeywordFilterCollectionListField var1) {
-      this._listField = var1;
-      var1.setInputProcessor(this);
-   }
-
-   @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      return var1;
+   public void linkToField(KeywordFilterCollectionListField field) {
+      this._listField = field;
+      field.setInputProcessor(this);
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      super.paint(var1);
+   protected int moveFocus(int amount, int status, int time) {
+      return amount;
+   }
+
+   @Override
+   protected void paint(Graphics graphics) {
+      super.paint(graphics);
       if (this._drawFocusIndicator) {
          this.getFocusRect(this._focusRect);
-         this.drawFocus(var1, true);
+         this.drawFocus(graphics, true);
       }
    }
 
-   private void performSearch(String var1) {
+   private void performSearch(String newSearchPattern) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void redoSearch(boolean var1) {
+   public void redoSearch(boolean force) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -172,51 +172,51 @@ public class KeywordFilteredListFinder extends BasicEditField {
       this.setText(null);
    }
 
-   public void setAllowSpacesInSearchText(boolean var1) {
-      this._allowSpacesInSearchText = var1;
+   public void setAllowSpacesInSearchText(boolean allowSpacesInSearchText) {
+      this._allowSpacesInSearchText = allowSpacesInSearchText;
       if (!this._allowSpacesInSearchText && this._searchPattern != null) {
          this._searchPattern = this._searchPattern.replace(' ', '_');
       }
    }
 
-   public void acceptYomiSearch(boolean var1) {
+   public void acceptYomiSearch(boolean acceptYomiSearch) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setBaseText(String var1) {
-      boolean var2 = StringUtilities.strEqual(this._baseText, var1);
-      this._baseText = var1;
-      if (!var2) {
+   public void setBaseText(String baseText) {
+      boolean sameText = StringUtilities.strEqual(this._baseText, baseText);
+      this._baseText = baseText;
+      if (!sameText) {
          this.updateText();
       }
    }
 
-   public void setDisplayUpperCaseCharsInSearchText(boolean var1) {
-      this._displayUpperCaseCharsInSearchText = var1;
+   public void setDisplayUpperCaseCharsInSearchText(boolean displayUpperCaseCharsInSearchText) {
+      this._displayUpperCaseCharsInSearchText = displayUpperCaseCharsInSearchText;
       if (!this._displayUpperCaseCharsInSearchText && this._searchPattern != null) {
          this._searchPattern = this._searchPattern.toLowerCase();
       }
    }
 
-   public void setFocusIndicatorEnabled(boolean var1) {
+   public void setFocusIndicatorEnabled(boolean enabled) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setSearchPattern(String var1) {
-      this.setSearchPattern(var1, true);
+   public void setSearchPattern(String newPattern) {
+      this.setSearchPattern(newPattern, true);
    }
 
-   private void setSearchPattern(String var1, boolean var2) {
+   private void setSearchPattern(String newPattern, boolean forceUpdate) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
    protected void updateInputStyle() {
       super.updateInputStyle();
-      Object var1 = this.getInputContext().getInputMethodControlObject();
-      KeywordFilterList var2 = this._listField.getKeywordFilterList();
-      if (var2 != null) {
-         ((SLControlObject)var1).actionPerformed(38, var2.getSearcher());
+      SLControlObject controlObject = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+      KeywordFilterList list = this._listField.getKeywordFilterList();
+      if (list != null) {
+         controlObject.actionPerformed(38, list.getSearcher());
       }
    }
 

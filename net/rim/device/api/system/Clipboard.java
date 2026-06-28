@@ -23,25 +23,25 @@ public final class Clipboard {
 
    public static final synchronized Clipboard getClipboard() {
       if (_instance == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _instance = (Clipboard)var0.getOrWaitFor(-2401061171848633112L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _instance = (Clipboard)ar.getOrWaitFor(-2401061171848633112L);
          if (_instance == null) {
             _instance = new Clipboard();
-            var0.put(-2401061171848633112L, _instance);
+            ar.put(-2401061171848633112L, _instance);
          }
       }
 
       return _instance;
    }
 
-   private final boolean isClipboardAccessRestricted(Object var1) {
+   private final boolean isClipboardAccessRestricted(Object o) {
       if (!ApplicationControl.isIPCAllowed(true)) {
          return true;
       }
 
-      if (var1 != null && !(var1 instanceof Object) && !(var1 instanceof Object)) {
-         int var2 = TraceBack.getCallingModule(2);
-         if (!ControlledAccess.verifyCodeModuleSignature(var2, 51)) {
+      if (o != null && !(o instanceof Object) && !(o instanceof Object)) {
+         int callingModule = TraceBack.getCallingModule(2);
+         if (!ControlledAccess.verifyCodeModuleSignature(callingModule, 51)) {
             return true;
          }
       }
@@ -61,34 +61,34 @@ public final class Clipboard {
       return InternalServices.getUptime() < this._pastePriorityExpiration;
    }
 
-   public final Object put(Object var1) {
+   public final Object put(Object o) {
       this._pastePriorityExpiration = InternalServices.getUptime();
       if (this.isClipboardDisabled()) {
          this._object = null;
          return null;
       }
 
-      if (this.isClipboardAccessRestricted(var1)) {
+      if (this.isClipboardAccessRestricted(o)) {
          throw new Object();
       }
 
-      Object var2 = this._object;
-      this._object = var1;
-      if (var1 != null) {
+      Object temp = this._object;
+      this._object = o;
+      if (o != null) {
          this._pastePriorityExpiration = this._pastePriorityExpiration + this._pastePriorityTimeout;
       }
 
-      return var2;
+      return temp;
    }
 
-   public final void setNotYetPasted(boolean var1) {
+   public final void setNotYetPasted(boolean notYetPasted) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public final void setPastePriorityTimeout(long var1) {
+   public final void setPastePriorityTimeout(long pastePriorityTimeout) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      if (var1 > 0) {
-         this._pastePriorityTimeout = var1;
+      if (pastePriorityTimeout > 0) {
+         this._pastePriorityTimeout = pastePriorityTimeout;
       } else {
          this._pastePriorityTimeout = 60000;
       }

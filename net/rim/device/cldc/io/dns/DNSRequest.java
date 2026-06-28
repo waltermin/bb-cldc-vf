@@ -31,24 +31,24 @@ public class DNSRequest {
    public static final int FLAG_USE_SECONDARY_DNS;
    public static final int DEFAULT_TIMEOUT;
 
-   public DNSRequest(String var1, DNSListener var2, int var3) {
-      this(var1, var2, var3, getDefaultServerAddress(var3, 1), getDefaultServerAddress(var3, 2), 19780);
+   public DNSRequest(String hostname, DNSListener listener, int apnId) {
+      this(hostname, listener, apnId, getDefaultServerAddress(apnId, 1), getDefaultServerAddress(apnId, 2), 19780);
    }
 
-   public DNSRequest(String var1, DNSListener var2, int var3, byte[] var4, byte[] var5, int var6) {
+   public DNSRequest(String hostname, DNSListener listener, int apnId, byte[] primaryDnsAddr, byte[] secondaryDnsAddr, int srcPort) {
       this._queryType = 1;
       this._timeout = 10000;
-      this.init(var1, var2, var3, var4, var5, var6);
+      this.init(hostname, listener, apnId, primaryDnsAddr, secondaryDnsAddr, srcPort);
    }
 
-   public DNSRequest(byte[] var1, DNSListener var2, int var3) {
-      this(var1, var2, var3, getDefaultServerAddress(var3, 1), getDefaultServerAddress(var3, 2), 19780);
+   public DNSRequest(byte[] ipAddr, DNSListener listener, int apnId) {
+      this(ipAddr, listener, apnId, getDefaultServerAddress(apnId, 1), getDefaultServerAddress(apnId, 2), 19780);
    }
 
-   public DNSRequest(byte[] var1, DNSListener var2, int var3, byte[] var4, byte[] var5, int var6) {
+   public DNSRequest(byte[] ipAddr, DNSListener listener, int apnId, byte[] primaryDnsAddr, byte[] secondaryDnsAddr, int srcPort) {
       this._queryType = 12;
       this._timeout = 10000;
-      this.init(makeInverseQueryHostname(var1), var2, var3, var4, var5, var6);
+      this.init(makeInverseQueryHostname(ipAddr), listener, apnId, primaryDnsAddr, secondaryDnsAddr, srcPort);
    }
 
    public DNSListener getListener() {
@@ -63,7 +63,7 @@ public class DNSRequest {
       return this._answer;
    }
 
-   void setAnswer(DNSMessageIPv4 var1) {
+   void setAnswer(DNSMessageIPv4 answer) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -71,7 +71,7 @@ public class DNSRequest {
       return this._timestamp;
    }
 
-   void setTimestamp(int var1) {
+   void setTimestamp(int timestamp) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -79,7 +79,7 @@ public class DNSRequest {
       return this._status;
    }
 
-   void setStatus(int var1) {
+   void setStatus(int status) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -99,9 +99,9 @@ public class DNSRequest {
       return this._curDnsName;
    }
 
-   void setCurrentIpSettings(byte[] var1, String var2) {
-      this._curDnsIP = var1;
-      this._curDnsName = var2;
+   void setCurrentIpSettings(byte[] nsIp, String nsName) {
+      this._curDnsIP = nsIp;
+      this._curDnsName = nsName;
    }
 
    public int getSrcPort() {
@@ -112,7 +112,7 @@ public class DNSRequest {
       return this._result;
    }
 
-   void setResult(Vector var1) {
+   void setResult(Vector vec) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -124,23 +124,23 @@ public class DNSRequest {
       return this._flags;
    }
 
-   public boolean isFlagSet(int var1) {
-      return (this._flags & var1) != 0;
+   public boolean isFlagSet(int flag) {
+      return (this._flags & flag) != 0;
    }
 
-   void setFlag(int var1) {
-      this._flags |= var1;
+   void setFlag(int flag) {
+      this._flags |= flag;
    }
 
-   void clearFlag(int var1) {
-      this._flags &= ~var1;
+   void clearFlag(int flag) {
+      this._flags &= ~flag;
    }
 
    public boolean isDone() {
       return this._done;
    }
 
-   void setDone(boolean var1) {
+   void setDone(boolean done) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -148,7 +148,7 @@ public class DNSRequest {
       return this._prevRequest;
    }
 
-   void setPreviousRequest(DNSRequest var1) {
+   void setPreviousRequest(DNSRequest req) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -156,15 +156,15 @@ public class DNSRequest {
       return this._message.getID();
    }
 
-   void setPacketId(int var1) {
-      this._message.setID(var1);
+   void setPacketId(int id) {
+      this._message.setID(id);
    }
 
    public byte[] getPrimaryDnsIp() {
       return this._primaryDnsIP;
    }
 
-   public void setPrimaryDnsIp(byte[] var1) {
+   public void setPrimaryDnsIp(byte[] ip) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -172,7 +172,7 @@ public class DNSRequest {
       return this._secondaryDnsIP;
    }
 
-   public void setSecondaryDnsIp(byte[] var1) {
+   public void setSecondaryDnsIp(byte[] ip) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -180,7 +180,7 @@ public class DNSRequest {
       return this._timeout;
    }
 
-   public void setTimeout(int var1) {
+   public void setTimeout(int to) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -188,7 +188,7 @@ public class DNSRequest {
       return this._cnames;
    }
 
-   void setCnameAttempts(int var1) {
+   void setCnameAttempts(int newAttempts) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -196,19 +196,19 @@ public class DNSRequest {
       return this._referrals;
    }
 
-   void setReferralAttempts(int var1) {
+   void setReferralAttempts(int newAttempts) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private void init(String var1, DNSListener var2, int var3, byte[] var4, byte[] var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void init(String queryStr, DNSListener listener, int apnId, byte[] primaryDnsAddr, byte[] secondaryDnsAddr, int port) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static String makeInverseQueryHostname(byte[] var0) {
+   private static String makeInverseQueryHostname(byte[] ipAddr) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static byte[] getDefaultServerAddress(int var0, int var1) {
+   public static byte[] getDefaultServerAddress(int apnId, int type) {
       throw new RuntimeException("cod2jar: array init");
    }
 }

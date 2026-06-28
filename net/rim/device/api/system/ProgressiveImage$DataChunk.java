@@ -8,7 +8,7 @@ final class ProgressiveImage$DataChunk {
    private ProgressiveImage$DataChunk() {
    }
 
-   ProgressiveImage$DataChunk(ProgressiveImage$1 var1) {
+   ProgressiveImage$DataChunk(ProgressiveImage$1 x0) {
       this();
    }
 }

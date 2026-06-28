@@ -27,10 +27,10 @@ public class FlashInputStream extends InputStream {
 
    private static native void erase(Object var0);
 
-   public FlashInputStream(long var1) {
-      int var3 = bufferSize();
-      this._buffer = new byte[var3];
-      this._stream = open(var1);
+   public FlashInputStream(long guid) {
+      int bufferSize = bufferSize();
+      this._buffer = new byte[bufferSize];
+      this._stream = open(guid);
       this._totalSize = totalSize(this._stream);
       this._handleIndex = -1;
    }
@@ -65,13 +65,19 @@ public class FlashInputStream extends InputStream {
    public void close() {
    }
 
-   public static boolean exists(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static boolean exists(long guid) {
+      FlashInputStream fis = new FlashInputStream(guid);
+
+      try {
+         return fis.available() != 0;
+      } catch (Throwable e) {
+         return false;
+      }
    }
 
-   public static void erase(long var0) {
-      FlashInputStream var2 = new FlashInputStream(var0);
-      var2.erase();
-      var2.close();
+   public static void erase(long guid) {
+      FlashInputStream fis = new FlashInputStream(guid);
+      fis.erase();
+      fis.close();
    }
 }

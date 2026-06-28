@@ -1,6 +1,7 @@
 package net.rim.device.api.ui.component;
 
 import net.rim.device.api.collection.Collection;
+import net.rim.device.api.collection.CollectionLock;
 import net.rim.device.api.collection.FilterStatusListener;
 import net.rim.device.api.collection.ReadableList;
 import net.rim.device.api.collection.util.KeywordFilterList;
@@ -15,18 +16,18 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
    private int _searchesInProgress;
    private KeywordFilteredListFinder _inputProcessor;
 
-   public void setSize(int var1, int var2, boolean var3) {
-      if (var3 && this.getListSize() == 0) {
-         var2 = 0;
+   public void setSize(int count, int index, boolean selectFirstItem) {
+      if (selectFirstItem && this.getListSize() == 0) {
+         index = 0;
       }
 
-      super.setSize(var1, var2);
+      super.setSize(count, index);
    }
 
-   public void setKeywordFilterList(KeywordFilterList var1) {
-      if (var1 != this._list) {
-         this._list = var1;
-         super.setList(var1);
+   public void setKeywordFilterList(KeywordFilterList newList) {
+      if (newList != this._list) {
+         this._list = newList;
+         super.setList(newList);
       }
    }
 
@@ -34,11 +35,18 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
       return this._list;
    }
 
-   void initiateSearch(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   void initiateSearch(String pattern) {
+      if (this._list != null) {
+         this._searchesInProgress++;
+         synchronized (CollectionLock.getGlobalLock()) {
+            synchronized (this._list) {
+               this._list.setCriteria(pattern, this);
+            }
+         }
+      }
    }
 
-   void setInputProcessor(KeywordFilteredListFinder var1) {
+   void setInputProcessor(KeywordFilteredListFinder processor) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -47,7 +55,7 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
    }
 
    @Override
-   public void filterDone(boolean var1) {
+   public void filterDone(boolean interrupted) {
       if (this._searchesInProgress > 0) {
          this._searchesInProgress--;
          if (this._searchesInProgress == 0) {
@@ -57,14 +65,14 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
    }
 
    @Override
-   public void dispatchEvent(Event var1) {
+   public void dispatchEvent(Event rEvent) {
       if (this._inputProcessor == null) {
-         super.dispatchEvent(var1);
-      } else if (var1.getID() == 1004) {
-         var1.setSource(this._inputProcessor);
-         this._inputProcessor.dispatchEvent(var1);
+         super.dispatchEvent(rEvent);
+      } else if (rEvent.getID() == 1004) {
+         rEvent.setSource(this._inputProcessor);
+         this._inputProcessor.dispatchEvent(rEvent);
       } else {
-         this._inputProcessor.dispatchEvent(var1);
+         this._inputProcessor.dispatchEvent(rEvent);
       }
    }
 
@@ -80,31 +88,31 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      return this._inputProcessor != null ? this._inputProcessor.keyChar(var1, var2, var3) : super.keyChar(var1, var2, var3);
+   protected boolean keyChar(char key, int status, int time) {
+      return this._inputProcessor != null ? this._inputProcessor.keyChar(key, status, time) : super.keyChar(key, status, time);
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      return this._inputProcessor != null ? this._inputProcessor.keyControl(var1, var2, var3) : super.keyControl(var1, var2, var3);
+   protected boolean keyControl(char key, int status, int time) {
+      return this._inputProcessor != null ? this._inputProcessor.keyControl(key, status, time) : super.keyControl(key, status, time);
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      return this._inputProcessor != null ? this._inputProcessor.processKeyEvent(var1, var2, var3, var4) : super.processKeyEvent(var1, var2, var3, var4);
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      return this._inputProcessor != null ? this._inputProcessor.processKeyEvent(event, key, keycode, time) : super.processKeyEvent(event, key, keycode, time);
    }
 
    @Override
-   public boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
+   public boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
       return this._inputProcessor != null
-         ? this._inputProcessor.processNavigationEvent(var1, var2, var3, var4, var5)
-         : super.processNavigationEvent(var1, var2, var3, var4, var5);
+         ? this._inputProcessor.processNavigationEvent(event, dx, dy, status, time)
+         : super.processNavigationEvent(event, dx, dy, status, time);
    }
 
    @Override
-   public void reset(Collection var1) {
+   public void reset(Collection collection) {
       if (this._searchesInProgress == 0) {
-         super.reset(var1);
+         super.reset(collection);
       }
    }
 
@@ -113,19 +121,19 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
       return this._inputProcessor == null ? super.getInputMethodRequests() : this._inputProcessor.getInputMethodRequests();
    }
 
-   public KeywordFilterCollectionListField(ReadableList var1, ListFieldCallback var2, long var3) {
-      super(var1, var2, var3);
-      this._list = (KeywordFilterList)var1;
+   public KeywordFilterCollectionListField(ReadableList list, ListFieldCallback listCallback, long style) {
+      super(list, listCallback, style);
+      this._list = (KeywordFilterList)list;
    }
 
    @Override
-   public void setSize(int var1, int var2) {
-      this.setSize(var1, var2, true);
+   public void setSize(int count, int index) {
+      this.setSize(count, index, true);
    }
 
-   public KeywordFilterCollectionListField(ReadableList var1, ListFieldCallback var2) {
-      this(var1, var2, 0);
+   public KeywordFilterCollectionListField(ReadableList list, ListFieldCallback listCallback) {
+      this(list, listCallback, 0);
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._list = (KeywordFilterList)var1;
+      this._list = (KeywordFilterList)list;
    }
 }

@@ -11,9 +11,9 @@ final class ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable implement
    private ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable() {
    }
 
-   private final void reset(String var1, int var2) {
-      this._requestName = var1;
-      this._requestHandle = var2;
+   private final void reset(String name, int handle) {
+      this._requestName = name;
+      this._requestHandle = handle;
       this._bundle = null;
    }
 
@@ -25,12 +25,42 @@ final class ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable implement
       return this._bundle;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._requestName != null) {
+         boolean var7 = false /* VF: Semaphore variable */;
+
+         label72: {
+            try {
+               var7 = true;
+               this._bundle = ResourceBundleFetcher.fetchResourceBundleInternal(this._requestName, this._requestHandle);
+               var7 = false;
+               break label72;
+            } catch (Exception var11) {
+               var7 = false;
+            } finally {
+               if (var7) {
+                  synchronized (this._lockObject) {
+                     this._lockObject.notify();
+                  }
+               }
+            }
+
+            synchronized (this._lockObject) {
+               this._lockObject.notify();
+               return;
+            }
+         }
+
+         synchronized (this._lockObject) {
+            this._lockObject.notify();
+         }
+      }
    }
 
-   ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable(ResourceBundleFetcher$1 var1) {
+   ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable(ResourceBundleFetcher$1 x0) {
       this();
    }
 }

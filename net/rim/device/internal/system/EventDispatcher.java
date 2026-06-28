@@ -3,15 +3,15 @@ package net.rim.device.internal.system;
 import net.rim.vm.Message;
 
 public class EventDispatcher {
-   public boolean notify(Message var1) {
+   public boolean notify(Message message) {
       return true;
    }
 
-   public int getNotifyProcessId(Message var1) {
+   public int getNotifyProcessId(Message message) {
       return -1;
    }
 
-   public void dispatch(Message var1, Object var2) {
+   public void dispatch(Message _1, Object _2) {
       throw null;
    }
 }

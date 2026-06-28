@@ -5,21 +5,21 @@ final class NativeARC4PRNG {
    private int _j;
    private byte[] _s;
 
-   public NativeARC4PRNG(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 > 0 && var1.length - var3 >= var2) {
+   public NativeARC4PRNG(byte[] seed, int offset, int length) {
+      if (seed != null && offset >= 0 && length > 0 && seed.length - length >= offset) {
          this._s = new byte[256];
 
-         for (int var4 = 0; var4 < 256; var4++) {
-            this._s[var4] = (byte)var4;
+         for (int i = 0; i < 256; i++) {
+            this._s[i] = (byte)i;
          }
 
-         int var5 = 0;
+         int j = 0;
 
          for (int var7 = 0; var7 < 256; var7++) {
-            var5 = var1[var2 + var7 % var3] + this._s[var7] + var5 & 0xFF;
-            byte var6 = this._s[var7];
-            this._s[var7] = this._s[var5];
-            this._s[var5] = var6;
+            j = seed[offset + var7 % length] + this._s[var7] + j & 0xFF;
+            byte t = this._s[var7];
+            this._s[var7] = this._s[j];
+            this._s[j] = t;
          }
       } else {
          throw new Object();

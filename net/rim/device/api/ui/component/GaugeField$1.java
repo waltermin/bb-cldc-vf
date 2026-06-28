@@ -4,7 +4,7 @@ import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.MenuItem;
 
 class GaugeField$1 extends MenuItem {
-   GaugeField$1(ResourceBundle var1, int var2, int var3, int var4) {
+   GaugeField$1(ResourceBundle x0, int x1, int x2, int x3) {
    }
 
    @Override

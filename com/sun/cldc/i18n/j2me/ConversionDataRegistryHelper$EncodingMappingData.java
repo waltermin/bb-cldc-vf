@@ -9,10 +9,10 @@ final class ConversionDataRegistryHelper$EncodingMappingData {
    int _encodingDataOffset;
    int _encodingDataLength;
 
-   ConversionDataRegistryHelper$EncodingMappingData(String var1, int var2, int var3, String var4) {
-      this._id = var2;
-      this._locale = var3;
-      this._typeface = var4;
-      this._encoding = var1;
+   ConversionDataRegistryHelper$EncodingMappingData(String encoding, int id, int locale, String typeface) {
+      this._id = id;
+      this._locale = locale;
+      this._typeface = typeface;
+      this._encoding = encoding;
    }
 }

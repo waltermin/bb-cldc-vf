@@ -7,11 +7,11 @@ final class TimeZone$BaseGMTTimeZone extends TimeZone {
    }
 
    @Override
-   public final int getOffset(int var1, int var2, int var3, int var4, int var5, int var6) {
+   public final int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis) {
       return 0;
    }
 
-   public final int getOffset(int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
+   public final int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis, int monthLength) {
       return 0;
    }
 
@@ -36,11 +36,11 @@ final class TimeZone$BaseGMTTimeZone extends TimeZone {
    }
 
    @Override
-   public final boolean equals(Object var1) {
-      return var1 instanceof TimeZone$BaseGMTTimeZone;
+   public final boolean equals(Object obj) {
+      return obj instanceof TimeZone$BaseGMTTimeZone;
    }
 
-   TimeZone$BaseGMTTimeZone(TimeZone$1 var1) {
+   TimeZone$BaseGMTTimeZone(TimeZone$1 x0) {
       this();
    }
 }

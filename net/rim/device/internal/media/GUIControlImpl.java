@@ -12,15 +12,15 @@ public class GUIControlImpl implements GUIControl {
    }
 
    @Override
-   public Object initDisplayMode(int var1, Object var2) {
+   public Object initDisplayMode(int mode, Object arg) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public GUIControlImpl(Item var1) {
-      this._item = var1;
+   public GUIControlImpl(Item item) {
+      this._item = item;
    }
 
-   public GUIControlImpl(Object var1) {
-      this._item = var1;
+   public GUIControlImpl(Object item) {
+      this._item = item;
    }
 }

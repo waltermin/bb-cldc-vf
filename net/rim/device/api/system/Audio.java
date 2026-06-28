@@ -4,6 +4,7 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.media.MediaNatives;
 import net.rim.device.internal.system.AudioInternal;
+import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 
 public final class Audio {
@@ -48,14 +49,14 @@ public final class Audio {
       return true;
    }
 
-   public static final void enable(boolean var0) {
+   public static final void enable(boolean enable) {
    }
 
    public static final native int getVolume();
 
-   public static final boolean setVolume(int var0) {
+   public static final boolean setVolume(int volume) {
       assertDeviceSettingsPermission();
-      return AudioInternal.setVolume(var0);
+      return AudioInternal.setVolume(volume);
    }
 
    public static final native boolean isHeadsetConnected();
@@ -64,32 +65,40 @@ public final class Audio {
       return InternalServices.isDeviceCapable(3);
    }
 
-   public static final boolean isCodecSupported(int var0) {
-      return var0 >= 0 && var0 < 15 ? MediaNatives.isAudioDecoderCodecSupported(var0) : false;
+   public static final boolean isCodecSupported(int codec) {
+      return codec >= 0 && codec < 15 ? MediaNatives.isAudioDecoderCodecSupported(codec) : false;
    }
 
-   public static final boolean isRecordingCodecSupported(int var0) {
-      return var0 >= 0 && var0 < 15 ? MediaNatives.isAudioEncoderCodecSupported(var0) : false;
+   public static final boolean isRecordingCodecSupported(int codec) {
+      return codec >= 0 && codec < 15 ? MediaNatives.isAudioEncoderCodecSupported(codec) : false;
    }
 
-   public static final int playFile(int var0, int var1, String var2) {
+   public static final int playFile(int audioCodec, int fs, String fileName) {
       throw new Object();
    }
 
-   public static final int recordFile(int var0, int var1, String var2) {
+   public static final int recordFile(int audioCodec, int fs, String fileName) {
       throw new Object();
    }
 
-   public static final int stopFile(int var0, int var1, String var2) {
+   public static final int stopFile(int audioCodec, int fs, String fileName) {
       throw new Object();
    }
 
-   public static final void addListener(Application var0, AudioListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final void removeListener(Application var0, AudioListener var1) {
+   public static final void addListener(Application app, AudioListener listener) {
       assertMediaPermission();
-      var0.removeListener(21, var1);
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(21) == null) {
+            dispatchManager.setDispatcher(21, new AudioEventDispatcher());
+         }
+      }
+
+      app.addListener(21, listener);
+   }
+
+   public static final void removeListener(Application app, AudioListener listener) {
+      assertMediaPermission();
+      app.removeListener(21, listener);
    }
 }

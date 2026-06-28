@@ -12,11 +12,11 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    private final USBPasswordRedirectManager this$0;
    public static final int DISMISS;
 
-   public USBPasswordRedirectManager$USBPasswordRedirectDialog(USBPasswordRedirectManager var1, String var2) {
+   public USBPasswordRedirectManager$USBPasswordRedirectDialog(USBPasswordRedirectManager _1, String usbPeripheralName) {
       super(null, 1, 32, false, 134217728);
-      this.this$0 = var1;
+      this.this$0 = _1;
       this.setStatusPriority(-2147483644);
-      this._usbPeripheralName = var2;
+      this._usbPeripheralName = usbPeripheralName;
       this._app = Application.getApplication();
       this._app.addGlobalEventListener(this);
       this._app.addSystemListener(this);
@@ -24,8 +24,8 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    @Override
-   protected void close(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void close(int closeReason) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private void setMessage() {
@@ -33,8 +33,8 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == 6345609069135580235L) {
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 6345609069135580235L) {
          this.closeDialogLater();
       }
    }
@@ -44,8 +44,8 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    @Override
-   public void usbConnectionStateChange(int var1) {
-      if (var1 == 4) {
+   public void usbConnectionStateChange(int state) {
+      if (state == 4) {
          this.closeDialogLater();
       }
    }
@@ -67,15 +67,15 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    @Override
-   public void batteryStatusChange(int var1) {
+   public void batteryStatusChange(int status) {
    }
 
    @Override
-   public void powerOffRequested(int var1) {
+   public void powerOffRequested(int reason) {
    }
 
    @Override
-   public void cradleMismatch(boolean var1) {
+   public void cradleMismatch(boolean mismatch) {
    }
 
    @Override
@@ -83,6 +83,6 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    @Override
-   public void backlightStateChange(boolean var1) {
+   public void backlightStateChange(boolean on) {
    }
 }

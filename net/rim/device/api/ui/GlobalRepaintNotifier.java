@@ -16,15 +16,15 @@ class GlobalRepaintNotifier {
       this._extentChanged = false;
    }
 
-   synchronized void post(boolean var1) {
-      int var2 = ApplicationManager.getApplicationManager().getForegroundProcessId();
-      if (this._foreground == var2) {
-         this._extentChanged |= var1;
+   synchronized void post(boolean extentChanged) {
+      int foreground = ApplicationManager.getApplicationManager().getForegroundProcessId();
+      if (this._foreground == foreground) {
+         this._extentChanged |= extentChanged;
       } else {
-         if (var2 != -1) {
-            this._foreground = var2;
-            this._extentChanged = var1;
-            RIMGlobalMessagePoster.postGlobalEvent(var2, 5961289116197897667L, 3, 0, this, null);
+         if (foreground != -1) {
+            this._foreground = foreground;
+            this._extentChanged = extentChanged;
+            RIMGlobalMessagePoster.postGlobalEvent(foreground, 5961289116197897667L, 3, 0, this, null);
          }
       }
    }

@@ -3,8 +3,8 @@ package net.rim.device.api.util;
 final class StringWrapper extends AbstractStringWrapper {
    private String _string;
 
-   public StringWrapper(String var1) {
-      this._string = var1;
+   public StringWrapper(String str) {
+      this._string = str;
    }
 
    @Override
@@ -23,22 +23,22 @@ final class StringWrapper extends AbstractStringWrapper {
    }
 
    @Override
-   public final void getChars(int var1, int var2, char[] var3, int var4) {
-      this._string.getChars(var1, var2, var3, var4);
+   public final void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
+      this._string.getChars(srcBegin, srcEnd, dst, dstBegin);
    }
 
    @Override
-   public final int indexOf(char var1, int var2, int var3) {
-      return StringUtilities.indexOf(this._string, var1, var2, var3);
+   public final int indexOf(char c, int beginIndex, int endIndex) {
+      return StringUtilities.indexOf(this._string, c, beginIndex, endIndex);
    }
 
    @Override
-   public final char charAt(int var1) {
+   public final char charAt(int index) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public final void reset(Object var1) {
+   public final void reset(Object string) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

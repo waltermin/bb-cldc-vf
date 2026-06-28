@@ -4,6 +4,6 @@ public class NoClassDefFoundError extends Error {
    public NoClassDefFoundError() {
    }
 
-   public NoClassDefFoundError(String var1) {
+   public NoClassDefFoundError(String s) {
    }
 }

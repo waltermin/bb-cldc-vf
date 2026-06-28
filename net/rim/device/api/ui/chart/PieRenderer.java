@@ -11,7 +11,7 @@ public class PieRenderer extends ChartRenderer {
    public static final int PADDING_MEDIUM;
    public static final int PADDING_HIGH;
 
-   public PieRenderer(ChartField var1) {
+   public PieRenderer(ChartField field) {
    }
 
    public int getSlicePadding() {
@@ -19,50 +19,50 @@ public class PieRenderer extends ChartRenderer {
    }
 
    @Override
-   public void layout(int var1, int var2) {
-      this.setExtent(var1, var2);
+   public void layout(int width, int height) {
+      this.setExtent(width, height);
    }
 
    @Override
-   public void paint(Graphics var1) {
-      XYDataset var2 = this.getDataset();
-      int var3 = 0;
-      int var4 = 0;
-      int var5 = var2.getSize();
-      XYPoint var6 = new XYPoint();
-      int var7 = this.getWidth();
-      int var8 = this.getHeight();
+   public void paint(Graphics graphics) {
+      XYDataset dataset = this.getDataset();
+      int currentAngle = 0;
+      int lastAngle = 0;
+      int numSlices = dataset.getSize();
+      XYPoint point = new XYPoint();
+      int width = this.getWidth();
+      int height = this.getHeight();
       this._valuesTotal = 0;
 
-      for (int var9 = 0; var9 < var5; var9++) {
-         this._valuesTotal = this._valuesTotal + var2.getY(var9);
+      for (int index = 0; index < numSlices; index++) {
+         this._valuesTotal = this._valuesTotal + dataset.getY(index);
       }
 
-      for (int var13 = 0; var13 < var5; var13++) {
-         var2.getPoint(var13, var6);
-         int var10 = var6.x;
-         int var11 = var6.y;
-         var1.setColor(var10);
-         var3 = var11 * 360 / this._valuesTotal - this._slicePadding;
-         if (var3 != 0) {
-            var1.fillArc(0, 0, var7, var8, var4, var3);
+      for (int index = 0; index < numSlices; index++) {
+         dataset.getPoint(index, point);
+         int color = point.x;
+         int value = point.y;
+         graphics.setColor(color);
+         currentAngle = value * 360 / this._valuesTotal - this._slicePadding;
+         if (currentAngle != 0) {
+            graphics.fillArc(0, 0, width, height, lastAngle, currentAngle);
          }
 
-         var1.setColor(0);
-         var1.drawArc(0, 0, var7, var8, var4, var3);
-         var4 += var3 + this._slicePadding;
+         graphics.setColor(0);
+         graphics.drawArc(0, 0, width, height, lastAngle, currentAngle);
+         lastAngle += currentAngle + this._slicePadding;
       }
    }
 
-   public void setSlicePadding(int var1) {
-      if (this._slicePadding != var1) {
-         checkSlicePadding(var1);
-         this._slicePadding = var1;
+   public void setSlicePadding(int padding) {
+      if (this._slicePadding != padding) {
+         checkSlicePadding(padding);
+         this._slicePadding = padding;
       }
    }
 
-   private static void checkSlicePadding(int var0) {
-      switch (var0) {
+   private static void checkSlicePadding(int padding) {
+      switch (padding) {
          case 0:
          case 4:
          case 8:

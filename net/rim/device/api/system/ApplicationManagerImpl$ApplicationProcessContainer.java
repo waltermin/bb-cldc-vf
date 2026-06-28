@@ -10,66 +10,66 @@ class ApplicationManagerImpl$ApplicationProcessContainer {
       return this._processes.length;
    }
 
-   ApplicationProcess getProcessAtIndex(int var1) {
-      return this._processes[var1];
+   ApplicationProcess getProcessAtIndex(int index) {
+      return this._processes[index];
    }
 
-   int getProcessIndex(ApplicationProcess var1) {
-      for (int var2 = this._processes.length - 1; var2 >= 0; var2--) {
-         if (this._processes[var2] == var1) {
-            return var2;
+   int getProcessIndex(ApplicationProcess process) {
+      for (int i = this._processes.length - 1; i >= 0; i--) {
+         if (this._processes[i] == process) {
+            return i;
          }
       }
 
       return -1;
    }
 
-   void addProcess(ApplicationProcess var1) {
-      Arrays.add(this._processes, var1);
+   void addProcess(ApplicationProcess process) {
+      Arrays.add(this._processes, process);
    }
 
-   void removeProcess(int var1) {
-      this.moveProcessToRear(var1);
+   void removeProcess(int index) {
+      this.moveProcessToRear(index);
       Array.resize(this._processes, this._processes.length - 1);
    }
 
-   void moveProcess(ApplicationProcess var1, int var2) {
-      int var3 = this.getProcessIndex(var1);
-      if (var3 == -1) {
+   void moveProcess(ApplicationProcess process, int destIndex) {
+      int srcIndex = this.getProcessIndex(process);
+      if (srcIndex == -1) {
          throw new Object();
       }
 
-      this.moveProcess(var3, var2);
+      this.moveProcess(srcIndex, destIndex);
    }
 
-   void moveProcessToRear(ApplicationProcess var1) {
-      int var2 = this.getProcessIndex(var1);
-      if (var2 == -1) {
+   void moveProcessToRear(ApplicationProcess process) {
+      int srcIndex = this.getProcessIndex(process);
+      if (srcIndex == -1) {
          throw new Object();
       }
 
-      this.moveProcessToRear(var2);
+      this.moveProcessToRear(srcIndex);
    }
 
-   void moveProcessToRear(int var1) {
-      this.moveProcess(var1, this._processes.length - 1);
+   void moveProcessToRear(int srcIndex) {
+      this.moveProcess(srcIndex, this._processes.length - 1);
    }
 
-   void moveProcess(int var1, int var2) {
-      ApplicationProcess var3 = this._processes[var1];
-      if (var2 < var1) {
-         System.arraycopy(this._processes, var2, this._processes, var2 + 1, var1 - var2);
-      } else if (var2 > var1) {
-         System.arraycopy(this._processes, var1 + 1, this._processes, var1, var2 - var1);
+   void moveProcess(int srcIndex, int destIndex) {
+      ApplicationProcess targetProcess = this._processes[srcIndex];
+      if (destIndex < srcIndex) {
+         System.arraycopy(this._processes, destIndex, this._processes, destIndex + 1, srcIndex - destIndex);
+      } else if (destIndex > srcIndex) {
+         System.arraycopy(this._processes, srcIndex + 1, this._processes, srcIndex, destIndex - srcIndex);
       }
 
-      this._processes[var2] = var3;
+      this._processes[destIndex] = targetProcess;
    }
 
    ApplicationProcess[] getCopyOfProcesses() {
-      int var1 = this._processes.length;
-      ApplicationProcess[] var2 = new ApplicationProcess[var1];
-      System.arraycopy(this._processes, 0, var2, 0, var1);
-      return var2;
+      int numProcesses = this._processes.length;
+      ApplicationProcess[] copy = new ApplicationProcess[numProcesses];
+      System.arraycopy(this._processes, 0, copy, 0, numProcesses);
+      return copy;
    }
 }

@@ -13,9 +13,9 @@ public final class Radio {
    private Radio() {
    }
 
-   public static final boolean activateWAFs(int var0) {
-      RadioInternal.assertWAFAccessPermission(var0);
-      if (var0 == 0) {
+   public static final boolean activateWAFs(int WAFs) {
+      RadioInternal.assertWAFAccessPermission(WAFs);
+      if (WAFs == 0) {
          return true;
       }
 
@@ -31,81 +31,81 @@ public final class Radio {
          return false;
       }
 
-      if ((var0 & 4) != 0 && !WLAN.isWLANAllowed()) {
-         if (var0 == 4) {
+      if ((WAFs & 4) != 0 && !WLAN.isWLANAllowed()) {
+         if (WAFs == 4) {
             return false;
          }
 
-         var0 &= -5;
+         WAFs &= -5;
       }
 
-      int var1 = RadioInternal.get3GPPEnabledRats();
-      if ((var0 & 1) != 0) {
+      int enabled3GPPRats = RadioInternal.get3GPPEnabledRats();
+      if ((WAFs & 1) != 0) {
          if (RadioInternal.getGANPreference() == 2) {
             return false;
          }
 
-         var1 |= RadioInternal.get3GPPSupportedRats() & -5;
+         enabled3GPPRats |= RadioInternal.get3GPPSupportedRats() & -5;
       }
 
-      if ((var0 & 4) != 0 && GAN.isGANAllowed()) {
-         var1 |= RadioInternal.get3GPPSupportedRats() & 4;
+      if ((WAFs & 4) != 0 && GAN.isGANAllowed()) {
+         enabled3GPPRats |= RadioInternal.get3GPPSupportedRats() & 4;
       }
 
-      RadioInternal.set3GPPEnabledRats(var1);
-      int var2 = RadioInfo.getNetworkType();
-      if (var2 != 7 && var2 != 4) {
-         int var3 = RadioInternal.getNetworkSelectionMode();
-         if ((1 << var3 & RadioInternal.getAvailableNetworkSelectionModes()) == 0) {
+      RadioInternal.set3GPPEnabledRats(enabled3GPPRats);
+      int networkType = RadioInfo.getNetworkType();
+      if (networkType != 7 && networkType != 4) {
+         int savedMode = RadioInternal.getNetworkSelectionMode();
+         if ((1 << savedMode & RadioInternal.getAvailableNetworkSelectionModes()) == 0) {
             RadioInternal.setNetworkSelectionMode(0);
          } else {
-            RadioInternal.setNetworkSelectionMode(var3);
+            RadioInternal.setNetworkSelectionMode(savedMode);
          }
       }
 
       RadioInternal.set3GPPRatConfig(RadioInternal.get3GPPActiveRats(), RadioInternal.get3GPPRATPreference(RadioInternal.getGANPreference()));
       if (RadioInfo.areWAFsSupported(1)) {
          if (RadioInternal.get3GPPActiveRats() != 0 && (RadioInfo.getEnabledWAFs() & 1) != 0) {
-            var0 |= 1;
+            WAFs |= 1;
          } else {
-            var0 &= -2;
+            WAFs &= -2;
          }
       }
 
-      RadioInternal.activateWAFsInternal(var0);
+      RadioInternal.activateWAFsInternal(WAFs);
       return true;
    }
 
-   public static final void deactivateWAFs(int var0) {
-      RadioInternal.assertWAFAccessPermission(var0);
-      int var1 = RadioInternal.get3GPPEnabledRats();
-      if ((var0 & 1) != 0) {
-         var1 &= ~(RadioInternal.get3GPPSupportedRats() & -5);
+   public static final void deactivateWAFs(int WAFs) {
+      RadioInternal.assertWAFAccessPermission(WAFs);
+      int enabled3GPPRats = RadioInternal.get3GPPEnabledRats();
+      if ((WAFs & 1) != 0) {
+         enabled3GPPRats &= ~(RadioInternal.get3GPPSupportedRats() & -5);
       }
 
-      if ((var0 & 4) != 0) {
-         var1 &= ~(RadioInternal.get3GPPSupportedRats() & 4);
+      if ((WAFs & 4) != 0) {
+         enabled3GPPRats &= ~(RadioInternal.get3GPPSupportedRats() & 4);
       }
 
-      RadioInternal.set3GPPEnabledRats(var1);
+      RadioInternal.set3GPPEnabledRats(enabled3GPPRats);
       RadioInternal.set3GPPRatConfig(RadioInternal.get3GPPActiveRats(), RadioInternal.get3GPPRATPreference(RadioInternal.getGANPreference()));
       if (RadioInfo.areWAFsSupported(1)) {
          if (RadioInternal.get3GPPActiveRats() == 0) {
-            var0 |= 1;
+            WAFs |= 1;
          } else {
-            var0 &= -2;
-            if (var0 == 0) {
+            WAFs &= -2;
+            if (WAFs == 0) {
                return;
             }
          }
       }
 
-      RadioInternal.deactivateWAFsInternal(var0);
+      RadioInternal.deactivateWAFsInternal(WAFs);
    }
 
-   public static final boolean setEnabledWAFs(int var0) {
+   public static final boolean setEnabledWAFs(int WAFs) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      return setEnabledWAFsInternal(var0);
+      return setEnabledWAFsInternal(WAFs);
    }
 
    private static final native boolean setEnabledWAFsInternal(int var0);

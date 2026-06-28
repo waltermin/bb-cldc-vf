@@ -11,7 +11,7 @@ public class GANConnectivityPreference {
       return (GANConnectivityPreference)ApplicationRegistry.getApplicationRegistry().waitFor(6614774638737238176L);
    }
 
-   public void setPreference(int var1) {
+   public void setPreference(int _1) {
       throw null;
    }
 

@@ -1,71 +1,100 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.XYRect;
 
 public class Displayable {
    private MIDPScreen _peer;
 
-   Displayable(MIDPScreen var1) {
-      this._peer = var1;
+   Displayable(MIDPScreen peer) {
+      this._peer = peer;
    }
 
    final MIDPScreen getPeer() {
       return this._peer;
    }
 
-   final void setPeer(MIDPScreen var1) {
+   final void setPeer(MIDPScreen peer) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    public String getTitle() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this.getPeer().getTitle();
+      }
    }
 
-   public void setTitle(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setTitle(String s) {
+      synchronized (Application.getEventLock()) {
+         int oldHeight = this.getPeer().getDisplayableAreaExtent().height;
+         this.getPeer().setTitle(s);
+         int newHeight = this.getPeer().getDisplayableAreaExtent().height;
+         if (oldHeight != newHeight) {
+            this.sizeChanged(newHeight, this.getWidth());
+         }
+      }
    }
 
    public Ticker getTicker() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         return this.getPeer().getTicker();
+      }
    }
 
-   public void setTicker(Ticker var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setTicker(Ticker ticker) {
+      synchronized (Application.getEventLock()) {
+         int oldHeight = this.getPeer().getDisplayableAreaExtent().height;
+         this.getPeer().setTicker(ticker);
+         int newHeight = this.getPeer().getDisplayableAreaExtent().height;
+         if (oldHeight != newHeight) {
+            this.sizeChanged(newHeight, this.getWidth());
+         }
+      }
    }
 
    public boolean isShown() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getEventLock()) {
+         UiApplication app = UiApplication.getUiApplication();
+         return !app.isForeground() ? false : this.getPeer() == app.getActiveScreen();
+      }
    }
 
-   public void addCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void addCommand(Command cmd) {
+      synchronized (Application.getEventLock()) {
+         this.getPeer().addCommand(cmd);
+      }
    }
 
-   public void removeCommand(Command var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void removeCommand(Command cmd) {
+      synchronized (Application.getEventLock()) {
+         this.getPeer().removeCommand(cmd);
+      }
    }
 
-   public void setCommandListener(CommandListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCommandListener(CommandListener l) {
+      synchronized (Application.getEventLock()) {
+         this.getPeer().setCommandListener(l);
+      }
    }
 
    public int getWidth() {
-      MIDPScreen var1 = this.getPeer();
-      return var1 != null ? var1.getWidth() : 0;
+      MIDPScreen peer = this.getPeer();
+      return peer != null ? peer.getWidth() : 0;
    }
 
    public int getHeight() {
-      MIDPScreen var1 = this.getPeer();
-      if (var1 != null) {
-         XYRect var2 = var1.getDisplayableAreaExtent();
-         if (var2 != null) {
-            return var2.height;
+      MIDPScreen peer = this.getPeer();
+      if (peer != null) {
+         XYRect displayableArea = peer.getDisplayableAreaExtent();
+         if (displayableArea != null) {
+            return displayableArea.height;
          }
       }
 
       return 0;
    }
 
-   protected void sizeChanged(int var1, int var2) {
+   protected void sizeChanged(int w, int h) {
    }
 }

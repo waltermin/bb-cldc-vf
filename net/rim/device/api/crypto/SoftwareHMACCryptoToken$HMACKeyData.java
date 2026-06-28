@@ -9,23 +9,23 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
    private byte[] _data;
    private int _hashCode;
 
-   public SoftwareHMACCryptoToken$HMACKeyData(int var1) {
-      if (var1 < 0) {
+   public SoftwareHMACCryptoToken$HMACKeyData(int length) {
+      if (length < 0) {
          throw new Object();
       }
 
-      this._data = RandomSource.getBytes(var1);
+      this._data = RandomSource.getBytes(length);
       MemoryCleanerManager.getInstance().setCryptoAPISecureOldObjects(true);
       PersistentContent.markAsPlaintext(this._data);
       this.setHashCode();
    }
 
-   public SoftwareHMACCryptoToken$HMACKeyData(byte[] var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var3 >= 0 && var1.length - var3 >= var2) {
-         this._data = Arrays.copy(var1, var2, var3);
+   public SoftwareHMACCryptoToken$HMACKeyData(byte[] data, int offset, int length) {
+      if (data != null && offset >= 0 && length >= 0 && data.length - length >= offset) {
+         this._data = Arrays.copy(data, offset, length);
          MemoryCleanerManager.getInstance().setCryptoAPISecureOldObjects(true);
          PersistentContent.markAsPlaintext(this._data);
-         PersistentContent.markAsPlaintext(var1);
+         PersistentContent.markAsPlaintext(data);
          this.setHashCode();
       } else {
          throw new Object();
@@ -33,9 +33,9 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
    }
 
    public final byte[] getData() {
-      byte[] var1 = Arrays.copy(this._data);
-      PersistentContent.markAsPlaintext(var1);
-      return var1;
+      byte[] data = Arrays.copy(this._data);
+      PersistentContent.markAsPlaintext(data);
+      return data;
    }
 
    public final int getLength() {
@@ -55,7 +55,7 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

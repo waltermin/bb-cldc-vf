@@ -2,6 +2,7 @@ package javax.microedition.lcdui;
 
 import java.io.InputStream;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
 
 public class Image {
    private Bitmap _bitmap;
@@ -14,154 +15,186 @@ public class Image {
    private Image() {
    }
 
-   public static Image createImage(int var0, int var1) {
-      if (var0 > 0 && var1 > 0) {
-         Image var2 = new Image();
-         var2._bitmap = (Bitmap)(new Object(var0, var1));
-         var2._mutable = true;
-         return var2;
+   public static Image createImage(int width, int height) {
+      if (width > 0 && height > 0) {
+         Image image = new Image();
+         image._bitmap = (Bitmap)(new Object(width, height));
+         image._mutable = true;
+         return image;
       } else {
          throw new Object();
       }
    }
 
-   public static Image createImage(Image var0) {
-      if (var0._mutable) {
-         int var1 = var0.getWidth();
-         int var2 = var0.getHeight();
-         Image var3 = createImage(var1, var2);
-         var3.getGraphics().getPeer().drawBitmap(0, 0, var1, var2, var0._bitmap, 0, 0);
-         var3._mutable = false;
-         return var3;
+   public static Image createImage(Image source) {
+      if (source._mutable) {
+         int width = source.getWidth();
+         int height = source.getHeight();
+         Image copy = createImage(width, height);
+         copy.getGraphics().getPeer().drawBitmap(0, 0, width, height, source._bitmap, 0, 0);
+         copy._mutable = false;
+         return copy;
       } else {
-         return var0;
+         return source;
       }
    }
 
-   public static Image createImage(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Image createImage(String name) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static Image createImage(byte[] var0, int var1, int var2) {
-      if (var1 >= 0 && var2 >= 0 && var1 + var2 <= var0.length) {
-         Image var3 = new Image();
-         var3._bitmap = Bitmap.createBitmapFromPNG(var0, var1, var2);
-         var3._mutable = false;
-         return var3;
+   public static Image createImage(byte[] imageData, int imageOffset, int imageLength) {
+      if (imageOffset >= 0 && imageLength >= 0 && imageOffset + imageLength <= imageData.length) {
+         Image img = new Image();
+         img._bitmap = Bitmap.createBitmapFromPNG(imageData, imageOffset, imageLength);
+         img._mutable = false;
+         return img;
       } else {
          throw new Object();
       }
    }
 
-   private static void getNextScanLine(int[] var0, int var1, int[] var2, int var3, int var4, int var5, int var6, int var7) {
-      var0[var1] = var2[var5 + var6 * var3];
-      if (var4 > 1) {
-         for (int var8 = 1; var8 < var4; var8++) {
-            if (Graphics.DUX[var7] == 0) {
-               var0[var1 + var8] = var2[var5 + (var6 + var8 * Graphics.DUY[var7]) * var3];
+   private static void getNextScanLine(
+      int[] rgbDestData, int offset, int[] rgbSourceData, int rgbSourceScanLength, int rgbDestScanLength, int xPosition, int yPosition, int transform
+   ) {
+      rgbDestData[offset] = rgbSourceData[xPosition + yPosition * rgbSourceScanLength];
+      if (rgbDestScanLength > 1) {
+         for (int i = 1; i < rgbDestScanLength; i++) {
+            if (Graphics.DUX[transform] == 0) {
+               rgbDestData[offset + i] = rgbSourceData[xPosition + (yPosition + i * Graphics.DUY[transform]) * rgbSourceScanLength];
             } else {
-               var0[var1 + var8] = var2[var5 + Graphics.DUX[var7] * var8 + var3 * var6];
+               rgbDestData[offset + i] = rgbSourceData[xPosition + Graphics.DUX[transform] * i + rgbSourceScanLength * yPosition];
             }
          }
       }
    }
 
-   public static Image createImage(Image var0, int var1, int var2, int var3, int var4, int var5) {
-      var0.isMutable();
-      if (var1 < 0 || var2 < 0 || var1 + var3 > var0.getWidth() || var2 + var4 > var0.getHeight() || var3 <= 0 || var4 <= 0 || var5 < 0 || var5 > 7) {
+   public static Image createImage(Image image, int x, int y, int width, int height, int transform) {
+      image.isMutable();
+      if (x < 0 || y < 0 || x + width > image.getWidth() || y + height > image.getHeight() || width <= 0 || height <= 0 || transform < 0 || transform > 7) {
          throw new Object();
       }
 
-      if (var1 == 0 && var2 == 0 && var3 == var0.getWidth() && var4 == var0.getHeight() && var5 == 0) {
-         return var0;
+      if (x == 0 && y == 0 && width == image.getWidth() && height == image.getHeight() && transform == 0) {
+         return image;
       }
 
-      int[] var7 = null;
-      int[] var8 = null;
-      var7 = new int[var3 * var4];
-      var0.getRGB(var7, 0, var3, var1, var2, var3, var4);
-      Image var6;
-      if (var5 == 0) {
-         var6 = new Image();
-         var6._bitmap = (Bitmap)(new Object(var3, var4));
-         var6._bitmap.setARGB(var7, 0, var3, 0, 0, var3, var4);
+      int[] rgbData = null;
+      int[] rgbDestData = null;
+      rgbData = new int[width * height];
+      image.getRGB(rgbData, 0, width, x, y, width, height);
+      Image resultImage;
+      if (transform == 0) {
+         resultImage = new Image();
+         resultImage._bitmap = (Bitmap)(new Object(width, height));
+         resultImage._bitmap.setARGB(rgbData, 0, width, 0, 0, width, height);
       } else {
-         int var9 = 0;
-         int var10 = 0;
-         int var11 = 0;
-         int var12 = 0;
-         switch (var5) {
+         int startPosX = 0;
+         int startPosY = 0;
+         int newWidth = 0;
+         int newHeight = 0;
+         switch (transform) {
             case 0:
                break;
             case 1:
-               var9 = 0;
-               var10 = var4 - 1;
-               var11 = var3;
-               var12 = var4;
+               startPosX = 0;
+               startPosY = height - 1;
+               newWidth = width;
+               newHeight = height;
                break;
             case 2:
             default:
-               var9 = var3 - 1;
-               var10 = 0;
-               var11 = var3;
-               var12 = var4;
+               startPosX = width - 1;
+               startPosY = 0;
+               newWidth = width;
+               newHeight = height;
                break;
             case 3:
-               var9 = var3 - 1;
-               var10 = var4 - 1;
-               var11 = var3;
-               var12 = var4;
+               startPosX = width - 1;
+               startPosY = height - 1;
+               newWidth = width;
+               newHeight = height;
                break;
             case 4:
-               var9 = 0;
-               var10 = 0;
-               var11 = var4;
-               var12 = var3;
+               startPosX = 0;
+               startPosY = 0;
+               newWidth = height;
+               newHeight = width;
                break;
             case 5:
-               var9 = 0;
-               var10 = var4 - 1;
-               var5 = 6;
-               var11 = var4;
-               var12 = var3;
+               startPosX = 0;
+               startPosY = height - 1;
+               transform = 6;
+               newWidth = height;
+               newHeight = width;
                break;
             case 6:
-               var9 = var3 - 1;
-               var10 = 0;
-               var5 = 5;
-               var11 = var4;
-               var12 = var3;
+               startPosX = width - 1;
+               startPosY = 0;
+               transform = 5;
+               newWidth = height;
+               newHeight = width;
                break;
             case 7:
-               var9 = var3 - 1;
-               var10 = var4 - 1;
-               var11 = var4;
-               var12 = var3;
+               startPosX = width - 1;
+               startPosY = height - 1;
+               newWidth = height;
+               newHeight = width;
          }
 
-         var8 = new int[var11 * var12];
-         int var13 = 0;
+         rgbDestData = new int[newWidth * newHeight];
+         int offset = 0;
 
-         for (int var14 = 0; var14 < var12; var14++) {
-            getNextScanLine(var8, var13, var7, var3, var11, var9, var10, var5);
-            var13 += var11;
-            if (Graphics.DUX[var5] == 0) {
-               var9 += Graphics.DVX[var5];
+         for (int i = 0; i < newHeight; i++) {
+            getNextScanLine(rgbDestData, offset, rgbData, width, newWidth, startPosX, startPosY, transform);
+            offset += newWidth;
+            if (Graphics.DUX[transform] == 0) {
+               startPosX += Graphics.DVX[transform];
             } else {
-               var10 += Graphics.DVY[var5];
+               startPosY += Graphics.DVY[transform];
             }
          }
 
-         var6 = new Image();
-         var6._bitmap = (Bitmap)(new Object(var11, var12));
-         var6._bitmap.setARGB(var8, 0, var11, 0, 0, var11, var12);
+         resultImage = new Image();
+         resultImage._bitmap = (Bitmap)(new Object(newWidth, newHeight));
+         resultImage._bitmap.setARGB(rgbDestData, 0, newWidth, 0, 0, newWidth, newHeight);
       }
 
-      return var6;
+      return resultImage;
    }
 
-   public static Image createImage(InputStream var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Image createImage(InputStream stream) {
+      int blocksize = 4096;
+      if (stream == null) {
+         throw new Object();
+      }
+
+      int l = stream.available();
+      byte[] buffer = new byte[l + 1];
+      int length = 0;
+
+      while ((l = stream.read(buffer, length, buffer.length - length)) != -1) {
+         length += l;
+         if (length == buffer.length) {
+            byte[] b = new byte[buffer.length + blocksize];
+            System.arraycopy(buffer, 0, b, 0, length);
+            buffer = b;
+         }
+      }
+
+      Image image = new Image();
+      EncodedImage encodedImage = null;
+
+      try {
+         encodedImage = EncodedImage.createEncodedImage(buffer, 0, length);
+      } catch (IllegalArgumentException iae) {
+         throw new Object(iae.getMessage());
+      }
+
+      image._bitmap = encodedImage.getBitmap();
+      image._mutable = false;
+      stream.close();
+      return image;
    }
 
    public Graphics getGraphics() {
@@ -169,11 +202,11 @@ public class Image {
          throw new Object();
       }
 
-      Graphics var1 = new Graphics(this);
-      Object var2 = new Object(this._bitmap);
-      ((net.rim.device.api.ui.Graphics)var2).pushRegion(0, 0, this.getWidth(), this.getHeight(), 0, 0);
-      var1.setGraphics((net.rim.device.api.ui.Graphics)var2, false);
-      return var1;
+      Graphics graphics = new Graphics(this);
+      net.rim.device.api.ui.Graphics rimGraphics = (net.rim.device.api.ui.Graphics)(new Object(this._bitmap));
+      rimGraphics.pushRegion(0, 0, this.getWidth(), this.getHeight(), 0, 0);
+      graphics.setGraphics(rimGraphics, false);
+      return graphics;
    }
 
    public int getWidth() {
@@ -188,44 +221,44 @@ public class Image {
       return this._mutable;
    }
 
-   public static Image createRGBImage(int[] var0, int var1, int var2, boolean var3) {
-      if (var1 > 0 && var2 > 0) {
-         if (var0.length < var1 * var2) {
+   public static Image createRGBImage(int[] rgb, int width, int height, boolean processAlpha) {
+      if (width > 0 && height > 0) {
+         if (rgb.length < width * height) {
             throw new Object();
          }
 
-         Image var4 = new Image();
-         var4._bitmap = (Bitmap)(new Object(var1, var2));
-         var4._bitmap.setARGB(var0, 0, var4.getWidth(), 0, 0, var1, var2);
-         if (!var3) {
-            var4._bitmap.setAlpha(null);
+         Image image = new Image();
+         image._bitmap = (Bitmap)(new Object(width, height));
+         image._bitmap.setARGB(rgb, 0, image.getWidth(), 0, 0, width, height);
+         if (!processAlpha) {
+            image._bitmap.setAlpha(null);
          }
 
-         var4._mutable = false;
-         return var4;
+         image._mutable = false;
+         return image;
       } else {
          throw new Object();
       }
    }
 
-   public void getRGB(int[] var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      int var8 = var1.length;
-      boolean var9 = var4 < 0 || var5 < 0 || var4 + var6 > this._bitmap.getWidth() || var5 + var7 > this._bitmap.getHeight();
-      if (!var9 && Math.abs(var3) >= var6) {
-         if (var6 > 0 && var7 > 0) {
-            if (var2 < 0 || var2 + (var7 - 1) * var3 + var6 > var8 || var2 + (var7 - 1) * var3 < 0) {
+   public void getRGB(int[] rgbData, int offset, int scanlength, int x, int y, int width, int height) {
+      int rgbDataLength = rgbData.length;
+      boolean exceedsBounds = x < 0 || y < 0 || x + width > this._bitmap.getWidth() || y + height > this._bitmap.getHeight();
+      if (!exceedsBounds && Math.abs(scanlength) >= width) {
+         if (width > 0 && height > 0) {
+            if (offset < 0 || offset + (height - 1) * scanlength + width > rgbDataLength || offset + (height - 1) * scanlength < 0) {
                throw new Object();
             }
 
-            if (var3 < 0) {
-               int var10 = 0 - var3;
+            if (scanlength < 0) {
+               int positiveScanLength = 0 - scanlength;
 
-               for (int var11 = var7 - 1; var11 >= 0; var11--) {
-                  this._bitmap.getARGB(var1, var2, var10, var4, var5 + var11, var6, 1);
-                  var2 += var6;
+               for (int i = height - 1; i >= 0; i--) {
+                  this._bitmap.getARGB(rgbData, offset, positiveScanLength, x, y + i, width, 1);
+                  offset += width;
                }
             } else {
-               this._bitmap.getARGB(var1, var2, var3, var4, var5, var6, var7);
+               this._bitmap.getARGB(rgbData, offset, scanlength, x, y, width, height);
             }
          }
       } else {

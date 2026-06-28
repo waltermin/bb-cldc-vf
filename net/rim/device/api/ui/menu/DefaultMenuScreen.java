@@ -27,8 +27,8 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
       this((Manager)(new Object(299067162755072L)));
    }
 
-   public DefaultMenuScreen(Manager var1) {
-      super(var1);
+   public DefaultMenuScreen(Manager manager) {
+      super(manager);
       this.setTag(TAG);
    }
 
@@ -49,8 +49,8 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             this.notifyMenuSelected();
             return true;
@@ -60,76 +60,76 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
-      if ((var3 & 536936448) != 0) {
-         if (var1 > 0 && this._list.getCurrentItem() instanceof CascadingMenuItem) {
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
+      if ((status & 536936448) != 0) {
+         if (dx > 0 && this._list.getCurrentItem() instanceof CascadingMenuItem) {
             this.notifyMenuSelected();
             return true;
          }
 
-         if (var1 < 0 && (this._menu.getStyle() & 262144) != 0) {
+         if (dx < 0 && (this._menu.getStyle() & 262144) != 0) {
             this.popMenu();
             return true;
          }
       }
 
-      return super.navigationMovement(var1, var2, var3, var4);
+      return super.navigationMovement(dx, dy, status, time);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      boolean var4 = false;
-      switch (var1) {
+   protected boolean keyChar(char key, int status, int time) {
+      boolean result = false;
+      switch (key) {
          case '\n':
             this.notifyMenuSelected();
-            var4 = true;
+            result = true;
             break;
          case '\u001b':
             this.popMenu();
-            var4 = true;
+            result = true;
             break;
          default:
-            char var5 = UiInternal.map(Keypad.getLayout().getOriginalKeyCode(var1, SLKeyLayout.convertStatusToModifiers(var2)), var2);
-            var5 = Character.toLowerCase(var5);
-            var4 = super.keyChar(var5, var2, var3);
+            char keyToCheck = UiInternal.map(Keypad.getLayout().getOriginalKeyCode(key, SLKeyLayout.convertStatusToModifiers(status)), status);
+            keyToCheck = Character.toLowerCase(keyToCheck);
+            result = super.keyChar(keyToCheck, status, time);
       }
 
-      return var4;
+      return result;
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      boolean var4 = super.keyControl(var1, var2, var3);
-      if (var4) {
+   protected boolean keyControl(char key, int status, int time) {
+      boolean result = super.keyControl(key, status, time);
+      if (result) {
          return true;
       }
 
-      switch (var1) {
+      switch (key) {
          case '\u0095':
             this.popMenu();
             if (this._menu.getInstance() == 65536) {
                MenuItem.getPrefab(18).run();
             }
 
-            var4 = true;
+            result = true;
          default:
-            return var4;
+            return result;
       }
    }
 
    private void notifyMenuSelected() {
-      MenuItem var1 = this._list.getCurrentItem();
-      if (var1 instanceof CascadingMenuItem) {
-         XYRect var2 = Ui.getTmpXYRect();
-         Field var3 = this.getFieldWithFocus();
-         var3.getFocusRect(var2);
-         var3.transformToScreen(var2);
-         int var4 = var2.x + 8;
-         int var5 = var2.y + (var2.height >> 1);
-         Ui.returnTmpXYRect(var2);
-         ((CascadingMenuItem)var1).invokeSubMenu(this._menu, var4, var5);
+      MenuItem item = this._list.getCurrentItem();
+      if (item instanceof CascadingMenuItem) {
+         XYRect rect = Ui.getTmpXYRect();
+         Field f = this.getFieldWithFocus();
+         f.getFocusRect(rect);
+         f.transformToScreen(rect);
+         int x = rect.x + 8;
+         int y = rect.y + (rect.height >> 1);
+         Ui.returnTmpXYRect(rect);
+         ((CascadingMenuItem)item).invokeSubMenu(this._menu, x, y);
       } else {
-         this._menu.notifySelected(var1);
+         this._menu.notifySelected(item);
          this.popMenu();
       }
    }
@@ -141,8 +141,8 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   protected boolean openDevelopmentBackdoor(int var1) {
-      switch (var1) {
+   protected boolean openDevelopmentBackdoor(int secretCode) {
+      switch (secretCode) {
          case 1229870670:
             Ui.setNewInvalidate(true);
             break;
@@ -162,11 +162,11 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
             Ui.setTrackwheelClickAction(1);
       }
 
-      return super.openDevelopmentBackdoor(var1);
+      return super.openDevelopmentBackdoor(secretCode);
    }
 
    @Override
-   protected boolean openProductionBackdoor(int var1) {
+   protected boolean openProductionBackdoor(int secretCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -175,15 +175,15 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   public void setList(MenuList var1) {
-      Object var2 = var1;
-      this._list = var1;
+   public void setList(MenuList list) {
+      Field field = (Field)list;
+      this._list = list;
       this.deleteAll();
-      this.add((Field)var2);
+      this.add(field);
    }
 
    @Override
-   public void setMenu(Menu var1) {
+   public void setMenu(Menu menu) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -195,26 +195,26 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   public void setAlignment(long var1, long var3) {
-      this._hAlign = var1;
-      this._vAlign = var3;
+   public void setAlignment(long hAlign, long vAlign) {
+      this._hAlign = hAlign;
+      this._vAlign = vAlign;
    }
 
    @Override
-   public void setCurrentItem(MenuItem var1) {
-      this._list.setCurrentItem(var1);
+   public void setCurrentItem(MenuItem item) {
+      this._list.setCurrentItem(item);
    }
 
    @Override
-   public void setOrigin(int var1, int var2) {
-      this._xOrigin = var1;
-      this._yOrigin = var2;
+   public void setOrigin(int x, int y) {
+      this._xOrigin = x;
+      this._yOrigin = y;
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      XYRect var5 = this.getExtent();
-      if (var5.contains(var5.x, var5.y, var1, var2)) {
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      XYRect extent = this.getExtent();
+      if (extent.contains(extent.x, extent.y, x, y)) {
          return this.invokeAction(1);
       }
 
@@ -223,82 +223,83 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   protected boolean stylusTapHold(int var1, int var2, int var3, int var4) {
+   protected boolean stylusTapHold(int x, int y, int status, int time) {
       return true;
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      int var3 = this.getBorderBottom();
-      var2 += this.getBorderTop() + var3;
-      int var4 = this._xOrigin != -1 ? this._xOrigin : Ui.getUiEngine().getStylusX();
-      if (var4 != -1) {
-         super.sublayout(var1, var2);
-         int var16 = this.getWidth();
-         int var17 = this.getHeight();
-         int var18 = this._yOrigin != -1 ? this._yOrigin : Ui.getUiEngine().getStylusY();
-         int var10 = var1 - (var4 + var16);
-         int var14;
-         if (var10 > 0) {
-            var14 = var4;
+   protected void sublayout(int width, int height) {
+      int borderBottom = this.getBorderBottom();
+      height += this.getBorderTop() + borderBottom;
+      int stylusX = this._xOrigin != -1 ? this._xOrigin : Ui.getUiEngine().getStylusX();
+      if (stylusX != -1) {
+         super.sublayout(width, height);
+         int menuWidth = this.getWidth();
+         int menuHeight = this.getHeight();
+         int stylusY = this._yOrigin != -1 ? this._yOrigin : Ui.getUiEngine().getStylusY();
+         int rightRoom = width - (stylusX + menuWidth);
+         int posX;
+         if (rightRoom > 0) {
+            posX = stylusX;
          } else {
-            int var11 = var4 - var16;
-            if (var11 > 0) {
-               var14 = var11;
-            } else if (var11 > var10) {
-               var14 = 0;
+            int leftRoom = stylusX - menuWidth;
+            if (leftRoom > 0) {
+               posX = leftRoom;
+            } else if (leftRoom > rightRoom) {
+               posX = 0;
             } else {
-               var14 = var1 - var16;
+               posX = width - menuWidth;
             }
          }
 
-         int var19 = var2 - (var18 + var17);
-         int var15;
-         if (var19 > 0) {
-            var15 = var18;
+         int bottomRoom = height - (stylusY + menuHeight);
+         int posY;
+         if (bottomRoom > 0) {
+            posY = stylusY;
          } else {
-            int var12 = var18 - var17;
-            if (var12 > 0) {
-               var15 = var12;
-            } else if (var12 > var19) {
-               var15 = 0;
+            int topRoom = stylusY - menuHeight;
+            if (topRoom > 0) {
+               posY = topRoom;
+            } else if (topRoom > bottomRoom) {
+               posY = 0;
             } else {
-               var15 = var2 - var17;
+               posY = height - menuHeight;
             }
          }
 
-         this.setPosition(var14, var15);
+         this.setPosition(posX, posY);
       } else {
          this.getMenu();
-         Screen var5 = Menu.getTargetScreen();
-         int var6 = var1 + this.getBorderLeft() + this.getPaddingLeft() + this.getBorderRight() + this.getPaddingRight();
-         int var7 = 0;
-         if (var5 != null) {
-            var6 = var5.getLeft() + var5.getWidth();
-            var7 = var5.getTop();
+         Screen target = Menu.getTargetScreen();
+         int x = width + this.getBorderLeft() + this.getPaddingLeft() + this.getBorderRight() + this.getPaddingRight();
+         int y = 0;
+         if (target != null) {
+            x = target.getLeft() + target.getWidth();
+            y = target.getTop();
          }
 
-         super.sublayout(var1, var2 - this.getBorderTop() - var3 - var7);
-         int var8 = var6 - this.getWidth() + this.getBorderRight();
+         super.sublayout(width, height - this.getBorderTop() - borderBottom - y);
+         int xOffset = x - this.getWidth() + this.getBorderRight();
          if (this._hAlign == 4294967296L) {
-            var8 = (var5 != null ? var5.getLeft() : 0) - this.getBorderLeft();
+            xOffset = (target != null ? target.getLeft() : 0) - this.getBorderLeft();
          } else if (this._hAlign == 12884901888L) {
-            var8 = var6 - this.getWidth() >> 1;
+            xOffset = x - this.getWidth() >> 1;
          }
 
-         int var9 = var7 - this.getBorderTop();
+         int yOffset = y - this.getBorderTop();
          if (this._vAlign == 34359738368L) {
-            var9 = var7 + Math.max(0, (var5 != null ? var5.getHeight() + var3 : var2 + var3 + this.getPaddingBottom()) - this.getHeight());
+            yOffset = y
+               + Math.max(0, (target != null ? target.getHeight() + borderBottom : height + borderBottom + this.getPaddingBottom()) - this.getHeight());
          } else if (this._vAlign == 51539607552L) {
-            var9 = var7 + (var5 != null ? var5.getHeight() + var3 : var2) - this.getHeight() >> 1;
+            yOffset = y + (target != null ? target.getHeight() + borderBottom : height) - this.getHeight() >> 1;
          }
 
-         this.setPosition(var8, var9);
+         this.setPosition(xOffset, yOffset);
       }
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       return this.invokeAction(1);
    }
 
@@ -313,8 +314,8 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      return this.getMenu().getItem(var1);
+   public AccessibleContext getAccessibleChildAt(int index) {
+      return this.getMenu().getItem(index);
    }
 
    @Override
@@ -323,12 +324,12 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       return this.getMenu().getCurrentMenuItem();
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      return this.getMenu().getItem(var1).equals(this.getMenu().getCurrentMenuItem());
+   public boolean isAccessibleChildSelected(int index) {
+      return this.getMenu().getItem(index).equals(this.getMenu().getCurrentMenuItem());
    }
 }

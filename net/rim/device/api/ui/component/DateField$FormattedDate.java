@@ -9,16 +9,16 @@ class DateField$FormattedDate extends Date {
    private DateFormat _format;
    private Calendar _calendar;
 
-   public DateField$FormattedDate(long var1, DateFormat var3, TimeZone var4) {
-      super(var1);
-      this._format = var3;
-      this._calendar = Calendar.getInstance(var4);
+   public DateField$FormattedDate(long date, DateFormat format, TimeZone zone) {
+      super(date);
+      this._format = format;
+      this._calendar = Calendar.getInstance(zone);
       this._calendar.setTime(this);
    }
 
    @Override
-   public void setTime(long var1) {
-      super.setTime(var1);
+   public void setTime(long time) {
+      super.setTime(time);
       this._calendar.setTime(this);
    }
 

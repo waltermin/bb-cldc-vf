@@ -22,13 +22,15 @@ public final class TextFlowNative {
    private int _startYPos;
    private int _lastRegionIndex;
 
-   public TextFlowNative(StringBuffer var1, int[] var2, int[] var3, TextFlowRegion[] var4, short[] var5, int[] var6) {
-      this._text = var1;
-      this._regionStartOffsets = var2;
-      this._regionEndOffsets = var3;
-      this._regions = var4;
-      this._regionFlags = var5;
-      this._regionParentIds = var6;
+   public TextFlowNative(
+      StringBuffer text, int[] regionStartOffsets, int[] regionEndOffsets, TextFlowRegion[] regions, short[] regionFlags, int[] regionParentIds
+   ) {
+      this._text = text;
+      this._regionStartOffsets = regionStartOffsets;
+      this._regionEndOffsets = regionEndOffsets;
+      this._regions = regions;
+      this._regionFlags = regionFlags;
+      this._regionParentIds = regionParentIds;
       this._lines = new TextFlowNative$Lines();
       this._totalHeightStack = new int[16];
       this.reset();
@@ -48,50 +50,50 @@ public final class TextFlowNative {
       this._maxXOffset = 0;
    }
 
-   public final void appendVerticalSpace(int var1, int var2, int var3, short var4, short var5) {
-      if (this._startLine == -1 && var3 > 0) {
-         this._startLine = var2;
-         this._startYPos = var1;
+   public final void appendVerticalSpace(int aStartYPos, int aStartLine, int aHeight, short aXOffset, short aWidth) {
+      if (this._startLine == -1 && aHeight > 0) {
+         this._startLine = aStartLine;
+         this._startYPos = aStartYPos;
       }
 
-      this._totalHeight += var3;
-      this._lines.appendVerticalSpace(var3, var4, var5, this._currentCellId);
+      this._totalHeight += aHeight;
+      this._lines.appendVerticalSpace(aHeight, aXOffset, aWidth, this._currentCellId);
    }
 
-   public final void appendZeroHeightCharacters(int var1, int var2, int var3, short var4, short var5) {
-      if (this._startLine == -1 && var3 > 0) {
-         this._startLine = var2;
-         this._startYPos = var1;
+   public final void appendZeroHeightCharacters(int aStartYPos, int aStartLine, int aChars, short aXOffset, short aWidth) {
+      if (this._startLine == -1 && aChars > 0) {
+         this._startLine = aStartLine;
+         this._startYPos = aStartYPos;
       }
 
-      this._lines.appendZeroHeightCharacters(var3, var4, var5, this._currentCellId);
+      this._lines.appendZeroHeightCharacters(aChars, aXOffset, aWidth, this._currentCellId);
    }
 
-   public final void appendZeroHeightZeroWidthCharacter(int var1, int var2, short var3) {
+   public final void appendZeroHeightZeroWidthCharacter(int aStartYPos, int aStartLine, short aXOffset) {
       if (this._startLine == -1) {
-         this._startLine = var2;
-         this._startYPos = var1;
+         this._startLine = aStartLine;
+         this._startYPos = aStartYPos;
       }
 
-      this._lines.appendZeroHeightZeroWidthCharacter(var3, this._currentCellId);
+      this._lines.appendZeroHeightZeroWidthCharacter(aXOffset, this._currentCellId);
    }
 
-   public final void pushCell(short var1) {
+   public final void pushCell(short nextCellId) {
       if (this._totalHeightTop + 1 >= this._totalHeightStack.length) {
          Array.resize(this._totalHeightStack, this._totalHeightStack.length << 1);
       }
 
       this._totalHeightTop++;
       this._totalHeightStack[this._totalHeightTop] = this._totalHeight;
-      this._currentCellId = var1;
+      this._currentCellId = nextCellId;
       this._totalHeight = 0;
    }
 
-   public final void popCell(short var1) {
+   public final void popCell(short parentCellId) {
       this._totalHeight = this._totalHeightStack[this._totalHeightTop];
       this._totalHeightStack[this._totalHeightTop] = 0;
       this._totalHeightTop--;
-      this._currentCellId = var1;
+      this._currentCellId = parentCellId;
    }
 
    public final native void wordWrap(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8);
@@ -116,7 +118,7 @@ public final class TextFlowNative {
       return this._startYPos;
    }
 
-   public final void setEndLine(int var1) {
+   public final void setEndLine(int endLine) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -124,7 +126,7 @@ public final class TextFlowNative {
       return this._endLine;
    }
 
-   public final void setMaxXOffset(int var1) {
+   public final void setMaxXOffset(int xPos) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -152,7 +154,7 @@ public final class TextFlowNative {
       return this._lines.getXOffsets();
    }
 
-   public final short[] getLineWidth(int var1) {
+   public final short[] getLineWidth(int aLineIndex) {
       return this._lines.getWidths();
    }
 
@@ -176,12 +178,12 @@ public final class TextFlowNative {
       return this._lines.getCellIds();
    }
 
-   public final byte[] getLineBidiState(int var1) {
-      return this._lines.getBidiState(var1);
+   public final byte[] getLineBidiState(int aLineIndex) {
+      return this._lines.getBidiState(aLineIndex);
    }
 
-   public final void append(int var1, TextFlowNative$Lines var2, int var3, int var4) {
-      this._lines.append(var2, var3, var4);
-      this._totalHeight += var1;
+   public final void append(int aHeight, TextFlowNative$Lines aLines, int aStartLine, int aLineCount) {
+      this._lines.append(aLines, aStartLine, aLineCount);
+      this._totalHeight += aHeight;
    }
 }

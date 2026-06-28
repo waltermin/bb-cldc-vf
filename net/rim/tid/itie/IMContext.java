@@ -12,6 +12,7 @@ import net.rim.tid.im.ISupplementaryInputData;
 import net.rim.tid.text.AttributedString;
 import net.rim.tid.text.AttributedTextIterator;
 import net.rim.tid.text.TextHitInfo;
+import net.rim.tid.util.Utils;
 import net.rim.vm.WeakReference;
 
 public final class IMContext extends InputContext implements InputMethodContext {
@@ -31,31 +32,62 @@ public final class IMContext extends InputContext implements InputMethodContext 
 
    @Override
    public final int dispatchInputMethodEvent(
-      int var1, int var2, AttributedString var3, long var4, int var6, int var7, TextHitInfo var8, TextHitInfo var9, ISupplementaryInputData var10
+      int id,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      ISupplementaryInputData supplementaryInputData
    ) {
-      return this.dispatchInputMethodEvent(var1, var2, var3, var4, var6, var7, var8, var9, var10, (byte)4);
+      return this.dispatchInputMethodEvent(
+         id, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition, supplementaryInputData, (byte)4
+      );
    }
 
    @Override
    public final int dispatchInputMethodEvent(
-      int var1, int var2, AttributedString var3, long var4, int var6, int var7, TextHitInfo var8, TextHitInfo var9, ISupplementaryInputData var10, byte var11
+      int id,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      ISupplementaryInputData supplementaryInputData,
+      byte caretShape
    ) {
-      IComponent var12 = this.getInputComponent();
+      IComponent component = this.getInputComponent();
       super._lastIMEventResult = 1;
-      if (var12 != null) {
-         InputMethodEvent var13 = this.getIMEvent(var12, var1, var2, var3, var4, var6, var7, var8, var9, var10, var11);
-         switch (var1) {
+      if (component != null) {
+         InputMethodEvent event = this.getIMEvent(
+            component,
+            id,
+            modifiers,
+            text,
+            attribTextMask,
+            committedCharacterCount,
+            convertedCharacterCount,
+            caret,
+            visiblePosition,
+            supplementaryInputData,
+            caretShape
+         );
+         switch (id) {
             case 1099:
             case 1103:
                break;
             case 1100:
             default:
-               super._lastIMEventResult = var12.inputMethodTextChanged(var13);
+               super._lastIMEventResult = component.inputMethodTextChanged(event);
                break;
             case 1101:
             case 1102:
             case 1104:
-               super._lastIMEventResult = var12.caretPositionChanged(var13);
+               super._lastIMEventResult = component.caretPositionChanged(event);
          }
       }
 
@@ -63,96 +95,96 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    @Override
-   public final void setIMCookieCache(Object var1) {
-      IComponent var2 = this.getInputComponent();
-      if (var2 != null) {
-         var2.setIMCookieCache(var1);
+   public final void setIMCookieCache(Object cookie) {
+      IComponent component = this.getInputComponent();
+      if (component != null) {
+         component.setIMCookieCache(cookie);
       }
    }
 
    @Override
    public final int getInsertPositionOffset() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getInsertPositionOffset() : -1;
+      InputMethodRequests r = this.getInputMethodRequests();
+      return r != null ? r.getInsertPositionOffset() : -1;
    }
 
    @Override
-   public final AttributedTextIterator getCommittedText(int var1, int var2, String[] var3) {
+   public final AttributedTextIterator getCommittedText(int beginIndex, int endIndex, String[] attributes) {
       return null;
    }
 
    @Override
    public final Object getIMCookieCache() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getIMCookieCache() : null;
+      InputMethodRequests r = this.getInputMethodRequests();
+      return r != null ? r.getIMCookieCache() : null;
    }
 
    @Override
-   public final void getTextLocation(TextHitInfo var1, XYRect var2) {
-      InputMethodRequests var3 = this.getInputMethodRequests();
-      if (var3 != null) {
-         var3.getTextLocation(var1, var2);
+   public final void getTextLocation(TextHitInfo offset, XYRect aResult) {
+      InputMethodRequests requests = this.getInputMethodRequests();
+      if (requests != null) {
+         requests.getTextLocation(offset, aResult);
       }
    }
 
    @Override
-   public final void setComposedText(int var1, int var2) {
-      InputMethodRequests var3 = this.getInputMethodRequests();
-      if (var3 != null) {
-         var3.setComposedText(var1, var2);
+   public final void setComposedText(int start, int end) {
+      InputMethodRequests requests = this.getInputMethodRequests();
+      if (requests != null) {
+         requests.setComposedText(start, end);
       }
    }
 
    @Override
    public final AttributedString getAttributedText() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getAttributedText() : null;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getAttributedText() : null;
    }
 
    @Override
    public final int getComposedTextStart() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getComposedTextStart() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getComposedTextStart() : -1;
    }
 
    @Override
    public final int getComposedTextEnd() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getComposedTextEnd() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getComposedTextEnd() : -1;
    }
 
    @Override
    public final int getLabelLength() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getLabelLength() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getLabelLength() : -1;
    }
 
    @Override
    public final int getCaretPosition() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getCaretPosition() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getCaretPosition() : -1;
    }
 
    @Override
    public final int getAnchorPosition() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getAnchorPosition() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getAnchorPosition() : -1;
    }
 
    @Override
    public final int getLatestCommittedTextStart() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getLatestCommittedTextStart() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getLatestCommittedTextStart() : -1;
    }
 
    @Override
    public final int getLatestCommittedTextEnd() {
-      InputMethodRequests var1 = this.getInputMethodRequests();
-      return var1 != null ? var1.getLatestCommittedTextEnd() : -1;
+      InputMethodRequests requests = this.getInputMethodRequests();
+      return requests != null ? requests.getLatestCommittedTextEnd() : -1;
    }
 
    @Override
-   public final TextHitInfo getLocationOffset(int var1, int var2) {
+   public final TextHitInfo getLocationOffset(int x, int y) {
       return null;
    }
 
@@ -187,36 +219,44 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    @Override
-   public final AttributedTextIterator getText(int var1, int var2, boolean var3) {
+   public final AttributedTextIterator getText(int start, int end, boolean makeUncommitted) {
       return null;
    }
 
    @Override
-   public final void actionPerformed(int var1, Object var2) {
-      IComponent var3 = this.getInputComponent();
-      if (var3 != null) {
-         var3.actionPerformed(var1, var2);
+   public final void actionPerformed(int action, Object parameter) {
+      IComponent component = this.getInputComponent();
+      if (component != null) {
+         component.actionPerformed(action, parameter);
       }
    }
 
    @Override
-   public final int dispatchInputMethodEvent(int var1, AttributedString var2, long var3, int var5, int var6, TextHitInfo var7, TextHitInfo var8) {
-      return this.dispatchInputMethodEvent(var1, 0, var2, var3, var5, var6, var7, var8, null, (byte)4);
+   public final int dispatchInputMethodEvent(
+      int id,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition
+   ) {
+      return this.dispatchInputMethodEvent(id, 0, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition, null, (byte)4);
    }
 
    @Override
-   public final InputMethod getInputMethod(Locale var1) {
-      return var1 != null ? super._manager.getInputMethod(var1, null) : null;
+   public final InputMethod getInputMethod(Locale requestedLocale) {
+      return requestedLocale != null ? super._manager.getInputMethod(requestedLocale, null) : null;
    }
 
-   private final void handleException(Throwable var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void handleException(Throwable th) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   protected final synchronized boolean selectInputMethod(Locale var1, String var2, int var3) {
-      if (super.selectInputMethod(var1, var2, var3)) {
-         this.loadLingData(var1);
+   protected final synchronized boolean selectInputMethod(Locale locale, String imName, int state) {
+      if (super.selectInputMethod(locale, imName, state)) {
+         this.loadLingData(locale);
          return true;
       } else {
          return false;
@@ -224,63 +264,108 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    @Override
-   public final void enableLookup(boolean var1) {
+   public final void enableLookup(boolean enable) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   private final void loadLingData(Locale var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void loadLingData(Locale locale) {
+      if (this._lingDataRegistry != null) {
+         synchronized (this._lingDataRegistry) {
+            int lCode = locale.getCode();
+            LinguisticData data = this._lingDataRegistry.getLingData(lCode);
+            this.processLingDataLoad(data, lCode);
+            if (data == null) {
+               int lang = lCode & -65536;
+               if (lang != lCode) {
+                  data = this._lingDataRegistry.getLingData(lang);
+                  this.processLingDataLoad(data, lang);
+               }
+
+               if (data == null) {
+                  data = this._lingDataRegistry.getLingData(0);
+                  this.processLingDataLoad(data, 0);
+               }
+            }
+         }
+      }
    }
 
-   private final void processLingDataLoad(LinguisticData var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void processLingDataLoad(LinguisticData data, int locale) {
+      try {
+         if (data != null) {
+            LinguisticData first = data;
+            LinguisticData last = data;
+
+            do {
+               if ((super._inputMethod.loadLinguisticData(data) & 2) != 0) {
+                  if (data == first) {
+                     last = data._next;
+                     first = data._next;
+                  } else {
+                     last._next = data._next;
+                  }
+               } else {
+                  last = data;
+               }
+            } while ((data = data._next) != null);
+
+            this._lingDataRegistry.update(locale, first);
+            return;
+         }
+      } catch (Throwable e) {
+         Utils.reportException(e);
+      }
    }
 
    @Override
-   public final void addSecureBuffer(ISecureInputMethodBuffer var1) {
-      this._secureBufferRegistry.registerBuffer(var1);
+   public final void addSecureBuffer(ISecureInputMethodBuffer buffer) {
+      this._secureBufferRegistry.registerBuffer(buffer);
    }
 
    @Override
-   protected final boolean changeIM(Locale var1, InputMethod var2) {
-      boolean var3 = var2.setLocale(var1);
-      if (var3) {
-         var2.setInputMethodContext(this);
-         var2.endComposition();
+   protected final boolean changeIM(Locale locale, InputMethod im) {
+      boolean ret = im.setLocale(locale);
+      if (ret) {
+         im.setInputMethodContext(this);
+         im.endComposition();
       }
 
-      return var3;
+      return ret;
    }
 
    private final InputMethodEvent getIMEvent(
-      IComponent var1,
-      int var2,
-      int var3,
-      AttributedString var4,
-      long var5,
-      int var7,
-      int var8,
-      TextHitInfo var9,
-      TextHitInfo var10,
-      ISupplementaryInputData var11,
-      byte var12
+      IComponent component,
+      int id,
+      int modifiers,
+      AttributedString text,
+      long attribTextMask,
+      int committedCharacterCount,
+      int convertedCharacterCount,
+      TextHitInfo caret,
+      TextHitInfo visiblePosition,
+      ISupplementaryInputData supplementaryInputData,
+      byte caretShape
    ) {
-      InputMethodEvent var13 = (InputMethodEvent)this._event.get();
-      if (var13 == null) {
-         var13 = new InputMethodEvent(var1, var2, var3, var4, var5, var7, var8, var9, var10);
-         var13.setCaretShape(var12);
-         this._event.set(var13);
+      InputMethodEvent event = (InputMethodEvent)this._event.get();
+      if (event == null) {
+         event = new InputMethodEvent(component, id, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition);
+         event.setCaretShape(caretShape);
+         this._event.set(event);
       } else {
-         var13.init(var1, var2, var3, var4, var5, var7, var8, var9, var10, true, var12);
+         event.init(component, id, modifiers, text, attribTextMask, committedCharacterCount, convertedCharacterCount, caret, visiblePosition, true, caretShape);
       }
 
-      var13.setSupplementaryInputData(var11);
-      return var13;
+      event.setSupplementaryInputData(supplementaryInputData);
+      return event;
    }
 
    @Override
-   public final void dispatchEvent(Event var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void dispatchEvent(Event event) {
+      try {
+         super.dispatchEvent(event);
+      } catch (Throwable e) {
+         this.handleException(e);
+      }
    }
 
    @Override
@@ -289,17 +374,21 @@ public final class IMContext extends InputContext implements InputMethodContext 
 
    @Override
    public final void endComposition() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         super.endComposition();
+      } catch (Throwable e) {
+         this.handleException(e);
+      }
    }
 
    @Override
-   public final synchronized boolean addIMDescriptor(String var1, String var2, boolean var3) {
-      boolean var4 = super._manager.addIMDescriptor(var1, var2);
-      if (var3 && var4 && super._inputMethod != null) {
+   public final synchronized boolean addIMDescriptor(String imName, String className, boolean isAuxiliary) {
+      boolean ret = super._manager.addIMDescriptor(imName, className);
+      if (isAuxiliary && ret && super._inputMethod != null) {
          this.loadLingData(super._inputMethod.getLocale());
       }
 
-      return var4;
+      return ret;
    }
 
    public static final IMContext getInstance0() {
@@ -324,7 +413,7 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    private final InputMethodRequests getInputMethodRequests() {
-      IComponent var1 = this.getInputComponent();
-      return var1 != null ? var1.getInputMethodRequests() : null;
+      IComponent comp = this.getInputComponent();
+      return comp != null ? comp.getInputMethodRequests() : null;
    }
 }

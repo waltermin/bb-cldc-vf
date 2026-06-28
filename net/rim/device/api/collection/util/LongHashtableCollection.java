@@ -16,8 +16,8 @@ public final class LongHashtableCollection implements Persistable, ReadableSet, 
    }
 
    @Override
-   public final void remove(long var1) {
-      this._ht.remove(var1);
+   public final void remove(long key) {
+      this._ht.remove(key);
    }
 
    @Override
@@ -31,23 +31,23 @@ public final class LongHashtableCollection implements Persistable, ReadableSet, 
    }
 
    @Override
-   public final Object get(long var1) {
-      return this._ht.get(var1);
+   public final Object get(long key) {
+      return this._ht.get(key);
    }
 
    @Override
-   public final long getKey(Object var1) {
-      return this._ht.getKey(var1);
+   public final long getKey(Object element) {
+      return this._ht.getKey(element);
    }
 
    @Override
-   public final boolean contains(long var1) {
-      return this._ht.containsKey(var1);
+   public final boolean contains(long key) {
+      return this._ht.containsKey(key);
    }
 
    @Override
-   public final boolean contains(Object var1) {
-      return this._ht.contains(var1);
+   public final boolean contains(Object element) {
+      return this._ht.contains(element);
    }
 
    @Override
@@ -56,12 +56,22 @@ public final class LongHashtableCollection implements Persistable, ReadableSet, 
    }
 
    @Override
-   public final void put(long var1, Object var3) {
-      this._ht.put(var1, var3);
+   public final void put(long key, Object element) {
+      this._ht.put(key, element);
    }
 
    @Override
-   public final int getElements(Object[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int getElements(Object[] elements) {
+      synchronized (this._ht) {
+         Enumeration enumeration = this._ht.elements();
+         int dest = 0;
+         int length = elements.length;
+
+         while (enumeration.hasMoreElements() && dest < length) {
+            elements[dest++] = enumeration.nextElement();
+         }
+
+         return dest;
+      }
    }
 }

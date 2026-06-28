@@ -7,18 +7,18 @@ public class UiEngineListener {
    public void onBackground() {
    }
 
-   public void onFocus(Screen var1, Screen var2) {
+   public void onFocus(Screen previous, Screen screen) {
    }
 
    public void onForeground() {
    }
 
-   public void onPopScreen(Screen var1) {
+   public void onPopScreen(Screen screen) {
    }
 
-   public void onPushGlobalScreen(Screen var1, int var2, int var3) {
+   public void onPushGlobalScreen(Screen screen, int priority, int flags) {
    }
 
-   public void onPushScreen(Screen var1) {
+   public void onPushScreen(Screen screen) {
    }
 }

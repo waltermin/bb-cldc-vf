@@ -19,17 +19,17 @@ public final class SessionStats {
       return System.currentTimeMillis() - this._creationTime;
    }
 
-   public final void addToSent(int var1) {
-      this._bytesSent += var1;
+   public final void addToSent(int count) {
+      this._bytesSent += count;
    }
 
-   public final void addToReceived(int var1) {
-      this._bytesReceived += var1;
+   public final void addToReceived(int count) {
+      this._bytesReceived += count;
    }
 
-   public final void setConnectedHost(String var1, int var2) {
-      this._connectedHost = var1;
-      this._connectedPort = var2;
+   public final void setConnectedHost(String host, int port) {
+      this._connectedHost = host;
+      this._connectedPort = port;
    }
 
    public final String getConnectedHost() {

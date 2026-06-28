@@ -10,8 +10,8 @@ class AbstractCallEventHandler implements PhoneListener {
    private static final long HANDLERS_GUID;
    private static AbstractCallEventHandler _first;
 
-   protected AbstractCallEventHandler(int var1) {
-      this._order = var1;
+   protected AbstractCallEventHandler(int order) {
+      this._order = order;
    }
 
    public final void register() {
@@ -38,161 +38,161 @@ class AbstractCallEventHandler implements PhoneListener {
    }
 
    protected final PhoneListener getNext() {
-      AbstractCallEventHandler var1 = this._next;
+      AbstractCallEventHandler next = this._next;
 
-      while (!var1.isRegistered()) {
-         var1 = var1._next;
+      while (!next.isRegistered()) {
+         next = next._next;
       }
 
-      return var1;
+      return next;
    }
 
-   static void internalRegister(AbstractCallEventHandler var0) {
-      if (var0._next != null) {
-         if (!var0._registered) {
-            var0._registered = true;
-            var0.onRegistration();
+   static void internalRegister(AbstractCallEventHandler handler) {
+      if (handler._next != null) {
+         if (!handler._registered) {
+            handler._registered = true;
+            handler.onRegistration();
          }
       } else {
-         int var1 = var0._order;
-         AbstractCallEventHandler var2 = null;
+         int order = handler._order;
+         AbstractCallEventHandler previous = null;
 
-         AbstractCallEventHandler var3;
-         for (var3 = getFirstHandler(); var3 != null; var3 = var3._next) {
-            if (var3._order == var1) {
-               AbstractCallEventHandler var4 = var3;
-               var3 = var4._next;
-               var4._next = null;
-               var4.deregister();
+         AbstractCallEventHandler next;
+         for (next = getFirstHandler(); next != null; next = next._next) {
+            if (next._order == order) {
+               AbstractCallEventHandler removed = next;
+               next = removed._next;
+               removed._next = null;
+               removed.deregister();
                break;
             }
 
-            if (var3._order > var1) {
+            if (next._order > order) {
                break;
             }
 
-            var2 = var3;
+            previous = next;
          }
 
-         var0._next = var3;
-         if (var2 == null) {
-            setFirstHandler(var0);
+         handler._next = next;
+         if (previous == null) {
+            setFirstHandler(handler);
          } else {
-            var2._next = var0;
+            previous._next = handler;
          }
 
-         var0._registered = true;
-         var0.onRegistration();
+         handler._registered = true;
+         handler.onRegistration();
       }
    }
 
    private static AbstractCallEventHandler getFirstHandler() {
       if (_first == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _first = (AbstractCallEventHandler)var0.getOrWaitFor(-3955160615553205537L);
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         _first = (AbstractCallEventHandler)ar.getOrWaitFor(-3955160615553205537L);
       }
 
       return _first;
    }
 
-   private static void setFirstHandler(AbstractCallEventHandler var0) {
-      _first = var0;
-      ApplicationRegistry var1 = ApplicationRegistry.getApplicationRegistry();
-      var1.replace(-3955160615553205537L, _first);
+   private static void setFirstHandler(AbstractCallEventHandler handler) {
+      _first = handler;
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      ar.replace(-3955160615553205537L, _first);
    }
 
    @Override
-   public void dtmfData(int var1) {
+   public void dtmfData(int _1) {
       throw null;
    }
 
    @Override
-   public void callOTAStatusUpdated(int var1, int var2) {
+   public void callOTAStatusUpdated(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void callVoicePrivacyUpdated(int var1, boolean var2) {
+   public void callVoicePrivacyUpdated(int _1, boolean _2) {
       throw null;
    }
 
    @Override
-   public void callTransferStateUpdated(int var1, int var2) {
+   public void callTransferStateUpdated(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void callTransferred(int var1, int var2) {
+   public void callTransferred(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void callRemoved(int var1) {
+   public void callRemoved(int _1) {
       throw null;
    }
 
    @Override
-   public void callAdded(int var1) {
+   public void callAdded(int _1) {
       throw null;
    }
 
    @Override
-   public void callResumed(int var1) {
+   public void callResumed(int _1) {
       throw null;
    }
 
    @Override
-   public void callHeld(int var1) {
+   public void callHeld(int _1) {
       throw null;
    }
 
    @Override
-   public void callDisconnected(int var1) {
+   public void callDisconnected(int _1) {
       throw null;
    }
 
    @Override
-   public void callManipulateFailed(int var1, int var2) {
+   public void callManipulateFailed(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void callDelivered(int var1) {
+   public void callDelivered(int _1) {
       throw null;
    }
 
    @Override
-   public void callFailed(int var1, int var2) {
+   public void callFailed(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void callConnected(int var1) {
+   public void callConnected(int _1) {
       throw null;
    }
 
    @Override
-   public void callInitiated(int var1) {
+   public void callInitiated(int _1) {
       throw null;
    }
 
    @Override
-   public void callWaiting(int var1) {
+   public void callWaiting(int _1) {
       throw null;
    }
 
    @Override
-   public void callDisplayUpdated(int var1) {
+   public void callDisplayUpdated(int _1) {
       throw null;
    }
 
    @Override
-   public void callIncoming(int var1) {
+   public void callIncoming(int _1) {
       throw null;
    }
 
    @Override
-   public void callTimerUpdated(int var1, int var2) {
+   public void callTimerUpdated(int _1, int _2) {
       throw null;
    }
 
@@ -202,17 +202,17 @@ class AbstractCallEventHandler implements PhoneListener {
    }
 
    @Override
-   public void voicemailCountUpdated(int var1, int var2) {
+   public void voicemailCountUpdated(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void voiceLineChanged(int var1) {
+   public void voiceLineChanged(int _1) {
       throw null;
    }
 
    @Override
-   public void responseEnableFDN(int var1) {
+   public void responseEnableFDN(int _1) {
       throw null;
    }
 
@@ -222,22 +222,22 @@ class AbstractCallEventHandler implements PhoneListener {
    }
 
    @Override
-   public void ssUssDisplay(byte[] var1, int var2, boolean var3) {
+   public void ssUssDisplay(byte[] _1, int _2, boolean _3) {
       throw null;
    }
 
    @Override
-   public void ssNotification(int var1) {
+   public void ssNotification(int _1) {
       throw null;
    }
 
    @Override
-   public void ssUpdated(int var1, int var2) {
+   public void ssUpdated(int _1, int _2) {
       throw null;
    }
 
    @Override
-   public void ssPasswordRequested(int var1) {
+   public void ssPasswordRequested(int _1) {
       throw null;
    }
 
@@ -247,22 +247,22 @@ class AbstractCallEventHandler implements PhoneListener {
    }
 
    @Override
-   public void ssRequestReleased(boolean var1) {
+   public void ssRequestReleased(boolean _1) {
       throw null;
    }
 
    @Override
-   public void ssRequestRejected(boolean var1) {
+   public void ssRequestRejected(boolean _1) {
       throw null;
    }
 
    @Override
-   public void ssRequestFailed(int var1, int var2, boolean var3) {
+   public void ssRequestFailed(int _1, int _2, boolean _3) {
       throw null;
    }
 
    @Override
-   public void ssRequestSucceeded(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
+   public void ssRequestSucceeded(int _1, int _2, int _3, int _4, boolean _5, boolean _6) {
       throw null;
    }
 }

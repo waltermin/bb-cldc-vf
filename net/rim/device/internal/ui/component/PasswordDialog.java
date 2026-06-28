@@ -20,7 +20,7 @@ public class PasswordDialog extends PopupDialog implements FieldChangeListener {
    private boolean _mismatchIndicationDisplayed;
 
    protected boolean accept() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public byte[] getPassword() {
@@ -38,91 +38,91 @@ public class PasswordDialog extends PopupDialog implements FieldChangeListener {
    }
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
-      if (var1 == this._ok) {
+   public void fieldChanged(Field field, int context) {
+      if (field == this._ok) {
          this.accept();
       } else {
-         if (var1 == this._cancel) {
+         if (field == this._cancel) {
             this.cancel();
          }
       }
    }
 
-   public PasswordDialog(String var1, String var2) {
-      this(var1, var2, 32);
+   public PasswordDialog(String passwordLabel, String confirmLabel) {
+      this(passwordLabel, confirmLabel, 32);
    }
 
-   public PasswordDialog(String var1, String var2, int var3) {
-      this(var1, var2, var3, 0);
+   public PasswordDialog(String passwordLabel, String confirmLabel, int maxPasswordLength) {
+      this(passwordLabel, confirmLabel, maxPasswordLength, 0);
    }
 
-   public PasswordDialog(String var1, String var2, int var3, int var4) {
-      this(var1, var2, false, var3, var4);
+   public PasswordDialog(String passwordLabel, String confirmLabel, int maxPasswordLength, int style) {
+      this(passwordLabel, confirmLabel, false, maxPasswordLength, style);
    }
 
-   public PasswordDialog(String var1, String var2, boolean var3, String var4, boolean var5, int var6) {
-      this(var1, var4, var5, 32, var6);
+   public PasswordDialog(String passwordLabel, String passwordLabelRetry, boolean confirm, String confirmLabel, boolean revealPassword, int style) {
+      this(passwordLabel, confirmLabel, revealPassword, 32, style);
    }
 
-   private PasswordDialog(String var1, String var2, boolean var3, int var4, int var5) {
-      super(new VerticalIndentFieldManager(1153220571769602048L), var5);
-      VerticalIndentFieldManager var6 = (VerticalIndentFieldManager)this.getDelegate();
-      RichTextField var7 = RichTextFieldUtilities.getBoldFormattedRichTextField(var1, 45035996273704960L);
-      var6.add(var7);
-      this._passwordField = this.createPasswordEditField(var3, var4);
-      FrameLayout var8 = new FrameLayout(1);
-      var8.add(this._passwordField);
-      var6.add(var8);
-      if (var2 != null) {
-         RichTextField var9 = RichTextFieldUtilities.getBoldFormattedRichTextField(var2, 45035996273704960L);
-         var6.add(var9);
-         this._confirmField = this.createPasswordEditField(var3, var4);
-         var8 = new FrameLayout(1);
-         var8.add(this._confirmField);
-         var6.add(var8);
+   private PasswordDialog(String passwordLabel, String confirmLabel, boolean revealPassword, int maxPasswordLength, int style) {
+      super(new VerticalIndentFieldManager(1153220571769602048L), style);
+      VerticalIndentFieldManager vifm = (VerticalIndentFieldManager)this.getDelegate();
+      RichTextField passwordLabelField = RichTextFieldUtilities.getBoldFormattedRichTextField(passwordLabel, 45035996273704960L);
+      vifm.add(passwordLabelField);
+      this._passwordField = this.createPasswordEditField(revealPassword, maxPasswordLength);
+      FrameLayout layout = new FrameLayout(1);
+      layout.add(this._passwordField);
+      vifm.add(layout);
+      if (confirmLabel != null) {
+         RichTextField confirmLabelField = RichTextFieldUtilities.getBoldFormattedRichTextField(confirmLabel, 45035996273704960L);
+         vifm.add(confirmLabelField);
+         this._confirmField = this.createPasswordEditField(revealPassword, maxPasswordLength);
+         layout = new FrameLayout(1);
+         layout.add(this._confirmField);
+         vifm.add(layout);
       }
 
-      Object var11 = new Object(12884901888L);
+      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
       this._ok = (ButtonField)(new Object(CommonResource.getString(100)));
       this._ok.setChangeListener(this);
-      ((HorizontalFieldManager)var11).add(this._ok);
+      buttonManager.add(this._ok);
       this._cancel = (ButtonField)(new Object(CommonResource.getString(10005)));
       this._cancel.setChangeListener(this);
-      ((HorizontalFieldManager)var11).add(this._cancel);
-      var6.add((Field)var11);
+      buttonManager.add(this._cancel);
+      vifm.add(buttonManager);
    }
 
-   private BasicEditField createPasswordEditField(boolean var1, int var2) {
-      return (BasicEditField)(var1 ? new Object(null, null, var2, 1073741824) : new Object(null, null, var2, 1073741824));
+   private BasicEditField createPasswordEditField(boolean revealPassword, int maxPasswordLength) {
+      return (BasicEditField)(revealPassword ? new Object(null, null, maxPasswordLength, 1073741824) : new Object(null, null, maxPasswordLength, 1073741824));
    }
 
-   public PasswordDialog(String var1) {
-      this(var1, false);
+   public PasswordDialog(String passwordLabel) {
+      this(passwordLabel, false);
    }
 
-   public PasswordDialog(String var1, boolean var2, int var3, int var4) {
-      this(var1, null, var2, var3, var4);
+   public PasswordDialog(String passwordLabel, boolean revealPassword, int maxPasswordLength, int style) {
+      this(passwordLabel, null, revealPassword, maxPasswordLength, style);
    }
 
-   public PasswordDialog(String var1, boolean var2, int var3) {
-      this(var1, var2, var3, 0);
+   public PasswordDialog(String passwordLabel, boolean revealPassword, int maxPasswordLength) {
+      this(passwordLabel, revealPassword, maxPasswordLength, 0);
    }
 
-   public PasswordDialog(String var1, boolean var2) {
-      this(var1, var2, 32);
+   public PasswordDialog(String passwordLabel, boolean revealPassword) {
+      this(passwordLabel, revealPassword, 32);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == 27) {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == 27) {
          return this.cancel();
       }
 
-      if (var1 == '\n') {
-         Field var4 = this.getLeafFieldWithFocus();
-         if (var4 == this._cancel) {
+      if (key == '\n') {
+         Field field = this.getLeafFieldWithFocus();
+         if (field == this._cancel) {
             return this.cancel();
-         } else if (var4 == this._passwordField && this._confirmField != null) {
+         } else if (field == this._passwordField && this._confirmField != null) {
             this._confirmField.setFocus();
             return true;
          } else {
@@ -130,17 +130,17 @@ public class PasswordDialog extends PopupDialog implements FieldChangeListener {
             return true;
          }
       } else {
-         return super.keyChar(var1, var2, var3);
+         return super.keyChar(key, status, time);
       }
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      if (!super.trackwheelClick(var1, var2)) {
-         Field var3 = this.getLeafFieldWithFocus();
-         if (var3 == this._cancel) {
+   protected boolean trackwheelClick(int status, int time) {
+      if (!super.trackwheelClick(status, time)) {
+         Field field = this.getLeafFieldWithFocus();
+         if (field == this._cancel) {
             return this.cancel();
-         } else if (var3 == this._passwordField && this._confirmField != null) {
+         } else if (field == this._passwordField && this._confirmField != null) {
             this._confirmField.setFocus();
             return true;
          } else {

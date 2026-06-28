@@ -6,6 +6,6 @@ public class DRMIOException extends IOException {
    public DRMIOException() {
    }
 
-   public DRMIOException(String var1) {
+   public DRMIOException(String message) {
    }
 }

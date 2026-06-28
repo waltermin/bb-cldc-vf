@@ -6,8 +6,8 @@ import net.rim.device.api.util.Persistable;
 class PersistentContent$CharArrayWrapper implements Persistable {
    private char[] _array;
 
-   public PersistentContent$CharArrayWrapper(char[] var1) {
-      this._array = var1;
+   public PersistentContent$CharArrayWrapper(char[] array) {
+      this._array = array;
    }
 
    public char[] getArray() {

@@ -12,19 +12,27 @@ public final class SelfTests {
    SelfTestModule[] _modules;
    private static final long LOGGER_GUID;
 
-   public SelfTests(boolean var1) {
+   public SelfTests(boolean startupRun) {
    }
 
-   private final SelfTestModule getSelfTestModule(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final SelfTestModule getSelfTestModule(String module) {
+      try {
+         return (SelfTestModule)Class.forName(module).newInstance();
+      } catch (IllegalAccessException var3) {
+         return null;
+      } catch (InstantiationException var4) {
+         return null;
+      } catch (ClassNotFoundException var5) {
+         return null;
+      }
    }
 
-   private final void getTestStrings(SelfTestModule var1) {
-      if (var1 != null) {
-         String[] var2 = var1.getTestNames(this._startupRun);
-         int var3 = this._tests.length;
-         Array.resize(this._tests, this._tests.length + var2.length);
-         System.arraycopy(var2, 0, this._tests, var3, var2.length);
+   private final void getTestStrings(SelfTestModule selfTestModule) {
+      if (selfTestModule != null) {
+         String[] newStrings = selfTestModule.getTestNames(this._startupRun);
+         int copyIndex = this._tests.length;
+         Array.resize(this._tests, this._tests.length + newStrings.length);
+         System.arraycopy(newStrings, 0, this._tests, copyIndex, newStrings.length);
       }
    }
 

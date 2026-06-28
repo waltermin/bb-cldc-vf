@@ -13,10 +13,10 @@ public final class UnicodeServiceRegistry {
       return _instance;
    }
 
-   public final int setFlags(int var1) {
-      int var2 = this._flags;
-      this._flags = var1;
-      return var2;
+   public final int setFlags(int flags) {
+      int f = this._flags;
+      this._flags = flags;
+      return f;
    }
 
    public final int getFlags() {

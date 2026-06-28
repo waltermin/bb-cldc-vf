@@ -37,18 +37,18 @@ public class DateTimeFormatOptions {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static void setTimeFormat(int var0) {
-      int var1 = getTimeFormat();
-      if (var0 != var1) {
-         switch (var0) {
+   public static void setTimeFormat(int timeFormat) {
+      int curTimrFormat = getTimeFormat();
+      if (timeFormat != curTimrFormat) {
+         switch (timeFormat) {
             case -2:
             default:
                throw new Object();
             case -1:
             case 0:
             case 1:
-               _instance.timeFormatUserSetting = var0;
-               PersistentInteger.set(_timeFormatId, var0);
+               _instance.timeFormatUserSetting = timeFormat;
+               PersistentInteger.set(_timeFormatId, timeFormat);
                onSystemLocaleChange();
                RIMGlobalMessagePoster.postGlobalEvent(7207871974803693937L);
          }

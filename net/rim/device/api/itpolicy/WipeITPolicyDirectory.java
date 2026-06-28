@@ -5,9 +5,9 @@ public final class WipeITPolicyDirectory {
    private static int[] WIPEABLE_POLICY_GROUPS;
    private static int[][][] WIPEABLE_POLICY_IDS;
 
-   public static final boolean isWipeableGroup(int var0) {
-      for (int var1 = 0; var1 < WIPEABLE_POLICY_GROUPS.length; var1++) {
-         if (WIPEABLE_POLICY_GROUPS[var1] == var0) {
+   public static final boolean isWipeableGroup(int group) {
+      for (int i = 0; i < WIPEABLE_POLICY_GROUPS.length; i++) {
+         if (WIPEABLE_POLICY_GROUPS[i] == group) {
             return true;
          }
       }
@@ -15,27 +15,27 @@ public final class WipeITPolicyDirectory {
       return false;
    }
 
-   public static final boolean isWipeableId(int var0, int var1) {
-      int var2 = -1;
+   public static final boolean isWipeableId(int group, int id) {
+      int groupLookupId = -1;
 
-      for (int var3 = 0; var3 < WIPEABLE_POLICY_GROUPS.length; var3++) {
-         if (WIPEABLE_POLICY_GROUPS[var3] == var0) {
-            var2 = var3;
+      for (int i = 0; i < WIPEABLE_POLICY_GROUPS.length; i++) {
+         if (WIPEABLE_POLICY_GROUPS[i] == group) {
+            groupLookupId = i;
             break;
          }
       }
 
-      if (var2 == -1) {
+      if (groupLookupId == -1) {
          return false;
       }
 
-      int[][] var5 = WIPEABLE_POLICY_IDS[var2];
-      if (var5[0] == WIPE_ALL) {
+      int[] wipeableIds = (int[])WIPEABLE_POLICY_IDS[groupLookupId];
+      if (wipeableIds[0] == WIPE_ALL) {
          return true;
       }
 
-      for (int var4 = 0; var4 < var5.length; var4++) {
-         if (var5[var4] == var1) {
+      for (int i = 0; i < wipeableIds.length; i++) {
+         if (wipeableIds[i] == id) {
             return true;
          }
       }

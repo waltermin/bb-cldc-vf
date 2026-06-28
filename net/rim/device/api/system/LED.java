@@ -25,51 +25,51 @@ public final class LED {
       ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
    }
 
-   public static final boolean isSupported(int var0) {
-      return LEDEngine.isSupported(var0);
+   public static final boolean isSupported(int type) {
+      return LEDEngine.isSupported(type);
    }
 
    public static final boolean isPolychromatic() {
       return LEDEngine.isPolychromatic();
    }
 
-   public static final boolean isPolychromatic(int var0) {
-      return LEDEngine.isPolychromatic(var0);
+   public static final boolean isPolychromatic(int type) {
+      return LEDEngine.isPolychromatic(type);
    }
 
-   public static final void setConfiguration(int var0, int var1, int var2) {
-      setConfiguration(0, var0, var1, var2);
+   public static final void setConfiguration(int onTime, int offTime, int brightness) {
+      setConfiguration(0, onTime, offTime, brightness);
    }
 
-   public static final void setConfiguration(int var0, int var1, int var2, int var3) {
+   public static final void setConfiguration(int type, int onTime, int offTime, int brightness) {
       assertPermission();
-      _ledEngine.setConfigurationInternal(var0, var1, var2, var3);
+      _ledEngine.setConfigurationInternal(type, onTime, offTime, brightness);
    }
 
-   public static final void setColorConfiguration(int var0, int var1, int var2) {
-      setColorConfiguration(0, var0, var1, var2);
+   public static final void setColorConfiguration(int onTime, int offTime, int color) {
+      setColorConfiguration(0, onTime, offTime, color);
    }
 
-   public static final void setColorConfiguration(int var0, int var1, int var2, int var3) {
+   public static final void setColorConfiguration(int type, int onTime, int offTime, int color) {
       assertPermission();
-      _ledEngine.setColorConfigurationInternal(var0, var1, var2, var3);
+      _ledEngine.setColorConfigurationInternal(type, onTime, offTime, color);
    }
 
-   public static final void setState(int var0) {
-      setState(0, var0);
+   public static final void setState(int state) {
+      setState(0, state);
    }
 
-   public static final void setState(int var0, int var1) {
+   public static final void setState(int type, int state) {
       assertPermission();
-      _ledEngine.setStateInternal(var0, var1);
+      _ledEngine.setStateInternal(type, state);
    }
 
-   public static final void setColorPattern(int[] var0, boolean var1) {
-      setColorPattern(0, var0, var1);
+   public static final void setColorPattern(int[] pattern, boolean repeat) {
+      setColorPattern(0, pattern, repeat);
    }
 
-   public static final void setColorPattern(int var0, int[] var1, boolean var2) {
+   public static final void setColorPattern(int type, int[] pattern, boolean repeat) {
       assertPermission();
-      _ledEngine.setColorPatternInternal(var0, var1, var2);
+      _ledEngine.setColorPatternInternal(type, pattern, repeat);
    }
 }

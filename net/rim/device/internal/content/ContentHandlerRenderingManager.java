@@ -9,11 +9,11 @@ public class ContentHandlerRenderingManager {
    }
 
    public static ContentHandlerRenderingManager getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      return (ContentHandlerRenderingManager)var0.waitFor(972161364679736566L);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      return (ContentHandlerRenderingManager)ar.waitFor(972161364679736566L);
    }
 
-   public void register(String var1) {
+   public void register(String _1) {
       throw null;
    }
 }

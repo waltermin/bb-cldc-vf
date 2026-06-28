@@ -5,17 +5,17 @@ class VerticalFetcher implements Fetcher {
    int _width;
    int _x;
 
-   VerticalFetcher(int[] var1, int var2) {
-      this._data = var1;
-      this._width = var2;
+   VerticalFetcher(int[] data, int width) {
+      this._data = data;
+      this._width = width;
    }
 
-   void set(int var1) {
+   void set(int x) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public int get(int var1) {
-      return this._data[var1 * this._width + this._x];
+   public int get(int index) {
+      return this._data[index * this._width + this._x];
    }
 }

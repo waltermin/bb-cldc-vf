@@ -6,22 +6,22 @@ import net.rim.device.api.ui.Field;
 class DateField$2 extends DateField {
    private final DateField this$0;
 
-   DateField$2(DateField var1, String var2, long var3, DateFormat var5, long var6) {
-      super(var2, var3, var5, var6);
-      this.this$0 = var1;
+   DateField$2(DateField _1, String x0, long x1, DateFormat x2, long x3) {
+      super(x0, x1, x2, x3);
+      this.this$0 = _1;
    }
 
    @Override
-   protected void onFocus(int var1) {
-      boolean var2 = false;
+   protected void onFocus(int direction) {
+      boolean firstFocus = false;
       if (super._first_focus) {
-         var2 = true;
+         firstFocus = true;
       }
 
-      super.onFocus(var1);
-      if (var2) {
-         DateField var3 = this.this$0;
-         super._position = var3._position;
+      super.onFocus(direction);
+      if (firstFocus) {
+         DateField outer = this.this$0;
+         super._position = outer._position;
          super.calcCachedData();
       }
    }
@@ -32,7 +32,7 @@ class DateField$2 extends DateField {
    }
 
    @Override
-   public int moveFocus(int var1, int var2, int var3) {
-      return super.moveFocus(var1, var2 | 1, var3);
+   public int moveFocus(int amount, int status, int time) {
+      return super.moveFocus(amount, status | 1, time);
    }
 }

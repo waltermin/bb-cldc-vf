@@ -7,20 +7,20 @@ public class BluetoothSerialPortInfo {
    private int _serverID;
    private String _serviceName;
 
-   public BluetoothSerialPortInfo(byte[] var1, int var2, String var3) {
-      this(var1, 0, null, var2, var3);
+   public BluetoothSerialPortInfo(byte[] address, int serverID, String serviceName) {
+      this(address, 0, null, serverID, serviceName);
    }
 
-   public BluetoothSerialPortInfo(byte[] var1, String var2, int var3, String var4) {
-      this(var1, 0, var2, var3, var4);
+   public BluetoothSerialPortInfo(byte[] address, String name, int serverID, String serviceName) {
+      this(address, 0, name, serverID, serviceName);
    }
 
-   public BluetoothSerialPortInfo(byte[] var1, int var2, String var3, int var4, String var5) {
-      this._address = var1;
-      this._pageScanInfo = var2;
-      this._name = var3;
-      this._serverID = var4;
-      this._serviceName = var5;
+   public BluetoothSerialPortInfo(byte[] address, int pageScanInfo, String name, int serverID, String serviceName) {
+      this._address = address;
+      this._pageScanInfo = pageScanInfo;
+      this._name = name;
+      this._serverID = serverID;
+      this._serviceName = serviceName;
    }
 
    @Override

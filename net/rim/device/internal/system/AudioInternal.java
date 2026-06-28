@@ -58,8 +58,8 @@ public final class AudioInternal {
 
    public static final native int getAVCMode();
 
-   public static final int mapDTMFToneToAudioTone(byte var0) {
-      switch (var0) {
+   public static final int mapDTMFToneToAudioTone(byte dtmfTone) {
+      switch (dtmfTone) {
          case 35:
             return 14;
          case 42:

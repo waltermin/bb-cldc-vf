@@ -22,12 +22,62 @@ public final class NativeSocket {
       this._operationLock = new Object();
    }
 
-   private NativeSocket(int var1) {
-      this._socketId = var1;
+   private NativeSocket(int socketId) {
+      this._socketId = socketId;
    }
 
-   public final void create(int var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public final void create(int tunnel, int socketType, int protocolType, int localPort) {
+      NativeSocketEventDispatcher.addListener(this);
+      boolean var15 = false /* VF: Semaphore variable */;
+
+      try {
+         var15 = true;
+         long result;
+         int returnCode;
+         synchronized (this._operationLock) {
+            result = allocate0(socketType, protocolType);
+            returnCode = (int)(result & 4294967295L);
+            if (returnCode == 0) {
+               try {
+                  this._operationResult = -100;
+                  this._operationLock.wait(120000);
+               } catch (InterruptedException var17) {
+               }
+
+               returnCode = this._operationResult;
+            }
+         }
+
+         if (returnCode != 1) {
+            checkError(returnCode);
+         }
+
+         this._socketId = (int)(result >> 32);
+         synchronized (this._operationLock) {
+            result = bindIPv4_0(this._socketId, tunnel, localPort);
+            returnCode = (int)(result & 4294967295L);
+            if (returnCode == 0) {
+               try {
+                  this._operationResult = -100;
+                  this._operationLock.wait(120000);
+               } catch (InterruptedException var16) {
+               }
+
+               returnCode = this._operationResult;
+            }
+         }
+
+         checkError(returnCode);
+         var15 = false;
+      } finally {
+         if (var15) {
+            NativeSocketEventDispatcher.removeListener(this);
+         }
+      }
+
+      NativeSocketEventDispatcher.removeListener(this);
    }
 
    public static final native boolean isMultiRATSupported();
@@ -36,18 +86,52 @@ public final class NativeSocket {
       return this._socketId;
    }
 
-   public final void connectIPv4(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public final void connectIPv4(int ipv4Addr, int destPort) {
+      NativeSocketEventDispatcher.addListener(this);
+      boolean var11 = false /* VF: Semaphore variable */;
+
+      try {
+         var11 = true;
+         int returnCode;
+         synchronized (this._operationLock) {
+            long result = connectIPv4_0(this._socketId, ipv4Addr, destPort);
+            returnCode = (int)(result & 4294967295L);
+            if (returnCode == 0) {
+               try {
+                  this._operationResult = -100;
+                  this._operationLock.wait(120000);
+               } catch (InterruptedException var12) {
+               }
+
+               returnCode = this._operationResult;
+            }
+         }
+
+         if (returnCode != 1) {
+            checkError(returnCode);
+            var11 = false;
+         } else {
+            var11 = false;
+         }
+      } finally {
+         if (var11) {
+            NativeSocketEventDispatcher.removeListener(this);
+         }
+      }
+
+      NativeSocketEventDispatcher.removeListener(this);
    }
 
-   public final void listen(int var1) {
-      checkError(listen0(this._socketId, var1));
+   public final void listen(int backlog) {
+      checkError(listen0(this._socketId, backlog));
    }
 
    public final NativeSocket accept() {
-      long var1 = accept0(this._socketId);
-      checkError(var1 & 4294967295L);
-      return new NativeSocket((int)(var1 >> 32));
+      long result = accept0(this._socketId);
+      checkError(result & 4294967295L);
+      return new NativeSocket((int)(result >> 32));
    }
 
    public final void shutdown() {
@@ -58,61 +142,67 @@ public final class NativeSocket {
       checkError(close0(this._socketId));
    }
 
-   public final int send(byte[] var1, int var2, int var3, int var4) {
-      long var5 = send0(this._socketId, var1, var2, var3, var4);
-      checkError(var5 & 4294967295L);
-      return (int)(var5 >> 32);
+   public final int send(byte[] data, int offset, int length, int flags) {
+      long result = send0(this._socketId, data, offset, length, flags);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
-   public final int send(int var1, int var2) {
-      long var3 = send0(this._socketId, var1, var2);
-      checkError(var3 & 4294967295L);
-      return (int)(var3 >> 32);
+   public final int send(int aByte, int flags) {
+      long result = send0(this._socketId, aByte, flags);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
-   public final int sendToIPv4(byte[] var1, int var2, int var3, int var4, int var5, int var6) {
-      long var7 = sendToIPv4_0(this._socketId, var1, var2, var3, var4, var5, var6);
-      checkError(var7 & 4294967295L);
-      return (int)(var7 >> 32);
+   public final int sendToIPv4(byte[] data, int offset, int length, int flags, int ipv4Addr, int port) {
+      long result = sendToIPv4_0(this._socketId, data, offset, length, flags, ipv4Addr, port);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
    public final int available() {
-      int var1 = available0(this._socketId);
-      if (var1 < 0) {
+      int result = available0(this._socketId);
+      if (result < 0) {
          throw new SocketIOException(-6);
       } else {
-         return var1;
+         return result;
       }
    }
 
-   public final int receive(byte[] var1, int var2, int var3, int var4) {
-      long var5 = receive0(this._socketId, var1, var2, var3, var4);
-      checkError(var5 & 4294967295L);
-      return (int)(var5 >> 32);
+   public final int receive(byte[] data, int offset, int length, int flags) {
+      long result = receive0(this._socketId, data, offset, length, flags);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
-   public final int receiveFrom0(byte[] var1, int var2, int var3, int var4) {
-      long var5 = receiveFrom0(this._socketId, var1, var2, var3, var4);
-      checkError(var5 & 4294967295L);
-      return (int)(var5 >> 32);
+   public final int receiveFrom0(byte[] data, int offset, int length, int flags) {
+      long result = receiveFrom0(this._socketId, data, offset, length, flags);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
-   public final void setSocketOption(int var1, int var2, int var3) {
-      checkError(setOption0(this._socketId, var1, var2, var3));
+   public final void setSocketOption(int socketLevel, int socketOption, int value) {
+      checkError(setOption0(this._socketId, socketLevel, socketOption, value));
    }
 
-   public final int getSocketOption(int var1, int var2) {
-      long var3 = getOption0(this._socketId, var1, var2);
-      checkError(var3 & 4294967295L);
-      return (int)(var3 >> 32);
+   public final int getSocketOption(int socketLevel, int socketOption) {
+      long result = getOption0(this._socketId, socketLevel, socketOption);
+      checkError(result & 4294967295L);
+      return (int)(result >> 32);
    }
 
-   public final void socketConnected(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void socketConnected(int resultCode) {
+      synchronized (this._operationLock) {
+         this._operationResult = resultCode;
+         this._operationLock.notify();
+      }
    }
 
    public final void socketDisconnected() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._operationLock) {
+         this._operationResult = -1;
+         this._operationLock.notify();
+      }
    }
 
    public final void flush() {
@@ -155,9 +245,9 @@ public final class NativeSocket {
 
    private static final native int flush0(int var0);
 
-   public static final void checkError(long var0) {
-      if (var0 != 1 && var0 != 0) {
-         throw new SocketIOException((int)var0);
+   public static final void checkError(long result) {
+      if (result != 1 && result != 0) {
+         throw new SocketIOException((int)result);
       }
    }
 }

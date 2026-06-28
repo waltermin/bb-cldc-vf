@@ -9,80 +9,80 @@ public class MessagePart {
    private String _contentLocation;
    private String _enc;
 
-   public MessagePart(byte[] var1, int var2, int var3, String var4, String var5, String var6, String var7) {
-      if (var4 != null && var5 != null && var3 >= 0 && var2 >= 0) {
-         if (var1 != null) {
-            if (var2 + var3 > var1.length) {
+   public MessagePart(byte[] contents, int offset, int length, String mimeType, String contentId, String contentLocation, String enc) {
+      if (mimeType != null && contentId != null && length >= 0 && offset >= 0) {
+         if (contents != null) {
+            if (offset + length > contents.length) {
                throw new Object();
             }
 
-            this._contents = new byte[var3];
-            System.arraycopy(var1, var2, this._contents, 0, var3);
+            this._contents = new byte[length];
+            System.arraycopy(contents, offset, this._contents, 0, length);
          }
 
-         this._mimeType = var4;
-         if (var5 != null && !this.isASCII(var5)) {
+         this._mimeType = mimeType;
+         if (contentId != null && !this.isASCII(contentId)) {
             throw new Object();
          }
 
-         if (var6 != null && !this.isASCII(var6)) {
+         if (contentLocation != null && !this.isASCII(contentLocation)) {
             throw new Object();
          }
 
-         this._contentId = var5;
-         this._contentLocation = var6;
-         this._enc = var7;
+         this._contentId = contentId;
+         this._contentLocation = contentLocation;
+         this._enc = enc;
       } else {
          throw new Object();
       }
    }
 
-   public MessagePart(byte[] var1, String var2, String var3, String var4, String var5) {
-      if (var2 == null || var3 == null) {
+   public MessagePart(byte[] contents, String mimeType, String contentId, String contentLocation, String enc) {
+      if (mimeType == null || contentId == null) {
          throw new Object();
       }
 
-      if (var3 != null && !this.isASCII(var3)) {
+      if (contentId != null && !this.isASCII(contentId)) {
          throw new Object();
       }
 
-      if (var4 != null && !this.isASCII(var4)) {
+      if (contentLocation != null && !this.isASCII(contentLocation)) {
          throw new Object();
       }
 
-      if (var1 != null) {
-         this._contents = new byte[var1.length];
-         System.arraycopy(var1, 0, this._contents, 0, var1.length);
+      if (contents != null) {
+         this._contents = new byte[contents.length];
+         System.arraycopy(contents, 0, this._contents, 0, contents.length);
       }
 
-      this._mimeType = var2;
-      this._contentId = var3;
-      this._contentLocation = var4;
-      this._enc = var5;
+      this._mimeType = mimeType;
+      this._contentId = contentId;
+      this._contentLocation = contentLocation;
+      this._enc = enc;
    }
 
-   public MessagePart(InputStream var1, String var2, String var3, String var4, String var5) {
-      if (var2 == null || var3 == null) {
+   public MessagePart(InputStream is, String mimeType, String contentId, String contentLocation, String enc) {
+      if (mimeType == null || contentId == null) {
          throw new Object();
       }
 
-      if (var3 != null && !this.isASCII(var3)) {
+      if (contentId != null && !this.isASCII(contentId)) {
          throw new Object();
       }
 
-      if (var4 != null && !this.isASCII(var4)) {
+      if (contentLocation != null && !this.isASCII(contentLocation)) {
          throw new Object();
       }
 
-      if (var1 != null) {
-         this._contents = new byte[var1.available()];
-         var1.read(this._contents);
+      if (is != null) {
+         this._contents = new byte[is.available()];
+         is.read(this._contents);
       }
 
-      this._mimeType = var2;
-      this._contentId = var3;
-      this._contentLocation = var4;
-      this._enc = var5;
+      this._mimeType = mimeType;
+      this._contentId = contentId;
+      this._contentLocation = contentLocation;
+      this._enc = enc;
    }
 
    public byte[] getContent() {
@@ -113,7 +113,7 @@ public class MessagePart {
       return this._mimeType;
    }
 
-   private boolean isASCII(String var1) {
+   private boolean isASCII(String s) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

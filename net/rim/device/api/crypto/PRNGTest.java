@@ -11,30 +11,30 @@ public final class PRNGTest {
    private PRNGTest() {
    }
 
-   public static final int testPRNG(PseudoRandomSource var0) {
-      if (var0 == null) {
+   public static final int testPRNG(PseudoRandomSource source) {
+      if (source == null) {
          throw new Object();
       } else {
-         return testForRandomness(var0.getBytes(2500));
+         return testForRandomness(source.getBytes(2500));
       }
    }
 
    public static final int testRandomSource() {
-      int var0 = 0;
-      byte[] var1 = new byte[2500];
+      int result = 0;
+      byte[] data = new byte[2500];
 
-      for (int var2 = 0; var2 < 10; var2++) {
-         RandomSource.getBytes(var1);
-         var0 = testForRandomness(var1);
-         if (var0 == 15) {
-            return var0;
+      for (int i = 0; i < 10; i++) {
+         RandomSource.getBytes(data);
+         result = testForRandomness(data);
+         if (result == 15) {
+            return result;
          }
 
          RandomSource.add(SelfTestData.RANDOM_DATA);
-         RandomSource.add(var1);
+         RandomSource.add(data);
       }
 
-      return var0;
+      return result;
    }
 
    static final native int testForRandomness(byte[] var0);

@@ -10,19 +10,19 @@ class Theme$ImageDescriptor {
    private ResourceFetcher _resourceFetcher;
    private EncodedImage _image;
 
-   Theme$ImageDescriptor(String var1, ResourceFetcher var2, boolean var3) {
+   Theme$ImageDescriptor(String name, ResourceFetcher resourceFetcher, boolean isDefault) {
    }
 
    EncodedImage getImage() {
       if (this._image == null) {
-         byte[] var1 = this._resourceFetcher.fetchResource(this._filename);
-         this._image = EncodedImage.createEncodedImage(var1, 0, var1.length);
-         int var2 = (Graphics.getNumColors() > 2 ? 1 : 0) | 4;
+         byte[] bytes = this._resourceFetcher.fetchResource(this._filename);
+         this._image = EncodedImage.createEncodedImage(bytes, 0, bytes.length);
+         int decodeMode = (Graphics.getNumColors() > 2 ? 1 : 0) | 4;
          if (this._name.equals(ThemeConstants.NAVIGATION_UP_ARROW) || this._name.equals(ThemeConstants.NAVIGATION_DOWN_ARROW)) {
-            var2 |= 2;
+            decodeMode |= 2;
          }
 
-         this._image.setDecodeMode(var2);
+         this._image.setDecodeMode(decodeMode);
       }
 
       return this._image;

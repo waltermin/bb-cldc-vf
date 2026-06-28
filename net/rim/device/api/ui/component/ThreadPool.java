@@ -17,38 +17,38 @@ class ThreadPool {
       this._first = 0;
       this._onePastLast = 0;
 
-      for (int var1 = 0; var1 < 2; var1++) {
+      for (int idx = 0; idx < 2; idx++) {
          new ThreadPool$ThreadPoolRunner(this).start();
          this._threadCount++;
       }
    }
 
-   public static void post(Runnable var0) {
-      ThreadPool var1 = _pool;
-      if (var1 == null || var1._threadCount <= 0) {
-         var1 = new ThreadPool();
-         _pool = var1;
+   public static void post(Runnable object) {
+      ThreadPool pool = _pool;
+      if (pool == null || pool._threadCount <= 0) {
+         pool = new ThreadPool();
+         _pool = pool;
       }
 
-      var1.put(var0);
+      pool.put(object);
    }
 
-   private synchronized void put(Runnable var1) {
+   private synchronized void put(Runnable object) {
       if (this._first == 0 && this._onePastLast == this._list.length - 1 || this._first == this._onePastLast + 1) {
-         int var2 = this._list.length;
-         Array.resize(this._list, var2 + 8);
+         int oldLength = this._list.length;
+         Array.resize(this._list, oldLength + 8);
          if (this._first > this._onePastLast) {
-            System.arraycopy(this._list, this._first, this._list, this._first + 8, var2 - this._first);
-            int var3 = this._first;
+            System.arraycopy(this._list, this._first, this._list, this._first + 8, oldLength - this._first);
+            int oldFirst = this._first;
             this._first += 8;
 
-            for (int var4 = var3; var4 < this._first; var4++) {
-               this._list[var4] = null;
+            for (int i = oldFirst; i < this._first; i++) {
+               this._list[i] = null;
             }
          }
       }
 
-      this._list[this._onePastLast] = var1;
+      this._list[this._onePastLast] = object;
       this._onePastLast++;
       if (this._onePastLast >= this._list.length) {
          this._onePastLast = 0;
@@ -59,15 +59,36 @@ class ThreadPool {
    }
 
    private synchronized Runnable get() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (this._onePastLast == this._first) {
+         try {
+            long delta = this._lastTimeUsed + 60000 - System.currentTimeMillis();
+            if (delta <= 0) {
+               return null;
+            }
+
+            super.wait(delta);
+         } catch (InterruptedException var3) {
+         } catch (Exception var4) {
+         }
+      }
+
+      Runnable object = this._list[this._first];
+      this._list[this._first] = null;
+      this._first++;
+      if (this._first >= this._list.length) {
+         this._first = 0;
+      }
+
+      this._lastTimeUsed = System.currentTimeMillis();
+      return object;
    }
 
-   static int access$110(ThreadPool var0) {
+   static int access$110(ThreadPool x0) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   static ThreadPool access$202(ThreadPool var0) {
-      _pool = var0;
-      return var0;
+   static ThreadPool access$202(ThreadPool x0) {
+      _pool = x0;
+      return x0;
    }
 }

@@ -7,7 +7,7 @@ public final class DNSMessageIPv4Question {
    private int _qtype = 1;
    private int _qclass = 1;
 
-   public final void setQname(String var1) {
+   public final void setQname(String qname) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -15,7 +15,7 @@ public final class DNSMessageIPv4Question {
       return this._qname;
    }
 
-   public final void setQtype(int var1) {
+   public final void setQtype(int qtype) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -23,7 +23,7 @@ public final class DNSMessageIPv4Question {
       return this._qtype;
    }
 
-   public final void setQclass(int var1) {
+   public final void setQclass(int qclass) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -31,15 +31,15 @@ public final class DNSMessageIPv4Question {
       return this._qclass;
    }
 
-   final void writeQuestion(DataBuffer var1) {
-      DNSMessageIPv4.writeDomainName(var1, this._qname);
-      var1.writeShort(this._qtype);
-      var1.writeShort(this._qclass);
+   final void writeQuestion(DataBuffer db) {
+      DNSMessageIPv4.writeDomainName(db, this._qname);
+      db.writeShort(this._qtype);
+      db.writeShort(this._qclass);
    }
 
-   final void readQuestion(DataBuffer var1) {
-      this._qname = DNSMessageIPv4.readDomainName(var1);
-      this._qtype = var1.readShort();
-      this._qclass = var1.readShort();
+   final void readQuestion(DataBuffer db) {
+      this._qname = DNSMessageIPv4.readDomainName(db);
+      this._qtype = db.readShort();
+      this._qclass = db.readShort();
    }
 }

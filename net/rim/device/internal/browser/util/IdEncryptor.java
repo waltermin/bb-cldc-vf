@@ -1,5 +1,7 @@
 package net.rim.device.internal.browser.util;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import net.rim.device.api.crypto.RandomSource;
 
 public final class IdEncryptor {
@@ -14,32 +16,39 @@ public final class IdEncryptor {
    private IdEncryptor() {
    }
 
-   public static final String encrypt(String var0, int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String encrypt(String value, int key) {
+      throw new RuntimeException("cod2jar: unsupported opcode");
    }
 
-   private static final void formatAndEncrypt(byte[] var0, byte[] var1, byte[] var2, int var3, int var4, byte[] var5, int var6) {
-      if (var2 != null && var3 >= 0 && var4 >= 0 && var3 + var4 <= var2.length && var5 != null && var6 >= 0 && var6 + 128 <= var5.length && var4 <= 100) {
-         int var7 = 0;
-         var1[var7++] = 0;
-         var1[var7++] = 2;
-         int var8 = var1.length - (3 + var4);
-         RandomSource.getBytes(var1, var7, var8);
+   private static final void formatAndEncrypt(byte[] n, byte[] temp, byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset) {
+      if (input != null
+         && inputOffset >= 0
+         && inputLength >= 0
+         && inputOffset + inputLength <= input.length
+         && output != null
+         && outputOffset >= 0
+         && outputOffset + 128 <= output.length
+         && inputLength <= 100) {
+         int encodedMessageOffset = 0;
+         temp[encodedMessageOffset++] = 0;
+         temp[encodedMessageOffset++] = 2;
+         int randomDataLength = temp.length - (3 + inputLength);
+         RandomSource.getBytes(temp, encodedMessageOffset, randomDataLength);
 
-         for (int var9 = var8; var9 > 0; var9--) {
-            if (var1[var7++] == 0) {
-               byte var10;
+         for (int i = randomDataLength; i > 0; i--) {
+            if (temp[encodedMessageOffset++] == 0) {
+               byte randomByte;
                do {
-                  var10 = (byte)RandomSource.getInt();
-               } while (var10 == 0);
+                  randomByte = (byte)RandomSource.getInt();
+               } while (randomByte == 0);
 
-               var1[var7 - 1] = var10;
+               temp[encodedMessageOffset - 1] = randomByte;
             }
          }
 
-         var1[var7++] = 0;
-         System.arraycopy(var2, var3, var1, var7, var4);
-         nativeRSAPublicKeyOperation(1024, RSA_E, var0, var1, 0, var5, var6);
+         temp[encodedMessageOffset++] = 0;
+         System.arraycopy(input, inputOffset, temp, encodedMessageOffset, inputLength);
+         nativeRSAPublicKeyOperation(1024, RSA_E, n, temp, 0, output, outputOffset);
       } else {
          throw new Object();
       }
@@ -51,7 +60,27 @@ public final class IdEncryptor {
       return getPGPPublicKey(RSA_E, RSA_N_0);
    }
 
-   private static final byte[] getPGPPublicKey(byte[] var0, byte[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final byte[] getPGPPublicKey(byte[] e, byte[] n) {
+      try {
+         ByteArrayOutputStream bytesOut = (ByteArrayOutputStream)(new Object());
+         bytesOut.write(3);
+         long time = System.currentTimeMillis() / 1000;
+         bytesOut.write((int)(time >> 24) & 0xFF);
+         bytesOut.write((int)(time >> 16) & 0xFF);
+         bytesOut.write((int)(time >> 8) & 0xFF);
+         bytesOut.write((int)time & 0xFF);
+         bytesOut.write(1);
+         int length = n.length << 3;
+         bytesOut.write(length >> 8);
+         bytesOut.write(length);
+         bytesOut.write(n);
+         length = e.length << 3;
+         bytesOut.write(length >> 8);
+         bytesOut.write(length);
+         bytesOut.write(e);
+         return bytesOut.toByteArray();
+      } catch (IOException var6) {
+         return null;
+      }
    }
 }

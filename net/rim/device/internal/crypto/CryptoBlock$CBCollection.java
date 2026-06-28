@@ -1,5 +1,6 @@
 package net.rim.device.internal.crypto;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.synchronization.OTASyncPriorityProvider;
@@ -14,8 +15,8 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
    Object[] _key = new Object[1];
    private static final int CURRENT_VERSION;
 
-   CryptoBlock$CBCollection(PersistentObject var1) {
-      this._root = var1;
+   CryptoBlock$CBCollection(PersistentObject root) {
+      this._root = root;
    }
 
    private final boolean isByID() {
@@ -24,34 +25,67 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
 
    @Override
    public final SyncObject[] getSyncObjects() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (CryptoBlock._persistentKeysById) {
+         Hashtable h = (Hashtable)this._root.getContents();
+         if (h != null) {
+            SyncObject[] objs = new SyncObject[h.size()];
+            int curr = 0;
+            Enumeration e = h.elements();
+
+            while (e.hasMoreElements()) {
+               SyncObject so = (SyncObject)e.nextElement();
+               objs[curr++] = so;
+            }
+
+            return objs;
+         }
+      }
+
+      return new SyncObject[0];
    }
 
-   private static final void clearHashtable(PersistentObject var0) {
-      Object var1 = var0.getContents();
-      if (var1 != null) {
-         ((Hashtable)var1).clear();
-         var0.commit();
+   private static final void clearHashtable(PersistentObject root) {
+      Hashtable h = (Hashtable)root.getContents();
+      if (h != null) {
+         h.clear();
+         root.commit();
       }
    }
 
    private final boolean okToInject() {
-      throw new RuntimeException("cod2jar: exception table");
+      int status = CryptoBlock$CryptoBlockKey.sameDeviceKey(this._key[0]);
+      if (status == -1) {
+         return false;
+      }
+
+      if (status == 0) {
+         CryptoBlock$CryptoBlockKey.setDeviceKey(this._key[0], true);
+         synchronized (CryptoBlock._persistentKeysById) {
+            clearHashtable(CryptoBlock._persistentKeysByName);
+            clearHashtable(CryptoBlock._persistentKeysById);
+            return true;
+         }
+      } else {
+         return true;
+      }
    }
 
    @Override
-   public final boolean addSyncObject(SyncObject var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean addSyncObject(SyncObject object) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public final boolean removeSyncObject(SyncObject var1) {
+   public final boolean removeSyncObject(SyncObject object) {
       return true;
    }
 
    @Override
    public final int getSyncObjectCount() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (CryptoBlock._persistentKeysById) {
+         Hashtable h = (Hashtable)this._root.getContents();
+         return h != null ? h.size() : 0;
+      }
    }
 
    @Override
@@ -70,7 +104,7 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
    }
 
    @Override
-   public final String getSyncName(Locale var1) {
+   public final String getSyncName(Locale locale) {
       return this.getSyncName();
    }
 
@@ -90,41 +124,41 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
    }
 
    @Override
-   public final boolean isSyncObjectDirty(SyncObject var1) {
+   public final boolean isSyncObjectDirty(SyncObject object) {
       return true;
    }
 
    @Override
-   public final void setSyncObjectDirty(SyncObject var1) {
+   public final void setSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public final void clearSyncObjectDirty(SyncObject var1) {
+   public final void clearSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public final SyncObject getSyncObject(int var1) {
+   public final SyncObject getSyncObject(int uid) {
       return null;
    }
 
    @Override
-   public final boolean updateSyncObject(SyncObject var1, SyncObject var2) {
+   public final boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
       return false;
    }
 
    @Override
-   public final boolean convert(SyncObject var1, DataBuffer var2, int var3) {
-      return var3 != 1 ? false : CryptoBlock$CryptoBlockKey.convert(var1, var2);
+   public final boolean convert(SyncObject object, DataBuffer buffer, int version) {
+      return version != 1 ? false : CryptoBlock$CryptoBlockKey.convert(object, buffer);
    }
 
    @Override
-   public final SyncObject convert(DataBuffer var1, int var2, int var3) {
-      if (var2 != 1) {
+   public final SyncObject convert(DataBuffer data, int version, int UID) {
+      if (version != 1) {
          return null;
       }
 
       this._key[0] = null;
-      return CryptoBlock$CryptoBlockKey.convert(var1, var3, this._key);
+      return CryptoBlock$CryptoBlockKey.convert(data, UID, this._key);
    }
 
    @Override

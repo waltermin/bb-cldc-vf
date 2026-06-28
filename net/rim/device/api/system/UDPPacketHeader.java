@@ -40,37 +40,37 @@ public final class UDPPacketHeader implements RadioPacketHeader {
       return this._accessPointNumber;
    }
 
-   public final void setSourceAddress(byte[] var1) {
-      this._sourceAddress = IPv4ByteArrayToInt(var1);
+   public final void setSourceAddress(byte[] address) {
+      this._sourceAddress = IPv4ByteArrayToInt(address);
    }
 
-   public final void setDestinationAddress(byte[] var1) {
-      this._destinationAddress = IPv4ByteArrayToInt(var1);
+   public final void setDestinationAddress(byte[] address) {
+      this._destinationAddress = IPv4ByteArrayToInt(address);
    }
 
-   public final void setSourcePort(int var1) {
-      this.checkPortRange(var1);
-      this._sourcePort = var1;
+   public final void setSourcePort(int sourcePort) {
+      this.checkPortRange(sourcePort);
+      this._sourcePort = sourcePort;
    }
 
-   public final void setDestinationPort(int var1) {
-      this.checkPortRange(var1);
-      this._destinationPort = var1;
+   public final void setDestinationPort(int destinationPort) {
+      this.checkPortRange(destinationPort);
+      this._destinationPort = destinationPort;
    }
 
-   public final void setAccessPointNumber(int var1) {
+   public final void setAccessPointNumber(int accessPointNumber) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private final void checkPortRange(int var1) {
+   private final void checkPortRange(int port) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final byte[] IPv4IntToByteArray(int var0) {
-      return new byte[]{(byte)(var0 >>> 24 & 0xFF), (byte)(var0 >>> 16 & 0xFF), (byte)(var0 >>> 8 & 0xFF), (byte)(var0 & 0xFF)};
+   public static final byte[] IPv4IntToByteArray(int address) {
+      return new byte[]{(byte)(address >>> 24 & 0xFF), (byte)(address >>> 16 & 0xFF), (byte)(address >>> 8 & 0xFF), (byte)(address & 0xFF)};
    }
 
-   public static final int IPv4ByteArrayToInt(byte[] var0) {
+   public static final int IPv4ByteArrayToInt(byte[] address) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

@@ -23,8 +23,8 @@ public class CollectionListField extends ListField implements FocusChangeListene
    private String[] _extraRowName;
    private boolean _isExtraRowAtBottom = false;
 
-   public void addExtraRowName(String var1) {
-      Arrays.add(this._extraRowName, var1);
+   public void addExtraRowName(String extraRowName) {
+      Arrays.add(this._extraRowName, extraRowName);
    }
 
    protected void doUpdateList() {
@@ -32,23 +32,47 @@ public class CollectionListField extends ListField implements FocusChangeListene
    }
 
    public void updateList() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._updaterRunnable) {
+         if (this._updaterRunnable._isQueued) {
+            this._updaterRunnable.requeue(this._application);
+         } else {
+            this._updaterRunnable._isQueued = true;
+            this._application.invokeLater(this._updaterRunnable);
+         }
+      }
    }
 
-   public void setList(ReadableList var1) {
+   public void setList(ReadableList newList) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void setExtraRowAtBottom(boolean var1) {
+   public void setExtraRowAtBottom(boolean isExtraRowAtBottom) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setElementWithFocus(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setElementWithFocus(Object element) {
+      Application thisApplication = this.getApplication();
+      if (this._application == thisApplication && Application.isEventDispatchThread()) {
+         this.doSetElementWithFocus(element);
+      } else {
+         synchronized (this._focusedElementRunnable) {
+            this._focusedElementRunnable._element = element;
+            if (!this._focusedElementRunnable._isQueued) {
+               this._focusedElementRunnable._isQueued = true;
+               this._application.invokeLater(this._focusedElementRunnable);
+            }
+         }
+      }
    }
 
-   public Object getElementAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Object getElementAt(int index) {
+      try {
+         return this._list.getAt(index - this.getExtraRowCount());
+      } catch (ArrayIndexOutOfBoundsException var3) {
+         return null;
+      } catch (NullPointerException var4) {
+         return null;
+      }
    }
 
    public Object getElementWithFocus() {
@@ -59,9 +83,9 @@ public class CollectionListField extends ListField implements FocusChangeListene
       return this._extraRowCount;
    }
 
-   public void setExtraRowCount(int var1) {
-      if (this._extraRowCount != var1) {
-         this._extraRowCount = var1;
+   public void setExtraRowCount(int newCount) {
+      if (this._extraRowCount != newCount) {
+         this._extraRowCount = newCount;
          this.setSize(this.getListSize());
          this._extraRowName = new String[this._extraRowCount];
       }
@@ -76,107 +100,111 @@ public class CollectionListField extends ListField implements FocusChangeListene
    }
 
    @Override
-   public void reset(Collection var1) {
+   public void reset(Collection collection) {
       this.updateList();
    }
 
    @Override
-   public void focusChanged(Field var1, int var2) {
+   public void focusChanged(Field field, int action) {
       this.setElementWithFocus(this.getElementAt(this.getSelectedIndex()));
    }
 
    @Override
-   public void elementUpdated(Collection var1, Object var2, Object var3) {
-      if (this._elementWithFocus == var2) {
-         this.setElementWithFocus(var3);
+   public void elementUpdated(Collection collection, Object oldElement, Object newElement) {
+      if (this._elementWithFocus == oldElement) {
+         this.setElementWithFocus(newElement);
       }
 
       this.updateList();
    }
 
    @Override
-   public void elementRemoved(Collection var1, Object var2) {
-      if (this._elementWithFocus == var2) {
-         int var3 = this.getSelectedIndex();
-         if (this._list != null && var3 == this._list.size()) {
-            var3--;
+   public void elementRemoved(Collection collection, Object element) {
+      if (this._elementWithFocus == element) {
+         int index = this.getSelectedIndex();
+         if (this._list != null && index == this._list.size()) {
+            index--;
          }
 
-         this.setElementWithFocus(this.getElementAt(var3));
+         this.setElementWithFocus(this.getElementAt(index));
       }
 
       this.updateList();
    }
 
    @Override
-   public void elementAdded(Collection var1, Object var2) {
+   public void elementAdded(Collection collection, Object element) {
       this.updateList();
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    private Application getApplication() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         return Application.getApplication();
+      } catch (Throwable e) {
+         return null;
+      }
    }
 
-   public CollectionListField(ReadableList var1, ListFieldCallback var2, long var3) {
-      super(0, var3);
+   public CollectionListField(ReadableList list, ListFieldCallback listCallback, long style) {
+      super(0, style);
       this._application = Application.getApplication();
       this._collectionListener = (WeakReference)(new Object(this));
       this._updaterRunnable = new CollectionListField$UpdaterRunnable(this);
       this._focusedElementRunnable = new CollectionListField$SetFocusedElementRunnable(this);
-      if (var2 != null) {
-         this.setCallback(var2);
+      if (listCallback != null) {
+         this.setCallback(listCallback);
       }
 
-      this.setList(var1);
+      this.setList(list);
       this.setFocusListener(this);
       this.setSize(this.getListSize());
    }
 
-   private void doSetElementWithFocus(Object var1) {
-      this._elementWithFocus = var1;
-      if (var1 != null && var1 != this.getSelectedElement() && this._list != null) {
-         int var2 = this._list.getIndex(var1);
-         if (var2 != -1) {
-            this.setSelectedIndex(var2 + this.getExtraRowCount());
+   private void doSetElementWithFocus(Object element) {
+      this._elementWithFocus = element;
+      if (element != null && element != this.getSelectedElement() && this._list != null) {
+         int index = this._list.getIndex(element);
+         if (index != -1) {
+            this.setSelectedIndex(index + this.getExtraRowCount());
          }
       }
    }
 
    @Override
-   public void setSize(int var1) {
+   public void setSize(int count) {
       if (this._list != null) {
-         int var2 = -1;
+         int index = -1;
          if (this._elementWithFocus != null) {
-            var2 = this._list.getIndex(this._elementWithFocus);
+            index = this._list.getIndex(this._elementWithFocus);
          }
 
-         if (var2 == -1) {
-            var2 = this.getExtraRowCount();
+         if (index == -1) {
+            index = this.getExtraRowCount();
             this.setElementWithFocus(null);
          } else {
-            var2 += this.getExtraRowCount();
+            index += this.getExtraRowCount();
          }
 
-         this.setSize(var1, var2);
+         this.setSize(count, index);
       }
    }
 
    @Override
-   public void setSize(int var1, int var2) {
+   public void setSize(int count, int index) {
       if (this._list != null) {
-         if (var1 == 0 && this.getEmptyString() != null) {
-            var1++;
+         if (count == 0 && this.getEmptyString() != null) {
+            count++;
          }
 
-         var1 += this.getExtraRowCount();
-         int var3 = this.getSize();
-         super.setSize(var1, var2);
-         if (var3 == 0 && var1 > 0 && this.getManager() != null) {
+         count += this.getExtraRowCount();
+         int beforeCount = this.getSize();
+         super.setSize(count, index);
+         if (beforeCount == 0 && count > 0 && this.getManager() != null) {
             this.setFocus();
          }
 
@@ -186,8 +214,8 @@ public class CollectionListField extends ListField implements FocusChangeListene
       }
    }
 
-   public CollectionListField(ReadableList var1, ListFieldCallback var2) {
-      this(var1, var2, 0);
+   public CollectionListField(ReadableList list, ListFieldCallback listCallback) {
+      this(list, listCallback, 0);
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
    }
 }

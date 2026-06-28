@@ -17,8 +17,8 @@ public final class Font {
    public static final int FONT_STATIC_TEXT;
    public static final int FONT_INPUT_TEXT;
 
-   public static final Font getFont(int var0) {
-      switch (var0) {
+   public static final Font getFont(int fontSpecifier) {
+      switch (fontSpecifier) {
          case -1:
             throw new Object();
          case 0:
@@ -28,8 +28,8 @@ public final class Font {
       }
    }
 
-   Font(net.rim.device.api.ui.Font var1) {
-      this._font = var1;
+   Font(net.rim.device.api.ui.Font font) {
+      this._font = font;
    }
 
    final net.rim.device.api.ui.Font getPeer() {
@@ -37,42 +37,42 @@ public final class Font {
    }
 
    public static final Font getDefaultFont() {
-      net.rim.device.api.ui.Font var0 = net.rim.device.api.ui.Font.getDefault();
-      if (_rimDefaultFont != var0) {
-         _rimDefaultFont = var0;
-         _defaultFont = new Font(var0);
+      net.rim.device.api.ui.Font rimDefaultFont = net.rim.device.api.ui.Font.getDefault();
+      if (_rimDefaultFont != rimDefaultFont) {
+         _rimDefaultFont = rimDefaultFont;
+         _defaultFont = new Font(rimDefaultFont);
       }
 
       return _defaultFont;
    }
 
-   public static final Font getFont(int var0, int var1, int var2) {
+   public static final Font getFont(int face, int style, int size) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public final int getStyle() {
-      byte var1 = 0;
+      int style = 0;
       if (this._font.isBold()) {
-         var1 |= 1;
+         style |= 1;
       }
 
       if (this._font.isItalic()) {
-         var1 |= 2;
+         style |= 2;
       }
 
       if (this._font.isUnderlined()) {
-         var1 |= 4;
+         style |= 4;
       }
 
-      return var1;
+      return style;
    }
 
    public final int getSize() {
-      int var1 = this._font.getHeight(3);
-      if (var1 <= 8) {
+      int size = this._font.getHeight(3);
+      if (size <= 8) {
          return 8;
       } else {
-         return var1 <= 10 ? 0 : 16;
+         return size <= 10 ? 0 : 16;
       }
    }
 
@@ -104,23 +104,35 @@ public final class Font {
       return this._font.getAscent();
    }
 
-   public final int charWidth(char var1) {
-      return this._font.getAdvance(var1);
+   public final int charWidth(char ch) {
+      return this._font.getAdvance(ch);
    }
 
-   public final int charsWidth(char[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public final int stringWidth(String var1) {
-      if (var1 == null) {
+   public final int charsWidth(char[] ch, int offset, int length) {
+      if (ch == null) {
          throw new Object();
+      }
+
+      if (offset >= 0 && offset <= ch.length && offset + length <= ch.length && length >= 0 && length <= ch.length) {
+         try {
+            return this._font.getAdvance(ch, offset, length);
+         } catch (IllegalArgumentException iae) {
+            throw new Object();
+         }
       } else {
-         return this._font.getAdvance(var1);
+         throw new Object();
       }
    }
 
-   public final int substringWidth(String var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int stringWidth(String str) {
+      if (str == null) {
+         throw new Object();
+      } else {
+         return this._font.getAdvance(str);
+      }
+   }
+
+   public final int substringWidth(String str, int offset, int len) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

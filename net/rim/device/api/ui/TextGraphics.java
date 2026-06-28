@@ -19,10 +19,10 @@ public class TextGraphics {
    private int[] _transform;
    private static FontMetrics _fontMetrics;
 
-   public TextGraphics(String var1, int var2) {
+   public TextGraphics(String typefaceName, int height) {
    }
 
-   public TextGraphics(Font var1) {
+   public TextGraphics(Font font) {
    }
 
    public int getAntialiasMode() {
@@ -68,94 +68,94 @@ public class TextGraphics {
       return this._effectsFillColor;
    }
 
-   public void setStyle(int var1) {
+   public void setStyle(int aStyle) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setHeight(int var1) {
+   public void setHeight(int aHeight) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setHeightWithLeading(int var1) {
+   public void setHeightWithLeading(int aHeight) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private native int _convertToFontEngineSize(int var1);
 
-   public void setTransform(int[] var1) {
+   public void setTransform(int[] transform) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setTransform(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this._A = var1;
-      this._B = var2;
-      this._C = var3;
-      this._D = var4;
-      this._Tx = var5;
-      this._Ty = var6;
+   public void setTransform(int a, int b, int c, int d, int tx, int ty) {
+      this._A = a;
+      this._B = b;
+      this._C = c;
+      this._D = d;
+      this._Tx = tx;
+      this._Ty = ty;
    }
 
-   public void setEffects(int var1) {
+   public void setEffects(int aEffects) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setAntialiasingMode(int var1) {
+   public void setAntialiasingMode(int aMode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setEffectsStrokeColor(int var1) {
+   public void setEffectsStrokeColor(int color) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setEffectsFillColor(int var1) {
+   public void setEffectsFillColor(int color) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setFontSpec(Font var1) {
+   public void setFontSpec(Font font) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setTypefaceName(String var1) {
+   public void setTypefaceName(String typefaceName) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public int measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
+   public int measureText(String text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private native int _measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public int measureText(StringBufferGap var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
+   public int measureText(StringBufferGap text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private native int _measureText(StringBufferGap var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public int measureText(StringBuffer var1, int var2, int var3, DrawTextParam var4, TextMetrics var5) {
+   public int measureText(StringBuffer text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private native int _measureText(StringBuffer var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
-   public void getFontMetrics(FontMetrics var1) {
+   public void getFontMetrics(FontMetrics aFontMetrics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private native void _getFontMetrics(FontMetrics var1);
 
-   public int drawText(Graphics var1, String var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8) {
+   public int drawText(Graphics graphics, String aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    private native int _drawText(Graphics var1, String var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);
 
-   public int drawText(Graphics var1, StringBuffer var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8) {
+   public int drawText(Graphics graphics, StringBuffer aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    private native int _drawText(Graphics var1, StringBuffer var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);
 
-   public int drawText(Graphics var1, StringBufferGap var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8) {
+   public int drawText(Graphics graphics, StringBufferGap aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

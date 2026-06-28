@@ -21,26 +21,26 @@ final class PopupChoice extends BasicChoice {
    }
 
    @Override
-   final Field addToForm(FieldChangeListener var1) {
-      super._changeListener = var1;
+   final Field addToForm(FieldChangeListener changeListener) {
+      super._changeListener = changeListener;
       this._popupContainer.setChangeListener(null);
-      this._popupContainer.setChangeListener(var1);
+      this._popupContainer.setChangeListener(changeListener);
       return super._container;
    }
 
    @Override
-   protected final String doGetString(int var1) {
-      return this._popupStrings[var1];
+   protected final String doGetString(int elementNum) {
+      return this._popupStrings[elementNum];
    }
 
    @Override
-   protected final Image doGetImage(int var1) {
-      BitmapField var2 = this._popupImages[var1];
-      return var2 != null ? (Image)var2.getCookie() : null;
+   protected final Image doGetImage(int elementNum) {
+      BitmapField imageElement = this._popupImages[elementNum];
+      return imageElement != null ? (Image)imageElement.getCookie() : null;
    }
 
-   public final void setCookie(Object var1) {
-      this._popup.setCookie(var1);
+   public final void setCookie(Object cookie) {
+      this._popup.setCookie(cookie);
    }
 
    @Override
@@ -49,18 +49,18 @@ final class PopupChoice extends BasicChoice {
    }
 
    @Override
-   public final void setLayout(int var1) {
+   public final void setLayout(int layout) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected final void doInsert(int var1, String var2, Image var3) {
-      Arrays.insertAt(this._popupStrings, var2, var1);
-      if (var3 != null) {
-         Arrays.insertAt(this._popupImages, new Object(var3.getBitmap()), var1);
-         this._popupImages[var1].setCookie(var3);
+   protected final void doInsert(int elementNum, String stringElement, Image imageElement) {
+      Arrays.insertAt(this._popupStrings, stringElement, elementNum);
+      if (imageElement != null) {
+         Arrays.insertAt(this._popupImages, new Object(imageElement.getBitmap()), elementNum);
+         this._popupImages[elementNum].setCookie(imageElement);
       } else {
-         Arrays.insertAt(this._popupImages, null, var1);
+         Arrays.insertAt(this._popupImages, null, elementNum);
       }
 
       if (this.size() == 0) {
@@ -80,9 +80,9 @@ final class PopupChoice extends BasicChoice {
    }
 
    @Override
-   protected final void doDelete(int var1) {
-      Arrays.removeAt(this._popupStrings, var1);
-      Arrays.removeAt(this._popupImages, var1);
+   protected final void doDelete(int elementNum) {
+      Arrays.removeAt(this._popupStrings, elementNum);
+      Arrays.removeAt(this._popupImages, elementNum);
       this._popup.setChoices(this._popupStrings);
       if (this.size() > 0) {
          this._popup.setSelectedIndex(0);
@@ -94,46 +94,46 @@ final class PopupChoice extends BasicChoice {
    }
 
    @Override
-   protected final void doSet(int var1, String var2, Image var3) {
-      int var4 = this.getSelectedIndex();
-      this._popupStrings[var1] = var2;
-      this._popupImages[var1] = (BitmapField)(new Object(var3.getBitmap()));
+   protected final void doSet(int elementNum, String stringPart, Image imagePart) {
+      int selectedIndex = this.getSelectedIndex();
+      this._popupStrings[elementNum] = stringPart;
+      this._popupImages[elementNum] = (BitmapField)(new Object(imagePart.getBitmap()));
       this._popup.setChoices(this._popupStrings);
-      this._popup.setSelectedIndex(var4);
+      this._popup.setSelectedIndex(selectedIndex);
    }
 
    @Override
-   protected final boolean doIsSelected(int var1) {
-      return super._currentlySelectedIndex == var1;
+   protected final boolean doIsSelected(int elementNum) {
+      return super._currentlySelectedIndex == elementNum;
    }
 
    @Override
-   protected final void doSetSelectedIndex(int var1, boolean var2) {
-      if (var2) {
-         this._popup.setSelectedIndex(var1);
+   protected final void doSetSelectedIndex(int elementNum, boolean selected) {
+      if (selected) {
+         this._popup.setSelectedIndex(elementNum);
       }
    }
 
    @Override
-   protected final void doSetSelectedFlags(boolean[] var1) {
-      int var2 = this.size();
-      int var3 = 0;
+   protected final void doSetSelectedFlags(boolean[] selectedArray) {
+      int count = this.size();
+      int i = 0;
 
-      while (var3 < var2 && !var1[var3]) {
-         var3++;
+      while (i < count && !selectedArray[i]) {
+         i++;
       }
 
-      if (var3 == var2) {
-         var3 = 0;
+      if (i == count) {
+         i = 0;
       }
 
-      this._popup.setSelectedIndex(var3);
+      this._popup.setSelectedIndex(i);
    }
 
    @Override
-   protected final void setFieldFont(net.rim.device.api.ui.Font var1, int var2) {
-      if (super._currentlySelectedIndex == var2) {
-         this._popup.setFont(var1);
+   protected final void setFieldFont(net.rim.device.api.ui.Font font, int elementNum) {
+      if (super._currentlySelectedIndex == elementNum) {
+         this._popup.setFont(font);
       }
    }
 }

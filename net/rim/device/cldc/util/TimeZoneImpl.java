@@ -35,26 +35,26 @@ final class TimeZoneImpl extends TimeZone {
    private static final byte[] staticMonthLength;
 
    TimeZoneImpl(
-      String var1,
-      int var2,
-      int var3,
-      int var4,
-      int var5,
-      int var6,
-      int var7,
-      int var8,
-      int var9,
-      int var10,
-      int var11,
-      int var12,
-      int var13,
-      int var14,
-      boolean var15
+      String initZoneID,
+      int initGMTOffset,
+      int initDSTAmount,
+      int initStartMode,
+      int initStartMonth,
+      int initStartDayOfWeek,
+      int initStartDay,
+      int initStartTime,
+      int initEndMode,
+      int initEndMonth,
+      int initEndDayOfWeek,
+      int initEndDay,
+      int initEndTime,
+      int initSerialSyncID,
+      boolean observeDST
    ) {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object other) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -64,63 +64,75 @@ final class TimeZoneImpl extends TimeZone {
    }
 
    @Override
-   public final synchronized int getOffset(int var1, int var2, int var3, int var4, int var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final int compareToRule(int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, boolean var11) {
-      if (var1 < var7) {
+   private final int compareToRule(
+      int month,
+      int monthLen,
+      int dayOfMonth,
+      int dayOfWeek,
+      int millis,
+      int ruleMode,
+      int ruleMonth,
+      int ruleDayOfWeek,
+      int ruleDay,
+      int ruleMillis,
+      boolean start
+   ) {
+      if (month < ruleMonth) {
          return -1;
       }
 
-      if (var1 > var7) {
+      if (month > ruleMonth) {
          return 1;
       }
 
-      int var12;
-      if (var11) {
-         var12 = this._c_ruleDayStart;
+      int ruleDayOfMonth;
+      if (start) {
+         ruleDayOfMonth = this._c_ruleDayStart;
       } else {
-         var12 = this._c_ruleDayEnd;
+         ruleDayOfMonth = this._c_ruleDayEnd;
       }
 
-      if (var12 == -1) {
-         switch (var6) {
+      if (ruleDayOfMonth == -1) {
+         switch (ruleMode) {
             case 0:
                break;
             case 1:
-               if (var9 > 0) {
-                  var12 = 1 + (var9 - 1) * 7 + (7 + var8 - (var4 - var3 + 1)) % 7;
+               if (ruleDay > 0) {
+                  ruleDayOfMonth = 1 + (ruleDay - 1) * 7 + (7 + ruleDayOfWeek - (dayOfWeek - dayOfMonth + 1)) % 7;
                } else {
-                  var12 = var2 + (var9 + 1) * 7 - (7 + (var4 + var2 - var3) - var8) % 7;
+                  ruleDayOfMonth = monthLen + (ruleDay + 1) * 7 - (7 + (dayOfWeek + monthLen - dayOfMonth) - ruleDayOfWeek) % 7;
                }
                break;
             case 2:
             default:
-               var12 = var9;
+               ruleDayOfMonth = ruleDay;
                break;
             case 3:
-               var12 = var9 + (49 + var8 - var9 - var4 + var3) % 7;
+               ruleDayOfMonth = ruleDay + (49 + ruleDayOfWeek - ruleDay - dayOfWeek + dayOfMonth) % 7;
                break;
             case 4:
-               var12 = var9 - (49 - var8 + var9 + var4 - var3) % 7;
+               ruleDayOfMonth = ruleDay - (49 - ruleDayOfWeek + ruleDay + dayOfWeek - dayOfMonth) % 7;
          }
 
-         if (var11) {
-            this._c_ruleDayStart = var12;
+         if (start) {
+            this._c_ruleDayStart = ruleDayOfMonth;
          } else {
-            this._c_ruleDayEnd = var12;
+            this._c_ruleDayEnd = ruleDayOfMonth;
          }
       }
 
-      if (var3 < var12) {
+      if (dayOfMonth < ruleDayOfMonth) {
          return -1;
-      } else if (var3 > var12) {
+      } else if (dayOfMonth > ruleDayOfMonth) {
          return 1;
-      } else if (var5 < var10) {
+      } else if (millis < ruleMillis) {
          return -1;
       } else {
-         return var5 > var10 ? 1 : 0;
+         return millis > ruleMillis ? 1 : 0;
       }
    }
 

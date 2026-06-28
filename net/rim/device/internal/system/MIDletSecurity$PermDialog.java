@@ -14,19 +14,19 @@ class MIDletSecurity$PermDialog extends PopupDialog {
    private Field _noButton;
    int _setting;
 
-   MIDletSecurity$PermDialog(int var1, int var2, ApplicationDescriptor var3, String var4) {
+   MIDletSecurity$PermDialog(int perm, int setting, ApplicationDescriptor descriptor, String target) {
       super((Manager)(new Object()), 33554432);
       this.setStatusPriority(-2147483643);
-      String var5 = this.getMessage(var1, var3, var4);
-      String[] var6 = CommonResource.getStringArray(10012);
+      String message = this.getMessage(perm, descriptor, target);
+      String[] yesNo = CommonResource.getStringArray(10012);
       this._dfm = (DialogFieldManager)this.getDelegate();
-      Object var7 = new Object(var5, 45035996273704960L);
-      this._dfm.setMessage((RichTextField)var7);
-      this._yesButton = (Field)(new Object(var6[0]));
+      RichTextField label = (RichTextField)(new Object(message, 45035996273704960L));
+      this._dfm.setMessage(label);
+      this._yesButton = (Field)(new Object(yesNo[0]));
       this._dfm.addCustomField(this._yesButton);
-      this._noButton = (Field)(new Object(var6[1]));
+      this._noButton = (Field)(new Object(yesNo[1]));
       this._dfm.addCustomField(this._noButton);
-      switch (var2) {
+      switch (setting) {
          case 2:
             this._yesButton.setFocus();
             break;
@@ -37,27 +37,27 @@ class MIDletSecurity$PermDialog extends PopupDialog {
       this._setting = 0;
    }
 
-   private String getMessage(int var1, ApplicationDescriptor var2, String var3) {
+   private String getMessage(int perm, ApplicationDescriptor descriptor, String target) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      return this.doAction() ? true : super.trackwheelClick(var1, var2);
+   protected boolean trackwheelClick(int status, int time) {
+      return this.doAction() ? true : super.trackwheelClick(status, time);
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      return var1 == '\n' && this.doAction() ? true : super.keyChar(var1, var2, var3);
+   protected boolean keyChar(char c, int status, int time) {
+      return c == '\n' && this.doAction() ? true : super.keyChar(c, status, time);
    }
 
    private boolean doAction() {
-      Field var1 = this._dfm.getLeafFieldWithFocus();
-      if (var1 == this._yesButton) {
+      Field f = this._dfm.getLeafFieldWithFocus();
+      if (f == this._yesButton) {
          this._setting = 6;
          this.close(0);
          return true;
-      } else if (var1 == this._noButton) {
+      } else if (f == this._noButton) {
          this._setting = 0;
          this.close(0);
          return true;

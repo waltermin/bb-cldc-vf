@@ -10,35 +10,35 @@ public class EditField extends BasicEditField {
       this(null, null, 1000000, validateStyle(0));
    }
 
-   public EditField(long var1) {
-      this(null, null, 1000000, validateStyle(var1));
+   public EditField(long style) {
+      this(null, null, 1000000, validateStyle(style));
    }
 
-   public EditField(String var1, String var2) {
-      this(var1, var2, 1000000, validateStyle(0));
+   public EditField(String label, String initialValue) {
+      this(label, initialValue, 1000000, validateStyle(0));
    }
 
-   public EditField(String var1, String var2, int var3, long var4) {
-      super(var1, var2, var3, validateStyle(var4));
+   public EditField(String label, String initialValue, int maxNumChars, long style) {
+      super(label, initialValue, maxNumChars, validateStyle(style));
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      int var3 = Keypad.key(var1);
-      int var4 = Keypad.status(var1);
-      char var5 = Character.toUpperCase(Keypad.map(var3, var4));
-      this.setLastKeyPressed(var5);
+   protected boolean keyDown(int keycode, int time) {
+      int key = Keypad.key(keycode);
+      int status = Keypad.status(keycode);
+      int newKey = Character.toUpperCase(Keypad.map(key, status));
+      this.setLastKeyPressed(newKey);
       this._rollerCharacterIndex = -1;
-      return super.keyDown(var1, var2);
+      return super.keyDown(keycode, time);
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      return !this.isEditable() ? false : super.keyRepeat(var1, var2);
+   protected boolean keyRepeat(int keycode, int time) {
+      return !this.isEditable() ? false : super.keyRepeat(keycode, time);
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
+   protected int moveFocus(int amount, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -46,19 +46,19 @@ public class EditField extends BasicEditField {
       return this._rollerCharacterIndex != -1;
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 3298534883328L) == 0) {
-         var0 |= 1099511627776L;
+   private static long validateStyle(long style) {
+      if ((style & 3298534883328L) == 0) {
+         style |= 1099511627776L;
       }
 
-      return var0;
+      return style;
    }
 
    protected int getLastKeyPressed() {
       return this._lastKeyPressed;
    }
 
-   protected void setLastKeyPressed(int var1) {
+   protected void setLastKeyPressed(int key) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

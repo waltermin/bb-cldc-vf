@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.internal.proxy.Proxy;
 
 public class MethodRunnable implements Runnable {
@@ -20,8 +21,8 @@ public class MethodRunnable implements Runnable {
    }
 
    public void runOnProxy() {
-      Proxy var1 = Proxy.getInstance();
-      var1.invokeAndWait(this);
+      Application proxy = Proxy.getInstance();
+      proxy.invokeAndWait(this);
    }
 
    public int getIntegerResult() {
@@ -30,6 +31,10 @@ public class MethodRunnable implements Runnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         this.call();
+      } catch (Throwable t) {
+         this._throwable = t;
+      }
    }
 }

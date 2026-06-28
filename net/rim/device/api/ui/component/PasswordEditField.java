@@ -13,18 +13,18 @@ public class PasswordEditField extends BasicEditField {
       this(null, null);
    }
 
-   public PasswordEditField(String var1, String var2) {
-      this(var1, var2, 1000000, 536870912);
+   public PasswordEditField(String label, String initialValue) {
+      this(label, initialValue, 1000000, 536870912);
    }
 
-   public PasswordEditField(String var1, String var2, int var3, long var4) {
+   public PasswordEditField(String label, String initialValue, int maxNumChars, long style) {
    }
 
    @Override
    protected StringBufferGap getDisplayText() {
-      char[] var1 = new char[super._text.length()];
-      Arrays.fill(var1, '*');
-      return (StringBufferGap)(new Object((String)(new Object(var1))));
+      char[] buffer = new char[super._text.length()];
+      Arrays.fill(buffer, '*');
+      return (StringBufferGap)(new Object((String)(new Object(buffer))));
    }
 
    @Override
@@ -33,18 +33,18 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      int var3 = Keypad.key(var1);
-      return !Trackball.isSupported() || var3 != 273;
+   protected boolean keyRepeat(int keycode, int time) {
+      int key = Keypad.key(keycode);
+      return !Trackball.isSupported() || key != 273;
    }
 
    @Override
-   protected void notifyTextChanged(FormatParams var1, boolean var2) {
-      if (var2) {
-         int var3 = this.getLabelLength();
-         if (var1._changedTextStart + var1._newLength > var3) {
-            int var4 = Math.max(var1._changedTextStart, var3);
-            this.setAttrib(var4, var1._changedTextStart + var1._newLength, 268435456, 268435456, 0, 0);
+   protected void notifyTextChanged(FormatParams aParams, boolean aIsInsertionOrDeletion) {
+      if (aIsInsertionOrDeletion) {
+         int labelLen = this.getLabelLength();
+         if (aParams._changedTextStart + aParams._newLength > labelLen) {
+            int from = Math.max(aParams._changedTextStart, labelLen);
+            this.setAttrib(from, aParams._changedTextStart + aParams._newLength, 268435456, 268435456, 0, 0);
             if (this.getComposedTextStart() != this.getComposedTextEnd()) {
                this.setAttrib(this.getComposedTextStart(), this.getComposedTextEnd(), 0, 268435456, 0, 0);
             }
@@ -57,19 +57,19 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public final void selectionCopy(Clipboard var1) {
+   public final void selectionCopy(Clipboard cb) {
    }
 
-   private static long verifyStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long verifyStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      return var0;
+      return style;
    }
 
    @Override
@@ -83,22 +83,22 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public int backspace(int var1) {
+   public int backspace(int count) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected int backspace(int var1, int var2) {
+   protected int backspace(int count, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public char charAt(int var1) {
+   public char charAt(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void clear(int var1) {
+   public void clear(int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -148,12 +148,12 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public String getText(int var1, int var2) {
+   public String getText(int offset, int length) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void getText(int var1, int var2, char[] var3, int var4) {
+   public void getText(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -168,12 +168,12 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public int insert(String var1) {
+   public int insert(String text) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected int insert(String var1, int var2) {
+   protected int insert(String text, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -183,27 +183,27 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public void setLabel(String var1) {
+   public void setLabel(String newLabel) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void update(int var1) {
+   protected void update(int delta) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setMaxSize(int var1) {
+   public void setMaxSize(int maxSize) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setCursorPosition(int var1) {
+   public void setCursorPosition(int offset) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void setCursorPosition(int var1, int var2) {
+   protected void setCursorPosition(int offset, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
@@ -213,17 +213,17 @@ public class PasswordEditField extends BasicEditField {
    }
 
    @Override
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   public void setText(String var1) {
+   public void setText(String text) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void setText(String var1, int var2) {
+   protected void setText(String text, int context) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 }

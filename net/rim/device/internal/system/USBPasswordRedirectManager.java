@@ -1,6 +1,7 @@
 package net.rim.device.internal.system;
 
 import java.util.Vector;
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.SystemListener2;
@@ -49,9 +50,9 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
       return this._channels;
    }
 
-   public void addToDisallowedChannels(String var1) {
-      if (!this._disallowedChannels.contains(var1)) {
-         this._disallowedChannels.addElement(var1);
+   public void addToDisallowedChannels(String channelName) {
+      if (!this._disallowedChannels.contains(channelName)) {
+         this._disallowedChannels.addElement(channelName);
       }
    }
 
@@ -59,25 +60,25 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
       return this._isRadioAllowedOn;
    }
 
-   public synchronized void allowRedirects(boolean var1) {
+   public synchronized void allowRedirects(boolean allow) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void clearChannels(boolean var1) {
+   public synchronized void clearChannels(boolean allow) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void allowChannel(int var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void allowChannel(int channel, boolean allow) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void connectionAuthenticationRequired(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void connectionAuthenticationRequired(int channel) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public synchronized void disconnected(int var1) {
+   public synchronized void disconnected(int channel) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -91,11 +92,11 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
    }
 
    @Override
-   public void receiveError(int var1) {
+   public void receiveError(int error) {
    }
 
    @Override
-   public void dataReceived(int var1) {
+   public void dataReceived(int length) {
    }
 
    @Override
@@ -103,7 +104,7 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
    }
 
    @Override
-   public void patternReceived(byte[] var1) {
+   public void patternReceived(byte[] pattern) {
    }
 
    @Override
@@ -119,7 +120,7 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
    }
 
    @Override
-   public void usbConnectionStateChange(int var1) {
+   public void usbConnectionStateChange(int state) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -140,15 +141,15 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
    }
 
    @Override
-   public void batteryStatusChange(int var1) {
+   public void batteryStatusChange(int status) {
    }
 
    @Override
-   public void powerOffRequested(int var1) {
+   public void powerOffRequested(int reason) {
    }
 
    @Override
-   public void cradleMismatch(boolean var1) {
+   public void cradleMismatch(boolean mismatch) {
    }
 
    @Override
@@ -156,15 +157,15 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
    }
 
    @Override
-   public void backlightStateChange(boolean var1) {
+   public void backlightStateChange(boolean on) {
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == 8508406279413621091L || var1 == -594020114676189989L) {
-         int var7 = USBPortInternal.getConnectionState();
-         if (var7 != -1) {
-            this.checkState(var7);
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 8508406279413621091L || guid == -594020114676189989L) {
+         int state = USBPortInternal.getConnectionState();
+         if (state != -1) {
+            this.checkState(state);
          }
       }
    }
@@ -180,23 +181,32 @@ public class USBPasswordRedirectManager implements SystemListener2, USBPortListe
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void connectionAuthenticationRequiredPrivate(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void connectionAuthenticationRequiredPrivate(int channel) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void checkState(int var1) {
+   private void checkState(int state) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static USBPasswordRedirectManager getInstance() {
-      throw new RuntimeException("cod2jar: exception table");
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      synchronized (ar) {
+         _passwordManager = (USBPasswordRedirectManager)ar.get(-6654808410320396441L);
+         if (_passwordManager == null) {
+            _passwordManager = new USBPasswordRedirectManager();
+            ar.put(-6654808410320396441L, _passwordManager);
+         }
+      }
+
+      return _passwordManager;
    }
 
    public static void initialize() {
       getInstance();
    }
 
-   public static void logEvent(int var0) {
-      EventLogger.logEvent(-2691377221057526315L, var0, 0);
+   public static void logEvent(int event) {
+      EventLogger.logEvent(-2691377221057526315L, event, 0);
    }
 }

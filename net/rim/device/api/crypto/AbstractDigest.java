@@ -14,24 +14,24 @@ public class AbstractDigest {
       throw null;
    }
 
-   public void update(int var1) {
+   public void update(int data) {
       if (this.buffer == null) {
          this.buffer = new byte[1];
       }
 
-      this.buffer[0] = (byte)var1;
+      this.buffer[0] = (byte)data;
       this.update(this.buffer, 0, 1);
    }
 
-   public void update(byte[] var1) {
-      if (var1 == null) {
+   public void update(byte[] data) {
+      if (data == null) {
          throw new Object();
       }
 
-      this.update(var1, 0, var1.length);
+      this.update(data, 0, data.length);
    }
 
-   public void update(byte[] var1, int var2, int var3) {
+   public void update(byte[] _1, int _2, int _3) {
       throw null;
    }
 
@@ -47,17 +47,17 @@ public class AbstractDigest {
       return this.getDigest(true);
    }
 
-   public byte[] getDigest(boolean var1) {
-      byte[] var2 = new byte[this.getDigestLength()];
-      this.getDigest(var2, 0, var1);
-      return var2;
+   public byte[] getDigest(boolean resetDigest) {
+      byte[] buffer = new byte[this.getDigestLength()];
+      this.getDigest(buffer, 0, resetDigest);
+      return buffer;
    }
 
-   public int getDigest(byte[] var1, int var2) {
-      return this.getDigest(var1, var2, true);
+   public int getDigest(byte[] buffer, int offset) {
+      return this.getDigest(buffer, offset, true);
    }
 
-   public int getDigest(byte[] var1, int var2, boolean var3) {
+   public int getDigest(byte[] _1, int _2, boolean _3) {
       throw null;
    }
 }

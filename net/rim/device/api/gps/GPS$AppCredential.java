@@ -4,9 +4,9 @@ public class GPS$AppCredential {
    int _gpsAppId;
    String _appPassword;
 
-   public GPS$AppCredential(int var1, String var2) {
-      this._gpsAppId = var1;
-      this._appPassword = var2;
+   public GPS$AppCredential(int appId, String pass) {
+      this._gpsAppId = appId;
+      this._appPassword = pass;
    }
 
    public int getAppId() {

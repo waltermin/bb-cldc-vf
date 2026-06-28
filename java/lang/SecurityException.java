@@ -4,6 +4,6 @@ public class SecurityException extends RuntimeException {
    public SecurityException() {
    }
 
-   public SecurityException(String var1) {
+   public SecurityException(String s) {
    }
 }

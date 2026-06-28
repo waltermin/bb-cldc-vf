@@ -23,9 +23,9 @@ public final class AutoOnOff {
    public static final void init() {
    }
 
-   private static final void commit(boolean var0) {
+   private static final void commit(boolean notifyOfChanges) {
       _persistentAutoOnOffData.commit();
-      if (var0) {
+      if (notifyOfChanges) {
          RIMGlobalMessagePoster.postGlobalEvent(-2918606221006897090L);
       }
 
@@ -33,11 +33,11 @@ public final class AutoOnOff {
    }
 
    private static final void setApplicationManagerPowerOnBehaviour() {
-      ApplicationManager var0 = ApplicationManager.getApplicationManager();
+      ApplicationManager appmanager = ApplicationManager.getApplicationManager();
       if (!isWeekendAutoOnOffEnabled() && !isWeekdayAutoOnOffEnabled()) {
-         var0.setCurrentPowerOnBehavior(1);
+         appmanager.setCurrentPowerOnBehavior(1);
       } else {
-         var0.setCurrentPowerOnBehavior(2);
+         appmanager.setCurrentPowerOnBehavior(2);
       }
    }
 
@@ -45,152 +45,230 @@ public final class AutoOnOff {
       return _autoOnOffData._weekdayOn;
    }
 
-   public static final void setWeekdayOnTime(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setWeekdayOnTime(int msPastMidnight) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekdayOn = msPastMidnight;
+         commit(true);
+      }
    }
 
    public static final int getWeekdayOffTime() {
       return _autoOnOffData._weekdayOff;
    }
 
-   public static final void setWeekdayOffTime(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setWeekdayOffTime(int msPastMidnight) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekdayOff = msPastMidnight;
+         commit(true);
+      }
    }
 
    public static final boolean isWeekdayAutoOnOffEnabled() {
       return _autoOnOffData._weekdayAutoOnOffEnabled;
    }
 
-   public static final void enableWeekdayAutoOnOff(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void enableWeekdayAutoOnOff(boolean enable) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekdayAutoOnOffEnabled = enable;
+         commit(true);
+      }
    }
 
    public static final int getWeekendOnTime() {
       return _autoOnOffData._weekendOn;
    }
 
-   public static final void setWeekendOnTime(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setWeekendOnTime(int msPastMidnight) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekendOn = msPastMidnight;
+         commit(true);
+      }
    }
 
    public static final int getWeekendOffTime() {
       return _autoOnOffData._weekendOff;
    }
 
-   public static final void setWeekendOffTime(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setWeekendOffTime(int msPastMidnight) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekendOff = msPastMidnight;
+         commit(true);
+      }
    }
 
    public static final boolean isWeekendAutoOnOffEnabled() {
       return _autoOnOffData._weekendAutoOnOffEnabled;
    }
 
-   public static final void enableWeekendAutoOnOff(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void enableWeekendAutoOnOff(boolean enable) {
+      synchronized (_autoOnOffData) {
+         _autoOnOffData._weekendAutoOnOffEnabled = enable;
+         commit(true);
+      }
    }
 
    public static final void resetToDefaults() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_autoOnOffData) {
+         _autoOnOffData.reset();
+         commit(true);
+      }
    }
 
    public static final long getNextAutoOnTime() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (_autoOnOffData) {
+         long nextOnTime = Long.MIN_VALUE;
+         if (_autoOnOffData._weekdayAutoOnOffEnabled) {
+            Calendar nextWeekday = DateTimeUtilities.getNextDate(getWeekdayOnTime());
+
+            while (DateTimeUtilities.isWeekend(nextWeekday)) {
+               ((CalendarExtensions)nextWeekday).add(5, 1);
+            }
+
+            nextOnTime = ((CalendarExtensions)nextWeekday).getTimeLong();
+         }
+
+         if (_autoOnOffData._weekendAutoOnOffEnabled) {
+            Calendar nextWeekend = DateTimeUtilities.getNextDate(getWeekendOnTime());
+
+            while (!DateTimeUtilities.isWeekend(nextWeekend)) {
+               ((CalendarExtensions)nextWeekend).add(5, 1);
+            }
+
+            if (nextOnTime == Long.MIN_VALUE || nextOnTime > ((CalendarExtensions)nextWeekend).getTimeLong()) {
+               nextOnTime = ((CalendarExtensions)nextWeekend).getTimeLong();
+            }
+         }
+
+         return nextOnTime;
+      }
    }
 
-   public static final long getNextAutoOffTime(boolean var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final long getNextAutoOffTime(boolean backward) {
+      synchronized (_autoOnOffData) {
+         Calendar autoOnCal = Calendar.getInstance();
+         autoOnCal.setTime((Date)(new Object(getNextAutoOnTime())));
+         long autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong();
+         if (!_autoOnOffData._weekendAutoOnOffEnabled && !_autoOnOffData._weekdayAutoOnOffEnabled) {
+            return Long.MIN_VALUE;
+         }
+
+         if (!backward) {
+            return constructAutoOffTime(autoOnLong, DateTimeUtilities.isWeekend(autoOnLong) ? getWeekendOffTime() : getWeekdayOffTime());
+         }
+
+         long currentTime = System.currentTimeMillis();
+
+         while (autoOnLong > currentTime) {
+            autoOnLong -= 86400000;
+            if (DateTimeUtilities.isWeekend(autoOnLong) && _autoOnOffData._weekendAutoOnOffEnabled) {
+               autoOnCal.setTime((Date)(new Object(autoOnLong)));
+               DateTimeUtilities.zeroCalendarTime(autoOnCal);
+               autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong() + getWeekendOnTime();
+               return constructAutoOffTime(autoOnLong, getWeekendOffTime());
+            }
+
+            if (!DateTimeUtilities.isWeekend(autoOnLong) && _autoOnOffData._weekdayAutoOnOffEnabled) {
+               autoOnCal.setTime((Date)(new Object(autoOnLong)));
+               DateTimeUtilities.zeroCalendarTime(autoOnCal);
+               autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong() + getWeekdayOnTime();
+               return constructAutoOffTime(autoOnLong, getWeekdayOffTime());
+            }
+         }
+
+         return Long.MIN_VALUE;
+      }
    }
 
-   private static final long constructAutoOffTime(long var0, int var2) {
-      Calendar var3 = Calendar.getInstance();
-      var3.setTime((Date)(new Object(var0)));
-      int var4 = var2 / 3600000;
-      int var5 = (var2 - var4 * 3600000) / 60000;
-      var3.set(11, var4);
-      var3.set(12, var5);
-      var3.set(13, 0);
-      var3.set(14, 0);
-      long var6 = ((CalendarExtensions)var3).getTimeLong();
-      if (var6 < var0) {
-         var6 += 86400000;
+   private static final long constructAutoOffTime(long autoOnTimeLong, int autoOffTime) {
+      Calendar autoOnCal = Calendar.getInstance();
+      autoOnCal.setTime((Date)(new Object(autoOnTimeLong)));
+      int offHoursSinceMidnight = autoOffTime / 3600000;
+      int offMinutesSinceMidnight = (autoOffTime - offHoursSinceMidnight * 3600000) / 60000;
+      autoOnCal.set(11, offHoursSinceMidnight);
+      autoOnCal.set(12, offMinutesSinceMidnight);
+      autoOnCal.set(13, 0);
+      autoOnCal.set(14, 0);
+      long autoOffLong = ((CalendarExtensions)autoOnCal).getTimeLong();
+      if (autoOffLong < autoOnTimeLong) {
+         autoOffLong += 86400000;
       }
 
-      return var6 < System.currentTimeMillis() ? Long.MIN_VALUE : var6;
+      return autoOffLong < System.currentTimeMillis() ? Long.MIN_VALUE : autoOffLong;
    }
 
    public static final int determineAutoOffBehavior() {
-      byte var0 = 2;
-      Calendar var1 = Calendar.getInstance();
-      int var2 = var1.get(11) * 3600000 + var1.get(12) * 60000 + var1.get(13) * 1000 + var1.get(14);
-      if (DateTimeUtilities.isWeekend(var1) && _autoOnOffData._weekendAutoOnOffEnabled) {
-         if (!insideTimeFrame(_autoOnOffData._weekendOn, _autoOnOffData._weekendOff, var2, var1.get(7) == 7)) {
-            var0 = 1;
-            if (turnOffImmediately(_autoOnOffData._weekendOff, var2)) {
-               var0 = 0;
+      int behavior = 2;
+      Calendar cal = Calendar.getInstance();
+      int currentTime = cal.get(11) * 3600000 + cal.get(12) * 60000 + cal.get(13) * 1000 + cal.get(14);
+      if (DateTimeUtilities.isWeekend(cal) && _autoOnOffData._weekendAutoOnOffEnabled) {
+         if (!insideTimeFrame(_autoOnOffData._weekendOn, _autoOnOffData._weekendOff, currentTime, cal.get(7) == 7)) {
+            behavior = 1;
+            if (turnOffImmediately(_autoOnOffData._weekendOff, currentTime)) {
+               behavior = 0;
             }
          }
 
-         if (var1.get(7) == 7
-            && var0 != 0
+         if (cal.get(7) == 7
+            && behavior != 0
             && _autoOnOffData._weekdayAutoOnOffEnabled
             && _autoOnOffData._weekdayOn > _autoOnOffData._weekdayOff
-            && var0 == 1
-            && var2 < _autoOnOffData._weekendOn) {
-            if (insideTimeFrame(0, _autoOnOffData._weekdayOff, var2)) {
+            && behavior == 1
+            && currentTime < _autoOnOffData._weekendOn) {
+            if (insideTimeFrame(0, _autoOnOffData._weekdayOff, currentTime)) {
                return 2;
             }
 
-            if (turnOffImmediately(_autoOnOffData._weekdayOff, var2)) {
+            if (turnOffImmediately(_autoOnOffData._weekdayOff, currentTime)) {
                return 0;
             }
          }
-      } else if (!DateTimeUtilities.isWeekend(var1) && _autoOnOffData._weekdayAutoOnOffEnabled) {
-         if (!insideTimeFrame(_autoOnOffData._weekdayOn, _autoOnOffData._weekdayOff, var2, var1.get(7) == 2)) {
-            var0 = 1;
-            if (turnOffImmediately(_autoOnOffData._weekdayOff, var2)) {
-               var0 = 0;
+      } else if (!DateTimeUtilities.isWeekend(cal) && _autoOnOffData._weekdayAutoOnOffEnabled) {
+         if (!insideTimeFrame(_autoOnOffData._weekdayOn, _autoOnOffData._weekdayOff, currentTime, cal.get(7) == 2)) {
+            behavior = 1;
+            if (turnOffImmediately(_autoOnOffData._weekdayOff, currentTime)) {
+               behavior = 0;
             }
          }
 
-         if (var1.get(7) == 2
-            && var0 != 0
+         if (cal.get(7) == 2
+            && behavior != 0
             && _autoOnOffData._weekendAutoOnOffEnabled
             && _autoOnOffData._weekendOn > _autoOnOffData._weekendOff
-            && var0 == 1
-            && var2 < _autoOnOffData._weekdayOn) {
-            if (insideTimeFrame(0, _autoOnOffData._weekendOff, var2)) {
+            && behavior == 1
+            && currentTime < _autoOnOffData._weekdayOn) {
+            if (insideTimeFrame(0, _autoOnOffData._weekendOff, currentTime)) {
                return 2;
             }
 
-            if (turnOffImmediately(_autoOnOffData._weekendOff, var2)) {
-               var0 = 0;
+            if (turnOffImmediately(_autoOnOffData._weekendOff, currentTime)) {
+               behavior = 0;
             }
          }
       }
 
-      return var0;
+      return behavior;
    }
 
-   private static final boolean insideTimeFrame(int var0, int var1, int var2) {
-      return insideTimeFrame(var0, var1, var2, false);
+   private static final boolean insideTimeFrame(int startTime, int endTime, int currentTime) {
+      return insideTimeFrame(startTime, endTime, currentTime, false);
    }
 
-   private static final boolean insideTimeFrame(int var0, int var1, int var2, boolean var3) {
-      boolean var4;
-      if (var1 < var0) {
-         var4 = !insideTimeFrame(var1, var0, var2);
-         if (var3) {
-            var4 = var4 && var2 >= var0;
+   private static final boolean insideTimeFrame(int startTime, int endTime, int currentTime, boolean isMondayOrSaturday) {
+      boolean validTime;
+      if (endTime < startTime) {
+         validTime = !insideTimeFrame(endTime, startTime, currentTime);
+         if (isMondayOrSaturday) {
+            validTime = validTime && currentTime >= startTime;
          }
       } else {
-         var4 = var2 >= var0 - 60000 && var2 <= var1 - 60000;
+         validTime = currentTime >= startTime - 60000 && currentTime <= endTime - 60000;
       }
 
-      return var4;
+      return validTime;
    }
 
-   private static final boolean turnOffImmediately(int var0, int var1) {
-      int var2 = var1 - var0;
-      return var2 >= 0 && var2 <= 60000;
+   private static final boolean turnOffImmediately(int endTime, int currentTime) {
+      int diffTime = currentTime - endTime;
+      return diffTime >= 0 && diffTime <= 60000;
    }
 }

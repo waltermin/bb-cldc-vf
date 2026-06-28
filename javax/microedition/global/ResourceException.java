@@ -12,10 +12,10 @@ public final class ResourceException extends RuntimeException {
    public static final int METAFILE_NOT_FOUND;
    private static final int MAX_ERROR_CODE;
 
-   public ResourceException(int var1, String var2) {
-      super(var2);
-      if (var1 >= 0 && var1 <= 7) {
-         this._err = var1;
+   public ResourceException(int err, String message) {
+      super(message);
+      if (err >= 0 && err <= 7) {
+         this._err = err;
       } else {
          throw new Object();
       }

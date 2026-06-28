@@ -2,6 +2,7 @@ package net.rim.device.internal.camera;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.internal.system.EventDispatchManager;
 
 public final class Camera {
    public static final int OPTION_FLASH;
@@ -54,20 +55,20 @@ public final class Camera {
 
    public static final native int[] getMaxPictureDimensions();
 
-   public static final int openViewfinder(int var0, int var1, int var2, int var3) {
-      int var4 = UNKNOWN_MODE_HANDLE;
-      startViewfinder(var0, var1, var2, var3);
-      var4 = CAMERA_MODE_HANDLE;
-      _internalHandle = var4;
-      return var4;
+   public static final int openViewfinder(int x, int y, int width, int height) {
+      int handle = UNKNOWN_MODE_HANDLE;
+      startViewfinder(x, y, width, height);
+      handle = CAMERA_MODE_HANDLE;
+      _internalHandle = handle;
+      return handle;
    }
 
    private static final native void startViewfinder(int var0, int var1, int var2, int var3);
 
    private static final native void stopViewfinder();
 
-   public static final void closeViewfinder(int var0) {
-      if (var0 == _internalHandle || _internalHandle == UNKNOWN_MODE_HANDLE) {
+   public static final void closeViewfinder(int handle) {
+      if (handle == _internalHandle || _internalHandle == UNKNOWN_MODE_HANDLE) {
          stopViewfinder();
          _internalHandle = UNKNOWN_MODE_HANDLE;
       }
@@ -83,9 +84,9 @@ public final class Camera {
 
    public static final native byte[] getPicture(int var0, int var1, int var2, String var3, String var4);
 
-   public static final byte[] getPicture(String var0, String var1) {
+   public static final byte[] getPicture(String timeStamp, String model) {
       if (_pictureWidth != -1 && _pictureHeight != -1 && _pictureQuality != -1) {
-         return getPicture(_pictureWidth, _pictureHeight, _pictureQuality, var0, var1);
+         return getPicture(_pictureWidth, _pictureHeight, _pictureQuality, timeStamp, model);
       } else {
          throw new Object();
       }
@@ -97,20 +98,20 @@ public final class Camera {
 
    public static final native void setOption(int var0, int var1);
 
-   public static final void setPictureResolution(int var0, int var1, int var2) {
-      if (var2 >= 0 && var2 < 3) {
-         if (_pictureWidth != var0 || _pictureHeight != var1) {
-            _pictureWidth = var0 & 65535;
-            _pictureHeight = var1 & 65535;
+   public static final void setPictureResolution(int width, int height, int quality) {
+      if (quality >= 0 && quality < 3) {
+         if (_pictureWidth != width || _pictureHeight != height) {
+            _pictureWidth = width & 65535;
+            _pictureHeight = height & 65535;
             if ((getFeatures(0) & 128) != 0) {
                setOption(8, _pictureWidth << 16 | _pictureHeight);
             }
          }
 
-         if (_pictureQuality != var2) {
-            _pictureQuality = var2;
+         if (_pictureQuality != quality) {
+            _pictureQuality = quality;
             if ((getFeatures(0) & 128) != 0) {
-               setOption(16, var2);
+               setOption(16, quality);
             }
          }
       } else {
@@ -130,16 +131,23 @@ public final class Camera {
       return getFeatures(32);
    }
 
-   public static final void addListener(Application var0, CameraListener var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(Application app, CameraListener listener) {
+      EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
+      synchronized (dispatchManager) {
+         if (dispatchManager.getDispatcher(55) == null) {
+            dispatchManager.setDispatcher(55, new CameraEventDispatcher());
+         }
+      }
+
+      app.addListener(55, listener);
    }
 
-   public static final void removeListener(Application var0, CameraListener var1) {
-      var0.removeListener(55, var1);
+   public static final void removeListener(Application app, CameraListener listener) {
+      app.removeListener(55, listener);
    }
 
-   public static final int openVideoViewfinder(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
-      startVideoViewfinder(var0, var1, var2, var3, var4, var5, var6, var7);
+   public static final int openVideoViewfinder(int x, int y, int vfWidth, int vfHeight, int recWidth, int recHeight, int audioCodec, int videoCodec) {
+      startVideoViewfinder(x, y, vfWidth, vfHeight, recWidth, recHeight, audioCodec, videoCodec);
       _internalHandle = VIDEO_MODE_HANDLE;
       return _internalHandle;
    }

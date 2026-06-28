@@ -13,17 +13,17 @@ public final class SerialPort extends IOPort {
       return false;
    }
 
-   public SerialPort(int var1, int var2, int var3, int var4, int var5, int var6) {
+   public SerialPort(int baud, int dataBits, int parity, int stopBits, int rxBufferSize, int txBufferSize) {
       throw new UnsupportedOperationException();
    }
 
-   public final void setProperties(int var1, int var2, int var3, int var4) {
+   public final void setProperties(int baud, int dataBits, int parity, int stopBits) {
    }
 
-   public final void setDsr(boolean var1) {
+   public final void setDsr(boolean state) {
    }
 
-   public final void standbyMode(boolean var1) {
+   public final void standbyMode(boolean state) {
    }
 
    public final boolean getDtr() {
@@ -39,27 +39,27 @@ public final class SerialPort extends IOPort {
    }
 
    @Override
-   public final int write(byte[] var1) {
+   public final int write(byte[] data) {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public final int write(byte[] var1, int var2, int var3) {
+   public final int write(byte[] data, int offset, int length) {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public final int write(int var1) {
+   public final int write(int b) {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public final int read(byte[] var1) {
+   public final int read(byte[] data) {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public final int read(byte[] var1, int var2, int var3) {
+   public final int read(byte[] data, int offset, int length) {
       throw new UnsupportedOperationException();
    }
 
@@ -68,7 +68,7 @@ public final class SerialPort extends IOPort {
       throw new UnsupportedOperationException();
    }
 
-   public static final void registerNotifyPattern(byte[] var0) {
+   public static final void registerNotifyPattern(byte[] pattern) {
       throw new UnsupportedOperationException();
    }
 

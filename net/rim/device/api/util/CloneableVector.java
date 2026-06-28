@@ -4,11 +4,11 @@ import java.util.Vector;
 import net.rim.vm.Array;
 
 public class CloneableVector extends Vector {
-   public CloneableVector(int var1, int var2) {
+   public CloneableVector(int initialCapacity, int capacityIncrement) {
    }
 
-   public CloneableVector(int var1) {
-      this(var1, 0);
+   public CloneableVector(int initialCapacity) {
+      this(initialCapacity, 0);
    }
 
    public CloneableVector() {
@@ -16,15 +16,15 @@ public class CloneableVector extends Vector {
    }
 
    public synchronized Object clone() {
-      CloneableVector var1 = new CloneableVector();
-      Array.resize(var1.elementData, super.elementCount);
-      var1.elementCount = super.elementCount;
-      var1.capacityIncrement = super.capacityIncrement;
-      System.arraycopy(super.elementData, 0, var1.elementData, 0, super.elementCount);
-      return var1;
+      CloneableVector v = new CloneableVector();
+      Array.resize(v.elementData, super.elementCount);
+      v.elementCount = super.elementCount;
+      v.capacityIncrement = super.capacityIncrement;
+      System.arraycopy(super.elementData, 0, v.elementData, 0, super.elementCount);
+      return v;
    }
 
-   public static final Vector clone(Vector var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final Vector clone(Vector vector) {
+      throw new RuntimeException("cod2jar: type check");
    }
 }

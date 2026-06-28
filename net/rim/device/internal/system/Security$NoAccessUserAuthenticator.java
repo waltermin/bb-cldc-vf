@@ -9,17 +9,17 @@ public final class Security$NoAccessUserAuthenticator extends UserAuthenticator 
    }
 
    @Override
-   public final Object getInformation(long var1, Object var3, Object var4) {
-      return var4;
+   public final Object getInformation(long key, Object parameter, Object defaultValue) {
+      return defaultValue;
    }
 
    @Override
-   public final boolean authenticate(String var1) {
+   public final boolean authenticate(String password) {
       return false;
    }
 
    @Override
-   public final boolean initialize(String var1) {
+   public final boolean initialize(String password) {
       throw new Object();
    }
 
@@ -39,7 +39,7 @@ public final class Security$NoAccessUserAuthenticator extends UserAuthenticator 
    }
 
    @Override
-   public final boolean setStateData(byte[] var1) {
+   public final boolean setStateData(byte[] initializationData) {
       return true;
    }
 

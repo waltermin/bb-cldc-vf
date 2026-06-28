@@ -5,17 +5,17 @@ import net.rim.device.api.ui.container.VerticalFieldManager;
 final class ImageItem$ImageItemManager extends VerticalFieldManager {
    ImageItem _img;
 
-   public ImageItem$ImageItemManager(ImageItem var1) {
+   public ImageItem$ImageItemManager(ImageItem img) {
       super(1152921504606846976L);
-      this._img = var1;
+      this._img = img;
    }
 
    @Override
-   protected final void sublayout(int var1, int var2) {
+   protected final void sublayout(int width, int height) {
       if (this._img.getOwner() instanceof Form) {
-         super.sublayout(var1, this._img.getPreferredHeight());
+         super.sublayout(width, this._img.getPreferredHeight());
       } else {
-         super.sublayout(var1, var2);
+         super.sublayout(width, height);
       }
    }
 }

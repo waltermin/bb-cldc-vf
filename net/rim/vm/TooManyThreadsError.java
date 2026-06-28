@@ -4,6 +4,6 @@ public final class TooManyThreadsError extends OutOfMemoryError {
    public TooManyThreadsError() {
    }
 
-   public TooManyThreadsError(String var1) {
+   public TooManyThreadsError(String s) {
    }
 }

@@ -6,6 +6,6 @@ public class IORefusedException extends IOException {
    public IORefusedException() {
    }
 
-   public IORefusedException(String var1) {
+   public IORefusedException(String msg) {
    }
 }

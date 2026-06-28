@@ -5,11 +5,11 @@ import net.rim.device.api.util.StringUtilities;
 public class ObjectComboField extends ComboField {
    protected ObjectComboField$ListCallback _listCallback;
 
-   public ObjectComboField(String var1, Object[] var2) {
-      this.setEditable(new ObjectComboField$Editable(var1));
+   public ObjectComboField(String label, Object[] choices) {
+      this.setEditable(new ObjectComboField$Editable(label));
       this.setList(new ListField());
       this.setController(new ObjectComboField$Controller(this));
-      this._listCallback = new ObjectComboField$ListCallback(this, var2);
+      this._listCallback = new ObjectComboField$ListCallback(this, choices);
       this.getList().setCallback(this._listCallback);
    }
 
@@ -17,7 +17,7 @@ public class ObjectComboField extends ComboField {
       return true;
    }
 
-   protected boolean matches(String var1, String var2) {
-      return StringUtilities.startsWithIgnoreCase(var1, var2);
+   protected boolean matches(String choice, String criterion) {
+      return StringUtilities.startsWithIgnoreCase(choice, criterion);
    }
 }

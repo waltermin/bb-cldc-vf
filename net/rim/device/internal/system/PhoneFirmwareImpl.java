@@ -58,8 +58,8 @@ public final class PhoneFirmwareImpl {
 
    public static final native String getCallPhoneNumber(int var0, boolean var1);
 
-   public static final String getCallName(int var0, boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String getCallName(int callId, boolean original) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static final native byte[] getCallName0(int var0, boolean var1);
@@ -80,9 +80,9 @@ public final class PhoneFirmwareImpl {
 
    public static final native void setCallBarringPassword(String var0, String var1);
 
-   public static final void flash(String var0) {
-      flash0(var0);
-      RIMGlobalMessagePoster.postGlobalEvent(5606159505026478103L, 0, 0, var0, null);
+   public static final void flash(String number) {
+      flash0(number);
+      RIMGlobalMessagePoster.postGlobalEvent(5606159505026478103L, 0, 0, number, null);
    }
 
    public static final native void flash0(String var0);

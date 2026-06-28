@@ -8,40 +8,49 @@ import net.rim.device.api.util.Comparator;
 public class BigSortedReadableList extends BigUnsortedReadableList implements SortableCollection {
    private Comparator _comparator;
 
-   protected int binarySearch(Object var1, int var2, int var3) {
-      int var4 = super._elements.size();
-      if (var2 >= 0 && var3 <= var4 && var2 <= var3) {
-         int var5 = var2;
-         int var6 = var3 - 1;
+   protected int binarySearch(Object key, int startIndex, int endIndex) {
+      int size = super._elements.size();
+      if (startIndex >= 0 && endIndex <= size && startIndex <= endIndex) {
+         int low = startIndex;
+         int high = endIndex - 1;
 
-         while (var5 <= var6) {
-            int var7 = var5 + var6 >> 1;
-            int var8 = this._comparator.compare(var1, super._elements.elementAt(var7));
-            if (var8 == 0) {
-               var6 = var7;
-               if (var7 == var5) {
-                  return var5;
+         while (low <= high) {
+            int mid = low + high >> 1;
+            int result = this._comparator.compare(key, super._elements.elementAt(mid));
+            if (result == 0) {
+               high = mid;
+               if (mid == low) {
+                  return low;
                }
-            } else if (var8 < 0) {
-               var6 = var7 - 1;
+            } else if (result < 0) {
+               high = mid - 1;
             } else {
-               var5 = var7 + 1;
+               low = mid + 1;
             }
          }
 
-         return -(var5 + 1);
+         return -(low + 1);
       } else {
          throw new Object();
       }
    }
 
    protected void sort() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         super._elements.sort(this._comparator);
+         super._lastInsertedUpdated = null;
+      }
    }
 
    @Override
-   public void setComparator(Comparator var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setComparator(Comparator comparator) {
+      if (comparator != this._comparator) {
+         synchronized (this) {
+            this._comparator = comparator;
+            this.sort();
+            this.fireReset(this);
+         }
+      }
    }
 
    @Override
@@ -49,34 +58,54 @@ public class BigSortedReadableList extends BigUnsortedReadableList implements So
       return this._comparator;
    }
 
-   public BigSortedReadableList(CollectionEventSource var1, Comparator var2) {
-      this(var2);
-      var1.addCollectionListener(this);
-      if (var1 instanceof Collection) {
-         this.reload(var1);
+   public BigSortedReadableList(CollectionEventSource sourceCollection, Comparator comparator) {
+      this(comparator);
+      sourceCollection.addCollectionListener(this);
+      if (sourceCollection instanceof Collection) {
+         this.reload(sourceCollection);
       }
    }
 
    @Override
-   protected void reload(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void reload(Object collection) {
+      synchronized (this) {
+         super.reload(collection);
+         this.sort();
+      }
    }
 
-   public BigSortedReadableList(Comparator var1) {
-      if (var1 == null) {
+   public BigSortedReadableList(Comparator comparator) {
+      if (comparator == null) {
          throw new Object();
       }
 
-      this._comparator = var1;
+      this._comparator = comparator;
    }
 
    @Override
-   protected void doAdd(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void doAdd(Object element) {
+      synchronized (this) {
+         int index = this.binarySearch(element, 0, super._elements.size());
+         if (index < 0) {
+            index = -index - 1;
+         }
+
+         this.insertAt(index, element);
+      }
    }
 
    @Override
-   protected boolean doUpdate(Object var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected boolean doUpdate(Object oldElement, Object newElement) {
+      boolean fireEvent = false;
+      synchronized (this) {
+         int oldIndex = this.getIndex(oldElement);
+         if (oldIndex != -1) {
+            super._elements.removeElementAt(oldIndex);
+            this.doAdd(newElement);
+            fireEvent = true;
+         }
+
+         return fireEvent;
+      }
    }
 }

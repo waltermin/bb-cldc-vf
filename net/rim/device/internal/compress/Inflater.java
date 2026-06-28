@@ -28,8 +28,8 @@ public final class Inflater {
    public static final int Z_DEF_MEM_LEVEL;
    public static final int GZIP_DEF_WBITS;
 
-   public Inflater(int var1) {
-      this.init(var1);
+   public Inflater(int windowBits) {
+      this.init(windowBits);
    }
 
    public final native void init(int var1);

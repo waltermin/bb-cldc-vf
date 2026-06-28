@@ -6,11 +6,14 @@ public class Format {
    protected Format() {
    }
 
-   public final String format(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final String format(Object obj) {
+      synchronized (this._buffer) {
+         this._buffer.setLength(0);
+         return this.format(obj, this._buffer, null).toString();
+      }
    }
 
-   public StringBuffer format(Object var1, StringBuffer var2, FieldPosition var3) {
+   public StringBuffer format(Object _1, StringBuffer _2, FieldPosition _3) {
       throw null;
    }
 

@@ -10,7 +10,7 @@ public class CharacterIterator {
       throw null;
    }
 
-   public char setIndex(int var1) {
+   public char setIndex(int _1) {
       throw null;
    }
 
@@ -27,12 +27,12 @@ public class CharacterIterator {
    }
 
    public char next() {
-      char var1 = this.current();
+      char c = this.current();
       if (this.iIndex >= this.iBegin && this.iIndex < this.iEnd) {
          this.setIndex(this.iIndex + 1);
       }
 
-      return var1;
+      return c;
    }
 
    public char previous() {

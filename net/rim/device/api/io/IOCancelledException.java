@@ -6,6 +6,6 @@ public class IOCancelledException extends IOException {
    public IOCancelledException() {
    }
 
-   public IOCancelledException(String var1) {
+   public IOCancelledException(String msg) {
    }
 }

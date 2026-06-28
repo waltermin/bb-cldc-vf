@@ -8,71 +8,71 @@ public class IPEditField extends EditField {
    private boolean keyRepeatProcessed;
    private int lastKeyPosition;
 
-   public IPEditField(String var1, String var2) {
-      super(var1, var2);
+   public IPEditField(String label, String initialValue) {
+      super(label, initialValue);
       this.setFilter((TextFilter)(new Object()));
    }
 
-   public IPEditField(String var1, String var2, int var3) {
-      super(var1, var2, var3, 0);
+   public IPEditField(String label, String initialValue, int maxNumChars) {
+      super(label, initialValue, maxNumChars, 0);
       this.setFilter((TextFilter)(new Object()));
    }
 
-   public IPEditField(String var1, String var2, int var3, int var4) {
-      super(var1, var2, var3, 0);
-      this.setFilter((TextFilter)(new Object(var4)));
+   public IPEditField(String label, String initialValue, int maxNumChars, int filterFlags) {
+      super(label, initialValue, maxNumChars, 0);
+      this.setFilter((TextFilter)(new Object(filterFlags)));
    }
 
    @Override
-   protected boolean insert(char var1, int var2) {
+   protected boolean insert(char key, int status) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       this.keyRepeatProcessed = false;
       this.lastKeyPosition = this.getCursorPosition();
-      return super.keyDown(var1, var2);
+      return super.keyDown(keycode, time);
    }
 
    @Override
-   protected boolean keyRepeat(int var1, int var2) {
-      boolean var3 = false;
+   protected boolean keyRepeat(int keycode, int time) {
+      boolean handled = false;
       if (!this.keyRepeatProcessed) {
-         char var4 = Keypad.getAltedChar(Keypad.map(var1));
-         if (Character.isDigit(var4)) {
+         char altedKeyChar = Keypad.getAltedChar(Keypad.map(keycode));
+         if (Character.isDigit(altedKeyChar)) {
             if (this.lastKeyPosition != this.getCursorPosition()) {
                this.backspace();
             }
 
-            this.insert(var4, 0);
+            this.insert(altedKeyChar, 0);
             this.keyRepeatProcessed = true;
-            var3 = true;
+            handled = true;
          }
       }
 
-      if (!var3) {
-         var3 = super.keyRepeat(var1, var2);
+      if (!handled) {
+         handled = super.keyRepeat(keycode, time);
       }
 
-      return var3;
+      return handled;
    }
 
-   public static final int parseIpAddr(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int parseIpAddr(String str) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final void appendIpAddr(StringBuffer var0, int var1) {
-      for (byte var2 = 24; var2 >= 0; var2 -= 8) {
-         int var3 = var1 >>> var2 & 0xFF;
-         var0.append(var3);
-         if (var2 != 0) {
-            var0.append('.');
+   public static final void appendIpAddr(StringBuffer strBuf, int ip) {
+      for (int shift = 24; shift >= 0; shift -= 8) {
+         int temp = ip >>> shift & 0xFF;
+         strBuf.append(temp);
+         if (shift != 0) {
+            strBuf.append('.');
          }
       }
    }
 
-   public static final void appendIpAddr(StringBuffer var0, byte[] var1) {
+   public static final void appendIpAddr(StringBuffer strBuf, byte[] ip) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

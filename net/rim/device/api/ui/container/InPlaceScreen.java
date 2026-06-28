@@ -16,12 +16,12 @@ public class InPlaceScreen extends Screen {
    public static final long ALT_DISMISS;
    private static final Tag TAG;
 
-   public InPlaceScreen(Field var1, Field var2, long var3) {
-      super(new VerticalFieldManager(var3), var3);
+   public InPlaceScreen(Field original, Field fake, long style) {
+      super(new VerticalFieldManager(style), style);
       this.setTag(TAG);
       this._delegate = this.getDelegate();
-      this._original = var1;
-      this._fake = var2;
+      this._original = original;
+      this._fake = fake;
       this._delegate.add(this._fake);
    }
 
@@ -39,23 +39,23 @@ public class InPlaceScreen extends Screen {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 == '\n') {
+   protected boolean keyChar(char key, int status, int time) {
+      if (key == '\n') {
          this._result = 0;
          this.close();
          return true;
-      } else if (var1 == 27) {
+      } else if (key == 27) {
          this._result = -1;
          this.close();
          return true;
       } else {
-         return super.keyChar(var1, var2, var3);
+         return super.keyChar(key, status, time);
       }
    }
 
    @Override
-   protected boolean keyStatus(int var1, int var2) {
-      if (this.isStyle(1) && Keypad.key(var1) == 257 && (Keypad.status(var1) & 1) == 0) {
+   protected boolean keyStatus(int keycode, int time) {
+      if (this.isStyle(1) && Keypad.key(keycode) == 257 && (Keypad.status(keycode) & 1) == 0) {
          this._result = 0;
          this.close();
          return true;
@@ -65,8 +65,8 @@ public class InPlaceScreen extends Screen {
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      if (var1 > 0 && var2 > 0 && var1 < this.getWidth() && var2 < this.getHeight()) {
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      if (x > 0 && y > 0 && x < this.getWidth() && y < this.getHeight()) {
          this._result = 0;
       } else {
          this._result = -1;
@@ -77,8 +77,8 @@ public class InPlaceScreen extends Screen {
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             this._result = 0;
             this.close();
@@ -89,7 +89,7 @@ public class InPlaceScreen extends Screen {
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       return this.invokeAction(1);
    }
 }

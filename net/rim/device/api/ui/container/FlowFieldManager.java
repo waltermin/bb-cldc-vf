@@ -12,332 +12,333 @@ public class FlowFieldManager extends Manager {
       super(1153202979583557632L);
    }
 
-   public FlowFieldManager(long var1) {
-      super(var1);
+   public FlowFieldManager(long style) {
+      super(style);
    }
 
    @Override
-   public int getFieldAtLocation(int var1, int var2) {
-      int var3 = 0;
-      int var5 = 0;
-      int var6 = this.getFieldCount() - 1;
+   public int getFieldAtLocation(int x, int y) {
+      int i = 0;
+      int low = 0;
+      int high = this.getFieldCount() - 1;
 
-      while (var5 <= var6) {
-         var3 = var5 + var6 >> 1;
-         XYRect var4 = this.getField(var3).getExtent();
-         int var7 = var4.y;
-         if (var7 < var2) {
-            var5 = var3 + 1;
+      while (low <= high) {
+         i = low + high >> 1;
+         XYRect fieldExtent = this.getField(i).getExtent();
+         int midVal = fieldExtent.y;
+         if (midVal < y) {
+            low = i + 1;
          } else {
-            if (var7 <= var2) {
+            if (midVal <= y) {
                break;
             }
 
-            var6 = var3 - 1;
+            high = i - 1;
          }
       }
 
-      if (var5 > var6) {
-         var3 = var6;
+      if (low > high) {
+         i = high;
       }
 
-      if (var3 < 0) {
-         return var3;
+      if (i < 0) {
+         return i;
       }
 
-      if (this.getField(var3).getLeft() > var1) {
-         while (var3 > 0) {
-            Field var9 = this.getField(var3);
-            if (var9.getTop() + var9.getHeight() < var2) {
+      if (this.getField(i).getLeft() > x) {
+         while (i > 0) {
+            Field field = this.getField(i);
+            if (field.getTop() + field.getHeight() < y) {
                break;
             }
 
-            if (var9.getLeft() <= var1) {
-               return var3;
+            if (field.getLeft() <= x) {
+               return i;
             }
 
-            var3--;
+            i--;
          }
       } else {
-         while (var3 < this.getFieldCount() - 1) {
-            Field var8 = this.getField(var3);
-            if (var8.getTop() > var2) {
+         while (i < this.getFieldCount() - 1) {
+            Field field = this.getField(i);
+            if (field.getTop() > y) {
                break;
             }
 
-            if (var8.getLeft() + var8.getWidth() >= var1) {
-               return var3;
+            if (field.getLeft() + field.getWidth() >= x) {
+               return i;
             }
 
-            var3++;
+            i++;
          }
       }
 
-      return var3;
+      return i;
    }
 
    @Override
    public int getPreferredHeight() {
-      int var1 = this.getFieldCount();
-      int var2 = 0;
+      int numFields = this.getFieldCount();
+      int height = 0;
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2 += this.getField(var3).getPreferredHeight();
+      for (int i = 0; i < numFields; i++) {
+         height += this.getField(i).getPreferredHeight();
       }
 
-      return var2;
+      return height;
    }
 
    @Override
    public int getPreferredWidth() {
-      int var1 = this.getFieldCount();
-      int var2 = 0;
+      int numFields = this.getFieldCount();
+      int width = 0;
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         Field var4 = this.getField(var3);
-         if (var4.getPreferredWidth() > var2) {
-            var2 = var4.getPreferredWidth();
+      for (int i = 0; i < numFields; i++) {
+         Field field = this.getField(i);
+         if (field.getPreferredWidth() > width) {
+            width = field.getPreferredWidth();
          }
       }
 
-      return var2;
+      return width;
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      byte var4 = 0;
-      if (var1 != 131 && var1 != 129) {
-         if (var1 != 132 && var1 != 130) {
-            return super.keyControl(var1, var2, var3);
+   protected boolean keyControl(char c, int status, int time) {
+      int amount = 0;
+      byte var5;
+      if (c != 131 && c != 129) {
+         if (c != 132 && c != 130) {
+            return super.keyControl(c, status, time);
          }
 
-         var4 = 1;
+         var5 = 1;
       } else {
-         var4 = -1;
+         var5 = -1;
       }
 
-      this.getScreen().dispatchTrackwheelEvent(519, var4, 0, var3);
+      this.getScreen().dispatchTrackwheelEvent(519, var5, 0, time);
       return true;
    }
 
-   private int layoutChildren(int var1, int var2, int var3) {
-      int var4 = this.getFieldCount();
-      int var5 = 0;
-      int var6 = 0;
-      int var7 = 0;
-      int var8 = 0;
-      int var9 = 0;
-      int var10 = 0;
+   private int layoutChildren(int maxWidth, int maxHeight, int heightUsed) {
+      int numFields = this.getFieldCount();
+      int widthUsed = 0;
+      int maxBottomOfRow = 0;
+      int maxBottomOfRowWithMargin = 0;
+      int startField = 0;
+      int marginHorizontal = 0;
+      int marginBelowPrev = 0;
 
-      for (int var11 = var8; var11 < var4; var11++) {
-         Field var12 = this.getField(var11);
-         var9 = Math.max(var9, var12.getMarginLeft());
-         var5 += var9;
-         int var13 = this.getPreferredWidthOfChild(var12) + var12.getMarginRight();
-         if (var13 > var1 - var5 && var5 != 0) {
+      for (int i = startField; i < numFields; i++) {
+         Field field = this.getField(i);
+         marginHorizontal = Math.max(marginHorizontal, field.getMarginLeft());
+         widthUsed += marginHorizontal;
+         int prefWidth = this.getPreferredWidthOfChild(field) + field.getMarginRight();
+         if (prefWidth > maxWidth - widthUsed && widthUsed != 0) {
             if (this.isStyle(12884901888L)) {
-               int var14 = var1 - var5 >> 1;
+               int dx = maxWidth - widthUsed >> 1;
 
-               for (int var15 = var8; var15 <= var11; var15++) {
-                  Field var16 = this.getField(var15);
-                  this.setPositionChild(var16, var16.getLeft() + var14, var16.getTop());
+               for (int i2 = startField; i2 <= i; i2++) {
+                  Field f = this.getField(i2);
+                  this.setPositionChild(f, f.getLeft() + dx, f.getTop());
                }
             }
 
-            var8 = var11;
-            var3 += var7;
-            var5 = var12.getMarginLeft();
-            var10 = var7 - var6;
-            var6 = 0;
-            var7 = 0;
+            startField = i;
+            heightUsed += maxBottomOfRowWithMargin;
+            widthUsed = field.getMarginLeft();
+            marginBelowPrev = maxBottomOfRowWithMargin - maxBottomOfRow;
+            maxBottomOfRow = 0;
+            maxBottomOfRowWithMargin = 0;
          }
 
-         this.layoutChild(var12, var1 - var5, var2 - var3);
-         var13 = var12.getWidth();
-         int var23 = Math.max(0, var12.getMarginTop() - var10);
-         this.setPositionChild(var12, var5, var3 + var23);
-         var5 += var13;
-         var9 = var12.getMarginRight();
-         var6 = Math.max(var6, var12.getHeight() + var23);
-         var7 = Math.max(var7, var12.getHeight() + var23 + var12.getMarginBottom());
+         this.layoutChild(field, maxWidth - widthUsed, maxHeight - heightUsed);
+         prefWidth = field.getWidth();
+         int marginAbove = Math.max(0, field.getMarginTop() - marginBelowPrev);
+         this.setPositionChild(field, widthUsed, heightUsed + marginAbove);
+         widthUsed += prefWidth;
+         marginHorizontal = field.getMarginRight();
+         maxBottomOfRow = Math.max(maxBottomOfRow, field.getHeight() + marginAbove);
+         maxBottomOfRowWithMargin = Math.max(maxBottomOfRowWithMargin, field.getHeight() + marginAbove + field.getMarginBottom());
       }
 
       if (this.isStyle(12884901888L)) {
-         int var19 = var1 - var5 >> 1;
+         int dx = maxWidth - widthUsed >> 1;
 
-         for (int var20 = var8; var20 < var4; var20++) {
-            Field var22 = this.getField(var20);
-            this.setPositionChild(var22, var22.getLeft() + var19, var22.getTop());
+         for (int i2 = startField; i2 < numFields; i2++) {
+            Field f = this.getField(i2);
+            this.setPositionChild(f, f.getLeft() + dx, f.getTop());
          }
       }
 
-      return var3 + var7;
+      return heightUsed + maxBottomOfRowWithMargin;
    }
 
    @Override
-   public int nextFocus(int var1, boolean var2) {
+   public int nextFocus(int direction, boolean alt) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   protected int nextFocus(int var1, int var2) {
-      if (var2 == 0) {
-         return super.nextFocus(var1, var2);
+   protected int nextFocus(int direction, int axis) {
+      if (axis == 0) {
+         return super.nextFocus(direction, axis);
       }
 
-      if (var2 != 2) {
-         if (var2 != 1) {
+      if (axis != 2) {
+         if (axis != 1) {
             return -1;
          }
 
-         int var12 = this.getFieldWithFocusIndex();
-         if (var12 <= -1) {
-            return super.nextFocus(var1, var2);
+         int index = this.getFieldWithFocusIndex();
+         if (index <= -1) {
+            return super.nextFocus(direction, axis);
          }
 
-         Field var13 = this.getField(var12);
+         Field currField = this.getField(index);
 
-         Field var14;
+         Field newField;
          do {
-            var12 += var1;
-            if (var12 >= this.getFieldCount() || var12 <= -1) {
+            index += direction;
+            if (index >= this.getFieldCount() || index <= -1) {
                return -1;
             }
 
-            var14 = this.getField(var12);
+            newField = this.getField(index);
          } while (
-            (var1 <= 0 || var12 >= this.getFieldCount() || var13.getLeft() >= var14.getLeft())
-                  && (var1 >= 0 || var12 <= -1 || var13.getLeft() <= var14.getLeft())
-               || !var14.isFocusable()
+            (direction <= 0 || index >= this.getFieldCount() || currField.getLeft() >= newField.getLeft())
+                  && (direction >= 0 || index <= -1 || currField.getLeft() <= newField.getLeft())
+               || !newField.isFocusable()
          );
 
-         return var12;
+         return index;
       } else {
-         Field var3 = this.getFieldWithFocus();
-         if (var3 == null) {
-            return super.nextFocus(var1, var2);
+         Field fieldWithFocus = this.getFieldWithFocus();
+         if (fieldWithFocus == null) {
+            return super.nextFocus(direction, axis);
          }
 
-         XYRect var4 = var3.getExtent();
-         int var5 = var4.y;
-         int var6 = var4.x;
-         int var7 = this.getFieldWithFocusIndex();
+         XYRect current = fieldWithFocus.getExtent();
+         int y = current.y;
+         int x = current.x;
+         int index = this.getFieldWithFocusIndex();
 
-         Field var8;
+         Field field;
          do {
-            var7 += var1;
-            if (var7 >= this.getFieldCount() || var7 <= -1) {
+            index += direction;
+            if (index >= this.getFieldCount() || index <= -1) {
                return -1;
             }
 
-            var8 = this.getField(var7);
-         } while (!var8.isFocusable() || (var8.getTop() - var5) * var1 <= 0);
+            field = this.getField(index);
+         } while (!field.isFocusable() || (field.getTop() - y) * direction <= 0);
 
-         int var15 = var7;
-         int var9 = Math.abs(this.getField(var15).getLeft() - var6);
-         if (var9 == 0) {
-            return var15;
+         int bestindex = index;
+         int bestdistance = Math.abs(this.getField(bestindex).getLeft() - x);
+         if (bestdistance == 0) {
+            return bestindex;
          }
 
          while (true) {
-            var7 += var1;
-            if (var7 >= this.getFieldCount() || var7 <= -1) {
+            index += direction;
+            if (index >= this.getFieldCount() || index <= -1) {
                break;
             }
 
-            Field var10 = this.getField(var7);
-            if (var10.isFocusable()) {
-               int var11 = Math.abs(this.getField(var7).getLeft() - var6);
-               if (var11 >= var9) {
+            Field fieldx = this.getField(index);
+            if (fieldx.isFocusable()) {
+               int distance = Math.abs(this.getField(index).getLeft() - x);
+               if (distance >= bestdistance) {
                   break;
                }
 
-               var15 = var7;
-               var9 = var11;
+               bestindex = index;
+               bestdistance = distance;
             }
          }
 
-         return var15;
+         return bestindex;
       }
    }
 
-   private boolean tappedDirectlyOnFocusField(int var1, int var2) {
-      var1 += this.getHorizontalScroll();
-      var2 += this.getVerticalScroll();
-      int var3 = this.getFieldAtLocation(var1, var2);
-      if (var3 < 0) {
+   private boolean tappedDirectlyOnFocusField(int x, int y) {
+      x += this.getHorizontalScroll();
+      y += this.getVerticalScroll();
+      int index = this.getFieldAtLocation(x, y);
+      if (index < 0) {
          return false;
       }
 
-      Field var4 = this.getField(var3);
-      if (var4 != this.getFieldWithFocus()) {
+      Field field = this.getField(index);
+      if (field != this.getFieldWithFocus()) {
          return false;
       }
 
-      int var5 = var4.getTop();
-      if (var2 < var5) {
+      int top = field.getTop();
+      if (y < top) {
          return false;
       }
 
-      if (var2 > var5 + var4.getHeight()) {
+      if (y > top + field.getHeight()) {
          return false;
       }
 
-      int var6 = var4.getLeft();
-      return var1 < var6 ? false : var1 <= var6 + var4.getWidth();
-   }
-
-   @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return this.tappedDirectlyOnFocusField(var1, var2) ? this.getScreen().defaultStylusAction(0) : super.stylusTap(var1, var2, var3, var4);
+      int left = field.getLeft();
+      return x < left ? false : x <= left + field.getWidth();
    }
 
    @Override
-   protected void sublayout(int var1, int var2) {
-      int var3 = var2;
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return this.tappedDirectlyOnFocusField(x, y) ? this.getScreen().defaultStylusAction(0) : super.stylusTap(x, y, status, time);
+   }
+
+   @Override
+   protected void sublayout(int width, int height) {
+      int heightAvail = height;
       if (this.isStyle(281474976710656L)) {
-         var3 = 1073741823;
+         heightAvail = 1073741823;
       }
 
-      int var4 = this.layoutChildren(var1, var3, 0);
+      int virtualHeight = this.layoutChildren(width, heightAvail, 0);
       if (this.isStyle(2305843009213693952L)) {
-         this.setExtent(var1, var2);
+         this.setExtent(width, height);
       } else {
-         this.setExtent(var1, Math.min(var2, var4));
+         this.setExtent(width, Math.min(height, virtualHeight));
       }
 
-      this.setVirtualExtent(var1, var4);
+      this.setVirtualExtent(width, virtualHeight);
    }
 
    @Override
-   protected void subpaint(Graphics var1) {
-      XYRect var2 = var1.getClippingRect();
-      int var3 = var2.y;
-      int var4 = var2.y + var2.height;
-      int var5 = this.getFieldCount();
-      if (var5 > 0) {
-         Field var6 = this.getField(0);
-         if (var6 != null) {
-            var3 += var6.getMarginTop();
+   protected void subpaint(Graphics graphics) {
+      XYRect clip = graphics.getClippingRect();
+      int top = clip.y;
+      int bottom = clip.y + clip.height;
+      int numFields = this.getFieldCount();
+      if (numFields > 0) {
+         Field field = this.getField(0);
+         if (field != null) {
+            top += field.getMarginTop();
          }
       }
 
-      int var7 = this.getFieldAtLocation(0, var3);
-      if (var7 != -1) {
-         while (var7 < var5) {
-            Field var8 = this.getField(var7);
-            if (var8.getTop() >= var4) {
+      int i = this.getFieldAtLocation(0, top);
+      if (i != -1) {
+         while (i < numFields) {
+            Field field = this.getField(i);
+            if (field.getTop() >= bottom) {
                return;
             }
 
-            this.paintChild(var1, var8);
-            var7++;
+            this.paintChild(graphics, field);
+            i++;
          }
       }
    }
 
    @Override
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 }

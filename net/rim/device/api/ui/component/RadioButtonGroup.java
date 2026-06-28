@@ -9,15 +9,15 @@ public class RadioButtonGroup {
    private int _selected = -1;
    private FieldChangeListener _changeListener;
 
-   public int add(RadioButtonField var1) {
-      if (var1.getGroup() != null) {
+   public int add(RadioButtonField button) {
+      if (button.getGroup() != null) {
          throw new Object();
       }
 
-      var1._group = this;
-      var1._index = this._buttons.size();
-      this._buttons.addElement(var1);
-      return var1._index;
+      button._group = this;
+      button._index = this._buttons.size();
+      this._buttons.addElement(button);
+      return button._index;
    }
 
    public FieldChangeListener getChangeListener() {
@@ -36,23 +36,75 @@ public class RadioButtonGroup {
       return this._buttons.size();
    }
 
-   public void remove(RadioButtonField var1) {
+   public void remove(RadioButtonField button) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setChangeListener(FieldChangeListener var1) {
+   public void setChangeListener(FieldChangeListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setNotifyReselected(boolean var1) {
+   public final void setNotifyReselected(boolean notifyReselected) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setSelectedIndex(int var1) {
-      this.setSelectedIndex(var1, Integer.MIN_VALUE);
+   public void setSelectedIndex(int selected) {
+      this.setSelectedIndex(selected, Integer.MIN_VALUE);
    }
 
-   void setSelectedIndex(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   void setSelectedIndex(int selected, int context) {
+      if (selected < -1 || selected >= this._buttons.size()) {
+         throw new Object();
+      }
+
+      if (this._selected == selected) {
+         if (this._notifyReselected) {
+            RadioButtonField newButton = null;
+            if (this._selected != -1) {
+               newButton = (RadioButtonField)this._buttons.elementAt(this._selected);
+               if (this._changeListener != null) {
+                  try {
+                     this._changeListener.fieldChanged(newButton, context);
+                  } catch (Throwable var6) {
+                  }
+               }
+
+               newButton.selectionChange(context);
+            }
+         }
+      } else {
+         RadioButtonField oldButton = null;
+         if (this._selected != -1) {
+            oldButton = (RadioButtonField)this._buttons.elementAt(this._selected);
+         }
+
+         this._selected = selected;
+         if (oldButton != null) {
+            oldButton.selectionChange(context);
+         }
+
+         RadioButtonField newButton = null;
+         if (this._selected != -1) {
+            newButton = (RadioButtonField)this._buttons.elementAt(this._selected);
+            newButton.selectionChange(context);
+         }
+
+         if (this._changeListener != null) {
+            if (oldButton != null) {
+               try {
+                  this._changeListener.fieldChanged(oldButton, context);
+               } catch (Throwable var7) {
+               }
+            }
+
+            if (newButton != null) {
+               try {
+                  this._changeListener.fieldChanged(newButton, context);
+                  return;
+               } catch (Throwable var8) {
+               }
+            }
+         }
+      }
    }
 }

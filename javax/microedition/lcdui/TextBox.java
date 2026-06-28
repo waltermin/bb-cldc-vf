@@ -1,45 +1,57 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.Manager;
+
 public class TextBox extends Screen {
    MIDPEditField _edit;
 
-   public TextBox(String var1, String var2, int var3, int var4) {
+   public TextBox(String title, String text, int maxSize, int constraints) {
+      super(new MIDPScreen());
+      synchronized (Application.getEventLock()) {
+         this.getPeer().setDisplayable(this);
+         Manager container = (Manager)(new Object(3459045988797251584L));
+         this.getPeer().add(container);
+         this._edit = new MIDPEditField(null, text, maxSize, constraints, null);
+         container.add(this._edit);
+         this.setTitle(title);
+      }
    }
 
    public String getString() {
       return this._edit.getString();
    }
 
-   public void setString(String var1) {
-      this._edit.setString(var1);
+   public void setString(String text) {
+      this._edit.setString(text);
    }
 
-   public int getChars(char[] var1) {
-      return this._edit.getChars(var1);
+   public int getChars(char[] data) {
+      return this._edit.getChars(data);
    }
 
-   public void setChars(char[] var1, int var2, int var3) {
-      this._edit.setChars(var1, var2, var3);
+   public void setChars(char[] data, int offset, int length) {
+      this._edit.setChars(data, offset, length);
    }
 
-   public void insert(String var1, int var2) {
-      this._edit.insert(var1, var2);
+   public void insert(String src, int position) {
+      this._edit.insert(src, position);
    }
 
-   public void insert(char[] var1, int var2, int var3, int var4) {
-      this._edit.insert(var1, var2, var3, var4);
+   public void insert(char[] data, int offset, int length, int position) {
+      this._edit.insert(data, offset, length, position);
    }
 
-   public void delete(int var1, int var2) {
-      this._edit.delete(var1, var2);
+   public void delete(int offset, int length) {
+      this._edit.delete(offset, length);
    }
 
    public int getMaxSize() {
       return this._edit.getMaxSize();
    }
 
-   public int setMaxSize(int var1) {
-      return this._edit.setMaxSize(var1);
+   public int setMaxSize(int maxSize) {
+      return this._edit.setMaxSize(maxSize);
    }
 
    public int size() {
@@ -50,14 +62,14 @@ public class TextBox extends Screen {
       return this._edit.getCaretPosition();
    }
 
-   public void setConstraints(int var1) {
-      this._edit.setConstraints(var1);
+   public void setConstraints(int constraints) {
+      this._edit.setConstraints(constraints);
    }
 
    public int getConstraints() {
       return this._edit.getConstraints();
    }
 
-   public void setInitialInputMode(String var1) {
+   public void setInitialInputMode(String characterSubset) {
    }
 }

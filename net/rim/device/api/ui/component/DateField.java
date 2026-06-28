@@ -57,12 +57,12 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    void calcCachedData() {
       if (this.getManager() != null && this.getManager().isValidLayout()) {
-         XYRect var1 = this.getExtent();
-         int var2 = var1.width;
-         int var3 = var1.height;
+         XYRect extent = this.getExtent();
+         int oldWidth = extent.width;
+         int oldHeight = extent.height;
          this.calcLayoutData(Math.max(this._oldWidth, this.getContentWidth()));
-         var1 = this.getExtent();
-         if (var1.width != var2 || var1.height != var3) {
+         extent = this.getExtent();
+         if (extent.width != oldWidth || extent.height != oldHeight) {
             this.updateLayout();
          }
 
@@ -74,19 +74,19 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    boolean changeOptionDialog() {
       if (this.isEditable() && this.getOriginal() == this) {
-         DateField$2 var1 = new DateField$2(this, null, this.getDate(), this._format, 6);
-         var1.setMinuteIncrements(this._minuteIncrements);
-         var1.setTimeZone(this._timezone);
-         var1.setChangeListener(this.getChangeListener());
-         DateInPlaceScreen var2 = new DateInPlaceScreen(this, var1, 0);
-         boolean var3 = var2.doModal();
-         if (var3) {
-            this.setDate(var1.getDate(), 0);
+         DateField field = new DateField$2(this, null, this.getDate(), this._format, 6);
+         field.setMinuteIncrements(this._minuteIncrements);
+         field.setTimeZone(this._timezone);
+         field.setChangeListener(this.getChangeListener());
+         DateInPlaceScreen changeDialog = new DateInPlaceScreen(this, field, 0);
+         boolean accepted = changeDialog.doModal();
+         if (accepted) {
+            this.setDate(field.getDate(), 0);
          } else {
-            var1.setDate(this.getDate());
+            field.setDate(this.getDate());
          }
 
-         this._position = var1._position;
+         this._position = field._position;
          this.calcCachedData();
          return true;
       } else {
@@ -102,29 +102,29 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       return this._utilCal == null ? Long.MIN_VALUE : ((CalendarExtensions)this._utilCal).getTimeLong();
    }
 
-   void getInPlaceRect(XYRect var1) {
-      this._dateTextRect.getTextBounds(var1);
+   void getInPlaceRect(XYRect rect) {
+      this._dateTextRect.getTextBounds(rect);
    }
 
-   public void setTimeZone(TimeZone var1) {
-      if (var1 == null) {
+   public void setTimeZone(TimeZone tz) {
+      if (tz == null) {
          throw new Object();
       }
 
-      this._timezone = var1;
+      this._timezone = tz;
       if (this._utilCal != null) {
-         this._utilCal.setTimeZone(var1);
+         this._utilCal.setTimeZone(tz);
       }
 
       this.calcCachedData();
    }
 
    public int getMode() {
-      int[] var1 = !this.isEditable() && this._format != null ? this._format.getFields() : this._c_fields;
-      byte var2 = 0;
+      int[] fields = !this.isEditable() && this._format != null ? this._format.getFields() : this._c_fields;
+      int mode = 0;
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         switch (var1[var3]) {
+      for (int lv = 0; lv < fields.length; lv++) {
+         switch (fields[lv]) {
             case 0:
             case 3:
             case 4:
@@ -137,26 +137,26 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
             case 5:
             case 7:
             default:
-               var2 |= 16;
+               mode |= 16;
                break;
             case 9:
             case 10:
             case 12:
-               var2 |= 32;
+               mode |= 32;
          }
       }
 
-      return var2;
+      return mode;
    }
 
    public TimeZone getTimeZone() {
       return this._timezone;
    }
 
-   boolean isSubFieldEditable(int var1) {
-      boolean var2 = false;
-      int var3 = this._c_fields[var1];
-      switch (var3) {
+   boolean isSubFieldEditable(int testPosition) {
+      boolean supported = false;
+      int testField = this._c_fields[testPosition];
+      switch (testField) {
          case 1:
          case 2:
          case 5:
@@ -167,73 +167,73 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
          case 13:
          case 14:
          default:
-            var2 = true;
+            supported = true;
          case 0:
          case 3:
          case 4:
          case 6:
          case 7:
          case 8:
-            return var2;
+            return supported;
       }
    }
 
-   public void setDate(long var1) {
-      this.setDate(var1, Integer.MIN_VALUE);
+   public void setDate(long date) {
+      this.setDate(date, Integer.MIN_VALUE);
    }
 
-   protected void setDate(long var1, int var3) {
-      boolean var4 = false;
-      if (var1 != Long.MIN_VALUE) {
+   protected void setDate(long date, int context) {
+      boolean changed = false;
+      if (date != Long.MIN_VALUE) {
          if (this._utilCal == null) {
             this._utilCal = Calendar.getInstance(this._timezone);
-            var4 = true;
+            changed = true;
          }
 
-         if (var1 != this.getDate()) {
-            ((CalendarExtensions)this._utilCal).setTimeLong(var1);
-            var4 = true;
+         if (date != this.getDate()) {
+            ((CalendarExtensions)this._utilCal).setTimeLong(date);
+            changed = true;
          }
       } else if (this._utilCal != null) {
          this._utilCal = null;
-         var4 = true;
+         changed = true;
       }
 
-      if (var4) {
+      if (changed) {
          this.calcCachedData();
-         this.fieldChangeNotify(var3);
+         this.fieldChangeNotify(context);
       }
    }
 
-   public void setDate(Date var1) {
-      this.setDate(var1, Integer.MIN_VALUE);
+   public void setDate(Date date) {
+      this.setDate(date, Integer.MIN_VALUE);
    }
 
-   protected void setDate(Date var1, int var2) {
-      boolean var3 = false;
-      if (var1 != null) {
+   protected void setDate(Date date, int context) {
+      boolean changed = false;
+      if (date != null) {
          if (this._utilCal == null) {
             this._utilCal = Calendar.getInstance(this._timezone);
-            var3 = true;
+            changed = true;
          }
 
-         if (!var1.equals(this._utilCal.getTime())) {
-            this._utilCal.setTime(var1);
-            var3 = true;
+         if (!date.equals(this._utilCal.getTime())) {
+            this._utilCal.setTime(date);
+            changed = true;
          }
       } else if (this._utilCal != null) {
          this._utilCal = null;
-         var3 = true;
+         changed = true;
       }
 
-      if (var3) {
+      if (changed) {
          this.calcCachedData();
-         this.fieldChangeNotify(var2);
+         this.fieldChangeNotify(context);
       }
    }
 
-   public void setFormat(DateFormat var1) {
-      this._format = var1;
+   public void setFormat(DateFormat format) {
+      this._format = format;
       if (this.isEditable()) {
          this._c_fields = this._format.getFields();
       } else {
@@ -248,22 +248,22 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       return this._minimumWidth;
    }
 
-   void setMinimumWidth(int var1) {
+   void setMinimumWidth(int minimumWidth) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setMinuteIncrements(long var1) {
-      this._minuteIncrements = var1;
+   public void setMinuteIncrements(long minuteIncrements) {
+      this._minuteIncrements = minuteIncrements;
    }
 
    @Override
-   public void setLabelStringProvider(StringProvider var1) {
+   public void setLabelStringProvider(StringProvider label) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void setLabel(String var1) {
-      this._label.setText(var1);
+   public void setLabel(String label) {
+      this._label.setText(label);
       this.calcCachedData();
    }
 
@@ -273,8 +273,8 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    private boolean isEraSupported() {
-      for (int var1 = 0; var1 < this._c_fields.length; var1++) {
-         if (this._c_fields[var1] == 0) {
+      for (int lv = 0; lv < this._c_fields.length; lv++) {
+         if (this._c_fields[lv] == 0) {
             return true;
          }
       }
@@ -292,42 +292,42 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char key, int status, int time) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private char transformKeyChar(char var1, int var2) {
+   private char transformKeyChar(char key, int status) {
       if (InternalServices.isReducedFormFactor()) {
-         switch (var1) {
+         switch (key) {
             case ' ':
                switch (this._c_position.getField()) {
                   case 2:
                   case 9:
-                     return var1;
+                     return key;
                   default:
-                     return Keypad.map(var1, 1);
+                     return Keypad.map(key, 1);
                }
             case '0':
-               var1 = Keypad.getUnaltedChar('0');
+               key = Keypad.getUnaltedChar('0');
          }
       }
 
-      return var1;
+      return key;
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
+   protected boolean keyControl(char key, int status, int time) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   protected boolean keyStatus(int var1, int var2) {
-      return Keypad.key(var1) == 257 && (Keypad.status(var1) & 1) != 0 ? this.changeOptionDialog() : false;
+   protected boolean keyStatus(int keycode, int time) {
+      return Keypad.key(keycode) == 257 && (Keypad.status(keycode) & 1) != 0 ? this.changeOptionDialog() : false;
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      switch (var1) {
+   protected boolean invokeAction(int action) {
+      switch (action) {
          case 1:
             return this.changeOptionDialog();
          default:
@@ -336,155 +336,155 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       if (this.isEditable()) {
          this._c_fields = this._format.getFields();
       }
 
-      this._oldWidth = var1;
-      this.calcLayoutData(var1);
+      this._oldWidth = width;
+      this.calcLayoutData(width);
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
-      super.makeContextMenu(var1);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      super.makeContextMenu(contextMenu);
       if (Ui.getMode() < 2 && this.isEditable()) {
-         var1.addItem(_changeOptionsItem);
+         contextMenu.addItem(_changeOptionsItem);
       }
 
-      var1.setDefault(-1);
+      contextMenu.setDefault(-1);
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      super.moveFocus(var1, var2, var3);
-      if (((var2 & 536870912) == 0 || (var2 & 65536) == 0 && (var2 & 131072) != 0) && (var2 & 1) != 0 && this.isEditable()) {
-         this.calcDateFromFieldChange(Ui.getIncreaseDirection() * var1);
+   protected int moveFocus(int amount, int status, int time) {
+      super.moveFocus(amount, status, time);
+      if (((status & 536870912) == 0 || (status & 65536) == 0 && (status & 131072) != 0) && (status & 1) != 0 && this.isEditable()) {
+         this.calcDateFromFieldChange(Ui.getIncreaseDirection() * amount);
          this.calcCachedData();
          this.fieldChangeNotify(0);
-         this.clampDateOnInterval(var2, var1);
+         this.clampDateOnInterval(status, amount);
          return 0;
       }
 
-      if ((var2 & 536870912) != 0 && (var2 & 65536) == 0) {
-         if ((var2 & 131072) != 0 && this.isChangeOnVerticalScrollSet()) {
-            this.calcDateFromFieldChange(Ui.getIncreaseDirection() * var1);
+      if ((status & 536870912) != 0 && (status & 65536) == 0) {
+         if ((status & 131072) != 0 && this.isChangeOnVerticalScrollSet()) {
+            this.calcDateFromFieldChange(Ui.getIncreaseDirection() * amount);
             this.calcCachedData();
             this.fieldChangeNotify(0);
             return 0;
          } else {
-            return var1;
+            return amount;
          }
       } else {
-         byte var4;
-         if (var1 > 0) {
-            var4 = 1;
+         int dir;
+         if (amount > 0) {
+            dir = 1;
          } else {
-            var4 = -1;
+            dir = -1;
          }
 
-         int var5 = this._c_fields.length - 1;
-         int var6 = this._position;
-         int var7 = var6;
+         int last = this._c_fields.length - 1;
+         int position = this._position;
+         int newposition = position;
 
          label90:
-         while (var1 != 0) {
+         while (amount != 0) {
             do {
-               if ((var2 & 536870912) != 0) {
+               if ((status & 536870912) != 0) {
                   if (!this.isEditable()) {
-                     var1 = 0;
+                     amount = 0;
                      break label90;
                   }
 
-                  if (var6 + var4 > var5) {
+                  if (position + dir > last) {
                      if (this.isFocusMoveOnHorizontalScrollSet()) {
-                        return var1;
+                        return amount;
                      }
 
-                     var6 = var5;
+                     position = last;
 
-                     while (!this.isSubFieldEditable(var6)) {
-                        var6--;
+                     while (!this.isSubFieldEditable(position)) {
+                        position--;
                      }
-                  } else if (var6 + var4 < 0) {
+                  } else if (position + dir < 0) {
                      if (this.isFocusMoveOnHorizontalScrollSet()) {
-                        return var1;
+                        return amount;
                      }
 
-                     var6 = 0;
+                     position = 0;
 
-                     while (!this.isSubFieldEditable(var6)) {
-                        var6++;
+                     while (!this.isSubFieldEditable(position)) {
+                        position++;
                      }
                   } else {
-                     var6 += var4;
+                     position += dir;
                   }
                } else {
-                  var6 += var4;
+                  position += dir;
                }
 
-               if (var6 < 0 || var6 > var5) {
+               if (position < 0 || position > last) {
                   break label90;
                }
-            } while (!this.isSubFieldEditable(var6));
+            } while (!this.isSubFieldEditable(position));
 
-            var7 = var6;
-            var1 -= var4;
+            newposition = position;
+            amount -= dir;
          }
 
-         if (this._position != var7) {
-            this._position = var7;
+         if (this._position != newposition) {
+            this._position = newposition;
          }
 
          this.calcCachedData();
-         this.clampDateOnInterval(var2, var1);
-         return var1;
+         this.clampDateOnInterval(status, amount);
+         return amount;
       }
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
+   public void getFocusRect(XYRect rect) {
       if (this._cursor == null) {
-         super.getFocusRect(var1);
+         super.getFocusRect(rect);
       } else {
-         var1.set(this._cursor[0]);
-         int var2 = this._cursor.length;
+         rect.set(this._cursor[0]);
+         int i = this._cursor.length;
 
-         while (--var2 > 0) {
-            var1.union(this._cursor[var2]);
+         while (--i > 0) {
+            rect.union(this._cursor[i]);
          }
       }
    }
 
-   private void clampDateOnInterval(int var1, int var2) {
-      if ((var1 & 1) != 0 && this.isEditable() && this.getCurrentSubfield() == 12) {
-         long var3 = this.getDate();
-         long var5 = var3 / 60000 * 60000;
-         long var7 = var3 / this._minuteIncrements;
-         var7 *= this._minuteIncrements;
-         if (var7 != var5) {
-            if (var5 > 0 && var2 > 0) {
-               var7 += this._minuteIncrements;
-            } else if (var5 < 0 && var2 < 0) {
-               var7 -= this._minuteIncrements;
+   private void clampDateOnInterval(int status, int amount) {
+      if ((status & 1) != 0 && this.isEditable() && this.getCurrentSubfield() == 12) {
+         long date = this.getDate();
+         long clampedDate = date / 60000 * 60000;
+         long newDate = date / this._minuteIncrements;
+         newDate *= this._minuteIncrements;
+         if (newDate != clampedDate) {
+            if (clampedDate > 0 && amount > 0) {
+               newDate += this._minuteIncrements;
+            } else if (clampedDate < 0 && amount < 0) {
+               newDate -= this._minuteIncrements;
             }
          }
 
-         this.setDate(var7 + (var3 - var5), 0);
+         this.setDate(newDate + (date - clampedDate), 0);
       }
    }
 
    @Override
-   protected void onFocus(int var1) {
-      super.onFocus(var1);
+   protected void onFocus(int direction) {
+      super.onFocus(direction);
       if (!Trackball.isSupported()) {
-         if (var1 == 1) {
+         if (direction == 1) {
             this._position = 0;
 
             while (this._position < this._c_fields.length - 1 && !this.isSubFieldEditable(this._position)) {
                this._position++;
             }
-         } else if (var1 != -1) {
+         } else if (direction != -1) {
             while (this._position < this._c_fields.length - 1 && !this.isSubFieldEditable(this._position)) {
                this._position++;
             }
@@ -507,17 +507,17 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
          }
 
          if (this._first_focus) {
-            int var2 = 0;
+            int i = 0;
 
-            while (var2 < this._focus_order.length && this._focus_order[var2] != this._position) {
-               var2++;
+            while (i < this._focus_order.length && this._focus_order[i] != this._position) {
+               i++;
             }
 
             label93:
-            for (int var3 = 0; var3 < var2; var3++) {
-               for (int var4 = 0; var4 < this._c_fields.length; var4++) {
-                  if (this._c_fields[var4] == this._focus_order[var3] && this.isSubFieldEditable(var4)) {
-                     this._position = var4;
+            for (int j = 0; j < i; j++) {
+               for (int k = 0; k < this._c_fields.length; k++) {
+                  if (this._c_fields[k] == this._focus_order[j] && this.isSubFieldEditable(k)) {
+                     this._position = k;
                      break label93;
                   }
                }
@@ -531,27 +531,27 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      this._label.paintSelf(var1);
-      this._dateTextRect.paintSelf(var1);
+   protected void paint(Graphics graphics) {
+      this._label.paintSelf(graphics);
+      this._dateTextRect.paintSelf(graphics);
    }
 
    @Override
-   public void selectionCopy(Clipboard var1) {
-      DateField$FormattedDate var2 = new DateField$FormattedDate(this.getDate(), this._format, this._timezone);
+   public void selectionCopy(Clipboard cb) {
+      DateField$FormattedDate formattedDate = new DateField$FormattedDate(this.getDate(), this._format, this._timezone);
       if (ControlledAccess.verifyRRISignatures(true)) {
-         var1.put(var2);
+         cb.put(formattedDate);
       } else {
-         var1.put(var2.toString());
+         cb.put(formattedDate.toString());
       }
    }
 
-   private void calcDateFromFieldChange(int var1) {
-      int var2 = this._c_fields[this._position];
+   private void calcDateFromFieldChange(int changeAmount) {
+      int currentField = this._c_fields[this._position];
       if (this._utilCal == null) {
          this._utilCal = Calendar.getInstance(this._timezone);
       } else {
-         switch (var2) {
+         switch (currentField) {
             case 0:
             case 3:
             case 4:
@@ -566,45 +566,61 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
             case 13:
             case 14:
             default:
-               ((CalendarExtensions)this._utilCal).add(var2, var1);
+               ((CalendarExtensions)this._utilCal).add(currentField, changeAmount);
                break;
             case 7:
-               ((CalendarExtensions)this._utilCal).add(5, var1);
+               ((CalendarExtensions)this._utilCal).add(5, changeAmount);
                break;
             case 9:
-               ((CalendarExtensions)this._utilCal).roll(9, var1);
+               ((CalendarExtensions)this._utilCal).roll(9, changeAmount);
                break;
             case 12:
-               int var3 = (int)(this._minuteIncrements / 60000);
-               int var4 = this._utilCal.get(var2) % var3;
-               ((CalendarExtensions)this._utilCal).add(var2, 0 > var1 && 0 < var4 ? (var1 + 1) * var3 - var4 : var1 * var3 - var4);
+               int increment = (int)(this._minuteIncrements / 60000);
+               int currentValue = this._utilCal.get(currentField) % increment;
+               ((CalendarExtensions)this._utilCal)
+                  .add(
+                     currentField,
+                     0 > changeAmount && 0 < currentValue ? (changeAmount + 1) * increment - currentValue : changeAmount * increment - currentValue
+                  );
          }
 
          if (!this.isEraSupported()) {
-            int var5 = this._utilCal.get(0);
-            if (var5 == 0) {
+            int era = this._utilCal.get(0);
+            if (era == 0) {
                this._utilCal.set(0, 1);
             }
          }
       }
    }
 
-   public DateField(String var1, long var2, long var4) {
-      this(var1, var2, getDateFormatFromStyle(var4), var4);
+   public DateField(String label, long date, long style) {
+      this(label, date, getDateFormatFromStyle(style), style);
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void drawFocus(Graphics graphics, boolean on) {
+      if (this._cursor == null) {
+         synchronized (_rect) {
+            this.getInPlaceRect(_rect);
+            this.drawHighlightRegion(graphics, 1, on, _rect.x, _rect.y, _rect.width, _rect.height);
+         }
+      } else {
+         int i = this._cursor.length;
+
+         while (--i >= 0) {
+            XYRect rect = this._cursor[i];
+            this.drawHighlightRegion(graphics, 1, on, rect.x, rect.y, rect.width, rect.height);
+         }
+      }
    }
 
-   public DateField(String var1, long var2, DateFormat var4) {
-      this(var1, var2, var4, 0);
+   public DateField(String label, long date, DateFormat format) {
+      this(label, date, format, 0);
    }
 
    @Override
-   public void setEditable(boolean var1) {
-      super.setEditable(var1);
+   public void setEditable(boolean editable) {
+      super.setEditable(editable);
       if (this.isEditable()) {
          this._c_fields = this._format.getFields();
       } else {
@@ -613,30 +629,30 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       }
    }
 
-   public DateField(String var1, long var2, long var4, DateFormat var6) {
-      this(var1, var2, var6, var4);
+   public DateField(String label, long date, long style, DateFormat format) {
+      this(label, date, format, style);
    }
 
    @Override
    public int getPreferredHeight() {
-      int var1 = this.getFont().getHeight();
-      int var2 = this._isLabelOwnLine && this._label.getTextString() != null ? 2 : 1;
-      return var1 * var2;
+      int height = this.getFont().getHeight();
+      int rows = this._isLabelOwnLine && this._label.getTextString() != null ? 2 : 1;
+      return height * rows;
    }
 
    @Override
    public int getPreferredWidth() {
-      Object var1 = this._dateTextRect.getText();
-      ((StringBuffer)var1).setLength(0);
-      this._format.format(this._utilCal, (StringBuffer)var1, null);
-      Font var2 = this.getFont();
-      int var3 = var2.getBounds((StringBuffer)var1, 0, ((StringBuffer)var1).length());
-      int var4 = var2.getBounds(this._label.getTextString());
-      if (var4 != 0) {
-         var4 += 5;
+      StringBuffer text = (StringBuffer)this._dateTextRect.getText();
+      text.setLength(0);
+      this._format.format(this._utilCal, text, null);
+      Font font = this.getFont();
+      int dateWidth = font.getBounds(text, 0, text.length());
+      int labelWidth = font.getBounds(this._label.getTextString());
+      if (labelWidth != 0) {
+         labelWidth += 5;
       }
 
-      return Math.max(this._minimumWidth, var3 + var4);
+      return Math.max(this._minimumWidth, dateWidth + labelWidth);
    }
 
    @Override
@@ -645,65 +661,65 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       this._label.applyTheme();
       this._isLabelOwnLine = ThemeManager.getActiveTheme().isLabelOnOwnLine();
       if (this._isLabelOwnLine) {
-         int var1 = this.getFieldStyle();
-         var1 &= -8;
-         var1 |= 6;
-         this._dateTextRect.setStyle(var1);
+         int textStyle = this.getFieldStyle();
+         textStyle &= -8;
+         textStyle |= 6;
+         this._dateTextRect.setStyle(textStyle);
       }
    }
 
-   private void calcLayoutData(int var1) {
+   private void calcLayoutData(int width) {
       this._position = MathUtilities.clamp(0, this._position, this._c_fields.length - 1);
       this._c_position.setField(this._c_fields[this._position]);
       this.formatDate(this._c_position);
-      byte var2 = 0;
-      int var3 = 0;
-      this._label.layout(var1, Integer.MAX_VALUE);
-      int var6 = this.getFieldStyle();
-      this._dateTextRect.layout(var1, Integer.MAX_VALUE);
-      int var7 = this._dateTextRect.getWidth();
-      int var8 = this._dateTextRect.getHeight();
-      int var9 = this._label.getWidth();
-      int var4;
-      int var5;
-      if (var9 <= 0) {
-         var4 = 0;
-         var5 = 0;
+      int labelXOffset = 0;
+      int labelYOffset = 0;
+      this._label.layout(width, Integer.MAX_VALUE);
+      int textStyle = this.getFieldStyle();
+      this._dateTextRect.layout(width, Integer.MAX_VALUE);
+      int extentX = this._dateTextRect.getWidth();
+      int extentY = this._dateTextRect.getHeight();
+      int labelWidth = this._label.getWidth();
+      int dateXOffset;
+      int dateYOffset;
+      if (labelWidth <= 0) {
+         dateXOffset = 0;
+         dateYOffset = 0;
       } else if (this._isLabelOwnLine) {
-         var4 = 0;
-         var5 = this._label.getHeight();
-         var8 += var5;
+         dateXOffset = 0;
+         dateYOffset = this._label.getHeight();
+         extentY += dateYOffset;
       } else {
-         int var10 = var9 + 5 + var7;
-         if (var10 <= var1) {
-            var4 = var9 + 5;
-            var5 = this._label.getLineHeight(0) - this._dateTextRect.getLineHeight(0);
-            if (var5 < 0) {
-               var3 = -var5;
-               var5 = 0;
+         int desiredWidth = labelWidth + 5 + extentX;
+         if (desiredWidth <= width) {
+            dateXOffset = labelWidth + 5;
+            dateYOffset = this._label.getLineHeight(0) - this._dateTextRect.getLineHeight(0);
+            if (dateYOffset < 0) {
+               labelYOffset = -dateYOffset;
+               dateYOffset = 0;
             }
 
-            var7 = var10;
-            this._dateTextRect.reduceWidthToFit(var1 - var4);
+            extentX = desiredWidth;
+            this._dateTextRect.reduceWidthToFit(width - dateXOffset);
          } else {
-            var4 = 0;
-            var5 = this._label.getHeight();
-            var7 = Math.max(var9, var7);
-            var8 += var5;
+            dateXOffset = 0;
+            dateYOffset = this._label.getHeight();
+            extentX = Math.max(labelWidth, extentX);
+            extentY += dateYOffset;
          }
       }
 
-      if ((var6 & 1152921504606846976L) != 0 || (var6 & 7) != 6) {
-         var7 = var1;
+      if ((textStyle & 1152921504606846976L) != 0 || (textStyle & 7) != 6) {
+         extentX = width;
       }
 
       if (this._minimumWidth > 0) {
-         var7 = Math.max(var7, this._minimumWidth);
+         extentX = Math.max(extentX, this._minimumWidth);
       }
 
-      this._label.setPosition(var2, var3);
-      this._dateTextRect.setPosition(var4, var5);
-      this.setExtent(var7, var8);
+      this._label.setPosition(labelXOffset, labelYOffset);
+      this._dateTextRect.setPosition(dateXOffset, dateYOffset);
+      this.setExtent(extentX, extentY);
       if (this.isEditable() && this.isSubFieldEditable(this._position)) {
          this._cursor = this._dateTextRect.getTextBounds(this._c_position.getBeginIndex(), this._c_position.getEndIndex());
       } else {
@@ -711,11 +727,11 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       }
    }
 
-   public DateField(String var1, long var2, int var4, DateFormat var5) {
-      this(var1, var2, (long)var4, var5);
+   public DateField(String label, long date, int style, DateFormat format) {
+      this(label, date, (long)style, format);
    }
 
-   public DateField(String var1, long var2, DateFormat var4, long var5) {
+   public DateField(String label, long date, DateFormat format, long style) {
    }
 
    @Override
@@ -723,23 +739,23 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       return this._dateTextRect.getTextString();
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 7) == 0) {
-         var0 |= 5;
+   private static long validateStyle(long style) {
+      if ((style & 7) == 0) {
+         style |= 5;
       }
 
-      if ((var0 & 13510798882111488L) == 0) {
-         var0 |= 4503599627370496L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 4503599627370496L;
       }
 
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0 & -49;
+      return style & -49;
    }
 
-   private static DateFormat getDateFormatFromStyle(long var0) {
+   private static DateFormat getDateFormatFromStyle(long style) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -755,11 +771,11 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
       return (this.getStyle() & 128) > 0;
    }
 
-   private void formatDate(FieldPosition var1) {
-      Object var2 = this._dateTextRect.getText();
-      ((StringBuffer)var2).setLength(0);
-      this._format.format(this._utilCal, (StringBuffer)var2, var1);
-      this._dateTextRect.setText(var2);
+   private void formatDate(FieldPosition fieldPosition) {
+      StringBuffer dateStringBuffer = (StringBuffer)this._dateTextRect.getText();
+      dateStringBuffer.setLength(0);
+      this._format.format(this._utilCal, dateStringBuffer, fieldPosition);
+      this._dateTextRect.setText(dateStringBuffer);
    }
 
    @Override

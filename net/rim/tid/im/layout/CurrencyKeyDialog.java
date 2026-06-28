@@ -7,8 +7,8 @@ import net.rim.device.api.ui.component.TextInputDialog;
 public final class CurrencyKeyDialog extends Dialog implements TextInputDialog {
    private static CurrencyKeyDialog _instance;
 
-   public CurrencyKeyDialog(String var1, Object[] var2, int var3) {
-      super(var1, var2, null, var3, null, 1);
+   public CurrencyKeyDialog(String message, Object[] choices, int defaultChoice) {
+      super(message, choices, null, defaultChoice, null, 1);
       this.setEscapeEnabled(true);
    }
 
@@ -19,13 +19,13 @@ public final class CurrencyKeyDialog extends Dialog implements TextInputDialog {
       }
    }
 
-   public static final int ask(String var0, Object[] var1, int var2) {
-      _instance = new CurrencyKeyDialog(var0, var1, var2);
+   public static final int ask(String message, Object[] choices, int defaultChoice) {
+      _instance = new CurrencyKeyDialog(message, choices, defaultChoice);
       return _instance.doModal();
    }
 
    @Override
-   public final int processKeyEvent(int var1, char var2, int var3, int var4) {
-      return Keypad.key(var3) == 36 ? 65536 : super.processKeyEvent(var1, var2, var3, var4);
+   public final int processKeyEvent(int event, char key, int keycode, int time) {
+      return Keypad.key(keycode) == 36 ? 65536 : super.processKeyEvent(event, key, keycode, time);
    }
 }

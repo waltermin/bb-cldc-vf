@@ -4,6 +4,6 @@ public class MIDletStateChangeException extends Exception {
    public MIDletStateChangeException() {
    }
 
-   public MIDletStateChangeException(String var1) {
+   public MIDletStateChangeException(String s) {
    }
 }

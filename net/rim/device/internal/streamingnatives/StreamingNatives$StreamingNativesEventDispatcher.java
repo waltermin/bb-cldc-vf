@@ -5,36 +5,36 @@ import net.rim.vm.Message;
 
 class StreamingNatives$StreamingNativesEventDispatcher extends EventDispatcher {
    @Override
-   public void dispatch(Message var1, Object var2) {
-      int var3 = var1.getEvent();
-      int var4 = var1.getSubMessage();
-      int var5 = var1.getData0();
-      StreamingNativesListener var6 = (StreamingNativesListener)var2;
-      switch (var3) {
+   public void dispatch(Message message, Object oListener) {
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      int data0 = message.getData0();
+      StreamingNativesListener listener = (StreamingNativesListener)oListener;
+      switch (event) {
          case 3329:
          default:
-            var6.streamHitWatermark(var4, var5);
+            listener.streamHitWatermark(subMessage, data0);
             return;
          case 3331:
-            var6.streamNewData(var4, var5);
+            listener.streamNewData(subMessage, data0);
             return;
          case 3332:
-            var6.streamSourceDone(var4);
+            listener.streamSourceDone(subMessage);
             return;
          case 3333:
-            var6.streamErrorFromSource(var4, var5);
+            listener.streamErrorFromSource(subMessage, data0);
             return;
          case 3334:
-            var6.streamErrorFromSink(var4, var5);
+            listener.streamErrorFromSink(subMessage, data0);
             return;
          case 3335:
-            var6.streamSessionClosed(var4);
+            listener.streamSessionClosed(subMessage);
             return;
          case 3336:
-            var6.streamLostData(var4, var5);
+            listener.streamLostData(subMessage, data0);
             return;
          case 3337:
-            var6.streamSinkDone(var4);
+            listener.streamSinkDone(subMessage);
          case 3328:
          case 3330:
       }

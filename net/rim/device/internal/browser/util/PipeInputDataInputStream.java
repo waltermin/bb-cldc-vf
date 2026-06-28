@@ -6,14 +6,14 @@ import java.io.InputStream;
 public final class PipeInputDataInputStream extends DataInputStream implements PipeInput {
    private PipeInput _pipeIn;
 
-   public PipeInputDataInputStream(PipeInput var1) {
-      super((InputStream)var1);
-      this._pipeIn = var1;
+   public PipeInputDataInputStream(PipeInput in) {
+      super((InputStream)in);
+      this._pipeIn = in;
    }
 
    @Override
-   public final int readByteArray(PipePtr var1, int var2) {
-      return this._pipeIn.readByteArray(var1, var2);
+   public final int readByteArray(PipePtr ptr, int length) {
+      return this._pipeIn.readByteArray(ptr, length);
    }
 
    @Override
@@ -22,8 +22,8 @@ public final class PipeInputDataInputStream extends DataInputStream implements P
    }
 
    @Override
-   public final String readInlineString(String var1) {
-      return this._pipeIn.readInlineString(var1);
+   public final String readInlineString(String encoding) {
+      return this._pipeIn.readInlineString(encoding);
    }
 
    @Override

@@ -4,30 +4,30 @@ public final class LEDUtilities implements LEDConstants {
    private LEDUtilities() {
    }
 
-   static final int getFlagColour(int var0) {
-      return var0 > LEDConstants.flagColourMap.length - 1 ? 0 : LEDConstants.flagColourMap[var0];
+   static final int getFlagColour(int bitNumber) {
+      return bitNumber > LEDConstants.flagColourMap.length - 1 ? 0 : LEDConstants.flagColourMap[bitNumber];
    }
 
-   static final int countSetBits(int var0) {
-      int var1 = 0;
+   static final int countSetBits(int flag) {
+      int numSetBits = 0;
 
-      for (int var2 = 32; var2 >= 0; var2--) {
-         if ((var0 & 1) == 1) {
-            var1++;
+      for (int i = 32; i >= 0; i--) {
+         if ((flag & 1) == 1) {
+            numSetBits++;
          }
 
-         var0 >>= 1;
+         flag >>= 1;
       }
 
-      return var1;
+      return numSetBits;
    }
 
-   static final int stateToColours(int var0) {
-      if ((var0 & 64) != 0) {
+   static final int stateToColours(int flag) {
+      if ((flag & 64) != 0) {
          return 4;
       }
 
-      switch (var0) {
+      switch (flag) {
          case 15:
          case 32:
          case 33:

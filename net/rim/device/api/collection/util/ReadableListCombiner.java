@@ -25,17 +25,17 @@ public class ReadableListCombiner
    }
 
    @Override
-   public void apply(int var1, int var2, long var3, Object var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void apply(int lowValue, int highValue, long action, Object context) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._listeners.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._listeners.removeCollectionListener(listener);
    }
 
    @Override
-   public void reset(Collection var1) {
+   public void reset(Collection collection) {
       if (!this._inReset) {
          this._inReset = true;
          this._listeners.fireReset(this);
@@ -44,67 +44,133 @@ public class ReadableListCombiner
    }
 
    @Override
-   public void elementAdded(Collection var1, Object var2) {
-      this._listeners.fireElementAdded(this, var2);
+   public void elementAdded(Collection collection, Object element) {
+      this._listeners.fireElementAdded(this, element);
    }
 
    @Override
-   public void elementUpdated(Collection var1, Object var2, Object var3) {
-      this._listeners.fireElementUpdated(this, var2, var3);
+   public void elementUpdated(Collection collection, Object oldElement, Object newElement) {
+      this._listeners.fireElementUpdated(this, oldElement, newElement);
    }
 
    @Override
-   public void elementRemoved(Collection var1, Object var2) {
-      this._listeners.fireElementRemoved(this, var2);
+   public void elementRemoved(Collection collection, Object element) {
+      this._listeners.fireElementRemoved(this, element);
    }
 
    @Override
-   public void addSource(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public void removeSource(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public int size() {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public Object getAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public int getAt(int var1, int var2, Object[] var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public int getIndex(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public void apply(long var1, long var3, long var5, Object var7) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   @Override
-   public void addCollectionListener(Object var1) {
-      this._listeners.addCollectionListener(var1);
-   }
-
-   @Override
-   public void suspendNotification(Object var1) {
+   public void addSource(Object source) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void resumeNotification(Object var1) {
+   public void removeSource(Object source) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   @Override
+   public int size() {
+      int count = 0;
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            count += ((ReadableList)this._sources.elementAt(i)).size();
+         }
+
+         return count;
+      }
+   }
+
+   @Override
+   public Object getAt(int index) {
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            ReadableList list = (ReadableList)this._sources.elementAt(i);
+            synchronized (list) {
+               int listSize = list.size();
+               if (index < listSize) {
+                  return list.getAt(index);
+               }
+
+               index -= listSize;
+            }
+         }
+
+         return null;
+      }
+   }
+
+   @Override
+   public int getAt(int index, int count, Object[] elements, int destIndex) {
+      int retrieved = 0;
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            ReadableList list = (ReadableList)this._sources.elementAt(i);
+            synchronized (list) {
+               int listSize = list.size();
+               if (index < listSize) {
+                  int copied = list.getAt(index, count, elements, destIndex);
+                  count -= copied;
+                  index += copied;
+                  destIndex += copied;
+                  retrieved += copied;
+                  if (count <= 0) {
+                     break;
+                  }
+               }
+
+               index -= listSize;
+            }
+         }
+
+         return retrieved;
+      }
+   }
+
+   @Override
+   public int getIndex(Object element) {
+      int offset = 0;
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            ReadableList list = (ReadableList)this._sources.elementAt(i);
+            synchronized (list) {
+               int index = list.getIndex(element);
+               if (index != -1) {
+                  return index + offset;
+               }
+
+               offset += list.size();
+            }
+         }
+
+         return -1;
+      }
+   }
+
+   @Override
+   public void apply(long lowValue, long highValue, long action, Object context) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   @Override
+   public void addCollectionListener(Object listener) {
+      this._listeners.addCollectionListener(listener);
+   }
+
+   @Override
+   public void suspendNotification(Object context) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   @Override
+   public void resumeNotification(Object context) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

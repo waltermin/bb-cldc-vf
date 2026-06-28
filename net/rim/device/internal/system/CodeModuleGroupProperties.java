@@ -8,9 +8,9 @@ import net.rim.vm.Persistable;
 public class CodeModuleGroupProperties extends Hashtable implements Persistable, SyncObject {
    private int _uid;
 
-   public Object put(String var1, String var2) {
-      Object var3 = PersistentContent.encode(var2);
-      return super.put(var1, var3);
+   public Object put(String key, String value) {
+      Object encodedValue = PersistentContent.encode(value);
+      return super.put(key, encodedValue);
    }
 
    @Override
@@ -18,12 +18,19 @@ public class CodeModuleGroupProperties extends Hashtable implements Persistable,
       return this._uid;
    }
 
-   public CodeModuleGroupProperties(int var1) {
-      this._uid = var1;
+   public CodeModuleGroupProperties(int uid) {
+      this._uid = uid;
    }
 
    @Override
-   public Object get(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Object get(Object key) {
+      Object encodedValue = super.get(key);
+      String value = null;
+
+      try {
+         return PersistentContent.decodeString(encodedValue);
+      } catch (ClassCastException cce) {
+         return encodedValue;
+      }
    }
 }

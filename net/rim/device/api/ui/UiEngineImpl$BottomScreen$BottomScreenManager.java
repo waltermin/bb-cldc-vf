@@ -6,6 +6,6 @@ final class UiEngineImpl$BottomScreen$BottomScreenManager extends Manager {
    }
 
    @Override
-   protected final void sublayout(int var1, int var2) {
+   protected final void sublayout(int width, int height) {
    }
 }

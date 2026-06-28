@@ -4,6 +4,6 @@ public final class UnsupportedOperationException extends RuntimeException {
    public UnsupportedOperationException() {
    }
 
-   public UnsupportedOperationException(String var1) {
+   public UnsupportedOperationException(String msg) {
    }
 }

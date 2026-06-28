@@ -14,7 +14,7 @@ public class TextScrapeVisitor implements FieldVisitor {
    }
 
    @Override
-   public boolean visit(Field var1, int var2) {
+   public boolean visit(Field field, int state) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 }

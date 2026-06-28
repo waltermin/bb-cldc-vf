@@ -8,12 +8,12 @@ class FontRegistry$FontInfo {
    int _renderingEngineHandle;
    String _typefaceName;
 
-   FontRegistry$FontInfo(int var1, int var2, boolean var3, int var4, int var5, String var6) {
-      this._index = var1;
-      this._count = var2;
-      this._isPublic = var3;
-      this._codFileHandle = var4;
-      this._renderingEngineHandle = var5;
-      this._typefaceName = var6;
+   FontRegistry$FontInfo(int aIndex, int aCount, boolean aIsPublic, int aCodFileHandle, int aRenderingEngineHandle, String aTypefaceName) {
+      this._index = aIndex;
+      this._count = aCount;
+      this._isPublic = aIsPublic;
+      this._codFileHandle = aCodFileHandle;
+      this._renderingEngineHandle = aRenderingEngineHandle;
+      this._typefaceName = aTypefaceName;
    }
 }

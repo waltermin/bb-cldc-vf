@@ -9,8 +9,8 @@ public final class Character {
    public static final char MIN_VALUE;
    public static final char MAX_VALUE;
 
-   public Character(char var1) {
-      this.value = var1;
+   public Character(char value) {
+      this.value = value;
    }
 
    public final char charValue() {
@@ -23,46 +23,46 @@ public final class Character {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public final String toString() {
-      char[] var1 = new char[]{this.value};
-      return String.valueOf(var1);
+      char[] buf = new char[]{this.value};
+      return String.valueOf(buf);
    }
 
-   public static final boolean isLowerCase(char var0) {
-      return CharacterUtilities.isLowerCase(var0);
+   public static final boolean isLowerCase(char ch) {
+      return CharacterUtilities.isLowerCase(ch);
    }
 
-   public static final boolean isUpperCase(char var0) {
-      return CharacterUtilities.isUpperCase(var0);
+   public static final boolean isUpperCase(char ch) {
+      return CharacterUtilities.isUpperCase(ch);
    }
 
-   public static final boolean isDigit(char var0) {
-      return CharacterUtilities.isDigit(var0);
+   public static final boolean isDigit(char ch) {
+      return CharacterUtilities.isDigit(ch);
    }
 
-   public static final char toLowerCase(char var0) {
-      return CharacterUtilities.isUpperCase(var0) ? CharacterUtilities.toLowerCase(var0) : var0;
+   public static final char toLowerCase(char ch) {
+      return CharacterUtilities.isUpperCase(ch) ? CharacterUtilities.toLowerCase(ch) : ch;
    }
 
-   public static final char toUpperCase(char var0) {
-      return CharacterUtilities.isLowerCase(var0) ? CharacterUtilities.toUpperCase(var0) : var0;
+   public static final char toUpperCase(char ch) {
+      return CharacterUtilities.isLowerCase(ch) ? CharacterUtilities.toUpperCase(ch) : ch;
    }
 
-   public static final int digit(char var0, int var1) {
-      int var2 = -1;
-      if (var1 >= 2 && var1 <= 36) {
-         if (isDigit(var0)) {
-            var2 = var0 - '0';
-         } else if (isUpperCase(var0) || isLowerCase(var0)) {
-            var2 = (var0 & 31) + 9;
+   public static final int digit(char ch, int radix) {
+      int value = -1;
+      if (radix >= 2 && radix <= 36) {
+         if (isDigit(ch)) {
+            value = ch - '0';
+         } else if (isUpperCase(ch) || isLowerCase(ch)) {
+            value = (ch & 31) + 9;
          }
       }
 
-      return var2 < var1 ? var2 : -1;
+      return value < radix ? value : -1;
    }
 }

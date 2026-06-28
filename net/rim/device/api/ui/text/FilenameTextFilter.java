@@ -2,13 +2,13 @@ package net.rim.device.api.ui.text;
 
 public class FilenameTextFilter extends TextFilter {
    @Override
-   public char convert(char var1, int var2) {
-      return var1;
+   public char convert(char character, int status) {
+      return character;
    }
 
    @Override
-   public boolean validate(char var1) {
-      switch (var1) {
+   public boolean validate(char character) {
+      switch (character) {
          case '"':
          case '*':
          case '/':
@@ -20,7 +20,7 @@ public class FilenameTextFilter extends TextFilter {
          case '|':
             return false;
          default:
-            return var1 >= ' ';
+            return character >= ' ';
       }
    }
 

@@ -6,7 +6,7 @@ public class InterruptedIOException extends IOException {
    public InterruptedIOException() {
    }
 
-   public InterruptedIOException(String var1) {
-      super(var1);
+   public InterruptedIOException(String s) {
+      super(s);
    }
 }

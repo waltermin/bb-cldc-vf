@@ -16,54 +16,54 @@ public class SimpleDateFormat extends DateFormat {
    private static final int CHAR_FIELD;
    private static final int NI_FIELD;
 
-   private SimpleDateFormat(Locale var1, boolean var2) {
-      if (var1 == null) {
+   private SimpleDateFormat(Locale locale, boolean localeFixed) {
+      if (locale == null) {
          throw new Object();
       }
 
-      this._localeFixed = var2;
-      this._localeCode = var1.getCode();
+      this._localeFixed = localeFixed;
+      this._localeCode = locale.getCode();
       if (this._localeFixed) {
-         this._symbols = DateFormatSymbols.getInstance(var1);
+         this._symbols = DateFormatSymbols.getInstance(locale);
       } else {
          this._symbols = DateFormatSymbols.getInstance();
       }
    }
 
-   public SimpleDateFormat(int var1) {
+   public SimpleDateFormat(int style) {
       this(Locale.getDefault(), false);
-      this.applyPattern(var1);
+      this.applyPattern(style);
    }
 
-   public SimpleDateFormat(String var1) {
+   public SimpleDateFormat(String pattern) {
       this(Locale.getDefault(), false);
-      this.applyPattern(var1);
+      this.applyPattern(pattern);
    }
 
-   public SimpleDateFormat(String var1, Locale var2) {
-      this(var2, true);
-      this.applyPattern(var1);
+   public SimpleDateFormat(String pattern, Locale locale) {
+      this(locale, true);
+      this.applyPattern(pattern);
    }
 
    public String getPattern() {
       return this._patternResult;
    }
 
-   public void applyPattern(int var1) {
+   public void applyPattern(int style) {
       this._pattern = null;
-      this._style = var1;
-      this._patternResult = this._symbols.getPattern(var1);
+      this._style = style;
+      this._patternResult = this._symbols.getPattern(style);
       this.compilePattern(this._patternResult);
    }
 
-   public void applyPattern(String var1) {
+   public void applyPattern(String pattern) {
       throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
    private void checkLocale() {
       if (!this._localeFixed) {
-         Locale var1 = Locale.getDefault();
-         if (var1.getCode() != this._localeCode) {
+         Locale locale = Locale.getDefault();
+         if (locale.getCode() != this._localeCode) {
             DateFormatSymbols.settingChanged();
             this._patternResult = this._pattern;
             if (this._patternResult == null) {
@@ -75,50 +75,50 @@ public class SimpleDateFormat extends DateFormat {
       }
    }
 
-   private void compilePattern(String var1) {
+   private void compilePattern(String pattern) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static int findLength(String var0, int var1, char var2) {
+   private static int findLength(String s, int offset, char ch) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
-   public StringBuffer format(Calendar var1, StringBuffer var2, FieldPosition var3) {
+   public StringBuffer format(Calendar calendar, StringBuffer toAppendTo_o, FieldPosition pos_io) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public int[] getFields() {
       this.checkLocale();
-      int[] var1 = new int[this._numFields];
-      char[] var2 = this._compiledPattern;
-      int var3 = this._compiledLength;
-      int var4 = 0;
-      int var5 = 0;
-      var4 = 0;
+      int[] fields = new int[this._numFields];
+      char[] compiledPattern = this._compiledPattern;
+      int compiledLength = this._compiledLength;
+      int patternIndex = 0;
+      int fieldIndex = 0;
+      patternIndex = 0;
 
-      while (var4 < var3) {
-         char var6 = var2[var4++];
-         switch (var6) {
-            case '￼':
-               var1[var5++] = var6;
-               var4++;
+      while (patternIndex < compiledLength) {
+         int type = compiledPattern[patternIndex++];
+         switch (type) {
+            case 65532:
+               fields[fieldIndex++] = type;
+               patternIndex++;
                break;
-            case '�':
-               var1[var5++] = -1;
+            case 65533:
+               fields[fieldIndex++] = -1;
                break;
-            case '\ufffe':
-               var4++;
+            case 65534:
+               patternIndex++;
                break;
-            case '\uffff':
+            case 65535:
             default:
-               char var7 = var2[var4++];
-               var4 += var7;
+               int len = compiledPattern[patternIndex++];
+               patternIndex += len;
          }
       }
 
-      return var1;
+      return fields;
    }
 
    public String toPattern() {

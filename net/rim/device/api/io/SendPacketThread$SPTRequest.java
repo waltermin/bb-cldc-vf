@@ -6,8 +6,8 @@ class SendPacketThread$SPTRequest {
    public Object _sendObj;
    public Datagram _datagram;
 
-   public SendPacketThread$SPTRequest(Object var1, Datagram var2) {
-      this._sendObj = var1;
-      this._datagram = var2;
+   public SendPacketThread$SPTRequest(Object sendObj, Datagram datagram) {
+      this._sendObj = sendObj;
+      this._datagram = datagram;
    }
 }

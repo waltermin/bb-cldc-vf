@@ -17,27 +17,27 @@ public final class StringPatternEnumerator {
    private boolean _endOfEnum;
    private Vector _queuedMatches;
 
-   public StringPatternEnumerator(Object var1, StringPatternContainer var2) {
-      this._patterns = var2;
-      int var3 = this._patterns.size();
-      this._beginIndicies = new int[var3];
-      this._endIndicies = new int[var3];
-      this._matchIndicies = new long[var3];
-      this._prefixLengths = new int[var3];
+   public StringPatternEnumerator(Object stringToScan, StringPatternContainer patternContainer) {
+      this._patterns = patternContainer;
+      int patternCount = this._patterns.size();
+      this._beginIndicies = new int[patternCount];
+      this._endIndicies = new int[patternCount];
+      this._matchIndicies = new long[patternCount];
+      this._prefixLengths = new int[patternCount];
       this._queuedMatches = (Vector)(new Object(1));
-      if (var1 == null) {
+      if (stringToScan == null) {
          this._string = null;
          this._endOfEnum = true;
       } else {
-         this.setStringToScan(var1);
+         this.setStringToScan(stringToScan);
          this.resetScanRange(0, this._string.length());
       }
    }
 
-   public StringPatternEnumerator(Object var1, int var2, int var3, StringPatternContainer var4) {
-      this(var1, var4);
+   public StringPatternEnumerator(Object stringToScan, int beginIndex, int endIndex, StringPatternContainer patternContainer) {
+      this(stringToScan, patternContainer);
       if (this._string != null) {
-         this.resetScanRange(var2, var3);
+         this.resetScanRange(beginIndex, endIndex);
       }
    }
 
@@ -45,14 +45,14 @@ public final class StringPatternEnumerator {
       this.resetScanRange(this._beginIndex, this._finalEndIndex);
    }
 
-   public final void reset(Object var1) {
-      this.setStringToScan(var1);
+   public final void reset(Object stringToScan) {
+      this.setStringToScan(stringToScan);
       this.resetScanRange(0, this._string.length());
    }
 
-   public final void reset(Object var1, int var2, int var3) {
-      this.setStringToScan(var1);
-      this.resetScanRange(var2, var3);
+   public final void reset(Object stringToScan, int beginIndex, int endIndex) {
+      this.setStringToScan(stringToScan);
+      this.resetScanRange(beginIndex, endIndex);
    }
 
    public final boolean hasMoreMatches() {
@@ -71,11 +71,11 @@ public final class StringPatternEnumerator {
       return true;
    }
 
-   public final boolean nextMatch(StringPattern$Match var1) {
+   public final boolean nextMatch(StringPattern$Match match) {
       if (!this.hasMoreMatches()) {
          return false;
       } else {
-         var1.setMatch(this._nextMatch);
+         match.setMatch(this._nextMatch);
          if (this._queuedMatches.size() > 0) {
             this._nextMatch.setMatch((StringPattern$Match)this._queuedMatches.elementAt(0));
             this._queuedMatches.removeElementAt(0);
@@ -89,14 +89,91 @@ public final class StringPatternEnumerator {
    }
 
    private final void findNextMatch() {
-      throw new RuntimeException("cod2jar: exception table");
+      int nextMatchIndex = 0;
+      StringPattern[] patterns = this._patterns.getElements();
+      int patternCount = patterns.length;
+      int stringLength = this._string.length();
+      this._nextMatchIsValid = false;
+
+      for (int idx = 0; idx < patternCount; idx++) {
+         StringPattern currentPattern = patterns[idx];
+         if (currentPattern != null && this._beginIndicies[idx] < stringLength) {
+            if (this._beginIndicies[idx] < this._prevEndIndex) {
+               boolean validTry = false;
+
+               try {
+                  validTry = currentPattern.findMatch(this._string, this._prevEndIndex, this._finalEndIndex, this._nextMatch);
+               } catch (IndexOutOfBoundsException var12) {
+               } catch (Throwable var13) {
+               }
+
+               if (validTry
+                  && (
+                     this._nextMatch.beginIndex < this._prevEndIndex
+                        || this._nextMatch.beginIndex >= this._nextMatch.endIndex
+                        || this._nextMatch.endIndex > this._finalEndIndex
+                  )) {
+                  validTry = false;
+               }
+
+               if (!validTry) {
+                  this._beginIndicies[idx] = stringLength;
+                  continue;
+               }
+
+               this._beginIndicies[idx] = this._nextMatch.beginIndex;
+               this._endIndicies[idx] = this._nextMatch.endIndex;
+               this._matchIndicies[idx] = this._nextMatch.id;
+               this._prefixLengths[idx] = this._nextMatch.prefixLength;
+            }
+
+            if (!this._nextMatchIsValid || this._endIndicies[idx] <= this._beginIndicies[nextMatchIndex]) {
+               this._nextMatchIsValid = true;
+               nextMatchIndex = idx;
+            } else if (this._endIndicies[nextMatchIndex] > this._beginIndicies[idx]) {
+               int idxNew = this._beginIndicies[idx] + this._prefixLengths[idx];
+               int idxOld = this._beginIndicies[nextMatchIndex] + this._prefixLengths[nextMatchIndex];
+               if (idxNew < idxOld) {
+                  nextMatchIndex = idx;
+                  this._queuedMatches.removeAllElements();
+               } else if (idxNew == idxOld) {
+                  int lenNew = this._endIndicies[idx] - idxNew;
+                  int lenOld = this._endIndicies[nextMatchIndex] - idxOld;
+                  if (lenNew > lenOld) {
+                     nextMatchIndex = idx;
+                     this._queuedMatches.removeAllElements();
+                  } else if (lenNew == lenOld) {
+                     if (this._beginIndicies[idx] < this._beginIndicies[nextMatchIndex]) {
+                        nextMatchIndex = idx;
+                        this._queuedMatches.removeAllElements();
+                     } else if (currentPattern instanceof Object && this._beginIndicies[idx] == this._beginIndicies[nextMatchIndex]) {
+                        StringPattern$Match queuedMatch = new StringPattern$Match();
+                        queuedMatch.beginIndex = this._beginIndicies[nextMatchIndex];
+                        queuedMatch.endIndex = this._endIndicies[nextMatchIndex];
+                        queuedMatch.id = this._matchIndicies[nextMatchIndex];
+                        queuedMatch.prefixLength = this._prefixLengths[nextMatchIndex];
+                        this._queuedMatches.addElement(queuedMatch);
+                        nextMatchIndex = idx;
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      if (this._nextMatchIsValid) {
+         this._nextMatch.beginIndex = this._beginIndicies[nextMatchIndex];
+         this._nextMatch.endIndex = this._endIndicies[nextMatchIndex];
+         this._nextMatch.id = this._matchIndicies[nextMatchIndex];
+         this._nextMatch.prefixLength = this._prefixLengths[nextMatchIndex];
+      }
    }
 
-   private final void setStringToScan(Object var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void setStringToScan(Object stringToScan) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private final void resetScanRange(int var1, int var2) {
+   private final void resetScanRange(int beginIndex, int endIndex) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

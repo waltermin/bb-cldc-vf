@@ -3,6 +3,10 @@ package net.rim.device.api.ui;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.resources.Resource;
 import net.rim.device.resources.Resource$Internal;
@@ -40,76 +44,76 @@ public final class FontRegistry {
 
    private final native void submit();
 
-   public static final int loadFont(String var0, String var1, String var2) {
-      return loadFont(var0, var1, var2, false);
+   public static final int loadFont(String font, String location, String typefaceName) {
+      return loadFont(font, location, typefaceName, false);
    }
 
-   public static final int loadFont(String var0, String var1, String var2, boolean var3) {
-      Resource var4 = Resource$Internal.getResourceClass(var1);
-      if (var4 == null) {
+   public static final int loadFont(String font, String location, String typefaceName, boolean isPublic) {
+      Resource resourceClass = Resource$Internal.getResourceClass(location);
+      if (resourceClass == null) {
          return -1;
       }
 
-      byte[] var5 = var4.getResource(var0);
-      int var6 = CodeModuleManager.getModuleHandle(var1);
-      return loadFont(var6, var5, var2, var3);
+      byte[] data = resourceClass.getResource(font);
+      int handle = CodeModuleManager.getModuleHandle(location);
+      return loadFont(handle, data, typefaceName, isPublic);
    }
 
-   public static final int loadSplitFont(String var0, int var1, String var2, String var3, boolean var4) {
-      return getInstance().loadSplitFontInternal(var0, var1, var2, var3, var4);
+   public static final int loadSplitFont(String aFileName, int aFileCount, String aLocation, String aTypefaceName, boolean aIsPublic) {
+      return getInstance().loadSplitFontInternal(aFileName, aFileCount, aLocation, aTypefaceName, aIsPublic);
    }
 
-   private final synchronized int loadSplitFontInternal(String var1, int var2, String var3, String var4, boolean var5) {
+   private final synchronized int loadSplitFontInternal(String aFileName, int aFileCount, String aLocation, String aTypefaceName, boolean aIsPublic) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final int loadFont(byte[] var0, String var1, boolean var2) {
-      return getInstance().loadFont0(-1, var0, var1, var2);
+   public static final int loadFont(byte[] data, String typefaceName, boolean isPublic) {
+      return getInstance().loadFont0(-1, data, typefaceName, isPublic);
    }
 
-   public static final int loadFont(int var0, byte[] var1, String var2, boolean var3) {
-      return getInstance().loadFont0(var0, var1, var2, var3);
+   public static final int loadFont(int codFileHandle, byte[] data, String typefaceName, boolean isPublic) {
+      return getInstance().loadFont0(codFileHandle, data, typefaceName, isPublic);
    }
 
-   public static final String getTypefaceName(int var0) {
-      return getInstance().getTypefaceName0(var0);
+   public static final String getTypefaceName(int fontHandle) {
+      return getInstance().getTypefaceName0(fontHandle);
    }
 
-   private final String getTypefaceName0(int var1) {
-      Object var2;
-      if (var1 >= 0 && (var2 = this._fontInfo.get(var1)) != null) {
-         FontRegistry$FontInfo var3 = (FontRegistry$FontInfo)var2;
-         return var3._typefaceName;
+   private final String getTypefaceName0(int fontHandle) {
+      Object obj;
+      if (fontHandle >= 0 && (obj = this._fontInfo.get(fontHandle)) != null) {
+         FontRegistry$FontInfo fi = (FontRegistry$FontInfo)obj;
+         return fi._typefaceName;
       } else {
          return null;
       }
    }
 
-   private final synchronized int loadFont0(int var1, byte[] var2, String var3, boolean var4) {
+   private final synchronized int loadFont0(int codFile, byte[] data, String typefaceName, boolean isPublic) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static final boolean probablyIdentical(byte[] var0, byte[] var1) {
-      if (var0 != null && var1 != null) {
-         if (var0.length != var1.length) {
+   private static final boolean probablyIdentical(byte[] data1, byte[] data2) {
+      if (data1 != null && data2 != null) {
+         if (data1.length != data2.length) {
             return false;
          }
 
-         byte var2 = 10;
-         if (var0.length < 30) {
-            var2 = 1;
+         int range = 10;
+         if (data1.length < 30) {
+            range = 1;
          }
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            if (var0[0 + var3] != var1[0 + var3]) {
+         for (int i = 0; i < range; i++) {
+            if (data1[0 + i] != data2[0 + i]) {
                return false;
             }
 
-            if (var0[var0.length / 2 + var3] != var1[var0.length / 2 + var3]) {
+            if (data1[data1.length / 2 + i] != data2[data1.length / 2 + i]) {
                return false;
             }
 
-            if (var0[var0.length - 1 - var3] != var1[var0.length - 1 - var3]) {
+            if (data1[data1.length - 1 - i] != data2[data1.length - 1 - i]) {
                return false;
             }
          }
@@ -120,16 +124,16 @@ public final class FontRegistry {
       }
    }
 
-   private final FontRegistry$FontInfo getFontInfo(String var1, int var2) {
-      int var3 = 0;
-      Enumeration var4 = this._fontInfo.elements();
-      FontRegistry$FontInfo var5 = null;
+   private final FontRegistry$FontInfo getFontInfo(String typefaceName, int occurance) {
+      int index = 0;
+      Enumeration e = this._fontInfo.elements();
+      FontRegistry$FontInfo fi = null;
 
-      while (var4.hasMoreElements()) {
-         var5 = (FontRegistry$FontInfo)var4.nextElement();
-         if (var1.equals(var5._typefaceName)) {
-            if (++var3 == var2) {
-               return var5;
+      while (e.hasMoreElements()) {
+         fi = (FontRegistry$FontInfo)e.nextElement();
+         if (typefaceName.equals(fi._typefaceName)) {
+            if (++index == occurance) {
+               return fi;
             }
          }
       }
@@ -137,78 +141,115 @@ public final class FontRegistry {
       return null;
    }
 
-   public static final int unloadFont(int var0) {
-      return var0 < 0 ? -1 : getInstance().unloadFont0(var0);
+   public static final int unloadFont(int aHandle) {
+      return aHandle < 0 ? -1 : getInstance().unloadFont0(aHandle);
    }
 
-   public static final int unloadFont(String var0) {
+   public static final int unloadFont(String typefaceName) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private final int unloadFont0(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int unloadFont0(String typefaceName) {
+      int rc = -1;
+      synchronized (super.getClass()) {
+         IntEnumeration e = this._fontInfo.keys();
+         FontRegistry$FontInfo fi = null;
+
+         while (e.hasMoreElements()) {
+            int key = e.nextElement();
+            fi = (FontRegistry$FontInfo)this._fontInfo.get(key);
+            if (typefaceName.equals(fi._typefaceName) && (rc = this.unloadFont0(key)) != 0) {
+               break;
+            }
+         }
+
+         return rc;
+      }
    }
 
-   private final int unloadFont0(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final int unloadFont0(int aHandle) {
+      int rc = -1;
+      synchronized (super.getClass()) {
+         if (aHandle < 0) {
+            return rc;
+         } else {
+            Object obj;
+            if ((obj = this._fontInfo.get(aHandle)) != null) {
+               this._fontInfo.remove(aHandle);
+               return this.unloadFont0((FontRegistry$FontInfo)obj);
+            } else {
+               return rc;
+            }
+         }
+      }
    }
 
-   private final int unloadFont0(FontRegistry$FontInfo var1) {
-      int var2 = -1;
-      Enumeration var3 = this._fontInfo.elements();
-      int var4 = 0;
-      Object var5 = null;
+   private final int unloadFont0(FontRegistry$FontInfo fi) {
+      int rc = -1;
+      Enumeration e = this._fontInfo.elements();
+      int i = 0;
+      FontRegistry$FontInfo tfi = null;
 
-      while (var3.hasMoreElements()) {
-         var5 = (FontRegistry$FontInfo)var3.nextElement();
-         if (var1._renderingEngineHandle == ((FontRegistry$FontInfo)var5)._renderingEngineHandle) {
-            var4++;
+      while (e.hasMoreElements()) {
+         tfi = (FontRegistry$FontInfo)e.nextElement();
+         if (fi._renderingEngineHandle == tfi._renderingEngineHandle) {
+            i++;
          }
       }
 
-      if (var4 > 0) {
+      if (i > 0) {
          return 0;
       }
 
-      var2 = unloadFontResource(var1._renderingEngineHandle);
-      if (var2 != 0) {
-         return var2;
+      rc = unloadFontResource(fi._renderingEngineHandle);
+      if (rc != 0) {
+         return rc;
       }
 
-      for (int var6 = 0; var6 < var1._count; var6++) {
-         this._fontData[var1._index + var6] = null;
+      for (int j = 0; j < fi._count; j++) {
+         this._fontData[fi._index + j] = null;
       }
 
-      if (var1._codFileHandle != -1) {
-         CodeModuleManager.deleteModuleEx(var1._codFileHandle, false);
+      if (fi._codFileHandle != -1) {
+         CodeModuleManager.deleteModuleEx(fi._codFileHandle, false);
       }
 
       this.reload();
-      return var2;
+      return rc;
    }
 
-   public final synchronized int getTypefaceType(String var1) {
+   public final synchronized int getTypefaceType(String aTypeface) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public final synchronized int[] getHeightsForTypeface(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final synchronized int[] getHeightsForTypeface(String aTypeface) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final FontFamily get(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final FontFamily get(String name) {
+      Object result = null;
+      FontRegistry registry = getInstance();
+      synchronized (registry) {
+         result = registry._table.get(name);
+         if (result == null) {
+            result = new FontFamily(name);
+            registry._table.put(name, result);
+         }
+      }
+
+      return (FontFamily)result;
    }
 
-   public static final String getTypefaceNameByIndex(int var0) {
-      return getInstance()._typefaceNameTable[var0];
+   public static final String getTypefaceNameByIndex(int id) {
+      return getInstance()._typefaceNameTable[id];
    }
 
-   public final int getTypefaceNameIndex(String var1) {
+   public final int getTypefaceNameIndex(String typeface) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    static final Font _getDefaultFont() {
-      FontRegistry var0 = getInstance();
+      FontRegistry registry = getInstance();
       if (_registry._defaultFont == null) {
          _registry._defaultFont = FontPersist.getDefaultFont();
          if (_registry._defaultFont == null) {
@@ -220,39 +261,80 @@ public final class FontRegistry {
    }
 
    public static final Font getDefaultFont() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (getInstance()) {
+         if (_registry._defaultFont == null) {
+            _registry._defaultFont = FontPersist.getDefaultFont();
+            if (_registry._defaultFont == null) {
+               _registry._defaultFont = get(DEFAULT_FAMILY).getFont(DEFAULT_STYLE, DEFAULT_SIZE, 3);
+            }
+         }
+      }
+
+      return _registry._defaultFont;
    }
 
    public static final boolean isDefaultFontSet() {
       return FontPersist.getDefaultFont() != null;
    }
 
-   public static final int getDefaultHeight(int var0) {
-      int var1 = DEFAULT_SIZE;
+   public static final int getDefaultHeight(int units) {
+      int dsize = DEFAULT_SIZE;
       if (getDefaultFont() != null) {
-         var1 = getDefaultFont().getHeight();
+         dsize = getDefaultFont().getHeight();
       }
 
-      return Ui.convertSize(var1, 0, var0);
+      return Ui.convertSize(dsize, 0, units);
    }
 
    public static final String[] getFontFamilies() {
-      throw new RuntimeException("cod2jar: exception table");
+      FontRegistry registry = getInstance();
+      synchronized (registry) {
+         Hashtable t = (Hashtable)(new Object());
+         Enumeration en = registry._fontInfo.elements();
+
+         while (en.hasMoreElements()) {
+            FontRegistry$FontInfo fi = (FontRegistry$FontInfo)en.nextElement();
+            if (fi._isPublic) {
+               t.put(fi._typefaceName, fi._typefaceName);
+            }
+         }
+
+         String[] rc = new String[t.size()];
+         Enumeration e = t.keys();
+         int j = 0;
+
+         while (e.hasMoreElements()) {
+            rc[j++] = (String)e.nextElement();
+         }
+
+         Arrays.sort(rc, new FontRegistry$1());
+         return rc;
+      }
    }
 
-   public static final void setDefaultFont(Font var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setDefaultFont(Font defaultFont) {
+      synchronized (getInstance()) {
+         if (_registry._defaultFont == defaultFont) {
+            return;
+         }
+
+         _registry._defaultFont = defaultFont;
+         FontPersist.setDefaultFont(defaultFont);
+      }
+
+      ThemeManager.onSystemFontChangeInternal();
+      RIMGlobalMessagePoster.postGlobalEvent(-4394903006263251010L);
    }
 
-   public static final void setDefaultFont(String var0, int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setDefaultFont(String family, int style, int height, int units) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private final synchronized void reload() {
-      Enumeration var1 = this._table.elements();
+      Enumeration e = this._table.elements();
 
-      while (var1.hasMoreElements()) {
-         ((FontFamily)var1.nextElement()).reload();
+      while (e.hasMoreElements()) {
+         ((FontFamily)e.nextElement()).reload();
       }
    }
 

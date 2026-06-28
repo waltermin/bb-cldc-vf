@@ -8,32 +8,32 @@ public final class Float {
    public static final float MAX_VALUE;
    public static final float MIN_VALUE;
 
-   public static final String toString(float var0) {
+   public static final String toString(float f) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final Float valueOf(String var0) {
-      return new Float(FloatingDecimal.readJavaFormatString(var0).floatValue());
+   public static final Float valueOf(String s) {
+      return new Float(FloatingDecimal.readJavaFormatString(s).floatValue());
    }
 
-   public static final float parseFloat(String var0) {
-      return FloatingDecimal.readJavaFormatString(var0).floatValue();
+   public static final float parseFloat(String s) {
+      return FloatingDecimal.readJavaFormatString(s).floatValue();
    }
 
-   public static final boolean isNaN(float var0) {
-      return var0 != var0;
+   public static final boolean isNaN(float v) {
+      return v != v;
    }
 
-   public static final boolean isInfinite(float var0) {
-      return var0 == 2139095040 || var0 == -8388608;
+   public static final boolean isInfinite(float v) {
+      return v == 2139095040 || v == -8388608;
    }
 
-   public Float(float var1) {
-      this.value = var1;
+   public Float(float value) {
+      this.value = value;
    }
 
-   public Float(double var1) {
-      this.value = (float)var1;
+   public Float(double value) {
+      this.value = (float)value;
    }
 
    public final boolean isNaN() {
@@ -79,7 +79,7 @@ public final class Float {
    }
 
    @Override
-   public final boolean equals(Object var1) {
+   public final boolean equals(Object obj) {
       throw new RuntimeException("cod2jar: type check");
    }
 

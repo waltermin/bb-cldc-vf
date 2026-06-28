@@ -7,7 +7,7 @@ public final class ITPolicyAuthentication {
    private ITPolicyAuthentication() {
    }
 
-   public static final boolean verifyITPolicy(byte[] var0, byte[] var1, byte[] var2) {
+   public static final boolean verifyITPolicy(byte[] publicKey, byte[] signature, byte[] itPolicy) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

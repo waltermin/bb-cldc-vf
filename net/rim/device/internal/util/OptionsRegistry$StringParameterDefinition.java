@@ -3,11 +3,11 @@ package net.rim.device.internal.util;
 public class OptionsRegistry$StringParameterDefinition extends OptionsRegistry$ParameterDefinition {
    String _default;
 
-   public OptionsRegistry$StringParameterDefinition(String var1) {
-      this._default = var1;
+   public OptionsRegistry$StringParameterDefinition(String def) {
+      this._default = def;
    }
 
-   protected boolean isValid(String var1) {
+   protected boolean isValid(String value) {
       return true;
    }
 }

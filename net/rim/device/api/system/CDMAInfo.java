@@ -103,9 +103,9 @@ public final class CDMAInfo {
    }
 
    public static final CDMAInfo$CDMACellInfo getCellInfo() {
-      CDMAInfo$CDMACellInfo var0 = new CDMAInfo$CDMACellInfo(null);
-      getCellInfo(var0);
-      return var0;
+      CDMAInfo$CDMACellInfo cellInfo = new CDMAInfo$CDMACellInfo(null);
+      getCellInfo(cellInfo);
+      return cellInfo;
    }
 
    public static final boolean getSMSStatusReportRequest() {
@@ -121,9 +121,9 @@ public final class CDMAInfo {
       return getInfo()._aKey;
    }
 
-   public static final String getNAI(int var0) {
-      byte[] var1 = RadioInternal.getNAI(var0);
-      return (String)(var1 == null ? null : new Object(var1));
+   public static final String getNAI(int profileIndex) {
+      byte[] nai = RadioInternal.getNAI(profileIndex);
+      return (String)(nai == null ? null : new Object(nai));
    }
 
    private static final native void getCellInfo(CDMAInfo$CDMACellInfo var0);

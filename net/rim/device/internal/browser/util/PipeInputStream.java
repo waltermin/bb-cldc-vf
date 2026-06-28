@@ -12,7 +12,14 @@ public class PipeInputStream extends InputStream implements PipeInput {
    }
 
    public Pipe getCacheableData() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._pipe.setCacheStart(this._context._currentPacket, this._context._currentReadPos);
+      synchronized (this._context) {
+         this._context._currentPacket = 0;
+         this._context._currentReadPos = 0;
+         this._context._numRead = 0;
+      }
+
+      return this._pipe;
    }
 
    public int getEstimatedSize() {
@@ -30,13 +37,13 @@ public class PipeInputStream extends InputStream implements PipeInput {
    }
 
    @Override
-   public int readByteArray(PipePtr var1, int var2) {
-      return this._pipe.readByteArray(var1, var2, this._context);
+   public int readByteArray(PipePtr ptr, int length) {
+      return this._pipe.readByteArray(ptr, length, this._context);
    }
 
    @Override
-   public String readInlineString(String var1) {
-      return this._pipe.readInlineString(this._context, var1);
+   public String readInlineString(String encoding) {
+      return this._pipe.readInlineString(this._context, encoding);
    }
 
    @Override
@@ -55,13 +62,21 @@ public class PipeInputStream extends InputStream implements PipeInput {
    }
 
    @Override
-   public void mark(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void mark(int readAhead) {
+      synchronized (this._context) {
+         this._markedContext._currentPacket = this._context._currentPacket;
+         this._markedContext._currentReadPos = this._context._currentReadPos;
+         this._markedContext._availableBytes = this._context._availableBytes;
+      }
    }
 
    @Override
    public void reset() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._context) {
+         this._context._currentPacket = this._markedContext._currentPacket;
+         this._context._currentReadPos = this._markedContext._currentReadPos;
+         this._context._availableBytes = this._markedContext._availableBytes;
+      }
    }
 
    @Override
@@ -69,8 +84,8 @@ public class PipeInputStream extends InputStream implements PipeInput {
       return this._pipe.read(this._context);
    }
 
-   PipeInputStream(Pipe var1) {
-      this._pipe = var1;
+   PipeInputStream(Pipe pipe) {
+      this._pipe = pipe;
       this._context = new PipeContext();
       this._markedContext = new PipeContext();
    }
@@ -80,16 +95,16 @@ public class PipeInputStream extends InputStream implements PipeInput {
       this._pipe.closeRead(this._context);
    }
 
-   PipeInputStream(Pipe var1, int var2, int var3, int var4) {
-      this._pipe = var1;
+   PipeInputStream(Pipe pipe, int packet, int offset, int length) {
+      this._pipe = pipe;
       this._context = new PipeContext();
-      this._context._currentPacket = var2;
-      this._context._currentReadPos = var3;
-      this._context._availableBytes = var4;
+      this._context._currentPacket = packet;
+      this._context._currentReadPos = offset;
+      this._context._availableBytes = length;
       this._markedContext = new PipeContext();
-      this._markedContext._currentReadPos = var3;
-      this._markedContext._currentPacket = var2;
-      this._markedContext._availableBytes = var4;
+      this._markedContext._currentReadPos = offset;
+      this._markedContext._currentPacket = packet;
+      this._markedContext._availableBytes = length;
    }
 
    @Override
@@ -98,12 +113,12 @@ public class PipeInputStream extends InputStream implements PipeInput {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      return this._pipe.read(var1, var2, var3, this._context);
+   public int read(byte[] b, int off, int len) {
+      return this._pipe.read(b, off, len, this._context);
    }
 
    @Override
-   public long skip(long var1) {
-      return this._pipe.skip(this._context, var1);
+   public long skip(long n) {
+      return this._pipe.skip(this._context, n);
    }
 }

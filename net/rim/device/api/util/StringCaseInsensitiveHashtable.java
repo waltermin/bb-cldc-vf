@@ -12,7 +12,7 @@ public class StringCaseInsensitiveHashtable implements Persistable {
    private static final int _loadFactorMul;
    private static final int _loadFactorRShift;
 
-   public StringCaseInsensitiveHashtable(int var1) {
+   public StringCaseInsensitiveHashtable(int initialCapacity) {
    }
 
    public StringCaseInsensitiveHashtable() {
@@ -35,14 +35,14 @@ public class StringCaseInsensitiveHashtable implements Persistable {
       return (Enumeration)(new Object(this._value, this._empty));
    }
 
-   public synchronized boolean contains(Object var1) {
-      String var2 = this._empty;
-      String[] var3 = this._key;
-      Object[] var4 = this._value;
-      int var5 = var4.length;
+   public synchronized boolean contains(Object value) {
+      Object empty = this._empty;
+      String[] keys = this._key;
+      Object[] values = this._value;
+      int len = values.length;
 
-      while (--var5 >= 0) {
-         if (var3[var5] != null && var3[var5] != var2 && var4[var5].equals(var1)) {
+      while (--len >= 0) {
+         if (keys[len] != null && keys[len] != empty && values[len].equals(value)) {
             return true;
          }
       }
@@ -50,45 +50,45 @@ public class StringCaseInsensitiveHashtable implements Persistable {
       return false;
    }
 
-   public synchronized boolean containsKey(String var1) {
+   public synchronized boolean containsKey(String key) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized boolean containsKey(String var1, int var2, int var3) {
-      int var4 = this.find(var1, var2, var3, StringUtilities.hashCode(var1, var2, var3, true));
-      return this._key[var4] != null && this._key[var4] != this._empty;
+   public synchronized boolean containsKey(String str, int fromIndex, int toIndex) {
+      int index = this.find(str, fromIndex, toIndex, StringUtilities.hashCode(str, fromIndex, toIndex, true));
+      return this._key[index] != null && this._key[index] != this._empty;
    }
 
    public synchronized void clear() {
-      for (int var1 = this._key.length; --var1 >= 0; this._key[var1] = null) {
-         this._value[var1] = null;
+      for (int len = this._key.length; --len >= 0; this._key[len] = null) {
+         this._value[len] = null;
       }
 
       this._numberOfKeys = 0;
    }
 
-   public synchronized Object remove(String var1) {
+   public synchronized Object remove(String key) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized Object get(String var1) {
+   public synchronized Object get(String key) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized Object get(String var1, int var2, int var3) {
-      int var4 = this.find(var1, var2, var3, StringUtilities.hashCode(var1, var2, var3, true));
-      return this._value[var4];
+   public synchronized Object get(String str, int fromIndex, int toIndex) {
+      int index = this.find(str, fromIndex, toIndex, StringUtilities.hashCode(str, fromIndex, toIndex, true));
+      return this._value[index];
    }
 
    protected void rehash() {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized Object put(String var1, Object var2) {
+   public synchronized Object put(String key, Object value) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private int find(String var1, int var2, int var3, int var4) {
+   private int find(String str, int fromIndex, int toIndex, int hashcode) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

@@ -3,12 +3,12 @@ package net.rim.device.internal.ui;
 class HorizontalFetcher implements Fetcher {
    int[] _data;
 
-   void set(int[] var1) {
+   void set(int[] data) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public int get(int var1) {
-      return this._data[var1];
+   public int get(int index) {
+      return this._data[index];
    }
 }

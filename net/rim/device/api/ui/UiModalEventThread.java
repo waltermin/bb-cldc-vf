@@ -5,8 +5,8 @@ import net.rim.device.api.system.ModalEventThread;
 final class UiModalEventThread extends ModalEventThread {
    private Screen _screen;
 
-   public UiModalEventThread(Screen var1) {
-      this._screen = var1;
+   public UiModalEventThread(Screen screen) {
+      this._screen = screen;
    }
 
    public final Screen getScreen() {

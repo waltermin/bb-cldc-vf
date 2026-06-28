@@ -7,42 +7,42 @@ import net.rim.tid.im.layout.SLKeyLayout;
 
 public class HexadecimalTextFilter extends TextFilter {
    @Override
-   public char convert(char var1, int var2) {
+   public char convert(char character, int status) {
       if (InputContext.getInstance().isSureType()) {
-         if (Character.isUpperCase(var1) && this.validate(var1)) {
-            return var1;
+         if (Character.isUpperCase(character) && this.validate(character)) {
+            return character;
          }
 
-         if ((var2 & 1) != 0) {
-            SLKeyLayout var3 = Keypad.getLayout();
-            int var4 = var3.getOriginalKeyCode(var1, SLKeyLayout.convertStatusToModifiers(var2));
-            var1 = Keypad.map(var4, 2);
-            var2 = 0;
-         }
-      }
-
-      if ((var2 & 1) != 0) {
-         char var5 = CharacterUtilities.toUpperCase(Keypad.getUnaltedChar(var1), 1701707776);
-         if (this.validate(var5)) {
-            return var5;
+         if ((status & 1) != 0) {
+            SLKeyLayout layout = Keypad.getLayout();
+            int code = layout.getOriginalKeyCode(character, SLKeyLayout.convertStatusToModifiers(status));
+            character = Keypad.map(code, 2);
+            status = 0;
          }
       }
 
-      if ((var2 & 32768) != 0) {
-         return CharacterUtilities.toUpperCase(var1, 1701707776);
+      if ((status & 1) != 0) {
+         char newChar = CharacterUtilities.toUpperCase(Keypad.getUnaltedChar(character), 1701707776);
+         if (this.validate(newChar)) {
+            return newChar;
+         }
       }
 
-      if (this.validate(var1)) {
-         return var1;
+      if ((status & 32768) != 0) {
+         return CharacterUtilities.toUpperCase(character, 1701707776);
       }
 
-      char var6 = Keypad.getAltedChar(var1);
-      return this.validate(var6) ? var6 : CharacterUtilities.toUpperCase(var1, 1701707776);
+      if (this.validate(character)) {
+         return character;
+      }
+
+      char newChar = Keypad.getAltedChar(character);
+      return this.validate(newChar) ? newChar : CharacterUtilities.toUpperCase(character, 1701707776);
    }
 
    @Override
-   public boolean validate(char var1) {
-      return var1 >= '0' && var1 <= '9' || var1 >= 'A' && var1 <= 'F';
+   public boolean validate(char character) {
+      return character >= '0' && character <= '9' || character >= 'A' && character <= 'F';
    }
 
    @Override

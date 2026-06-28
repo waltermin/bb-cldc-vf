@@ -5,8 +5,8 @@ import net.rim.device.api.listener.Event;
 final class PersistentContent$Listeners$LockChangeEvent implements Event {
    int _lockGeneration;
 
-   PersistentContent$Listeners$LockChangeEvent(int var1) {
-      this._lockGeneration = var1;
+   PersistentContent$Listeners$LockChangeEvent(int lockGeneration) {
+      this._lockGeneration = lockGeneration;
    }
 
    @Override
@@ -15,7 +15,7 @@ final class PersistentContent$Listeners$LockChangeEvent implements Event {
    }
 
    @Override
-   public final Thread updateEventListener(Object var1) {
+   public final Thread updateEventListener(Object listener) {
       return null;
    }
 

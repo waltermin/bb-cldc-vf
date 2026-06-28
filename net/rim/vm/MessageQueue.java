@@ -29,9 +29,9 @@ public final class MessageQueue {
       this._maxCapacity = MAX_CAPACITIES_NORMAL_PROCESS[0];
    }
 
-   public final void setProcessState(int var1) {
-      if (var1 >= 0 && var1 <= 2) {
-         this._processState = var1;
+   public final void setProcessState(int state) {
+      if (state >= 0 && state <= 2) {
+         this._processState = state;
          this.updateMaxCapacity();
       } else {
          throw new Object();
@@ -44,56 +44,128 @@ public final class MessageQueue {
    }
 
    private final void updateMaxCapacity() {
-      int var1;
+      int maxCapacity;
       if (this._isSystemProcess) {
-         var1 = MAX_CAPACITIES_SYSTEM_PROCESS[this._processState];
+         maxCapacity = MAX_CAPACITIES_SYSTEM_PROCESS[this._processState];
       } else {
-         var1 = MAX_CAPACITIES_NORMAL_PROCESS[this._processState];
+         maxCapacity = MAX_CAPACITIES_NORMAL_PROCESS[this._processState];
       }
 
-      if (this._maxCapacity < var1) {
-         this._maxCapacity = var1;
+      if (this._maxCapacity < maxCapacity) {
+         this._maxCapacity = maxCapacity;
       }
    }
 
-   private final void growTo(int var1) {
+   private final void growTo(int newCapacity) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final Object growArray(Object var1, Object var2) {
+   private final Object growArray(Object old, Object newArray) {
       if (this._end <= this._start) {
-         System.arraycopy(var1, this._start, var2, 0, this._capacity - this._start);
-         System.arraycopy(var1, 0, var2, this._capacity - this._start, this._end);
-         return var2;
+         System.arraycopy(old, this._start, newArray, 0, this._capacity - this._start);
+         System.arraycopy(old, 0, newArray, this._capacity - this._start, this._end);
+         return newArray;
       } else {
-         System.arraycopy(var1, this._start, var2, 0, this._end - this._start);
-         return var2;
+         System.arraycopy(old, this._start, newArray, 0, this._end - this._start);
+         return newArray;
       }
    }
 
-   public final boolean enqueue(Message var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean enqueue(Message msg) {
+      boolean ok = true;
+
+      try {
+         int end = this._end;
+         this._device[end] = msg._device;
+         this._event[end] = msg._event;
+         this._subMessage[end] = msg._subMessage;
+         this._dataLength[end] = msg._dataLength;
+         this._data0[end] = msg._data0;
+         this._data1[end] = msg._data1;
+         this._object0[end] = msg._object0;
+         this._object1[end] = msg._object1;
+      } catch (NullPointerException npe) {
+         int capacity = this._capacity;
+         this._device = new int[capacity];
+         this._event = new int[capacity];
+         this._subMessage = new int[capacity];
+         this._dataLength = new int[capacity];
+         this._data0 = new int[capacity];
+         this._data1 = new int[capacity];
+         this._object0 = new Object[capacity];
+         this._object1 = new Object[capacity];
+         return this.enqueue(msg);
+      }
+
+      this._end = this.plusplus(this._end);
+      if (this._start == this._end) {
+         if (this._capacity == this._maxCapacity) {
+            this._object0[this._start] = null;
+            this._object1[this._start] = null;
+            this._start = this.plusplus(this._start);
+            ok = false;
+         } else {
+            int newCapacity = this._capacity + 10;
+            if (newCapacity > this._maxCapacity) {
+               newCapacity = this._maxCapacity;
+            }
+
+            this.growTo(newCapacity);
+         }
+      }
+
+      super.notify();
+      return ok;
    }
 
-   public final boolean replaceTail(Message var1) {
+   public final boolean replaceTail(Message msg) {
       if (this._start == this._end) {
          return false;
       }
 
-      int var2 = this.minusminus(this._end);
-      this._device[var2] = var1._device;
-      this._event[var2] = var1._event;
-      this._subMessage[var2] = var1._subMessage;
-      this._dataLength[var2] = var1._dataLength;
-      this._data0[var2] = var1._data0;
-      this._data1[var2] = var1._data1;
-      this._object0[var2] = var1._object0;
-      this._object1[var2] = var1._object1;
+      int end = this.minusminus(this._end);
+      this._device[end] = msg._device;
+      this._event[end] = msg._event;
+      this._subMessage[end] = msg._subMessage;
+      this._dataLength[end] = msg._dataLength;
+      this._data0[end] = msg._data0;
+      this._data1[end] = msg._data1;
+      this._object0[end] = msg._object0;
+      this._object1[end] = msg._object1;
       return true;
    }
 
-   public final boolean dequeue(Message var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean dequeue(Message msg, boolean block) {
+      if (this._start == this._end) {
+         if (!block) {
+            return false;
+         }
+
+         msg._object0 = null;
+         msg._object1 = null;
+
+         while (true) {
+            try {
+               Object o = this;
+               o.wait();
+               break;
+            } catch (InterruptedException ie) {
+            }
+         }
+      }
+
+      msg._device = this._device[this._start];
+      msg._event = this._event[this._start];
+      msg._subMessage = this._subMessage[this._start];
+      msg._dataLength = this._dataLength[this._start];
+      msg._data0 = this._data0[this._start];
+      msg._data1 = this._data1[this._start];
+      msg._object0 = this._object0[this._start];
+      msg._object1 = this._object1[this._start];
+      this._object0[this._start] = null;
+      this._object1[this._start] = null;
+      this._start = this.plusplus(this._start);
+      return true;
    }
 
    public final void flush() {
@@ -104,16 +176,16 @@ public final class MessageQueue {
       }
    }
 
-   public final boolean alreadyPresent(Message var1) {
-      for (int var2 = this._start; var2 != this._end; var2 = this.plusplus(var2)) {
-         if (var1._device == this._device[var2]
-            && var1._event == this._event[var2]
-            && var1._subMessage == this._subMessage[var2]
-            && var1._dataLength == this._dataLength[var2]
-            && var1._data0 == this._data0[var2]
-            && var1._data1 == this._data1[var2]
-            && var1._object0 == this._object0[var2]
-            && var1._object1 == this._object1[var2]) {
+   public final boolean alreadyPresent(Message msg) {
+      for (int curr = this._start; curr != this._end; curr = this.plusplus(curr)) {
+         if (msg._device == this._device[curr]
+            && msg._event == this._event[curr]
+            && msg._subMessage == this._subMessage[curr]
+            && msg._dataLength == this._dataLength[curr]
+            && msg._data0 == this._data0[curr]
+            && msg._data1 == this._data1[curr]
+            && msg._object0 == this._object0[curr]
+            && msg._object1 == this._object1[curr]) {
             return true;
          }
       }
@@ -122,12 +194,12 @@ public final class MessageQueue {
    }
 
    public final int getSize() {
-      int var1 = this._end - this._start;
-      if (var1 < 0) {
-         var1 += this._capacity;
+      int size = this._end - this._start;
+      if (size < 0) {
+         size += this._capacity;
       }
 
-      return var1;
+      return size;
    }
 
    public final int getCapacity() {
@@ -138,56 +210,56 @@ public final class MessageQueue {
       return this._maxCapacity - 1;
    }
 
-   public final void setMaxCapacity(int var1) {
-      if (var1 + 1 < this._maxCapacity) {
+   public final void setMaxCapacity(int max) {
+      if (max + 1 < this._maxCapacity) {
          throw new Object();
       }
 
-      this._maxCapacity = var1 + 1;
+      this._maxCapacity = max + 1;
    }
 
-   private final int plusplus(int var1) {
-      if (++var1 == this._capacity) {
-         var1 = 0;
+   private final int plusplus(int value) {
+      if (++value == this._capacity) {
+         value = 0;
       }
 
-      return var1;
+      return value;
    }
 
-   private final int minusminus(int var1) {
-      return var1 == 0 ? this._capacity - 1 : var1 - 1;
+   private final int minusminus(int value) {
+      return value == 0 ? this._capacity - 1 : value - 1;
    }
 
-   private static final void appendObjType(StringBuffer var0, Object var1) {
+   private static final void appendObjType(StringBuffer buff, Object o) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
    public final String toString() {
-      Object var1 = new Object();
-      this.dumpMessage((StringBuffer)var1, this.minusminus(this._start), true);
+      StringBuffer buf = (StringBuffer)(new Object());
+      this.dumpMessage(buf, this.minusminus(this._start), true);
 
-      for (int var2 = this._start; var2 != this._end; var2 = this.plusplus(var2)) {
-         this.dumpMessage((StringBuffer)var1, var2, false);
+      for (int i = this._start; i != this._end; i = this.plusplus(i)) {
+         this.dumpMessage(buf, i, false);
       }
 
-      return ((StringBuffer)var1).toString();
+      return buf.toString();
    }
 
-   private final void dumpMessage(StringBuffer var1, int var2, boolean var3) {
-      if (var3) {
-         var1.append('[');
+   private final void dumpMessage(StringBuffer buf, int index, boolean bracketed) {
+      if (bracketed) {
+         buf.append('[');
       }
 
-      var1.append(Integer.toHexString(this._device[var2]));
-      var1.append(' ');
-      var1.append(Integer.toHexString(this._event[var2]));
-      if (var3) {
-         appendObjType(var1, this._object0[var2]);
-         appendObjType(var1, this._object1[var2]);
-         var1.append(']');
+      buf.append(Integer.toHexString(this._device[index]));
+      buf.append(' ');
+      buf.append(Integer.toHexString(this._event[index]));
+      if (bracketed) {
+         appendObjType(buf, this._object0[index]);
+         appendObjType(buf, this._object1[index]);
+         buf.append(']');
       }
 
-      var1.append('\n');
+      buf.append('\n');
    }
 }

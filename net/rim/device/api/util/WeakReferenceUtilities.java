@@ -7,51 +7,77 @@ public final class WeakReferenceUtilities {
    private WeakReferenceUtilities() {
    }
 
-   public static final byte[] getByteArray(WeakReference var0, int var1) {
+   public static final byte[] getByteArray(WeakReference wr, int size) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final char[] getCharArray(WeakReference var0, int var1) {
+   public static final char[] getCharArray(WeakReference wr, int size) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final StringBuffer getStringBuffer(WeakReference var0) {
-      Object var1 = var0.get();
-      if (var1 == null) {
-         var1 = new Object();
-         var0.set(var1);
+   public static final StringBuffer getStringBuffer(WeakReference wr) {
+      StringBuffer buffer = (StringBuffer)wr.get();
+      if (buffer == null) {
+         buffer = (StringBuffer)(new Object());
+         wr.set(buffer);
       }
 
-      return (StringBuffer)var1;
+      return buffer;
    }
 
-   public static final DataBuffer getDataBuffer(WeakReference var0, boolean var1) {
-      Object var2 = var0.get();
-      if (var2 == null) {
-         var2 = new Object(var1);
-         var0.set(var2);
+   public static final DataBuffer getDataBuffer(WeakReference wr, boolean bigEndianFlag) {
+      DataBuffer buffer = (DataBuffer)wr.get();
+      if (buffer == null) {
+         buffer = (DataBuffer)(new Object(bigEndianFlag));
+         wr.set(buffer);
       }
 
-      return (DataBuffer)var2;
+      return buffer;
    }
 
-   public static final Object[] getObjectArray(WeakReference var0, int var1) {
+   public static final Object[] getObjectArray(WeakReference wr, int size) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final String[] getStringArray(WeakReference var0, int var1) {
+   public static final String[] getStringArray(WeakReference wr, int size) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final int incrementalWRArrayPurge(int var0, WeakReference[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int incrementalWRArrayPurge(int curr, WeakReference[] wr) {
+      synchronized (wr) {
+         int len = wr.length;
+         if (len > 0) {
+            int n = len == 1 ? 1 : 2;
+
+            for (int i = 0; i < n; i++) {
+               if (++curr >= len) {
+                  curr = 0;
+               }
+
+               WeakReference w = wr[curr];
+               if (w == null || w.get() == null) {
+                  Arrays.removeAt(wr, curr);
+                  len--;
+               }
+            }
+         }
+
+         return curr;
+      }
    }
 
-   public static final void purge(IntHashtable var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void purge(IntHashtable ht) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void purge(Vector var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void purge(Vector v) {
+      synchronized (v) {
+         for (int i = v.size() - 1; i >= 0; i--) {
+            WeakReference wr = (WeakReference)v.elementAt(i);
+            if (wr.get() == null) {
+               v.removeElementAt(i);
+            }
+         }
+      }
    }
 }

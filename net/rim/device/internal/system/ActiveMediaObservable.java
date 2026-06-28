@@ -1,6 +1,7 @@
 package net.rim.device.internal.system;
 
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.util.ListenerUtilities;
 
 public final class ActiveMediaObservable {
    private ActiveMedia _user;
@@ -15,38 +16,74 @@ public final class ActiveMediaObservable {
    }
 
    public static final ActiveMediaObservable getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      ActiveMediaObservable var1 = (ActiveMediaObservable)var0.getOrWaitFor(-5866557420524450530L);
-      if (var1 == null) {
-         var1 = new ActiveMediaObservable();
-         var0.put(-5866557420524450530L, var1);
+      ApplicationRegistry registry = ApplicationRegistry.getApplicationRegistry();
+      ActiveMediaObservable observable = (ActiveMediaObservable)registry.getOrWaitFor(-5866557420524450530L);
+      if (observable == null) {
+         observable = new ActiveMediaObservable();
+         registry.put(-5866557420524450530L, observable);
       }
 
-      return var1;
+      return observable;
    }
 
-   public static final void setActive(ActiveMedia var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setActive(ActiveMedia newUser) {
+      ActiveMediaObservable observable = getInstance();
+      ActiveMedia user;
+      Object[] listeners;
+      synchronized (observable) {
+         if (observable._user != newUser) {
+            user = observable._user;
+            listeners = observable._listeners;
+            observable._user = newUser;
+         } else {
+            user = null;
+            listeners = null;
+         }
+      }
+
+      if (listeners != null) {
+         observable.notifyChange(listeners, user, newUser);
+      }
    }
 
-   public static final void setInactive(ActiveMedia var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void setInactive(ActiveMedia fromUser) {
+      ActiveMediaObservable observable = getInstance();
+      ActiveMedia user;
+      Object[] listeners;
+      synchronized (observable) {
+         if (observable._user == fromUser) {
+            user = observable._user;
+            listeners = observable._listeners;
+            observable._user = null;
+         } else {
+            user = null;
+            listeners = null;
+         }
+      }
+
+      if (listeners != null) {
+         observable.notifyChange(listeners, user, null);
+      }
    }
 
    public static final ActiveMedia getActiveMedia() {
-      ActiveMediaObservable var0 = getInstance();
-      return var0._user;
+      ActiveMediaObservable observable = getInstance();
+      return observable._user;
    }
 
-   private final void notifyChange(Object[] var1, ActiveMedia var2, ActiveMedia var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void notifyChange(Object[] listeners, ActiveMedia fromUser, ActiveMedia toUser) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public static final void addListener(ActiveMediaObserver var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addListener(ActiveMediaObserver listener) {
+      ActiveMediaObservable observable = getInstance();
+      synchronized (observable) {
+         observable._listeners = ListenerUtilities.addListener(observable._listeners, new Object(listener));
+         observable.cleanupWeakRefs();
+      }
    }
 
-   public static final void removeListener(ActiveMediaObserver var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void removeListener(ActiveMediaObserver listener) {
+      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 }

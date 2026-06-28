@@ -1,10 +1,12 @@
 package net.rim.device.internal.crypto;
 
 import java.io.DataInput;
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CRC32;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.StringUtilities;
@@ -71,130 +73,168 @@ public final class CryptoBlock {
    private CryptoBlock() {
    }
 
-   private static final void scanAndScheduleToRemoveExpiredKeys(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final String getKeyIDForUID(String var0) {
-      if (var0 == null) {
-         throw new Object();
-      }
-
-      Object var1 = _keysByName.get(var0.toLowerCase());
-      return var1 == null ? null : ((CryptoBlock$CryptoBlockKey)var1)._id;
-   }
-
-   public static final byte getKeyAlgorithmForUID(String var0) {
-      if (var0 == null) {
-         throw new Object();
-      }
-
-      Object var1 = _keysByName.get(var0.toLowerCase());
-      return var1 == null ? 0 : ((CryptoBlock$CryptoBlockKey)var1)._algorithm;
-   }
-
-   public static final String getUIDForKeyId(String var0) {
-      if (var0 == null) {
-         throw new Object();
-      }
-
-      Object var1 = _keysById.get(var0);
-      return var1 == null ? null : ((CryptoBlock$CryptoBlockKey)var1)._name;
-   }
-
-   public static final boolean moveKey(String var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final boolean isEnterpriseClassKey(String var0, String var1) {
-      Object var2 = _keysById != null ? _keysById.get(var0) : null;
-      if (var2 != null) {
-         return ((CryptoBlock$CryptoBlockKey)var2)._enterpriseClassKey;
-      }
-
-      Object var3 = var1 != null ? _keysByName.get(var1.toLowerCase()) : null;
-      return var3 != null ? ((CryptoBlock$CryptoBlockKey)var3)._enterpriseClassKey : false;
-   }
-
-   public static final boolean isGlobalPeerToPeerKey(String var0) {
+   private static final void scanAndScheduleToRemoveExpiredKeys(int context) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean isCorporatePeerToPeerKey(String var0) {
-      if (var0 == null) {
+   public static final String getKeyIDForUID(String uid) {
+      if (uid == null) {
          throw new Object();
       }
 
-      Object var1 = _keysById.get(var0);
-      return var1 != null
+      CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
+      return key == null ? null : key._id;
+   }
+
+   public static final byte getKeyAlgorithmForUID(String uid) {
+      if (uid == null) {
+         throw new Object();
+      }
+
+      CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
+      return key == null ? 0 : key._algorithm;
+   }
+
+   public static final String getUIDForKeyId(String keyId) {
+      if (keyId == null) {
+         throw new Object();
+      }
+
+      CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysById.get(keyId);
+      return key == null ? null : key._name;
+   }
+
+   public static final boolean moveKey(String oldUid, String newUid) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public static final boolean isEnterpriseClassKey(String keyId, String uid) {
+      CryptoBlock$CryptoBlockKey keyByID = (CryptoBlock$CryptoBlockKey)(_keysById != null ? _keysById.get(keyId) : null);
+      if (keyByID != null) {
+         return keyByID._enterpriseClassKey;
+      }
+
+      CryptoBlock$CryptoBlockKey keyByUid = (CryptoBlock$CryptoBlockKey)(uid != null ? _keysByName.get(uid.toLowerCase()) : null);
+      return keyByUid != null ? keyByUid._enterpriseClassKey : false;
+   }
+
+   public static final boolean isGlobalPeerToPeerKey(String keyID) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public static final boolean isCorporatePeerToPeerKey(String keyID) {
+      if (keyID == null) {
+         throw new Object();
+      }
+
+      CryptoBlock$CryptoBlockKey keyByID = (CryptoBlock$CryptoBlockKey)_keysById.get(keyID);
+      return keyByID != null
          && (
-            StringUtilities.strEqualIgnoreCase(((CryptoBlock$CryptoBlockKey)var1)._name, CURRENT_BES_SCRAMBLE_KEY, 1701707776)
-               || StringUtilities.strEqualIgnoreCase(((CryptoBlock$CryptoBlockKey)var1)._name, PREVIOUS_BES_SCRAMBLE_KEY, 1701707776)
+            StringUtilities.strEqualIgnoreCase(keyByID._name, CURRENT_BES_SCRAMBLE_KEY, 1701707776)
+               || StringUtilities.strEqualIgnoreCase(keyByID._name, PREVIOUS_BES_SCRAMBLE_KEY, 1701707776)
          );
    }
 
-   public static final boolean isPeerToPeerKey(String var0) {
-      return isGlobalPeerToPeerKey(var0) || isCorporatePeerToPeerKey(var0);
+   public static final boolean isPeerToPeerKey(String keyID) {
+      return isGlobalPeerToPeerKey(keyID) || isCorporatePeerToPeerKey(keyID);
    }
 
-   public static final byte[] getSymmetricKey(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final byte[] getSymmetricKey(String uid) {
+      synchronized (_persistentKeysById) {
+         if (uid == null) {
+            throw new Object();
+         }
+
+         CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
+         return key == null ? null : key.getKey();
+      }
    }
 
-   public static final boolean validateSenderByUid(String var0, String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean validateSenderByUid(String keyId, String uid) {
+      synchronized (_persistentKeysById) {
+         boolean result = false;
+         if (uid == null) {
+            throw new Object();
+         }
+
+         CryptoBlock$CryptoBlockKey key1 = (CryptoBlock$CryptoBlockKey)_keysById.get(keyId);
+         CryptoBlock$CryptoBlockKey key2 = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
+         if (key1 != null && key2 != null) {
+            result = Arrays.equals(key1.getKey(), key2.getKey());
+            result &= key1._enterpriseClassKey == key2._enterpriseClassKey;
+         }
+
+         return result;
+      }
    }
 
-   public static final void addNonEnterpriseClassSymmetricKey(String var0, DataInput var1) {
-      addSymmetricKey(var0, var1, -1, false);
+   public static final void addNonEnterpriseClassSymmetricKey(String uid, DataInput input) {
+      addSymmetricKey(uid, input, -1, false);
    }
 
-   public static final void addSymmetricKey(String var0, DataInput var1) {
-      addSymmetricKey(var0, var1, -1);
+   public static final void addSymmetricKey(String uid, DataInput input) {
+      addSymmetricKey(uid, input, -1);
    }
 
-   public static final void addSymmetricKey(String var0, DataInput var1, long var2) {
-      addSymmetricKey(var0, var1, var2, true);
+   public static final void addSymmetricKey(String uid, DataInput input, long keyExpiryDate) {
+      addSymmetricKey(uid, input, keyExpiryDate, true);
    }
 
-   public static final void addSymmetricKeyAsSecondaryKey(String var0, DataInput var1) {
-      addSymmetricKeyAsSecondaryKey(var0, var1, -1);
+   public static final void addSymmetricKeyAsSecondaryKey(String uid, DataInput input) {
+      addSymmetricKeyAsSecondaryKey(uid, input, -1);
    }
 
-   public static final void addSymmetricKeyAsSecondaryKey(String var0, DataInput var1, long var2) {
-      addSymmetricKey(var0, var1, var2, true, true);
+   public static final void addSymmetricKeyAsSecondaryKey(String uid, DataInput input, long keyExpiryDate) {
+      addSymmetricKey(uid, input, keyExpiryDate, true, true);
    }
 
-   public static final void addSymmetricKey(String var0, DataInput var1, long var2, boolean var4) {
-      addSymmetricKey(var0, var1, var2, var4, false);
+   public static final void addSymmetricKey(String uid, DataInput input, long keyExpiryDate, boolean enterpriseClassKey) {
+      addSymmetricKey(uid, input, keyExpiryDate, enterpriseClassKey, false);
    }
 
-   public static final void addSymmetricKey(String var0, DataInput var1, long var2, boolean var4, boolean var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void addSymmetricKey(String uid, DataInput input, long keyExpiryDate, boolean enterpriseClassKey, boolean secondaryOnly) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean revertSymmetricKey(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean revertSymmetricKey(String keyid) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean removeSymmetricKey(String var0, byte var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean removeSymmetricKey(String uid, byte flags) {
+      synchronized (_persistentKeysById) {
+         if (uid == null) {
+            throw new Object();
+         }
+
+         uid = uid.toLowerCase();
+         CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid);
+         return deleteSymmetricKey(key, flags);
+      }
    }
 
-   public static final boolean removeSymmetricKeyByKeyID(String var0, byte var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean removeSymmetricKeyByKeyID(String keyid, byte flags) {
+      synchronized (_persistentKeysById) {
+         if (keyid == null) {
+            throw new Object();
+         }
+
+         CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysById.get(keyid);
+         return deleteSymmetricKey(key, flags);
+      }
    }
 
-   private static final boolean deleteSymmetricKey(CryptoBlock$CryptoBlockKey var0, byte var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final boolean deleteSymmetricKey(CryptoBlock$CryptoBlockKey key, byte flags) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean isKeyPresent(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean isKeyPresent(String name) {
+      synchronized (_persistentKeysById) {
+         return _keysByName.containsKey(name.toLowerCase());
+      }
    }
 
-   public static final int getKeyLength(byte var0) {
-      switch (var0) {
+   public static final int getKeyLength(byte keyAlgorithm) {
+      switch (keyAlgorithm) {
          case 0:
             throw new CryptoBlockException();
          case 1:
@@ -205,38 +245,38 @@ public final class CryptoBlock {
       }
    }
 
-   private static final byte[] createSessionKey(byte var0) {
-      byte var1 = encryptionSchemeToKeyAlgorithm(var0);
-      int var2 = getKeyLength(var1);
-      byte[] var3 = RandomSource.getBytes(var2);
-      if (var0 == 0) {
-         for (int var4 = 0; var4 < var2; var4++) {
-            var3[var4] = (byte)(var3[var4] & 127);
+   private static final byte[] createSessionKey(byte encryptionScheme) {
+      byte keyAlgorithm = encryptionSchemeToKeyAlgorithm(encryptionScheme);
+      int keyLength = getKeyLength(keyAlgorithm);
+      byte[] keyData = RandomSource.getBytes(keyLength);
+      if (encryptionScheme == 0) {
+         for (int i = 0; i < keyLength; i++) {
+            keyData[i] = (byte)(keyData[i] & 127);
          }
       }
 
-      return var3;
+      return keyData;
    }
 
-   private static final boolean checkSessionKey(byte[] var0, byte var1) {
-      if (var0 == null) {
+   private static final boolean checkSessionKey(byte[] keyData, byte encryptionScheme) {
+      if (keyData == null) {
          return false;
       }
 
-      byte var2 = encryptionSchemeToKeyAlgorithm(var1);
-      int var3 = getKeyLength(var2);
-      if (var0.length != var3) {
+      byte keyAlgorithm = encryptionSchemeToKeyAlgorithm(encryptionScheme);
+      int keyLength = getKeyLength(keyAlgorithm);
+      if (keyData.length != keyLength) {
          return false;
       }
 
-      if (var1 == 0) {
-         byte var4 = 0;
+      if (encryptionScheme == 0) {
+         byte b = 0;
 
-         for (int var5 = 0; var5 < var3; var5++) {
-            var4 |= var0[var5];
+         for (int i = 0; i < keyLength; i++) {
+            b |= keyData[i];
          }
 
-         if ((var4 & 128) != 0) {
+         if ((b & 128) != 0) {
             return false;
          }
       }
@@ -244,48 +284,62 @@ public final class CryptoBlock {
       return true;
    }
 
-   private static final String readKeyID(DataInput var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final String readKeyID(DataInput input) {
+      byte[] buffer = new byte[32];
+
+      try {
+         for (int i = 0; i < 32; i++) {
+            int b = input.readUnsignedByte();
+            if (b == 0) {
+               return (String)(new Object(buffer, 0, i));
+            }
+
+            buffer[i] = (byte)b;
+         }
+      } catch (IOException var4) {
+      }
+
+      throw new CryptoBlockException();
    }
 
-   private static final byte encryptionSchemeToKeyAlgorithm(byte var0) {
+   private static final byte encryptionSchemeToKeyAlgorithm(byte encryptionScheme) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final byte keyAlgorithmToEncryptionScheme(byte var0) {
+   private static final byte keyAlgorithmToEncryptionScheme(byte keyAlgorithm) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final int checkRedundancy(byte[] var0, byte var1) {
+   private static final int checkRedundancy(byte[] data, byte encryptionScheme) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final void addRedundancy(DataBuffer var0, byte var1) {
-      if (var1 != 0) {
-         int var2 = CRC32.update(-1, var0.getArray(), var0.getArrayPosition(), var0.available());
-         int var3 = var0.getPosition();
-         var0.setPosition(var0.getLength());
-         var0.writeInt(var2);
-         var0.setPosition(var3);
+   private static final void addRedundancy(DataBuffer data, byte encryptionScheme) {
+      if (encryptionScheme != 0) {
+         int crc32 = CRC32.update(-1, data.getArray(), data.getArrayPosition(), data.available());
+         int currentPosition = data.getPosition();
+         data.setPosition(data.getLength());
+         data.writeInt(crc32);
+         data.setPosition(currentPosition);
       }
    }
 
-   private static final void removeRedundancy(DataBuffer var0, byte var1) {
-      if (var1 != 0) {
-         var0.setLength(var0.getLength() - 4);
+   private static final void removeRedundancy(DataBuffer data, byte encryptionScheme) {
+      if (encryptionScheme != 0) {
+         data.setLength(data.getLength() - 4);
       }
    }
 
-   public static final boolean encode(Vector var0, DataBuffer var1, DataBuffer var2, boolean var3, boolean var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean encode(Vector uids, DataBuffer input, DataBuffer output, boolean doCompress, boolean doEncrypt) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String decode(DataBuffer var0, DataBuffer var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String decode(DataBuffer input, DataBuffer output) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final void selfTest() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: array init");
    }
 
    private static final void registerKeyCollections() {

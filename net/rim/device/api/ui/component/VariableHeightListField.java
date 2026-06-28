@@ -44,18 +44,18 @@ public class VariableHeightListField extends Field {
       this(0, 0);
    }
 
-   public VariableHeightListField(int var1) {
-      this(var1, 0);
+   public VariableHeightListField(int numRows) {
+      this(numRows, 0);
    }
 
-   public VariableHeightListField(int var1, long var2) {
-      super(validateStyle(var2));
+   public VariableHeightListField(int numRows, long style) {
+      super(validateStyle(style));
       this.setTag(TAG);
       this._size = 0;
       this._topRow = 0;
       this._cursor = -1;
       this._selectionRange = 0;
-      this.setSize(var1, 0);
+      this.setSize(numRows, 0);
       if (this instanceof VariableHeightListFieldCallback) {
          this._callback = (VariableHeightListFieldCallback)this;
       }
@@ -66,8 +66,8 @@ public class VariableHeightListField extends Field {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   private void calcFocusRect(boolean var1) {
-      if (var1) {
+   private void calcFocusRect(boolean move) {
+      if (move) {
          this.focusRemove();
       }
 
@@ -76,103 +76,112 @@ public class VariableHeightListField extends Field {
          this._focusRect.height = this.getRowHeight(this._cursor);
       }
 
-      if (var1) {
+      if (move) {
          this.focusAdd(true);
       }
    }
 
-   private void calcSelectedIndex(int var1) {
-      this.calcSelectedIndex(var1, false, false);
+   private void calcSelectedIndex(int index) {
+      this.calcSelectedIndex(index, false, false);
    }
 
-   private void calcSelectedIndex(int var1, boolean var2) {
-      this.calcSelectedIndex(var1, var2, false);
+   private void calcSelectedIndex(int index, boolean scrollToTop) {
+      this.calcSelectedIndex(index, scrollToTop, false);
    }
 
-   private void calcSelectedIndex(int var1, boolean var2, boolean var3) {
+   private void calcSelectedIndex(int index, boolean scrollToTop, boolean moveFocus) {
       if (this._size == 0) {
          this._cursor = -1;
          this._topRow = 0;
          this._selectionRange = 0;
          this.updateScrollbar();
       } else {
-         if (var3) {
+         if (moveFocus) {
             this.focusRemove();
          }
 
-         this._cursor = MathUtilities.clamp(0, var1, this._size - 1);
+         this._cursor = MathUtilities.clamp(0, index, this._size - 1);
          this._selectionRange = 0;
-         if (var2 || this._cursor < this._topRow) {
+         if (scrollToTop || this._cursor < this._topRow) {
             this.setTopRow(this._cursor, this._cursor);
          }
 
-         this.makeFocusVisible(var3);
+         this.makeFocusVisible(moveFocus);
       }
    }
 
    private void checkLocale() {
       if (this._rbId != 0) {
-         int var1 = Locale.getDefault().getCode();
-         if (this._cachedLocaleCode != var1) {
-            this._cachedLocaleCode = var1;
-            ResourceBundleFamily var2 = ResourceBundle.getBundle(this._rbId, this._rbName);
-            this._emptyString = var2.getString(this._rbKey);
+         int currentCode = Locale.getDefault().getCode();
+         if (this._cachedLocaleCode != currentCode) {
+            this._cachedLocaleCode = currentCode;
+            ResourceBundleFamily family = ResourceBundle.getBundle(this._rbId, this._rbName);
+            this._emptyString = family.getString(this._rbKey);
          }
       }
    }
 
    private int computeFieldHeight() {
-      throw new RuntimeException("cod2jar: exception table");
+      int height = 0;
+
+      for (int i = this._size - 1; i >= 0; i--) {
+         try {
+            height += this.getRowHeight(i);
+         } catch (Throwable var4) {
+         }
+      }
+
+      return height;
    }
 
-   public void delete(int var1) {
-      boolean var2 = false;
-      if (var1 >= 0 && var1 <= this._size) {
+   public void delete(int index) {
+      boolean focusMoved = false;
+      if (index >= 0 && index <= this._size) {
          this._selectionRange = 0;
          this._size--;
-         if (var1 < this._topRow) {
+         if (index < this._topRow) {
             this._topRow--;
          }
 
-         if (var1 < this._cursor) {
+         if (index < this._cursor) {
             this._cursor--;
          }
 
-         if (var1 == this._cursor && var1 == this._size) {
-            if (var1 == 0) {
+         if (index == this._cursor && index == this._size) {
+            if (index == 0) {
                this._cursor = -1;
             } else {
                this._cursor--;
-               var2 = true;
-               var1--;
+               focusMoved = true;
+               index--;
             }
          }
 
          this.calcFocusRect(false);
          this.fieldChangeNotify(Integer.MIN_VALUE);
-         Manager var3 = this.getManager();
-         if (var3 != null) {
+         Manager manager = this.getManager();
+         if (manager != null) {
             this.updateLayout();
-            if (var2) {
+            if (focusMoved) {
                this.focusAdd(false);
                this.focusChangeNotify(2);
             }
 
-            this.invalidate(0, this.getYForRow(var1), this.getWidth(), 1073741823);
+            this.invalidate(0, this.getYForRow(index), this.getWidth(), 1073741823);
          }
 
          this.updateScrollbar();
       } else {
-         throw new Object(var1);
+         throw new Object(index);
       }
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      if (!var2) {
+   protected void drawFocus(Graphics graphics, boolean on) {
+      if (!on) {
          this.invalidate(this._focusRect.x, this._focusRect.y, this._focusRect.width, this._focusRect.height);
       } else {
-         super.drawFocus(var1, var2);
+         super.drawFocus(graphics, on);
       }
    }
 
@@ -202,7 +211,7 @@ public class VariableHeightListField extends Field {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -212,7 +221,7 @@ public class VariableHeightListField extends Field {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -234,17 +243,17 @@ public class VariableHeightListField extends Field {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      var1.set(this._focusRect);
+   public void getFocusRect(XYRect rect) {
+      rect.set(this._focusRect);
    }
 
    public int getLastVisibleRow() {
-      int var1 = this._topRow + this.getVisibleLinesPageDown(this._topRow) - 1;
-      if (var1 >= this._size) {
-         var1 = this._size - 1;
+      int lastVisibleRow = this._topRow + this.getVisibleLinesPageDown(this._topRow) - 1;
+      if (lastVisibleRow >= this._size) {
+         lastVisibleRow = this._size - 1;
       }
 
-      return var1;
+      return lastVisibleRow;
    }
 
    @Override
@@ -252,16 +261,16 @@ public class VariableHeightListField extends Field {
       return this._callback.getPreferredWidth(this);
    }
 
-   protected int getRowHeight(int var1) {
-      return this._callback != null ? this._callback.getRowHeight(this, var1) : 0;
+   protected int getRowHeight(int row) {
+      return this._callback != null ? this._callback.getRowHeight(this, row) : 0;
    }
 
-   protected int getRowHeight(int var1, int var2) {
-      int var3 = this._topRow;
-      this._topRow = var1;
-      int var4 = this.getRowHeight(var2);
-      this._topRow = var3;
-      return var4;
+   protected int getRowHeight(int topRow, int row) {
+      int oldTopRow = this._topRow;
+      this._topRow = topRow;
+      int height = this.getRowHeight(row);
+      this._topRow = oldTopRow;
+      return height;
    }
 
    public int getSelectedIndex() {
@@ -269,16 +278,16 @@ public class VariableHeightListField extends Field {
    }
 
    public int[] getSelection() {
-      int var1 = Math.abs(this._selectionRange) + 1;
-      int[] var2 = new int[var1];
-      int var3 = this._cursor + (this._selectionRange > 0 ? this._selectionRange : 0);
-      int var4 = var3;
+      int size = Math.abs(this._selectionRange) + 1;
+      int[] selection = new int[size];
+      int last = this._cursor + (this._selectionRange > 0 ? this._selectionRange : 0);
+      int index = last;
 
-      while (var1 > 0) {
-         var2[--var1] = var4--;
+      while (size > 0) {
+         selection[--size] = index--;
       }
 
-      return var2;
+      return selection;
    }
 
    private int getSelectionAnchor() {
@@ -293,59 +302,59 @@ public class VariableHeightListField extends Field {
       return this._topRow;
    }
 
-   private int getVisibleLinesPageDown(int var1) {
-      Manager var2 = this.getManager();
-      int var3 = this.getHeight();
-      if (var2 != null && var2.getVisibleHeight() < var3) {
-         var3 = var2.getVisibleHeight();
+   private int getVisibleLinesPageDown(int topVisibleLine) {
+      Manager manager = this.getManager();
+      int height = this.getHeight();
+      if (manager != null && manager.getVisibleHeight() < height) {
+         height = manager.getVisibleHeight();
       }
 
-      for (int var4 = var1; var4 < this._size; var4++) {
-         int var5 = this.getRowHeight(var4);
-         if (var5 > var3) {
-            return var4 - var1;
+      for (int row = topVisibleLine; row < this._size; row++) {
+         int rowHeight = this.getRowHeight(row);
+         if (rowHeight > height) {
+            return row - topVisibleLine;
          }
 
-         var3 -= var5;
+         height -= rowHeight;
       }
 
-      return this._size - var1;
+      return this._size - topVisibleLine;
    }
 
-   private int getVisibleLinesPageUp(int var1) {
-      int var2 = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
+   private int getVisibleLinesPageUp(int bottomVisibleLine) {
+      int height = Math.min(this.getHeight(), this.getManager().getVisibleHeight());
 
-      for (int var3 = var1; var3 >= 0; var3--) {
-         int var4 = this.getRowHeight(var3);
-         if (var4 > var2) {
-            return var1 - var3;
+      for (int row = bottomVisibleLine; row >= 0; row--) {
+         int rowHeight = this.getRowHeight(row);
+         if (rowHeight > height) {
+            return bottomVisibleLine - row;
          }
 
-         var2 -= var4;
+         height -= rowHeight;
       }
 
-      return var1;
+      return bottomVisibleLine;
    }
 
-   protected int getYForRow(int var1) {
-      if (var1 < this._topRow) {
+   protected int getYForRow(int row) {
+      if (row < this._topRow) {
          throw new Object();
       }
 
-      int var2 = 0;
+      int offset = 0;
 
-      for (int var3 = this._topRow; var3 < var1; var3++) {
-         var2 += this.getRowHeight(var3);
+      for (int i = this._topRow; i < row; i++) {
+         offset += this.getRowHeight(i);
       }
 
-      return var2;
+      return offset;
    }
 
-   public void insert(int var1) {
-      boolean var2 = false;
-      if (var1 >= 0 && var1 <= this._size) {
+   public void insert(int index) {
+      boolean focusMoved = false;
+      if (index >= 0 && index <= this._size) {
          this._selectionRange = 0;
-         if (var1 <= this._topRow) {
+         if (index <= this._topRow) {
             this._topRow++;
             this.updateScrollbar();
          }
@@ -353,27 +362,27 @@ public class VariableHeightListField extends Field {
          if (this._size == 0) {
             this._cursor = 0;
             this._topRow = 0;
-         } else if (var1 <= this._cursor) {
+         } else if (index <= this._cursor) {
             this._cursor++;
-            var2 = true;
+            focusMoved = true;
          }
 
          this._size++;
          this.calcFocusRect(false);
-         Manager var3 = this.getManager();
-         if (var3 != null) {
+         Manager manager = this.getManager();
+         if (manager != null) {
             this.updateLayout();
-            if (var2) {
+            if (focusMoved) {
                this.focusAdd(false);
             }
 
-            this.invalidate(0, this.getYForRow(var1), this.getWidth(), 1073741823);
+            this.invalidate(0, this.getYForRow(index), this.getWidth(), 1073741823);
          }
 
          this.fieldChangeNotify(Integer.MIN_VALUE);
          this.updateScrollbar();
       } else {
-         throw new Object(var1);
+         throw new Object(index);
       }
    }
 
@@ -384,41 +393,41 @@ public class VariableHeightListField extends Field {
       super.invalidate();
    }
 
-   public void invalidate(int var1) {
-      if (var1 >= this._topRow) {
-         this.invalidate(0, this.getYForRow(var1), this.getWidth(), this.getRowHeight(var1));
+   public void invalidate(int index) {
+      if (index >= this._topRow) {
+         this.invalidate(0, this.getYForRow(index), this.getWidth(), this.getRowHeight(index));
       }
    }
 
-   public void invalidateRange(int var1, int var2) {
-      if (var2 < var1) {
+   public void invalidateRange(int start, int end) {
+      if (end < start) {
          throw new Object();
       }
 
-      if (var1 < this._topRow) {
-         var1 = this._topRow;
+      if (start < this._topRow) {
+         start = this._topRow;
       }
 
-      if (var2 >= this._size) {
-         var2 = this._size - 1;
+      if (end >= this._size) {
+         end = this._size - 1;
       }
 
-      int var3 = this.getYForRow(var1);
-      var2 = MathUtilities.clamp(var1, var2, this._topRow + this.getVisibleLinesPageDown(this._topRow) + 1);
-      this.invalidate(0, var3, this.getContentWidth(), this.getYForRow(var2 + 1) - var3);
+      int y = this.getYForRow(start);
+      end = MathUtilities.clamp(start, end, this._topRow + this.getVisibleLinesPageDown(this._topRow) + 1);
+      this.invalidate(0, y, this.getContentWidth(), this.getYForRow(end + 1) - y);
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (super.getAccessibleStateSet() & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (super.getAccessibleStateSet() & state) != 0;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      int[] var2 = this.getSelection();
+   public boolean isAccessibleChildSelected(int index) {
+      int[] selectionRange = this.getSelection();
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         if (var2[var3] == var1) {
+      for (int i = 0; i < selectionRange.length; i++) {
+         if (selectionRange[i] == index) {
             return true;
          }
       }
@@ -430,133 +439,133 @@ public class VariableHeightListField extends Field {
       return this._size == 0;
    }
 
-   protected boolean isOnTopRow(int var1) {
-      return var1 == this._topRow;
+   protected boolean isOnTopRow(int index) {
+      return index == this._topRow;
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       this._focusRect.x = 0;
-      this._focusRect.width = var1;
+      this._focusRect.width = width;
       this.calcFocusRect(false);
-      if (var2 > 100000) {
+      if (height > 100000) {
          this._layoutOnSizeChange = true;
-         var2 = this.computeFieldHeight();
+         height = this.computeFieldHeight();
       }
 
-      this.setExtent(var1, var2);
+      this.setExtent(width, height);
       this.updateScrollbar();
    }
 
-   private void makeFocusVisible(boolean var1) {
+   private void makeFocusVisible(boolean moveFocus) {
       if (this._cursor < this._topRow) {
          if (this._cursor >= 0) {
             this.setTopRow(this._cursor, this._cursor);
          }
       } else {
-         int var2 = this.getYForRow(this._cursor);
-         int var3 = this.getRowHeight(this._cursor);
-         int var4 = this.getContentHeight();
-         if (var4 > 0 && var2 + var3 > var4) {
-            int var5 = var4;
+         int y = this.getYForRow(this._cursor);
+         int rowHeight = this.getRowHeight(this._cursor);
+         int contentHeight = this.getContentHeight();
+         if (contentHeight > 0 && y + rowHeight > contentHeight) {
+            int height = contentHeight;
 
-            int var6;
-            for (var6 = this._cursor; var6 >= 0; var6--) {
-               var3 = this.getRowHeight(var6);
-               if (var5 - var3 < 0) {
+            int row;
+            for (row = this._cursor; row >= 0; row--) {
+               rowHeight = this.getRowHeight(row);
+               if (height - rowHeight < 0) {
                   break;
                }
 
-               var5 -= var3;
+               height -= rowHeight;
             }
 
-            this.setTopRow(var6 + 1, this._cursor);
+            this.setTopRow(row + 1, this._cursor);
          } else {
             this.setTopRow(this._topRow, this._cursor);
          }
       }
 
       this.updateScrollbar();
-      this.calcFocusRect(var1);
+      this.calcFocusRect(moveFocus);
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      if (this._size != 0 && (var2 & 65536) == 0) {
+   protected int moveFocus(int amount, int status, int time) {
+      if (this._size != 0 && (status & 65536) == 0) {
          this.setMuddy(false);
-         if ((var2 & 1) == 0 || this.isStyle(8)) {
-            int var11 = this._cursor + var1;
-            int var13 = this._cursor;
-            this._cursor = MathUtilities.clamp(0, var11, this._size - 1);
-            var1 = var11 - this._cursor;
-            if ((var2 & 2) != 0) {
+         if ((status & 1) == 0 || this.isStyle(8)) {
+            int desiredAnchor = this._cursor + amount;
+            int oldCursor = this._cursor;
+            this._cursor = MathUtilities.clamp(0, desiredAnchor, this._size - 1);
+            amount = desiredAnchor - this._cursor;
+            if ((status & 2) != 0) {
                if (this.isStyle(2)) {
-                  boolean var7 = this._selectionRange != 0;
-                  this._selectionRange = this._selectionRange + (var13 - this._cursor);
-                  if (this._selectionRange != 0 || var7) {
-                     int var8 = Math.min(var13, this._cursor + 1);
-                     int var9 = Math.max(var13, this._cursor - 1);
-                     this.invalidateRange(var8, var9);
+                  boolean wasMultiple = this._selectionRange != 0;
+                  this._selectionRange = this._selectionRange + (oldCursor - this._cursor);
+                  if (this._selectionRange != 0 || wasMultiple) {
+                     int start = Math.min(oldCursor, this._cursor + 1);
+                     int end = Math.max(oldCursor, this._cursor - 1);
+                     this.invalidateRange(start, end);
                   }
                } else {
                   this._selectionRange = 0;
                }
 
-               var1 = 0;
+               amount = 0;
             } else {
                if (this._selectionRange != 0) {
-                  int var14 = Math.min(var13 + this._selectionRange, var13);
-                  int var15 = Math.max(var13 + this._selectionRange, var13);
-                  this.invalidateRange(var14, var15);
+                  int start = Math.min(oldCursor + this._selectionRange, oldCursor);
+                  int end = Math.max(oldCursor + this._selectionRange, oldCursor);
+                  this.invalidateRange(start, end);
                }
 
                this._selectionRange = 0;
             }
-         } else if ((var2 & 1) != 0) {
+         } else if ((status & 1) != 0) {
             if (this._selectionRange != 0) {
-               int var5 = Math.min(this._cursor + this._selectionRange, this._cursor);
-               int var6 = Math.max(this._cursor + this._selectionRange, this._cursor);
-               this.invalidateRange(var5, var6);
+               int start = Math.min(this._cursor + this._selectionRange, this._cursor);
+               int end = Math.max(this._cursor + this._selectionRange, this._cursor);
+               this.invalidateRange(start, end);
                this._selectionRange = 0;
             }
 
-            int var10 = this._topRow;
-            int var12 = this.getVisibleLinesPageDown(var10);
-            if (var1 < 0) {
+            int firstVisibleLine = this._topRow;
+            int visibleLines = this.getVisibleLinesPageDown(firstVisibleLine);
+            if (amount < 0) {
                if (this.isOnTopRow(this._cursor)) {
                   this._cursor = this._cursor - this.getVisibleLinesPageUp(this._cursor);
                   this._cursor = Math.max(0, this._cursor);
                } else {
-                  this._cursor = var10;
+                  this._cursor = firstVisibleLine;
                }
             } else {
-               if (this._cursor == var10 + var12 - 1) {
+               if (this._cursor == firstVisibleLine + visibleLines - 1) {
                   this._cursor = this._cursor + this.getVisibleLinesPageDown(this._cursor);
                } else {
-                  this._cursor = var10 + var12 - 1;
+                  this._cursor = firstVisibleLine + visibleLines - 1;
                }
 
                this._cursor = Math.min(this._cursor, this._size - 1);
             }
 
-            var1 = 0;
+            amount = 0;
          }
 
          this.makeFocusVisible(false);
-         return var1;
+         return amount;
       } else {
-         return var1;
+         return amount;
       }
    }
 
    @Override
-   protected void onFocus(int var1) {
+   protected void onFocus(int direction) {
       if (this._cursor < 0) {
-         if (var1 > 0) {
+         if (direction > 0) {
             this._cursor = Math.min(0, this._size - 1);
             this._topRow = this._cursor;
             this.updateScrollbar();
-         } else if (var1 != 0) {
+         } else if (direction != 0) {
             this._cursor = this._size - 1;
             this._topRow = this._cursor - this.getVisibleLinesPageUp(this._cursor);
             this.updateScrollbar();
@@ -567,98 +576,98 @@ public class VariableHeightListField extends Field {
    }
 
    @Override
-   protected void paint(Graphics var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void paint(Graphics graphics) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private void paintVerticalScrollbar(Graphics var1) {
+   private void paintVerticalScrollbar(Graphics graphics) {
       if (this._upScrollArrowVisible) {
          if (this._upScrollArrow != null) {
-            Manager var4 = this.getManager();
-            int var5 = var4.getWidth();
-            int var2 = var5 - this._upScrollArrow.getWidth();
-            var1.setOverlay(0, this._upScrollArrow, var2, 0);
+            Manager manager = this.getManager();
+            int width = manager.getWidth();
+            int x = width - this._upScrollArrow.getWidth();
+            graphics.setOverlay(0, this._upScrollArrow, x, 0);
          }
       } else {
-         var1.setOverlay(0, null, 0, 0);
+         graphics.setOverlay(0, null, 0, 0);
       }
 
       if (this._downScrollArrowVisible) {
          if (this._downScrollArrow != null) {
-            Manager var7 = this.getManager();
-            int var8 = var7.getWidth();
-            int var6 = var8 - this._downScrollArrow.getWidth();
-            int var3 = var7.getHeight() - this._downScrollArrow.getHeight();
-            var1.setOverlay(1, this._downScrollArrow, var6, var3);
+            Manager manager = this.getManager();
+            int width = manager.getWidth();
+            int x = width - this._downScrollArrow.getWidth();
+            int y = manager.getHeight() - this._downScrollArrow.getHeight();
+            graphics.setOverlay(1, this._downScrollArrow, x, y);
             return;
          }
       } else {
-         var1.setOverlay(1, null, 0, 0);
+         graphics.setOverlay(1, null, 0, 0);
       }
    }
 
-   protected void scrollRegionVertically(Graphics var1, int var2, int var3, int var4, int var5) {
-      var1.copyArea(0, var2, this.getContentWidth(), var3, 0, var4);
+   protected void scrollRegionVertically(Graphics graphics, int y, int height, int dy, int oldTopRow) {
+      graphics.copyArea(0, y, this.getContentWidth(), height, 0, dy);
    }
 
-   public void setCallback(VariableHeightListFieldCallback var1) {
+   public void setCallback(VariableHeightListFieldCallback callback) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setEmptyString(ResourceBundleFamily var1, int var2, int var3) {
-      if (var1 != null) {
-         var1.getString(var2);
-         this.setEmptyStringFamily(var1, var2);
+   public void setEmptyString(ResourceBundleFamily family, int id, int style) {
+      if (family != null) {
+         family.getString(id);
+         this.setEmptyStringFamily(family, id);
       } else {
          this.setEmptyStringFamily(CommonResource.getBundle(), 1012);
       }
 
-      this._emptyStyle = var3;
+      this._emptyStyle = style;
    }
 
-   public void setEmptyString(String var1, int var2) {
+   public void setEmptyString(String emptyString, int style) {
       this._rbId = 0;
       this._rbName = null;
-      this._emptyString = var1;
-      this._emptyStyle = var2;
+      this._emptyString = emptyString;
+      this._emptyStyle = style;
    }
 
-   private void setEmptyStringFamily(ResourceBundleFamily var1, int var2) {
-      this._rbId = var1.getId();
-      this._rbName = var1.getName();
-      this._rbKey = var2;
+   private void setEmptyStringFamily(ResourceBundleFamily rb, int key) {
+      this._rbId = rb.getId();
+      this._rbName = rb.getName();
+      this._rbKey = key;
       this._cachedLocaleCode = 0;
    }
 
-   public void setSelectedIndex(int var1) {
-      this.setSelectedIndex(var1, false);
+   public void setSelectedIndex(int index) {
+      this.setSelectedIndex(index, false);
    }
 
-   public void setSelectedIndex(int var1, boolean var2) {
+   public void setSelectedIndex(int index, boolean scrollToTop) {
       if (this._cursor >= 0 && this._selectionRange != 0) {
-         int var3 = this._selectionRange > 0 ? this._cursor : this._cursor + this._selectionRange;
-         int var4 = this._selectionRange > 0 ? this._cursor + this._selectionRange : this._cursor;
-         this.invalidateRange(var3, var4);
+         int topIndex = this._selectionRange > 0 ? this._cursor : this._cursor + this._selectionRange;
+         int bottomIndex = this._selectionRange > 0 ? this._cursor + this._selectionRange : this._cursor;
+         this.invalidateRange(topIndex, bottomIndex);
       }
 
-      this.calcSelectedIndex(var1, var2, true);
+      this.calcSelectedIndex(index, scrollToTop, true);
       this.updateScrollbar();
       this.makeFocusVisible(true);
    }
 
-   public void setSize(int var1) {
-      this.setSize(var1, 0);
+   public void setSize(int size) {
+      this.setSize(size, 0);
    }
 
-   public void setSize(int var1, int var2) {
-      boolean var3 = this._size != var1;
-      this._size = var1;
-      this.calcSelectedIndex(var2);
+   public void setSize(int size, int focusRow) {
+      boolean sizeChange = this._size != size;
+      this._size = size;
+      this.calcSelectedIndex(focusRow);
       this.calcFocusRect(false);
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      Manager var4 = this.getManager();
-      if (var4 != null && var4.isValidLayout()) {
-         if (var3 && this._layoutOnSizeChange) {
+      Manager manager = this.getManager();
+      if (manager != null && manager.isValidLayout()) {
+         if (sizeChange && this._layoutOnSizeChange) {
             this.updateLayout();
          }
 
@@ -669,50 +678,50 @@ public class VariableHeightListField extends Field {
       this.updateScrollbar();
    }
 
-   protected void setTopRow(int var1, int var2) {
-      if (var1 != this._topRow) {
-         Graphics var3 = this.getGraphics0();
-         int var4 = this._topRow;
-         int var5 = this.getLastVisibleRow();
-         this._topRow = var1;
-         int var6 = this.getLastVisibleRow();
-         this._topRow = var4;
-         if (var1 < var4 && var6 >= var4) {
-            int var13 = this.getYForRow(var6 + 1) + this.getRowHeight(var6 + 1);
-            this._topRow = var1;
-            int var15 = this.getYForRow(var4);
-            this.scrollRegionVertically(var3, 0, var13, var15, var4);
-            this.invalidate(0, 0, this.getContentWidth(), var15);
-            int var17 = Math.min(this._cursor, this._cursor + this._selectionRange);
-            int var19 = Math.max(this._cursor, this._cursor + this._selectionRange);
-            if (var17 < var4 && var19 >= var4 || var17 <= var6 && var19 > var6) {
+   protected void setTopRow(int topRow, int cursor) {
+      if (topRow != this._topRow) {
+         Graphics graphics = this.getGraphics0();
+         int oldTopRow = this._topRow;
+         int oldBottomVisible = this.getLastVisibleRow();
+         this._topRow = topRow;
+         int newBottomVisible = this.getLastVisibleRow();
+         this._topRow = oldTopRow;
+         if (topRow < oldTopRow && newBottomVisible >= oldTopRow) {
+            int height = this.getYForRow(newBottomVisible + 1) + this.getRowHeight(newBottomVisible + 1);
+            this._topRow = topRow;
+            int newY = this.getYForRow(oldTopRow);
+            this.scrollRegionVertically(graphics, 0, height, newY, oldTopRow);
+            this.invalidate(0, 0, this.getContentWidth(), newY);
+            int selectionStart = Math.min(this._cursor, this._cursor + this._selectionRange);
+            int selectionEnd = Math.max(this._cursor, this._cursor + this._selectionRange);
+            if (selectionStart < oldTopRow && selectionEnd >= oldTopRow || selectionStart <= newBottomVisible && selectionEnd > newBottomVisible) {
                this.invalidate();
             }
-         } else if (var6 > var5 && var1 < var5) {
-            int var7 = this.getYForRow(var1);
-            int var8 = this.getContentHeight();
-            int var9 = var8 - var7;
-            this._topRow = var1;
-            this.scrollRegionVertically(var3, var7, var9, -var7, var4);
-            int var10 = this.getManager().getHeight();
-            this.invalidate(0, var10 - var7, this.getContentWidth(), var8);
-            int var11 = Math.min(this._cursor, this._cursor + this._selectionRange);
-            int var12 = Math.max(this._cursor, this._cursor + this._selectionRange);
-            if (var11 < var1 && var12 >= var1 || var11 <= var5 && var12 > var5) {
+         } else if (newBottomVisible > oldBottomVisible && topRow < oldBottomVisible) {
+            int oldY = this.getYForRow(topRow);
+            int contentHeight = this.getContentHeight();
+            int height = contentHeight - oldY;
+            this._topRow = topRow;
+            this.scrollRegionVertically(graphics, oldY, height, -oldY, oldTopRow);
+            int actualHeight = this.getManager().getHeight();
+            this.invalidate(0, actualHeight - oldY, this.getContentWidth(), contentHeight);
+            int selectionStart = Math.min(this._cursor, this._cursor + this._selectionRange);
+            int selectionEnd = Math.max(this._cursor, this._cursor + this._selectionRange);
+            if (selectionStart < topRow && selectionEnd >= topRow || selectionStart <= oldBottomVisible && selectionEnd > oldBottomVisible) {
                this.invalidate();
             }
          } else {
-            this._topRow = var1;
+            this._topRow = topRow;
             this.invalidate();
          }
 
-         if (var6 >= this._size - 1) {
-            int var14 = this._size - 1;
-            int var16 = this.getYForRow(var14);
-            int var18 = this.getRowHeight(var14);
-            int var20 = this.getContentHeight();
-            if (var16 + var18 < var20) {
-               this.invalidate(0, var16, this.getContentWidth(), var20);
+         if (newBottomVisible >= this._size - 1) {
+            int lastRow = this._size - 1;
+            int lastY = this.getYForRow(lastRow);
+            int lastHeight = this.getRowHeight(lastRow);
+            int contentHeight = this.getContentHeight();
+            if (lastY + lastHeight < contentHeight) {
+               this.invalidate(0, lastY, this.getContentWidth(), contentHeight);
             }
          }
       }
@@ -722,11 +731,11 @@ public class VariableHeightListField extends Field {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private static long validateStyle(long var0) {
-      if ((var0 & 54043195528445952L) == 0) {
-         var0 |= 18014398509481984L;
+   private static long validateStyle(long style) {
+      if ((style & 54043195528445952L) == 0) {
+         style |= 18014398509481984L;
       }
 
-      return var0;
+      return style;
    }
 }

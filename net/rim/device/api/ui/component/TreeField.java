@@ -39,87 +39,87 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    private static MenuItem _expandItem;
    private static MenuItem _collapseItem;
 
-   public Object getCookie(int var1) {
-      return this._data.getCookie(var1);
+   public Object getCookie(int node) {
+      return this._data.getCookie(node);
    }
 
    public int getCurrentNode() {
       return this._focusNode;
    }
 
-   public boolean getExpanded(int var1) {
-      return this._data.getNodeExpansion(var1);
+   public boolean getExpanded(int node) {
+      return this._data.getNodeExpansion(node);
    }
 
-   public int getFirstChild(int var1) {
-      return this._data.getFirstChild(var1);
+   public int getFirstChild(int node) {
+      return this._data.getFirstChild(node);
    }
 
    public int getFirstRoot() {
       return this._data.getFirstRoot();
    }
 
-   public int getNextSibling(int var1) {
-      return this._data.getNextSibling(var1);
+   public int getNextSibling(int node) {
+      return this._data.getNextSibling(node);
    }
 
    public int getNodeCount() {
       return this._data.getNodeCount();
    }
 
-   public int getParent(int var1) {
-      return this._data.getParent(var1);
+   public int getParent(int node) {
+      return this._data.getParent(node);
    }
 
-   public int getPreviousSibling(int var1) {
-      return this._data.getPreviousSibling(var1);
+   public int getPreviousSibling(int node) {
+      return this._data.getPreviousSibling(node);
    }
 
    public int getRowHeight() {
       return this._rowHeight;
    }
 
-   public boolean getVisible(int var1) {
-      return this._data.getVisible(var1);
+   public boolean getVisible(int node) {
+      return this._data.getVisible(node);
    }
 
-   public void invalidateNode(int var1) {
-      Manager var2 = this.getManager();
-      if (this._lastStartNode != -1 && var2 != null) {
-         if (this._data.getVisible(var1)) {
-            int var3 = (var2.getVisibleHeight() + this._rowHeight - 1) / this._rowHeight;
-            int var4 = -1;
-            int var5 = this._lastStartNode;
+   public void invalidateNode(int node) {
+      Manager mgr = this.getManager();
+      if (this._lastStartNode != -1 && mgr != null) {
+         if (this._data.getVisible(node)) {
+            int maxVisibleRows = (mgr.getVisibleHeight() + this._rowHeight - 1) / this._rowHeight;
+            int index = -1;
+            int stepNode = this._lastStartNode;
 
-            for (int var6 = 0; var6 < var3; var6++) {
-               if (var5 == var1) {
-                  var4 = this._lastStartNodeIndex + var6;
+            for (int i = 0; i < maxVisibleRows; i++) {
+               if (stepNode == node) {
+                  index = this._lastStartNodeIndex + i;
                   break;
                }
 
-               var5 = this._data.nextNode(var5, false);
-               if (var5 == -1) {
+               stepNode = this._data.nextNode(stepNode, false);
+               if (stepNode == -1) {
                   break;
                }
             }
 
-            if (var4 == -1) {
-               var5 = this._lastStartNode;
+            if (index == -1) {
+               stepNode = this._lastStartNode;
 
-               for (int var8 = 0; var8 < var3; var8++) {
-                  var5 = this._data.previousNode(var5, false);
-                  if (var5 == -1) {
+               for (int i = 0; i < maxVisibleRows; i++) {
+                  stepNode = this._data.previousNode(stepNode, false);
+                  if (stepNode == -1) {
                      return;
                   }
 
-                  if (var5 == var1) {
-                     var4 = this._lastStartNodeIndex - var8 - 1;
+                  if (stepNode == node) {
+                     index = this._lastStartNodeIndex - i - 1;
                      break;
                   }
                }
             }
 
-            this.invalidate(0, this.getYForRow(var4), this.getWidth(), this.getRowHeight(var4));
+            this.invalidate(0, this.getYForRow(index), this.getWidth(), this.getRowHeight(index));
          }
       }
    }
@@ -128,7 +128,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       return this._data.getVisibleCount();
    }
 
-   public void setEmptyString(String var1, int var2) {
+   public void setEmptyString(String emptyString, int style) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
@@ -140,141 +140,141 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       return this._emptyStyle;
    }
 
-   public void setCurrentNode(int var1) {
+   public void setCurrentNode(int node) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public void deleteAll() {
-      int var1 = this.getFirstRoot();
+      int node = this.getFirstRoot();
 
-      while (var1 != -1) {
-         int var2 = this.getNextSibling(var1);
-         this.deleteSubtree(var1);
-         var1 = var2;
+      while (node != -1) {
+         int next = this.getNextSibling(node);
+         this.deleteSubtree(node);
+         node = next;
       }
    }
 
-   public void deleteSubtree(int var1) {
-      boolean var2 = this._data.getVisible(var1);
+   public void deleteSubtree(int node) {
+      boolean update = this._data.getVisible(node);
 
-      for (int var3 = this._focusNode; var3 > 0; var3 = this._data.getParent(var3)) {
-         if (var3 == var1) {
-            int var4 = this._data.getLastNode(var1, false);
-            this._focusNode = this._data.nextNode(var4, false);
+      for (int step = this._focusNode; step > 0; step = this._data.getParent(step)) {
+         if (step == node) {
+            int last = this._data.getLastNode(node, false);
+            this._focusNode = this._data.nextNode(last, false);
             if (this._focusNode == -1) {
-               this._focusNode = this._data.previousNode(var1, false);
+               this._focusNode = this._data.previousNode(node, false);
             }
             break;
          }
       }
 
-      this._data.deleteSubtree(var1);
-      if (var2) {
+      this._data.deleteSubtree(node);
+      if (update) {
          this.updateLayout();
       }
    }
 
-   public int addChildNode(int var1, Object var2) {
-      int var3 = this._data.addChildNode(var1, var2);
+   public int addChildNode(int parent, Object cookie) {
+      int id = this._data.addChildNode(parent, cookie);
       if (this._haveFocus && this._focusNode == -1) {
-         this._focusNode = var3;
+         this._focusNode = id;
       }
 
-      if (this._data.getVisible(var3)) {
+      if (this._data.getVisible(id)) {
          this.updateLayout();
       }
 
-      return var3;
+      return id;
    }
 
-   public int addSiblingNode(int var1, Object var2) {
-      int var3 = this._data.addSiblingNode(var1, var2);
-      if (this._data.getVisible(var3)) {
+   public int addSiblingNode(int previousSibling, Object cookie) {
+      int id = this._data.addSiblingNode(previousSibling, cookie);
+      if (this._data.getVisible(id)) {
          this.updateLayout();
       }
 
-      return var3;
+      return id;
    }
 
-   public void setDefaultExpanded(boolean var1) {
-      this._data.setDefaultExpansion(var1);
+   public void setDefaultExpanded(boolean expanded) {
+      this._data.setDefaultExpansion(expanded);
    }
 
-   public void setExpanded(int var1, boolean var2) {
-      boolean var3 = this._data.getNodeExpansion(var1);
-      if (var3 != var2) {
-         this._data.setNodeExpansion(var1, var2);
-         if (this._data.getVisible(var1)) {
+   public void setExpanded(int node, boolean expanded) {
+      boolean expansion = this._data.getNodeExpansion(node);
+      if (expansion != expanded) {
+         this._data.setNodeExpansion(node, expanded);
+         if (this._data.getVisible(node)) {
             this.updateLayout();
          }
       }
    }
 
-   public int nextNode(int var1, int var2, boolean var3) {
-      return this._data.nextSubtreeNode(var1, var2, var3);
+   public int nextNode(int node, int root, boolean followCollapsed) {
+      return this._data.nextSubtreeNode(node, root, followCollapsed);
    }
 
-   public int previousNode(int var1, boolean var2) {
-      return this._data.previousNode(var1, var2);
+   public int previousNode(int node, boolean followCollapsed) {
+      return this._data.previousNode(node, followCollapsed);
    }
 
-   public int getLastNode(int var1, boolean var2) {
-      return this._data.getLastNode(var1, var2);
+   public int getLastNode(int node, boolean followCollapsed) {
+      return this._data.getLastNode(node, followCollapsed);
    }
 
-   public void setCookie(int var1, Object var2) {
-      this._data.setCookie(var1, var2);
+   public void setCookie(int node, Object cookie) {
+      this._data.setCookie(node, cookie);
    }
 
-   public void setIndentWidth(int var1) {
-      if (var1 < 0) {
+   public void setIndentWidth(int indent) {
+      if (indent < 0) {
          throw new Object();
       }
 
-      this._indent = var1;
+      this._indent = indent;
    }
 
-   public void setRowHeight(int var1) {
+   public void setRowHeight(int rowHeight) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setRowHeightInLines(int var1) {
+   public void setRowHeightInLines(int rowHeight) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public int getIndentForNode(int var1) {
-      return this._data.getNodeDepth(var1) * this._indent;
+   public int getIndentForNode(int node) {
+      return this._data.getNodeDepth(node) * this._indent;
    }
 
-   public int getRowForY(int var1) {
-      return this._rowHeightAdjuster.getRowForY(var1);
+   public int getRowForY(int y) {
+      return this._rowHeightAdjuster.getRowForY(y);
    }
 
-   public int getRowHeight(int var1) {
-      return this._rowHeightAdjuster.getRowHeight(var1);
+   public int getRowHeight(int row) {
+      return this._rowHeightAdjuster.getRowHeight(row);
    }
 
-   int getYForRow(int var1) {
-      return this._rowHeightAdjuster.getYForRow(var1);
+   int getYForRow(int row) {
+      return this._rowHeightAdjuster.getYForRow(row);
    }
 
-   public int getLineNumberForNode(int var1) {
-      return this._data.getIndexOf(var1, false);
-   }
-
-   @Override
-   public int getAdjustedY(Font var1, StringBuffer var2, int var3, int var4, int var5) {
-      return this._rowHeightAdjuster.getAdjustedY(var1, var2, var3, var4, var5);
+   public int getLineNumberForNode(int node) {
+      return this._data.getIndexOf(node, false);
    }
 
    @Override
-   public int getAdjustedY(int var1) {
-      return this._rowHeightAdjuster.getAdjustedY(var1);
+   public int getAdjustedY(Font font, StringBuffer text, int offset, int len, int y) {
+      return this._rowHeightAdjuster.getAdjustedY(font, text, offset, len, y);
    }
 
    @Override
-   public int getAdjustedY(Font var1, String var2, int var3) {
-      return this._rowHeightAdjuster.getAdjustedY(var1, var2, var3);
+   public int getAdjustedY(int currentY) {
+      return this._rowHeightAdjuster.getAdjustedY(currentY);
+   }
+
+   @Override
+   public int getAdjustedY(Font font, String text, int y) {
+      return this._rowHeightAdjuster.getAdjustedY(font, text, y);
    }
 
    private void calcFocusRect() {
@@ -282,9 +282,9 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      this._drawFocus = var2;
-      super.drawFocus(var1, var2);
+   protected void drawFocus(Graphics graphics, boolean on) {
+      this._drawFocus = on;
+      super.drawFocus(graphics, on);
    }
 
    @Override
@@ -298,24 +298,24 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
+   public void getFocusRect(XYRect rect) {
       this.calcFocusRect();
-      var1.set(this._focusRectX, this._focusRectY, this._focusRectWidth, this._focusRectHeight);
+      rect.set(this._focusRectX, this._focusRectY, this._focusRectWidth, this._focusRectHeight);
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (super.getAccessibleStateSet() & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (super.getAccessibleStateSet() & state) != 0;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      return this._focusNode == var1 + 1;
+   public boolean isAccessibleChildSelected(int index) {
+      return this._focusNode == index + 1;
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      if (var1 != ' ') {
+   protected boolean keyChar(char character, int status, int time) {
+      if (character != ' ') {
          return false;
       }
 
@@ -327,10 +327,10 @@ public class TreeField extends Field implements VariableRowHeightProvider {
          return true;
       }
 
-      boolean var4 = !this._data.getNodeExpansion(this._focusNode);
-      this._data.setNodeExpansion(this._focusNode, var4);
+      boolean expanding = !this._data.getNodeExpansion(this._focusNode);
+      this._data.setNodeExpansion(this._focusNode, expanding);
       this.updateLayout();
-      if (var4) {
+      if (expanding) {
          this.showDescendants(this._focusNode);
          if (Ui.isTTSEnabled()) {
             super.accessibleEventOccurred(1, new Object(1024), new Object(512), this);
@@ -343,26 +343,26 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       return true;
    }
 
-   private void showDescendants(int var1) {
-      if (this._data.getNodeExpansion(var1)) {
-         int var2 = (this.getManager().getVisibleHeight() + this._rowHeight - 1) / this._rowHeight;
-         int var3 = -1;
-         int var4 = this._data.nextSubtreeNode(var1, var1, false);
+   private void showDescendants(int node) {
+      if (this._data.getNodeExpansion(node)) {
+         int maxVisibleRows = (this.getManager().getVisibleHeight() + this._rowHeight - 1) / this._rowHeight;
+         int lastNode = -1;
+         int childNode = this._data.nextSubtreeNode(node, node, false);
 
-         for (int var5 = 1; var5 < var2 && var4 != -1; var5++) {
-            var3 = var4;
-            var4 = this._data.nextSubtreeNode(var4, var1, false);
+         for (int i = 1; i < maxVisibleRows && childNode != -1; i++) {
+            lastNode = childNode;
+            childNode = this._data.nextSubtreeNode(childNode, node, false);
          }
 
-         if (var3 != -1) {
-            this.setCurrentNode(var3);
-            this.setCurrentNode(var1);
+         if (lastNode != -1) {
+            this.setCurrentNode(lastNode);
+            this.setCurrentNode(node);
          }
       }
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       if (this._rowHeightSet < 0) {
          this._rowHeight = this.getFont().getHeight() * -this._rowHeightSet;
       }
@@ -372,87 +372,87 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       if (this._focusNode == -1) {
          this._lastStartNode = -1;
       } else {
-         int var3 = this._data.getIndexOf(this._focusNode, false);
+         int index = this._data.getIndexOf(this._focusNode, false);
          this._lastStartNode = this._focusNode;
-         this._lastStartNodeIndex = var3;
+         this._lastStartNodeIndex = index;
       }
 
-      int var4 = Math.max(1, this._data.getVisibleCount());
-      this._rowHeightAdjuster.setSize(var4);
+      int numRows = Math.max(1, this._data.getVisibleCount());
+      this._rowHeightAdjuster.setSize(numRows);
       this._rowHeightAdjuster.setRowHeight(this._rowHeight);
-      this.setExtent(var1, this._rowHeightAdjuster.getHeight());
+      this.setExtent(width, this._rowHeightAdjuster.getHeight());
    }
 
    @Override
-   protected void makeMenu(Menu var1, int var2) {
+   protected void makeMenu(Menu menu, int instance) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   protected void makeContextMenu(ContextMenu var1) {
+   protected void makeContextMenu(ContextMenu contextMenu) {
       throw new RuntimeException("cod2jar: tail call (jumpspecial)");
    }
 
    @Override
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
-      int var5 = this.getRowForY(var2);
-      int var6 = this.getFirstRoot();
+   protected void moveFocus(int x, int y, int status, int time) {
+      int row = this.getRowForY(y);
+      int node = this.getFirstRoot();
 
-      while (--var5 >= 0) {
-         var6 = this._data.nextNode(var6, false);
-         if (var6 == -1) {
+      while (--row >= 0) {
+         node = this._data.nextNode(node, false);
+         if (node == -1) {
             break;
          }
       }
 
-      if (var6 != this._focusNode) {
+      if (node != this._focusNode) {
          this.invalidateNode(this._focusNode);
-         if (this._data.getFirstChild(var6) != -1) {
+         if (this._data.getFirstChild(node) != -1) {
             this._iconFocusChanged = true;
          }
       }
 
-      this._focusNode = var6;
+      this._focusNode = node;
       if (Ui.isTTSEnabled()) {
          super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
       }
    }
 
    @Override
-   protected int moveFocus(int var1, int var2, int var3) {
-      if (this._data.getVisibleCount() != 0 && (var2 & 65536) == 0) {
-         while (var1 > 0) {
-            int var4 = this._data.nextNode(this._focusNode, false);
-            if (var4 == -1) {
-               return var1;
+   protected int moveFocus(int amount, int status, int time) {
+      if (this._data.getVisibleCount() != 0 && (status & 65536) == 0) {
+         while (amount > 0) {
+            int focusNode = this._data.nextNode(this._focusNode, false);
+            if (focusNode == -1) {
+               return amount;
             }
 
-            if (var4 != this._focusNode) {
+            if (focusNode != this._focusNode) {
                this.invalidateNode(this._focusNode);
-               if (this._data.getFirstChild(var4) != -1) {
+               if (this._data.getFirstChild(focusNode) != -1) {
                   this._iconFocusChanged = true;
                }
             }
 
-            this._focusNode = var4;
-            var1--;
+            this._focusNode = focusNode;
+            amount--;
          }
 
-         while (var1 < 0) {
-            int var5 = this._data.previousNode(this._focusNode, false);
-            if (var5 == -1) {
-               return var1;
+         while (amount < 0) {
+            int focusNode = this._data.previousNode(this._focusNode, false);
+            if (focusNode == -1) {
+               return amount;
             }
 
-            if (var5 != this._focusNode) {
+            if (focusNode != this._focusNode) {
                this.invalidateNode(this._focusNode);
-               if (this._data.getFirstChild(var5) != -1) {
+               if (this._data.getFirstChild(focusNode) != -1) {
                   this._iconFocusChanged = true;
                }
             }
 
-            this._focusNode = var5;
-            var1++;
+            this._focusNode = focusNode;
+            amount++;
          }
 
          if (Ui.isTTSEnabled()) {
@@ -461,15 +461,15 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
          return 0;
       } else {
-         return var1;
+         return amount;
       }
    }
 
    @Override
-   protected void onFocus(int var1) {
+   protected void onFocus(int direction) {
       this._haveFocus = true;
       if (this._data.getVisibleCount() != 0) {
-         switch (var1) {
+         switch (direction) {
             case -2:
                break;
             case -1:
@@ -490,7 +490,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
          super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
       }
 
-      super.onFocus(var1);
+      super.onFocus(direction);
    }
 
    @Override
@@ -501,89 +501,89 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       if (this._data.getVisibleCount() == 0) {
-         int var14 = Math.min(this.getContentWidth(), this.getManager().getVisibleWidth());
-         var1.drawText(this._emptyString, 0, 0, this._emptyStyle, var14);
+         int availableWidth = Math.min(this.getContentWidth(), this.getManager().getVisibleWidth());
+         graphics.drawText(this._emptyString, 0, 0, this._emptyStyle, availableWidth);
       } else {
-         XYRect var2 = var1.getClippingRect();
-         int var3 = this.getRowForY(var2.y);
-         int var4 = Math.min(this._data.getVisibleCount() - 1, this.getRowForY(var2.y + var2.height - 1));
+         XYRect invalidRect = graphics.getClippingRect();
+         int startLine = this.getRowForY(invalidRect.y);
+         int endLine = Math.min(this._data.getVisibleCount() - 1, this.getRowForY(invalidRect.y + invalidRect.height - 1));
          if (this._lastStartNode == -1) {
             this._lastStartNode = this._data.nextNode(0, false);
             this._lastStartNodeIndex = 0;
          }
 
-         while (this._lastStartNodeIndex > var3) {
+         while (this._lastStartNodeIndex > startLine) {
             this._lastStartNode = this._data.previousNode(this._lastStartNode, false);
             this._lastStartNodeIndex--;
          }
 
-         while (this._lastStartNodeIndex < var3) {
+         while (this._lastStartNodeIndex < startLine) {
             this._lastStartNode = this._data.nextNode(this._lastStartNode, false);
             this._lastStartNodeIndex++;
          }
 
-         int var5 = this._lastStartNode;
-         int var6 = this.getYForRow(this._lastStartNodeIndex);
-         int var7 = this.getContentWidth();
-         int var8 = this._rowHeight;
-         boolean var9 = false;
+         int node = this._lastStartNode;
+         int y = this.getYForRow(this._lastStartNodeIndex);
+         int width = this.getContentWidth();
+         int size = this._rowHeight;
+         boolean updateLayoutRequired = false;
 
-         for (int var10 = var3; var10 <= var4; var10++) {
-            int var11 = this.getIndentForNode(var5);
-            boolean var12 = this._data.getFirstChild(var5) != -1;
-            byte var13 = 4;
-            if (var12) {
-               if (this.getExpanded(var5)) {
-                  var13 = 5;
-                  if (this._drawFocus && var5 == this._focusNode && SystemIcon.COLLECTION.containsIcon(var8, 17)) {
-                     var13 = 17;
+         for (int line = startLine; line <= endLine; line++) {
+            int indent = this.getIndentForNode(node);
+            boolean hasChildren = this._data.getFirstChild(node) != -1;
+            int icon = 4;
+            if (hasChildren) {
+               if (this.getExpanded(node)) {
+                  icon = 5;
+                  if (this._drawFocus && node == this._focusNode && SystemIcon.COLLECTION.containsIcon(size, 17)) {
+                     icon = 17;
                   }
                } else {
-                  var13 = 6;
-                  if (this._drawFocus && var5 == this._focusNode && SystemIcon.COLLECTION.containsIcon(var8, 18)) {
-                     var13 = 18;
+                  icon = 6;
+                  if (this._drawFocus && node == this._focusNode && SystemIcon.COLLECTION.containsIcon(size, 18)) {
+                     icon = 18;
                   }
                }
             }
 
-            SystemIcon.COLLECTION.paint(var1, var11, var6, this._iconWidth, var8, var13);
-            var11 += this._iconWidth + this._iconGap;
-            this._rowHeightAdjuster.start(var10, var6);
-            this._callback.drawTreeItem(this, var1, var5, var6, var7 - var11, var11);
-            var9 |= this._rowHeightAdjuster.finish(var10);
-            var5 = this._data.nextNode(var5, false);
-            var6 += this.getRowHeight(var10);
+            SystemIcon.COLLECTION.paint(graphics, indent, y, this._iconWidth, size, icon);
+            indent += this._iconWidth + this._iconGap;
+            this._rowHeightAdjuster.start(line, y);
+            this._callback.drawTreeItem(this, graphics, node, y, width - indent, indent);
+            updateLayoutRequired |= this._rowHeightAdjuster.finish(line);
+            node = this._data.nextNode(node, false);
+            y += this.getRowHeight(line);
          }
 
-         if (var9) {
+         if (updateLayoutRequired) {
             this.updateLayout();
          }
 
          if (this._iconFocusChanged) {
-            int var15 = this.getYForRow(this._lastStartNodeIndex);
-            this.invalidate(0, var15, this.getContentWidth(), var6 - var15);
+            int startY = this.getYForRow(this._lastStartNodeIndex);
+            this.invalidate(0, startY, this.getContentWidth(), y - startY);
             this._iconFocusChanged = false;
          }
       }
    }
 
-   public TreeField(TreeFieldCallback var1, long var2) {
+   public TreeField(TreeFieldCallback callback, long style) {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void getFocusRectPhantom(XYRect var1) {
+   public void getFocusRectPhantom(XYRect rect) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

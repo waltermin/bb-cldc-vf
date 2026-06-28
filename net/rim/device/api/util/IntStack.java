@@ -4,28 +4,28 @@ public class IntStack extends IntVector implements Persistable {
    public IntStack() {
    }
 
-   public IntStack(int var1) {
+   public IntStack(int initialCapacityInt) {
    }
 
-   public int push(int var1) {
-      this.addElement(var1);
-      return var1;
+   public int push(int valueInt) {
+      this.addElement(valueInt);
+      return valueInt;
    }
 
    public int pop() {
-      int var1 = this.size() - 1;
-      int var2 = this.elementAt(var1);
-      this.removeElementAt(var1);
-      return var2;
+      int index = this.size() - 1;
+      int result = this.elementAt(index);
+      this.removeElementAt(index);
+      return result;
    }
 
    public int peek() {
-      int var1 = this.size() - 1;
-      return this.elementAt(var1);
+      int index = this.size() - 1;
+      return this.elementAt(index);
    }
 
-   public int search(int var1) {
-      int var2 = this.lastIndexOf(var1);
-      return var2 >= 0 ? this.size() - var2 : -1;
+   public int search(int valueInt) {
+      int index = this.lastIndexOf(valueInt);
+      return index >= 0 ? this.size() - index : -1;
    }
 }

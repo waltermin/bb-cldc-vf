@@ -5,8 +5,8 @@ import net.rim.device.api.ui.UiEngine;
 class ApplicationSwitcher$ResumePainting implements Runnable {
    UiEngine _engineToSuspend;
 
-   ApplicationSwitcher$ResumePainting(UiEngine var1) {
-      this._engineToSuspend = var1;
+   ApplicationSwitcher$ResumePainting(UiEngine engineToSuspend) {
+      this._engineToSuspend = engineToSuspend;
    }
 
    @Override

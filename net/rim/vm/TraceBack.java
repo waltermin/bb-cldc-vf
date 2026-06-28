@@ -24,21 +24,21 @@ public final class TraceBack {
 
    public static final native Class[] getCallingClasses();
 
-   public static final void printStackTrace(PrintStream var0, Object var1) {
-      int var2 = 0;
+   public static final void printStackTrace(PrintStream out, Object tb) {
+      int i = 0;
 
       while (true) {
-         String var3 = getMessage(var1, var2);
-         if (var3 == null) {
+         String msg = getMessage(tb, i);
+         if (msg == null) {
             return;
          }
 
-         var0.println(var3);
-         var2++;
+         out.println(msg);
+         i++;
       }
    }
 
-   public static final void printStackTrace(PrintStream var0) {
-      printStackTrace(var0, getTraceBack());
+   public static final void printStackTrace(PrintStream out) {
+      printStackTrace(out, getTraceBack());
    }
 }

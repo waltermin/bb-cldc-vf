@@ -15,8 +15,8 @@ public class BugReportManager {
    }
 
    public static BugReport createReport() {
-      BugReportManager var0 = (BugReportManager)ApplicationRegistry.getApplicationRegistry().get(-483760535199085048L);
-      return var0 != null ? var0.createReportInternal() : null;
+      BugReportManager brm = (BugReportManager)ApplicationRegistry.getApplicationRegistry().get(-483760535199085048L);
+      return brm != null ? brm.createReportInternal() : null;
    }
 
    public BugReport createReportInternal() {
@@ -35,15 +35,15 @@ public class BugReportManager {
       return _screenshotAllowed;
    }
 
-   public static void setApplicationReportable(BugReportable var0) {
-      _appReportable = var0;
+   public static void setApplicationReportable(BugReportable reportable) {
+      _appReportable = reportable;
    }
 
-   public static void setReportLocation(String var0) {
-      _reportLocation = var0;
+   public static void setReportLocation(String reportLocation) {
+      _reportLocation = reportLocation;
    }
 
-   public static void setScreenshotAllowed(boolean var0) {
-      _screenshotAllowed = var0;
+   public static void setScreenshotAllowed(boolean screenshotAllowed) {
+      _screenshotAllowed = screenshotAllowed;
    }
 }

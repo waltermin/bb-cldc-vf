@@ -6,14 +6,14 @@ class PersistentContent$Listeners$Indicator implements Runnable {
    private boolean _pending;
    private final PersistentContent$Listeners this$0;
 
-   PersistentContent$Listeners$Indicator(PersistentContent$Listeners var1, PersistentContentListener var2) {
-      this.this$0 = var1;
-      this._listener = var2;
+   PersistentContent$Listeners$Indicator(PersistentContent$Listeners _1, PersistentContentListener listener) {
+      this.this$0 = _1;
+      this._listener = listener;
       this._pending = false;
    }
 
-   synchronized void update(int var1) {
-      this._state = var1;
+   synchronized void update(int state) {
+      this._state = state;
       if (!this._pending) {
          this._pending = true;
          this.this$0._proxy.invokeLater(this);
@@ -22,6 +22,13 @@ class PersistentContent$Listeners$Indicator implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this) {
+         this._pending = false;
+      }
+
+      try {
+         this._listener.persistentContentStateChanged(this._state);
+      } catch (Throwable var2) {
+      }
    }
 }

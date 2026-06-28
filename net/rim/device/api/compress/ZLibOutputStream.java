@@ -14,28 +14,28 @@ public class ZLibOutputStream extends OutputStream {
    public static final int COMPRESSION_BEST;
    private static final int BUFFER_LENGTH;
 
-   public ZLibOutputStream(OutputStream var1) {
-      this(var1, false);
+   public ZLibOutputStream(OutputStream outputStream) {
+      this(outputStream, false);
    }
 
-   public ZLibOutputStream(OutputStream var1, boolean var2) {
-      this(var1, var2, 8);
+   public ZLibOutputStream(OutputStream outputStream, boolean noWrap) {
+      this(outputStream, noWrap, 8);
    }
 
-   public ZLibOutputStream(OutputStream var1, boolean var2, int var3) {
-      this(var1, var2, var3, 0);
+   public ZLibOutputStream(OutputStream outputStream, boolean noWrap, int maxLog2WindowLength) {
+      this(outputStream, noWrap, maxLog2WindowLength, 0);
    }
 
-   public ZLibOutputStream(OutputStream var1, boolean var2, int var3, int var4) {
+   public ZLibOutputStream(OutputStream outputStream, boolean noWrap, int maxLog2WindowLength, int compressionValue) {
    }
 
    @Override
-   public synchronized void write(int var1) {
+   public synchronized void write(int data) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public synchronized void write(byte[] var1, int var2, int var3) {
+   public synchronized void write(byte[] data, int dataOffset, int dataLength) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

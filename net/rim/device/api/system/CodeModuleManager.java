@@ -36,21 +36,21 @@ public final class CodeModuleManager {
 
    public static final native int[] getModuleHandles(boolean var0);
 
-   public static final int getModuleHandleForObject(Object var0) {
-      if (var0 == null) {
+   public static final int getModuleHandleForObject(Object obj) {
+      if (obj == null) {
          throw new Object();
       } else {
-         return getModuleHandleForObjectImpl(var0);
+         return getModuleHandleForObjectImpl(obj);
       }
    }
 
    private static final native int getModuleHandleForObjectImpl(Object var0);
 
-   public static final int getModuleHandleForClass(Class var0) {
-      if (var0 == null) {
+   public static final int getModuleHandleForClass(Class clazz) {
+      if (clazz == null) {
          throw new Object();
       } else {
-         return getModuleHandleForClassImpl(var0);
+         return getModuleHandleForClassImpl(clazz);
       }
    }
 
@@ -60,36 +60,36 @@ public final class CodeModuleManager {
 
    public static final native int getModuleHandle(byte[] var0);
 
-   public static final boolean deleteModule(int var0, boolean var1) {
-      int var2 = deleteModuleEx(var0, var1);
-      return var2 == 0 || var2 == 6;
+   public static final boolean deleteModule(int moduleHandle, boolean force) {
+      int rc = deleteModuleEx(moduleHandle, force);
+      return rc == 0 || rc == 6;
    }
 
-   public static final int deleteModuleEx(int var0, boolean var1) {
+   public static final int deleteModuleEx(int moduleHandle, boolean force) {
       ApplicationControl.assertCMMApiAllowed(true);
-      int var2 = deleteModuleExImpl(var0, var1);
-      if (var2 == 0) {
-         ApplicationControl.removeModule(var0);
-         return var2;
+      int rc = deleteModuleExImpl(moduleHandle, force);
+      if (rc == 0) {
+         ApplicationControl.removeModule(moduleHandle);
+         return rc;
       }
 
-      if (var2 == 6) {
+      if (rc == 6) {
          setResetRequired();
       }
 
-      return var2;
+      return rc;
    }
 
    private static final native int deleteModuleExImpl(int var0, boolean var1);
 
    public static final native int getModuleFlags(int var0);
 
-   public static final String getModuleName(int var0) {
-      return getModuleName(var0, 0);
+   public static final String getModuleName(int moduleHandle) {
+      return getModuleName(moduleHandle, 0);
    }
 
-   public static final String getModuleVersion(int var0) {
-      return getModuleVersion(var0, 0);
+   public static final String getModuleVersion(int moduleHandle) {
+      return getModuleVersion(moduleHandle, 0);
    }
 
    public static final native byte[] getModuleHash(int var0);
@@ -100,20 +100,20 @@ public final class CodeModuleManager {
 
    public static final native byte[] getModuleSignature(int var0, int var1);
 
-   public static final String getModuleVendor(int var0) {
+   public static final String getModuleVendor(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String getModuleDescription(int var0) {
+   public static final String getModuleDescription(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String getModuleURL(int var0) {
+   public static final String getModuleURL(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final long getModuleTimestamp(int var0) {
-      return (long)getModuleTimestamp0(var0) * 1000;
+   public static final long getModuleTimestamp(int moduleHandle) {
+      return (long)getModuleTimestamp0(moduleHandle) * 1000;
    }
 
    private static final native int getModuleTimestamp0(int var0);
@@ -125,8 +125,8 @@ public final class CodeModuleManager {
    public static final native int getNumMidlets();
 
    public static final boolean isMidlet() {
-      int var0 = Process.currentProcess().getModuleHandle();
-      return isMidlet(var0);
+      int handle = Process.currentProcess().getModuleHandle();
+      return isMidlet(handle);
    }
 
    private static final native boolean hasEntryPoint(int var0, int var1);
@@ -139,59 +139,59 @@ public final class CodeModuleManager {
 
    public static final native String getModuleVersion(int var0, int var1);
 
-   public static final int createNewModule(int var0) {
+   public static final int createNewModule(int length) {
       ApplicationControl.assertCMMApiAllowed(true);
-      return createNewModuleImpl(var0);
+      return createNewModuleImpl(length);
    }
 
    private static final native int createNewModuleImpl(int var0);
 
-   public static final int createNewModule(int var0, byte[] var1, int var2) {
+   public static final int createNewModule(int totalLength, byte[] data, int length) {
       ApplicationControl.assertCMMApiAllowed(true);
-      return createNewModuleImpl(var0, var1, var2);
+      return createNewModuleImpl(totalLength, data, length);
    }
 
    private static final native int createNewModuleImpl(int var0, byte[] var1, int var2);
 
-   public static final boolean writeNewModule(int var0, byte[] var1, int var2, int var3) {
-      return writeNewModule(var0, var2, var1, 0, var3);
+   public static final boolean writeNewModule(int newModuleHandle, byte[] data, int newModuleOffset, int length) {
+      return writeNewModule(newModuleHandle, newModuleOffset, data, 0, length);
    }
 
-   public static final boolean writeNewModule(int var0, int var1, byte[] var2, int var3, int var4) {
+   public static final boolean writeNewModule(int newModuleHandle, int newModuleOffset, byte[] data, int offset, int length) {
       ApplicationControl.assertCMMApiAllowed(true);
-      return writeNewModuleImpl(var0, var1, var2, var3, var4);
+      return writeNewModuleImpl(newModuleHandle, newModuleOffset, data, offset, length);
    }
 
    private static final native boolean writeNewModuleImpl(int var0, int var1, byte[] var2, int var3, int var4);
 
-   public static final int saveNewModule(int var0) {
-      return saveNewModule(var0, false);
+   public static final int saveNewModule(int newModuleHandle) {
+      return saveNewModule(newModuleHandle, false);
    }
 
-   public static final int saveNewModule(int var0, boolean var1) {
-      return saveNewModule(var0, var1, 0);
+   public static final int saveNewModule(int newModuleHandle, boolean forceOverwrite) {
+      return saveNewModule(newModuleHandle, forceOverwrite, 0);
    }
 
-   public static final int saveNewModule(int var0, boolean var1, int var2) {
+   public static final int saveNewModule(int newModuleHandle, boolean forceOverwrite, int transactionHandle) {
       ApplicationControl.assertCMMApiAllowed(true);
-      int var3 = saveNewModuleImpl(var0, var1, var2);
-      if (var3 == 6 && var2 == 0) {
+      int rc = saveNewModuleImpl(newModuleHandle, forceOverwrite, transactionHandle);
+      if (rc == 6 && transactionHandle == 0) {
          setResetRequired();
       }
 
-      return var3;
+      return rc;
    }
 
    private static final native int saveNewModuleImpl(int var0, boolean var1, int var2);
 
-   public static final int deleteNewModule(int var0) {
+   public static final int deleteNewModule(int newModuleHandle) {
       ApplicationControl.assertCMMApiAllowed(true);
-      int var1 = deleteNewModuleImpl(var0);
-      if (var1 == 6) {
+      int rc = deleteNewModuleImpl(newModuleHandle);
+      if (rc == 6) {
          setResetRequired();
       }
 
-      return var1;
+      return rc;
    }
 
    private static final native int deleteNewModuleImpl(int var0);
@@ -202,19 +202,19 @@ public final class CodeModuleManager {
 
    private static final native int beginTransactionImpl();
 
-   public static final int endTransaction(int var0) {
-      int var1 = endTransactionImpl(var0);
-      if (var1 == 15) {
+   public static final int endTransaction(int transactionHandle) {
+      int rc = endTransactionImpl(transactionHandle);
+      if (rc == 15) {
          setResetRequired();
       }
 
-      return var1;
+      return rc;
    }
 
    private static final native int endTransactionImpl(int var0);
 
-   public static final int cancelTransaction(int var0) {
-      return cancelTransactionImpl(var0);
+   public static final int cancelTransaction(int transactionHandle) {
+      return cancelTransactionImpl(transactionHandle);
    }
 
    private static final native int cancelTransactionImpl(int var0);
@@ -224,57 +224,81 @@ public final class CodeModuleManager {
    public static final void promptForResetIfRequired() {
       ApplicationControl.assertCMMApiAllowed(true);
       if (isResetRequired()) {
-         ForcedResetManager var0 = ForcedResetManager.getInstance();
-         String var1 = CommonResource.getString(10127);
-         var0.scheduleDeviceResetNoTimeout(var1, 3600000, false);
+         ForcedResetManager frm = ForcedResetManager.getInstance();
+         String text = CommonResource.getString(10127);
+         frm.scheduleDeviceResetNoTimeout(text, 3600000, false);
       }
    }
 
-   public static final byte[] getModuleResourceData(int var0) {
+   public static final byte[] getModuleResourceData(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final byte[] getModuleLanguageData(int var0) {
+   public static final byte[] getModuleLanguageData(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    static final native byte[] getModuleData(int var0, String var1);
 
-   private static final int getAppCount(int var0) {
+   private static final int getAppCount(int moduleHandle) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final ApplicationDescriptor[] getApplicationDescriptors(int var0) {
-      int var1 = getAppCount(var0);
-      if (var1 <= 0) {
+   public static final ApplicationDescriptor[] getApplicationDescriptors(int moduleHandle) {
+      int numApps = getAppCount(moduleHandle);
+      if (numApps <= 0) {
          return null;
       }
 
-      ApplicationDescriptor[] var2 = new ApplicationDescriptor[var1];
+      ApplicationDescriptor[] descriptors = new ApplicationDescriptor[numApps];
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2[var3] = new ApplicationDescriptor(var0, var3);
+      for (int i = 0; i < numApps; i++) {
+         descriptors[i] = new ApplicationDescriptor(moduleHandle, i);
       }
 
-      return var2;
+      return descriptors;
    }
 
-   static final byte[] getModuleData(int var0, String var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final byte[] getModuleData(int moduleHandle, String id, int index) {
+      byte[] data = getModuleData(moduleHandle, id);
+      if (data == null) {
+         return null;
+      }
+
+      int length = 0;
+      int offset = 0;
+
+      try {
+         for (int i = 0; i <= index; i++) {
+            offset += length;
+            length = (data[offset++] & 255) << 8;
+            length += data[offset++] & 255;
+         }
+
+         if (length == 0) {
+            return null;
+         }
+
+         System.arraycopy(data, offset, data, 0, length);
+         Array.resize(data, length);
+         return data;
+      } catch (ArrayIndexOutOfBoundsException ex) {
+         return null;
+      }
    }
 
-   static final String getModuleString(int var0, String var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final String getModuleString(int moduleHandle, String id, int index) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final native boolean verifySignature(int var0, int var1, byte[] var2);
 
    public static final CodeSigningKey getADCCodeSigningKey() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final boolean setADCCodeSigningKey(CodeSigningKey var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final boolean setADCCodeSigningKey(CodeSigningKey newKey) {
+      throw new RuntimeException("cod2jar: array init");
    }
 
    public static final native boolean isRRTSignaturePresent(int var0);
@@ -289,40 +313,40 @@ public final class CodeModuleManager {
 
    public static final native byte[] getModuleTrailer(int var0, int var1, int var2);
 
-   public static final byte[] makeTrailer(int var0, int var1, byte[] var2) {
-      int var3 = var2.length;
-      if ((var3 & 3) != 0) {
+   public static final byte[] makeTrailer(int id, int flags, byte[] data) {
+      int len = data.length;
+      if ((len & 3) != 0) {
          throw new Object();
       }
 
-      byte[] var4 = new byte[4 + var3];
-      var4[0] = (byte)var0;
-      var4[1] = (byte)var1;
-      var4[2] = (byte)var3;
-      var4[3] = (byte)(var3 >> 8);
-      System.arraycopy(var2, 0, var4, 4, var3);
-      return var4;
+      byte[] trailer = new byte[4 + len];
+      trailer[0] = (byte)id;
+      trailer[1] = (byte)flags;
+      trailer[2] = (byte)len;
+      trailer[3] = (byte)(len >> 8);
+      System.arraycopy(data, 0, trailer, 4, len);
+      return trailer;
    }
 
-   public static final byte[] appendTrailers(byte[] var0, byte[][][] var1) {
-      int var2 = var1.length;
-      int var3 = 0;
+   public static final byte[] appendTrailers(byte[] codfile, byte[][][] trailers) {
+      int trailerNum = trailers.length;
+      int trailerSize = 0;
 
-      for (int var4 = var2 - 1; var4 >= 0; var4--) {
-         var3 += var1[var4].length;
+      for (int i = trailerNum - 1; i >= 0; i--) {
+         trailerSize += trailers[i].length;
       }
 
-      int var8 = var0.length;
-      Array.resize(var0, var8 + var3);
+      int codfileEnd = codfile.length;
+      Array.resize(codfile, codfileEnd + trailerSize);
 
-      for (int var5 = var2 - 1; var5 >= 0; var5--) {
-         byte[][] var6 = var1[var5];
-         int var7 = var6.length;
-         System.arraycopy(var6, 0, var0, var8, var7);
-         var8 += var7;
+      for (int i = trailerNum - 1; i >= 0; i--) {
+         byte[] t = (byte[])trailers[i];
+         int len = t.length;
+         System.arraycopy(t, 0, codfile, codfileEnd, len);
+         codfileEnd += len;
       }
 
-      return var0;
+      return codfile;
    }
 
    public static final boolean deleteThirdPartyApplications() {

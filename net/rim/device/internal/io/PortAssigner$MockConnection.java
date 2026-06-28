@@ -10,7 +10,7 @@ class PortAssigner$MockConnection implements Connection {
    public void close() {
    }
 
-   PortAssigner$MockConnection(PortAssigner$1 var1) {
+   PortAssigner$MockConnection(PortAssigner$1 x0) {
       this();
    }
 }

@@ -12,30 +12,50 @@ public class DigestFactory {
    protected DigestFactory() {
    }
 
-   public static Digest getInstance(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static boolean isDigestWeakByPolicy(String var0) {
-      int var1 = Arrays.getIndex(DIGESTS, var0);
-      if (var1 == -1) {
-         return false;
-      }
-
-      int var2 = ITPolicy.getInteger(24, 83, 0);
-      return (var2 & 1 << var1) != 0;
-   }
-
-   public static void register(DigestFactory var0) {
-      if (var0 == null) {
+   public static Digest getInstance(String algorithm) {
+      if (algorithm == null) {
          throw new Object();
       }
 
-      String[] var1 = var0.getFactoryAlgorithms();
+      String checkAlgorithm = algorithm;
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         if (_hashtable.get(var1[var2]) == null) {
-            _hashtable.put(var1[var2], var0);
+      do {
+         String baseAlgorithm = RIMFactoryUtilities.getBaseAlgorithm(checkAlgorithm);
+         DigestFactory factory = (DigestFactory)_hashtable.get(baseAlgorithm);
+         if (factory != null) {
+            try {
+               return factory.create(baseAlgorithm);
+            } catch (ClassCastException e) {
+               throw new Object();
+            }
+         }
+
+         checkAlgorithm = RIMFactoryUtilities.stripBaseAlgorithm(checkAlgorithm);
+      } while (checkAlgorithm != null);
+
+      throw new NoSuchAlgorithmException(algorithm);
+   }
+
+   public static boolean isDigestWeakByPolicy(String algorithm) {
+      int flag = Arrays.getIndex(DIGESTS, algorithm);
+      if (flag == -1) {
+         return false;
+      }
+
+      int policyMask = ITPolicy.getInteger(24, 83, 0);
+      return (policyMask & 1 << flag) != 0;
+   }
+
+   public static void register(DigestFactory factory) {
+      if (factory == null) {
+         throw new Object();
+      }
+
+      String[] algorithms = factory.getFactoryAlgorithms();
+
+      for (int i = 0; i < algorithms.length; i++) {
+         if (_hashtable.get(algorithms[i]) == null) {
+            _hashtable.put(algorithms[i], factory);
          }
       }
    }
@@ -48,7 +68,7 @@ public class DigestFactory {
       throw null;
    }
 
-   protected Digest create(String var1) {
+   protected Digest create(String _1) {
       throw null;
    }
 }

@@ -32,18 +32,18 @@ public class Graphics {
       return this._peer;
    }
 
-   Graphics(Image var1) {
-      this._image = var1;
+   Graphics(Image image) {
+      this._image = image;
    }
 
    Graphics() {
    }
 
-   void setGraphics(net.rim.device.api.ui.Graphics var1, boolean var2) {
+   void setGraphics(net.rim.device.api.ui.Graphics graphics, boolean isCustomItem) {
       this._font = Font.getDefaultFont();
-      this._peer = var1;
+      this._peer = graphics;
       this._peer.setFont(this._font.getPeer());
-      if (var2) {
+      if (isCustomItem) {
          this._clipRect.set(this._peer.getClippingRect());
       } else {
          this._peer.getAbsoluteClippingRect(this._clipRect);
@@ -54,13 +54,13 @@ public class Graphics {
       this.setStrokeStyle(this._strokeStyle);
    }
 
-   public synchronized void translate(int var1, int var2) {
+   public synchronized void translate(int x, int y) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private final void updateClipAndOffset() {
-      int var1 = this._peer.getColor();
-      Font var2 = this._font;
+      int colour = this._peer.getColor();
+      Font font = this._font;
       this._peer.popContext();
       this._peer
          .pushContext(
@@ -71,8 +71,8 @@ public class Graphics {
             this._translation.x,
             this._translation.y
          );
-      this.setFont(var2);
-      this._peer.setColor(var1);
+      this.setFont(font);
+      this._peer.setColor(colour);
       this.setStrokeStyle(this._strokeStyle);
    }
 
@@ -101,19 +101,19 @@ public class Graphics {
    }
 
    public synchronized int getGrayScale() {
-      int var1 = this._peer.getColor();
-      return (((var1 & 0xFF0000) >> 16) + ((var1 & 0xFF00) >> 8) + (var1 & 0xFF)) / 3;
+      int color = this._peer.getColor();
+      return (((color & 0xFF0000) >> 16) + ((color & 0xFF00) >> 8) + (color & 0xFF)) / 3;
    }
 
-   public synchronized void setColor(int var1, int var2, int var3) {
+   public synchronized void setColor(int red, int green, int blue) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public synchronized void setColor(int var1) {
-      this._peer.setColor(var1);
+   public synchronized void setColor(int RGB) {
+      this._peer.setColor(RGB);
    }
 
-   public void setGrayScale(int var1) {
+   public void setGrayScale(int value) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -121,7 +121,7 @@ public class Graphics {
       return this._font;
    }
 
-   public void setStrokeStyle(int var1) {
+   public void setStrokeStyle(int style) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -129,11 +129,11 @@ public class Graphics {
       return this._strokeStyle;
    }
 
-   public synchronized void setFont(Font var1) {
-      if (var1 == null) {
+   public synchronized void setFont(Font font) {
+      if (font == null) {
          this._font = Font.getDefaultFont();
       } else {
-         this._font = var1;
+         this._font = font;
       }
 
       this._peer.setFont(this._font.getPeer());
@@ -155,133 +155,133 @@ public class Graphics {
       return this._clipRect.height;
    }
 
-   public synchronized void clipRect(int var1, int var2, int var3, int var4) {
-      Object var5 = new Object(var1, var2, var3, var4);
-      this._clipRect.intersect((XYRect)var5);
+   public synchronized void clipRect(int x, int y, int width, int height) {
+      XYRect newClip = (XYRect)(new Object(x, y, width, height));
+      this._clipRect.intersect(newClip);
       this.updateClipAndOffset();
    }
 
-   public synchronized void setClip(int var1, int var2, int var3, int var4) {
-      this._clipRect.set(var1, var2, var3, var4);
+   public synchronized void setClip(int x, int y, int width, int height) {
+      this._clipRect.set(x, y, width, height);
       this.updateClipAndOffset();
    }
 
-   public void drawLine(int var1, int var2, int var3, int var4) {
-      this._peer.drawLine(var1, var2, var3, var4);
+   public void drawLine(int x1, int y1, int x2, int y2) {
+      this._peer.drawLine(x1, y1, x2, y2);
    }
 
-   public void fillRect(int var1, int var2, int var3, int var4) {
-      this._peer.fillRect(var1, var2, var3, var4);
+   public void fillRect(int x, int y, int width, int height) {
+      this._peer.fillRect(x, y, width, height);
    }
 
-   public void drawRect(int var1, int var2, int var3, int var4) {
-      this._peer.drawRect(var1, var2, var3 + 1, var4 + 1);
+   public void drawRect(int x, int y, int width, int height) {
+      this._peer.drawRect(x, y, width + 1, height + 1);
    }
 
-   public void drawRoundRect(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this._peer.drawRoundRect(var1, var2, var3 + 1, var4 + 1, var5, var6);
+   public void drawRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+      this._peer.drawRoundRect(x, y, width + 1, height + 1, arcWidth, arcHeight);
    }
 
-   public void fillRoundRect(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this._peer.fillRoundRect(var1, var2, var3, var4, var5, var6);
+   public void fillRoundRect(int x, int y, int width, int height, int arcWidth, int arcHeight) {
+      this._peer.fillRoundRect(x, y, width, height, arcWidth, arcHeight);
    }
 
-   public void fillArc(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this._peer.fillArc(var1, var2, var3, var4, var5, var6);
+   public void fillArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+      this._peer.fillArc(x, y, width, height, startAngle, arcAngle);
    }
 
-   public void drawArc(int var1, int var2, int var3, int var4, int var5, int var6) {
-      this._peer.drawArc(var1, var2, var3 + 1, var4 + 1, var5, var6);
+   public void drawArc(int x, int y, int width, int height, int startAngle, int arcAngle) {
+      this._peer.drawArc(x, y, width + 1, height + 1, startAngle, arcAngle);
    }
 
-   public synchronized void drawString(String var1, int var2, int var3, int var4) {
-      if (var1 == null) {
+   public synchronized void drawString(String str, int x, int y, int anchor) {
+      if (str == null) {
          throw new Object();
       }
 
-      this.validateTextAnchor(var4);
-      if ((var4 & -21) == 0) {
-         this._peer.drawText(var1, var2, var3);
+      this.validateTextAnchor(anchor);
+      if ((anchor & -21) == 0) {
+         this._peer.drawText(str, x, y);
       } else {
-         int var5 = this._font.getPeer().getBounds(var1);
-         var2 = this.translateHorizontalAnchor(var2, var5, var4);
-         int var6 = this.translateVerticalAnchor(var4);
-         this._peer.drawText(var1, var2, var3, var6, var5);
+         int width = this._font.getPeer().getBounds(str);
+         x = this.translateHorizontalAnchor(x, width, anchor);
+         int flags = this.translateVerticalAnchor(anchor);
+         this._peer.drawText(str, x, y, flags, width);
       }
    }
 
-   public synchronized void drawSubstring(String var1, int var2, int var3, int var4, int var5, int var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public synchronized void drawSubstring(String str, int offset, int len, int x, int y, int anchor) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public synchronized void drawChar(char var1, int var2, int var3, int var4) {
-      if ((var4 & -21) == 0) {
-         this._peer.drawText(var1, var2, var3, this.translateAnchorToDrawStyle(var4), -1);
+   public synchronized void drawChar(char character, int x, int y, int anchor) {
+      if ((anchor & -21) == 0) {
+         this._peer.drawText(character, x, y, this.translateAnchorToDrawStyle(anchor), -1);
       } else {
-         this.validateTextAnchor(var4);
-         int var5 = this._font.getPeer().getBounds(var1);
-         var2 = this.translateHorizontalAnchor(var2, var5, var4);
-         int var6 = this.translateVerticalAnchor(var4);
-         this._peer.drawText(var1, var2, var3, var6, var5);
+         this.validateTextAnchor(anchor);
+         int width = this._font.getPeer().getBounds(character);
+         x = this.translateHorizontalAnchor(x, width, anchor);
+         int flags = this.translateVerticalAnchor(anchor);
+         this._peer.drawText(character, x, y, flags, width);
       }
    }
 
-   private int translateAnchorToDrawStyle(int var1) {
-      if ((var1 & -128) != 0) {
+   private int translateAnchorToDrawStyle(int anchor) {
+      if ((anchor & -128) != 0) {
          throw new Object();
       }
 
-      byte var2;
-      switch (var1 & 114) {
+      int flags;
+      switch (anchor & 114) {
          case 0:
          case 16:
-            var2 = 48;
+            flags = 48;
             break;
          case 32:
-            var2 = 40;
+            flags = 40;
             break;
          case 64:
-            var2 = 8;
+            flags = 8;
             break;
          default:
             throw new Object();
       }
 
-      switch (var1 & 13) {
+      switch (anchor & 13) {
          case 0:
          case 4:
-            return var2 | 6;
+            return flags | 6;
          case 1:
-            return var2 | 4;
+            return flags | 4;
          case 8:
-            return var2 | 5;
+            return flags | 5;
          default:
             throw new Object();
       }
    }
 
-   private void validateTextAnchor(int var1) {
-      if ((var1 & -128) != 0) {
+   private void validateTextAnchor(int anchor) {
+      if ((anchor & -128) != 0) {
          throw new Object();
       }
    }
 
-   private int translateHorizontalAnchor(int var1, int var2, int var3) {
-      switch (var3 & 13) {
+   private int translateHorizontalAnchor(int x, int width, int anchor) {
+      switch (anchor & 13) {
          case 0:
          case 4:
-            return var1;
+            return x;
          case 1:
-            return var1 - (var2 >> 1);
+            return x - (width >> 1);
          case 8:
-            return var1 - var2;
+            return x - width;
          default:
             throw new Object();
       }
    }
 
-   private int translateVerticalAnchor(int var1) {
-      switch (var1 & 114) {
+   private int translateVerticalAnchor(int anchor) {
+      switch (anchor & 114) {
          case 0:
          case 16:
             return 48;
@@ -294,178 +294,178 @@ public class Graphics {
       }
    }
 
-   public synchronized void drawChars(char[] var1, int var2, int var3, int var4, int var5, int var6) {
-      int var7 = var1.length;
-      if (var2 >= 0 && var2 <= var7 && var2 + var3 <= var7 && var3 >= 0) {
-         if (var3 > 0) {
-            if ((var6 & -21) == 0) {
-               this._peer.drawText(var1, var2, var3, var4, var5, this.translateAnchorToDrawStyle(var6), -1);
+   public synchronized void drawChars(char[] data, int offset, int length, int x, int y, int anchor) {
+      int dlen = data.length;
+      if (offset >= 0 && offset <= dlen && offset + length <= dlen && length >= 0) {
+         if (length > 0) {
+            if ((anchor & -21) == 0) {
+               this._peer.drawText(data, offset, length, x, y, this.translateAnchorToDrawStyle(anchor), -1);
                return;
             }
 
-            this.validateTextAnchor(var6);
-            int var8 = this._font.getPeer().getBounds(var1, var2, var3);
-            var4 = this.translateHorizontalAnchor(var4, var8, var6);
-            int var9 = this.translateVerticalAnchor(var6);
-            this._peer.drawText(var1, var2, var3, var4, var5, var9, var8);
+            this.validateTextAnchor(anchor);
+            int width = this._font.getPeer().getBounds(data, offset, length);
+            x = this.translateHorizontalAnchor(x, width, anchor);
+            int flags = this.translateVerticalAnchor(anchor);
+            this._peer.drawText(data, offset, length, x, y, flags, width);
          }
       } else {
          throw new Object();
       }
    }
 
-   public void drawImage(Image var1, int var2, int var3, int var4) {
-      int var5 = var1.getWidth();
-      int var6 = var1.getHeight();
-      switch (var4 & 13) {
+   public void drawImage(Image img, int x, int y, int anchor) {
+      int width = img.getWidth();
+      int height = img.getHeight();
+      switch (anchor & 13) {
          case 0:
          case 4:
             break;
          case 1:
-            var2 -= var5 >> 1;
+            x -= width >> 1;
             break;
          case 8:
-            var2 -= var5;
+            x -= width;
             break;
          default:
             throw new Object();
       }
 
-      switch (var4 & 114) {
+      switch (anchor & 114) {
          case 0:
          case 16:
             break;
          case 2:
-            var3 -= var6 >> 1;
+            y -= height >> 1;
             break;
          case 32:
-            var3 -= var6;
+            y -= height;
             break;
          default:
             throw new Object();
       }
 
-      this._peer.drawBitmap(var2, var3, var5, var6, var1.getBitmap(), 0, 0);
+      this._peer.drawBitmap(x, y, width, height, img.getBitmap(), 0, 0);
    }
 
-   private int calcXShift(int var1, int var2, int var3, int var4) {
-      int var5;
-      switch (var4 & 13) {
+   private int calcXShift(int x_dest, int rectLeft, int rectRight, int anchor) {
+      int result;
+      switch (anchor & 13) {
          case 0:
          case 4:
-            var5 = var1 - var2;
+            result = x_dest - rectLeft;
             break;
          case 1:
-            var5 = var1 - (var2 + (var3 - var2 >> 1));
+            result = x_dest - (rectLeft + (rectRight - rectLeft >> 1));
             break;
          case 8:
-            var5 = var1 - var3;
+            result = x_dest - rectRight;
             break;
          default:
             throw new Object();
       }
 
-      return var5;
+      return result;
    }
 
-   private int calcYShift(int var1, int var2, int var3, int var4) {
-      int var5;
-      switch (var4 & 114) {
+   private int calcYShift(int y_dest, int rectTop, int rectBottom, int anchor) {
+      int result;
+      switch (anchor & 114) {
          case 0:
          case 16:
-            var5 = var1 - var2;
+            result = y_dest - rectTop;
             break;
          case 2:
-            var5 = var1 - (var2 + (var3 - var2 >> 1));
+            result = y_dest - (rectTop + (rectBottom - rectTop >> 1));
             break;
          case 32:
-            var5 = var1 - var3;
+            result = y_dest - rectBottom;
             break;
          default:
             throw new Object();
       }
 
-      return var5;
+      return result;
    }
 
-   public void drawRegion(Image var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
+   public void drawRegion(Image src, int x_src, int y_src, int width, int height, int transform, int x_dest, int y_dest, int anchor) {
       throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
-   public synchronized void copyArea(int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
+   public synchronized void copyArea(int x_src, int y_src, int width, int height, int x_dest, int y_dest, int anchor) {
       if (this._image == null) {
          throw new Object();
       }
 
-      if (var1 + this._translation.x >= 0
-         && var2 + this._translation.y >= 0
-         && var1 + this._translation.x + var3 <= this._image.getWidth()
-         && var2 + this._translation.y + var4 <= this._image.getHeight()) {
-         int var8 = var5 - var1;
-         int var9 = var6 - var2;
-         switch (var7 & 13) {
+      if (x_src + this._translation.x >= 0
+         && y_src + this._translation.y >= 0
+         && x_src + this._translation.x + width <= this._image.getWidth()
+         && y_src + this._translation.y + height <= this._image.getHeight()) {
+         int dx = x_dest - x_src;
+         int dy = y_dest - y_src;
+         switch (anchor & 13) {
             case 0:
             case 4:
                break;
             case 1:
-               var8 -= var3 >> 1;
+               dx -= width >> 1;
                break;
             case 8:
-               var8 -= var3;
+               dx -= width;
                break;
             default:
                throw new Object();
          }
 
-         switch (var7 & 114) {
+         switch (anchor & 114) {
             case 0:
             case 16:
                break;
             case 2:
-               var9 -= var4 >> 1;
+               dy -= height >> 1;
                break;
             case 32:
-               var9 -= var4;
+               dy -= height;
                break;
             default:
                throw new Object();
          }
 
-         this._peer.copyArea(var1, var2, var3, var4, var8, var9);
+         this._peer.copyArea(x_src, y_src, width, height, dx, dy);
       } else {
          throw new Object();
       }
    }
 
-   public void fillTriangle(int var1, int var2, int var3, int var4, int var5, int var6) {
-      int[] var7 = this._xPts3;
-      int[] var8 = this._yPts3;
-      var7[0] = var1;
-      var7[1] = var3;
-      var7[2] = var5;
-      var8[0] = var2;
-      var8[1] = var4;
-      var8[2] = var6;
-      this._peer.drawFilledPath(var7, var8, null, null);
+   public void fillTriangle(int x1, int y1, int x2, int y2, int x3, int y3) {
+      int[] xPts = this._xPts3;
+      int[] yPts = this._yPts3;
+      xPts[0] = x1;
+      xPts[1] = x2;
+      xPts[2] = x3;
+      yPts[0] = y1;
+      yPts[1] = y2;
+      yPts[2] = y3;
+      this._peer.drawFilledPath(xPts, yPts, null, null);
    }
 
-   public void drawRGB(int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
-      int var9 = var1.length;
-      if (var5 >= 0 && var4 >= 0 && var3 >= 0 && var2 >= 0 && var2 + var7 * var3 <= var9) {
-         if (var6 > 0 && var7 > 0) {
-            if (var8) {
-               this._peer.drawARGB(var1, var2, var3, var4, var5, var6, var7);
+   public void drawRGB(int[] rgbData, int offset, int scanlength, int x, int y, int width, int height, boolean processAlpha) {
+      int rgbDataLength = rgbData.length;
+      if (y >= 0 && x >= 0 && scanlength >= 0 && offset >= 0 && offset + height * scanlength <= rgbDataLength) {
+         if (width > 0 && height > 0) {
+            if (processAlpha) {
+               this._peer.drawARGB(rgbData, offset, scanlength, x, y, width, height);
                return;
             }
 
-            this._peer.drawRGB(var1, var2, var3, var4, var5, var6, var7);
+            this._peer.drawRGB(rgbData, offset, scanlength, x, y, width, height);
          }
       } else {
          throw new Object();
       }
    }
 
-   public int getDisplayColor(int var1) {
-      return net.rim.device.api.ui.Graphics.getDisplayColor(var1);
+   public int getDisplayColor(int color) {
+      return net.rim.device.api.ui.Graphics.getDisplayColor(color);
    }
 }

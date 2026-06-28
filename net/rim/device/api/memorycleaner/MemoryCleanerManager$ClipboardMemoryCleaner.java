@@ -5,11 +5,11 @@ import net.rim.device.internal.i18n.CommonResource;
 
 final class MemoryCleanerManager$ClipboardMemoryCleaner implements MemoryCleanerListener {
    @Override
-   public final boolean cleanNow(int var1) {
-      if (var1 != 7) {
-         Clipboard var2 = Clipboard.getClipboard();
-         if (var2.get() != null) {
-            var2.put(null);
+   public final boolean cleanNow(int event) {
+      if (event != 7) {
+         Clipboard clipboard = Clipboard.getClipboard();
+         if (clipboard.get() != null) {
+            clipboard.put(null);
             return true;
          }
       }

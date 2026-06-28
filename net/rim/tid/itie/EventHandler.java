@@ -1,5 +1,8 @@
 package net.rim.tid.itie;
 
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.ui.Keypad;
+import net.rim.device.internal.ui.UiSettings;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.FocusEvent;
 import net.rim.tid.awt.event.KeyEvent;
@@ -30,22 +33,35 @@ public final class EventHandler {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final int processKeyEvent(int var1, int var2, char var3, int var4, int var5, boolean var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final int processKeyEvent(int ID, int keyCode, char keyChar, int modifiers, int time, boolean input) {
+      if (Keypad.key(keyCode) == 36
+         && Keypad.hasCurrencyKey()
+         && UiSettings.getCurrencyKey() == 0
+         && !ApplicationManager.getApplicationManager().isSystemLocked()
+         && Keypad.map(keyCode) == '$') {
+         this.initCurrencySign();
+         if (UiSettings.getCurrencyKey() == 0) {
+            return 131071;
+         }
+      }
+
+      synchronized (InputContext.getInstance()) {
+         return this.processKeyEvent0(ID, keyCode, keyChar, modifiers, time, input);
+      }
    }
 
-   private final synchronized int processKeyEvent0(int var1, int var2, char var3, int var4, int var5, boolean var6) {
-      InputContext var7 = InputContext.getInstance();
-      IComponent var8 = var7.getInputComponent();
-      if (var1 == 6913) {
-         if (var2 == 0) {
+   private final synchronized int processKeyEvent0(int ID, int keyCode, char keyChar, int modifiers, int time, boolean input) {
+      InputContext inputContext = InputContext.getInstance();
+      IComponent comp = inputContext.getInputComponent();
+      if (ID == 6913) {
+         if (keyCode == 0) {
             return 0;
          }
 
-         var1 = 519;
+         ID = 519;
       }
 
-      switch (var1) {
+      switch (ID) {
          case 512:
          case 517:
          case 518:
@@ -55,59 +71,75 @@ public final class EventHandler {
          case 515:
          case 520:
          default:
-            this._keyEvent.init(var8, var1, var5, SLKeyLayout.convertStatusToModifiers(var4), var2 >> 16, var3, var6);
+            this._keyEvent.init(comp, ID, time, SLKeyLayout.convertStatusToModifiers(modifiers), keyCode >> 16, keyChar, input);
             break;
          case 516:
          case 519:
-            this._keyEvent.init(var8, var1, var5, SLKeyLayout.convertStatusToModifiers(var4), var2, var3, var6);
+            this._keyEvent.init(comp, ID, time, SLKeyLayout.convertStatusToModifiers(modifiers), keyCode, keyChar, input);
       }
 
-      if (var8 != null) {
-         var8.dispatchEvent(this._keyEvent);
+      if (comp != null) {
+         comp.dispatchEvent(this._keyEvent);
       } else {
-         var7.dispatchEvent(this._keyEvent);
+         inputContext.dispatchEvent(this._keyEvent);
       }
 
       this._keyEvent.setSource(null);
       return this._keyEvent.isConsumed() ? this._keyEvent.getKeyChar() | 65536 : this._keyEvent.getKeyChar();
    }
 
-   public final boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
+      switch (event) {
+         case 516:
+         case 6914:
+            if ((this.processKeyEvent(516, 0, '\u0000', status, time, true) & 65536) == 65536) {
+               return true;
+            }
+
+            return false;
+         case 519:
+         case 6913:
+            synchronized (InputContext.getInstance()) {
+               return this.processNavigationEvent0(event, dx, dy, status, time);
+            }
+         default:
+            return false;
+      }
    }
 
-   private final boolean processNavigationEvent0(int var1, int var2, int var3, int var4, int var5) {
-      byte var6 = 0;
-      if (var1 == 519) {
-         var6 = 2;
+   private final boolean processNavigationEvent0(int event, int dx, int dy, int status, int time) {
+      int eventID = 0;
+      byte var9;
+      if (event == 519) {
+         var9 = 2;
       } else {
-         if (var1 != 6913) {
+         if (event != 6913) {
             return false;
          }
 
-         var6 = 1;
+         var9 = 1;
       }
 
-      InputContext var7 = InputContext.getInstance();
-      IComponent var8 = var7.getInputComponent();
-      this._navigationEvent.init(var8, var6, var2, var3, var4);
-      if (var8 != null) {
-         var8.dispatchEvent(this._navigationEvent);
+      InputContext inputContext = InputContext.getInstance();
+      IComponent comp = inputContext.getInputComponent();
+      this._navigationEvent.init(comp, var9, dx, dy, status);
+      if (comp != null) {
+         comp.dispatchEvent(this._navigationEvent);
       } else {
-         var7.dispatchEvent(this._navigationEvent);
+         inputContext.dispatchEvent(this._navigationEvent);
       }
 
       this._navigationEvent.setSource(null);
       if (!this._navigationEvent.isConsumed()) {
-         switch (var1) {
+         switch (event) {
             case 519:
-               if ((this.processKeyEvent(519, var3, (char)var4, var4, var5, true) & 65536) == 65536) {
+               if ((this.processKeyEvent(519, dy, (char)status, status, time, true) & 65536) == 65536) {
                   return true;
                }
 
                return false;
             case 6913:
-               if ((this.processKeyEvent(519, var2, (char)var4, var4, var5, true) & 65536) == 65536) {
+               if ((this.processKeyEvent(519, dx, (char)status, status, time, true) & 65536) == 65536) {
                   return true;
                }
 
@@ -118,41 +150,45 @@ public final class EventHandler {
       return this._navigationEvent.isConsumed();
    }
 
-   public final void focusGained(IComponent var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void focusGained(IComponent src, int time, int appID) {
+      synchronized (InputContext.getInstance()) {
+         this.focusGained0(src, time, appID);
+      }
    }
 
-   private final void focusGained0(IComponent var1, int var2, int var3) {
-      if (var1 != null) {
-         InputContext var4 = InputContext.getInstance();
-         int var5 = var4.getAppId();
-         if (var4.getInputComponent() != var1 || var5 == -1 || var5 != var3 || var4.getInputComponent() == var1 && var5 == var3) {
-            this.fillFocusHistory(var3, var1, true);
-            this._focusEvent.init(var1, 1004, var3);
-            var1.dispatchEvent(this._focusEvent);
+   private final void focusGained0(IComponent src, int time, int appID) {
+      if (src != null) {
+         InputContext ic = InputContext.getInstance();
+         int currentId = ic.getAppId();
+         if (ic.getInputComponent() != src || currentId == -1 || currentId != appID || ic.getInputComponent() == src && currentId == appID) {
+            this.fillFocusHistory(appID, src, true);
+            this._focusEvent.init(src, 1004, appID);
+            src.dispatchEvent(this._focusEvent);
             this._focusEvent.setSource(null);
          }
       }
    }
 
-   public final void focusLost(IComponent var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void focusLost(IComponent src, int time, int appID) {
+      synchronized (InputContext.getInstance()) {
+         this.focusLost0(src, time, appID);
+      }
    }
 
-   private final void focusLost0(IComponent var1, int var2, int var3) {
-      this.fillFocusHistory(var3, var1, false);
-      if (var1 instanceof Object) {
+   private final void focusLost0(IComponent src, int time, int appID) {
+      this.fillFocusHistory(appID, src, false);
+      if (src instanceof Object) {
          InputContext.getInstance().endComposition();
       } else {
-         IComponent var4 = InputContext.getInstance().getInputComponent();
-         if (var4 != null) {
-            IComponent var5 = InputContext.getInstance().getAppId() == var3 ? var4 : var1;
-            if (var5 == null) {
+         IComponent registeredInputComponent = InputContext.getInstance().getInputComponent();
+         if (registeredInputComponent != null) {
+            IComponent emulationEventSrc = InputContext.getInstance().getAppId() == appID ? registeredInputComponent : src;
+            if (emulationEventSrc == null) {
                return;
             }
 
-            this._focusEvent.init(var5, 1005, var3);
-            var5.dispatchEvent(this._focusEvent);
+            this._focusEvent.init(emulationEventSrc, 1005, appID);
+            emulationEventSrc.dispatchEvent(this._focusEvent);
             this._focusEvent.setSource(null);
          }
       }
@@ -162,18 +198,18 @@ public final class EventHandler {
       return ((IMContext)InputContext.getInstance()).getEventHandler();
    }
 
-   public final void actionPerformed(int var1, Object var2) {
-      switch (var1) {
+   public final void actionPerformed(int action, Object parameter) {
+      switch (action) {
          case 1:
             CurrencyKeyDialog.closeDialog();
       }
    }
 
-   private final void fillFocusHistory(int var1, IComponent var2, boolean var3) {
+   private final void fillFocusHistory(int appId, IComponent src, boolean eventType) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final void printFocusEvent(int var1, String var2, boolean var3) {
+   private final void printFocusEvent(int appId, String component, boolean eventType) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -181,7 +217,7 @@ public final class EventHandler {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private final String findAppName(int var1) {
+   private final String findAppName(int appId) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

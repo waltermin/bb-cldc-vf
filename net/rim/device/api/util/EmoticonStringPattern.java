@@ -14,15 +14,15 @@ public class EmoticonStringPattern extends StringPattern {
       throw null;
    }
 
-   public void drawEmoticon(Graphics var1, int var2, int var3, int var4) {
+   public void drawEmoticon(Graphics _1, int _2, int _3, int _4) {
       throw null;
    }
 
-   public String emoticonReplacementText(int var1) {
+   public String emoticonReplacementText(int _1) {
       throw null;
    }
 
-   public String emoticonDescription(int var1) {
+   public String emoticonDescription(int _1) {
       throw null;
    }
 

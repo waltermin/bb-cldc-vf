@@ -9,11 +9,11 @@ final class PersistentContent$SymmetricKeyCache {
    private int _victim = 0;
    private static final int SIZE;
 
-   final byte[] get(char[] var1, int var2) {
+   final byte[] get(char[] encoding, int offset) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final void put(char[] var1, int var2, byte[] var3) {
+   final void put(char[] encoding, int offset, byte[] symmetricKey) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

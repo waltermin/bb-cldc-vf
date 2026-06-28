@@ -4,92 +4,92 @@ final class IntArraySortParallel {
    private IntArraySortParallel() {
    }
 
-   private static final int rangeCheck(int var0, int var1, int var2) {
-      if (var1 > var2) {
+   private static final int rangeCheck(int arrayLen, int from, int to) {
+      if (from > to) {
          throw new Object();
-      } else if (var1 < 0) {
-         throw new Object(var1);
-      } else if (var2 > var0) {
-         throw new Object(var2);
+      } else if (from < 0) {
+         throw new Object(from);
+      } else if (to > arrayLen) {
+         throw new Object(to);
       } else {
-         return var2 - var1;
+         return to - from;
       }
    }
 
-   public static final void sort(int[] var0, int var1, int var2, Object[] var3) {
-      int var4 = rangeCheck(var0.length, var1, var2);
-      if (var4 != 0) {
-         int var5 = var4 + 1 >> 1;
-         int[] var6 = new int[var5];
-         Object[] var7 = new Object[var5];
-         mergeSort(var0, var6, var3, var7, var1, var4);
+   public static final void sort(int[] a, int from, int to, Object[] parallel) {
+      int length = rangeCheck(a.length, from, to);
+      if (length != 0) {
+         int halfSize = length + 1 >> 1;
+         int[] aux = new int[halfSize];
+         Object[] auxParallel = new Object[halfSize];
+         mergeSort(a, aux, parallel, auxParallel, from, length);
       }
    }
 
-   private static final boolean exchange(int[] var0, Object[] var1, int var2, int var3) {
-      int var4 = var0[var2];
-      int var5 = var0[var3];
-      if (var4 > var5) {
-         var0[var2] = var5;
-         var0[var3] = var4;
-         Object var6 = var1[var2];
-         var1[var2] = var1[var3];
-         var1[var3] = var6;
+   private static final boolean exchange(int[] a, Object[] parallel, int x1, int x2) {
+      int t1 = a[x1];
+      int t2 = a[x2];
+      if (t1 > t2) {
+         a[x1] = t2;
+         a[x2] = t1;
+         Object tempObj = parallel[x1];
+         parallel[x1] = parallel[x2];
+         parallel[x2] = tempObj;
          return true;
       } else {
          return false;
       }
    }
 
-   private static final void mergeSort(int[] var0, int[] var1, Object[] var2, Object[] var3, int var4, int var5) {
-      switch (var5) {
+   private static final void mergeSort(int[] a, int[] aux, Object[] parallel, Object[] auxParallel, int from, int length) {
+      switch (length) {
          case -1:
-            int var6 = var5 + 1 >> 1;
-            mergeSort(var0, var1, var2, var3, var4, var6);
-            mergeSort(var0, var1, var2, var3, var4 + var6, var5 - var6);
-            int var7 = var4 + var6;
-            if (var0[var7 - 1] <= var0[var7]) {
+            int midLength = length + 1 >> 1;
+            mergeSort(a, aux, parallel, auxParallel, from, midLength);
+            mergeSort(a, aux, parallel, auxParallel, from + midLength, length - midLength);
+            int midIndex = from + midLength;
+            if (a[midIndex - 1] <= a[midIndex]) {
                return;
             } else {
-               System.arraycopy(var0, var4, var1, 0, var6);
-               System.arraycopy(var2, var4, var3, 0, var6);
-               int var8 = 0;
-               int var9 = var8 + var6;
-               int var10 = var4 + var6;
-               int var11 = var10 + var5 - var6;
-               int var12 = var4 + var5;
+               System.arraycopy(a, from, aux, 0, midLength);
+               System.arraycopy(parallel, from, auxParallel, 0, midLength);
+               int left = 0;
+               int endLeft = left + midLength;
+               int rite = from + midLength;
+               int endRite = rite + length - midLength;
+               int endFrom = from + length;
 
-               for (; var4 < var12; var4++) {
-                  if (var8 >= var9) {
-                     while (var4 < var12) {
-                        var0[var4] = var0[var10];
-                        var2[var4] = var2[var10];
-                        var10++;
-                        var4++;
+               for (; from < endFrom; from++) {
+                  if (left >= endLeft) {
+                     while (from < endFrom) {
+                        a[from] = a[rite];
+                        parallel[from] = parallel[rite];
+                        rite++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var10 >= var11) {
-                     while (var4 < var12) {
-                        var0[var4] = var1[var8];
-                        var2[var4] = var3[var8];
-                        var8++;
-                        var4++;
+                  if (rite >= endRite) {
+                     while (from < endFrom) {
+                        a[from] = aux[left];
+                        parallel[from] = auxParallel[left];
+                        left++;
+                        from++;
                      }
 
                      return;
                   }
 
-                  if (var1[var8] > var0[var10]) {
-                     var0[var4] = var0[var10];
-                     var2[var4] = var2[var10];
-                     var10++;
+                  if (aux[left] > a[rite]) {
+                     a[from] = a[rite];
+                     parallel[from] = parallel[rite];
+                     rite++;
                   } else {
-                     var0[var4] = var1[var8];
-                     var2[var4] = var3[var8];
-                     var8++;
+                     a[from] = aux[left];
+                     parallel[from] = auxParallel[left];
+                     left++;
                   }
                }
 
@@ -100,12 +100,12 @@ final class IntArraySortParallel {
          default:
             return;
          case 2:
-            exchange(var0, var2, var4, var4 + 1);
+            exchange(a, parallel, from, from + 1);
             return;
          case 3:
-            exchange(var0, var2, var4, var4 + 1);
-            if (exchange(var0, var2, var4 + 1, var4 + 2)) {
-               exchange(var0, var2, var4, var4 + 1);
+            exchange(a, parallel, from, from + 1);
+            if (exchange(a, parallel, from + 1, from + 2)) {
+               exchange(a, parallel, from, from + 1);
             }
       }
    }

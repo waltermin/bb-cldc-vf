@@ -36,7 +36,7 @@ public class MediaStreamingManager$StreamingSession {
       throw null;
    }
 
-   public void registerMediaPlayer(MediaPlayer var1) {
+   public void registerMediaPlayer(MediaPlayer _1) {
       throw null;
    }
 
@@ -48,7 +48,7 @@ public class MediaStreamingManager$StreamingSession {
       throw null;
    }
 
-   public int setVolume(int var1) {
+   public int setVolume(int _1) {
       throw null;
    }
 
@@ -60,11 +60,11 @@ public class MediaStreamingManager$StreamingSession {
       throw null;
    }
 
-   public void stopUplinkBuffer(boolean var1) {
+   public void stopUplinkBuffer(boolean _1) {
       throw null;
    }
 
-   public void unregisterMediaPlayer(MediaPlayer var1) {
+   public void unregisterMediaPlayer(MediaPlayer _1) {
       throw null;
    }
 }

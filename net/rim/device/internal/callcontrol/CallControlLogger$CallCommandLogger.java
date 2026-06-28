@@ -3,167 +3,167 @@ package net.rim.device.internal.callcontrol;
 class CallControlLogger$CallCommandLogger extends AbstractCallCommandHandler {
    private final CallControlLogger this$0;
 
-   public CallControlLogger$CallCommandLogger(CallControlLogger var1, int var2) {
-      super(var2);
-      this.this$0 = var1;
+   public CallControlLogger$CallCommandLogger(CallControlLogger _1, int order) {
+      super(order);
+      this.this$0 = _1;
    }
 
    @Override
-   public boolean canInvokeCallTransferAction(int var1, int var2) {
-      this.this$0.logEvent(5, CallControlLogger.CANINVOKEXFER, var1, var2);
-      boolean var3 = this.getNext().canInvokeCallTransferAction(var1, var2);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var3);
-      return var3;
+   public boolean canInvokeCallTransferAction(int callId, int action) {
+      this.this$0.logEvent(5, CallControlLogger.CANINVOKEXFER, callId, action);
+      boolean ret = this.getNext().canInvokeCallTransferAction(callId, action);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean canHold(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.CANHOLD, var1);
-      boolean var2 = this.getNext().canHold(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean canHold(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.CANHOLD, callId);
+      boolean ret = this.getNext().canHold(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean canSwap(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.CANSWAP, var1);
-      boolean var2 = this.getNext().canSwap(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean canSwap(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.CANSWAP, callId);
+      boolean ret = this.getNext().canSwap(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean canJoin(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.CANJOIN, var1);
-      boolean var2 = this.getNext().canJoin(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean canJoin(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.CANJOIN, callId);
+      boolean ret = this.getNext().canJoin(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean canPark(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.CANPARK, var1);
-      boolean var2 = this.getNext().canPark(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean canPark(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.CANPARK, callId);
+      boolean ret = this.getNext().canPark(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean canSendToVoicemail(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.CANSENDTOVM, var1);
-      boolean var2 = this.getNext().canSendToVoicemail(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean canSendToVoicemail(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.CANSENDTOVM, callId);
+      boolean ret = this.getNext().canSendToVoicemail(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getAlternateLineLabel(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETLINELABEL, var1);
-      String var2 = this.getNext().getAlternateLineLabel(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public String getAlternateLineLabel(int line) {
+      this.this$0.logEvent(5, CallControlLogger.GETLINELABEL, line);
+      String ret = this.getNext().getAlternateLineLabel(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean isAlternateLineAvailable(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.ISLINEAVAILABLE, var1);
-      boolean var2 = this.getNext().isAlternateLineAvailable(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean isAlternateLineAvailable(int line) {
+      this.this$0.logEvent(5, CallControlLogger.ISLINEAVAILABLE, line);
+      boolean ret = this.getNext().isAlternateLineAvailable(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void setAlternateLineLabel(int var1, String var2) {
-      this.this$0.logEvent(5, CallControlLogger.SETLINELABEL, var1, var2);
-      this.getNext().setAlternateLineLabel(var1, var2);
+   public void setAlternateLineLabel(int line, String description) {
+      this.this$0.logEvent(5, CallControlLogger.SETLINELABEL, line, description);
+      this.getNext().setAlternateLineLabel(line, description);
    }
 
    @Override
-   public String getAlternateLineNumber(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETLINENUMBER, var1);
-      String var2 = this.getNext().getAlternateLineNumber(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public String getAlternateLineNumber(int line) {
+      this.this$0.logEvent(5, CallControlLogger.GETLINENUMBER, line);
+      String ret = this.getNext().getAlternateLineNumber(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public int[] getAlternateLines() {
       this.this$0.logEvent(5, CallControlLogger.GETLINES);
-      int[] var1 = this.getNext().getAlternateLines();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int[] ret = this.getNext().getAlternateLines();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getCallTransferState(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETXFERSTATE, var1);
-      int var2 = this.getNext().getCallTransferState(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getCallTransferState(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.GETXFERSTATE, callId);
+      int ret = this.getNext().getCallTransferState(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getVoiceMailNumber(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETVMNUMBER, var1);
-      String var2 = this.getNext().getVoiceMailNumber(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public String getVoiceMailNumber(int line) {
+      this.this$0.logEvent(5, CallControlLogger.GETVMNUMBER, line);
+      String ret = this.getNext().getVoiceMailNumber(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getVoiceMailCount(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETVMCOUNT, var1);
-      int var2 = this.getNext().getVoiceMailCount(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getVoiceMailCount(int line) {
+      this.this$0.logEvent(5, CallControlLogger.GETVMCOUNT, line);
+      int ret = this.getNext().getVoiceMailCount(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getWAFs(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETWAFS, var1);
-      int var2 = this.getNext().getWAFs(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getWAFs(int line) {
+      this.this$0.logEvent(5, CallControlLogger.GETWAFS, line);
+      int ret = this.getNext().getWAFs(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean invokeCallTransferAction(int var1, int var2, Object var3) {
-      this.this$0.logEvent(5, CallControlLogger.XFERACTION, var1, var2, var3);
-      boolean var4 = this.getNext().invokeCallTransferAction(var1, var2, var3);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var4);
-      return var4;
+   public boolean invokeCallTransferAction(int callId, int action, Object param) {
+      this.this$0.logEvent(5, CallControlLogger.XFERACTION, callId, action, param);
+      boolean ret = this.getNext().invokeCallTransferAction(callId, action, param);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void parkCall(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.PARK, var1);
-      this.getNext().parkCall(var1);
+   public void parkCall(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.PARK, callId);
+      this.getNext().parkCall(callId);
    }
 
    @Override
-   public void sendToVoicemail(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.SENDTOVM, var1);
-      this.getNext().sendToVoicemail(var1);
+   public void sendToVoicemail(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.SENDTOVM, callId);
+      this.getNext().sendToVoicemail(callId);
    }
 
    @Override
-   public boolean supportsCorporateExtensions(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.SUPPORTSEXT, var1);
-      boolean var2 = this.getNext().supportsCorporateExtensions(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean supportsCorporateExtensions(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.SUPPORTSEXT, callId);
+      boolean ret = this.getNext().supportsCorporateExtensions(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void activateCallBarring(boolean var1, int var2, String var3) {
-      this.this$0.logEvent(5, CallControlLogger.ACTIVATEBARRING, var1, var2, var3);
-      this.getNext().activateCallBarring(var1, var2, var3);
+   public void activateCallBarring(boolean activate, int type, String password) {
+      this.this$0.logEvent(5, CallControlLogger.ACTIVATEBARRING, activate, type, password);
+      this.getNext().activateCallBarring(activate, type, password);
    }
 
    @Override
-   public void activateCallWaiting(boolean var1) {
-      this.this$0.logEvent(5, CallControlLogger.ACTIVATEWAITING, var1);
-      this.getNext().activateCallWaiting(var1);
+   public void activateCallWaiting(boolean activate) {
+      this.this$0.logEvent(5, CallControlLogger.ACTIVATEWAITING, activate);
+      this.getNext().activateCallWaiting(activate);
    }
 
    @Override
@@ -173,9 +173,9 @@ class CallControlLogger$CallCommandLogger extends AbstractCallCommandHandler {
    }
 
    @Override
-   public void answerCall(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.ANSWER, var1);
-      this.getNext().answerCall(var1);
+   public void answerCall(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.ANSWER, callId);
+      this.getNext().answerCall(callId);
    }
 
    @Override
@@ -185,151 +185,151 @@ class CallControlLogger$CallCommandLogger extends AbstractCallCommandHandler {
    }
 
    @Override
-   public void disableDTMFEcho(boolean var1) {
-      this.this$0.logEvent(5, CallControlLogger.DISABLEDTMFECHO, var1);
-      this.getNext().disableDTMFEcho(var1);
+   public void disableDTMFEcho(boolean disable) {
+      this.this$0.logEvent(5, CallControlLogger.DISABLEDTMFECHO, disable);
+      this.getNext().disableDTMFEcho(disable);
    }
 
    @Override
    public boolean endEmergencyCallbackMode() {
       this.this$0.logEvent(0, CallControlLogger.END911CALLBACKMODE);
-      boolean var1 = this.getNext().endEmergencyCallbackMode();
-      this.this$0.logEvent(0, CallControlLogger.RESULT, var1);
-      return var1;
+      boolean ret = this.getNext().endEmergencyCallbackMode();
+      this.this$0.logEvent(0, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void flash(String var1) {
-      this.this$0.logEvent(0, CallControlLogger.FLASH, CallControlLogger.obfuscate(var1));
-      this.getNext().flash(var1);
+   public void flash(String number) {
+      this.this$0.logEvent(0, CallControlLogger.FLASH, CallControlLogger.obfuscate(number));
+      this.getNext().flash(number);
    }
 
    @Override
    public int getActiveCallId() {
       this.this$0.logEvent(5, CallControlLogger.GETACTIVECALL);
-      int var1 = this.getNext().getActiveCallId();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int ret = this.getNext().getActiveCallId();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getAlternateLine(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETLINE, var1);
-      int var2 = this.getNext().getAlternateLine(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getAlternateLine(int callID) {
+      this.this$0.logEvent(5, CallControlLogger.GETLINE, callID);
+      int ret = this.getNext().getAlternateLine(callID);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getCallDuration(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETDURATION, var1);
-      int var2 = this.getNext().getCallDuration(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getCallDuration(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.GETDURATION, callId);
+      int ret = this.getNext().getCallDuration(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getCallForwardingNumber(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETCALLFWDNUMBER, var1);
-      String var2 = this.getNext().getCallForwardingNumber(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public String getCallForwardingNumber(int type) {
+      this.this$0.logEvent(5, CallControlLogger.GETCALLFWDNUMBER, type);
+      String ret = this.getNext().getCallForwardingNumber(type);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getCallName(int var1, boolean var2) {
-      this.this$0.logEvent(0, CallControlLogger.CALLNAME, var1, var2);
-      String var3 = this.getNext().getCallName(var1, var2);
-      this.this$0.logEvent(0, CallControlLogger.RESULT, CallControlLogger.obfuscate(var3));
-      return var3;
+   public String getCallName(int callId, boolean original) {
+      this.this$0.logEvent(0, CallControlLogger.CALLNAME, callId, original);
+      String ret = this.getNext().getCallName(callId, original);
+      this.this$0.logEvent(0, CallControlLogger.RESULT, CallControlLogger.obfuscate(ret));
+      return ret;
    }
 
    @Override
-   public String getCallPhoneNumber(int var1, boolean var2) {
-      this.this$0.logEvent(0, CallControlLogger.GETCALLNUMBER, var1, var2);
-      String var3 = this.getNext().getCallPhoneNumber(var1, var2);
-      this.this$0.logEvent(0, CallControlLogger.RESULT, CallControlLogger.obfuscate(var3));
-      return var3;
+   public String getCallPhoneNumber(int callId, boolean original) {
+      this.this$0.logEvent(0, CallControlLogger.GETCALLNUMBER, callId, original);
+      String ret = this.getNext().getCallPhoneNumber(callId, original);
+      this.this$0.logEvent(0, CallControlLogger.RESULT, CallControlLogger.obfuscate(ret));
+      return ret;
    }
 
    @Override
-   public int getCallState(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETCALLSTATE, var1);
-      int var2 = this.getNext().getCallState(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getCallState(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.GETCALLSTATE, callId);
+      int ret = this.getNext().getCallState(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public int getCLIPDisplayMode(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETCLIP, var1);
-      int var2 = this.getNext().getCLIPDisplayMode(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public int getCLIPDisplayMode(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.GETCLIP, callId);
+      int ret = this.getNext().getCLIPDisplayMode(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public String getEmergencyNumber() {
       this.this$0.logEvent(5, CallControlLogger.GETEMERGENCYNUMBER);
-      String var1 = this.getNext().getEmergencyNumber();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      String ret = this.getNext().getEmergencyNumber();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public String getForwardingNumber() {
       this.this$0.logEvent(5, CallControlLogger.GETFWDNUMBER);
-      String var1 = this.getNext().getForwardingNumber();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      String ret = this.getNext().getForwardingNumber();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getForwardingNumberForService(int var1, int var2) {
-      this.this$0.logEvent(5, CallControlLogger.GETFWDNUMBER, var1, var2);
-      String var3 = this.getNext().getForwardingNumberForService(var1, var2);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var3);
-      return var3;
+   public String getForwardingNumberForService(int ssOption, int bearerService) {
+      this.this$0.logEvent(5, CallControlLogger.GETFWDNUMBER, ssOption, bearerService);
+      String ret = this.getNext().getForwardingNumberForService(ssOption, bearerService);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public int getHeldCallId() {
       this.this$0.logEvent(5, CallControlLogger.GETHELD);
-      int var1 = this.getNext().getHeldCallId();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int ret = this.getNext().getHeldCallId();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public int getIncomingCallId() {
       this.this$0.logEvent(5, CallControlLogger.GETINCOMING);
-      int var1 = this.getNext().getIncomingCallId();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int ret = this.getNext().getIncomingCallId();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public int getMaxConferenceMembers() {
       this.this$0.logEvent(5, CallControlLogger.GETMAXCONFMEMBERS);
-      int var1 = this.getNext().getMaxConferenceMembers();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int ret = this.getNext().getMaxConferenceMembers();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public int getNetworkFeatures() {
       this.this$0.logEvent(5, CallControlLogger.GETNETWORKFEATURES);
-      int var1 = this.getNext().getNetworkFeatures();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      int ret = this.getNext().getNetworkFeatures();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public String getNumber(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.GETNUMBER, var1);
-      String var2 = this.getNext().getNumber(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public String getNumber(int index) {
+      this.this$0.logEvent(5, CallControlLogger.GETNUMBER, index);
+      String ret = this.getNext().getNumber(index);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
@@ -339,91 +339,91 @@ class CallControlLogger$CallCommandLogger extends AbstractCallCommandHandler {
    }
 
    @Override
-   public boolean inCallDTMFDigitsEntered(String var1) {
-      this.this$0.logEvent(5, CallControlLogger.INCALLDTMF, var1);
-      boolean var2 = this.getNext().inCallDTMFDigitsEntered(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean inCallDTMFDigitsEntered(String digits) {
+      this.this$0.logEvent(5, CallControlLogger.INCALLDTMF, digits);
+      boolean ret = this.getNext().inCallDTMFDigitsEntered(digits);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public boolean isActive() {
       this.this$0.logEvent(5, CallControlLogger.ISACTIVE);
-      boolean var1 = this.getNext().isActive();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      boolean ret = this.getNext().isActive();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean isCallForwardUnconditionalActive(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.ISCFUACTIVE, var1);
-      boolean var2 = this.getNext().isCallForwardUnconditionalActive(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean isCallForwardUnconditionalActive(int line) {
+      this.this$0.logEvent(5, CallControlLogger.ISCFUACTIVE, line);
+      boolean ret = this.getNext().isCallForwardUnconditionalActive(line);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean isCallRedirected(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.ISREDIRECTED, var1);
-      boolean var2 = this.getNext().isCallRedirected(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean isCallRedirected(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.ISREDIRECTED, callId);
+      boolean ret = this.getNext().isCallRedirected(callId);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public boolean isEmergencyNumber(String var1) {
-      this.this$0.logEvent(5, CallControlLogger.ISEMERGENCYNUMBER, var1);
-      boolean var2 = this.getNext().isEmergencyNumber(var1);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean isEmergencyNumber(String number) {
+      this.this$0.logEvent(5, CallControlLogger.ISEMERGENCYNUMBER, number);
+      boolean ret = this.getNext().isEmergencyNumber(number);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public boolean isFDNAvailable() {
       this.this$0.logEvent(5, CallControlLogger.ISFDNAVAILABLE);
-      boolean var1 = this.getNext().isFDNAvailable();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      boolean ret = this.getNext().isFDNAvailable();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
    public boolean isFDNEnabled() {
       this.this$0.logEvent(5, CallControlLogger.ISFDNENABLED);
-      boolean var1 = this.getNext().isFDNEnabled();
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var1);
-      return var1;
+      boolean ret = this.getNext().isFDNEnabled();
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void querySSOption(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.QUERYSSOPTION, var1);
-      this.getNext().querySSOption(var1);
+   public void querySSOption(int ssOption) {
+      this.this$0.logEvent(5, CallControlLogger.QUERYSSOPTION, ssOption);
+      this.getNext().querySSOption(ssOption);
    }
 
    @Override
-   public int querySSOptionResult(int var1, int var2) {
-      this.this$0.logEvent(5, CallControlLogger.QUERYSSOPTIONRESULT, var1, var2);
-      int var3 = this.getNext().querySSOptionResult(var1, var2);
-      this.this$0.logEvent(5, CallControlLogger.RESULT, var3);
-      return var3;
+   public int querySSOptionResult(int ssOption, int bearerService) {
+      this.this$0.logEvent(5, CallControlLogger.QUERYSSOPTIONRESULT, ssOption, bearerService);
+      int ret = this.getNext().querySSOptionResult(ssOption, bearerService);
+      this.this$0.logEvent(5, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void removeCallFromConference(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.REMOVECALL, var1);
-      this.getNext().removeCallFromConference(var1);
+   public void removeCallFromConference(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.REMOVECALL, callId);
+      this.getNext().removeCallFromConference(callId);
    }
 
    @Override
-   public void rejectCall(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.REJECTCALL, var1);
-      this.getNext().rejectCall(var1);
+   public void rejectCall(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.REJECTCALL, callId);
+      this.getNext().rejectCall(callId);
    }
 
    @Override
-   public void requestEnableFDN(boolean var1) {
+   public void requestEnableFDN(boolean enable) {
       this.this$0.logEvent(5, CallControlLogger.REQUESTENABLEFDN);
-      this.getNext().requestEnableFDN(var1);
+      this.getNext().requestEnableFDN(enable);
    }
 
    @Override
@@ -433,73 +433,73 @@ class CallControlLogger$CallCommandLogger extends AbstractCallCommandHandler {
    }
 
    @Override
-   public void sendSSPasswordResponse(String var1) {
-      this.this$0.logEvent(5, CallControlLogger.SENDSSPWDRESPONSE, var1);
-      this.getNext().sendSSPasswordResponse(var1);
+   public void sendSSPasswordResponse(String password) {
+      this.this$0.logEvent(5, CallControlLogger.SENDSSPWDRESPONSE, password);
+      this.getNext().sendSSPasswordResponse(password);
    }
 
    @Override
-   public boolean setAlternateLine(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.SETLINE, var1);
-      boolean var2 = this.getNext().setAlternateLine(var1);
-      this.this$0.logEvent(0, CallControlLogger.RESULT, var2);
-      return var2;
+   public boolean setAlternateLine(int line) {
+      this.this$0.logEvent(0, CallControlLogger.SETLINE, line);
+      boolean ret = this.getNext().setAlternateLine(line);
+      this.this$0.logEvent(0, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void setCallBarringPassword(String var1, String var2) {
-      this.this$0.logEvent(5, CallControlLogger.SETBARRINGPWD, var1, var2);
-      this.getNext().setCallBarringPassword(var1, var2);
+   public void setCallBarringPassword(String oldPassword, String newPassword) {
+      this.this$0.logEvent(5, CallControlLogger.SETBARRINGPWD, oldPassword, newPassword);
+      this.getNext().setCallBarringPassword(oldPassword, newPassword);
    }
 
    @Override
-   public void setCallForwardingNumber(int var1, String var2) {
-      this.this$0.logEvent(5, CallControlLogger.SETFWDNUMBER, var1, var2);
-      this.getNext().setCallForwardingNumber(var1, var2);
+   public void setCallForwardingNumber(int type, String number) {
+      this.this$0.logEvent(5, CallControlLogger.SETFWDNUMBER, type, number);
+      this.getNext().setCallForwardingNumber(type, number);
    }
 
    @Override
-   public void setSSBasicService(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.SETSSBASICSERVICE, var1);
-      this.getNext().setSSBasicService(var1);
+   public void setSSBasicService(int bearerService) {
+      this.this$0.logEvent(5, CallControlLogger.SETSSBASICSERVICE, bearerService);
+      this.getNext().setSSBasicService(bearerService);
    }
 
    @Override
-   public void setUSSDResponse(byte[] var1) {
-      this.this$0.logEvent(5, CallControlLogger.SETUSSDRESPONSE, var1);
-      this.getNext().setUSSDResponse(var1);
+   public void setUSSDResponse(byte[] data) {
+      this.this$0.logEvent(5, CallControlLogger.SETUSSDRESPONSE, data);
+      this.getNext().setUSSDResponse(data);
    }
 
    @Override
-   public int startCall(String var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.STARTCALL, CallControlLogger.obfuscate(var1), var2);
-      int var3 = this.getNext().startCall(var1, var2);
-      this.this$0.logEvent(0, CallControlLogger.RESULT, var3);
-      return var3;
+   public int startCall(String number, int clir) {
+      this.this$0.logEvent(0, CallControlLogger.STARTCALL, CallControlLogger.obfuscate(number), clir);
+      int ret = this.getNext().startCall(number, clir);
+      this.this$0.logEvent(0, CallControlLogger.RESULT, ret);
+      return ret;
    }
 
    @Override
-   public void startDTMF(int var1, byte var2) {
-      this.this$0.logEvent(5, CallControlLogger.STARTDTMF, var1, var2);
-      this.getNext().startDTMF(var1, var2);
+   public void startDTMF(int callId, byte character) {
+      this.this$0.logEvent(5, CallControlLogger.STARTDTMF, callId, character);
+      this.getNext().startDTMF(callId, character);
    }
 
    @Override
-   public void stopAllCalls(boolean var1) {
-      this.this$0.logEvent(0, CallControlLogger.STOPALLCALLS, var1);
-      this.getNext().stopAllCalls(var1);
+   public void stopAllCalls(boolean unconditional) {
+      this.this$0.logEvent(0, CallControlLogger.STOPALLCALLS, unconditional);
+      this.getNext().stopAllCalls(unconditional);
    }
 
    @Override
-   public void stopCall(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.STOPCALL, var1);
-      this.getNext().stopCall(var1);
+   public void stopCall(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.STOPCALL, callId);
+      this.getNext().stopCall(callId);
    }
 
    @Override
-   public void stopDTMF(int var1) {
-      this.this$0.logEvent(5, CallControlLogger.STOPDTMF, var1);
-      this.getNext().stopDTMF(var1);
+   public void stopDTMF(int callId) {
+      this.this$0.logEvent(5, CallControlLogger.STOPDTMF, callId);
+      this.getNext().stopDTMF(callId);
    }
 
    @Override

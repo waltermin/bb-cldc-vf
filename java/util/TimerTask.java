@@ -11,11 +11,17 @@ public class TimerTask implements Runnable {
    static final int CANCELLED;
 
    public long scheduledExecutionTime() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this.lock) {
+         return this.period < 0 ? this.nextExecutionTime + this.period : this.nextExecutionTime - this.period;
+      }
    }
 
    public boolean cancel() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this.lock) {
+         boolean result = this.state == 1;
+         this.state = 3;
+         return result;
+      }
    }
 
    @Override

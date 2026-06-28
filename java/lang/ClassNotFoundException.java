@@ -4,6 +4,6 @@ public class ClassNotFoundException extends Exception {
    public ClassNotFoundException() {
    }
 
-   public ClassNotFoundException(String var1) {
+   public ClassNotFoundException(String s) {
    }
 }

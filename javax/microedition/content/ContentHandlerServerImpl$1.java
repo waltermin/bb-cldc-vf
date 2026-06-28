@@ -3,8 +3,8 @@ package javax.microedition.content;
 class ContentHandlerServerImpl$1 implements Runnable {
    private final ContentHandlerServerImpl this$0;
 
-   ContentHandlerServerImpl$1(ContentHandlerServerImpl var1) {
-      this.this$0 = var1;
+   ContentHandlerServerImpl$1(ContentHandlerServerImpl _1) {
+      this.this$0 = _1;
    }
 
    @Override

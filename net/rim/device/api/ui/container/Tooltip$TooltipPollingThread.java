@@ -1,5 +1,6 @@
 package net.rim.device.api.ui.container;
 
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.ui.UiApplication;
 
 final class Tooltip$TooltipPollingThread extends Thread {
@@ -21,11 +22,36 @@ final class Tooltip$TooltipPollingThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      while (true) {
+         try {
+            Tooltip$TooltipProvider tooltipProvider = this.getTooltipProvider();
+            if (tooltipProvider != null && tooltipProvider.hashCode() != this._previous) {
+               long idleTime = DeviceInfo.getIdleTime();
+               long notificationIdleTime = System.currentTimeMillis() - this._notificationTime;
+               if (1 > idleTime || 1000 > notificationIdleTime) {
+                  Thread.sleep(200);
+               } else {
+                  this._previous = tooltipProvider.hashCode();
+                  Tooltip.show(tooltipProvider);
+               }
+            } else {
+               Tooltip$TooltipProvider var8 = null;
+               synchronized (this) {
+                  super.wait();
+               }
+            }
+         } catch (InterruptedException var7) {
+         }
+      }
    }
 
    public static final synchronized void reset() {
-      throw new RuntimeException("cod2jar: exception table");
+      Tooltip$TooltipPollingThread instance = getInstance();
+      synchronized (instance) {
+         instance._previous = 0;
+         instance._notificationTime = System.currentTimeMillis();
+         instance.notify();
+      }
    }
 
    private final Tooltip$TooltipProvider getTooltipProvider() {

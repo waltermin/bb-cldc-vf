@@ -7,8 +7,8 @@ class Tooltip$PopScreenRunnable implements Runnable {
    private int _invokeId;
    private final Tooltip this$0;
 
-   Tooltip$PopScreenRunnable(Tooltip var1) {
-      this.this$0 = var1;
+   Tooltip$PopScreenRunnable(Tooltip _1) {
+      this.this$0 = _1;
       this._invokeId = -1;
    }
 

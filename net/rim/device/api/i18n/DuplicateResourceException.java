@@ -4,6 +4,6 @@ public class DuplicateResourceException extends RuntimeException {
    public DuplicateResourceException() {
    }
 
-   public DuplicateResourceException(String var1) {
+   public DuplicateResourceException(String s) {
    }
 }

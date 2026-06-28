@@ -17,11 +17,11 @@ public class ApplicationManager {
       throw null;
    }
 
-   public void launch(String var1) {
+   public void launch(String _1) {
       throw null;
    }
 
-   public void lockSystem(boolean var1) {
+   public void lockSystem(boolean _1) {
       throw null;
    }
 
@@ -33,24 +33,24 @@ public class ApplicationManager {
       throw null;
    }
 
-   public final int runApplication(ApplicationDescriptor var1) {
-      int var2 = TraceBack.getCallingModule(0);
-      return this.runApplicationImpl(var1, true, var2);
+   public final int runApplication(ApplicationDescriptor descriptor) {
+      int callingModule = TraceBack.getCallingModule(0);
+      return this.runApplicationImpl(descriptor, true, callingModule);
    }
 
-   protected int runApplicationImpl(ApplicationDescriptor var1, boolean var2, int var3) {
-      return this.runApplication(var1, var2);
+   protected int runApplicationImpl(ApplicationDescriptor descriptor, boolean grabForeground, int callingModule) {
+      return this.runApplication(descriptor, grabForeground);
    }
 
-   public int runApplication(ApplicationDescriptor var1, boolean var2) {
+   public int runApplication(ApplicationDescriptor _1, boolean _2) {
       throw null;
    }
 
-   public boolean scheduleApplication(ApplicationDescriptor var1, long var2, boolean var4) {
+   public boolean scheduleApplication(ApplicationDescriptor _1, long _2, boolean _4) {
       throw null;
    }
 
-   public void requestForeground(int var1) {
+   public void requestForeground(int _1) {
       throw null;
    }
 
@@ -58,11 +58,11 @@ public class ApplicationManager {
       throw null;
    }
 
-   public boolean isConsoleDescriptor(ApplicationDescriptor var1) {
+   public boolean isConsoleDescriptor(ApplicationDescriptor _1) {
       throw null;
    }
 
-   public int getProcessId(ApplicationDescriptor var1) {
+   public int getProcessId(ApplicationDescriptor _1) {
       throw null;
    }
 
@@ -74,25 +74,25 @@ public class ApplicationManager {
       throw null;
    }
 
-   public final boolean postGlobalEvent(long var1) {
-      int var3 = TraceBack.getCallingModule(0);
-      return this.postGlobalEventImpl(var1, 0, 0, null, null, var3);
+   public final boolean postGlobalEvent(long guid) {
+      int callingModule = TraceBack.getCallingModule(0);
+      return this.postGlobalEventImpl(guid, 0, 0, null, null, callingModule);
    }
 
-   public final boolean postGlobalEvent(long var1, int var3, int var4) {
-      int var5 = TraceBack.getCallingModule(0);
-      return this.postGlobalEventImpl(var1, var3, var4, null, null, var5);
+   public final boolean postGlobalEvent(long guid, int data0, int data1) {
+      int callingModule = TraceBack.getCallingModule(0);
+      return this.postGlobalEventImpl(guid, data0, data1, null, null, callingModule);
    }
 
-   public boolean postGlobalEvent(long var1, int var3, int var4, Object var5, Object var6) {
+   public boolean postGlobalEvent(long _1, int _3, int _4, Object _5, Object _6) {
       throw null;
    }
 
-   protected boolean postGlobalEventImpl(long var1, int var3, int var4, Object var5, Object var6, int var7) {
-      return this.postGlobalEvent(var1, var3, var4, var5, var6);
+   protected boolean postGlobalEventImpl(long guid, int data0, int data1, Object object0, Object object1, int callingModule) {
+      return this.postGlobalEvent(guid, data0, data1, object0, object1);
    }
 
-   public boolean postGlobalEvent(int var1, long var2, int var4, int var5, Object var6, Object var7) {
+   public boolean postGlobalEvent(int _1, long _2, int _4, int _5, Object _6, Object _7) {
       throw null;
    }
 
@@ -100,11 +100,11 @@ public class ApplicationManager {
       throw null;
    }
 
-   public void setCurrentPowerOnBehavior(int var1) {
+   public void setCurrentPowerOnBehavior(int _1) {
       throw null;
    }
 
-   public long getNextAlarm(int var1) {
+   public long getNextAlarm(int _1) {
       throw null;
    }
 

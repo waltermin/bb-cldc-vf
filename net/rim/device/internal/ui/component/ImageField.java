@@ -25,13 +25,13 @@ public class ImageField extends Field implements DrawStyle {
       this.setTag(TAG);
    }
 
-   public ImageField(long var1) {
-      super(var1);
+   public ImageField(long style) {
+      super(style);
    }
 
    @Override
-   protected void drawFocus(Graphics var1, boolean var2) {
-      this.drawHighlightRegion(var1, 1, var2, this._x, this._y, this._width, this._height);
+   protected void drawFocus(Graphics graphics, boolean on) {
+      this.drawHighlightRegion(graphics, 1, on, this._x, this._y, this._width, this._height);
    }
 
    public int getImageHeight() {
@@ -61,8 +61,8 @@ public class ImageField extends Field implements DrawStyle {
       if (this._preferredWidth >= 0) {
          return this._image.getWidth(this._preferredWidth, this._preferredHeight);
       } else if (this.isStyle(65536)) {
-         int var1 = this.getFont().getHeight();
-         return this._image != null ? this._image.getWidth(Integer.MAX_VALUE, var1) : var1;
+         int fontHeight = this.getFont().getHeight();
+         return this._image != null ? this._image.getWidth(Integer.MAX_VALUE, fontHeight) : fontHeight;
       } else {
          int var10000 = this.getImageWidth();
          return (this.getStyle() & 51539607552L) != 0 ? var10000 + (this._hSpace << 1) : var10000 + 0;
@@ -70,40 +70,40 @@ public class ImageField extends Field implements DrawStyle {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
-      var1 = Math.min(var1, this.getPreferredWidth());
-      var2 = Math.min(var2, this.getPreferredHeight());
+   protected void layout(int width, int height) {
+      width = Math.min(width, this.getPreferredWidth());
+      height = Math.min(height, this.getPreferredHeight());
       this._x = this._x;
       this._y = this._y;
-      this._width = var1;
-      this._height = var2;
-      this.setExtent(var1, var2);
+      this._width = width;
+      this._height = height;
+      this.setExtent(width, height);
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       if (this._image != null) {
-         this._image.paint(var1, this._x, this._y, this.getWidth(), this.getHeight());
+         this._image.paint(graphics, this._x, this._y, this.getWidth(), this.getHeight());
       }
    }
 
-   public void setImage(Image var1) {
-      this._image = var1;
+   public void setImage(Image image) {
+      this._image = image;
       this.fieldChangeNotify(Integer.MIN_VALUE);
-      Manager var2 = this.getManager();
-      if (var2 != null && var2.isValidLayout()) {
+      Manager manager = this.getManager();
+      if (manager != null && manager.isValidLayout()) {
          this.invalidate();
       }
    }
 
-   public void setPreferredSize(int var1, int var2) {
-      this._preferredWidth = var1;
-      this._preferredHeight = var2;
+   public void setPreferredSize(int preferredWidth, int preferredHeight) {
+      this._preferredWidth = preferredWidth;
+      this._preferredHeight = preferredHeight;
    }
 
-   public void setSpace(int var1, int var2) {
-      this._hSpace = var1;
-      this._vSpace = var2;
+   public void setSpace(int hSpace, int vSpace) {
+      this._hSpace = hSpace;
+      this._vSpace = vSpace;
       this.updateLayout();
    }
 }

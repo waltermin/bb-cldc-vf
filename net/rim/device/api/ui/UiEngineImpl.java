@@ -43,17 +43,17 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    static int _layoutGeneration;
    private static UiEngineImpl _uiEngine;
 
-   public final void addUiEngineListener(UiEngineListener var1) {
+   public final void addUiEngineListener(UiEngineListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._uiEngineListener = ListenerUtilities.addListener(this._uiEngineListener, var1);
+      this._uiEngineListener = ListenerUtilities.addListener(this._uiEngineListener, listener);
    }
 
    final Screen[] getLocalWrappedScreens() {
       return this._screenList.wrapLocalScreens();
    }
 
-   final boolean allowImmediate(Screen var1) {
-      return !this._appInvalid.isEmpty() ? false : this._screenList.isTopmost(var1);
+   final boolean allowImmediate(Screen screen) {
+      return !this._appInvalid.isEmpty() ? false : this._screenList.isTopmost(screen);
    }
 
    public final void doPainting() {
@@ -68,69 +68,69 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
                this._somethingInvalid = false;
             } else {
                this.checkForExtentChanges();
-               boolean var1 = !this._appInvalid.isEmpty();
-               XYRect var2 = Ui.getTmpXYRect();
-               this.gatherInvalidRegions(var2, false, 0);
-               XYRect var3 = Ui.getTmpXYRect();
-               var3.set(this._appInvalid);
-               var3.unionNoEmpty(var2);
-               if (var3.isEmpty()) {
+               boolean hasAppInvalid = !this._appInvalid.isEmpty();
+               XYRect screenInvalid = Ui.getTmpXYRect();
+               this.gatherInvalidRegions(screenInvalid, false, 0);
+               XYRect totalInvalid = Ui.getTmpXYRect();
+               totalInvalid.set(this._appInvalid);
+               totalInvalid.unionNoEmpty(screenInvalid);
+               if (totalInvalid.isEmpty()) {
                   this._somethingInvalid = false;
-                  Ui.returnTmpXYRect(var2);
-                  Ui.returnTmpXYRect(var3);
+                  Ui.returnTmpXYRect(screenInvalid);
+                  Ui.returnTmpXYRect(totalInvalid);
                } else {
-                  int var4 = this._screenList.highestOpaqueRegionContaining(var3);
-                  Ui.returnTmpXYRect(var2);
-                  Ui.returnTmpXYRect(var3);
-                  this.gatherInvalidRegions(this._appInvalid, true, var4);
-                  XYRect var5 = Ui.getTmpXYRect();
-                  XYRect var6 = Ui.getTmpXYRect();
-                  XYRect var7 = Ui.getTmpXYRect();
-                  Screen var8 = null;
-                  XYRect var9 = Ui.getTmpXYRect();
-                  var9.set(this._appInvalid);
+                  int highest = this._screenList.highestOpaqueRegionContaining(totalInvalid);
+                  Ui.returnTmpXYRect(screenInvalid);
+                  Ui.returnTmpXYRect(totalInvalid);
+                  this.gatherInvalidRegions(this._appInvalid, true, highest);
+                  XYRect paintedRect = Ui.getTmpXYRect();
+                  XYRect invalid = Ui.getTmpXYRect();
+                  XYRect tmp = Ui.getTmpXYRect();
+                  Screen screen = null;
+                  XYRect appInvalid = Ui.getTmpXYRect();
+                  appInvalid.set(this._appInvalid);
                   this._appInvalid.set(0, 0, 0, 0);
                   this._somethingInvalid = false;
-                  int var10 = this._screenList.getScreenCount();
+                  int screenCount = this._screenList.getScreenCount();
 
-                  for (int var11 = var4; var11 < var10; var11++) {
-                     if (var11 == -1) {
-                        var8 = this._bottomScreen;
+                  for (int i = highest; i < screenCount; i++) {
+                     if (i == -1) {
+                        screen = this._bottomScreen;
                      } else {
-                        var8 = this._screenList.getScreen(var11);
+                        screen = this._screenList.getScreen(i);
                      }
 
-                     XYRect var12 = this.getScreenExtent(var8);
-                     var6.set(this.getScreenInvalid(var8));
-                     var7.set(var9);
-                     var7.intersect(var12);
-                     var6.unionNoEmpty(var7);
-                     if (this.isScreenTransparent(var8) || this.isScreenTransparentBorder(var8)) {
-                        var7.set(var5);
-                        var7.intersect(var12);
-                        var6.unionNoEmpty(var7);
+                     XYRect extent = this.getScreenExtent(screen);
+                     invalid.set(this.getScreenInvalid(screen));
+                     tmp.set(appInvalid);
+                     tmp.intersect(extent);
+                     invalid.unionNoEmpty(tmp);
+                     if (this.isScreenTransparent(screen) || this.isScreenTransparentBorder(screen)) {
+                        tmp.set(paintedRect);
+                        tmp.intersect(extent);
+                        invalid.unionNoEmpty(tmp);
                      }
 
-                     if (var1 && var11 == var10 - 1) {
+                     if (hasAppInvalid && i == screenCount - 1) {
                         Graphics.resetOverlays();
                      }
 
-                     var6.intersect(this._fullScreenRect);
-                     if (!var6.isEmpty() && this.isScreenDisplayed(var8)) {
-                        var8.doPaintInternal(var6);
-                        var5.unionNoEmpty(var6);
-                        var5.intersect(this._fullScreenRect);
+                     invalid.intersect(this._fullScreenRect);
+                     if (!invalid.isEmpty() && this.isScreenDisplayed(screen)) {
+                        screen.doPaintInternal(invalid);
+                        paintedRect.unionNoEmpty(invalid);
+                        paintedRect.intersect(this._fullScreenRect);
                      }
                   }
 
-                  if (this._somethingInvalid && !var6.isEmpty() && this._app.getMessageQueueSize() == 0) {
+                  if (this._somethingInvalid && !invalid.isEmpty() && this._app.getMessageQueueSize() == 0) {
                      this._app.invokeLater(Ui.nullRunnable);
                   }
 
-                  Ui.returnTmpXYRect(var9);
-                  Ui.returnTmpXYRect(var5);
-                  Ui.returnTmpXYRect(var6);
-                  Ui.returnTmpXYRect(var7);
+                  Ui.returnTmpXYRect(appInvalid);
+                  Ui.returnTmpXYRect(paintedRect);
+                  Ui.returnTmpXYRect(invalid);
+                  Ui.returnTmpXYRect(tmp);
                   this.updateDisplay();
                }
             }
@@ -138,20 +138,20 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       }
    }
 
-   final void invalidateTransparentScreens(Screen var1) {
-      int var2 = this._screenList.getIndex(var1);
-      if (var2 >= 0) {
-         int var3 = this._screenList.getScreenCount();
-         XYRect var4 = this.getScreenExtent(var1);
+   final void invalidateTransparentScreens(Screen modified) {
+      int index = this._screenList.getIndex(modified);
+      if (index >= 0) {
+         int numScreens = this._screenList.getScreenCount();
+         XYRect rect = this.getScreenExtent(modified);
 
-         for (int var5 = var2 + 1; var5 < var3; var5++) {
-            Screen var6 = this._screenList.getScreenInNonEventThread(var5);
-            if (var6 == null) {
+         for (int lv = index + 1; lv < numScreens; lv++) {
+            Screen screen = this._screenList.getScreenInNonEventThread(lv);
+            if (screen == null) {
                return;
             }
 
-            if (this.isInProcess(var6) && this.isScreenTransparent(var6)) {
-               var6.invalidateAll(var4.x - var6.getLeft(), var4.y - var6.getTop(), var4.width, var4.height);
+            if (this.isInProcess(screen) && this.isScreenTransparent(screen)) {
+               screen.invalidateAll(rect.x - screen.getLeft(), rect.y - screen.getTop(), rect.width, rect.height);
             }
          }
       }
@@ -166,25 +166,25 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final void injectLocalWrappedScreens(Screen[] var1) {
-      if (this.isMessageValid(var1)) {
+   final void injectLocalWrappedScreens(Screen[] screens) {
+      if (this.isMessageValid(screens)) {
          this.removeLocalWrappedScreens();
       }
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         UiEngineImpl$ProxyScreen var3 = (UiEngineImpl$ProxyScreen)var1[var2];
-         if (var3.getWrappedScreen().getUiEngineImpl() != null) {
-            if (!var3.getWrappedScreen().getUiEngineImpl().getApplication().isForeground()) {
+      for (int i = 0; i < screens.length; i++) {
+         UiEngineImpl$ProxyScreen next = (UiEngineImpl$ProxyScreen)screens[i];
+         if (next.getWrappedScreen().getUiEngineImpl() != null) {
+            if (!next.getWrappedScreen().getUiEngineImpl().getApplication().isForeground()) {
                return;
             }
 
-            var3.setUiEngine(this);
-            var3.doLayoutNoSynch();
-            this._screenList.push(var3);
-            this._screenList.updateExtent(var3);
-            Screen var4 = var3.getWrappedScreen();
-            var4.invalidateInternal();
-            var4.cleanBackingStore();
+            next.setUiEngine(this);
+            next.doLayoutNoSynch();
+            this._screenList.push(next);
+            this._screenList.updateExtent(next);
+            Screen wrapped = next.getWrappedScreen();
+            wrapped.invalidateInternal();
+            wrapped.cleanBackingStore();
          }
       }
 
@@ -208,11 +208,11 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void notifyUserInputEventListener(int var1) {
-      Object[] var2 = this._userInputEventListener;
-      if (var2 != null) {
-         for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-            ((UserInputEventListener)var2[var3]).onUserInput(var1, 0);
+   final void notifyUserInputEventListener(int device) {
+      Object[] listeners = this._userInputEventListener;
+      if (listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            ((UserInputEventListener)listeners[i]).onUserInput(device, 0);
          }
       }
    }
@@ -223,32 +223,32 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       }
    }
 
-   final void statusDismissedEvent(Screen var1) {
+   final void statusDismissedEvent(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   final void statusDisplayedEvent(Screen var1, boolean var2, boolean var3, boolean var4, XYRect var5) {
+   final void statusDisplayedEvent(Screen screen, boolean inputRequired, boolean redisplay, boolean isTopmost, XYRect revokedInvalid) {
       GlobalScreenManager.assertHaveLock();
-      var1.setPushMethod(1);
-      this._app.invokeLater(new UiEngineImpl$StatusDisplayedHandler(this, var1, var2, var3, var5));
+      screen.setPushMethod(1);
+      this._app.invokeLater(new UiEngineImpl$StatusDisplayedHandler(this, screen, inputRequired, redisplay, revokedInvalid));
    }
 
    final void setSomethingInvalid() {
       this._somethingInvalid = true;
    }
 
-   public final void removeUiEngineListener(UiEngineListener var1) {
+   public final void removeUiEngineListener(UiEngineListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._uiEngineListener = ListenerUtilities.removeListener(this._uiEngineListener, var1);
+      this._uiEngineListener = ListenerUtilities.removeListener(this._uiEngineListener, listener);
    }
 
    final Screen getActiveLocalGlobalScreen() {
       return this._screenList.getTopmostScreen();
    }
 
-   final void appInvalidate(Screen var1) {
-      XYRect var2 = this.getScreenExtent(var1);
-      this.appInvalidate(var2.x, var2.y, var2.width, var2.height);
+   final void appInvalidate(Screen screen) {
+      XYRect extent = this.getScreenExtent(screen);
+      this.appInvalidate(extent.x, extent.y, extent.width, extent.height);
    }
 
    final Screen getGlobalScreen() {
@@ -259,52 +259,56 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       return this._inputScreen;
    }
 
-   final Screen getScreen(int var1) {
-      return this._screenList.getLocalScreen(var1);
+   final Screen getScreen(int index) {
+      return this._screenList.getLocalScreen(index);
    }
 
-   final Screen getScreenAbove(Screen var1) {
+   final Screen getScreenAbove(Screen screen) {
       assertIpcOrDependency();
-      return this._screenList.getLocalScreenAbove(var1);
+      return this._screenList.getLocalScreenAbove(screen);
    }
 
-   final Screen getScreenBelow(Screen var1) {
+   final Screen getScreenBelow(Screen screen) {
       assertIpcOrDependency();
-      return this._screenList.getLocalScreenBelow(var1);
+      return this._screenList.getLocalScreenBelow(screen);
    }
 
-   final boolean isOutOfProcessGlobalScreen(Screen var1) {
-      return var1 != null && var1.isGlobal() && !this.isInProcess(var1);
+   final boolean isOutOfProcessGlobalScreen(Screen screen) {
+      return screen != null && screen.isGlobal() && !this.isInProcess(screen);
    }
 
-   final boolean hasNonNullBackingStore(Screen var1) {
-      return this.isOutOfProcessGlobalScreen(var1) && ((UiEngineImpl$ProxyScreen)var1).getWrappedScreen().getBackingStore() != null;
+   final boolean hasNonNullBackingStore(Screen screen) {
+      return this.isOutOfProcessGlobalScreen(screen) && ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen().getBackingStore() != null;
    }
 
-   final void appInvalidate(int var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void appInvalidate(int x, int y, int width, int height) {
+      synchronized (this._appInvalid) {
+         this._appInvalid.unionNoEmpty(x, y, width, height);
+         this._somethingInvalid = true;
+         this.forceRepaintIfNotOnEventThread();
+      }
    }
 
    final boolean shouldRemoveLocalWrappedScreens() {
-      Screen[] var1 = this._screenList.getHiddenGlobalScreens();
-      int var2 = 0;
+      Screen[] hidden = this._screenList.getHiddenGlobalScreens();
+      int count = 0;
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         Screen var4 = var1[var3];
-         if (this.isInProcess(var4) && var4.acceptsInput() || var4.getUiEngine() == null) {
-            var2++;
+      for (int i = 0; i < hidden.length; i++) {
+         Screen next = hidden[i];
+         if (this.isInProcess(next) && next.acceptsInput() || next.getUiEngine() == null) {
+            count++;
          }
       }
 
-      return this.getLocalInProcessGlobalScreenCount() + var2 - 1 == this.getScreenCount();
+      return this.getLocalInProcessGlobalScreenCount() + count - 1 == this.getScreenCount();
    }
 
    final boolean shouldAddLocalWrappedScreens() {
-      Screen[] var1 = this._screenList.getHiddenGlobalScreens();
+      Screen[] hidden = this._screenList.getHiddenGlobalScreens();
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         Screen var3 = var1[var2];
-         if (this.isInProcess(var3) && var3.acceptsInput()) {
+      for (int i = 0; i < hidden.length; i++) {
+         Screen next = hidden[i];
+         if (this.isInProcess(next) && next.acceptsInput()) {
             return true;
          }
       }
@@ -320,51 +324,51 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final int getScreenIndex(Screen var1) {
-      return this._screenList.getLocalIndex(var1);
+   final int getScreenIndex(Screen screen) {
+      return this._screenList.getLocalIndex(screen);
    }
 
-   final int getLocalGlobalScreenIndex(Screen var1) {
-      return this._screenList.getIndex(var1);
+   final int getLocalGlobalScreenIndex(Screen screen) {
+      return this._screenList.getIndex(screen);
    }
 
    @Override
-   public final void queueStatus(Screen var1, int var2, boolean var3) {
-      if (var1.isPaintController()) {
+   public final void queueStatus(Screen screen, int priority, boolean inputRequired) {
+      if (screen.isPaintController()) {
          GlobalScreenManager.injectLocalWrappedScreens(this);
       }
 
-      GlobalScreenManager.queue(var1, var2, var3, Process.currentProcess().getProcessId(), this);
-      UiInternalListener var4 = GlobalScreenManager.getUiInternalListener();
-      if (var4 != null) {
-         var4.onPushGlobalScreen(this, var1, var2, 1073741826);
+      GlobalScreenManager.queue(screen, priority, inputRequired, Process.currentProcess().getProcessId(), this);
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onPushGlobalScreen(this, screen, priority, 1073741826);
       }
    }
 
    @Override
-   public final void pushGlobalScreen(Screen var1, int var2, boolean var3) {
-      GlobalScreenManager.push(var1, var2, var3, Process.currentProcess().getProcessId(), this);
-      UiInternalListener var4 = GlobalScreenManager.getUiInternalListener();
-      if (var4 != null) {
-         var4.onPushGlobalScreen(this, var1, var2, 1073741824);
+   public final void pushGlobalScreen(Screen screen, int priority, boolean inputRequired) {
+      GlobalScreenManager.push(screen, priority, inputRequired, Process.currentProcess().getProcessId(), this);
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onPushGlobalScreen(this, screen, priority, 1073741824);
       }
    }
 
    @Override
-   public final void pushGlobalScreen(Screen var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void pushGlobalScreen(Screen screen, int priority, int flags) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void dismissStatus(Screen var1) {
-      var1.setDismissing(true);
-      GlobalScreenManager.dismiss(var1, this, true, Process.currentProcess().getProcessId());
-      var1.setDismissing(false);
+   public final void dismissStatus(Screen screen) {
+      screen.setDismissing(true);
+      GlobalScreenManager.dismiss(screen, this, true, Process.currentProcess().getProcessId());
+      screen.setDismissing(false);
    }
 
    @Override
-   public final void processMessage(Object var1, Message var2, boolean var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void processMessage(Object eventLock, Message message, boolean consumed) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -374,21 +378,21 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final int getTopmostGlobalPriority() {
-      for (int var1 = 0; var1 < this._screenList.getScreenCount(); var1++) {
-         Screen var2 = this._screenList.getScreen(var1);
-         if (!var2.isGlobal()) {
+      for (int i = 0; i < this._screenList.getScreenCount(); i++) {
+         Screen next = this._screenList.getScreen(i);
+         if (!next.isGlobal()) {
             break;
          }
 
-         if (this.isInProcess(var2)) {
-            return GlobalScreenManager.getGlobalPriority(var2);
+         if (this.isInProcess(next)) {
+            return GlobalScreenManager.getGlobalPriority(next);
          }
       }
 
-      for (int var3 = 0; var3 < this._screenList.getHiddenGlobalScreens().length; var3++) {
-         Screen var4 = this._screenList.getHiddenGlobalScreens()[var3];
-         if (this.isInProcess(var4)) {
-            return GlobalScreenManager.getGlobalPriority(var4);
+      for (int i = 0; i < this._screenList.getHiddenGlobalScreens().length; i++) {
+         Screen next = this._screenList.getHiddenGlobalScreens()[i];
+         if (this.isInProcess(next)) {
+            return GlobalScreenManager.getGlobalPriority(next);
          }
       }
 
@@ -396,8 +400,8 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -411,25 +415,42 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void outOfHolster() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._app.isForeground()) {
+         this.notifyVisibleScreens(true);
+         if (this._inputScreen != null && !this._inputScreen.equals(GlobalScreenManager.getScreenWithFocus())) {
+            UiEngineImpl$FocusNotifier focusNotifier = null;
+            synchronized (GlobalScreenManager.getLock()) {
+               this._inputScreen = null;
+               focusNotifier = this.setInputScreen();
+            }
+
+            if (focusNotifier != null) {
+               focusNotifier.run();
+            }
+
+            this.repaint();
+         }
+      }
+
+      this.notifyVisibleGlobalScreens(true);
    }
 
    @Override
    public final boolean isTopmostGlobal() {
-      for (int var1 = 0; var1 < this._screenList.getScreenCount(); var1++) {
-         Screen var2 = this._screenList.getScreen(var1);
-         if (!var2.isGlobal()) {
+      for (int i = 0; i < this._screenList.getScreenCount(); i++) {
+         Screen next = this._screenList.getScreen(i);
+         if (!next.isGlobal()) {
             break;
          }
 
-         if (this.isInProcess(var2)) {
+         if (this.isInProcess(next)) {
             return true;
          }
       }
 
-      for (int var3 = 0; var3 < this._screenList.getHiddenGlobalScreens().length; var3++) {
-         Screen var4 = this._screenList.getHiddenGlobalScreens()[var3];
-         if (this.isInProcess(var4)) {
+      for (int i = 0; i < this._screenList.getHiddenGlobalScreens().length; i++) {
+         Screen next = this._screenList.getHiddenGlobalScreens()[i];
+         if (this.isInProcess(next)) {
             return true;
          }
       }
@@ -444,21 +465,21 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void removeUserInputEventListener(UserInputEventListener var1) {
+   public final void removeUserInputEventListener(UserInputEventListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._userInputEventListener = ListenerUtilities.removeListener(this._userInputEventListener, var1);
+      this._userInputEventListener = ListenerUtilities.removeListener(this._userInputEventListener, listener);
    }
 
    @Override
    public final void relayout() {
-      int var2 = this._screenList.getScreenCount();
+      int numScreens = this._screenList.getScreenCount();
       _layoutGeneration++;
 
-      for (int var3 = 0; var3 < var2; var3++) {
-         Screen var1 = this._screenList.getScreen(var3);
-         if (this.isInProcess(var1)) {
-            var1.invalidateLayout0();
-            var1.doLayout();
+      for (int i = 0; i < numScreens; i++) {
+         Screen screen = this._screenList.getScreen(i);
+         if (this.isInProcess(screen)) {
+            screen.invalidateLayout0();
+            screen.doLayout();
          }
       }
 
@@ -473,8 +494,8 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void popScreen(Screen var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void popScreen(Screen screen) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -494,15 +515,15 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void batteryStatusChange(int var1) {
+   public final void batteryStatusChange(int status) {
    }
 
    @Override
-   public final void powerOffRequested(int var1) {
+   public final void powerOffRequested(int reason) {
    }
 
    @Override
-   public final void cradleMismatch(boolean var1) {
+   public final void cradleMismatch(boolean mismatch) {
    }
 
    @Override
@@ -511,37 +532,37 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void backlightStateChange(boolean var1) {
-      boolean var2 = var1;
+   public final void backlightStateChange(boolean on) {
+      boolean val = on;
       if ((Display.getProperties() & 16384) != 0) {
-         if (var2 && !this._app.isForeground()) {
-            var2 = false;
+         if (val && !this._app.isForeground()) {
+            val = false;
          }
 
-         this.notifyVisibleScreens(var2);
-         this.notifyVisibleGlobalScreens(var1);
+         this.notifyVisibleScreens(val);
+         this.notifyVisibleGlobalScreens(on);
       }
    }
 
    @Override
-   public final void usbConnectionStateChange(int var1) {
+   public final void usbConnectionStateChange(int state) {
    }
 
    @Override
-   public final void pushModalScreen(Screen var1) {
+   public final void pushModalScreen(Screen screen) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public final void pushScreen(Screen var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void pushScreen(Screen screen) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public final void updateDisplay() {
-      UiInternalListener var1 = GlobalScreenManager.getUiInternalListener();
-      if (var1 != null) {
-         var1.onUpdateDisplay(this);
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onUpdateDisplay(this);
       }
 
       if (this._screenList.getScreenCount() > 0) {
@@ -555,14 +576,14 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final void setStylusPos(int var1, int var2) {
-      this._stylusX = var1;
-      this._stylusY = var2;
+   public final void setStylusPos(int x, int y) {
+      this._stylusX = x;
+      this._stylusY = y;
    }
 
    @Override
-   public final void suspendPainting(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final void suspendPainting(boolean suspend) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -581,14 +602,14 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    @Override
-   public final int getGlobalPriority(Screen var1) {
-      return GlobalScreenManager.getGlobalPriority(var1);
+   public final int getGlobalPriority(Screen screen) {
+      return GlobalScreenManager.getGlobalPriority(screen);
    }
 
    @Override
-   public final void addUserInputEventListener(UserInputEventListener var1) {
+   public final void addUserInputEventListener(UserInputEventListener listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._userInputEventListener = ListenerUtilities.addListener(this._userInputEventListener, var1);
+      this._userInputEventListener = ListenerUtilities.addListener(this._userInputEventListener, listener);
    }
 
    static final Screen getTopmostScreen() {
@@ -596,51 +617,51 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final UiEngineImpl$FocusNotifier setInputScreen() {
-      UiEngineImpl$FocusNotifier var1 = null;
+      UiEngineImpl$FocusNotifier focusNotifier = null;
       GlobalScreenManager.assertHaveLock();
-      Screen var2 = null;
+      Screen newInputScreen = null;
 
-      for (int var3 = this._screenList.getScreenCount() - 1; var3 >= 0; var3--) {
-         Screen var4 = this._screenList.getScreen(var3);
-         if (var4.acceptsInput()) {
-            var2 = var4;
+      for (int i = this._screenList.getScreenCount() - 1; i >= 0; i--) {
+         Screen screen = this._screenList.getScreen(i);
+         if (screen.acceptsInput()) {
+            newInputScreen = screen;
             break;
          }
       }
 
-      if (var2 != null && !this.isInProcess(var2)) {
-         var2 = null;
+      if (newInputScreen != null && !this.isInProcess(newInputScreen)) {
+         newInputScreen = null;
       }
 
       if (!this._app.isForeground()
          && (!DeviceInfo.isInHolster() || !ApplicationManager.getApplicationManager().isInHolsterInputProcess())
-         && var2 != null
-         && !var2.isGlobal()) {
-         var2 = null;
+         && newInputScreen != null
+         && !newInputScreen.isGlobal()) {
+         newInputScreen = null;
       }
 
-      if (this._inputScreen != var2) {
-         var1 = new UiEngineImpl$FocusNotifier(this._inputScreen, var2, this.getApplication());
-         UiInternalListener var6 = GlobalScreenManager.getUiInternalListener();
-         if (var6 != null) {
-            var6.onFocus(this, this._inputScreen, var2);
+      if (this._inputScreen != newInputScreen) {
+         focusNotifier = new UiEngineImpl$FocusNotifier(this._inputScreen, newInputScreen, this.getApplication());
+         UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+         if (listener != null) {
+            listener.onFocus(this, this._inputScreen, newInputScreen);
          }
 
-         Object[] var7 = this._uiEngineListener;
-         if (var7 != null) {
-            for (int var5 = var7.length - 1; var5 >= 0; var5--) {
-               ((UiEngineListener)var7[var5]).onFocus(this._inputScreen, var2);
+         Object[] listeners = this._uiEngineListener;
+         if (listeners != null) {
+            for (int i = listeners.length - 1; i >= 0; i--) {
+               ((UiEngineListener)listeners[i]).onFocus(this._inputScreen, newInputScreen);
             }
          }
 
-         this._inputScreen = var2;
-         Screen var8 = GlobalScreenManager.getScreenWithFocus();
-         if (var2 != null || var8 != null && var8.getUiEngine() == this) {
-            GlobalScreenManager.setScreenWithFocus(var2);
+         this._inputScreen = newInputScreen;
+         Screen oldScreenWithFocus = GlobalScreenManager.getScreenWithFocus();
+         if (newInputScreen != null || oldScreenWithFocus != null && oldScreenWithFocus.getUiEngine() == this) {
+            GlobalScreenManager.setScreenWithFocus(newInputScreen);
          }
       }
 
-      return var1;
+      return focusNotifier;
    }
 
    private final int getLocalInProcessGlobalScreenCount() {
@@ -648,162 +669,162 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final void notifyNewlyHiddenGlobalScreens() {
-      Screen[] var1 = this._screenList.getHiddenGlobalScreens();
+      Screen[] hiddenGlobals = this._screenList.getHiddenGlobalScreens();
 
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         var1[var2].doPaintabilityWalk(false);
-         var1[var2].doVisibilityWalk(false);
+      for (int i = 0; i < hiddenGlobals.length; i++) {
+         hiddenGlobals[i].doPaintabilityWalk(false);
+         hiddenGlobals[i].doVisibilityWalk(false);
       }
    }
 
-   private final void notifyVisibleGlobalScreens(boolean var1) {
-      if (var1 && (DeviceInfo.isInHolster() || !Backlight.isEnabled() && (Display.getProperties() & 16384) != 0)) {
-         var1 = false;
+   private final void notifyVisibleGlobalScreens(boolean visible) {
+      if (visible && (DeviceInfo.isInHolster() || !Backlight.isEnabled() && (Display.getProperties() & 16384) != 0)) {
+         visible = false;
       }
 
-      int var2 = this._screenList.getScreenCount() - 1;
-      if (var1) {
-         XYRect var3 = new XYRect();
-         int var4 = Display.getWidth();
-         int var5 = Display.getHeight();
+      int lv = this._screenList.getScreenCount() - 1;
+      if (visible) {
+         XYRect rect = new XYRect();
+         int screenWidth = Display.getWidth();
+         int screenHeight = Display.getHeight();
 
-         while (var2 >= 0) {
-            Screen var6 = this._screenList.getScreen(var2);
-            if (var6.isGlobal()) {
-               var6.doVisibilityWalk(var1);
-               this.getScreenExtent(var6, var3);
-               if (!this.isScreenTransparent(var6) && var3.contains(0, 0, var4, var5)) {
-                  var1 = false;
-                  var2--;
+         while (lv >= 0) {
+            Screen screen = this._screenList.getScreen(lv);
+            if (screen.isGlobal()) {
+               screen.doVisibilityWalk(visible);
+               this.getScreenExtent(screen, rect);
+               if (!this.isScreenTransparent(screen) && rect.contains(0, 0, screenWidth, screenHeight)) {
+                  visible = false;
+                  lv--;
                   break;
                }
             }
 
-            var2--;
+            lv--;
          }
       }
 
-      for (; var2 >= 0; var2--) {
-         Screen var7 = this._screenList.getScreen(var2);
-         if (var7.isGlobal()) {
-            var7.doVisibilityWalk(var1);
+      for (; lv >= 0; lv--) {
+         Screen screen = this._screenList.getScreen(lv);
+         if (screen.isGlobal()) {
+            screen.doVisibilityWalk(visible);
          }
       }
    }
 
-   private final void notifyPaintableScreens(boolean var1) {
-      int var2 = this._screenList.getScreenCount() - 1;
-      if (var1) {
-         XYRect var3 = new XYRect();
-         int var4 = Display.getWidth();
-         int var5 = Display.getHeight();
+   private final void notifyPaintableScreens(boolean paintable) {
+      int lv = this._screenList.getScreenCount() - 1;
+      if (paintable) {
+         XYRect rect = new XYRect();
+         int screenWidth = Display.getWidth();
+         int screenHeight = Display.getHeight();
 
-         while (var2 >= 0) {
-            Screen var6 = this._screenList.getScreen(var2);
-            var6.doPaintabilityWalk(var1);
-            this.getScreenExtent(var6, var3);
-            if (!this.isScreenTransparent(var6) && var3.contains(0, 0, var4, var5)) {
-               var1 = false;
-               var2--;
+         while (lv >= 0) {
+            Screen screen = this._screenList.getScreen(lv);
+            screen.doPaintabilityWalk(paintable);
+            this.getScreenExtent(screen, rect);
+            if (!this.isScreenTransparent(screen) && rect.contains(0, 0, screenWidth, screenHeight)) {
+               paintable = false;
+               lv--;
                break;
             }
 
-            var2--;
+            lv--;
          }
       }
 
-      while (var2 >= 0) {
-         this._screenList.getScreen(var2).doPaintabilityWalk(var1);
-         var2--;
+      while (lv >= 0) {
+         this._screenList.getScreen(lv).doPaintabilityWalk(paintable);
+         lv--;
       }
 
-      this._bottomScreen.doPaintabilityWalk(var1);
+      this._bottomScreen.doPaintabilityWalk(paintable);
    }
 
-   private final void notifyPaintableGlobalScreens(boolean var1) {
-      int var2 = this._screenList.getScreenCount() - 1;
-      if (var1) {
-         XYRect var3 = new XYRect();
-         int var4 = Display.getWidth();
-         int var5 = Display.getHeight();
+   private final void notifyPaintableGlobalScreens(boolean paintable) {
+      int lv = this._screenList.getScreenCount() - 1;
+      if (paintable) {
+         XYRect rect = new XYRect();
+         int screenWidth = Display.getWidth();
+         int screenHeight = Display.getHeight();
 
-         while (var2 >= 0) {
-            Screen var6 = this._screenList.getScreen(var2);
-            if (var6.isGlobal()) {
-               var6.doPaintabilityWalk(var1);
-               this.getScreenExtent(var6, var3);
-               if (!this.isScreenTransparent(var6) && var3.contains(0, 0, var4, var5)) {
-                  var1 = false;
-                  var2--;
+         while (lv >= 0) {
+            Screen screen = this._screenList.getScreen(lv);
+            if (screen.isGlobal()) {
+               screen.doPaintabilityWalk(paintable);
+               this.getScreenExtent(screen, rect);
+               if (!this.isScreenTransparent(screen) && rect.contains(0, 0, screenWidth, screenHeight)) {
+                  paintable = false;
+                  lv--;
                   break;
                }
             }
 
-            var2--;
+            lv--;
          }
       }
 
-      for (; var2 >= 0; var2--) {
-         Screen var7 = this._screenList.getScreen(var2);
-         if (var7.isGlobal()) {
-            var7.doPaintabilityWalk(var1);
+      for (; lv >= 0; lv--) {
+         Screen screen = this._screenList.getScreen(lv);
+         if (screen.isGlobal()) {
+            screen.doPaintabilityWalk(paintable);
          }
       }
    }
 
-   private final void notifyPaintableWrappedLocalScreens(boolean var1) {
-      int var2 = this._screenList.getScreenCount() - 1;
-      if (var1) {
-         XYRect var3 = new XYRect();
-         int var4 = Display.getWidth();
-         int var5 = Display.getHeight();
+   private final void notifyPaintableWrappedLocalScreens(boolean paintable) {
+      int lv = this._screenList.getScreenCount() - 1;
+      if (paintable) {
+         XYRect rect = new XYRect();
+         int screenWidth = Display.getWidth();
+         int screenHeight = Display.getHeight();
 
-         while (var2 >= 0) {
-            Screen var6 = this._screenList.getScreen(var2);
-            if (!var6.isGlobal() && var6 instanceof UiEngineImpl$ProxyScreen) {
-               var6.doPaintabilityWalk(var1);
-               this.getScreenExtent(var6, var3);
-               if (!this.isScreenTransparent(var6) && var3.contains(0, 0, var4, var5)) {
-                  var1 = false;
-                  var2--;
+         while (lv >= 0) {
+            Screen screen = this._screenList.getScreen(lv);
+            if (!screen.isGlobal() && screen instanceof UiEngineImpl$ProxyScreen) {
+               screen.doPaintabilityWalk(paintable);
+               this.getScreenExtent(screen, rect);
+               if (!this.isScreenTransparent(screen) && rect.contains(0, 0, screenWidth, screenHeight)) {
+                  paintable = false;
+                  lv--;
                   break;
                }
             }
 
-            var2--;
+            lv--;
          }
       }
 
-      for (; var2 >= 0; var2--) {
-         Screen var7 = this._screenList.getScreen(var2);
-         if (var7.isGlobal() && var7 instanceof UiEngineImpl$ProxyScreen) {
-            var7.doPaintabilityWalk(var1);
+      for (; lv >= 0; lv--) {
+         Screen screen = this._screenList.getScreen(lv);
+         if (screen.isGlobal() && screen instanceof UiEngineImpl$ProxyScreen) {
+            screen.doPaintabilityWalk(paintable);
          }
       }
    }
 
-   private final void releaseBackingStore(Screen var1) {
-      BackingStore var2 = var1.getBackingStore();
-      XYRect var3 = var1.getExtent();
-      if (var2 != null && this._fullScreenRect.equals(var3)) {
-         if (!var1.isTransparent() && !var1.isTransparentBorder()) {
-            GlobalScreenManager.returnBackingStore(var2);
+   private final void releaseBackingStore(Screen screen) {
+      BackingStore backingStore = screen.getBackingStore();
+      XYRect extent = screen.getExtent();
+      if (backingStore != null && this._fullScreenRect.equals(extent)) {
+         if (!screen.isTransparent() && !screen.isTransparentBorder()) {
+            GlobalScreenManager.returnBackingStore(backingStore);
          } else {
-            GlobalScreenManager.returnTransparentBackingStore(var2);
+            GlobalScreenManager.returnTransparentBackingStore(backingStore);
          }
 
-         var1.clearBackingStore();
+         screen.clearBackingStore();
       }
    }
 
-   private final void keyNotHandled(Message var1) {
-      int var2 = var1.getData0() >> 16;
-      if (Arrays.getIndex(UnhandledGlobalKeyListener.GLOBAL_KEYS, var2) != -1) {
-         var1.setDevice(56);
-         var1.post();
+   private final void keyNotHandled(Message message) {
+      int key = message.getData0() >> 16;
+      if (Arrays.getIndex(UnhandledGlobalKeyListener.GLOBAL_KEYS, key) != -1) {
+         message.setDevice(56);
+         message.post();
       } else {
-         if (var2 == 261) {
-            Keypad.changeShiftState(var1.getEvent());
+         if (key == 261) {
+            Keypad.changeShiftState(message.getEvent());
          }
       }
    }
@@ -812,93 +833,145 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final void globalScreenEventCommon(int var1, XYRect var2, Integer var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void globalScreenEventCommon(int type, XYRect appInvalid, Integer processId) {
+      if (processId != null && processId == Process.currentProcess().getProcessId()) {
+         UiEngineImpl$FocusNotifier focusNotifier = null;
+         synchronized (GlobalScreenManager.getLock()) {
+            focusNotifier = this.setInputScreen();
+         }
+
+         if (focusNotifier != null) {
+            focusNotifier.run();
+         }
+
+         this.globalScreenEventPainting(type, appInvalid);
+      } else {
+         Screen oldTopmost = this._screenList.getTopmostScreen();
+         synchronized (GlobalScreenManager.getLock()) {
+            this._screenList.copyGlobalScreens();
+         }
+
+         Screen newTopmost = this._screenList.getTopmostScreen();
+         UiEngineImpl$FocusNotifier focusNotifier = null;
+         synchronized (GlobalScreenManager.getLock()) {
+            focusNotifier = this.setInputScreen();
+         }
+
+         if (type == 1) {
+            if ((this._app.isForeground() || oldTopmost != null && oldTopmost.isGlobal())
+               && oldTopmost != null
+               && oldTopmost != newTopmost
+               && oldTopmost.getUiEngine() != null
+               && oldTopmost.isUiEngineAttached()) {
+               oldTopmost.callOnObscured();
+            }
+
+            if (focusNotifier != null) {
+               focusNotifier.setEnableFocusNotificationForIM(true);
+            }
+         } else if (type == 2) {
+            if ((this._app.isForeground() || newTopmost != null && newTopmost.isGlobal()) && newTopmost != null && oldTopmost != newTopmost) {
+               newTopmost.callOnExposed();
+            }
+
+            if (focusNotifier != null) {
+               focusNotifier.setEnableFocusNotificationForIM(true);
+            }
+
+            this.notifyNewlyExposedGlobalScreens();
+         }
+
+         if (focusNotifier != null) {
+            focusNotifier.run();
+         }
+
+         this.globalScreenEventPainting(type, appInvalid);
+      }
    }
 
    private final void applyTheme() {
-      int var1 = this._screenList.getScreenCount();
+      int numScreens = this._screenList.getScreenCount();
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         Screen var3 = this._screenList.getScreen(var2);
-         if (this.isInProcess(var3)) {
-            var3.applyTheme();
+      for (int lv = 0; lv < numScreens; lv++) {
+         Screen screen = this._screenList.getScreen(lv);
+         if (this.isInProcess(screen)) {
+            screen.applyTheme();
          }
       }
    }
 
    private final void layoutOutOfProcessGlobalScreens() {
-      int var1 = this._screenList.getScreenCount();
+      int screenCount = this._screenList.getScreenCount();
 
-      for (int var2 = this._screenList.getLocalScreenCount(); var2 < var1; var2++) {
-         Screen var3 = this._screenList.getScreen(var2);
-         if (var3 instanceof UiEngineImpl$ProxyScreen) {
-            var3.invalidateLayout0();
-            var3.doLayout();
+      for (int i = this._screenList.getLocalScreenCount(); i < screenCount; i++) {
+         Screen globalScreen = this._screenList.getScreen(i);
+         if (globalScreen instanceof UiEngineImpl$ProxyScreen) {
+            globalScreen.invalidateLayout0();
+            globalScreen.doLayout();
          }
       }
    }
 
    private final void paintWrappedLocalScreens() {
-      boolean var1 = false;
-      boolean var2 = false;
+      boolean screenChanged = false;
+      boolean sendNotification = false;
 
-      for (int var3 = this._screenList.getLocalScreenCount() - 1; var3 >= 0; var3--) {
-         Screen var4 = this._screenList.getScreen(var3);
-         XYRect var5 = var4.getExtent();
-         XYRect var6 = this._screenList.getExtent(var3);
-         if (!var5.equals(var6)) {
-            var1 = true;
-            var4.invalidateLayout0();
-            var4.doLayout();
-            var4.invalidateInternal();
-            var4.clearBackingStore();
-            var6.set(var5);
+      for (int i = this._screenList.getLocalScreenCount() - 1; i >= 0; i--) {
+         Screen local = this._screenList.getScreen(i);
+         XYRect extent = local.getExtent();
+         XYRect cachedExtent = this._screenList.getExtent(i);
+         if (!extent.equals(cachedExtent)) {
+            screenChanged = true;
+            local.invalidateLayout0();
+            local.doLayout();
+            local.invalidateInternal();
+            local.clearBackingStore();
+            cachedExtent.set(extent);
          }
 
-         if (!this._appInvalid.isEmpty() && var4.getExtent().intersects(this._appInvalid)) {
-            var1 = true;
-            var4.invalidateInternal(this._appInvalid.x, this._appInvalid.y, this._appInvalid.width, this._appInvalid.height);
-            if (var4.getContentRect().contains(this._appInvalid)) {
+         if (!this._appInvalid.isEmpty() && local.getExtent().intersects(this._appInvalid)) {
+            screenChanged = true;
+            local.invalidateInternal(this._appInvalid.x, this._appInvalid.y, this._appInvalid.width, this._appInvalid.height);
+            if (local.getContentRect().contains(this._appInvalid)) {
                this._appInvalid.set(0, 0, 0, 0);
             }
          }
 
-         if (!var4.getInvalid().isEmpty()) {
-            XYRect var7 = Ui.getTmpXYRect();
-            var7.set(var4.getInvalid());
-            var7.intersect(var4.getContentRect());
-            if (this._screenList.highestOpaqueRegionContaining(var7) == var3 || this._screenList.highestOpaqueRegionContaining(var7) == -1) {
-               var1 = true;
+         if (!local.getInvalid().isEmpty()) {
+            XYRect tmp = Ui.getTmpXYRect();
+            tmp.set(local.getInvalid());
+            tmp.intersect(local.getContentRect());
+            if (this._screenList.highestOpaqueRegionContaining(tmp) == i || this._screenList.highestOpaqueRegionContaining(tmp) == -1) {
+               screenChanged = true;
             }
 
-            Ui.returnTmpXYRect(var7);
+            Ui.returnTmpXYRect(tmp);
          }
 
-         if (var1) {
-            var2 = true;
-            var4.doPaint0(true, true);
-            var1 = false;
+         if (screenChanged) {
+            sendNotification = true;
+            local.doPaint0(true, true);
+            screenChanged = false;
          }
       }
 
-      if (var2 && GlobalScreenManager.getPaintControlEngine().getApplication().getMessageQueueSize() < 5) {
+      if (sendNotification && GlobalScreenManager.getPaintControlEngine().getApplication().getMessageQueueSize() < 5) {
          RIMGlobalMessagePoster.postGlobalEvent(
             GlobalScreenManager.getPaintControlEngine().getApplication().getProcessId(), 1286649819098130486L, 3, 0, null, null
          );
       }
    }
 
-   private final boolean isInProcess(Screen var1) {
-      return var1 instanceof UiEngineImpl$ProxyScreen ? false : var1 != null && this != null && this.equals(var1.getUiEngineImpl());
+   private final boolean isInProcess(Screen screen) {
+      return screen instanceof UiEngineImpl$ProxyScreen ? false : screen != null && this != null && this.equals(screen.getUiEngineImpl());
    }
 
-   private final boolean isScreenDisplayed(Screen var1) {
+   private final boolean isScreenDisplayed(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    static final UiEngineImpl getUiEngine() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final void assertIpcOrDependency() {
@@ -906,96 +979,96 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final void applyFont() {
-      int var1 = this._screenList.getScreenCount();
+      int numScreens = this._screenList.getScreenCount();
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         Screen var3 = this._screenList.getScreen(var2);
-         if (this.isInProcess(var3)) {
-            var3.applyFont();
+      for (int lv = 0; lv < numScreens; lv++) {
+         Screen screen = this._screenList.getScreen(lv);
+         if (this.isInProcess(screen)) {
+            screen.applyFont();
          }
       }
    }
 
-   private final XYRect getScreenExtent(Screen var1) {
+   private final XYRect getScreenExtent(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final void getScreenExtent(Screen var1, XYRect var2) {
+   private final void getScreenExtent(Screen screen, XYRect extent) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final XYRect getScreenInvalid(Screen var1) {
+   private final XYRect getScreenInvalid(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final boolean isScreenTransparent(Screen var1) {
+   private final boolean isScreenTransparent(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final boolean isScreenTransparentBorder(Screen var1) {
+   private final boolean isScreenTransparentBorder(Screen screen) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   private final void notifyVisibleScreens(boolean var1) {
-      if (var1 && (DeviceInfo.isInHolster() || !Backlight.isEnabled() && (Display.getProperties() & 16384) != 0)) {
-         var1 = false;
+   private final void notifyVisibleScreens(boolean visible) {
+      if (visible && (DeviceInfo.isInHolster() || !Backlight.isEnabled() && (Display.getProperties() & 16384) != 0)) {
+         visible = false;
       }
 
-      int var2 = this._screenList.getScreenCount() - 1;
-      if (var1) {
-         XYRect var3 = new XYRect();
-         int var4 = Display.getWidth();
-         int var5 = Display.getHeight();
+      int lv = this._screenList.getScreenCount() - 1;
+      if (visible) {
+         XYRect rect = new XYRect();
+         int screenWidth = Display.getWidth();
+         int screenHeight = Display.getHeight();
 
-         while (var2 >= 0) {
-            Screen var6 = this._screenList.getScreen(var2);
-            var6.doVisibilityWalk(var1);
-            this.getScreenExtent(var6, var3);
-            if (!this.isScreenTransparent(var6) && var3.contains(0, 0, var4, var5)) {
-               var1 = false;
-               var2--;
+         while (lv >= 0) {
+            Screen screen = this._screenList.getScreen(lv);
+            screen.doVisibilityWalk(visible);
+            this.getScreenExtent(screen, rect);
+            if (!this.isScreenTransparent(screen) && rect.contains(0, 0, screenWidth, screenHeight)) {
+               visible = false;
+               lv--;
                break;
             }
 
-            var2--;
+            lv--;
          }
       }
 
-      while (var2 >= 0) {
-         this._screenList.getScreen(var2).doVisibilityWalk(var1);
-         var2--;
+      while (lv >= 0) {
+         this._screenList.getScreen(lv).doVisibilityWalk(visible);
+         lv--;
       }
    }
 
    private final void paintInProcessGlobalScreens() {
-      boolean var1 = false;
-      boolean var2 = false;
-      int var3 = this._screenList.getScreenCount();
+      boolean screenChanged = false;
+      boolean screenExtentChanged = false;
+      int screenCount = this._screenList.getScreenCount();
 
-      for (int var4 = this._screenList.getLocalScreenCount(); var4 < var3; var4++) {
-         Screen var5 = this._screenList.getScreen(var4);
-         if (this.isInProcess(var5)) {
-            XYRect var6 = var5.getExtent();
-            XYRect var7 = this._screenList.getExtent(var4);
-            if (!var6.equals(var7) || var5.isClearBackingStore()) {
-               var2 = true;
-               var5.invalidateLayout0();
-               var5.doLayout();
-               var5.invalidate();
-               var5.clearBackingStore();
-               var7.set(var6);
-               var5.setClearBackingStore(false);
+      for (int i = this._screenList.getLocalScreenCount(); i < screenCount; i++) {
+         Screen globalScreen = this._screenList.getScreen(i);
+         if (this.isInProcess(globalScreen)) {
+            XYRect extent = globalScreen.getExtent();
+            XYRect cachedExtent = this._screenList.getExtent(i);
+            if (!extent.equals(cachedExtent) || globalScreen.isClearBackingStore()) {
+               screenExtentChanged = true;
+               globalScreen.invalidateLayout0();
+               globalScreen.doLayout();
+               globalScreen.invalidate();
+               globalScreen.clearBackingStore();
+               cachedExtent.set(extent);
+               globalScreen.setClearBackingStore(false);
             }
 
-            if (var2 || !var5.getInvalid().isEmpty()) {
-               var1 = true;
-               var5.doPaint0(true, true);
+            if (screenExtentChanged || !globalScreen.getInvalid().isEmpty()) {
+               screenChanged = true;
+               globalScreen.doPaint0(true, true);
             }
          }
       }
 
-      if (var1) {
-         this._globalRepaintNotifier.post(var2);
+      if (screenChanged) {
+         this._globalRepaintNotifier.post(screenExtentChanged);
       }
    }
 
@@ -1003,18 +1076,18 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       return _uiEngine.getActiveLocalGlobalScreen();
    }
 
-   private final void globalScreenEventPainting(int var1, XYRect var2) {
+   private final void globalScreenEventPainting(int type, XYRect appInvalid) {
       if (this._app.isForeground()) {
          this.notifyPaintableScreens(true);
          this.notifyVisibleScreens(true);
-         if (var1 == 1) {
+         if (type == 1) {
             this.notifyNewlyHiddenGlobalScreens();
-         } else if (var1 == 2) {
+         } else if (type == 2) {
             this.notifyNewlyExposedGlobalScreens();
          }
 
-         if (var2 != null) {
-            this._appInvalid.unionNoEmpty(var2);
+         if (appInvalid != null) {
+            this._appInvalid.unionNoEmpty(appInvalid);
             this._somethingInvalid = true;
          }
 
@@ -1023,8 +1096,8 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
       if (this.equals(GlobalScreenManager.getPaintControlEngine()) && !this._app.isForeground()) {
          this.notifyPaintableScreens(true);
-         if (var2 != null) {
-            this._appInvalid.unionNoEmpty(var2);
+         if (appInvalid != null) {
+            this._appInvalid.unionNoEmpty(appInvalid);
          }
 
          this._somethingInvalid = true;
@@ -1032,76 +1105,76 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
       }
    }
 
-   private final boolean isMessageValid(Screen[] var1) {
-      if (var1.length == 0) {
+   private final boolean isMessageValid(Screen[] screens) {
+      if (screens.length == 0) {
          return false;
       }
 
-      UiEngineImpl$ProxyScreen var2 = (UiEngineImpl$ProxyScreen)var1[0];
-      UiEngineImpl var3 = var2.getWrappedScreen().getUiEngineImpl();
-      return var3 != null && var3.getApplication().isForeground();
+      UiEngineImpl$ProxyScreen next = (UiEngineImpl$ProxyScreen)screens[0];
+      UiEngineImpl engine = next.getWrappedScreen().getUiEngineImpl();
+      return engine != null && engine.getApplication().isForeground();
    }
 
    private final void checkForExtentChanges() {
-      int var1 = this._screenList.getScreenCount();
+      int screenCount = this._screenList.getScreenCount();
 
-      for (int var2 = 0; var2 < var1; var2++) {
-         Screen var3 = this._screenList.getScreen(var2);
-         XYRect var4 = this.getScreenExtent(var3);
-         XYRect var5 = this._screenList.getExtent(var2);
-         if (!var4.equals(var5)) {
-            this._appInvalid.unionNoEmpty(var4);
-            this._appInvalid.unionNoEmpty(var5);
-            this._screenList.updateExtent(var3);
+      for (int i = 0; i < screenCount; i++) {
+         Screen screen = this._screenList.getScreen(i);
+         XYRect extent = this.getScreenExtent(screen);
+         XYRect cached = this._screenList.getExtent(i);
+         if (!extent.equals(cached)) {
+            this._appInvalid.unionNoEmpty(extent);
+            this._appInvalid.unionNoEmpty(cached);
+            this._screenList.updateExtent(screen);
          }
       }
 
       this._appInvalid.intersect(this._fullScreenRect);
    }
 
-   private final void gatherInvalidRegions(XYRect var1, boolean var2, int var3) {
-      int var4 = this._screenList.getScreenCount();
-      boolean var5 = false;
-      XYRect var6 = Ui.getTmpXYRect();
-      var6.set(var1);
+   private final void gatherInvalidRegions(XYRect accumulator, boolean transparentOnly, int startIndex) {
+      int screenCount = this._screenList.getScreenCount();
+      boolean includeTransparentBorder = false;
+      XYRect appInvalidIn = Ui.getTmpXYRect();
+      appInvalidIn.set(accumulator);
 
-      for (int var7 = var3; var7 < var4; var7++) {
-         if (var7 != -1) {
-            Screen var8 = this._screenList.getScreen(var7);
-            XYRect var9 = Ui.getTmpXYRect();
-            var9.set(this.getScreenInvalid(var8));
-            if (this.isScreenTransparentBorder(var8) && this._screenList.getScreenCount() > 0) {
-               for (Screen var10 = this._screenList.getScreenBelow(var8); var10 != null; var10 = this._screenList.getScreenBelow(var10)) {
-                  XYRect var11 = this.getScreenInvalid(var10);
-                  if (!var11.isEmpty()) {
-                     var9.unionNoEmpty(var11);
-                     var5 = true;
+      for (int i = startIndex; i < screenCount; i++) {
+         if (i != -1) {
+            Screen screen = this._screenList.getScreen(i);
+            XYRect invalid = Ui.getTmpXYRect();
+            invalid.set(this.getScreenInvalid(screen));
+            if (this.isScreenTransparentBorder(screen) && this._screenList.getScreenCount() > 0) {
+               for (Screen below = this._screenList.getScreenBelow(screen); below != null; below = this._screenList.getScreenBelow(below)) {
+                  XYRect invalidBelow = this.getScreenInvalid(below);
+                  if (!invalidBelow.isEmpty()) {
+                     invalid.unionNoEmpty(invalidBelow);
+                     includeTransparentBorder = true;
                   }
                }
 
-               if (!var6.isEmpty()) {
-                  var9.unionNoEmpty(var6);
-                  var5 = true;
+               if (!appInvalidIn.isEmpty()) {
+                  invalid.unionNoEmpty(appInvalidIn);
+                  includeTransparentBorder = true;
                }
             }
 
-            if (var9.isEmpty()) {
-               Ui.returnTmpXYRect(var9);
+            if (invalid.isEmpty()) {
+               Ui.returnTmpXYRect(invalid);
             } else {
-               if (!var2 || this.isScreenTransparent(var8) || var5) {
-                  var1.unionNoEmpty(var9);
-                  var5 = false;
+               if (!transparentOnly || this.isScreenTransparent(screen) || includeTransparentBorder) {
+                  accumulator.unionNoEmpty(invalid);
+                  includeTransparentBorder = false;
                }
 
-               Ui.returnTmpXYRect(var9);
+               Ui.returnTmpXYRect(invalid);
             }
          }
       }
 
-      Ui.returnTmpXYRect(var6);
-      var1.intersect(this._fullScreenRect);
+      Ui.returnTmpXYRect(appInvalidIn);
+      accumulator.intersect(this._fullScreenRect);
    }
 
-   private UiEngineImpl(Application var1) {
+   private UiEngineImpl(Application app) {
    }
 }

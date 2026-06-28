@@ -1,5 +1,7 @@
 package net.rim.device.api.ui;
 
+import com.sun.cldc.i18n.Helper;
+
 public class FontLogicHelper {
    static final int MIN_HEIGHT_ARABIC_STROKE_BOLD;
    static final int MIN_HEIGHT_ARABIC_NO_STROKE_BOLD;
@@ -11,158 +13,167 @@ public class FontLogicHelper {
    static final int MIN_HEIGHT_ASIAN_NO_STROKE_NORMAL;
    private static TextGraphics _textGraphics;
 
-   public static boolean fontLegible(TextGraphics var0, int var1) {
-      switch (var1 & -65536) {
+   public static boolean fontLegible(TextGraphics textGraphics, int locale) {
+      switch (locale & -65536) {
          case 1634861056:
          case 1751449600:
-            return fontLegible(var0, 15, 13, 12, 10);
+            return fontLegible(textGraphics, 15, 13, 12, 10);
          case 1784741888:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var4 = var0.getStyle() & 7168;
-               if (var4 != 3072) {
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int hanMask = textGraphics.getStyle() & 7168;
+               if (hanMask != 3072) {
                   return false;
                }
             }
 
-            return fontLegible(var0, 19, 19, 15, 15);
+            return fontLegible(textGraphics, 19, 19, 15, 15);
          case 1802436608:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var3 = var0.getStyle() & 7168;
-               if (var3 != 4096) {
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int hanMask = textGraphics.getStyle() & 7168;
+               if (hanMask != 4096) {
                   return false;
                }
             }
 
-            return fontLegible(var0, 19, 19, 15, 15);
+            return fontLegible(textGraphics, 19, 19, 15, 15);
          case 2053636096:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var2 = var0.getStyle() & 7168;
-               if (var1 == 2053653326) {
-                  if (var2 != 2048) {
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int hanMask = textGraphics.getStyle() & 7168;
+               if (locale == 2053653326) {
+                  if (hanMask != 2048) {
                      return false;
                   }
-               } else if (var2 != 1024) {
+               } else if (hanMask != 1024) {
                   return false;
                }
             }
 
-            return fontLegible(var0, 19, 19, 15, 15);
+            return fontLegible(textGraphics, 19, 19, 15, 15);
          default:
             return true;
       }
    }
 
-   private static boolean fontLegible(TextGraphics var0, int var1, int var2, int var3, int var4) {
-      int var5 = var0.getHeight();
-      if (var5 >= var1) {
+   private static boolean fontLegible(
+      TextGraphics textGraphics, int minHeightStrokeBold, int minHeightNoStrokeBold, int minHeightStrokeNormal, int minHeightNoStrokeNormal
+   ) {
+      int height = textGraphics.getHeight();
+      if (height >= minHeightStrokeBold) {
          return true;
-      } else if (var5 >= var2) {
-         return (var0.getStyle() & 1) == 0 || var0.getEffects() != 768;
-      } else if (var5 >= var3) {
-         return (var0.getStyle() & 1) == 0;
+      } else if (height >= minHeightNoStrokeBold) {
+         return (textGraphics.getStyle() & 1) == 0 || textGraphics.getEffects() != 768;
+      } else if (height >= minHeightStrokeNormal) {
+         return (textGraphics.getStyle() & 1) == 0;
       } else {
-         return var5 >= var4 ? (var0.getStyle() & 1) == 0 && var0.getEffects() != 768 : false;
+         return height >= minHeightNoStrokeNormal ? (textGraphics.getStyle() & 1) == 0 && textGraphics.getEffects() != 768 : false;
       }
    }
 
-   public static boolean fontLegible(Font var0, int var1) {
-      _textGraphics.setFontSpec(var0);
-      return fontLegible(_textGraphics, var1);
+   public static boolean fontLegible(Font font, int locale) {
+      _textGraphics.setFontSpec(font);
+      return fontLegible(_textGraphics, locale);
    }
 
-   public static boolean getSuggestedFont(TextGraphics var0, int var1, boolean var2) {
-      switch (var1 & -65536) {
+   public static boolean getSuggestedFont(TextGraphics textGraphics, int locale, boolean allowSizeChange) {
+      switch (locale & -65536) {
          case 1634861056:
          case 1751449600:
-            return getSuggestedFont(var0, 15, 13, 12, 10, var2);
+            return getSuggestedFont(textGraphics, 15, 13, 12, 10, allowSizeChange);
          case 1784741888:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var5 = var0.getStyle() & -7169 | 3072;
-               var0.setStyle(var5);
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int newStyle = textGraphics.getStyle() & -7169 | 3072;
+               textGraphics.setStyle(newStyle);
             }
 
-            return getSuggestedFont(var0, 19, 19, 15, 15, var2);
+            return getSuggestedFont(textGraphics, 19, 19, 15, 15, allowSizeChange);
          case 1802436608:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var4 = var0.getStyle() & -7169 | 4096;
-               var0.setStyle(var4);
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int newStyle = textGraphics.getStyle() & -7169 | 4096;
+               textGraphics.setStyle(newStyle);
             }
 
-            return getSuggestedFont(var0, 19, 19, 15, 15, var2);
+            return getSuggestedFont(textGraphics, 19, 19, 15, 15, allowSizeChange);
          case 2053636096:
-            if (!var0.getTypefaceName().equals(getAltFontFamily(var1).getName())) {
-               int var3;
-               if (var1 == 2053653326) {
-                  var3 = var0.getStyle() & -7169 | 2048;
+            if (!textGraphics.getTypefaceName().equals(getAltFontFamily(locale).getName())) {
+               int newStyle;
+               if (locale == 2053653326) {
+                  newStyle = textGraphics.getStyle() & -7169 | 2048;
                } else {
-                  var3 = var0.getStyle() & -7169 | 1024;
+                  newStyle = textGraphics.getStyle() & -7169 | 1024;
                }
 
-               var0.setStyle(var3);
+               textGraphics.setStyle(newStyle);
             }
 
-            return getSuggestedFont(var0, 19, 19, 15, 15, var2);
+            return getSuggestedFont(textGraphics, 19, 19, 15, 15, allowSizeChange);
          default:
             return true;
       }
    }
 
-   private static boolean getSuggestedFont(TextGraphics var0, int var1, int var2, int var3, int var4, boolean var5) {
-      int var6 = var0.getHeight();
-      int var7 = var0.getStyle();
-      if (var6 >= var1) {
+   private static boolean getSuggestedFont(
+      TextGraphics textGraphics,
+      int minHeightStrokeBold,
+      int minHeightNoStrokeBold,
+      int minHeightStrokeNormal,
+      int minHeightNoStrokeNormal,
+      boolean allowSizeChange
+   ) {
+      int height = textGraphics.getHeight();
+      int style = textGraphics.getStyle();
+      if (height >= minHeightStrokeBold) {
          return true;
       }
 
-      if (var6 >= var2) {
-         if ((var7 & 1) != 0 && var0.getEffects() == 768) {
-            var0.setStyle(var7 & -2);
+      if (height >= minHeightNoStrokeBold) {
+         if ((style & 1) != 0 && textGraphics.getEffects() == 768) {
+            textGraphics.setStyle(style & -2);
             return true;
          } else {
             return true;
          }
-      } else if (var6 >= var3) {
-         if ((var7 & 1) != 0) {
-            var0.setStyle(var7 & -2);
+      } else if (height >= minHeightStrokeNormal) {
+         if ((style & 1) != 0) {
+            textGraphics.setStyle(style & -2);
             return true;
          } else {
             return true;
          }
-      } else if (var6 >= var4) {
-         if ((var7 & 1) != 0) {
-            var0.setStyle(var7 & -2);
+      } else if (height >= minHeightNoStrokeNormal) {
+         if ((style & 1) != 0) {
+            textGraphics.setStyle(style & -2);
          }
 
-         if (var0.getEffects() != 768) {
+         if (textGraphics.getEffects() != 768) {
             return true;
-         } else if (var5) {
-            var0.setHeight(var3);
+         } else if (allowSizeChange) {
+            textGraphics.setHeight(minHeightStrokeNormal);
             return true;
          } else {
             return false;
          }
       } else {
-         if ((var7 & 1) != 0) {
-            var0.setStyle(var7 & -2);
+         if ((style & 1) != 0) {
+            textGraphics.setStyle(style & -2);
          }
 
-         if (!var5) {
+         if (!allowSizeChange) {
             return false;
-         } else if (var0.getEffects() == 768) {
-            var0.setHeight(var3);
+         } else if (textGraphics.getEffects() == 768) {
+            textGraphics.setHeight(minHeightStrokeNormal);
             return true;
          } else {
-            var0.setHeight(var4);
+            textGraphics.setHeight(minHeightNoStrokeNormal);
             return true;
          }
       }
    }
 
-   public static Font getSuggestedFont(Font var0, int var1, boolean var2) {
-      FontFamily var3 = getAltFontFamily(var1);
-      _textGraphics.setFontSpec(var0);
-      getSuggestedFont(_textGraphics, var1, var2);
-      return var3.getFont(
+   public static Font getSuggestedFont(Font font, int locale, boolean allowSizeChange) {
+      FontFamily family = getAltFontFamily(locale);
+      _textGraphics.setFontSpec(font);
+      getSuggestedFont(_textGraphics, locale, allowSizeChange);
+      return family.getFont(
          _textGraphics.getStyle(),
          _textGraphics.getHeightWithLeading(),
          0,
@@ -179,12 +190,19 @@ public class FontLogicHelper {
       );
    }
 
-   public static FontFamily getAltFontFamily(int var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static FontFamily getAltFontFamily(int locale) {
+      FontFamily result = null;
+      String fName = Helper.getSuggestedTypeface(locale);
+
+      try {
+         return FontFamily.forName(fName);
+      } catch (ClassNotFoundException var4) {
+         return result;
+      }
    }
 
-   public static boolean useAltFont(int var0) {
-      switch (var0 & -65536) {
+   public static boolean useAltFont(int locale) {
+      switch (locale & -65536) {
          case 1667301376:
          case 1668481024:
          case 1684340736:

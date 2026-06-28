@@ -20,15 +20,15 @@ public class CertificateException extends IOException {
    public static final byte UNSUPPORTED_PUBLIC_KEY_TYPE;
    public static final byte VERIFICATION_FAILED;
 
-   public CertificateException(Certificate var1, byte var2) {
-      this.cert = var1;
-      this.reason = var2;
+   public CertificateException(Certificate certificate, byte status) {
+      this.cert = certificate;
+      this.reason = status;
    }
 
-   public CertificateException(String var1, Certificate var2, byte var3) {
-      super(var1);
-      this.cert = var2;
-      this.reason = var3;
+   public CertificateException(String message, Certificate certificate, byte status) {
+      super(message);
+      this.cert = certificate;
+      this.reason = status;
    }
 
    public Certificate getCertificate() {

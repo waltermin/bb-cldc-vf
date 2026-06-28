@@ -12,24 +12,24 @@ public final class JPEGEncodedImage extends EncodedImage {
    public static final int FRAMETYPE_SEQUENTIAL;
    public static final int FRAMETYPE_PROGRESSIVE;
 
-   JPEGEncodedImage(byte[] var1, int var2, int var3) {
-      super._data = var1;
-      super._offset = var2;
-      super._length = var3;
+   JPEGEncodedImage(byte[] data, int offset, int length) {
+      super._data = data;
+      super._offset = offset;
+      super._length = length;
       this.$initJPEGImage();
    }
 
-   JPEGEncodedImage(String var1) {
-      super._filename = var1;
+   JPEGEncodedImage(String filename) {
+      super._filename = filename;
       this.$initJPEGImage();
    }
 
-   public JPEGEncodedImage(Bitmap var1, int var2) {
+   public JPEGEncodedImage(Bitmap bitmap, int quality) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      byte[] var3 = getJPEGData(var1, var2);
-      super._data = var3;
+      byte[] data = getJPEGData(bitmap, quality);
+      super._data = data;
       super._offset = 0;
-      super._length = var3.length;
+      super._length = data.length;
       this.$initJPEGImage();
    }
 
@@ -45,9 +45,9 @@ public final class JPEGEncodedImage extends EncodedImage {
       super._frameInfo[0].hasTransparency = this._jpegInfo.hasTransparency;
    }
 
-   public static final JPEGEncodedImage encode(Bitmap var0, int var1) {
-      byte[] var2 = getJPEGData(var0, var1);
-      return new JPEGEncodedImage(var2, 0, var2.length);
+   public static final JPEGEncodedImage encode(Bitmap bitmap, int quality) {
+      byte[] data = getJPEGData(bitmap, quality);
+      return new JPEGEncodedImage(data, 0, data.length);
    }
 
    public final boolean isColor() {
@@ -63,8 +63,8 @@ public final class JPEGEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getBitmapType(int var1) {
-      if (var1 >= 0 && var1 < super._info.frameCount) {
+   public final int getBitmapType(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return Bitmap.DEFAULT_TYPE;
       } else {
          throw new Object();
@@ -72,8 +72,8 @@ public final class JPEGEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getAlphaType(int var1) {
-      if (var1 >= 0 && var1 < super._info.frameCount) {
+   public final int getAlphaType(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
          throw new Object();
@@ -81,18 +81,18 @@ public final class JPEGEncodedImage extends EncodedImage {
    }
 
    @Override
-   final Bitmap getBitmapImpl(int var1) {
-      if (var1 != 0) {
+   final Bitmap getBitmapImpl(int frameIndex) {
+      if (frameIndex != 0) {
          throw new Object();
       }
 
-      boolean var2 = (super._decodeMode & 4) != 0;
-      int var3 = this.getScaledWidth();
-      int var4 = this.getScaledHeight();
-      Object var5 = new Object(this.getBitmapType(var1), var3, var4, null, var2, false);
-      this.getJPEGImage((Bitmap)var5, super._scaleX, super._scaleY, super._decodeMode);
-      ((Bitmap)var5).setAlphaDirect(null);
-      return (Bitmap)var5;
+      boolean readonly = (super._decodeMode & 4) != 0;
+      int width = this.getScaledWidth();
+      int height = this.getScaledHeight();
+      Bitmap bitmap = (Bitmap)(new Object(this.getBitmapType(frameIndex), width, height, null, readonly, false));
+      this.getJPEGImage(bitmap, super._scaleX, super._scaleY, super._decodeMode);
+      bitmap.setAlphaDirect(null);
+      return bitmap;
    }
 
    public static final boolean isJPEGSupported() {
@@ -106,8 +106,8 @@ public final class JPEGEncodedImage extends EncodedImage {
 
    @Override
    public final EncodedImage getStandardsCompliantEncodedImage() {
-      byte[] var1 = getStandardEncodedData(super._data, super._offset, super._length);
-      return var1 == super._data ? this : EncodedImage.createEncodedImage(var1, 0, var1.length);
+      byte[] stdData = getStandardEncodedData(super._data, super._offset, super._length);
+      return stdData == super._data ? this : EncodedImage.createEncodedImage(stdData, 0, stdData.length);
    }
 
    private static final native byte[] getStandardEncodedData(byte[] var0, int var1, int var2);

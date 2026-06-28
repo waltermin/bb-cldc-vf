@@ -10,11 +10,11 @@ public class MessageImpl implements Message {
    byte[] _buffer;
    int _encoding;
 
-   void setBuffer(byte[] var1) {
+   void setBuffer(byte[] b) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   void setEncoding(int var1) {
+   void setEncoding(int coding) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -30,12 +30,12 @@ public class MessageImpl implements Message {
       return this._scAddress;
    }
 
-   public void setSCAddress(String var1) {
+   public void setSCAddress(String value) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
    @Override
-   public void setAddress(String var1) {
+   public void setAddress(String addr) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -49,7 +49,7 @@ public class MessageImpl implements Message {
       return this._address;
    }
 
-   public MessageImpl(String var1) {
-      this._address = var1;
+   public MessageImpl(String address) {
+      this._address = address;
    }
 }

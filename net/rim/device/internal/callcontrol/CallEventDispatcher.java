@@ -10,98 +10,98 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    @Override
-   public final void callAdded(int var1) {
-      this.postCallEvent(1560, var1);
+   public final void callAdded(int callId) {
+      this.postCallEvent(1560, callId);
    }
 
    @Override
-   public final void callConnected(int var1) {
-      this.postCallEvent(1555, var1);
+   public final void callConnected(int callId) {
+      this.postCallEvent(1555, callId);
    }
 
    @Override
-   public final void callDelivered(int var1) {
-      this.postCallEvent(1563, var1);
+   public final void callDelivered(int callId) {
+      this.postCallEvent(1563, callId);
    }
 
    @Override
-   public final void callDisconnected(int var1) {
-      this.postCallEvent(1557, var1);
+   public final void callDisconnected(int callId) {
+      this.postCallEvent(1557, callId);
    }
 
    @Override
-   public final void callDisplayUpdated(int var1) {
-      this.postCallEvent(1574, var1);
+   public final void callDisplayUpdated(int callId) {
+      this.postCallEvent(1574, callId);
    }
 
    @Override
-   public final void callFailed(int var1, int var2) {
-      this.postCallEvent(1556, var1, var2, 0);
+   public final void callFailed(int callId, int error) {
+      this.postCallEvent(1556, callId, error, 0);
    }
 
    @Override
-   public final void callHeld(int var1) {
-      this.postCallEvent(1558, var1);
+   public final void callHeld(int callId) {
+      this.postCallEvent(1558, callId);
    }
 
    @Override
-   public final void callIncoming(int var1) {
-      this.postCallEvent(1553, var1);
+   public final void callIncoming(int callId) {
+      this.postCallEvent(1553, callId);
    }
 
    @Override
-   public final void callInitiated(int var1) {
-      this.postCallEvent(1564, var1);
+   public final void callInitiated(int callId) {
+      this.postCallEvent(1564, callId);
    }
 
    @Override
-   public final void callManipulateFailed(int var1, int var2) {
-      this.postCallEvent(1562, var1, var2, 0);
+   public final void callManipulateFailed(int callId, int error) {
+      this.postCallEvent(1562, callId, error, 0);
    }
 
    @Override
-   public final void callOTAStatusUpdated(int var1, int var2) {
-      this.postCallEvent(1600, var1, var2, 0);
+   public final void callOTAStatusUpdated(int callId, int status) {
+      this.postCallEvent(1600, callId, status, 0);
    }
 
    @Override
-   public final void callRemoved(int var1) {
-      this.postCallEvent(1561, var1);
+   public final void callRemoved(int callId) {
+      this.postCallEvent(1561, callId);
    }
 
    @Override
-   public final void callResumed(int var1) {
-      this.postCallEvent(1559, var1);
+   public final void callResumed(int callId) {
+      this.postCallEvent(1559, callId);
    }
 
    @Override
-   public final void callTransferred(int var1, int var2) {
-      this.postCallEvent(1668, var1, var2, 0);
+   public final void callTransferred(int status, int reason) {
+      this.postCallEvent(1668, status, reason, 0);
    }
 
    @Override
-   public final void callTransferStateUpdated(int var1, int var2) {
-      this.postCallEvent(5001, var1, var2, 0);
+   public final void callTransferStateUpdated(int callId, int state) {
+      this.postCallEvent(5001, callId, state, 0);
    }
 
    @Override
-   public final void callWaiting(int var1) {
-      this.postCallEvent(1554, var1);
+   public final void callWaiting(int callId) {
+      this.postCallEvent(1554, callId);
    }
 
    @Override
-   public final void callVoicePrivacyUpdated(int var1, boolean var2) {
-      this.postCallEvent(1605, var1, var2 ? 0 : 1, 0);
+   public final void callVoicePrivacyUpdated(int callId, boolean on) {
+      this.postCallEvent(1605, callId, on ? 0 : 1, 0);
    }
 
    @Override
-   public final void dtmfData(int var1) {
-      this.postCallEvent(5003, var1);
+   public final void dtmfData(int dtmf) {
+      this.postCallEvent(5003, dtmf);
    }
 
    @Override
-   public final void callTimerUpdated(int var1, int var2) {
-      this.postTimerEvent(1568, var1, var2, 0);
+   public final void callTimerUpdated(int callId, int time) {
+      this.postTimerEvent(1568, callId, time, 0);
    }
 
    @Override
@@ -110,24 +110,24 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    @Override
-   public final void responseEnableFDN(int var1) {
-      this.postControlEvent(var1, 0);
+   public final void responseEnableFDN(int status) {
+      this.postControlEvent(status, 0);
    }
 
    @Override
-   public final void ssNotification(int var1) {
-      this.postControlEvent(1609, var1);
+   public final void ssNotification(int ssOption) {
+      this.postControlEvent(1609, ssOption);
    }
 
    @Override
-   public final void ssPasswordRequested(int var1) {
-      this.postControlEvent(1610, var1);
+   public final void ssPasswordRequested(int requestType) {
+      this.postControlEvent(1610, requestType);
    }
 
    @Override
-   public final void ssRequestFailed(int var1, int var2, boolean var3) {
-      int var4 = var2 | (var3 ? 256 : 0);
-      this.postControlEvent(1569, var1, 0, var4, null);
+   public final void ssRequestFailed(int reason, int bearerService, boolean isUSSDCmd) {
+      int data1 = bearerService | (isUSSDCmd ? 256 : 0);
+      this.postControlEvent(1569, reason, 0, data1, null);
    }
 
    @Override
@@ -136,38 +136,38 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    @Override
-   public final void ssRequestRejected(boolean var1) {
-      int var2 = var1 ? 256 : 0;
-      this.postControlEvent(1571, 0, 0, var2, null);
+   public final void ssRequestRejected(boolean isUSSDCmd) {
+      int data1 = isUSSDCmd ? 256 : 0;
+      this.postControlEvent(1571, 0, 0, data1, null);
    }
 
    @Override
-   public final void ssRequestReleased(boolean var1) {
-      int var2 = var1 ? 256 : 0;
-      this.postControlEvent(1572, 0, 0, var2, null);
+   public final void ssRequestReleased(boolean isUSSDCmd) {
+      int data1 = isUSSDCmd ? 256 : 0;
+      this.postControlEvent(1572, 0, 0, data1, null);
    }
 
    @Override
-   public final void ssRequestSucceeded(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
-      int var7 = var2 | var3 << 16;
-      int var8 = var4 | (var5 ? 256 : 0) | (var6 ? 65536 : 0);
-      this.postControlEvent(1570, var1, var7, var8, null);
+   public final void ssRequestSucceeded(int ss, int action, int result, int bearerService, boolean isUSSDCmd, boolean forwardingNumberAvailable) {
+      int data0 = action | result << 16;
+      int data1 = bearerService | (isUSSDCmd ? 256 : 0) | (forwardingNumberAvailable ? 65536 : 0);
+      this.postControlEvent(1570, ss, data0, data1, null);
    }
 
    @Override
-   public final void ssUpdated(int var1, int var2) {
-      this.postControlEvent(1606, 0, var1, var2, null);
+   public final void ssUpdated(int ssOption, int state) {
+      this.postControlEvent(1606, 0, ssOption, state, null);
    }
 
    @Override
-   public final void ssUssDisplay(byte[] var1, int var2, boolean var3) {
-      int var4 = var3 ? 1608 : 1607;
-      this.postControlEvent(var4, 0, var2, 0, var1);
+   public final void ssUssDisplay(byte[] data, int messageCoding, boolean collectInput) {
+      int event = collectInput ? 1608 : 1607;
+      this.postControlEvent(event, 0, messageCoding, 0, data);
    }
 
    @Override
-   public final void voiceLineChanged(int var1) {
-      this.postControlEvent(1669, var1);
+   public final void voiceLineChanged(int line) {
+      this.postControlEvent(1669, line);
    }
 
    @Override
@@ -176,41 +176,41 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    @Override
-   public final void voicemailCountUpdated(int var1, int var2) {
-      this.postControlEvent(5002, var1, var2, 0, null);
+   public final void voicemailCountUpdated(int line, int count) {
+      this.postControlEvent(5002, line, count, 0, null);
    }
 
-   private final void postCallEvent(int var1, int var2) {
-      this.postCallEvent(var1, var2, 0, 0);
+   private final void postCallEvent(int event, int subMessage) {
+      this.postCallEvent(event, subMessage, 0, 0);
    }
 
-   private final void postCallEvent(int var1, int var2, int var3, int var4) {
-      Object var5 = new Object(52, var1, var2, var3, var4);
-      Object var6 = ApplicationManager.getApplicationManager();
-      ((ApplicationManagerInternal)var6).postMessage((Message)var5);
+   private final void postCallEvent(int event, int subMessage, int data0, int data1) {
+      Message msg = (Message)(new Object(52, event, subMessage, data0, data1));
+      ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      appManager.postMessage(msg);
    }
 
-   private final void postCallEvent(int var1, int var2, int var3, int var4, Object var5) {
-      Object var6 = new Object(52, var1, var2, var3, var4);
-      ((Message)var6).setObject0(var5);
-      Object var7 = ApplicationManager.getApplicationManager();
-      ((ApplicationManagerInternal)var7).postMessage((Message)var6);
+   private final void postCallEvent(int event, int subMessage, int data0, int data1, Object obj0) {
+      Message msg = (Message)(new Object(52, event, subMessage, data0, data1));
+      msg.setObject0(obj0);
+      ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      appManager.postMessage(msg);
    }
 
-   private final void postTimerEvent(int var1, int var2, int var3, int var4) {
-      Object var5 = new Object(53, var1, var2, var3, var4);
-      Object var6 = ApplicationManager.getApplicationManager();
-      ((ApplicationManagerInternal)var6).postMessage((Message)var5);
+   private final void postTimerEvent(int event, int subMessage, int data0, int data1) {
+      Message msg = (Message)(new Object(53, event, subMessage, data0, data1));
+      ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      appManager.postMessage(msg);
    }
 
-   private final void postControlEvent(int var1, int var2) {
-      this.postControlEvent(var1, var2, 0, 0, null);
+   private final void postControlEvent(int event, int subMessage) {
+      this.postControlEvent(event, subMessage, 0, 0, null);
    }
 
-   private final void postControlEvent(int var1, int var2, int var3, int var4, Object var5) {
-      Object var6 = new Object(54, var1, var2, var3, var4);
-      ((Message)var6).setObject0(var5);
-      Object var7 = ApplicationManager.getApplicationManager();
-      ((ApplicationManagerInternal)var7).postMessage((Message)var6);
+   private final void postControlEvent(int event, int subMessage, int data0, int data1, Object obj0) {
+      Message msg = (Message)(new Object(54, event, subMessage, data0, data1));
+      msg.setObject0(obj0);
+      ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
+      appManager.postMessage(msg);
    }
 }

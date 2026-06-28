@@ -5,16 +5,23 @@ class TimerThread extends Thread {
    private TaskQueue queue;
    private static final long THREAD_TIMEOUT;
 
-   TimerThread(TaskQueue var1) {
-      this.queue = var1;
+   TimerThread(TaskQueue queue) {
+      this.queue = queue;
    }
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         this.mainLoop();
+      } catch (Throwable t) {
+         synchronized (this.queue) {
+            this.newTasksMayBeScheduled = false;
+            this.queue.clear();
+         }
+      }
    }
 
    private void mainLoop() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 }

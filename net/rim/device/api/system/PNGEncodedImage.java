@@ -5,28 +5,42 @@ import net.rim.vm.TraceBack;
 public final class PNGEncodedImage extends EncodedImage {
    private PNGEncodedImage$PNGImageInfo _pngInfo;
 
-   public PNGEncodedImage(byte[] var1, int var2, int var3) {
+   public PNGEncodedImage(byte[] data, int offset, int length) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      super._data = var1;
-      super._offset = var2;
-      super._length = var3;
+      super._data = data;
+      super._offset = offset;
+      super._length = length;
       this.init();
    }
 
-   PNGEncodedImage(String var1) {
-      super._filename = var1;
+   PNGEncodedImage(String filename) {
+      super._filename = filename;
       this.init();
    }
 
-   private PNGEncodedImage(Bitmap var1, int var2, int var3, int var4, int var5) {
+   private PNGEncodedImage(Bitmap bitmap, int x, int y, int width, int height) {
+      try {
+         byte[] data = getPNGData(bitmap, x, y, width, height);
+         super._data = data;
+         super._offset = 0;
+         super._length = data.length;
+         this.init();
+      } catch (OutOfMemoryError ex) {
+         net.rim.vm.Memory.maximizeContiguousRAM();
+         byte[] data = getPNGData(bitmap, x, y, width, height);
+         super._data = data;
+         super._offset = 0;
+         super._length = data.length;
+         this.init();
+      }
    }
 
-   public static final PNGEncodedImage encode(Bitmap var0) {
-      return new PNGEncodedImage(var0, 0, 0, var0.getWidth(), var0.getHeight());
+   public static final PNGEncodedImage encode(Bitmap bitmap) {
+      return new PNGEncodedImage(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight());
    }
 
-   public static final PNGEncodedImage encode(Bitmap var0, int var1, int var2, int var3, int var4) {
-      return new PNGEncodedImage(var0, var1, var2, var3, var4);
+   public static final PNGEncodedImage encode(Bitmap bitmap, int x, int y, int width, int height) {
+      return new PNGEncodedImage(bitmap, x, y, width, height);
    }
 
    private final void init() {
@@ -46,20 +60,20 @@ public final class PNGEncodedImage extends EncodedImage {
    }
 
    @Override
-   public final int getAlphaType(int var1) {
-      if (var1 < 0 || var1 >= super._info.frameCount) {
+   public final int getAlphaType(int frameIndex) {
+      if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
          throw new Object();
       }
 
-      if ((super._decodeMode & 1) != 0 && this.getFrameTransparency(var1)) {
-         int var2 = 0;
+      if ((super._decodeMode & 1) != 0 && this.getFrameTransparency(frameIndex)) {
+         int alphaType = 0;
          if (this._pngInfo.alpha && Display.isRowwise()) {
-            var2 |= 3;
+            alphaType |= 3;
          } else {
-            var2 |= 1;
+            alphaType |= 1;
          }
 
-         return var2 | Bitmap.DEFAULT_TYPE & 128;
+         return alphaType | Bitmap.DEFAULT_TYPE & 128;
       } else {
          return 0;
       }
@@ -70,30 +84,30 @@ public final class PNGEncodedImage extends EncodedImage {
    }
 
    @Override
-   final Bitmap getBitmapImpl(int var1) {
-      if (var1 != 0) {
+   final Bitmap getBitmapImpl(int frameIndex) {
+      if (frameIndex != 0) {
          throw new Object();
       }
 
-      boolean var2 = (super._decodeMode & 4) != 0;
-      int var3 = this.getBitmapType(var1);
-      int var4 = this.getAlphaType(var1);
-      int var5 = this.getScaledWidth();
-      int var6 = this.getScaledHeight();
-      Object var7 = new Object(var3, var5, var6, null, var2, false);
-      Object var8 = null;
-      if (var4 != 0) {
-         var8 = new Object(var4, var5, var6, null, var2, false);
+      boolean readonly = (super._decodeMode & 4) != 0;
+      int type = this.getBitmapType(frameIndex);
+      int alphaType = this.getAlphaType(frameIndex);
+      int width = this.getScaledWidth();
+      int height = this.getScaledHeight();
+      Bitmap bitmap = (Bitmap)(new Object(type, width, height, null, readonly, false));
+      Bitmap alpha = null;
+      if (alphaType != 0) {
+         alpha = (Bitmap)(new Object(alphaType, width, height, null, readonly, false));
       }
 
-      this.getPNGImage((Bitmap)var7, (Bitmap)var8, super._scaleX, super._scaleY, -1, super._decodeSteps, super._decodeMode);
-      ((Bitmap)var7).setAlphaDirect((Bitmap)var8);
-      return (Bitmap)var7;
+      this.getPNGImage(bitmap, alpha, super._scaleX, super._scaleY, -1, super._decodeSteps, super._decodeMode);
+      bitmap.setAlphaDirect(alpha);
+      return bitmap;
    }
 
    @Override
-   public final int getBitmapType(int var1) {
-      if (var1 < 0 || var1 >= super._info.frameCount) {
+   public final int getBitmapType(int frameIndex) {
+      if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
          throw new Object();
       } else {
          return (super._decodeMode & 2) == 0 && this._pngInfo.colourType == 0 && this._pngInfo.bitDepth == 1

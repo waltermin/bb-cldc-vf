@@ -17,29 +17,29 @@ public class FlashOutputStream extends OutputStream {
 
    private static native void writeBuffer(byte[] var0, int var1, int var2, long var3, boolean var5, boolean var6);
 
-   public FlashOutputStream(long var1) {
-      this(var1, false);
+   public FlashOutputStream(long guid) {
+      this(guid, false);
    }
 
-   public FlashOutputStream(long var1, boolean var3) {
-      FlashInputStream var4 = new FlashInputStream(var1);
-      if (var3) {
-         this._writeIndex = var4.getNextWriteIndex();
-         var4.close();
+   public FlashOutputStream(long guid, boolean append) {
+      FlashInputStream in = new FlashInputStream(guid);
+      if (append) {
+         this._writeIndex = in.getNextWriteIndex();
+         in.close();
       } else {
-         var4.erase();
+         in.erase();
       }
 
       this._headerSize = headerSize();
       this._bufferSize = bufferSize();
       this._buffer = new byte[this._bufferSize];
-      this._guid = var1;
+      this._guid = guid;
       this._index = this._headerSize;
       this._startUserBlock = true;
    }
 
    @Override
-   public void write(int var1) {
+   public void write(int b) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -49,9 +49,9 @@ public class FlashOutputStream extends OutputStream {
       this._startUserBlock = true;
    }
 
-   private void internalFlush(boolean var1) {
+   private void internalFlush(boolean endUserBlock) {
       if (this._index > this._headerSize) {
-         writeBuffer(this._buffer, this._index, this._writeIndex, this._guid, this._startUserBlock, var1);
+         writeBuffer(this._buffer, this._index, this._writeIndex, this._guid, this._startUserBlock, endUserBlock);
          this._startUserBlock = false;
          this._index = this._headerSize;
          this._writeIndex++;

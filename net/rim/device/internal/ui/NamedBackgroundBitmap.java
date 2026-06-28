@@ -9,17 +9,17 @@ class NamedBackgroundBitmap extends BackgroundBitmap {
    private ResourceFetcher _resource;
    private String _name;
 
-   NamedBackgroundBitmap(ResourceFetcher var1, String var2) {
+   NamedBackgroundBitmap(ResourceFetcher resource, String name) {
    }
 
    @Override
-   public void draw(Graphics var1, XYRect var2) {
+   public void draw(Graphics graphics, XYRect rect) {
       this.initializeBitmap();
-      super.draw(var1, var2);
+      super.draw(graphics, rect);
    }
 
    @Override
-   public boolean freeStaleObject(int var1) {
+   public boolean freeStaleObject(int priority) {
       if (this.getBitmap() != null) {
          this.setBitmap(null);
          return true;
@@ -36,9 +36,9 @@ class NamedBackgroundBitmap extends BackgroundBitmap {
 
    private void initializeBitmap() {
       if (this.getBitmap() == null) {
-         byte[] var1 = this._resource.fetchResource(this._name);
-         Bitmap var2 = Bitmap.createBitmapFromPNG(var1, 0, -1);
-         this.setBitmap(var2);
+         byte[] pngImage = this._resource.fetchResource(this._name);
+         Bitmap bitmap = Bitmap.createBitmapFromPNG(pngImage, 0, -1);
+         this.setBitmap(bitmap);
       }
    }
 }

@@ -13,10 +13,10 @@ public final class Cursor {
    public static final int PREDEFINED_CURSOR_ZOOM_OUT;
    private static Cursor[] PREDEFINED_CURSORS;
 
-   public Cursor(Bitmap var1, int var2, int var3) {
-      this._bitmap = var1;
-      this._originX = var2;
-      this._originY = var3;
+   public Cursor(Bitmap bitmap, int originX, int originY) {
+      this._bitmap = bitmap;
+      this._originX = originX;
+      this._originY = originY;
    }
 
    public final Bitmap getBitmap() {
@@ -39,7 +39,7 @@ public final class Cursor {
       return this.getOriginY();
    }
 
-   public static final Cursor getPredefinedCursor(int var0) {
-      return PREDEFINED_CURSORS[var0];
+   public static final Cursor getPredefinedCursor(int cursor) {
+      return PREDEFINED_CURSORS[cursor];
    }
 }

@@ -5,8 +5,8 @@ import net.rim.device.api.ui.UiApplication;
 class Tooltip$TooltipInvoker implements Runnable {
    Tooltip _tooltip;
 
-   Tooltip$TooltipInvoker(Tooltip var1) {
-      this._tooltip = var1;
+   Tooltip$TooltipInvoker(Tooltip tooltip) {
+      this._tooltip = tooltip;
    }
 
    @Override

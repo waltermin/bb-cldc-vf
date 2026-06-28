@@ -59,50 +59,50 @@ class SymbolScreen$SymbolField extends Field {
    private static final int NUMBER_OF_ROWS;
    private static final int NUMBER_OF_MAPPED_PAGES;
 
-   protected SymbolScreen$SymbolField(SymbolScreen var1) {
+   protected SymbolScreen$SymbolField(SymbolScreen _1) {
    }
 
    @Override
    protected void applyFont() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void $initLayoutKeyCodes() {
       throw new RuntimeException("cod2jar: array creation");
    }
 
-   private int keyOrdinalNumber(char var1) {
-      int var3 = this._keyCodes[0].length;
-      int var2 = 0;
+   private int keyOrdinalNumber(char key) {
+      int len0 = this._keyCodes[0].length;
+      int i = 0;
 
-      while (var2 < var3 && this._keyCodes[0][var2] != var1) {
-         var2++;
+      while (i < len0 && this._keyCodes[0][i] != key) {
+         i++;
       }
 
-      if (var2 < var3) {
-         return var2;
+      if (i < len0) {
+         return i;
       }
 
-      int var4 = this._keyCodes[1].length;
-      var2 = 0;
+      int len1 = this._keyCodes[1].length;
+      i = 0;
 
-      while (var2 < var4 && this._keyCodes[1][var2] != var1) {
-         var2++;
+      while (i < len1 && this._keyCodes[1][i] != key) {
+         i++;
       }
 
-      if (var2 < var4) {
-         return var2 + var3;
+      if (i < len1) {
+         return i + len0;
       }
 
-      var3 += var4;
-      var4 = this._keyCodes[2].length;
-      var2 = 0;
+      len0 += len1;
+      len1 = this._keyCodes[2].length;
+      i = 0;
 
-      while (var2 < var4 && this._keyCodes[2][var2] != var1) {
-         var2++;
+      while (i < len1 && this._keyCodes[2][i] != key) {
+         i++;
       }
 
-      return var2 < var4 ? var2 + var3 : -1;
+      return i < len1 ? i + len0 : -1;
    }
 
    private void $initDisplayKeys() {
@@ -112,31 +112,31 @@ class SymbolScreen$SymbolField extends Field {
    @Override
    protected void applyTheme() {
       super.applyTheme();
-      Theme var1 = ThemeManager.getActiveTheme();
-      this._tasNext = var1.getAttributeSet(this.TAG_NEXT);
+      Theme theme = ThemeManager.getActiveTheme();
+      this._tasNext = theme.getAttributeSet(this.TAG_NEXT);
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
-      char var2 = this.getFocusChar();
-      char var3 = (char)this._map.get(Character.toUpperCase(var2));
-      return (AccessibleContext)(new Object(String.valueOf(var3), String.valueOf(var2), 22, 4, this, (AccessibleText)(new Object())));
+   public AccessibleContext getAccessibleSelectionAt(int index) {
+      char focusChar = this.getFocusChar();
+      char symbol = (char)this._map.get(Character.toUpperCase(focusChar));
+      return (AccessibleContext)(new Object(String.valueOf(symbol), String.valueOf(focusChar), 22, 4, this, (AccessibleText)(new Object())));
    }
 
    @Override
    public int getAccessibleChildCount() {
-      int var1 = 0;
+      int count = 0;
 
-      for (int var2 = 0; var2 < this._keyCodes.length; var2++) {
-         var1 += this._keyCodes[var2].length;
+      for (int i = 0; i < this._keyCodes.length; i++) {
+         count += this._keyCodes[i].length;
       }
 
-      return var1;
+      return count;
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public AccessibleContext getAccessibleChildAt(int index) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -144,11 +144,11 @@ class SymbolScreen$SymbolField extends Field {
       return 22;
    }
 
-   private char getSymbol(char var1, int var2) {
+   private char getSymbol(char keyCode, int page) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private String getDisplayKey(SLKeyLayout var1, char var2) {
+   private String getDisplayKey(SLKeyLayout layout, char keyCode) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -195,15 +195,15 @@ class SymbolScreen$SymbolField extends Field {
       // 29: ireturn
    }
 
-   private void setFocusChar(char var1) {
-      char[][][] var2 = this._keyCodes;
-      var1 = Character.toUpperCase(var1);
+   private void setFocusChar(char key) {
+      char[][][] keyCodes = this._keyCodes;
+      key = Character.toUpperCase(key);
 
-      for (int var3 = 0; var3 < var2.length; var3++) {
-         for (int var4 = 0; var4 < var2[var3].length; var4++) {
-            if (var1 == var2[var3][var4]) {
-               this._focusRow = (byte)var3;
-               this._focusColumn = (byte)var4;
+      for (int i = 0; i < keyCodes.length; i++) {
+         for (int j = 0; j < keyCodes[i].length; j++) {
+            if (key == keyCodes[i][j]) {
+               this._focusRow = (byte)i;
+               this._focusColumn = (byte)j;
                return;
             }
          }
@@ -211,32 +211,32 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    @Override
-   public void getFocusRect(XYRect var1) {
-      int var2 = this.getWidth() - ((this._keyWidth + this.HORIZONTAL_SPACE) * this._layout[this._focusRow].length - this.HORIZONTAL_SPACE) >> 1;
-      var2 += this._focusColumn * (this._keyWidth + this.HORIZONTAL_SPACE);
-      int var3 = this._focusRow * this._yStep + this._keyFont.getHeight() + 1 - this._maxIBearingY;
-      var1.set(var2 - (this.HORIZONTAL_SPACE >> 1), var3, this._keyWidth + this.HORIZONTAL_SPACE, this._replHeight + this._maxIBearingY);
+   public void getFocusRect(XYRect rect) {
+      int x = this.getWidth() - ((this._keyWidth + this.HORIZONTAL_SPACE) * this._layout[this._focusRow].length - this.HORIZONTAL_SPACE) >> 1;
+      x += this._focusColumn * (this._keyWidth + this.HORIZONTAL_SPACE);
+      int y = this._focusRow * this._yStep + this._keyFont.getHeight() + 1 - this._maxIBearingY;
+      rect.set(x - (this.HORIZONTAL_SPACE >> 1), y, this._keyWidth + this.HORIZONTAL_SPACE, this._replHeight + this._maxIBearingY);
    }
 
-   private char[] getLayoutCodes(int var1) {
-      byte var2;
-      switch (var1) {
+   private char[] getLayoutCodes(int row) {
+      int modifier;
+      switch (row) {
          case 0:
          default:
-            var2 = 0;
+            modifier = 0;
             break;
          case 1:
-            var2 = 1;
+            modifier = 1;
             break;
          case 2:
-            var2 = 2;
+            modifier = 2;
       }
 
-      SLKeyLayout var3 = Keypad.getLayout();
-      StringBuffer var4 = var3.getKeyChars(156, var2, false);
-      char[] var5 = new char[var4.length()];
-      var4.getChars(0, var5.length, var5, 0);
-      return var5;
+      SLKeyLayout layout = Keypad.getLayout();
+      StringBuffer buffer = layout.getKeyChars(156, modifier, false);
+      char[] result = new char[buffer.length()];
+      buffer.getChars(0, result.length, result, 0);
+      return result;
    }
 
    protected int getMaxSymbolHeight() {
@@ -244,30 +244,30 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    protected int getMaxKeyWidth() {
-      int var1 = -1;
+      int keyWidth = -1;
 
-      for (int var2 = 0; var2 < this._keyCodes.length; var2++) {
-         for (int var3 = 0; var3 < this._keyCodes[var2].length; var3++) {
-            String[] var4 = this._layout[var2][var3];
-            var1 = Math.max(var1, this._keyFont.getBounds(var4) + 3);
+      for (int i = 0; i < this._keyCodes.length; i++) {
+         for (int j = 0; j < this._keyCodes[i].length; j++) {
+            String key = this._layout[i][j];
+            keyWidth = Math.max(keyWidth, this._keyFont.getBounds(key) + 3);
          }
       }
 
-      return var1;
+      return keyWidth;
    }
 
    protected int getMaxSymbolWidth() {
-      int var1 = 0;
-      SLKeyLayout var2 = Keypad.getLayout();
+      int width = 0;
+      SLKeyLayout layout = Keypad.getLayout();
 
-      for (int var4 = 0; var4 < this._keyCodes.length; var4++) {
-         for (int var5 = 0; var5 < this._keyCodes[var4].length; var5++) {
-            StringBuffer var3 = var2.getKeyChars((int)this._keyCodes[var4][var5], 9, false);
-            var1 = Math.max(var1, this._symbolFont.getBounds(var3));
+      for (int i = 0; i < this._keyCodes.length; i++) {
+         for (int j = 0; j < this._keyCodes[i].length; j++) {
+            StringBuffer symbol = layout.getKeyChars((int)this._keyCodes[i][j], 9, false);
+            width = Math.max(width, this._symbolFont.getBounds(symbol));
          }
       }
 
-      return var1;
+      return width;
    }
 
    protected int getNumPages() {
@@ -283,33 +283,33 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
-      int var2 = 0;
+   public boolean isAccessibleChildSelected(int index) {
+      int focusIndex = 0;
 
-      for (int var3 = 0; var3 < this._focusRow; var3++) {
-         var2 += this._keyCodes[var3].length;
+      for (int i = 0; i < this._focusRow; i++) {
+         focusIndex += this._keyCodes[i].length;
       }
 
-      var2 += this._focusColumn;
-      return var1 == var2;
+      focusIndex += this._focusColumn;
+      return index == focusIndex;
    }
 
-   protected void initCurrentPageMap(int var1) {
+   protected void initCurrentPageMap(int page) {
       this.updatePageNumber();
       if (Keypad.getLayout() != null && this._layout != null) {
          this._map.clear();
-         int var2 = this._layout.length;
+         int rows = this._layout.length;
 
-         for (int var4 = 0; var4 < var2; var4++) {
-            int var5 = this._layout[var4].length;
-            if (this._maxKeysInRow < var5) {
-               this._maxKeysInRow = (byte)var5;
+         for (int i = 0; i < rows; i++) {
+            int len = this._layout[i].length;
+            if (this._maxKeysInRow < len) {
+               this._maxKeysInRow = (byte)len;
             }
 
-            for (int var6 = 0; var6 < var5; var6++) {
-               char var3 = this.getSymbol((char)this._keyCodes[var4][var6], var1);
-               if (var3 != 0) {
-                  this._map.put((int)this._keyCodes[var4][var6], var3);
+            for (int j = 0; j < len; j++) {
+               char ch = this.getSymbol((char)this._keyCodes[i][j], page);
+               if (ch != 0) {
+                  this._map.put((int)this._keyCodes[i][j], ch);
                }
             }
          }
@@ -319,15 +319,15 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    @Override
-   protected boolean invokeAction(int var1) {
-      if (super.invokeAction(var1)) {
+   protected boolean invokeAction(int action) {
+      if (super.invokeAction(action)) {
          return true;
       }
 
-      switch (var1) {
+      switch (action) {
          case 1:
-            int var2 = this._map.get(Character.toUpperCase(this.getFocusChar()));
-            return this.processSymbol(var2);
+            int symbol = this._map.get(Character.toUpperCase(this.getFocusChar()));
+            return this.processSymbol(symbol);
          default:
             return false;
       }
@@ -337,12 +337,12 @@ class SymbolScreen$SymbolField extends Field {
       return InternalServices.isReducedFormFactor();
    }
 
-   public boolean isCurrentPageEmpty(BasicEditField var1) {
-      IntEnumeration var2 = this._map.elements();
+   public boolean isCurrentPageEmpty(BasicEditField field) {
+      IntEnumeration enumeration = this._map.elements();
 
-      while (var2.hasMoreElements()) {
-         int var3 = var2.nextElement();
-         if (var3 != -1 && (var1 == null || var1.validate((char)var3))) {
+      while (enumeration.hasMoreElements()) {
+         int symbol = enumeration.nextElement();
+         if (symbol != -1 && (field == null || field.validate((char)symbol))) {
             return false;
          }
       }
@@ -350,9 +350,9 @@ class SymbolScreen$SymbolField extends Field {
       return true;
    }
 
-   public boolean isEmpty(TextField var1) {
-      for (int var2 = 0; var2 < this._pagesStandard; var2++) {
-         if (!this.isPageEmpty(var1, var2)) {
+   public boolean isEmpty(TextField field) {
+      for (int page = 0; page < this._pagesStandard; page++) {
+         if (!this.isPageEmpty(field, page)) {
             return false;
          }
       }
@@ -360,11 +360,11 @@ class SymbolScreen$SymbolField extends Field {
       return true;
    }
 
-   protected boolean isPageEmpty(TextField var1, int var2) {
-      for (int var3 = this._layout.length - 1; var3 >= 0; var3--) {
-         for (int var4 = this._layout[var3].length - 1; var4 >= 0; var4--) {
-            char var5 = this.getSymbol((char)this._keyCodes[var3][var4], var2);
-            if (var5 != 0 && (var1 == null || var1.validate(var5))) {
+   protected boolean isPageEmpty(TextField edit, int page) {
+      for (int i = this._layout.length - 1; i >= 0; i--) {
+         for (int j = this._layout[i].length - 1; j >= 0; j--) {
+            char replacement = this.getSymbol((char)this._keyCodes[i][j], page);
+            if (replacement != 0 && (edit == null || edit.validate(replacement))) {
                return false;
             }
          }
@@ -374,117 +374,123 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    @Override
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      return var1 == 514 ? EventHandler.getInstance().processKeyEvent(var1, var3, var2, var3, var4, true) : super.processKeyEvent(var1, var2, var3, var4);
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      return event == 514
+         ? EventHandler.getInstance().processKeyEvent(event, keycode, key, keycode, time, true)
+         : super.processKeyEvent(event, key, keycode, time);
    }
 
    @Override
-   protected boolean keyControl(char var1, int var2, int var3) {
-      boolean var4 = false;
-      if (var1 == 129 || var1 == 130) {
-         int var6 = var1 == 129 ? -1 : 1;
-         byte var7 = (byte)((this._focusRow + var6 + this._layout.length) % this._layout.length);
-         byte var8 = this._focusColumn >= this._layout[var7].length ? (byte)(this._layout[var7].length - 1) : this._focusColumn;
-         int var5 = var6 == -1 ? -(this._focusColumn + (this._layout[var7].length - var8)) : this._layout[this._focusRow].length - this._focusColumn + var8;
-         if (var5 != 0) {
-            return this.this$0.dispatchTrackwheelEvent(519, var5, var2, var3);
+   protected boolean keyControl(char character, int status, int time) {
+      boolean handled = false;
+      if (character == 129 || character == 130) {
+         int modifier = character == 129 ? -1 : 1;
+         byte goingToRow = (byte)((this._focusRow + modifier + this._layout.length) % this._layout.length);
+         byte goingToCol = this._focusColumn >= this._layout[goingToRow].length ? (byte)(this._layout[goingToRow].length - 1) : this._focusColumn;
+         int amount = modifier == -1
+            ? -(this._focusColumn + (this._layout[goingToRow].length - goingToCol))
+            : this._layout[this._focusRow].length - this._focusColumn + goingToCol;
+         if (amount != 0) {
+            return this.this$0.dispatchTrackwheelEvent(519, amount, status, time);
          }
 
-         var4 = true;
+         handled = true;
       }
 
-      if (!var4) {
-         var4 = super.keyControl(var1, var2, var3);
+      if (!handled) {
+         handled = super.keyControl(character, status, time);
       }
 
-      return var4;
+      return handled;
    }
 
    @Override
-   protected boolean keyDown(int var1, int var2) {
-      boolean var3 = super.keyDown(var1, var2);
-      if (!var3) {
-         boolean var4 = (var1 & 257) == 0;
-         var1 = Keypad.key(var1);
-         char var5 = Keypad.map(var1, 0);
-         if (this.this$0._inputMethodID == 512 && (!var4 || this.this$0._pageTimer != -1)) {
-            if (var5 > 'ﻠ') {
-               var5 -= 'ﻠ';
+   protected boolean keyDown(int keycode, int time) {
+      boolean handled = super.keyDown(keycode, time);
+      if (!handled) {
+         boolean noAlt = (keycode & 257) == 0;
+         keycode = Keypad.key(keycode);
+         char key = Keypad.map(keycode, 0);
+         if (this.this$0._inputMethodID == 512 && (!noAlt || this.this$0._pageTimer != -1)) {
+            if (key > 'ﻠ') {
+               key -= 'ﻠ';
             }
 
-            var5 = Keypad.getAltedChar(var5);
-            if (var5 > 'ﻠ') {
-               var5 -= 'ﻠ';
+            key = Keypad.getAltedChar(key);
+            if (key > 'ﻠ') {
+               key -= 'ﻠ';
             }
 
-            if ('0' <= var5 && var5 <= '9') {
+            if ('0' <= key && key <= '9') {
                if (this.this$0._pageTimer != -1) {
                   Application.getApplication().cancelInvokeLater(this.this$0._pageTimer);
                   this.this$0._pageTimer = -1;
-                  this.gotoPage(this.this$0._pendingPageNumber * 10 + var5 - 48 - 1, false);
+                  this.gotoPage(this.this$0._pendingPageNumber * 10 + key - 48 - 1, false);
                   return true;
                }
 
-               this.this$0._pendingPageNumber = var5 - '0';
+               this.this$0._pendingPageNumber = key - '0';
                this.this$0._pageTimer = Application.getApplication().invokeLater(new SymbolScreen$SymbolField$1(this), 500, false);
                return true;
             }
          }
 
-         switch (var5) {
+         switch (key) {
             case '\b':
             case ' ':
                this.this$0.close();
                return true;
-            case '\n':
-               int var8 = this._map.get(Character.toUpperCase(this.getFocusChar()));
-               return this.processSymbol(var8);
+            case '\n': {
+               int symbol = this._map.get(Character.toUpperCase(this.getFocusChar()));
+               return this.processSymbol(symbol);
+            }
             case '\u0080':
-               if (!this.nextPage(var4, true)) {
+               if (!this.nextPage(noAlt, true)) {
                   this.this$0.close();
                   return true;
                }
 
                this.invalidate();
                return true;
-            default:
-               int var6 = this._map.get(var1);
-               var3 = this.processSymbol(var6);
+            default: {
+               int symbol = this._map.get(keycode);
+               handled = this.processSymbol(symbol);
                if (!this._swapPages) {
-                  this.setFocusChar(var5);
+                  this.setFocusChar(key);
                }
+            }
          }
       }
 
       this.invalidate();
-      return var3;
+      return handled;
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   private boolean mapContains(int var1) {
-      return this._map.contains(var1);
+   private boolean mapContains(int c) {
+      return this._map.contains(c);
    }
 
-   protected boolean nextPage(boolean var1, boolean var2) {
-      if (var1) {
+   protected boolean nextPage(boolean forward, boolean wrap) {
+      if (forward) {
          this._currentPage++;
       } else {
          this._currentPage--;
       }
 
       if (this._currentPage >= this._pages.length) {
-         if (!var2 || this._pages.length <= 1) {
+         if (!wrap || this._pages.length <= 1) {
             this._currentPage = this._pages.length - 1;
             return false;
          }
 
          this._currentPage = 0;
       } else if (this._currentPage < 0) {
-         if (!var2) {
+         if (!wrap) {
             return false;
          }
 
@@ -496,36 +502,36 @@ class SymbolScreen$SymbolField extends Field {
       return true;
    }
 
-   protected void gotoPage(int var1) {
-      this.gotoPage(var1, true);
+   protected void gotoPage(int page) {
+      this.gotoPage(page, true);
    }
 
-   protected void gotoPage(int var1, boolean var2) {
-      if (var1 < 0 || var1 >= this._pages.length) {
-         if (!var2) {
+   protected void gotoPage(int page, boolean goAnyway) {
+      if (page < 0 || page >= this._pages.length) {
+         if (!goAnyway) {
             return;
          }
 
-         var1 = 0;
+         page = 0;
       }
 
-      this._currentPage = var1;
+      this._currentPage = page;
       this.initCurrentPageMap(this._pages[this._currentPage]);
       this.invalidate();
    }
 
    @Override
-   public int moveFocus(int var1, int var2, int var3) {
-      byte var4 = 0;
+   public int moveFocus(int amount, int status, int time) {
+      int ret = 0;
       if (Trackball.isSupported() || this.this$0._inputMethodID == 512) {
-         if ((var2 & 65536) == 0 && this.this$0._inputMethodID != 512 || (var2 & 1) != 0 && this.this$0._inputMethodID == 512) {
-            this._focusRow = (byte)(this._focusRow + var1);
-            int var5 = this._currentPage;
-            if (this._focusRow > this._layout.length - 1 && var1 > 0) {
+         if ((status & 65536) == 0 && this.this$0._inputMethodID != 512 || (status & 1) != 0 && this.this$0._inputMethodID == 512) {
+            this._focusRow = (byte)(this._focusRow + amount);
+            int currentPageBefore = this._currentPage;
+            if (this._focusRow > this._layout.length - 1 && amount > 0) {
                if (this._currentPage < this._pages.length - 1) {
                   this._focusRow = 0;
                   this.nextPage(true, true);
-                  if (this._currentPage == var5) {
+                  if (this._currentPage == currentPageBefore) {
                      this._focusRow = (byte)(this._layout.length - 1);
                   }
 
@@ -536,11 +542,11 @@ class SymbolScreen$SymbolField extends Field {
                   this._focusRow = 0;
                   this.gotoPage(0);
                }
-            } else if (this._focusRow < 0 && var1 < 0) {
+            } else if (this._focusRow < 0 && amount < 0) {
                if (this._currentPage > 0) {
                   this._focusRow = (byte)(this._layout.length - 1);
                   this.nextPage(false, true);
-                  if (this._currentPage == var5) {
+                  if (this._currentPage == currentPageBefore) {
                      this._focusRow = 0;
                   }
 
@@ -548,7 +554,7 @@ class SymbolScreen$SymbolField extends Field {
                } else {
                   this._focusRow = 0;
                   if (this.this$0._inputMethodID == 512) {
-                     var4 = -1;
+                     ret = -1;
                   }
                }
             }
@@ -557,17 +563,17 @@ class SymbolScreen$SymbolField extends Field {
                this._focusColumn--;
             }
          } else if (this.this$0._inputMethodID != 512) {
-            this._focusColumn = (byte)(this._focusColumn + var1);
-            if (var1 > 0 && this._focusColumn >= this._layout[this._focusRow].length) {
+            this._focusColumn = (byte)(this._focusColumn + amount);
+            if (amount > 0 && this._focusColumn >= this._layout[this._focusRow].length) {
                this._focusColumn = (byte)(this._layout[this._focusRow].length - 1);
-            } else if (var1 < 0 && this._focusColumn <= 0) {
+            } else if (amount < 0 && this._focusColumn <= 0) {
                this._focusColumn = 0;
             }
          }
       }
 
-      if (!Trackball.isSupported() && var2 == 0) {
-         this._focusColumn = (byte)(this._focusColumn + var1);
+      if (!Trackball.isSupported() && status == 0) {
+         this._focusColumn = (byte)(this._focusColumn + amount);
          if (this._focusColumn >= this._layout[this._focusRow].length) {
             this._focusColumn = (byte)(this._focusColumn - this._layout[this._focusRow].length);
             if (this._focusRow == this._layout.length - 1) {
@@ -583,7 +589,7 @@ class SymbolScreen$SymbolField extends Field {
             if (this._focusRow == 0) {
                this._focusRow = (byte)(this._layout.length - 1);
                if (this.this$0._inputMethodID == 512) {
-                  return var1;
+                  return amount;
                }
 
                this.nextPage(false, true);
@@ -601,45 +607,45 @@ class SymbolScreen$SymbolField extends Field {
          super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
       }
 
-      return var4;
+      return ret;
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   protected void paintSymbol(Graphics var1, char var2, int var3, int var4, int var5, int var6) {
-      if (var2 != 8646) {
-         var1.drawText(var2, var3, var4, 4, var5);
-         this._symbolFont.getGlyphMetrics(var2, this._glyphMetrics);
+   protected void paintSymbol(Graphics graphics, char symbol, int x, int y, int width, int height) {
+      if (symbol != 8646) {
+         graphics.drawText(symbol, x, y, 4, width);
+         this._symbolFont.getGlyphMetrics(symbol, this._glyphMetrics);
          this._maxIBearingY = Math.max(this._maxIBearingY, -(this._symbolFont.getAscent() + this._symbolFont.getLeading() + this._glyphMetrics.iBearingY));
       } else {
          if (this.this$0._inputMethodID == 512) {
-            byte var7 = 0;
-            if (var7 != -1) {
-               MediaIcon.COLLECTION.paint(var1, var3, var4 - 2, var5, var6 + 6, var7);
+            int icon = 0;
+            if (icon != -1) {
+               MediaIcon.COLLECTION.paint(graphics, x, y - 2, width, height + 6, icon);
                return;
             }
          } else {
-            int var8 = this._currentPage < this._pages.length - 1 ? 0 : (this.isCycling() ? 4 : -1);
-            if (var8 != -1) {
-               MediaIcon.COLLECTION.paint(var1, var3, var4, var5, var6, var8);
+            int icon = this._currentPage < this._pages.length - 1 ? 0 : (this.isCycling() ? 4 : -1);
+            if (icon != -1) {
+               MediaIcon.COLLECTION.paint(graphics, x, y, width, height, icon);
             }
          }
       }
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
-      int var3 = this._map.get(Character.toUpperCase(this.getFocusChar()));
-      return this.processSymbol(var3);
+   protected boolean trackwheelClick(int status, int time) {
+      int symbol = this._map.get(Character.toUpperCase(this.getFocusChar()));
+      return this.processSymbol(symbol);
    }
 
-   private boolean processSymbol(int var1) {
+   private boolean processSymbol(int symbol) {
       this._swapPages = false;
-      if (var1 != -1) {
-         if (var1 == 8646) {
+      if (symbol != -1) {
+         if (symbol == 8646) {
             this._swapPages = true;
             if (!this.nextPage(true, true)) {
                this.this$0.close();
@@ -650,8 +656,8 @@ class SymbolScreen$SymbolField extends Field {
             }
          } else {
             if (this._pages[this._currentPage] >= this._pagesStandard
-               || this.this$0._targetEditField != null && this.this$0._targetEditField.validate((char)var1)) {
-               this.send((char)var1);
+               || this.this$0._targetEditField != null && this.this$0._targetEditField.validate((char)symbol)) {
+               this.send((char)symbol);
                this.this$0.close();
             }
 
@@ -669,22 +675,22 @@ class SymbolScreen$SymbolField extends Field {
       this.nextPage(true, true);
    }
 
-   void send(char var1) {
-      if (var1 != ' ' && (this.this$0._targetEditField == null || this.this$0._targetEditField.validate(var1))) {
-         byte var2 = 0;
-         Screen var3 = this.this$0.getTarget().getScreen();
-         var3.processKeyEvent(513, var1, 32768, var2);
+   void send(char ch) {
+      if (ch != ' ' && (this.this$0._targetEditField == null || this.this$0._targetEditField.validate(ch))) {
+         int time = 0;
+         Screen screen = this.this$0.getTarget().getScreen();
+         screen.processKeyEvent(513, ch, 32768, time);
       }
    }
 
-   protected void setDescription(String var1) {
-      this._description = var1;
+   protected void setDescription(String description) {
+      this._description = description;
       this.invalidate();
    }
 
    @Override
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
-      return this.trackwheelClick(var3, var4);
+   protected boolean stylusTap(int x, int y, int status, int time) {
+      return this.trackwheelClick(status, time);
    }
 
    protected void updateDescription() {
@@ -698,9 +704,9 @@ class SymbolScreen$SymbolField extends Field {
             return;
          }
       } else {
-         Object[] var1 = new Object[]{new Object(this._currentPage + 1), new Object(this._pages.length)};
+         Object[] params = new Object[]{new Object(this._currentPage + 1), new Object(this._pages.length)};
          this._pageBuffer.setLength(0);
-         this._pageFormatter.format(var1, this._pageBuffer, null);
+         this._pageFormatter.format(params, this._pageBuffer, null);
       }
    }
 }

@@ -1,6 +1,6 @@
 package net.rim.device.api.system;
 
 public final class ApplicationManagerException extends Exception {
-   public ApplicationManagerException(String var1) {
+   public ApplicationManagerException(String s) {
    }
 }

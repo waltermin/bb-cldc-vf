@@ -18,32 +18,32 @@ public final class Manager {
    private Manager() {
    }
 
-   public static final String[] getSupportedContentTypes(String var0) {
+   public static final String[] getSupportedContentTypes(String protocol) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public static final String[] getSupportedProtocols(String var0) {
+   public static final String[] getSupportedProtocols(String content_type) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static final Player createPlayer(String var0) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static final Player createPlayer(DataSource var0) {
-      assertPermission();
-      return createPlayerImpl(var0);
-   }
-
-   public static final Player createPlayer(InputStream var0, String var1) {
+   public static final Player createPlayer(String locator) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   private static final Player createPlayerImpl(DataSource var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final Player createPlayer(DataSource source) {
+      assertPermission();
+      return createPlayerImpl(source);
    }
 
-   public static final void playTone(int var0, int var1, int var2) {
+   public static final Player createPlayer(InputStream stream, String type) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   private static final Player createPlayerImpl(DataSource source) {
+      throw new RuntimeException("cod2jar: ldc");
+   }
+
+   public static final void playTone(int note, int duration, int volume) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

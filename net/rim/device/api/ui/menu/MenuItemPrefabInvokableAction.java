@@ -5,9 +5,9 @@ import net.rim.device.api.ui.InvokableAction;
 final class MenuItemPrefabInvokableAction extends MenuItemPrefab {
    private InvokableAction _action;
 
-   MenuItemPrefabInvokableAction(InvokableAction var1) {
-      super(var1.getActionId());
-      this._action = var1;
+   MenuItemPrefabInvokableAction(InvokableAction action) {
+      super(action.getActionId());
+      this._action = action;
    }
 
    @Override

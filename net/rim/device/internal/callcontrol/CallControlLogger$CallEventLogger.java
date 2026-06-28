@@ -3,117 +3,117 @@ package net.rim.device.internal.callcontrol;
 class CallControlLogger$CallEventLogger extends AbstractCallEventHandler {
    private final CallControlLogger this$0;
 
-   public CallControlLogger$CallEventLogger(CallControlLogger var1, int var2) {
-      super(var2);
-      this.this$0 = var1;
+   public CallControlLogger$CallEventLogger(CallControlLogger _1, int order) {
+      super(order);
+      this.this$0 = _1;
    }
 
    @Override
-   public void callAdded(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.ADDED, var1);
-      this.getNext().callAdded(var1);
+   public void callAdded(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.ADDED, callId);
+      this.getNext().callAdded(callId);
    }
 
    @Override
-   public void callConnected(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.CONNECTED, var1);
-      this.getNext().callConnected(var1);
+   public void callConnected(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.CONNECTED, callId);
+      this.getNext().callConnected(callId);
    }
 
    @Override
-   public void callDelivered(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.DELIVERED, var1);
-      this.getNext().callDelivered(var1);
+   public void callDelivered(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.DELIVERED, callId);
+      this.getNext().callDelivered(callId);
    }
 
    @Override
-   public void callDisconnected(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.DISCONNECTED, var1);
-      this.getNext().callDisconnected(var1);
+   public void callDisconnected(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.DISCONNECTED, callId);
+      this.getNext().callDisconnected(callId);
    }
 
    @Override
-   public void callDisplayUpdated(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.UPDATED, var1);
-      this.getNext().callDisplayUpdated(var1);
+   public void callDisplayUpdated(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.UPDATED, callId);
+      this.getNext().callDisplayUpdated(callId);
    }
 
    @Override
-   public void callFailed(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.FAILED, var1, var2);
-      this.getNext().callFailed(var1, var2);
+   public void callFailed(int callId, int error) {
+      this.this$0.logEvent(0, CallControlLogger.FAILED, callId, error);
+      this.getNext().callFailed(callId, error);
    }
 
    @Override
-   public void callHeld(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.HELD, var1);
-      this.getNext().callHeld(var1);
+   public void callHeld(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.HELD, callId);
+      this.getNext().callHeld(callId);
    }
 
    @Override
-   public void callIncoming(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.INCOMING, var1);
-      this.getNext().callIncoming(var1);
+   public void callIncoming(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.INCOMING, callId);
+      this.getNext().callIncoming(callId);
    }
 
    @Override
-   public void callInitiated(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.INITIATED, var1);
-      this.getNext().callInitiated(var1);
+   public void callInitiated(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.INITIATED, callId);
+      this.getNext().callInitiated(callId);
    }
 
    @Override
-   public void callManipulateFailed(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.MANIPULATEFAILED, var1, var2);
-      this.getNext().callManipulateFailed(var1, var2);
+   public void callManipulateFailed(int callId, int error) {
+      this.this$0.logEvent(0, CallControlLogger.MANIPULATEFAILED, callId, error);
+      this.getNext().callManipulateFailed(callId, error);
    }
 
    @Override
-   public void callOTAStatusUpdated(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.OTAUPDATED, var1, var2);
-      this.getNext().callOTAStatusUpdated(var1, var2);
+   public void callOTAStatusUpdated(int callId, int status) {
+      this.this$0.logEvent(0, CallControlLogger.OTAUPDATED, callId, status);
+      this.getNext().callOTAStatusUpdated(callId, status);
    }
 
    @Override
-   public void callRemoved(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.REMOVED, var1);
-      this.getNext().callRemoved(var1);
+   public void callRemoved(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.REMOVED, callId);
+      this.getNext().callRemoved(callId);
    }
 
    @Override
-   public void callResumed(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.RESUMED, var1);
-      this.getNext().callResumed(var1);
+   public void callResumed(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.RESUMED, callId);
+      this.getNext().callResumed(callId);
    }
 
    @Override
-   public void callTransferred(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.XFER, var1, var2);
-      this.getNext().callTransferred(var1, var2);
+   public void callTransferred(int status, int reason) {
+      this.this$0.logEvent(0, CallControlLogger.XFER, status, reason);
+      this.getNext().callTransferred(status, reason);
    }
 
    @Override
-   public void callWaiting(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.WAITING, var1);
-      this.getNext().callWaiting(var1);
+   public void callWaiting(int callId) {
+      this.this$0.logEvent(0, CallControlLogger.WAITING, callId);
+      this.getNext().callWaiting(callId);
    }
 
    @Override
-   public void callVoicePrivacyUpdated(int var1, boolean var2) {
-      this.this$0.logEvent(0, CallControlLogger.PRIVACY, var1, var2);
-      this.getNext().callVoicePrivacyUpdated(var1, var2);
+   public void callVoicePrivacyUpdated(int callId, boolean on) {
+      this.this$0.logEvent(0, CallControlLogger.PRIVACY, callId, on);
+      this.getNext().callVoicePrivacyUpdated(callId, on);
    }
 
    @Override
-   public void callTransferStateUpdated(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.XFERUPDATED, var1, var2);
-      this.getNext().callTransferStateUpdated(var1, var2);
+   public void callTransferStateUpdated(int callId, int state) {
+      this.this$0.logEvent(0, CallControlLogger.XFERUPDATED, callId, state);
+      this.getNext().callTransferStateUpdated(callId, state);
    }
 
    @Override
-   public void callTimerUpdated(int var1, int var2) {
-      this.this$0.logEvent(5, CallControlLogger.TIMER, var1, var2);
-      this.getNext().callTimerUpdated(var1, var2);
+   public void callTimerUpdated(int callId, int time) {
+      this.this$0.logEvent(5, CallControlLogger.TIMER, callId, time);
+      this.getNext().callTimerUpdated(callId, time);
    }
 
    @Override
@@ -123,27 +123,27 @@ class CallControlLogger$CallEventLogger extends AbstractCallEventHandler {
    }
 
    @Override
-   public void responseEnableFDN(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.ENABLEFDN, var1);
-      this.getNext().responseEnableFDN(var1);
+   public void responseEnableFDN(int status) {
+      this.this$0.logEvent(0, CallControlLogger.ENABLEFDN, status);
+      this.getNext().responseEnableFDN(status);
    }
 
    @Override
-   public void ssNotification(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.SSNOTIFY, var1);
-      this.getNext().ssNotification(var1);
+   public void ssNotification(int ssOption) {
+      this.this$0.logEvent(0, CallControlLogger.SSNOTIFY, ssOption);
+      this.getNext().ssNotification(ssOption);
    }
 
    @Override
-   public void ssPasswordRequested(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.SSPWDREQUESTED, var1);
-      this.getNext().ssPasswordRequested(var1);
+   public void ssPasswordRequested(int requestType) {
+      this.this$0.logEvent(0, CallControlLogger.SSPWDREQUESTED, requestType);
+      this.getNext().ssPasswordRequested(requestType);
    }
 
    @Override
-   public void ssRequestFailed(int var1, int var2, boolean var3) {
-      this.this$0.logEvent(0, CallControlLogger.SSRQFAIL, var1, var2, var3);
-      this.getNext().ssRequestFailed(var1, var2, var3);
+   public void ssRequestFailed(int reason, int bearerService, boolean isUSSDCmd) {
+      this.this$0.logEvent(0, CallControlLogger.SSRQFAIL, reason, bearerService, isUSSDCmd);
+      this.getNext().ssRequestFailed(reason, bearerService, isUSSDCmd);
    }
 
    @Override
@@ -153,39 +153,39 @@ class CallControlLogger$CallEventLogger extends AbstractCallEventHandler {
    }
 
    @Override
-   public void ssRequestRejected(boolean var1) {
-      this.this$0.logEvent(0, CallControlLogger.SSRQREJECTED, var1);
-      this.getNext().ssRequestRejected(var1);
+   public void ssRequestRejected(boolean isUSSDCmd) {
+      this.this$0.logEvent(0, CallControlLogger.SSRQREJECTED, isUSSDCmd);
+      this.getNext().ssRequestRejected(isUSSDCmd);
    }
 
    @Override
-   public void ssRequestReleased(boolean var1) {
-      this.this$0.logEvent(0, CallControlLogger.SSRQRELEASED, var1);
-      this.getNext().ssRequestReleased(var1);
+   public void ssRequestReleased(boolean isUSSDCmd) {
+      this.this$0.logEvent(0, CallControlLogger.SSRQRELEASED, isUSSDCmd);
+      this.getNext().ssRequestReleased(isUSSDCmd);
    }
 
    @Override
-   public void ssRequestSucceeded(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
-      this.this$0.logEvent(0, CallControlLogger.SSRQSUCCESS, var1, var2, var3, var4, var5, var6);
-      this.getNext().ssRequestSucceeded(var1, var2, var3, var4, var5, var6);
+   public void ssRequestSucceeded(int ss, int action, int result, int bearerService, boolean isUSSDCmd, boolean forwardingNumberAvailable) {
+      this.this$0.logEvent(0, CallControlLogger.SSRQSUCCESS, ss, action, result, bearerService, isUSSDCmd, forwardingNumberAvailable);
+      this.getNext().ssRequestSucceeded(ss, action, result, bearerService, isUSSDCmd, forwardingNumberAvailable);
    }
 
    @Override
-   public void ssUpdated(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.SSUPDATED, var1, var2);
-      this.getNext().ssUpdated(var1, var2);
+   public void ssUpdated(int ssOption, int state) {
+      this.this$0.logEvent(0, CallControlLogger.SSUPDATED, ssOption, state);
+      this.getNext().ssUpdated(ssOption, state);
    }
 
    @Override
-   public void ssUssDisplay(byte[] var1, int var2, boolean var3) {
-      this.this$0.logEvent(0, CallControlLogger.SSUSSD, var1, var2, var3);
-      this.getNext().ssUssDisplay(var1, var2, var3);
+   public void ssUssDisplay(byte[] data, int messageCoding, boolean collectInput) {
+      this.this$0.logEvent(0, CallControlLogger.SSUSSD, data, messageCoding, collectInput);
+      this.getNext().ssUssDisplay(data, messageCoding, collectInput);
    }
 
    @Override
-   public void voiceLineChanged(int var1) {
-      this.this$0.logEvent(0, CallControlLogger.LINECHANGED, var1);
-      this.getNext().voiceLineChanged(var1);
+   public void voiceLineChanged(int line) {
+      this.this$0.logEvent(0, CallControlLogger.LINECHANGED, line);
+      this.getNext().voiceLineChanged(line);
    }
 
    @Override
@@ -195,14 +195,14 @@ class CallControlLogger$CallEventLogger extends AbstractCallEventHandler {
    }
 
    @Override
-   public void voicemailCountUpdated(int var1, int var2) {
-      this.this$0.logEvent(0, CallControlLogger.VMCOUNTUPDATED, var1, var2);
-      this.getNext().voicemailCountUpdated(var1, var2);
+   public void voicemailCountUpdated(int line, int count) {
+      this.this$0.logEvent(0, CallControlLogger.VMCOUNTUPDATED, line, count);
+      this.getNext().voicemailCountUpdated(line, count);
    }
 
    @Override
-   public void dtmfData(int var1) {
-      this.this$0.logEvent(4, CallControlLogger.DTMFDATA, var1);
-      this.getNext().dtmfData(var1);
+   public void dtmfData(int dtmf) {
+      this.this$0.logEvent(4, CallControlLogger.DTMFDATA, dtmf);
+      this.getNext().dtmfData(dtmf);
    }
 }

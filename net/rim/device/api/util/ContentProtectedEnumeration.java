@@ -6,8 +6,8 @@ import net.rim.device.api.system.PersistentContent;
 class ContentProtectedEnumeration implements Enumeration {
    private Enumeration _enum;
 
-   public ContentProtectedEnumeration(Enumeration var1) {
-      this._enum = var1;
+   public ContentProtectedEnumeration(Enumeration enumeration) {
+      this._enum = enumeration;
    }
 
    @Override

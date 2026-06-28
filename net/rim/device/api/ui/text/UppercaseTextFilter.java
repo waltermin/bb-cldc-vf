@@ -2,13 +2,13 @@ package net.rim.device.api.ui.text;
 
 public class UppercaseTextFilter extends TextFilter {
    @Override
-   public char convert(char var1, int var2) {
-      return Character.toUpperCase(var1);
+   public char convert(char character, int status) {
+      return Character.toUpperCase(character);
    }
 
    @Override
-   public boolean validate(char var1) {
-      return Character.isUpperCase(var1);
+   public boolean validate(char character) {
+      return Character.isUpperCase(character);
    }
 
    @Override

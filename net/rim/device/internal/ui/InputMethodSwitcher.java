@@ -27,8 +27,8 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    private Locale _selectedLocale;
    private boolean _closing;
 
-   public final void selectNext(int var1) {
-      if ((var1 & 1) == 0) {
+   public final void selectNext(int status) {
+      if ((status & 1) == 0) {
          this.closeSwitcher(false);
       }
 
@@ -36,37 +36,37 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    @Override
-   public final int getPreferredWidth(ListField var1) {
+   public final int getPreferredWidth(ListField listField) {
       return this.getPreferredWidth();
    }
 
    @Override
-   public final Object get(ListField var1, int var2) {
-      return this._imNames[var2];
+   public final Object get(ListField listField, int index) {
+      return this._imNames[index];
    }
 
    @Override
-   public final int indexOfList(ListField var1, String var2, int var3) {
+   public final int indexOfList(ListField listField, String prefix, int start) {
       return -1;
    }
 
    @Override
-   public final void drawListRow(ListField var1, Graphics var2, int var3, int var4, int var5) {
-      if (var3 > -1 && var3 < this._imNames.length) {
-         var2.drawText(this._imNames[var3], 0, var4, 64, var5);
+   public final void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
+      if (index > -1 && index < this._imNames.length) {
+         graphics.drawText(this._imNames[index], 0, y, 64, width);
       }
    }
 
    @Override
-   public final void focusChanged(Field var1, int var2) {
-      if (var2 == 2) {
+   public final void focusChanged(Field field, int action) {
+      if (action == 2) {
          this._selectedIM = this._listField.getSelectedIndex();
       }
    }
 
    @Override
-   public final void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      if (var1 == 5961289116197897667L && var3 == 1 && var4 != 1) {
+   public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 5961289116197897667L && data0 == 1 && data1 != 1) {
          this.doCloseSwitcher(false);
       }
    }
@@ -77,41 +77,41 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    @Override
-   protected final void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1 && !this._startedFromMenu) {
+   protected final void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached && !this._startedFromMenu) {
          this.selectNext(1);
       }
    }
 
-   public InputMethodSwitcher(Locale[] var1, String[] var2, boolean var3, Runnable var4) {
+   public InputMethodSwitcher(Locale[] inputLocales, String[] inputLocalesNames, boolean startedFromMenu, Runnable onExit) {
       super((Manager)(new Object(299067162755072L)), 0);
-      this._startedFromMenu = var3;
+      this._startedFromMenu = startedFromMenu;
       if (this._startedFromMenu) {
          InputContext.getInstance().setIMSwitchEnabled(false);
       }
 
-      this._onExit = var4;
+      this._onExit = onExit;
       this._app = UiApplication.getUiApplication();
       this._app.addGlobalEventListener(this);
-      this._imNames = var2;
-      this._imLocales = var1;
+      this._imNames = inputLocalesNames;
+      this._imLocales = inputLocales;
       this._listField = (ListField)(new Object(this._imLocales.length, 8));
       this._listField.setCallback(this);
       this._listField.setFocusListener(this);
       this.add(this._listField);
       this.setIndex(0);
-      boolean var5 = ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(2), 51);
-      int var6 = var5 ? -1073741823 : -1;
+      boolean isRIM = ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(2), 51);
+      int priority = isRIM ? -1073741823 : -1;
       if (ApplicationManager.getApplicationManager().isSystemLocked()) {
-         var6 = -1073741825;
+         priority = -1073741825;
       }
 
-      this._app.pushGlobalScreen(this, var6, 6);
+      this._app.pushGlobalScreen(this, priority, 6);
    }
 
-   private final void setIndex(int var1) {
-      this._selectedIM = var1;
+   private final void setIndex(int index) {
+      this._selectedIM = index;
       if (this._selectedIM >= this._imNames.length) {
          this._selectedIM = 0;
       }
@@ -120,30 +120,38 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    @Override
-   protected final boolean trackwheelClick(int var1, int var2) {
+   protected final boolean trackwheelClick(int status, int time) {
       this.closeSwitcher(true);
       return true;
    }
 
-   private final void closeSwitcher(boolean var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private final void closeSwitcher(boolean selected) {
+      boolean oldClosing;
+      synchronized (this) {
+         oldClosing = this._closing;
+         this._closing = true;
+      }
+
+      if (!oldClosing) {
+         this.doCloseSwitcher(selected);
+      }
    }
 
-   private final void doCloseSwitcher(boolean var1) {
+   private final void doCloseSwitcher(boolean selected) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   protected final boolean keyStatus(int var1, int var2) {
-      if (!this._startedFromMenu && Keypad.status(var1) != 32768) {
-         this.closeSwitcher(Keypad.key(var1) == 257);
+   protected final boolean keyStatus(int keycode, int time) {
+      if (!this._startedFromMenu && Keypad.status(keycode) != 32768) {
+         this.closeSwitcher(Keypad.key(keycode) == 257);
       }
 
       return true;
    }
 
-   private final void onEnter(int var1) {
-      if (!this._startedFromMenu && (var1 & 1) != 0) {
+   private final void onEnter(int status) {
+      if (!this._startedFromMenu && (status & 1) != 0) {
          this.setIndex(this._selectedIM + 1);
       } else {
          this.closeSwitcher(true);
@@ -151,32 +159,32 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    @Override
-   protected final boolean keyDown(int var1, int var2) {
-      int var3 = Keypad.status(var1);
-      var1 = Keypad.keycode((char)Keypad.key(var1), var3 & -2);
-      switch (Keypad.map(var1)) {
+   protected final boolean keyDown(int keycode, int time) {
+      int status = Keypad.status(keycode);
+      keycode = Keypad.keycode((char)Keypad.key(keycode), status & -2);
+      switch (Keypad.map(keycode)) {
          case '\n':
-            this.onEnter(var3);
+            this.onEnter(status);
             return true;
          case '\u001b':
-            if (this._startedFromMenu || (var3 & 1) == 0) {
+            if (this._startedFromMenu || (status & 1) == 0) {
                this.closeSwitcher(false);
             }
 
             return true;
          default:
-            return super.keyDown(var1, var2);
+            return super.keyDown(keycode, time);
       }
    }
 
    @Override
-   protected final boolean navigationClick(int var1, int var2) {
-      this.onEnter(var1);
+   protected final boolean navigationClick(int status, int time) {
+      this.onEnter(status);
       return true;
    }
 
    @Override
-   protected final boolean keyChar(char var1, int var2, int var3) {
+   protected final boolean keyChar(char key, int status, int time) {
       return true;
    }
 }

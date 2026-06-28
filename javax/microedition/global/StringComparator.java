@@ -13,56 +13,56 @@ public final class StringComparator {
    public StringComparator() {
    }
 
-   public StringComparator(String var1) {
-      this(var1, 1);
+   public StringComparator(String locale) {
+      this(locale, 1);
    }
 
-   public StringComparator(String var1, int var2) {
+   public StringComparator(String locale, int level) {
    }
 
-   public final int compare(String var1, String var2) {
-      if (var1 == null || var2 == null) {
+   public final int compare(String s1, String s2) {
+      if (s1 == null || s2 == null) {
          throw new Object();
       }
 
       if (this._locale == null) {
-         return var1.compareTo(var2);
+         return s1.compareTo(s2);
       }
 
       switch (this._level) {
          case 3:
-            int var5 = this.compare(var1, var2, 1);
+            int var5 = this.compare(s1, s2, 1);
             if (var5 == 0) {
-               var5 = this.compare(var1, var2, 2);
+               var5 = this.compare(s1, s2, 2);
                if (var5 == 0) {
-                  var5 = this.compare(var1, var2, 3);
+                  var5 = this.compare(s1, s2, 3);
                }
             }
 
             return var5;
          case 15:
-            int var3 = this.compare(var1, var2, 15);
+            int result = this.compare(s1, s2, 15);
          case 2:
-            int var4 = this.compare(var1, var2, 1);
+            int var4 = this.compare(s1, s2, 1);
             if (var4 == 0) {
-               var4 = this.compare(var1, var2, 2);
+               var4 = this.compare(s1, s2, 2);
             }
 
             return var4;
          default:
-            return this.compare(var1, var2, 1);
+            return this.compare(s1, s2, 1);
       }
    }
 
-   private final int compare(String var1, String var2, int var3) {
+   private final int compare(String s1, String s2, int level) {
       switch (this._level) {
          default:
-            return var1.compareTo(var2);
+            return s1.compareTo(s2);
       }
    }
 
-   public final boolean equals(String var1, String var2) {
-      return this.compare(var1, var2) == 0;
+   public final boolean equals(String s1, String s2) {
+      return this.compare(s1, s2) == 0;
    }
 
    public final int getLevel() {
@@ -77,7 +77,7 @@ public final class StringComparator {
       return new String[0];
    }
 
-   private final boolean isSupportedLocale(String var1) {
-      return Arrays.contains(getSupportedLocales(), var1);
+   private final boolean isSupportedLocale(String locale) {
+      return Arrays.contains(getSupportedLocales(), locale);
    }
 }

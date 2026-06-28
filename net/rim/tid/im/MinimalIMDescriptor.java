@@ -30,7 +30,7 @@ public class MinimalIMDescriptor implements InputMethodDescriptor {
    }
 
    @Override
-   public String getInputMethodDisplayName(Locale var1, Locale var2) {
+   public String getInputMethodDisplayName(Locale inputLocale, Locale displayLanguage) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -39,8 +39,8 @@ public class MinimalIMDescriptor implements InputMethodDescriptor {
       return new MinimalInputMethod(this.getAvailableLocales());
    }
 
-   protected static boolean verifySystemModulePresent(Locale var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected static boolean verifySystemModulePresent(Locale locale) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -54,7 +54,7 @@ public class MinimalIMDescriptor implements InputMethodDescriptor {
    }
 
    @Override
-   public CustomWordsRepository getRepository(int var1) {
+   public CustomWordsRepository getRepository(int type) {
       return null;
    }
 

@@ -1,6 +1,7 @@
 package net.rim.device.internal.crypto.fips;
 
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -8,6 +9,7 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
+import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -23,7 +25,7 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
    private boolean _startupRun;
    private final ResourceBundle _rb;
 
-   SelfTestsDialog(SelfTests var1, String[] var2, boolean var3, boolean[] var4) {
+   SelfTestsDialog(SelfTests selfTests, String[] tests, boolean startupRun, boolean[] testResults) {
    }
 
    final void display() {
@@ -34,51 +36,82 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
       }
    }
 
-   final void setTestPassed(int var1, boolean var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   final void setTestPassed(int passedIndex, boolean selectItem) {
+      this._testResults[passedIndex] = true;
+      synchronized (Application.getApplication().getAppEventLock()) {
+         if (selectItem) {
+            this._listField.setSelectedIndex(passedIndex);
+         }
+
+         this._listField.invalidate(passedIndex);
+      }
    }
 
-   final void setTestFailed(int var1) {
+   final void setTestFailed(int failedIndex) {
    }
 
    final void testsPassed() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getApplication().getAppEventLock()) {
+         RichTextField resultsField = (RichTextField)(new Object(this._rb.getString(2), 36028797019226112L));
+         this._vfmScroll.add(resultsField);
+         if (!this._startupRun) {
+            this.addOkButton();
+            this._okButton.setFocus();
+         } else {
+            resultsField.setFocus();
+         }
+      }
+
+      if (this._startupRun) {
+         try {
+            Thread.sleep(1000);
+         } catch (InterruptedException var4) {
+         }
+
+         synchronized (Application.getApplication().getAppEventLock()) {
+            this.closeDialog();
+         }
+      }
    }
 
    private final void addOkButton() {
-      Object var1 = new Object(12884901888L);
+      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
       this._okButton = (ButtonField)(new Object(CommonResource.getString(100)));
-      ((HorizontalFieldManager)var1).add(this._okButton);
-      this._vfmScroll.add((Field)var1);
+      buttonManager.add(this._okButton);
+      this._vfmScroll.add(buttonManager);
    }
 
    final void testsFailed() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (Application.getApplication().getAppEventLock()) {
+         this._vfmScroll.add((Field)(new Object(this._rb.getString(3), 36028797019226112L)));
+         this.addOkButton();
+         this._okButton.setFocus();
+      }
    }
 
    @Override
-   public final void drawListRow(ListField var1, Graphics var2, int var3, int var4, int var5) {
+   public final void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public final int getPreferredWidth(ListField var1) {
+   public final int getPreferredWidth(ListField listField) {
       return Display.getWidth();
    }
 
    @Override
-   public final int indexOfList(ListField var1, String var2, int var3) {
+   public final int indexOfList(ListField listField, String prefix, int start) {
       return -1;
    }
 
    @Override
-   public final Object get(ListField var1, int var2) {
-      return var1 == this._listField && var2 >= 0 && var2 < this._tests.length ? this._tests[var2] : null;
+   public final Object get(ListField listField, int index) {
+      return listField == this._listField && index >= 0 && index < this._tests.length ? this._tests[index] : null;
    }
 
    @Override
-   protected final boolean trackwheelClick(int var1, int var2) {
-      super.trackwheelClick(var1, var2);
+   protected final boolean trackwheelClick(int status, int time) {
+      super.trackwheelClick(status, time);
       if (this._okButton != null) {
          this.closeDialog();
       }
@@ -87,13 +120,13 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
    }
 
    @Override
-   protected final boolean keyChar(char var1, int var2, int var3) {
-      boolean var4 = super.keyChar(var1, var2, var3);
-      if (this._okButton != null && (this.getLeafFieldWithFocus() == this._okButton && var1 == '\n' || var1 == 27)) {
+   protected final boolean keyChar(char key, int status, int time) {
+      boolean ret = super.keyChar(key, status, time);
+      if (this._okButton != null && (this.getLeafFieldWithFocus() == this._okButton && key == '\n' || key == 27)) {
          this.closeDialog();
       }
 
-      return var4;
+      return ret;
    }
 
    private final void closeDialog() {
@@ -101,9 +134,9 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
    }
 
    @Override
-   public final void onUiEngineAttached(boolean var1) {
-      super.onUiEngineAttached(var1);
-      if (var1 && this._selfTests != null) {
+   public final void onUiEngineAttached(boolean attached) {
+      super.onUiEngineAttached(attached);
+      if (attached && this._selfTests != null) {
          this._selfTests.dialogDisplayed();
       }
    }

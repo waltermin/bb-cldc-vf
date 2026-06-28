@@ -1,114 +1,161 @@
 package net.rim.device.internal.system;
 
+import java.io.EOFException;
 import java.util.Enumeration;
 import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.util.CollectionListenerManager;
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.api.synchronization.OTASyncCapable;
 import net.rim.device.api.synchronization.SyncCollection;
 import net.rim.device.api.synchronization.SyncCollectionSchema;
 import net.rim.device.api.synchronization.SyncConverter;
+import net.rim.device.api.synchronization.SyncManager;
 import net.rim.device.api.synchronization.SyncObject;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleGroup;
+import net.rim.device.api.system.CodeModuleGroupManager;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.CRC32;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntVector;
+import net.rim.device.internal.proxy.Proxy;
 
 public class CodeModuleGroupPropertiesCollection implements SyncCollection, SyncConverter, CollectionEventSource, OTASyncCapable, GlobalEventListener {
    private PersistentObject _persist;
    private IntHashtable _properties;
    private CodeModuleGroupPropertiesCollection$CheckGroupsThread _checkGroupsThread;
-   private CollectionListenerManager _listeners;
+   private CollectionListenerManager _listeners = (CollectionListenerManager)(new Object());
    private static final long PROPERTIES_ID;
    private static final int TYPE_PROPERTY_KEY;
    private static final int TYPE_PROPERTY_VALUE;
    private static Object _lock;
 
    private CodeModuleGroupPropertiesCollection() {
+      this._persist = RIMPersistentStore.getPersistentObject(-1494190557092396307L);
+      synchronized (this._persist) {
+         if (this._persist.getContents() == null) {
+            this._persist.setContents(new Object(), 51);
+            this._persist.commit();
+         }
+      }
+
+      this._properties = (IntHashtable)this._persist.getContents();
    }
 
    public static CodeModuleGroupPropertiesCollection getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      CodeModuleGroupPropertiesCollection var1 = (CodeModuleGroupPropertiesCollection)var0.getOrWaitFor(-1494190557092396307L);
-      if (var1 == null) {
-         var1 = new CodeModuleGroupPropertiesCollection();
-         var0.put(-1494190557092396307L, var1);
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      CodeModuleGroupPropertiesCollection properties = (CodeModuleGroupPropertiesCollection)ar.getOrWaitFor(-1494190557092396307L);
+      if (properties == null) {
+         properties = new CodeModuleGroupPropertiesCollection();
+         ar.put(-1494190557092396307L, properties);
       }
 
-      return var1;
+      return properties;
    }
 
    public static void CodeModuleGroupPropertiesCollectionMain() {
-      throw new RuntimeException("cod2jar: exception table");
+      CodeModuleGroupPropertiesCollection instance = getInstance();
+
+      try {
+         CodeModuleGroup[] groups = CodeModuleGroupManager.loadAll();
+         instance.checkGroupInformation(groups);
+      } catch (Exception var2) {
+      }
+
+      Proxy.getInstance().addGlobalEventListener(instance);
+      SyncManager sm = SyncManager.getInstance();
+      if (sm != null) {
+         sm.enableSynchronization(instance, true);
+      }
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public static int getGroupUID(String var0) {
-      return CRC32.update(-1, var0.getBytes());
-   }
-
-   private void checkGroupInformation(CodeModuleGroup[] var1) {
-      if (var1 != null) {
-         this.checkAddedGroupInformation(var1);
-         this.checkDeletedGroupInformation(var1);
-      }
-   }
-
-   private void checkAddedGroupInformation(CodeModuleGroup[] var1) {
-      for (int var2 = 0; var2 < var1.length; var2++) {
-         int var3 = getGroupUID(var1[var2].getName());
-         if (this._properties.get(var3) == null) {
-            this.addSyncObject(this.createGroupProperties(var1[var2]));
-         }
-      }
-   }
-
-   private void checkDeletedGroupInformation(CodeModuleGroup[] var1) {
-      SyncObject[] var2 = this.getSyncObjects();
-      IntVector var3 = this.getCurrentModuleGroupUIDs(var1);
-      if (var3 != null) {
-         for (int var4 = 0; var4 < var2.length; var4++) {
-            if (!var3.contains(var2[var4].getUID())) {
-               this.removeSyncObject(var2[var4]);
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      if (guid == 256826950193107649L || guid == -4232371946002803201L) {
+         synchronized (_lock) {
+            if (this._checkGroupsThread != null && this._checkGroupsThread.isAlive()) {
+               this._checkGroupsThread.setFlag(guid);
+            } else {
+               this._checkGroupsThread = new CodeModuleGroupPropertiesCollection$CheckGroupsThread(null);
+               this._checkGroupsThread.setFlag(guid);
+               this._checkGroupsThread.start();
             }
          }
       }
    }
 
-   private CodeModuleGroupProperties createGroupProperties(CodeModuleGroup var1) {
-      int var2 = getGroupUID(var1.getName());
-      Object var3 = new Object(var2);
-      Enumeration var4 = var1.getPropertyNames();
-
-      while (var4.hasMoreElements()) {
-         Object var5 = var4.nextElement();
-         ((CodeModuleGroupProperties)var3).put((String)var5, var1.getProperty((String)var5));
-      }
-
-      return (CodeModuleGroupProperties)var3;
+   public static int getGroupUID(String groupName) {
+      return CRC32.update(-1, groupName.getBytes());
    }
 
-   private IntVector getCurrentModuleGroupUIDs(CodeModuleGroup[] var1) {
-      Object var2 = new Object(var1.length);
+   private void checkGroupInformation(CodeModuleGroup[] groups) {
+      if (groups != null) {
+         this.checkAddedGroupInformation(groups);
+         this.checkDeletedGroupInformation(groups);
+      }
+   }
 
-      for (int var3 = 0; var3 < var1.length; var3++) {
-         ((IntVector)var2).addElement(getGroupUID(var1[var3].getName()));
+   private void checkAddedGroupInformation(CodeModuleGroup[] groups) {
+      for (int i = 0; i < groups.length; i++) {
+         int uid = getGroupUID(groups[i].getName());
+         if (this._properties.get(uid) == null) {
+            this.addSyncObject(this.createGroupProperties(groups[i]));
+         }
+      }
+   }
+
+   private void checkDeletedGroupInformation(CodeModuleGroup[] groups) {
+      SyncObject[] objects = this.getSyncObjects();
+      IntVector currentGroups = this.getCurrentModuleGroupUIDs(groups);
+      if (currentGroups != null) {
+         for (int i = 0; i < objects.length; i++) {
+            if (!currentGroups.contains(objects[i].getUID())) {
+               this.removeSyncObject(objects[i]);
+            }
+         }
+      }
+   }
+
+   private CodeModuleGroupProperties createGroupProperties(CodeModuleGroup group) {
+      int uid = getGroupUID(group.getName());
+      CodeModuleGroupProperties properties = (CodeModuleGroupProperties)(new Object(uid));
+      Enumeration e = group.getPropertyNames();
+
+      while (e.hasMoreElements()) {
+         String key = (String)e.nextElement();
+         properties.put(key, group.getProperty(key));
       }
 
-      return (IntVector)var2;
+      return properties;
+   }
+
+   private IntVector getCurrentModuleGroupUIDs(CodeModuleGroup[] groups) {
+      IntVector uids = (IntVector)(new Object(groups.length));
+
+      for (int i = 0; i < groups.length; i++) {
+         uids.addElement(getGroupUID(groups[i].getName()));
+      }
+
+      return uids;
    }
 
    @Override
-   public boolean addSyncObject(SyncObject var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean addSyncObject(SyncObject object) {
+      if (object instanceof Object) {
+         synchronized (this._properties) {
+            this._properties.put(object.getUID(), object);
+            this._persist.commit();
+         }
+
+         this._listeners.fireElementAdded(this, object);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    @Override
@@ -116,7 +163,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
    }
 
    @Override
-   public void clearSyncObjectDirty(SyncObject var1) {
+   public void clearSyncObjectDirty(SyncObject object) {
    }
 
    @Override
@@ -134,13 +181,15 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
    }
 
    @Override
-   public String getSyncName(Locale var1) {
+   public String getSyncName(Locale locale) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public SyncObject getSyncObject(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public SyncObject getSyncObject(int uid) {
+      synchronized (this._properties) {
+         return (SyncObject)this._properties.get(uid);
+      }
    }
 
    @Override
@@ -150,7 +199,17 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public SyncObject[] getSyncObjects() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._properties) {
+         SyncObject[] objects = new SyncObject[this.getSyncObjectCount()];
+         int index = 0;
+         Enumeration e = this._properties.elements();
+
+         while (e.hasMoreElements()) {
+            objects[index++] = (SyncObject)e.nextElement();
+         }
+
+         return objects;
+      }
    }
 
    @Override
@@ -159,47 +218,98 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
    }
 
    @Override
-   public boolean isSyncObjectDirty(SyncObject var1) {
+   public boolean isSyncObjectDirty(SyncObject object) {
       return false;
    }
 
    @Override
    public boolean removeAllSyncObjects() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._properties) {
+         this._properties.clear();
+         this._persist.commit();
+         return true;
+      }
    }
 
    @Override
-   public boolean removeSyncObject(SyncObject var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean removeSyncObject(SyncObject object) {
+      if (object instanceof Object) {
+         synchronized (this._properties) {
+            this._properties.remove(object.getUID());
+            this._persist.commit();
+         }
+
+         this._listeners.fireElementRemoved(this, object);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    @Override
-   public void setSyncObjectDirty(SyncObject var1) {
+   public void setSyncObjectDirty(SyncObject object) {
    }
 
    @Override
-   public boolean updateSyncObject(SyncObject var1, SyncObject var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
+      if (oldObject instanceof Object && newObject instanceof Object) {
+         synchronized (this._properties) {
+            this._properties.remove(oldObject.getUID());
+            this._properties.put(newObject.getUID(), newObject);
+            this._persist.commit();
+         }
+
+         this._listeners.fireElementUpdated(this, oldObject, newObject);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    @Override
-   public SyncObject convert(DataBuffer var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public SyncObject convert(DataBuffer data, int version, int UID) {
+      CodeModuleGroupProperties properties = (CodeModuleGroupProperties)(new Object(UID));
+
+      try {
+         data.rewind();
+
+         while (true) {
+            int type;
+            try {
+               type = ConverterUtilities.getType(data);
+            } catch (EOFException eofe) {
+               return properties;
+            }
+
+            if (type == 1) {
+               String key = ConverterUtilities.readString(data, true);
+               type = ConverterUtilities.getType(data);
+               if (type == 2) {
+                  String value = ConverterUtilities.readString(data, true);
+                  properties.put(key, value);
+               }
+            } else {
+               ConverterUtilities.skipField(data);
+            }
+         }
+      } catch (EOFException eofe) {
+         return null;
+      }
    }
 
    @Override
-   public boolean convert(SyncObject var1, DataBuffer var2, int var3) {
+   public boolean convert(SyncObject object, DataBuffer data, int version) {
       throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
-      this._listeners.addCollectionListener(var1);
+   public void addCollectionListener(Object listener) {
+      this._listeners.addCollectionListener(listener);
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
-      this._listeners.removeCollectionListener(var1);
+   public void removeCollectionListener(Object listener) {
+      this._listeners.removeCollectionListener(listener);
    }
 
    @Override

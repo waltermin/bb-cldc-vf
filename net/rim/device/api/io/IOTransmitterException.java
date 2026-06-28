@@ -6,6 +6,6 @@ public class IOTransmitterException extends IOException {
    public IOTransmitterException() {
    }
 
-   public IOTransmitterException(String var1) {
+   public IOTransmitterException(String msg) {
    }
 }

@@ -16,72 +16,88 @@ public class Base64OutputStream extends OutputStream {
    private static final int INPUT_BUFFER_LENGTH;
    private static final int OUTPUT_BUFFER_LENGTH;
 
-   public Base64OutputStream(OutputStream var1) {
-      this(var1, false, false);
+   public Base64OutputStream(OutputStream outputStream) {
+      this(outputStream, false, false);
    }
 
-   public Base64OutputStream(OutputStream var1, boolean var2, boolean var3) {
-      if (var1 == null) {
+   public Base64OutputStream(OutputStream outputStream, boolean insertCR, boolean insertLF) {
+      if (outputStream == null) {
          throw new Object();
       }
 
       this._inputBuffer = new byte[1539];
       this._inputBufferLength = 0;
       this._outputBuffer = new byte[2106];
-      this._insertCR = var2;
-      this._insertLF = var3;
-      this._outputStream = var1;
+      this._insertCR = insertCR;
+      this._insertLF = insertLF;
+      this._outputStream = outputStream;
       this._lastException = null;
    }
 
    @Override
-   public void write(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void write(int data) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public void write(byte[] var1) {
+   public void write(byte[] data) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
-   public void write(byte[] var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void write(byte[] data, int dataOffset, int dataLength) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public void flush() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      if (this._lastException != null) {
+         throw this._lastException;
+      }
+
+      try {
+         if (this._outputStream != null) {
+            this.encode(this._inputBuffer, 0, this._inputBufferLength);
+            this._outputStream.close();
+            this._inputBuffer = null;
+            this._inputBufferLength = 0;
+            this._outputBuffer = null;
+            this._outputStream = null;
+         }
+      } catch (IOException e) {
+         this._lastException = e;
+         throw e;
+      }
    }
 
-   private void encode(byte[] var1, int var2, int var3) {
-      int var4 = encode(var1, var2, var3, this._outputBuffer, this._insertCR, this._insertLF);
-      this._outputStream.write(this._outputBuffer, 0, var4);
+   private void encode(byte[] input, int inputOffset, int inputLength) {
+      int outputBufferLength = encode(input, inputOffset, inputLength, this._outputBuffer, this._insertCR, this._insertLF);
+      this._outputStream.write(this._outputBuffer, 0, outputBufferLength);
    }
 
-   public static String encodeAsString(byte[] var0, int var1, int var2, boolean var3, boolean var4) {
-      return CompressUtilities.convertToString(encode(var0, var1, var2, var3, var4));
+   public static String encodeAsString(byte[] input, int inputOffset, int inputLength, boolean insertCR, boolean insertLF) {
+      return CompressUtilities.convertToString(encode(input, inputOffset, inputLength, insertCR, insertLF));
    }
 
-   public static byte[] encode(byte[] var0, int var1, int var2, boolean var3, boolean var4) {
-      if (var0 != null && var1 >= 0 && var2 >= 0 && var0.length - var2 >= var1) {
-         int var5 = (var2 + 2) / 3 * 4;
-         if (var3 || var4) {
-            var5 += var5 / 75 * 2 + 2;
+   public static byte[] encode(byte[] input, int inputOffset, int inputLength, boolean insertCR, boolean insertLF) {
+      if (input != null && inputOffset >= 0 && inputLength >= 0 && input.length - inputLength >= inputOffset) {
+         int outLength = (inputLength + 2) / 3 * 4;
+         if (insertCR || insertLF) {
+            outLength += outLength / 75 * 2 + 2;
          }
 
-         byte[] var6 = new byte[var5];
-         var5 = encode(var0, var1, var2, var6, var3, var4);
-         if (var5 != var6.length) {
-            Array.resize(var6, var5);
+         byte[] output = new byte[outLength];
+         outLength = encode(input, inputOffset, inputLength, output, insertCR, insertLF);
+         if (outLength != output.length) {
+            Array.resize(output, outLength);
          }
 
-         return var6;
+         return output;
       } else {
          throw new Object();
       }

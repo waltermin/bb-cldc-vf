@@ -109,9 +109,9 @@ public class GPSLocationExtended extends GPSLocationStandard {
    }
 
    public int getAltitude() {
-      int var1 = (this._altitude & 32768) == 0 ? -1 : 1;
-      int var2 = this._altitude & 32767;
-      return var1 * var2;
+      int sign = (this._altitude & 32768) == 0 ? -1 : 1;
+      int value = this._altitude & 32767;
+      return sign * value;
    }
 
    public double getVerticalUncertainity() {
@@ -159,11 +159,11 @@ public class GPSLocationExtended extends GPSLocationStandard {
       return this._numSatTracked;
    }
 
-   public int getSatellitePRN(int var1) {
-      return this._satPRN[var1] & 0xFF;
+   public int getSatellitePRN(int index) {
+      return this._satPRN[index] & 0xFF;
    }
 
-   public int getSatelliteSignalStrength(int var1) {
-      return this._satSignalStrength[var1] & 0xFF;
+   public int getSatelliteSignalStrength(int index) {
+      return this._satSignalStrength[index] & 0xFF;
    }
 }

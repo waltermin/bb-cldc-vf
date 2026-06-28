@@ -17,40 +17,40 @@ public class HexEditField extends EditField {
    AttributedString _tempString = (AttributedString)(new Object());
    AttributedString$Iterator _iterator = this._tempString.getIterator();
 
-   public HexEditField(String var1) {
-      this(var1, Integer.MAX_VALUE);
+   public HexEditField(String label) {
+      this(label, Integer.MAX_VALUE);
    }
 
-   public HexEditField(String var1, byte[] var2) {
-      this(var1, var2, 0, var2.length, Integer.MAX_VALUE);
+   public HexEditField(String label, byte[] value) {
+      this(label, value, 0, value.length, Integer.MAX_VALUE);
    }
 
-   public HexEditField(String var1, byte[] var2, int var3, int var4) {
-      this(var1, var2, var3, var4, Integer.MAX_VALUE);
+   public HexEditField(String label, byte[] value, int offset, int length) {
+      this(label, value, offset, length, Integer.MAX_VALUE);
    }
 
-   public HexEditField(String var1, byte[] var2, int var3, int var4, int var5) {
-      super(var1, null, Integer.MAX_VALUE, 1140850688);
+   public HexEditField(String label, byte[] value, int offset, int length, int maxBytes) {
+      super(label, null, Integer.MAX_VALUE, 1140850688);
       this._firstNibble = true;
-      this._maxBytes = var5;
+      this._maxBytes = maxBytes;
       this._strBuf = (StringBuffer)(new Object(4));
-      this.setData(var2, var3, var4);
+      this.setData(value, offset, length);
    }
 
-   public HexEditField(String var1, int var2) {
-      super(var1, null, Integer.MAX_VALUE, 1140850688);
+   public HexEditField(String label, int maxBytes) {
+      super(label, null, Integer.MAX_VALUE, 1140850688);
       this._firstNibble = true;
-      this._maxBytes = var2;
+      this._maxBytes = maxBytes;
       this._strBuf = (StringBuffer)(new Object(4));
    }
 
    @Override
-   protected boolean insert(char var1, int var2) {
+   protected boolean insert(char key, int status) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public int moveFocus(int var1, int var2, int var3) {
+   public int moveFocus(int amount, int status, int time) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
@@ -60,13 +60,13 @@ public class HexEditField extends EditField {
          super.selectionDelete();
       } else if (this.getCursorPosition() != super.getTextLength()) {
          if (this._firstNibble) {
-            int var1 = this.getCursorPosition() + 3;
-            if (var1 > this.getTextLength()) {
-               var1--;
+            int toDelete = this.getCursorPosition() + 3;
+            if (toDelete > this.getTextLength()) {
+               toDelete--;
             }
 
-            super.setCursorPosition(var1);
-            super.backspace(var1);
+            super.setCursorPosition(toDelete);
+            super.backspace(toDelete);
          } else {
             super.setCursorPosition(this.getCursorPosition() + 3);
             super.backspace(3);
@@ -84,16 +84,16 @@ public class HexEditField extends EditField {
          return false;
       }
 
-      byte var1 = 3;
+      int count = 3;
       if (!this._firstNibble) {
          if (super.getTextLength() == this.getCursorPosition()) {
-            var1 = 2;
+            count = 2;
          } else {
             super.setCursorPosition(this.getCursorPosition() + 1);
          }
       }
 
-      super.backspace(var1);
+      super.backspace(count);
       this._firstNibble = true;
       this.fieldChangeNotify(0);
       return true;
@@ -104,106 +104,106 @@ public class HexEditField extends EditField {
    }
 
    public byte[] getAsBytes() {
-      byte[] var1 = new byte[this.getNumBytes()];
-      int var2 = 0;
-      int var3 = 0;
+      byte[] vals = new byte[this.getNumBytes()];
+      int val = 0;
+      int byteCount = 0;
 
-      for (int var4 = 0; var3 < var1.length; var4++) {
-         char var5 = var4 < super.getTextLength() ? super.charAt(var4) : ' ';
-         if (var5 != ' ') {
-            var2 <<= 4;
-            var2 |= NumberUtilities.hexDigitToInt(var5);
+      for (int i = 0; byteCount < vals.length; i++) {
+         char ch = i < super.getTextLength() ? super.charAt(i) : ' ';
+         if (ch != ' ') {
+            val <<= 4;
+            val |= NumberUtilities.hexDigitToInt(ch);
          } else {
-            var1[var3] = (byte)(var2 & 0xFF);
-            var2 = 0;
-            var3++;
+            vals[byteCount] = (byte)(val & 0xFF);
+            val = 0;
+            byteCount++;
          }
       }
 
-      return var1;
+      return vals;
    }
 
    public short[] getAsShorts() {
-      int var2 = 0;
-      int var3 = 0;
-      int var4 = 0;
+      int shortCount = 0;
+      int byteCount = 0;
+      int sVal = 0;
       if (this.getNumBytes() % 2 != 0) {
          return null;
       }
 
-      short[] var1 = new short[this.getNumBytes() / 2];
+      short[] vals = new short[this.getNumBytes() / 2];
 
-      for (int var5 = 0; var2 < var1.length; var5++) {
-         char var6 = var5 < super.getTextLength() ? super.charAt(var5) : ' ';
-         if (var6 != ' ') {
-            var4 <<= 4;
-            var4 |= NumberUtilities.hexDigitToInt(var6);
-         } else if ((++var3 & 1) == 0) {
-            var1[var2] = (short)(var4 & 65535);
-            var2++;
-            var4 = 0;
+      for (int i = 0; shortCount < vals.length; i++) {
+         char ch = i < super.getTextLength() ? super.charAt(i) : ' ';
+         if (ch != ' ') {
+            sVal <<= 4;
+            sVal |= NumberUtilities.hexDigitToInt(ch);
+         } else if ((++byteCount & 1) == 0) {
+            vals[shortCount] = (short)(sVal & 65535);
+            shortCount++;
+            sVal = 0;
          }
       }
 
-      return var1;
+      return vals;
    }
 
    public int[] getAsInts() {
-      int var2 = 0;
-      int var3 = 0;
-      int var4 = 0;
+      int intCount = 0;
+      int byteCount = 0;
+      int iVal = 0;
       if (this.getNumBytes() % 4 != 0) {
          return null;
       }
 
-      int[] var1 = new int[this.getNumBytes() / 4];
+      int[] vals = new int[this.getNumBytes() / 4];
 
-      for (int var5 = 0; var2 < var1.length; var5++) {
-         char var6 = var5 < super.getTextLength() ? super.charAt(var5) : ' ';
-         if (var6 != ' ') {
-            var4 <<= 4;
-            var4 |= NumberUtilities.hexDigitToInt(var6);
-         } else if ((++var3 & 3) == 0) {
-            var1[var2] = var4;
-            var2++;
-            var4 = 0;
+      for (int i = 0; intCount < vals.length; i++) {
+         char ch = i < super.getTextLength() ? super.charAt(i) : ' ';
+         if (ch != ' ') {
+            iVal <<= 4;
+            iVal |= NumberUtilities.hexDigitToInt(ch);
+         } else if ((++byteCount & 3) == 0) {
+            vals[intCount] = iVal;
+            intCount++;
+            iVal = 0;
          }
       }
 
-      return var1;
+      return vals;
    }
 
    @Override
-   public int inputMethodTextChanged(InputMethodEvent var1) {
+   public int inputMethodTextChanged(InputMethodEvent event) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void dispatchEvent(Event var1) {
-      if (var1.getID() != 514 && var1.getID() != 519) {
-         super.dispatchEvent(var1);
+   public void dispatchEvent(Event rEvent) {
+      if (rEvent.getID() != 514 && rEvent.getID() != 519) {
+         super.dispatchEvent(rEvent);
       }
    }
 
    @Override
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public void setData(byte[] var1, int var2, int var3) {
+   public void setData(byte[] val, int offset, int length) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public void setData(int[] var1, int var2, int var3) {
+   public void setData(int[] val, int offset, int length) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
-   public void setData(short[] var1, int var2, int var3) {
+   public void setData(short[] val, int offset, int length) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public void setMaxSize(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setMaxSize(int maxSize) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

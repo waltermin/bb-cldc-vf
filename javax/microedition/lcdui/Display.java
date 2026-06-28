@@ -6,7 +6,10 @@ import java.util.Vector;
 import javax.microedition.midlet.MIDlet;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Backlight;
+import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.system.InternalServices;
 
 public class Display {
@@ -32,8 +35,8 @@ public class Display {
    static int _bestElementImageWidth;
    static Display$FlashBacklightTimerTask _flashBacklightTask;
 
-   private Display(MIDlet var1) {
-      this._midlet = var1;
+   private Display(MIDlet m) {
+      this._midlet = m;
       this._switchDisplayablesRunnable = null;
       this._callSeriallyRunnables = new Display$CallSeriallyQueue(null);
    }
@@ -42,30 +45,64 @@ public class Display {
       return this._midlet;
    }
 
-   private static void moveDisplayToFront(Display var0) {
-      _displayOrder.removeElement(var0);
-      _displayOrder.insertElementAt(var0, 0);
+   private static void moveDisplayToFront(Display d) {
+      _displayOrder.removeElement(d);
+      _displayOrder.insertElementAt(d, 0);
    }
 
-   private static void moveDisplayToBack(Display var0) {
-      _displayOrder.removeElement(var0);
-      _displayOrder.addElement(var0);
+   private static void moveDisplayToBack(Display d) {
+      _displayOrder.removeElement(d);
+      _displayOrder.addElement(d);
    }
 
    static Displayable getCurrentDisplayable() {
       return _displayOrder.size() > 0 ? ((Display)_displayOrder.elementAt(0))._current : null;
    }
 
-   private void switchDisplayables(Displayable var1, Displayable var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void switchDisplayables(Displayable oldDisplayable, Displayable newDisplayable) {
+      UiApplication app = UiApplication.getUiApplication();
+      if (oldDisplayable != newDisplayable) {
+         net.rim.device.api.ui.Screen screen = app.getActiveScreen();
+         if (screen instanceof Object) {
+            synchronized (app.getAppEventLock()) {
+               app.popScreen(screen);
+            }
+         }
+
+         if (oldDisplayable != null) {
+            MIDPScreen oldMIDPScreen = oldDisplayable.getPeer();
+            synchronized (app.getAppEventLock()) {
+               app.popScreen(oldMIDPScreen);
+            }
+
+            oldDisplayable.getPeer().setDisplay(null);
+            if (oldDisplayable instanceof Canvas) {
+               synchronized (Lcdui.getEventDeliveryLock()) {
+                  ((Canvas)oldDisplayable).hideNotify();
+               }
+            }
+         }
+
+         if (newDisplayable instanceof Canvas) {
+            synchronized (Lcdui.getEventDeliveryLock()) {
+               ((Canvas)newDisplayable).showNotify();
+            }
+         }
+
+         MIDPScreen midpScreen = newDisplayable.getPeer();
+         midpScreen.setDisplay(this);
+         synchronized (app.getAppEventLock()) {
+            app.pushScreen(midpScreen);
+         }
+      }
    }
 
-   public static Display getDisplay(MIDlet var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static Display getDisplay(MIDlet m) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public int getColor(int var1) {
-      switch (var1) {
+   public int getColor(int colorSpecifier) {
+      switch (colorSpecifier) {
          case -1:
             throw new Object();
          case 0:
@@ -79,7 +116,7 @@ public class Display {
       }
    }
 
-   public int getBorderStyle(boolean var1) {
+   public int getBorderStyle(boolean highlighted) {
       return 0;
    }
 
@@ -99,68 +136,95 @@ public class Display {
       return this._current;
    }
 
-   public void setCurrent(Displayable var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCurrent(Displayable nextDisplayable) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private void startDisplaySwitch(Application var1, Displayable var2, Displayable var3) {
+   private void startDisplaySwitch(Application app, Displayable oldDisplayable, Displayable newDisplayable) {
       if (this._switchDisplayablesRunnable != null) {
-         this._switchDisplayablesRunnable.setNewDisplayable(var3);
+         this._switchDisplayablesRunnable.setNewDisplayable(newDisplayable);
       } else {
-         this._switchDisplayablesRunnable = new Display$SwitchDisplayablesRunnable(this, var2, var3);
-         var1.invokeLater(this._switchDisplayablesRunnable);
+         this._switchDisplayablesRunnable = new Display$SwitchDisplayablesRunnable(this, oldDisplayable, newDisplayable);
+         app.invokeLater(this._switchDisplayablesRunnable);
       }
    }
 
-   public void setCurrent(Alert var1, Displayable var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCurrent(Alert alert, Displayable nextDisplayable) {
+      synchronized (Application.getEventLock()) {
+         alert.getPeer();
+         nextDisplayable.getPeer();
+         if (nextDisplayable instanceof Alert) {
+            throw new Object();
+         }
+
+         Displayable old = getCurrentDisplayable();
+         this._lastDisplayable = nextDisplayable;
+         moveDisplayToFront(this);
+         UiApplication.getUiApplication().requestForeground();
+         this._current = alert;
+         alert.show(this, nextDisplayable);
+         this.startDisplaySwitch(Application.getApplication(), old, alert);
+      }
    }
 
-   public void setCurrentItem(Item var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void setCurrentItem(Item item) {
+      synchronized (Application.getEventLock()) {
+         Screen nextDisplayable = item.getOwner();
+         if (nextDisplayable != null && !(nextDisplayable instanceof Alert)) {
+            Form nextForm = (Form)nextDisplayable;
+            if (nextForm != null) {
+               this.setCurrent(nextDisplayable);
+               Field field = item.addToForm(null);
+               item.addToForm(nextForm._formChangeListener);
+               field.setFocus();
+            }
+         } else {
+            throw new Object();
+         }
+      }
    }
 
-   public void callSerially(Runnable var1) {
-      this._callSeriallyRunnables.addElement(var1);
+   public void callSerially(Runnable r) {
+      this._callSeriallyRunnables.addElement(r);
    }
 
-   public boolean flashBacklight(int var1) {
-      if (var1 < 0) {
+   public boolean flashBacklight(int duration) {
+      if (duration < 0) {
          throw new Object();
       }
 
       if (this.getCurrent().isShown()) {
-         if (var1 == 0) {
+         if (duration == 0) {
             if (_flashBacklightTask != null) {
                _flashBacklightTask.cancel();
                _flashBacklightTask = null;
                return true;
             }
          } else {
-            int var2 = var1 % 1000;
-            int var3 = var1 / 1000;
-            if (var2 > 0) {
-               var3++;
+            int remainder = duration % 1000;
+            int seconds = duration / 1000;
+            if (remainder > 0) {
+               seconds++;
             }
 
             if (_flashBacklightTask != null) {
                _flashBacklightTask.cancel();
             }
 
-            int var4;
-            if (var3 % 2 == 0) {
-               var4 = var3;
+            int numBacklightOnOffIterations;
+            if (seconds % 2 == 0) {
+               numBacklightOnOffIterations = seconds;
             } else {
-               var4 = var3 + 1;
+               numBacklightOnOffIterations = seconds + 1;
             }
 
             if (Backlight.isEnabled()) {
                Backlight.enable(false);
             }
 
-            _flashBacklightTask = new Display$FlashBacklightTimerTask(var4);
-            Object var5 = new Object();
-            ((Timer)var5).schedule(_flashBacklightTask, 0, 1000);
+            _flashBacklightTask = new Display$FlashBacklightTimerTask(numBacklightOnOffIterations);
+            Timer flashingTimer = (Timer)(new Object());
+            flashingTimer.schedule(_flashBacklightTask, 0, 1000);
          }
 
          return true;
@@ -169,16 +233,16 @@ public class Display {
       }
    }
 
-   public boolean vibrate(int var1) {
-      if (var1 < 0) {
+   public boolean vibrate(int duration) {
+      if (duration < 0) {
          throw new Object();
       }
 
-      Displayable var2 = this.getCurrent();
-      if (var2 != null && var2.isShown()) {
+      Displayable current = this.getCurrent();
+      if (current != null && current.isShown()) {
          net.rim.device.api.system.Alert.stopVibrate();
-         if (var1 != 0) {
-            net.rim.device.api.system.Alert.startVibrate(var1);
+         if (duration != 0) {
+            net.rim.device.api.system.Alert.startVibrate(duration);
          }
 
          return true;
@@ -187,8 +251,8 @@ public class Display {
       }
    }
 
-   public int getBestImageWidth(int var1) {
-      switch (var1) {
+   public int getBestImageWidth(int imageType) {
+      switch (imageType) {
          case 0:
             throw new Object();
          case 1:
@@ -200,8 +264,8 @@ public class Display {
       }
    }
 
-   public int getBestImageHeight(int var1) {
-      switch (var1) {
+   public int getBestImageHeight(int imageType) {
+      switch (imageType) {
          case 0:
             throw new Object();
          case 1:
@@ -213,8 +277,8 @@ public class Display {
       }
    }
 
-   static int getGameAction(int var0) {
-      switch (var0) {
+   static int getGameAction(int keyCode) {
+      switch (keyCode) {
          case -8:
             return 8;
          case 1:
@@ -226,10 +290,10 @@ public class Display {
          case 6:
             return 6;
          default:
-            int var1 = Keypad.getHardwareLayout();
-            int var2 = InternalServices.getHardwareID();
+            int id = Keypad.getHardwareLayout();
+            int hwid = InternalServices.getHardwareID();
             if (InternalServices.isReducedFormFactor()) {
-               switch ((char)var0) {
+               switch ((char)keyCode) {
                   case '0':
                      return 8;
                   case '2':
@@ -253,8 +317,8 @@ public class Display {
                   case 'q':
                      return 9;
                }
-            } else if (var1 != 1364669234 && var2 != -1677720317 && var2 != 469763332 && var2 != 469763334) {
-               switch ((char)var0) {
+            } else if (id != 1364669234 && hwid != -1677720317 && hwid != 469763332 && hwid != 469763334) {
+               switch ((char)keyCode) {
                   case '\b':
                   case 'G':
                   case 'K':
@@ -302,7 +366,7 @@ public class Display {
                      return 10;
                }
             } else {
-               switch ((char)var0) {
+               switch ((char)keyCode) {
                   case ' ':
                      return 8;
                   case '2':
@@ -336,7 +400,7 @@ public class Display {
                }
             }
 
-            if (var0 == 0) {
+            if (keyCode == 0) {
                throw new Object();
             } else {
                return 0;

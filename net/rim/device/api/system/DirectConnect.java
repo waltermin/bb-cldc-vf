@@ -38,83 +38,83 @@ public final class DirectConnect {
       return RadioInfo.areWAFsSupported(8);
    }
 
-   public static final int getId(int var0) {
+   public static final int getId(int type) {
       assertPermission();
-      return getIdImpl(var0);
+      return getIdImpl(type);
    }
 
    private static final native int getIdImpl(int var0);
 
    public static final String getUFMI() {
       assertPermission();
-      Object var0 = new Object();
-      ((StringBuffer)var0).append(getId(1));
-      ((StringBuffer)var0).append('*');
-      ((StringBuffer)var0).append(getId(2));
-      ((StringBuffer)var0).append('*');
-      ((StringBuffer)var0).append(getId(0));
-      return ((StringBuffer)var0).toString();
+      StringBuffer sb = (StringBuffer)(new Object());
+      sb.append(getId(1));
+      sb.append('*');
+      sb.append(getId(2));
+      sb.append('*');
+      sb.append(getId(0));
+      return sb.toString();
    }
 
-   public static final void enableService(int var0, boolean var1) {
+   public static final void enableService(int service, boolean enable) {
       assertPermission();
-      enableServiceImpl(var0, var1);
+      enableServiceImpl(service, enable);
    }
 
    private static final native void enableServiceImpl(int var0, boolean var1);
 
-   public static final void queryService(int var0) {
+   public static final void queryService(int service) {
       assertPermission();
-      queryServiceImpl(var0);
+      queryServiceImpl(service);
    }
 
    private static final native void queryServiceImpl(int var0);
 
-   public static final int startPrivateCall(int var0, int var1, int var2) {
+   public static final int startPrivateCall(int memberId, int fleetId, int urbanId) {
       assertPermission();
-      return startPrivateCallImpl(var0, var1, var2);
+      return startPrivateCallImpl(memberId, fleetId, urbanId);
    }
 
    private static final native int startPrivateCallImpl(int var0, int var1, int var2);
 
-   public static final int startCallAlert(int var0, int var1, int var2) {
+   public static final int startCallAlert(int memberId, int fleetId, int urbanId) {
       assertPermission();
-      return startCallAlertImpl(var0, var1, var2);
+      return startCallAlertImpl(memberId, fleetId, urbanId);
    }
 
    private static final native int startCallAlertImpl(int var0, int var1, int var2);
 
-   public static final int startGroupCall(int var0, int var1) {
+   public static final int startGroupCall(int groupCallType, int selectedArea) {
       assertPermission();
-      return startGroupCallImpl(var0, var1);
+      return startGroupCallImpl(groupCallType, selectedArea);
    }
 
    private static final native int startGroupCallImpl(int var0, int var1);
 
-   public static final void stopCall(int var0, int var1) {
+   public static final void stopCall(int callType, int callId) {
       assertPermission();
-      stopCallImpl(var0, var1);
+      stopCallImpl(callType, callId);
    }
 
    private static final native void stopCallImpl(int var0, int var1);
 
-   public static final void clearCallAlert(int var0) {
+   public static final void clearCallAlert(int callId) {
       assertPermission();
-      clearCallAlertImpl(var0);
+      clearCallAlertImpl(callId);
    }
 
    private static final native void clearCallAlertImpl(int var0);
 
-   public static final int getCallState(int var0, int var1) {
+   public static final int getCallState(int callType, int callId) {
       assertPermission();
-      return getCallStateImpl(var0, var1);
+      return getCallStateImpl(callType, callId);
    }
 
    private static final native int getCallStateImpl(int var0, int var1);
 
-   public static final int getCallId(int var0, int var1, int var2) {
+   public static final int getCallId(int callType, int callId, int type) {
       assertPermission();
-      return getCallIdImpl(var0, var1, var2);
+      return getCallIdImpl(callType, callId, type);
    }
 
    private static final native int getCallIdImpl(int var0, int var1, int var2);
@@ -133,16 +133,16 @@ public final class DirectConnect {
 
    private static final native void queryTalkGroupIdImpl();
 
-   public static final void setTalkGroupId(int var0) {
+   public static final void setTalkGroupId(int talkGroupId) {
       assertPermission();
-      setTalkGroupIdImpl(var0);
+      setTalkGroupIdImpl(talkGroupId);
    }
 
    private static final native void setTalkGroupIdImpl(int var0);
 
-   public static final boolean profileUpdate(int var0, int var1, byte var2, byte var3) {
+   public static final boolean profileUpdate(int outOfHolsterType, int inHolsterType, byte outOfHolsterVolume, byte inHolsterVolume) {
       assertPermission();
-      return profileUpdateImpl(var0, var1, var2, var3);
+      return profileUpdateImpl(outOfHolsterType, inHolsterType, outOfHolsterVolume, inHolsterVolume);
    }
 
    private static final native boolean profileUpdateImpl(int var0, int var1, byte var2, byte var3);

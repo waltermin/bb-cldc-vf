@@ -14,31 +14,31 @@ public class GZIPOutputStream extends OutputStream {
    public static final int COMPRESSION_BEST;
    private static final int BUFFER_LENGTH;
 
-   public GZIPOutputStream(OutputStream var1) {
-      this(var1, 0);
+   public GZIPOutputStream(OutputStream outputStream) {
+      this(outputStream, 0);
    }
 
-   public GZIPOutputStream(OutputStream var1, int var2) {
-      this(var1, var2, 8);
+   public GZIPOutputStream(OutputStream outputStream, int compressionValue) {
+      this(outputStream, compressionValue, 8);
    }
 
-   public GZIPOutputStream(OutputStream var1, int var2, int var3) {
-      if (var1 != null && var2 >= 0 && var2 <= 9 && var3 >= 8 && var3 <= 15) {
-         this._outputStream = var1;
+   public GZIPOutputStream(OutputStream outputStream, int compressionValue, int windowLength) {
+      if (outputStream != null && compressionValue >= 0 && compressionValue <= 9 && windowLength >= 8 && windowLength <= 15) {
+         this._outputStream = outputStream;
          this._buffer = new byte[1024];
-         this._deflater = (Deflater)(new Object(var2, 0, var3 + 16));
+         this._deflater = (Deflater)(new Object(compressionValue, 0, windowLength + 16));
       } else {
          throw new Object();
       }
    }
 
    @Override
-   public synchronized void write(int var1) {
+   public synchronized void write(int data) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public synchronized void write(byte[] var1, int var2, int var3) {
+   public synchronized void write(byte[] data, int dataOffset, int dataLength) {
       throw new RuntimeException("cod2jar: ldc");
    }
 

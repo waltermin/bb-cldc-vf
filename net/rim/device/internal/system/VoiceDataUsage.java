@@ -16,18 +16,18 @@ public final class VoiceDataUsage {
    private VoiceDataUsage() {
    }
 
-   public static final synchronized void addVoiceSeconds(int var0) {
+   public static final synchronized void addVoiceSeconds(int seconds) {
       if (!itPolicyEnabled()) {
          if (!exceededVoiceLimit()) {
-            addValue(var0, _persistVoiceHandle, 37, 120);
+            addValue(seconds, _persistVoiceHandle, 37, 120);
          }
       }
    }
 
-   public static final synchronized void addDataBytes(int var0) {
+   public static final synchronized void addDataBytes(int bytes) {
       if (!itPolicyEnabled()) {
          if (!exceededDataLimit()) {
-            addValue(var0, _persistDataHandle, 38, 65536);
+            addValue(bytes, _persistDataHandle, 38, 65536);
          }
       }
    }
@@ -59,35 +59,35 @@ public final class VoiceDataUsage {
       NvStore.deleteData(38);
    }
 
-   private static final int getValue(int var0, int var1) {
-      int var2 = PersistentInteger.get(var0);
-      if (var2 == -1) {
-         var2 = getFromNvStore(var1);
-         if (var2 == -1) {
-            var2 = 0;
+   private static final int getValue(int pHandle, int nvHandle) {
+      int value = PersistentInteger.get(pHandle);
+      if (value == -1) {
+         value = getFromNvStore(nvHandle);
+         if (value == -1) {
+            value = 0;
          }
 
-         PersistentInteger.set(var0, var2);
+         PersistentInteger.set(pHandle, value);
       }
 
-      return var2;
+      return value;
    }
 
-   private static final int getFromNvStore(int var0) {
-      return NvStore.readInt(var0, -1);
+   private static final int getFromNvStore(int nvHandle) {
+      return NvStore.readInt(nvHandle, -1);
    }
 
-   private static final void addValue(int var0, int var1, int var2, int var3) {
-      int var4 = getValue(var1, var2);
-      int var5 = var4 + var0;
-      if (var5 / var3 != var4 / var3) {
-         commitToNvStore(var2, var5);
+   private static final void addValue(int value, int pHandle, int nvHandle, int commit) {
+      int old = getValue(pHandle, nvHandle);
+      int newVal = old + value;
+      if (newVal / commit != old / commit) {
+         commitToNvStore(nvHandle, newVal);
       }
 
-      PersistentInteger.set(var1, var5);
+      PersistentInteger.set(pHandle, newVal);
    }
 
-   private static final boolean commitToNvStore(int var0, int var1) {
-      return NvStore.writeInt(var0, var1);
+   private static final boolean commitToNvStore(int nvHandle, int value) {
+      return NvStore.writeInt(nvHandle, value);
    }
 }

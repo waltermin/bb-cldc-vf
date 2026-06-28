@@ -6,18 +6,18 @@ import net.rim.device.internal.i18n.CommonResource;
 class TreeField$TreeFieldMenuItem extends MenuItem {
    private boolean _expand;
 
-   public TreeField$TreeFieldMenuItem(int var1, boolean var2) {
-      super(CommonResource.getBundle(), var1, 65552, 10);
-      this._expand = var2;
+   public TreeField$TreeFieldMenuItem(int id, boolean expand) {
+      super(CommonResource.getBundle(), id, 65552, 10);
+      this._expand = expand;
    }
 
    @Override
    public void run() {
-      TreeField var1 = (TreeField)this.getTarget();
-      int var2 = var1.getCurrentNode();
-      var1.setExpanded(var2, this._expand);
+      TreeField t = (TreeField)this.getTarget();
+      int node = t.getCurrentNode();
+      t.setExpanded(node, this._expand);
       if (this._expand) {
-         var1.showDescendants(var2);
+         t.showDescendants(node);
       }
    }
 }

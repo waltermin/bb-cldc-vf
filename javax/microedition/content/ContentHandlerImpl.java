@@ -15,7 +15,7 @@ class ContentHandlerImpl implements ContentHandler {
    protected int _moduleHandle;
    protected boolean _dynamic;
 
-   void setVersion(String var1) {
+   void setVersion(String version) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -35,7 +35,7 @@ class ContentHandlerImpl implements ContentHandler {
       return this._dynamic;
    }
 
-   void setDynamic(boolean var1) {
+   void setDynamic(boolean dynamic) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -47,11 +47,11 @@ class ContentHandlerImpl implements ContentHandler {
       return this._actionnames;
    }
 
-   void setAppName(String var1) {
+   void setAppName(String appName) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   void setModuleHandle(int var1) {
+   void setModuleHandle(int handle) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -59,11 +59,11 @@ class ContentHandlerImpl implements ContentHandler {
       return this._moduleHandle;
    }
 
-   void setClassname(String var1) {
+   void setClassname(String classname) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   void setAuthority(String var1) {
+   void setAuthority(String authority) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -78,24 +78,24 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    @Override
-   public ActionNameMap getActionNameMap(int var1) {
-      if (var1 >= 0 && var1 < this.getActionNameMapCount()) {
-         return this._actionnames[var1];
+   public ActionNameMap getActionNameMap(int index) {
+      if (index >= 0 && index < this.getActionNameMapCount()) {
+         return this._actionnames[index];
       } else {
          throw new IndexOutOfBoundsException();
       }
    }
 
    @Override
-   public ActionNameMap getActionNameMap(String var1) {
-      for (int var2 = 0; var2 < this._actionnames.length; var2++) {
-         if (this._actionnames[var2].getLocale().equals(var1)) {
-            return this._actionnames[var2];
+   public ActionNameMap getActionNameMap(String locale) {
+      for (int i = 0; i < this._actionnames.length; i++) {
+         if (this._actionnames[i].getLocale().equals(locale)) {
+            return this._actionnames[i];
          }
       }
 
-      int var3 = var1.lastIndexOf(45);
-      return var3 == -1 ? null : this.getActionNameMap(var1.substring(0, var3));
+      int hashIndex = locale.lastIndexOf(45);
+      return hashIndex == -1 ? null : this.getActionNameMap(locale.substring(0, hashIndex));
    }
 
    @Override
@@ -109,9 +109,9 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    @Override
-   public String getSuffix(int var1) {
-      if (var1 >= 0 && var1 < this.getSuffixCount()) {
-         return this._suffixes[var1];
+   public String getSuffix(int index) {
+      if (index >= 0 && index < this.getSuffixCount()) {
+         return this._suffixes[index];
       } else {
          throw new IndexOutOfBoundsException();
       }
@@ -128,9 +128,9 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    @Override
-   public String getType(int var1) {
-      if (var1 >= 0 && var1 < this.getTypeCount()) {
-         return this._types[var1];
+   public String getType(int index) {
+      if (index >= 0 && index < this.getTypeCount()) {
+         return this._types[index];
       } else {
          throw new IndexOutOfBoundsException();
       }
@@ -147,9 +147,9 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    @Override
-   public String getAction(int var1) {
-      if (var1 >= 0 && var1 < this.getActionCount()) {
-         return this._actions[var1];
+   public String getAction(int index) {
+      if (index >= 0 && index < this.getActionCount()) {
+         return this._actions[index];
       } else {
          throw new IndexOutOfBoundsException();
       }
@@ -161,32 +161,32 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    @Override
-   public boolean hasAction(String var1) {
+   public boolean hasAction(String action) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public boolean hasSuffix(String var1) {
+   public boolean hasSuffix(String suffix) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
-   public boolean hasType(String var1) {
+   public boolean hasType(String type) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   ContentHandlerImpl(ContentHandlerImpl var1) {
-      this._types = var1.getTypes();
-      this._suffixes = var1.getSuffixes();
-      this._actions = var1.getActions();
-      this._actionnames = var1.getActionNameMaps();
-      this._ID = var1.getID();
-      this._appName = var1.getAppName();
-      this._version = var1.getVersion();
-      this._authority = var1.getAuthority();
-      this._classname = var1.getClassname();
-      this._moduleHandle = var1.getModuleHandle();
-      this._dynamic = var1.isDynamic();
+   ContentHandlerImpl(ContentHandlerImpl handler) {
+      this._types = handler.getTypes();
+      this._suffixes = handler.getSuffixes();
+      this._actions = handler.getActions();
+      this._actionnames = handler.getActionNameMaps();
+      this._ID = handler.getID();
+      this._appName = handler.getAppName();
+      this._version = handler.getVersion();
+      this._authority = handler.getAuthority();
+      this._classname = handler.getClassname();
+      this._moduleHandle = handler.getModuleHandle();
+      this._dynamic = handler.isDynamic();
    }
 
    ContentHandlerImpl() {

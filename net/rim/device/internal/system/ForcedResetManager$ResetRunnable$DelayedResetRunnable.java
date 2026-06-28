@@ -5,10 +5,10 @@ class ForcedResetManager$ResetRunnable$DelayedResetRunnable implements Runnable 
    int _variant;
    private final ForcedResetManager$ResetRunnable this$0;
 
-   ForcedResetManager$ResetRunnable$DelayedResetRunnable(ForcedResetManager$ResetRunnable var1, String var2, int var3) {
-      this.this$0 = var1;
-      this._message = var2;
-      this._variant = var3;
+   ForcedResetManager$ResetRunnable$DelayedResetRunnable(ForcedResetManager$ResetRunnable _1, String msg, int variant) {
+      this.this$0 = _1;
+      this._message = msg;
+      this._variant = variant;
    }
 
    @Override

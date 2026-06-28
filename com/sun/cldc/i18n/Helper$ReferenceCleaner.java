@@ -13,23 +13,23 @@ class Helper$ReferenceCleaner implements PersistentContentListener {
    }
 
    public static Helper$ReferenceCleaner getInstance() {
-      ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-      if (var0 == null) {
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      if (ar == null) {
          return new Helper$ReferenceCleaner();
       }
 
-      Helper$ReferenceCleaner var1 = (Helper$ReferenceCleaner)var0.getOrWaitFor(4119503239558518103L);
-      if (var1 == null) {
-         var1 = new Helper$ReferenceCleaner();
-         var0.put(4119503239558518103L, var1);
+      Helper$ReferenceCleaner referenceCleaner = (Helper$ReferenceCleaner)ar.getOrWaitFor(4119503239558518103L);
+      if (referenceCleaner == null) {
+         referenceCleaner = new Helper$ReferenceCleaner();
+         ar.put(4119503239558518103L, referenceCleaner);
       }
 
-      return var1;
+      return referenceCleaner;
    }
 
-   public synchronized void addLocalStrongReferences(Helper$LocalStrongReferences var1) {
+   public synchronized void addLocalStrongReferences(Helper$LocalStrongReferences localStrongReferences) {
       WeakReferenceUtilities.purge(this._references);
-      this._references.addElement(new Object(var1));
+      this._references.addElement(new Object(localStrongReferences));
    }
 
    public boolean keepStrongReferences() {
@@ -37,11 +37,11 @@ class Helper$ReferenceCleaner implements PersistentContentListener {
    }
 
    @Override
-   public synchronized void persistentContentStateChanged(int var1) {
+   public synchronized void persistentContentStateChanged(int state) {
       throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
    }
 
    @Override
-   public void persistentContentModeChanged(int var1) {
+   public void persistentContentModeChanged(int generation) {
    }
 }

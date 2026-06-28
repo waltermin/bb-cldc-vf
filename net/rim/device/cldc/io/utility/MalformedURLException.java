@@ -6,6 +6,6 @@ public final class MalformedURLException extends IOException {
    public MalformedURLException() {
    }
 
-   public MalformedURLException(String var1) {
+   public MalformedURLException(String msg) {
    }
 }

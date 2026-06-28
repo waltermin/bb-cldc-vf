@@ -41,104 +41,104 @@ public class EncodedImage {
    EncodedImage() {
    }
 
-   public static EncodedImage createEncodedImage(byte[] var0, int var1, int var2) {
-      return createEncodedImage(var0, var1, var2, null);
+   public static EncodedImage createEncodedImage(byte[] data, int offset, int length) {
+      return createEncodedImage(data, offset, length, null);
    }
 
-   public static EncodedImage createEncodedImage(byte[] var0, int var1, int var2, String var3) {
-      int var4;
-      if (var3 == null) {
-         var4 = getImageType(var0, var1, var2);
+   public static EncodedImage createEncodedImage(byte[] data, int offset, int length, String mimeType) {
+      int imageType;
+      if (mimeType == null) {
+         imageType = getImageType(data, offset, length);
       } else {
-         var4 = getMIMETypes().get(StringUtilities.toLowerCase(var3, 1701707776));
+         imageType = getMIMETypes().get(StringUtilities.toLowerCase(mimeType, 1701707776));
       }
 
-      switch (var4) {
+      switch (imageType) {
          case 0:
             throw new Object();
          case 1:
          default:
-            return new GIFEncodedImage(var0, var1, var2);
+            return new GIFEncodedImage(data, offset, length);
          case 2:
-            return new PNGEncodedImage(var0, var1, var2);
+            return new PNGEncodedImage(data, offset, length);
          case 3:
             if (JPEGEncodedImage.isJPEGSupported()) {
-               return new JPEGEncodedImage(var0, var1, var2);
+               return new JPEGEncodedImage(data, offset, length);
             }
 
             throw new Object();
          case 4:
-            return new WBMPEncodedImage(var0, var1, var2);
+            return new WBMPEncodedImage(data, offset, length);
          case 5:
             if (BMPEncodedImage.isBMPSupported()) {
-               return (EncodedImage)(new Object(var0, var1, var2));
+               return (EncodedImage)(new Object(data, offset, length));
             }
 
             throw new Object();
          case 6:
             if (TIFFEncodedImage.isTIFFSupported()) {
-               return new TIFFEncodedImage(var0, var1, var2);
+               return new TIFFEncodedImage(data, offset, length);
             }
 
             throw new Object();
          case 7:
          case 8:
             if (ProgressiveImage.isProgressiveSupported()) {
-               return new ProgressiveImage(var0, var1, var2, true);
+               return new ProgressiveImage(data, offset, length, true);
             } else {
                throw new Object();
             }
       }
    }
 
-   public static EncodedImage createEncodedImage(String var0, String var1) {
-      int var2;
-      if (var1 == null) {
-         var2 = 1;
+   public static EncodedImage createEncodedImage(String filename, String mimeType) {
+      int imageType;
+      if (mimeType == null) {
+         imageType = 1;
       } else {
-         var2 = getMIMETypes().get(StringUtilities.toLowerCase(var1, 1701707776));
+         imageType = getMIMETypes().get(StringUtilities.toLowerCase(mimeType, 1701707776));
       }
 
-      switch (var2) {
+      switch (imageType) {
          case 0:
             throw new Object();
          case 1:
          default:
-            return new GIFEncodedImage(var0);
+            return new GIFEncodedImage(filename);
          case 2:
-            return new PNGEncodedImage(var0);
+            return new PNGEncodedImage(filename);
          case 3:
             if (JPEGEncodedImage.isJPEGSupported()) {
-               return new JPEGEncodedImage(var0);
+               return new JPEGEncodedImage(filename);
             }
 
             throw new Object();
          case 4:
-            return new WBMPEncodedImage(var0);
+            return new WBMPEncodedImage(filename);
          case 5:
             if (BMPEncodedImage.isBMPSupported()) {
-               return (EncodedImage)(new Object(var0));
+               return (EncodedImage)(new Object(filename));
             }
 
             throw new Object();
          case 6:
             if (TIFFEncodedImage.isTIFFSupported()) {
-               return new TIFFEncodedImage(var0);
+               return new TIFFEncodedImage(filename);
             } else {
                throw new Object();
             }
       }
    }
 
-   public static EncodedImage getEncodedImageResource(String var0) {
-      return getEncodedImageResource(null, var0);
+   public static EncodedImage getEncodedImageResource(String name) {
+      return getEncodedImageResource(null, name);
    }
 
-   public static EncodedImage getEncodedImageResource(String var0, String var1) {
+   public static EncodedImage getEncodedImageResource(String module, String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public void setDecodeMode(int var1) {
+   public void setDecodeMode(int decodeMode) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -154,7 +154,7 @@ public class EncodedImage {
       return getMIMETypes().keys();
    }
 
-   public void setScale(int var1) {
+   public void setScale(int scale) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -162,20 +162,20 @@ public class EncodedImage {
       return Fixed32.toInt(this._scaleX);
    }
 
-   public void setScaleX32(int var1) {
-      if (var1 <= 0) {
+   public void setScaleX32(int scale) {
+      if (scale <= 0) {
          throw new Object();
       }
 
-      this._scaleX = var1;
+      this._scaleX = scale;
    }
 
-   public void setScaleY32(int var1) {
-      if (var1 <= 0) {
+   public void setScaleY32(int scale) {
+      if (scale <= 0) {
          throw new Object();
       }
 
-      this._scaleY = var1;
+      this._scaleY = scale;
    }
 
    public int getScaleX32() {
@@ -186,11 +186,11 @@ public class EncodedImage {
       return this._scaleY;
    }
 
-   public EncodedImage scaleImage32(int var1, int var2) {
-      EncodedImage var3 = createEncodedImage(this._data, this._offset, this._length);
-      var3.setScaleX32(var1);
-      var3.setScaleY32(var2);
-      return var3;
+   public EncodedImage scaleImage32(int scaleX, int scaleY) {
+      EncodedImage image = createEncodedImage(this._data, this._offset, this._length);
+      image.setScaleX32(scaleX);
+      image.setScaleY32(scaleY);
+      return image;
    }
 
    public int getImageType() {
@@ -221,27 +221,27 @@ public class EncodedImage {
       return this._info.frameCount;
    }
 
-   private boolean isCacheable(int var1) {
+   private boolean isCacheable(int frameIndex) {
       if ((this._decodeMode & 4) == 0) {
          return false;
       } else {
-         return (this.getBitmapType(var1) & 7) > 1 ? false : (this.getAlphaType(var1) & 7) <= 1;
+         return (this.getBitmapType(frameIndex) & 7) > 1 ? false : (this.getAlphaType(frameIndex) & 7) <= 1;
       }
    }
 
    public static native boolean isCFISupported();
 
-   public static boolean isMIMETypeSupported(String var0) {
-      return getMIMETypes().get(StringUtilities.toLowerCase(var0, 1701707776)) != -1;
+   public static boolean isMIMETypeSupported(String mimeType) {
+      return getMIMETypes().get(StringUtilities.toLowerCase(mimeType, 1701707776)) != -1;
    }
 
    public boolean isMonochrome() {
       return this._info.isMonochrome;
    }
 
-   public static boolean isImageValid(byte[] var0, int var1, int var2) {
-      int var3 = getImageType(var0, var1, var2);
-      switch (var3) {
+   public static boolean isImageValid(byte[] data, int offset, int length) {
+      int imageType = getImageType(data, offset, length);
+      switch (imageType) {
          case 0:
             return false;
          case 1:
@@ -265,49 +265,49 @@ public class EncodedImage {
       return this._info.hasTransparency;
    }
 
-   public int getFrameWidth(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return this._frameInfo[var1].width;
+   public int getFrameWidth(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return this._frameInfo[frameIndex].width;
       } else {
          throw new Object();
       }
    }
 
-   public int getFrameHeight(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return this._frameInfo[var1].height;
+   public int getFrameHeight(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return this._frameInfo[frameIndex].height;
       } else {
          throw new Object();
       }
    }
 
-   public int getScaledFrameWidth(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[var1].width), this._scaleX));
+   public int getScaledFrameWidth(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[frameIndex].width), this._scaleX));
       } else {
          throw new Object();
       }
    }
 
-   public int getScaledFrameHeight(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[var1].height), this._scaleY));
+   public int getScaledFrameHeight(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[frameIndex].height), this._scaleY));
       } else {
          throw new Object();
       }
    }
 
-   public boolean getFrameMonochrome(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return this._frameInfo[var1].isMonochrome;
+   public boolean getFrameMonochrome(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return this._frameInfo[frameIndex].isMonochrome;
       } else {
          throw new Object();
       }
    }
 
-   public boolean getFrameTransparency(int var1) {
-      if (var1 >= 0 && var1 <= this._info.frameCount) {
-         return this._frameInfo[var1].hasTransparency;
+   public boolean getFrameTransparency(int frameIndex) {
+      if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
+         return this._frameInfo[frameIndex].hasTransparency;
       } else {
          throw new Object();
       }
@@ -317,27 +317,27 @@ public class EncodedImage {
       return this.getBitmap(0);
    }
 
-   public Bitmap getBitmap(int var1) {
+   public Bitmap getBitmap(int frameIndex) {
       if (this._cacheBitmap != null && this._decodeMode == this._cacheDecodeMode && this._scaleX == this._cacheScaleX && this._scaleY == this._cacheScaleY) {
          return this._cacheBitmap;
       }
 
-      Bitmap var2 = this.getBitmapImpl(var1);
-      if (this.isCacheable(var1)) {
-         this._cacheBitmap = var2;
+      Bitmap bitmap = this.getBitmapImpl(frameIndex);
+      if (this.isCacheable(frameIndex)) {
+         this._cacheBitmap = bitmap;
          this._cacheDecodeMode = this._decodeMode;
          this._cacheScaleX = this._scaleX;
          this._cacheScaleY = this._scaleY;
       }
 
-      return var2;
+      return bitmap;
    }
 
    public String getMIMEType() {
       throw null;
    }
 
-   Bitmap getBitmapImpl(int var1) {
+   Bitmap getBitmapImpl(int _1) {
       throw null;
    }
 
@@ -353,11 +353,11 @@ public class EncodedImage {
       return this._length;
    }
 
-   public int getBitmapType(int var1) {
+   public int getBitmapType(int _1) {
       throw null;
    }
 
-   public int getAlphaType(int var1) {
+   public int getAlphaType(int _1) {
       throw null;
    }
 
@@ -367,12 +367,12 @@ public class EncodedImage {
       return this;
    }
 
-   public EncodedImage getReplacementImage(int var1, int var2) {
+   public EncodedImage getReplacementImage(int width, int height) {
       return this;
    }
 
-   public final void setDecodeSteps(int var1) {
+   public final void setDecodeSteps(int steps) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      this._decodeSteps = var1;
+      this._decodeSteps = steps;
    }
 }

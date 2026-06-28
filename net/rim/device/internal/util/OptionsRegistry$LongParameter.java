@@ -9,7 +9,7 @@ public final class OptionsRegistry$LongParameter implements Persistable {
       return this._value;
    }
 
-   final void setValue(long var1) {
-      this._value = var1;
+   final void setValue(long value) {
+      this._value = value;
    }
 }

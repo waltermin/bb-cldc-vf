@@ -4,7 +4,7 @@ class TaskQueue {
    private TimerTask[] queue = new TimerTask[4];
    private int size;
 
-   void add(TimerTask var1) {
+   void add(TimerTask task) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
@@ -16,8 +16,8 @@ class TaskQueue {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   void rescheduleMin(long var1) {
-      this.queue[1].nextExecutionTime = var1;
+   void rescheduleMin(long newTime) {
+      this.queue[1].nextExecutionTime = newTime;
       this.fixDown(1);
    }
 
@@ -26,42 +26,42 @@ class TaskQueue {
    }
 
    void clear() {
-      for (int var1 = 1; var1 <= this.size; var1++) {
-         this.queue[var1] = null;
+      for (int i = 1; i <= this.size; i++) {
+         this.queue[i] = null;
       }
 
       this.size = 0;
    }
 
-   private void fixUp(int var1) {
-      while (var1 > 1) {
-         int var2 = var1 >> 1;
-         if (this.queue[var2].nextExecutionTime <= this.queue[var1].nextExecutionTime) {
+   private void fixUp(int k) {
+      while (k > 1) {
+         int j = k >> 1;
+         if (this.queue[j].nextExecutionTime <= this.queue[k].nextExecutionTime) {
             return;
          }
 
-         TimerTask var3 = this.queue[var2];
-         this.queue[var2] = this.queue[var1];
-         this.queue[var1] = var3;
-         var1 = var2;
+         TimerTask tmp = this.queue[j];
+         this.queue[j] = this.queue[k];
+         this.queue[k] = tmp;
+         k = j;
       }
    }
 
-   private void fixDown(int var1) {
-      int var2;
-      while ((var2 = var1 << 1) <= this.size) {
-         if (var2 < this.size && this.queue[var2].nextExecutionTime > this.queue[var2 + 1].nextExecutionTime) {
-            var2++;
+   private void fixDown(int k) {
+      int j;
+      while ((j = k << 1) <= this.size) {
+         if (j < this.size && this.queue[j].nextExecutionTime > this.queue[j + 1].nextExecutionTime) {
+            j++;
          }
 
-         if (this.queue[var1].nextExecutionTime <= this.queue[var2].nextExecutionTime) {
+         if (this.queue[k].nextExecutionTime <= this.queue[j].nextExecutionTime) {
             return;
          }
 
-         TimerTask var3 = this.queue[var2];
-         this.queue[var2] = this.queue[var1];
-         this.queue[var1] = var3;
-         var1 = var2;
+         TimerTask tmp = this.queue[j];
+         this.queue[j] = this.queue[k];
+         this.queue[k] = tmp;
+         k = j;
       }
    }
 }

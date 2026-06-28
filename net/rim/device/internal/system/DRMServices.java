@@ -1,7 +1,12 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.crypto.SHA1Digest;
+import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.SIMCard;
+import net.rim.device.api.system.UnsupportedOperationException;
 import net.rim.device.api.util.Arrays;
+import net.rim.vm.Array;
 
 public final class DRMServices {
    private static final long LOCK_GUID;
@@ -13,25 +18,63 @@ public final class DRMServices {
    }
 
    private static final Object getDRMLock() {
-      throw new RuntimeException("cod2jar: exception table");
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      synchronized (ar) {
+         Object lock = ar.get(-1043389362224207904L);
+         if (lock == null) {
+            lock = new Object();
+            ar.put(-1043389362224207904L, lock);
+         }
+
+         return lock;
+      }
    }
 
    public static final byte[] getDeviceKey() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (getDRMLock()) {
+         byte[] deviceKey = NvStore.readData(17);
+         if (deviceKey == null) {
+            deviceKey = RandomSource.getBytes(16);
+            NvStore.writeData(17, deviceKey);
+         }
+
+         return deviceKey;
+      }
    }
 
    public static final byte[] getSubscriberKey() {
-      throw new RuntimeException("cod2jar: exception table");
+      try {
+         byte[] simKey = SIMCard.getICCID();
+         if (simKey.length < 16) {
+            int offset = simKey.length;
+            Array.resize(simKey, 16);
+
+            for (int i = simKey.length - 1; i >= offset; i--) {
+               simKey[i] = -28;
+            }
+         }
+
+         for (int i = simKey.length - 1; i >= 0; i--) {
+            int index = i % DRM_SIM_KEY_SCRAMBLE_SET.length;
+            simKey[i] ^= DRM_SIM_KEY_SCRAMBLE_SET[index];
+         }
+
+         return simKey;
+      } catch (UnsupportedOperationException var3) {
+         return null;
+      } catch (Throwable var4) {
+         return null;
+      }
    }
 
-   private static final byte[] getHash(byte[] var0) {
-      if (var0 != null) {
-         Object var1 = new Object();
-         ((SHA1Digest)var1).update(var0);
-         var0 = ((SHA1Digest)var1).getDigest();
+   private static final byte[] getHash(byte[] data) {
+      if (data != null) {
+         SHA1Digest digest = (SHA1Digest)(new Object());
+         digest.update(data);
+         data = digest.getDigest();
       }
 
-      return var0;
+      return data;
    }
 
    public static final byte[] getDeviceHash() {
@@ -42,13 +85,13 @@ public final class DRMServices {
       return getHash(getSubscriberKey());
    }
 
-   public static final boolean checkTrailerBytes(byte[] var0) {
-      byte[] var1 = getDeviceHash();
-      if (Arrays.equals(var0, var1)) {
+   public static final boolean checkTrailerBytes(byte[] trailer) {
+      byte[] data = getDeviceHash();
+      if (Arrays.equals(trailer, data)) {
          return true;
       }
 
-      var1 = getSubscriberHash();
-      return var1 != null && Arrays.equals(var0, var1);
+      data = getSubscriberHash();
+      return data != null && Arrays.equals(trailer, data);
    }
 }

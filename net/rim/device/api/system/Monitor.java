@@ -5,13 +5,13 @@ final class Monitor {
    private boolean _hasBeenNotified;
    private Thread _owner;
 
-   Monitor(long var1) {
-      this._guid = var1;
+   Monitor(long guid) {
+      this._guid = guid;
    }
 
-   Monitor(long var1, Thread var3) {
-      this._guid = var1;
-      this._owner = var3;
+   Monitor(long guid, Thread owner) {
+      this._guid = guid;
+      this._owner = owner;
    }
 
    final boolean hasBeenNotified() {

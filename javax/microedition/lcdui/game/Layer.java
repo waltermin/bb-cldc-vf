@@ -9,19 +9,19 @@ public class Layer {
    int height;
    boolean visible = true;
 
-   Layer(int var1, int var2) {
-      this.setWidthImpl(var1);
-      this.setHeightImpl(var2);
+   Layer(int width, int height) {
+      this.setWidthImpl(width);
+      this.setHeightImpl(height);
    }
 
-   public void setPosition(int var1, int var2) {
-      this.x = var1;
-      this.y = var2;
+   public void setPosition(int x, int y) {
+      this.x = x;
+      this.y = y;
    }
 
-   public void move(int var1, int var2) {
-      this.x += var1;
-      this.y += var2;
+   public void move(int dx, int dy) {
+      this.x += dx;
+      this.y += dy;
    }
 
    public final int getX() {
@@ -40,7 +40,7 @@ public class Layer {
       return this.height;
    }
 
-   public void setVisible(boolean var1) {
+   public void setVisible(boolean visible) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -48,23 +48,23 @@ public class Layer {
       return this.visible;
    }
 
-   public void paint(Graphics var1) {
+   public void paint(Graphics _1) {
       throw null;
    }
 
-   void setWidthImpl(int var1) {
-      if (var1 < 0) {
+   void setWidthImpl(int width) {
+      if (width < 0) {
          throw new Object();
       }
 
-      this.width = var1;
+      this.width = width;
    }
 
-   void setHeightImpl(int var1) {
-      if (var1 < 0) {
+   void setHeightImpl(int height) {
+      if (height < 0) {
          throw new Object();
       }
 
-      this.height = var1;
+      this.height = height;
    }
 }

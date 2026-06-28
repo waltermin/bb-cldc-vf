@@ -6,10 +6,15 @@ final class PersistentContent$CheckSecureThreadLauncher implements Runnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (PersistentContent._instance) {
+         if (PersistentContent._instance._checkSecureThread == null) {
+            PersistentContent._instance._checkSecureThread = new PersistentContent$CheckSecureThread(null);
+            PersistentContent._instance._checkSecureThread.start();
+         }
+      }
    }
 
-   PersistentContent$CheckSecureThreadLauncher(PersistentContent$1 var1) {
+   PersistentContent$CheckSecureThreadLauncher(PersistentContent$1 x0) {
       this();
    }
 }

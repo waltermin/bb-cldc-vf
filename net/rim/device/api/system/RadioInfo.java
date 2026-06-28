@@ -65,20 +65,20 @@ public final class RadioInfo {
    public static final native int getSupportedWAFs();
 
    private static final int getDefaultWAF() {
-      int var0 = getSupportedWAFs();
-      if ((var0 & 2) != 0) {
+      int wafs = getSupportedWAFs();
+      if ((wafs & 2) != 0) {
          return 2;
-      } else if ((var0 & 1) != 0) {
+      } else if ((wafs & 1) != 0) {
          return 1;
-      } else if ((var0 & 8) != 0) {
+      } else if ((wafs & 8) != 0) {
          return 8;
       } else {
-         return (var0 & 4) != 0 ? 4 : 0;
+         return (wafs & 4) != 0 ? 4 : 0;
       }
    }
 
-   public static final boolean areWAFsSupported(int var0) {
-      return (getSupportedWAFs() & var0) != 0;
+   public static final boolean areWAFsSupported(int WAFs) {
+      return (getSupportedWAFs() & WAFs) != 0;
    }
 
    public static final native int getActiveWAFs();
@@ -98,40 +98,40 @@ public final class RadioInfo {
    public static final native int getNetworkService();
 
    public static final int getSupportedBands() {
-      int var0 = getSupportedWAFs();
-      short var1 = 0;
-      if ((var0 & 2) != 0) {
-         var1 |= 96;
+      int wafs = getSupportedWAFs();
+      int bands = 0;
+      if ((wafs & 2) != 0) {
+         bands |= 96;
       }
 
-      if ((var0 & 8) != 0) {
-         var1 |= 128;
+      if ((wafs & 8) != 0) {
+         bands |= 128;
       }
 
-      if ((var0 & 1) != 0) {
-         int var2 = getNetworkBands();
-         if ((var2 & 8) != 0) {
-            var1 |= 256;
+      if ((wafs & 1) != 0) {
+         int osBands = getNetworkBands();
+         if ((osBands & 8) != 0) {
+            bands |= 256;
          }
 
-         if ((var2 & 1) != 0) {
-            var1 |= 4;
+         if ((osBands & 1) != 0) {
+            bands |= 4;
          }
 
-         if ((var2 & 2) != 0) {
-            var1 |= 8;
+         if ((osBands & 2) != 0) {
+            bands |= 8;
          }
 
-         if ((var2 & 4) != 0) {
-            var1 |= 16;
+         if ((osBands & 4) != 0) {
+            bands |= 16;
          }
 
-         if ((var2 & 16) != 0) {
-            var1 |= 512;
+         if ((osBands & 16) != 0) {
+            bands |= 512;
          }
       }
 
-      return var1;
+      return bands;
    }
 
    private static final native int getNetworkBands();
@@ -144,98 +144,98 @@ public final class RadioInfo {
 
    public static final native int getCurrentNetworkIndex();
 
-   public static final int getNetworkId(int var0) {
-      int var1 = getNetworkIdFromOS(var0);
-      return convertNetworkId(var1);
+   public static final int getNetworkId(int index) {
+      int networkId = getNetworkIdFromOS(index);
+      return convertNetworkId(networkId);
    }
 
    private static final native int getNetworkIdFromOS(int var0);
 
-   public static final String getNetworkName(int var0) {
-      String var1 = null;
+   public static final String getNetworkName(int index) {
+      String networkName = null;
       if (!DeviceInfo.isSimulator() && (getActiveWAFs() & 1) != 0) {
-         Object var2 = ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
-         if (var2 != null) {
-            return ((SE13NetworkTable)var2).getNetworkName(getNetworkId(var0));
+         SE13NetworkTable se13NetTable = (SE13NetworkTable)ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
+         if (se13NetTable != null) {
+            return se13NetTable.getNetworkName(getNetworkId(index));
          }
       } else {
-         var1 = getNetworkNameFromOS(var0);
+         networkName = getNetworkNameFromOS(index);
       }
 
-      return var1;
+      return networkName;
    }
 
    private static final native String getNetworkNameFromOS(int var0);
 
-   public static final String getNetworkCountryCode(int var0) {
-      String var1 = null;
+   public static final String getNetworkCountryCode(int index) {
+      String networkCountryCode = null;
       if (!DeviceInfo.isSimulator() && (getActiveWAFs() & 1) != 0) {
-         Object var2 = ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
-         if (var2 != null) {
-            return ((SE13NetworkTable)var2).getCountryInitials((short)(getNetworkId(var0) & 65535));
+         SE13NetworkTable se13NetTable = (SE13NetworkTable)ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
+         if (se13NetTable != null) {
+            return se13NetTable.getCountryInitials((short)(getNetworkId(index) & 65535));
          }
       } else {
-         var1 = getNetworkCountryCodeFromOS(var0);
+         networkCountryCode = getNetworkCountryCodeFromOS(index);
       }
 
-      return var1;
+      return networkCountryCode;
    }
 
    private static final native String getNetworkCountryCodeFromOS(int var0);
 
-   public static final int convertNetworkId(int var0) {
-      if (!DeviceInfo.isSimulator() && (getActiveWAFs() & 1) != 0 && (var0 & 983040) == 983040) {
-         Object var1 = ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
-         if (var1 != null) {
-            if (((SE13NetworkTable)var1).is3DigitMNC(var0)) {
-               return var0 & -983041;
+   public static final int convertNetworkId(int networkId) {
+      if (!DeviceInfo.isSimulator() && (getActiveWAFs() & 1) != 0 && (networkId & 983040) == 983040) {
+         SE13NetworkTable se13NetTable = (SE13NetworkTable)ApplicationRegistry.getApplicationRegistry().waitFor(-7927117593081548760L);
+         if (se13NetTable != null) {
+            if (se13NetTable.is3DigitMNC(networkId)) {
+               return networkId & -983041;
             }
 
-            var0 = (var0 & 267386880) >>> 4 | var0 & 4095;
+            networkId = (networkId & 267386880) >>> 4 | networkId & 4095;
          }
       }
 
-      return var0;
+      return networkId;
    }
 
-   public static final int calculateNetworkId(int var0, int var1) {
-      int var2 = var0 % 100;
-      int var3 = var0 / 100 << 8 | var2 / 10 << 4;
-      var3 |= var2 % 10;
-      var2 = var1 % 100;
-      int var4 = var1 / 100 << 8 | var2 / 10 << 4;
-      var4 |= var2 % 10;
-      return var4 << 16 | var3;
+   public static final int calculateNetworkId(int mcc, int mnc) {
+      int temp = mcc % 100;
+      int hexMCC = mcc / 100 << 8 | temp / 10 << 4;
+      hexMCC |= temp % 10;
+      temp = mnc % 100;
+      int hexMNC = mnc / 100 << 8 | temp / 10 << 4;
+      hexMNC |= temp % 10;
+      return hexMNC << 16 | hexMCC;
    }
 
-   public static final int getMNC(int var0) {
-      int var1 = getNetworkId(var0);
-      return (var1 & -65536) >> 16;
+   public static final int getMNC(int index) {
+      int netID = getNetworkId(index);
+      return (netID & -65536) >> 16;
    }
 
-   public static final int getMCC(int var0) {
-      int var1 = getNetworkId(var0);
-      return var1 & 65535;
+   public static final int getMCC(int index) {
+      int netID = getNetworkId(index);
+      return netID & 65535;
    }
 
    public static final native boolean isPDPContextActive(int var0);
 
    public static final native String getAccessPointName(int var0);
 
-   public static final int getAccessPointNumber(String var0) {
+   public static final int getAccessPointNumber(String name) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final native int getAccessPointNumber(String var0, int var1, int var2);
 
-   public static final byte[] getIPAddress(int var0) {
-      return UDPPacketHeader.IPv4IntToByteArray(getIPv4Address(var0));
+   public static final byte[] getIPAddress(int apnId) {
+      return UDPPacketHeader.IPv4IntToByteArray(getIPv4Address(apnId));
    }
 
    private static final native int getIPv4Address(int var0);
 
-   public static final long getNetworkTime(long var0) {
-      return TimeSync.GetNetworkTime(var0);
+   public static final long getNetworkTime(long deviceTime) {
+      return TimeSync.GetNetworkTime(deviceTime);
    }
 
    public static final boolean isDataServiceOperational() {
@@ -243,27 +243,27 @@ public final class RadioInfo {
    }
 
    public static final boolean isDataServiceSuspended() {
-      int var0 = getNetworkService();
-      int var1 = getSupportedWAFs();
-      if ((var1 & 2) != 0 && (var0 & 2048) != 0) {
+      int networkService = getNetworkService();
+      int supportedWAFs = getSupportedWAFs();
+      if ((supportedWAFs & 2) != 0 && (networkService & 2048) != 0) {
          return true;
       }
 
-      if ((var1 & 1) != 0) {
-         if ((RadioInternal.get3GPPSupportedRats() & 2) != 0 && (var0 & 4096) != 0) {
+      if ((supportedWAFs & 1) != 0) {
+         if ((RadioInternal.get3GPPSupportedRats() & 2) != 0 && (networkService & 4096) != 0) {
             return false;
          }
 
-         if ((var0 & 32768) != 0) {
+         if ((networkService & 32768) != 0) {
             return false;
          }
       }
 
-      return (var1 & 4) != 0 && WLAN.isRadioOn() && WLAN.isAssociated() != null ? false : Phone.isSupported() && Phone.getInstance().isActive();
+      return (supportedWAFs & 4) != 0 && WLAN.isRadioOn() && WLAN.isAssociated() != null ? false : Phone.isSupported() && Phone.getInstance().isActive();
    }
 
    public static final String getCurrentNetworkName() {
-      int var0 = getCurrentNetworkIndex();
-      return var0 != -1 ? getNetworkName(var0) : null;
+      int index = getCurrentNetworkIndex();
+      return index != -1 ? getNetworkName(index) : null;
    }
 }

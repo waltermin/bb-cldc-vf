@@ -8,9 +8,9 @@ import net.rim.vm.Array;
 class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
    private final SmileySymbolScreen this$0;
 
-   protected SmileySymbolScreen$SmileySymbolField(SmileySymbolScreen var1) {
-      super(var1);
-      this.this$0 = var1;
+   protected SmileySymbolScreen$SmileySymbolField(SmileySymbolScreen _1) {
+      super(_1);
+      this.this$0 = _1;
    }
 
    @Override
@@ -30,33 +30,33 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
 
    @Override
    protected int[] getPages() {
-      int[] var1 = super.getPages();
-      int[][] var2 = SmileySymbolScreen._smileyFacility.emoticonScreenLayouts();
-      if (var2 != null) {
-         int var3 = var1.length;
-         Array.resize(var1, var3 + var2.length);
-         int var4 = super.getNumPages();
+      int[] pages = super.getPages();
+      int[][][] smileyMaps = (int[][][])SmileySymbolScreen._smileyFacility.emoticonScreenLayouts();
+      if (smileyMaps != null) {
+         int nonEmptyPages = pages.length;
+         Array.resize(pages, nonEmptyPages + smileyMaps.length);
+         int numPages = super.getNumPages();
 
-         for (int var5 = var4; var5 < var4 + var2.length; var5++) {
-            var1[var3] = var5;
-            var3++;
+         for (int page = numPages; page < numPages + smileyMaps.length; page++) {
+            pages[nonEmptyPages] = page;
+            nonEmptyPages++;
          }
       }
 
-      return var1;
+      return pages;
    }
 
    @Override
-   protected void initCurrentPageMap(int var1) {
-      if (var1 < super._pagesStandard) {
-         super.initCurrentPageMap(var1);
+   protected void initCurrentPageMap(int page) {
+      if (page < super._pagesStandard) {
+         super.initCurrentPageMap(page);
       } else {
          this.updatePageNumber();
-         int[] var2 = SmileySymbolScreen._smileyFacility.emoticonScreenLayouts()[var1 - super._pagesStandard];
+         int[] smileymap = SmileySymbolScreen._smileyFacility.emoticonScreenLayouts()[page - super._pagesStandard];
          super._map.clear();
 
-         for (int var3 = var2.length - 1; var3 >= 0; var3--) {
-            super._map.put(65 + var3, var2[var3]);
+         for (int i = smileymap.length - 1; i >= 0; i--) {
+            super._map.put(65 + i, smileymap[i]);
          }
 
          super._map.put(90, 8646);
@@ -65,10 +65,10 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
    }
 
    @Override
-   public int moveFocus(int var1, int var2, int var3) {
-      int var4 = super.moveFocus(var1, var2, var3);
+   public int moveFocus(int amount, int status, int time) {
+      int result = super.moveFocus(amount, status, time);
       this.updateDescription();
-      return var4;
+      return result;
    }
 
    @Override
@@ -77,25 +77,25 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
    }
 
    @Override
-   protected void paintSymbol(Graphics var1, char var2, int var3, int var4, int var5, int var6) {
-      boolean var7 = InternalServices.isReducedFormFactor();
-      int var8 = super._keyWidth;
-      if (var2 == 8646) {
-         int var9 = super._currentPage < this.getNumPagesAvailable() - 1 ? 0 : 4;
-         if (var9 == 0 || var9 == 4) {
-            MediaIcon.COLLECTION.paint(var1, var3, var4, var5, var6, var9);
+   protected void paintSymbol(Graphics graphics, char symbol, int x, int y, int width, int height) {
+      boolean charm = InternalServices.isReducedFormFactor();
+      int _symKeyWidth = super._keyWidth;
+      if (symbol == 8646) {
+         int icon = super._currentPage < this.getNumPagesAvailable() - 1 ? 0 : 4;
+         if (icon == 0 || icon == 4) {
+            MediaIcon.COLLECTION.paint(graphics, x, y, width, height, icon);
             return;
          }
       } else {
          if (super._pages[super._currentPage] < super._pagesStandard) {
-            var1.drawText(var2, var3 + (var2 == 8646 && !var7 ? var8 - super._keyWidth >> 1 : 0), var4, 4, super._keyWidth - 1);
+            graphics.drawText(symbol, x + (symbol == 8646 && !charm ? _symKeyWidth - super._keyWidth >> 1 : 0), y, 4, super._keyWidth - 1);
             return;
          }
 
-         int var12 = SmileySymbolScreen._smileyFacility.emoticonSize();
-         int var10 = var3 + (var5 - var12 >> 1);
-         int var11 = var4 + (var6 - var12 >> 1);
-         SmileySymbolScreen._smileyFacility.drawEmoticon(var1, var2, var10, var11);
+         int size = SmileySymbolScreen._smileyFacility.emoticonSize();
+         int xSym = x + (width - size >> 1);
+         int ySym = y + (height - size >> 1);
+         SmileySymbolScreen._smileyFacility.drawEmoticon(graphics, symbol, xSym, ySym);
       }
    }
 
@@ -106,7 +106,7 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
    }
 
    @Override
-   void send(char var1) {
+   void send(char ch) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

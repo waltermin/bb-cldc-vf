@@ -18,9 +18,11 @@ import net.rim.device.api.system.RadioPacketHeader;
 import net.rim.device.api.system.RadioPacketListener;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.system.WLAN;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.cldc.io.daemon.ProtocolDaemon;
 import net.rim.device.internal.system.DataServices;
 import net.rim.device.internal.system.ITPolicyInternal;
+import net.rim.vm.Array;
 
 public class NativeTransport
    extends DatagramTransportBase
@@ -79,19 +81,19 @@ public class NativeTransport
       throw null;
    }
 
-   public void nativeSendVerify(DatagramAddressBase var1, Datagram var2) {
+   public void nativeSendVerify(DatagramAddressBase _1, Datagram _2) {
       throw null;
    }
 
-   public void nativeSendSetupHeader(Datagram var1, IOProperties var2) {
+   public void nativeSendSetupHeader(Datagram _1, IOProperties _2) {
       throw null;
    }
 
-   public void nativeSendSetupData(Datagram var1) {
+   public void nativeSendSetupData(Datagram _1) {
       throw null;
    }
 
-   public int nativeGetStatus(int var1) {
+   public int nativeGetStatus(int _1) {
       throw null;
    }
 
@@ -99,15 +101,19 @@ public class NativeTransport
    }
 
    public void nativePostSend() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendChokeLock) {
+         this._txAddressBase = null;
+         this._txDatagram = null;
+         this._txData = null;
+      }
    }
 
-   protected void queueDgslEvent(DatagramStatusListener var1, int var2, int var3, Object var4) {
-      this.xmitDgslEvent(var1, var2, var3, var4);
+   protected void queueDgslEvent(DatagramStatusListener listener, int dgramId, int status, Object context) {
+      this.xmitDgslEvent(listener, dgramId, status, context);
    }
 
-   protected void queueDgslEvent(int var1, int var2, Object var3) {
-      this.passDgslEvent(var1, var2, var3);
+   protected void queueDgslEvent(int subId, int status, Object context) {
+      this.passDgslEvent(subId, status, context);
    }
 
    protected void setBackoffTimer() {
@@ -118,13 +124,27 @@ public class NativeTransport
       }
    }
 
-   protected void queueSendStatus(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void queueSendStatus(int dgramId, int status) {
+      synchronized (this._sendStatusIds) {
+         Arrays.add(this._sendStatusIds, dgramId);
+         Arrays.add(this._sendStatusCodes, status);
+         this._sendStatusIds.notify();
+      }
    }
 
    @Override
-   public void networkStarted(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void networkStarted(int networkId, int service) {
+      synchronized (this._sendChokeLock) {
+         if ((this._networkServiceMask & service) != 0) {
+            if (this._networkChoked) {
+               this.startNetworkTimer();
+            }
+
+            if (this._sendWait != 0) {
+               this._sendChokeLock.notify();
+            }
+         }
+      }
    }
 
    @Override
@@ -133,42 +153,59 @@ public class NativeTransport
 
    @Override
    public void radioTurnedOff() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendChokeLock) {
+         this.lostNetwork();
+      }
+
+      this.possiblyClearSendStatus();
+      this.kickSend();
    }
 
    @Override
-   public void pdpStateChange(int var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void pdpStateChange(int apn, int state, int cause) {
+      synchronized (this._sendChokeLock) {
+         if (this._sendWait != 0 && apn == this._apnId && state == 0) {
+            EventLogger.logEvent(super.GUID, 1430479726, 4);
+            this._sendChokeLock.notify();
+         }
+      }
    }
 
    @Override
-   public void networkStateChange(int var1) {
+   public void networkStateChange(int state) {
    }
 
    @Override
-   public void networkScanComplete(boolean var1) {
+   public void networkScanComplete(boolean success) {
    }
 
    @Override
-   public void networkServiceChange(int var1, int var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void networkServiceChange(int networkId, int service) {
+      synchronized (this._sendChokeLock) {
+         this.processNetwork(service);
+      }
    }
 
    @Override
-   public void networkSelectionFailed(int var1, int var2) {
+   public void networkSelectionFailed(int networkId, int cause) {
    }
 
    @Override
-   public void flowControlStatusChange(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void flowControlStatusChange(int flowControlStatus) {
+      synchronized (this._sendChokeLock) {
+         if (this._sendWait != 0 && flowControlStatus == 2) {
+            EventLogger.logEvent(super.GUID, 1430480483, 4);
+            this._sendChokeLock.notify();
+         }
+      }
    }
 
    @Override
-   public void networkScanStatus(int var1) {
+   public void networkScanStatus(int status) {
    }
 
    @Override
-   public void networkNameChangeViaNITZ(int var1, int var2) {
+   public void networkNameChangeViaNITZ(int longNameLength, int shortNameLength) {
    }
 
    @Override
@@ -188,15 +225,15 @@ public class NativeTransport
    }
 
    @Override
-   public void batteryStatusChange(int var1) {
+   public void batteryStatusChange(int status) {
    }
 
    @Override
-   public void powerOffRequested(int var1) {
+   public void powerOffRequested(int reason) {
    }
 
    @Override
-   public void cradleMismatch(boolean var1) {
+   public void cradleMismatch(boolean mismatch) {
    }
 
    @Override
@@ -205,101 +242,107 @@ public class NativeTransport
    }
 
    @Override
-   public void backlightStateChange(boolean var1) {
+   public void backlightStateChange(boolean on) {
    }
 
    @Override
-   public void usbConnectionStateChange(int var1) {
+   public void usbConnectionStateChange(int state) {
    }
 
    @Override
-   public void callIncoming(int var1) {
+   public void callIncoming(int callId) {
    }
 
    @Override
-   public void callDisplayUpdated(int var1) {
+   public void callDisplayUpdated(int callId) {
    }
 
    @Override
-   public void callWaiting(int var1) {
+   public void callWaiting(int callId) {
    }
 
    @Override
-   public void callInitiated(int var1) {
+   public void callInitiated(int callId) {
    }
 
    @Override
-   public void callConnected(int var1) {
+   public void callConnected(int callId) {
    }
 
    @Override
-   public void callFailed(int var1, int var2) {
-      this.callDisconnected(var1);
+   public void callFailed(int callId, int error) {
+      this.callDisconnected(callId);
    }
 
    @Override
-   public void callDelivered(int var1) {
+   public void callDelivered(int callId) {
    }
 
    @Override
-   public void callManipulateFailed(int var1, int var2) {
+   public void callManipulateFailed(int callId, int error) {
    }
 
    @Override
-   public void callDisconnected(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void callDisconnected(int callId) {
+      synchronized (this._sendChokeLock) {
+         if (this._sendWait != 0) {
+            EventLogger.logEvent(super.GUID, 1430483048, 4);
+            this._timeBackoff = this.SEND_BACKOFF_DEF;
+            this._sendChokeLock.notify();
+         }
+      }
    }
 
    @Override
-   public void callHeld(int var1) {
+   public void callHeld(int callId) {
    }
 
    @Override
-   public void callResumed(int var1) {
+   public void callResumed(int callId) {
    }
 
    @Override
-   public void callAdded(int var1) {
+   public void callAdded(int callId) {
    }
 
    @Override
-   public void callRemoved(int var1) {
+   public void callRemoved(int callId) {
    }
 
    @Override
-   public void callTransferred(int var1, int var2) {
+   public void callTransferred(int status, int reason) {
    }
 
    @Override
-   public void callTransferStateUpdated(int var1, int var2) {
+   public void callTransferStateUpdated(int callId, int state) {
    }
 
    @Override
-   public void callTimerUpdated(int var1, int var2) {
+   public void callTimerUpdated(int callId, int time) {
    }
 
    @Override
-   public void callVoicePrivacyUpdated(int var1, boolean var2) {
+   public void callVoicePrivacyUpdated(int callId, boolean on) {
    }
 
    @Override
-   public void callOTAStatusUpdated(int var1, int var2) {
+   public void callOTAStatusUpdated(int callId, int status) {
    }
 
    @Override
-   public void ssRequestSucceeded(int var1, int var2, int var3, int var4, boolean var5, boolean var6) {
+   public void ssRequestSucceeded(int ss, int action, int result, int bearerService, boolean isUSSDCmd, boolean forwardingNumberAvailable) {
    }
 
    @Override
-   public void ssRequestFailed(int var1, int var2, boolean var3) {
+   public void ssRequestFailed(int reason, int bearerService, boolean isUSSDCmd) {
    }
 
    @Override
-   public void ssRequestRejected(boolean var1) {
+   public void ssRequestRejected(boolean isUSSDCmd) {
    }
 
    @Override
-   public void ssRequestReleased(boolean var1) {
+   public void ssRequestReleased(boolean isUSSDCmd) {
    }
 
    @Override
@@ -307,19 +350,19 @@ public class NativeTransport
    }
 
    @Override
-   public void ssPasswordRequested(int var1) {
+   public void ssPasswordRequested(int requestType) {
    }
 
    @Override
-   public void ssUpdated(int var1, int var2) {
+   public void ssUpdated(int ssOption, int state) {
    }
 
    @Override
-   public void ssNotification(int var1) {
+   public void ssNotification(int ssOption) {
    }
 
    @Override
-   public void ssUssDisplay(byte[] var1, int var2, boolean var3) {
+   public void ssUssDisplay(byte[] data, int messageCoding, boolean collectInput) {
    }
 
    @Override
@@ -327,11 +370,11 @@ public class NativeTransport
    }
 
    @Override
-   public void responseEnableFDN(int var1) {
+   public void responseEnableFDN(int status) {
    }
 
    @Override
-   public void voiceLineChanged(int var1) {
+   public void voiceLineChanged(int line) {
    }
 
    @Override
@@ -339,105 +382,167 @@ public class NativeTransport
    }
 
    @Override
-   public void voicemailCountUpdated(int var1, int var2) {
+   public void voicemailCountUpdated(int line, int count) {
    }
 
    @Override
-   public void dtmfData(int var1) {
+   public void dtmfData(int dtmf) {
    }
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   public void signalLevel(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void signalLevel(int level) {
+      synchronized (this._sendChokeLock) {
+         if (this._sendWait != 0 && level > this._signalThreshold) {
+            EventLogger.logEvent(super.GUID, 1430483817, 4);
+            this._sendChokeLock.notify();
+         }
+      }
    }
 
    @Override
-   public void packetStatus(int var1, int var2) {
-      this.queueSendStatus(var1, var2);
+   public void packetStatus(int packetId, int status) {
+      this.queueSendStatus(packetId, status);
    }
 
    @Override
-   public void packetNotSent(int var1, int var2) {
-      this.queueSendStatus(var1, var2);
+   public void packetNotSent(int packetId, int error) {
+      this.queueSendStatus(packetId, error);
    }
 
    @Override
-   public void packetSent(int var1, int var2) {
+   public void packetSent(int packetId, int networkId) {
       if (this._generateTransmittingStatusEvent) {
-         this.queueSendStatus(var1, 2);
+         this.queueSendStatus(packetId, 2);
       }
 
-      this.queueSendStatus(var1, 0);
+      this.queueSendStatus(packetId, 0);
    }
 
    @Override
-   protected void processReceivedDatagram(Datagram var1) {
+   protected void processReceivedDatagram(Datagram datagram) {
    }
 
    @Override
-   protected boolean passUpDatagram(Datagram var1) {
+   protected boolean passUpDatagram(Datagram datagram) {
       if (super._tLogger != null) {
-         super._tLogger.bytesReceived(this, 1, var1.getAddress(), var1.getLength(), var1.getData());
+         super._tLogger.bytesReceived(this, 1, datagram.getAddress(), datagram.getLength(), datagram.getData());
       }
 
-      return super.passUpDatagram(var1);
+      return super.passUpDatagram(datagram);
    }
 
    @Override
-   public void eventOccurred(long var1, int var3, int var4, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
+      super.eventOccurred(guid, data0, data1, object0, object1);
+      if (guid == -3556743465989743742L) {
+         this._dataServicesMode = this._dataServices.getMode();
+         boolean dataServicesEnabled = this._dataServices.isDataServicesEnabled();
+         if (this._dataServicesEnabled != dataServicesEnabled) {
+            this._dataServicesEnabled = dataServicesEnabled;
+            if (dataServicesEnabled) {
+               synchronized (this._sendChokeLock) {
+                  if (this._sendWait != 0) {
+                     EventLogger.logEvent(super.GUID, 1430479987, 4);
+                     this._sendChokeLock.notify();
+                  }
+
+                  return;
+               }
+            }
+         }
+      } else if (guid == 8508406279413621091L) {
+         this._itPolicyEnabled = ITPolicyInternal.isITPolicyEnabled();
+      }
    }
 
    @Override
-   protected byte[] setup(int var1, Object var2) {
-      switch (var1) {
+   protected byte[] setup(int callType, Object context) {
+      switch (callType) {
          case 334258761:
          default:
-            this._nativeListener = (NativeListener)var2;
+            this._nativeListener = (NativeListener)context;
          case 334258760:
             return null;
       }
    }
 
    @Override
-   public void cancel(Datagram var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void cancel(Datagram datagram) {
+      synchronized (this._sendChokeLock) {
+         if (datagram == this._txDatagram) {
+            this._txDatagram = null;
+            this._sendChokeLock.notify();
+            this.clearSendStatus();
+         }
+      }
    }
 
    @Override
-   public void send(Datagram var1, DatagramAddressBase var2, IOProperties var3, DatagramStatusListener var4, int var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void send(Datagram datagram, DatagramAddressBase addressBase, IOProperties properties, DatagramStatusListener listener, int dgramId) {
+      throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
    @Override
-   public void send(Datagram var1) {
-      this.send(var1, null, null, null, 0);
+   public void send(Datagram datagram) {
+      this.send(datagram, null, null, null, 0);
    }
 
    private void clearSendStatus() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendStatusIds) {
+         Array.resize(this._sendStatusIds, 0);
+         Array.resize(this._sendStatusCodes, 0);
+         this._sendStatusWaiting = false;
+         this._sendStatusIds.notify();
+      }
    }
 
    private void possiblyClearSendStatus() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendStatusIds) {
+         if (this._sendStatusWaiting) {
+            Array.resize(this._sendStatusIds, 0);
+            Array.resize(this._sendStatusCodes, 0);
+            this._sendStatusIds.notify();
+         }
+      }
    }
 
    @Override
-   protected synchronized int getNextDatagramId(DatagramBase var1) {
+   protected synchronized int getNextDatagramId(DatagramBase dgram) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private int[] dequeueSendStatus() {
-      throw new RuntimeException("cod2jar: exception table");
+      synchronized (this._sendStatusIds) {
+         if (this._sendStatusIds.length == 0) {
+            this._sendStatusWaiting = true;
+
+            try {
+               this._sendStatusIds.wait();
+            } catch (InterruptedException var3) {
+            }
+
+            this._sendStatusWaiting = false;
+            if (this._sendStatusIds.length == 0) {
+               return null;
+            }
+         }
+
+         this._sendStatusReturn[0] = this._sendStatusIds[0];
+         this._sendStatusReturn[1] = this._sendStatusCodes[0];
+         Arrays.removeAt(this._sendStatusIds, 0);
+         Arrays.removeAt(this._sendStatusCodes, 0);
+      }
+
+      return this._sendStatusReturn;
    }
 
-   private void processNetwork(int var1) {
-      if ((this._networkServiceMask & var1) != 0) {
+   private void processNetwork(int service) {
+      if ((this._networkServiceMask & service) != 0) {
          if (this._networkChoked) {
             this.startNetworkTimer();
          }
@@ -497,20 +602,20 @@ public class NativeTransport
       this._dataServices = DataServices.getInstance();
       this._dataServicesEnabled = this._dataServices.isDataServicesEnabled();
       this._dataServicesMode = this._dataServices.getMode();
-      ProtocolDaemon var1 = ProtocolDaemon.getInstance();
-      var1.addGlobalEventListener(this);
-      var1.addRadioListener(-1, this);
-      var1.addSystemListener(this);
+      ProtocolDaemon daemon = ProtocolDaemon.getInstance();
+      daemon.addGlobalEventListener(this);
+      daemon.addRadioListener(-1, this);
+      daemon.addSystemListener(this);
       EventLogger.logEvent(super.GUID, 1229878386, 0);
    }
 
-   private void logEvent(int var1, int var2, int var3) {
-      byte[] var4 = new byte[15];
-      DatagramAddressBase.writeInt(var4, 0, var1);
-      var4[4] = 45;
-      var4[5] = 48;
-      var4[6] = 120;
-      DatagramAddressBase.appendHex(var4, 7, var2, 8);
-      EventLogger.logEvent(super.GUID, var4, var3);
+   private void logEvent(int event, int s1, int level) {
+      byte[] buf = new byte[15];
+      DatagramAddressBase.writeInt(buf, 0, event);
+      buf[4] = 45;
+      buf[5] = 48;
+      buf[6] = 120;
+      DatagramAddressBase.appendHex(buf, 7, s1, 8);
+      EventLogger.logEvent(super.GUID, buf, level);
    }
 }

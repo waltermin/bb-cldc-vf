@@ -18,36 +18,36 @@ final class ContentHandlerConverter {
    private ContentHandlerConverter() {
    }
 
-   static final ContentHandlerServerImpl convert(DataBuffer var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final ContentHandlerServerImpl convert(DataBuffer buffer) {
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   private static final String[] readStringArray(DataBuffer var0) {
-      byte var1 = var0.readByte();
-      String[] var2 = new String[var1];
+   private static final String[] readStringArray(DataBuffer buffer) {
+      int size = buffer.readByte();
+      String[] strs = new String[size];
 
-      for (int var3 = 0; var3 < var1; var3++) {
-         var2[var3] = var0.readUTF();
+      for (int i = 0; i < size; i++) {
+         strs[i] = buffer.readUTF();
       }
 
-      return var2;
+      return strs;
    }
 
-   static final DataBuffer convert(ContentHandlerServerImpl var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   static final DataBuffer convert(ContentHandlerServerImpl server) {
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   private static final void writeString(DataBuffer var0, int var1, String var2) {
+   private static final void writeString(DataBuffer buffer, int param, String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private static final void writeStringArray(DataBuffer var0, int var1, String[] var2) {
-      if (var2 != null && var2.length != 0) {
-         var0.writeByte(var1);
-         var0.writeByte(var2.length);
+   private static final void writeStringArray(DataBuffer buffer, int param, String[] strs) {
+      if (strs != null && strs.length != 0) {
+         buffer.writeByte(param);
+         buffer.writeByte(strs.length);
 
-         for (int var3 = 0; var3 < var2.length; var3++) {
-            var0.writeUTF(var2[var3]);
+         for (int i = 0; i < strs.length; i++) {
+            buffer.writeUTF(strs[i]);
          }
       }
    }

@@ -4,14 +4,15 @@ import net.rim.device.api.collection.Collection;
 import net.rim.device.api.collection.ReadableList;
 import net.rim.device.api.util.BitSet;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.vm.Array;
 
 public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
    private PatriciaTree _keywordTree;
    public boolean _haltSearch;
 
-   public PatriciaKeywordFilterList(ReadableList var1, PatriciaTree var2) {
-      super(var1);
-      this._keywordTree = var2;
+   public PatriciaKeywordFilterList(ReadableList source, PatriciaTree keywordTree) {
+      super(source);
+      this._keywordTree = keywordTree;
       this.setSearcher(new KeywordSearcher(this));
    }
 
@@ -25,90 +26,133 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
    }
 
    @Override
-   public Object[] getElements(KeywordPrefixSearchResult var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public Object[] getElements(KeywordPrefixSearchResult result) {
+      synchronized (super._source) {
+         Object[] var10000;
+         synchronized (this) {
+            Object[] matchElements = new Object[result.getMatchCount()];
+            int dest = 0;
+            int[] orderList = this.getIDsBySortOrder();
+            int elementCount = orderList.length;
+            BitSet primaryMatches = result.getPrimaryMatches();
+            BitSet secondaryMatches = result.getSecondaryMatches();
+            int count = primaryMatches.getNumSet();
+
+            for (int src = 0; dest < count && src < elementCount; src++) {
+               int id = orderList[src];
+               if (primaryMatches.isSet(id)) {
+                  matchElements[dest++] = super._source.getAt(src);
+               }
+            }
+
+            count = dest + secondaryMatches.getNumSet();
+
+            for (int var18 = 0; dest < count && var18 < elementCount; var18++) {
+               int id = orderList[var18];
+               if (secondaryMatches.isSet(id)) {
+                  matchElements[dest++] = super._source.getAt(var18);
+               }
+            }
+
+            if (result == super._filterResult && dest != matchElements.length) {
+               BitSet usedIDs = (BitSet)(new Object());
+
+               for (int i = elementCount - 1; i >= 0; i--) {
+                  usedIDs.fastSet(orderList[i]);
+               }
+
+               primaryMatches.and(usedIDs);
+               secondaryMatches.and(usedIDs);
+            }
+
+            Array.resize(matchElements, dest);
+            var10000 = matchElements;
+         }
+
+         return var10000;
+      }
    }
 
    @Override
-   public boolean matches(Object var1) {
+   public boolean matches(Object object) {
       return false;
    }
 
    @Override
-   public void reset(Collection var1) {
+   public void reset(Collection collection) {
       this.clearPrefixCache();
       this.clearFilteredElementList();
-      Object var2 = this.getCriteria();
-      if (var2 != null) {
-         this.setCriteria(var2, null);
+      Object criteria = this.getCriteria();
+      if (criteria != null) {
+         this.setCriteria(criteria, null);
       } else {
          this.fireReset();
       }
    }
 
    @Override
-   public synchronized KeywordPrefixSearchResult search(String[] var1) {
-      KeywordPrefixCache var2 = this.getPrefixCache();
+   public synchronized KeywordPrefixSearchResult search(String[] words) {
+      KeywordPrefixCache cache = this.getPrefixCache();
       this._haltSearch = false;
-      byte var4 = 0;
-      byte[] var5 = null;
-      int var6 = var1.length;
+      byte targetCount = 0;
+      byte[] hitCount = null;
+      int wordCount = words.length;
 
-      for (int var3 = 0; var3 < var6; var3++) {
-         for (int var7 = 0; var7 < var6; var7++) {
-            if (StringUtilities.startsWithIgnoreCase(var1[var3], var1[var7], 1701707776)) {
-               var4++;
+      for (int i = 0; i < wordCount; i++) {
+         for (int j = 0; j < wordCount; j++) {
+            if (StringUtilities.startsWithIgnoreCase(words[i], words[j], 1701707776)) {
+               targetCount++;
             }
          }
       }
 
-      if (var4 > var6) {
-         var5 = new byte[0];
-         var2 = null;
+      if (targetCount > wordCount) {
+         hitCount = new byte[0];
+         cache = null;
       }
 
       if (this._haltSearch) {
          return null;
       }
 
-      Object var17 = new Object();
-      Object var8 = new Object();
-      Object var10 = var17;
-      PatriciaKeywordSearchResult var11 = new PatriciaKeywordSearchResult(this, var5, (BitSet)var8);
+      BitSet visibleSet = (BitSet)(new Object());
+      BitSet primarySet = (BitSet)(new Object());
+      BitSet theSet = visibleSet;
+      PatriciaKeywordSearchResult searchData = new PatriciaKeywordSearchResult(this, hitCount, primarySet);
 
-      for (int var12 = 0; var12 < var6; var12++) {
-         String var13 = var1[var12];
-         boolean var14 = false;
-         if (var2 != null) {
-            if (var12 == 0) {
-               BitSet var15 = var2.getPrimaryEntry(var13);
-               if (var15 != null) {
-                  ((BitSet)var8).or(var15);
-                  var15 = var2.getSecondaryEntry(var13);
-                  if (var15 != null) {
-                     ((BitSet)var10).or(var15);
-                     var14 = true;
+      for (int word = 0; word < wordCount; word++) {
+         String wordString = words[word];
+         boolean cacheUsed = false;
+         if (cache != null) {
+            if (word == 0) {
+               BitSet cacheEntry = cache.getPrimaryEntry(wordString);
+               if (cacheEntry != null) {
+                  primarySet.or(cacheEntry);
+                  cacheEntry = cache.getSecondaryEntry(wordString);
+                  if (cacheEntry != null) {
+                     theSet.or(cacheEntry);
+                     cacheUsed = true;
                   }
                }
             } else {
-               BitSet var19 = var2.getSecondaryEntry(var13);
-               if (var19 != null) {
-                  ((BitSet)var10).or(var19);
-                  var14 = true;
+               BitSet cacheEntry = cache.getSecondaryEntry(wordString);
+               if (cacheEntry != null) {
+                  theSet.or(cacheEntry);
+                  cacheUsed = true;
                }
             }
          }
 
-         if (!var14) {
-            var11._wordNumber = var12;
-            var11._theSet = (BitSet)var10;
-            this._keywordTree.search(var13, var11);
-            if (var2 != null) {
-               if (var12 == 0) {
-                  var2.putPrimaryEntry(var13, (BitSet)var8);
+         if (!cacheUsed) {
+            searchData._wordNumber = word;
+            searchData._theSet = theSet;
+            this._keywordTree.search(wordString, searchData);
+            if (cache != null) {
+               if (word == 0) {
+                  cache.putPrimaryEntry(wordString, primarySet);
                }
 
-               var2.putSecondaryEntry(var13, (BitSet)var10);
+               cache.putSecondaryEntry(wordString, theSet);
             }
          }
 
@@ -116,13 +160,13 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
             return null;
          }
 
-         if (var12 != 0) {
-            ((BitSet)var17).and((BitSet)var10);
-            if (var12 < var6 - 1) {
-               ((BitSet)var10).reset();
+         if (word != 0) {
+            visibleSet.and(theSet);
+            if (word < wordCount - 1) {
+               theSet.reset();
             }
-         } else if (var6 > 1) {
-            var10 = new Object();
+         } else if (wordCount > 1) {
+            theSet = (BitSet)(new Object());
          }
 
          if (this._haltSearch) {
@@ -130,17 +174,17 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
          }
       }
 
-      if (var5 != null) {
-         for (int var16 = ((BitSet)var17).getFirstSet(); var16 != -1; var16 = ((BitSet)var17).getNextSet(var16 + 1)) {
-            if (var5[var16] < var4) {
-               ((BitSet)var17).fastClear(var16);
+      if (hitCount != null) {
+         for (int var16 = visibleSet.getFirstSet(); var16 != -1; var16 = visibleSet.getNextSet(var16 + 1)) {
+            if (hitCount[var16] < targetCount) {
+               visibleSet.fastClear(var16);
             }
          }
       }
 
-      ((BitSet)var8).and((BitSet)var17);
-      Object var9 = var17;
-      ((BitSet)var9).xor((BitSet)var8);
-      return this._haltSearch ? null : new KeywordPrefixSearchResult((BitSet)var8, (BitSet)var9);
+      primarySet.and(visibleSet);
+      BitSet secondarySet = visibleSet;
+      secondarySet.xor(primarySet);
+      return this._haltSearch ? null : new KeywordPrefixSearchResult(primarySet, secondarySet);
    }
 }

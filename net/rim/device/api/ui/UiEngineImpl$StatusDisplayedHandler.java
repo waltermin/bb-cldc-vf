@@ -6,15 +6,15 @@ final class UiEngineImpl$StatusDisplayedHandler implements Runnable {
    private XYRect _revokedInvalid;
    private final UiEngineImpl this$0;
 
-   UiEngineImpl$StatusDisplayedHandler(UiEngineImpl var1, Screen var2, boolean var3, boolean var4, XYRect var5) {
-      this.this$0 = var1;
-      this._screen = var2;
-      this._redisplay = var4;
-      this._revokedInvalid = var5;
+   UiEngineImpl$StatusDisplayedHandler(UiEngineImpl _1, Screen screen, boolean inputRequired, boolean redisplay, XYRect revokedInvalid) {
+      this.this$0 = _1;
+      this._screen = screen;
+      this._redisplay = redisplay;
+      this._revokedInvalid = revokedInvalid;
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

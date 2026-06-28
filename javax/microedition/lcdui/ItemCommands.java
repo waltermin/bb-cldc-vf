@@ -11,28 +11,28 @@ class ItemCommands implements Comparator {
       return this._commands;
    }
 
-   public void addCommand(Command var1) {
-      if (var1 != null) {
-         int var2 = this._commands.size();
+   public void addCommand(Command cmd) {
+      if (cmd != null) {
+         int n = this._commands.size();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            if (this._commands.elementAt(var3) == var1) {
+         for (int i = 0; i < n; i++) {
+            if (this._commands.elementAt(i) == cmd) {
                return;
             }
          }
 
-         this._commands.addElement(var1);
+         this._commands.addElement(cmd);
       }
    }
 
-   public void removeCommand(Command var1) {
-      if (var1 != null && this._commands != null) {
-         int var2 = this._commands.size();
+   public void removeCommand(Command cmd) {
+      if (cmd != null && this._commands != null) {
+         int n = this._commands.size();
 
-         for (int var3 = 0; var3 < var2; var3++) {
-            if (this._commands.elementAt(var3) == var1) {
-               this._commands.removeElementAt(var3);
-               if (var1 == this._defaultCommand) {
+         for (int i = 0; i < n; i++) {
+            if (this._commands.elementAt(i) == cmd) {
+               this._commands.removeElementAt(i);
+               if (cmd == this._defaultCommand) {
                   this._defaultCommand = null;
                   return;
                }
@@ -42,19 +42,19 @@ class ItemCommands implements Comparator {
       }
    }
 
-   public void setDefaultCommand(Command var1) {
-      this._defaultCommand = var1;
+   public void setDefaultCommand(Command c) {
+      this._defaultCommand = c;
       if (this._defaultCommand != null) {
          this._commands.addElement(this._defaultCommand);
       }
    }
 
    @Override
-   public int compare(Object var1, Object var2) {
-      if (this._defaultCommand != null && var1 == this._defaultCommand) {
+   public int compare(Object o1, Object o2) {
+      if (this._defaultCommand != null && o1 == this._defaultCommand) {
          return -1;
       } else {
-         return this._defaultCommand != null && var2 == this._defaultCommand ? 1 : ((Command)var1).getPriority() - ((Command)var2).getPriority();
+         return this._defaultCommand != null && o2 == this._defaultCommand ? 1 : ((Command)o1).getPriority() - ((Command)o2).getPriority();
       }
    }
 

@@ -4,6 +4,6 @@ public class ClassCastException extends RuntimeException {
    public ClassCastException() {
    }
 
-   public ClassCastException(String var1) {
+   public ClassCastException(String s) {
    }
 }

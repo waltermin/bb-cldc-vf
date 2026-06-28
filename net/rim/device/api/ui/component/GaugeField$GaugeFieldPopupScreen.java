@@ -10,10 +10,10 @@ import net.rim.device.internal.ui.UiInternal;
 class GaugeField$GaugeFieldPopupScreen extends PopupScreen {
    private boolean _cancelled;
 
-   public GaugeField$GaugeFieldPopupScreen(GaugeField var1) {
+   public GaugeField$GaugeFieldPopupScreen(GaugeField fake) {
       super((Manager)(new Object(1152921504606846976L)));
       this.add(new RichTextField(MessageFormat.format(CommonResource.getString(1011), new Object[]{UiInternal.BUNDLE.getString(7)}), 36028797018963968L));
-      this.add(var1);
+      this.add(fake);
    }
 
    public boolean doModal() {
@@ -22,20 +22,20 @@ class GaugeField$GaugeFieldPopupScreen extends PopupScreen {
    }
 
    @Override
-   protected boolean keyChar(char var1, int var2, int var3) {
-      switch (var1) {
+   protected boolean keyChar(char key, int status, int time) {
+      switch (key) {
          case '\u001b':
             this._cancelled = true;
          case '\n':
             Ui.getUiEngine().popScreen(this);
             return true;
          default:
-            return super.keyChar(var1, var2, var3);
+            return super.keyChar(key, status, time);
       }
    }
 
    @Override
-   protected boolean trackwheelClick(int var1, int var2) {
+   protected boolean trackwheelClick(int status, int time) {
       Ui.getUiEngine().popScreen(this);
       return true;
    }

@@ -40,232 +40,320 @@ public class KeywordPrefixManager implements Persistable {
       this.reset();
    }
 
-   private int getKey(String var1, int var2, int var3) {
+   private int getKey(String str, int offset, int length) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private int getKey(char[] var1, int var2, int var3) {
-      if (var1.length < var3 - var2) {
+   private int getKey(char[] data, int offset, int length) {
+      if (data.length < length - offset) {
          throw new Object();
       } else {
-         return this.getKey0((char)(var3 > 0 ? var1[var2] : 0), (char)(var3 > 1 ? var1[var2 + 1] : 0), (char)(var3 > 2 ? var1[var2 + 2] : 0));
+         return this.getKey0((char)(length > 0 ? data[offset] : 0), (char)(length > 1 ? data[offset + 1] : 0), (char)(length > 2 ? data[offset + 2] : 0));
       }
    }
 
-   private int getKey0(char var1, char var2, char var3) {
-      if (var1 > 255) {
-         var1 = 0;
+   private int getKey0(char letter1, char letter2, char letter3) {
+      if (letter1 > 255) {
+         letter1 = 0;
       }
 
-      if (var2 > 255) {
-         var2 = 0;
+      if (letter2 > 255) {
+         letter2 = 0;
       }
 
-      if (var3 > 255) {
-         var3 = 0;
+      if (letter3 > 255) {
+         letter3 = 0;
       }
 
-      return charUnifier[var1] << 26 | charUnifier[var2] << 21 | charUnifier[var3] << 16;
+      return charUnifier[letter1] << 26 | charUnifier[letter2] << 21 | charUnifier[letter3] << 16;
    }
 
-   private long getKeyLong(String var1, int var2, int var3) {
+   private long getKeyLong(String str, int offset, int length) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private long getKeyLong(char[] var1, int var2, int var3) {
-      if (var1.length < var3 - var2) {
+   private long getKeyLong(char[] data, int offset, int length) {
+      if (data.length < length - offset) {
          throw new Object();
       } else {
-         return this.getKeyLong0(var3 > 0 ? var1[var2] : '\u0000', var3 > 1 ? var1[var2 + 1] : '\u0000', var3 > 2 ? var1[var2 + 2] : '\u0000');
+         return this.getKeyLong0(length > 0 ? data[offset] : '\u0000', length > 1 ? data[offset + 1] : '\u0000', length > 2 ? data[offset + 2] : '\u0000');
       }
    }
 
-   private long getKeyLong0(char var1, char var2, char var3) {
-      var1 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(var1, 1701707776));
-      var2 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(var2, 1701707776));
-      var3 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(var3, 1701707776));
-      return (long)(var1 < 255 ? charUnifier[var1] : var1) << 48
-         | (long)(var2 < 255 ? charUnifier[var2] : var2) << 32
-         | (long)(var3 < 255 ? charUnifier[var3] : var3) << 16;
+   private long getKeyLong0(char letter1, char letter2, char letter3) {
+      letter1 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(letter1, 1701707776));
+      letter2 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(letter2, 1701707776));
+      letter3 = CharacterUtilities.getOriginal(CharacterUtilities.toLowerCase(letter3, 1701707776));
+      return (long)(letter1 < 255 ? charUnifier[letter1] : letter1) << 48
+         | (long)(letter2 < 255 ? charUnifier[letter2] : letter2) << 32
+         | (long)(letter3 < 255 ? charUnifier[letter3] : letter3) << 16;
    }
 
-   private int nextKey(int var1) {
-      if ((var1 & 2031616) != 0) {
-         return var1 + 65536;
+   private int nextKey(int key) {
+      if ((key & 2031616) != 0) {
+         return key + 65536;
       } else {
-         return (var1 & 65011712) != 0 ? var1 + 2097152 : var1 + 67108864;
+         return (key & 65011712) != 0 ? key + 2097152 : key + 67108864;
       }
    }
 
-   private long nextKey(long var1) {
-      if ((var1 & 4294901760L) != 0) {
-         return var1 + 65536;
+   private long nextKey(long key) {
+      if ((key & 4294901760L) != 0) {
+         return key + 65536;
       } else {
-         return (var1 & 281470681743360L) != 0 ? var1 + 4294967296L : var1 + 281474976710656L;
+         return (key & 281470681743360L) != 0 ? key + 4294967296L : key + 281474976710656L;
       }
    }
 
    public void reset() {
-      throw new RuntimeException("cod2jar: exception table");
+      this._prefixes = new BigIntVector(64);
+      this._prefixesLong = new BigLongVector(64);
+      synchronized (this._prefixes) {
+         this._sorted = false;
+      }
+
+      synchronized (this._prefixesLong) {
+         this._sortedLong = false;
+      }
+
+      this._intWordIndexes = new ByteVector(64);
+      this._longWordIndexes = new ByteVector(64);
+      this._validTuples = new BitSet(32768);
+      this._validPrefixTuples = new BitSet(32768);
    }
 
    public int getPrefixCount() {
       return this._prefixes.size() + this._prefixesLong.size();
    }
 
-   public void addWords(int var1, String[] var2) {
+   public void addWords(int id, String[] words) {
       throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
-   public void addWords(int var1, String var2, boolean var3) {
-      this.addWords(var1, var2, var3, this.DEFAULT_INDEX);
+   public void addWords(int id, String words, boolean firstFlag) {
+      this.addWords(id, words, firstFlag, this.DEFAULT_INDEX);
    }
 
-   public void addWords(int var1, String var2, boolean var3, byte var4) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   public void addWord(int var1, String var2, boolean var3) {
-      this.addWord(var1, var2, var3, this.DEFAULT_INDEX);
-   }
-
-   public void addWord(int var1, String var2, boolean var3, byte var4) {
+   public void addWords(int id, String words, boolean firstFlag, byte propertyIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private int getTuple(String var1, int var2, int var3) {
+   public void addWord(int id, String word, boolean firstFlag) {
+      this.addWord(id, word, firstFlag, this.DEFAULT_INDEX);
+   }
+
+   public void addWord(int id, String word, boolean firstFlag, byte wordIndex) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void addTuples(String var1, int var2, int var3) {
-      if (var3 >= 2) {
-         int var4 = this.getTuple(var1, var2, 2);
-         if (var4 != 0) {
-            this._validPrefixTuples.fastSet(var4);
+   private int getTuple(String word, int start, int length) {
+      throw new RuntimeException("cod2jar: string-special");
+   }
+
+   private void addTuples(String word, int start, int length) {
+      if (length >= 2) {
+         int tuple = this.getTuple(word, start, 2);
+         if (tuple != 0) {
+            this._validPrefixTuples.fastSet(tuple);
          }
 
-         if (var3 >= 3) {
-            var4 = this.getTuple(var1, var2, var3);
-            if (var4 != 0) {
-               this._validPrefixTuples.fastSet(var4);
+         if (length >= 3) {
+            tuple = this.getTuple(word, start, length);
+            if (tuple != 0) {
+               this._validPrefixTuples.fastSet(tuple);
             }
 
-            while (var3 > 3) {
-               var4 = this.getTuple(var1, ++var2, --var3);
-               if (var4 != 0) {
-                  this._validTuples.fastSet(var4);
+            while (length > 3) {
+               tuple = this.getTuple(word, ++start, --length);
+               if (tuple != 0) {
+                  this._validTuples.fastSet(tuple);
                }
             }
          }
       }
    }
 
-   private boolean allTuplesPresent(String[] var1) {
+   private boolean allTuplesPresent(String[] words) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void add(int var1, byte var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void add(int key, byte wordIndex) {
+      synchronized (this._prefixes) {
+         if (!this._sorted) {
+            this._prefixes.addElement(key);
+            this._intWordIndexes.addElement(wordIndex);
+         } else {
+            int index = this._prefixes.binarySearch(key);
+            if (index < 0) {
+               index = -(index + 1);
+            }
+
+            this._prefixes.insertElementAt(key, index);
+            this._intWordIndexes.insertElementAt(wordIndex, index);
+         }
+
+         int id = key & 32767;
+         if (id > this._maxId) {
+            this._maxId = id;
+         }
+      }
    }
 
-   private void add(long var1, byte var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void add(long key, byte wordIndex) {
+      synchronized (this._prefixesLong) {
+         if (!this._sortedLong) {
+            this._prefixesLong.addElement(key);
+            this._longWordIndexes.addElement(wordIndex);
+         } else {
+            int index = this._prefixesLong.binarySearch(key);
+            if (index < 0) {
+               index = -(index + 1);
+            }
+
+            this._prefixesLong.insertElementAt(key, index);
+            this._longWordIndexes.insertElementAt(wordIndex, index);
+         }
+
+         int id = (int)key & 32767;
+         if (id > this._maxId) {
+            this._maxId = id;
+         }
+      }
    }
 
-   public void delete(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void delete(int id) {
+      synchronized (this._prefixes) {
+         int src = 0;
+         int prefixCount = this._prefixes.size();
+         this._maxId = 0;
+
+         while (src < prefixCount) {
+            int tmpId = this._prefixes.elementAt(src) & 32767;
+            if (tmpId == id) {
+               this._prefixes.removeElementAt(src);
+               this._intWordIndexes.removeElementAt(src);
+               prefixCount--;
+            } else {
+               if (tmpId > this._maxId) {
+                  this._maxId = tmpId;
+               }
+
+               src++;
+            }
+         }
+      }
+
+      synchronized (this._prefixesLong) {
+         int prefixCount = this._prefixesLong.size();
+         int src = 0;
+
+         while (src < prefixCount) {
+            int tmpId = (int)this._prefixesLong.elementAt(src) & 32767;
+            if (tmpId == id) {
+               this._prefixesLong.removeElementAt(src);
+               this._longWordIndexes.removeElementAt(src);
+               prefixCount--;
+            } else {
+               if (tmpId > this._maxId) {
+                  this._maxId = tmpId;
+               }
+
+               src++;
+            }
+         }
+      }
    }
 
    protected void sort() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    public void haltSearch() {
       this._haltSearch = true;
    }
 
-   public String[] getLongWords(String[] var1) {
+   public String[] getLongWords(String[] words) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public boolean getMatch(char[] var1, int var2, int var3, int[] var4) {
-      if (var4[1] == -1) {
-         this.rangeSearch(var1, var2, var3, var4);
+   public boolean getMatch(char[] prefixes, int offset, int length, int[] resultData) {
+      if (resultData[1] == -1) {
+         this.rangeSearch(prefixes, offset, length, resultData);
       }
 
-      if (var4[1] == -1 || var4[2] == -1 || var4[1] == var4[2]) {
+      if (resultData[1] == -1 || resultData[2] == -1 || resultData[1] == resultData[2]) {
          return false;
-      } else if (var4[0] == 0) {
-         var4[3] = this._prefixes.elementAt(var4[1]) & 32767;
-         var4[4] = this._intWordIndexes.elementAt(var4[1]);
+      } else if (resultData[0] == 0) {
+         resultData[3] = this._prefixes.elementAt(resultData[1]) & 32767;
+         resultData[4] = this._intWordIndexes.elementAt(resultData[1]);
          return true;
       } else {
-         var4[3] = (int)this._prefixesLong.elementAt(var4[1]) & 32767;
-         var4[4] = this._longWordIndexes.elementAt(var4[1]);
+         resultData[3] = (int)this._prefixesLong.elementAt(resultData[1]) & 32767;
+         resultData[4] = this._longWordIndexes.elementAt(resultData[1]);
          return true;
       }
    }
 
-   private void rangeSearch(char[] var1, int var2, int var3, int[] var4) {
-      int var5 = -1;
-      int var6 = -1;
+   private void rangeSearch(char[] prefixes, int offset, int length, int[] resultData) {
+      int low = -1;
+      int high = -1;
       if (!this._sorted || !this._sortedLong) {
          this.sort();
       }
 
-      if (var4[0] == 0) {
-         int var7 = this.getKey(var1, var2, var3);
-         var5 = this._prefixes.binarySearch(var7);
-         var6 = this._prefixes.binarySearch(this.nextKey(var7));
-         if (var5 < 0) {
-            var5 = -(var5 + 1);
+      if (resultData[0] == 0) {
+         int key = this.getKey(prefixes, offset, length);
+         low = this._prefixes.binarySearch(key);
+         high = this._prefixes.binarySearch(this.nextKey(key));
+         if (low < 0) {
+            low = -(low + 1);
          }
 
-         if (var6 < 0) {
-            var6 = -(var6 + 1);
+         if (high < 0) {
+            high = -(high + 1);
          }
 
-         if (var6 < var5) {
-            var6 = this._prefixes.size();
+         if (high < low) {
+            high = this._prefixes.size();
          }
       } else {
-         long var11 = this.getKeyLong(var1, var2, var3);
-         var5 = this._prefixesLong.binarySearch(var11);
-         var6 = this._prefixesLong.binarySearch(this.nextKey(var11));
-         if (var5 < 0) {
-            var5 = -(var5 + 1);
+         long key = this.getKeyLong(prefixes, offset, length);
+         low = this._prefixesLong.binarySearch(key);
+         high = this._prefixesLong.binarySearch(this.nextKey(key));
+         if (low < 0) {
+            low = -(low + 1);
          }
 
-         if (var6 < 0) {
-            var6 = -(var6 + 1);
+         if (high < 0) {
+            high = -(high + 1);
          }
 
-         if (var6 < var5) {
-            var6 = this._prefixesLong.size();
+         if (high < low) {
+            high = this._prefixesLong.size();
          }
       }
 
-      var4[1] = var5;
-      var4[2] = var6;
+      resultData[1] = low;
+      resultData[2] = high;
    }
 
-   public KeywordPrefixSearchResult search(String[] var1) {
-      return this.search(var1, null);
+   public KeywordPrefixSearchResult search(String[] words) {
+      return this.search(words, null);
    }
 
-   public KeywordPrefixSearchResult search(String[] var1, KeywordPrefixCache var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private void adjustWideCharacterSearch(String var1, int var2, BitSet var3, BitSet var4, int var5, byte[] var6) {
+   public KeywordPrefixSearchResult search(String[] words, KeywordPrefixCache cache) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static char getPrefixChar(int var0) {
-      return var0 >= 0 && var0 <= 31 ? PREFIX_CODE_TO_CHAR_MAP[var0] : '\u0000';
+   private void adjustWideCharacterSearch(String word, int offset, BitSet primarySet, BitSet theSet, int wordNumber, byte[] hitCount) {
+      throw new RuntimeException("cod2jar: string-special");
    }
 
-   public static boolean startsWithUsingMapping(String var0, String var1) {
+   public static char getPrefixChar(int prefixCode) {
+      return prefixCode >= 0 && prefixCode <= 31 ? PREFIX_CODE_TO_CHAR_MAP[prefixCode] : '\u0000';
+   }
+
+   public static boolean startsWithUsingMapping(String string, String prefix) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

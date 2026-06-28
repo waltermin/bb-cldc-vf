@@ -9,20 +9,20 @@ public final class FIPSPolicy {
    public static final boolean TLS_RESTRICT_FIPS_CIPHERS_FIPS_DEFAULT;
    public static final boolean WTLS_RESTRICT_FIPS_CIPHERS_FIPS_DEFAULT;
 
-   public static final boolean getBoolean(int var0, boolean var1, boolean var2) {
-      return getFIPSLevel() >= 2 ? var2 : ITPolicy.getBoolean(var0, var1);
+   public static final boolean getBoolean(int id, boolean defaultValue, boolean fipsDefaultValue) {
+      return getFIPSLevel() >= 2 ? fipsDefaultValue : ITPolicy.getBoolean(id, defaultValue);
    }
 
-   public static final boolean getBoolean(int var0, int var1, boolean var2, boolean var3) {
-      return getFIPSLevel() >= 2 ? var3 : ITPolicy.getBoolean(var0, var1, var2);
+   public static final boolean getBoolean(int group, int id, boolean defaultValue, boolean fipsDefaultValue) {
+      return getFIPSLevel() >= 2 ? fipsDefaultValue : ITPolicy.getBoolean(group, id, defaultValue);
    }
 
-   public static final int getMaxInteger(int var0, int var1, int var2) {
-      return getFIPSLevel() >= 2 ? Math.max(ITPolicy.getInteger(var0, var1), var2) : ITPolicy.getInteger(var0, var1);
+   public static final int getMaxInteger(int id, int defaultValue, int fipsDefaultValue) {
+      return getFIPSLevel() >= 2 ? Math.max(ITPolicy.getInteger(id, defaultValue), fipsDefaultValue) : ITPolicy.getInteger(id, defaultValue);
    }
 
-   public static final int getInteger(int var0, int var1, int var2, int var3) {
-      return getFIPSLevel() >= 2 ? var3 : ITPolicy.getInteger(var0, var1, var2);
+   public static final int getInteger(int id, int group, int defaultValue, int fipsDefaultValue) {
+      return getFIPSLevel() >= 2 ? fipsDefaultValue : ITPolicy.getInteger(id, group, defaultValue);
    }
 
    public static final boolean isDevicePasswordRequired() {

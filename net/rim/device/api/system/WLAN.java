@@ -1,5 +1,7 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.util.NumberUtilities;
+
 public final class WLAN {
    public static String WLAN_PSEUDO_APN;
    public static final int WLAN_MAX_SSID_SIZE;
@@ -132,14 +134,14 @@ public final class WLAN {
    private WLAN() {
    }
 
-   public static final void setWLANSystem(WLANSystem var0) {
+   public static final void setWLANSystem(WLANSystem system) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final WLANSystem getWLANSystem() {
       if (_system == null) {
-         ApplicationRegistry var0 = ApplicationRegistry.getApplicationRegistry();
-         _system = var0 != null ? (WLANSystem)var0.get(6850047726709752304L) : null;
+         ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+         _system = appReg != null ? (WLANSystem)appReg.get(6850047726709752304L) : null;
       }
 
       return _system;
@@ -154,20 +156,20 @@ public final class WLAN {
          return false;
       }
 
-      WLANSystem var0 = getWLANSystem();
-      return var0 != null && var0.isWLANAllowed();
+      WLANSystem system = getWLANSystem();
+      return system != null && system.isWLANAllowed();
    }
 
-   public static final void setWLANOverride(boolean var0) {
-      WLANSystem var1 = getWLANSystem();
-      if (var1 != null) {
-         var1.setWLANOverride(var0);
+   public static final void setWLANOverride(boolean wlanOverride) {
+      WLANSystem system = getWLANSystem();
+      if (system != null) {
+         system.setWLANOverride(wlanOverride);
       }
    }
 
    public static final boolean isRadioOn() {
-      WLANSystem var0 = getWLANSystem();
-      return var0 != null ? var0.isWLANRadioOn() : false;
+      WLANSystem system = getWLANSystem();
+      return system != null ? system.isWLANRadioOn() : false;
    }
 
    public static final native int getSupportedAuthModes();
@@ -183,12 +185,31 @@ public final class WLAN {
    public static final native byte[] getMACAddress();
 
    public static final String isAssociated() {
-      WLANSystem var0 = getWLANSystem();
-      return var0 != null ? var0.getActiveProfileSSID() : null;
+      WLANSystem system = getWLANSystem();
+      return system != null ? system.getActiveProfileSSID() : null;
    }
 
-   public static final String bssidToString(byte[] var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final String bssidToString(byte[] bssid) {
+      String macAddress = null;
+      if (bssid != null) {
+         try {
+            StringBuffer macStringBuffer = (StringBuffer)(new Object(bssid.length * 3));
+
+            for (int i = 0; i < bssid.length; i++) {
+               if (macStringBuffer.length() > 1) {
+                  macStringBuffer.append(':');
+               }
+
+               NumberUtilities.appendNumber(macStringBuffer, bssid[i], 16, 2);
+            }
+
+            return macStringBuffer.toString().toUpperCase();
+         } catch (Exception uoe) {
+            macAddress = null;
+         }
+      }
+
+      return macAddress;
    }
 
    public static final native byte[] getBSSID();
@@ -203,30 +224,100 @@ public final class WLAN {
 
    public static final native int getNumberOfAvailableNetworks(int var0);
 
-   public static final int getAvailableNetworks(WLANNetInfo[] var0, int var1, int var2, int var3) {
-      return getAvailableNetworks(-1, var0, var1, var2, var3);
+   public static final int getAvailableNetworks(WLANNetInfo[] networksInfo, int offset, int start, int length) {
+      return getAvailableNetworks(-1, networksInfo, offset, start, length);
    }
 
-   public static final int getAvailableNetworks(int var0, WLANNetInfo[] var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final int getAvailableNetworks(int handle, WLANNetInfo[] networksInfo, int offset, int start, int length) {
+      if (networksInfo == null) {
+         return -2;
+      }
+
+      if (offset >= 0 && start >= 0 && length >= 0 && offset + length <= networksInfo.length) {
+         synchronized (_networks) {
+            int retCode = 1;
+            int size = 0;
+
+            while (length > 0) {
+               size = Math.min(_networks.length, length);
+
+               for (int i = size - 1; i >= 0; i--) {
+                  _networks[i] = null;
+               }
+
+               retCode = getAvailableNetworksInternal(handle, _networks, 0, start, size);
+               if (retCode != 1) {
+                  break;
+               }
+
+               System.arraycopy(_networks, 0, networksInfo, offset, size);
+               length -= size;
+               offset += size;
+               start += size;
+            }
+
+            for (int i = _networks.length - 1; i >= 0; i--) {
+               _networks[i] = null;
+            }
+
+            return retCode;
+         }
+      } else {
+         throw new Object();
+      }
    }
 
    private static final native int getAvailableNetworksInternal(int var0, WLANNetInfo[] var1, int var2, int var3, int var4);
 
-   public static final WLANProfile[] getAvailableProfiles(int var0) {
-      int var1 = getNumberOfAvailableProfiles(var0);
-      if (var1 > 0 && var1 <= 32) {
-         WLANProfile[] var2 = new WLANProfile[var1];
-         if (getAvailableProfiles(var0, var2, 0, 0, var2.length) == 1) {
-            return var2;
+   public static final WLANProfile[] getAvailableProfiles(int handle) {
+      int number = getNumberOfAvailableProfiles(handle);
+      if (number > 0 && number <= 32) {
+         WLANProfile[] profiles = new WLANProfile[number];
+         if (getAvailableProfiles(handle, profiles, 0, 0, profiles.length) == 1) {
+            return profiles;
          }
       }
 
       return null;
    }
 
-   private static final int getAvailableProfiles(int var0, WLANProfile[] var1, int var2, int var3, int var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   private static final int getAvailableProfiles(int handle, WLANProfile[] profiles, int offset, int start, int length) {
+      if (profiles == null) {
+         return -2;
+      }
+
+      if (offset >= 0 && start >= 0 && length >= 0 && offset + length <= profiles.length) {
+         synchronized (_profiles) {
+            int retCode = 1;
+            int size = 0;
+
+            while (length > 0) {
+               size = Math.min(_profiles.length, length);
+
+               for (int i = size - 1; i >= 0; i--) {
+                  _profiles[i] = null;
+               }
+
+               retCode = getAvailableProfilesInternal(handle, _profiles, 0, start, size);
+               if (retCode != 1) {
+                  break;
+               }
+
+               System.arraycopy(_profiles, 0, profiles, offset, size);
+               length -= size;
+               offset += size;
+               start += size;
+            }
+
+            for (int i = _profiles.length - 1; i >= 0; i--) {
+               _profiles[i] = null;
+            }
+
+            return retCode;
+         }
+      } else {
+         throw new Object();
+      }
    }
 
    private static final native int getNumberOfAvailableProfiles(int var0);

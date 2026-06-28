@@ -9,7 +9,7 @@ final class ResourceBundleFetcher$RequestFlushRunnable implements Runnable {
       System.exit(0);
    }
 
-   ResourceBundleFetcher$RequestFlushRunnable(ResourceBundleFetcher$1 var1) {
+   ResourceBundleFetcher$RequestFlushRunnable(ResourceBundleFetcher$1 x0) {
       this();
    }
 }

@@ -27,243 +27,310 @@ public final class NotificationsManager implements NotificationsConstants {
    private NotificationsManager() {
    }
 
-   public static final void triggerImmediateEvent(long var0, long var2, Object var4, Object var5) {
-      NotificationsManager$Wrapper var6 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var6 != null) {
+   public static final void triggerImmediateEvent(long sourceID, long eventID, Object eventReference, Object context) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper != null) {
          if (_engine == null) {
             _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
          }
 
          if (_engine != null) {
-            _engine.triggerImmediateEvent(var6._id, var6._object, var6._level, var2, var4, var5);
+            _engine.triggerImmediateEvent(wrapper._id, wrapper._object, wrapper._level, eventID, eventReference, context);
          }
       }
    }
 
-   public static final void cancelImmediateEvent(long var0, long var2, Object var4, Object var5) {
-      NotificationsManager$Wrapper var6 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var6 != null) {
+   public static final void cancelImmediateEvent(long sourceID, long eventID, Object eventReference, Object context) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper != null) {
          if (_engine == null) {
             _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
          }
 
          if (_engine != null) {
-            _engine.cancelImmediateEvent(var6._id, var6._object, var6._level, var2, var4, var5);
+            _engine.cancelImmediateEvent(wrapper._id, wrapper._object, wrapper._level, eventID, eventReference, context);
          }
       }
    }
 
-   public static final void negotiateDeferredEvent(long var0, long var2, Object var4, long var5, int var7, Object var8) {
-      NotificationsManager$Wrapper var9 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var9 != null) {
+   public static final void negotiateDeferredEvent(long sourceID, long eventID, Object eventReference, long eventDate, int triggerIndex, Object context) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper != null) {
          if (_engine == null) {
             _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
          }
 
          if (_engine != null) {
-            _engine.negotiateDeferredEvent(var9._id, var9._object, var9._level, var2, var4, var5, var7, var8);
+            _engine.negotiateDeferredEvent(wrapper._id, wrapper._object, wrapper._level, eventID, eventReference, eventDate, triggerIndex, context);
          }
       }
    }
 
-   public static final void cancelDeferredEvent(long var0, long var2, Object var4, int var5, Object var6) {
-      NotificationsManager$Wrapper var7 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var7 != null) {
+   public static final void cancelDeferredEvent(long sourceID, long eventID, Object eventReference, int triggerIndex, Object context) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper != null) {
          if (_engine == null) {
             _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
          }
 
          if (_engine != null) {
-            _engine.cancelDeferredEvent(var7._id, var7._object, var7._level, var2, var4, var5, var6);
+            _engine.cancelDeferredEvent(wrapper._id, wrapper._object, wrapper._level, eventID, eventReference, triggerIndex, context);
          }
       }
    }
 
-   public static final void cancelAllDeferredEvents(long var0, int var2, Object var3) {
-      NotificationsManager$Wrapper var4 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var4 != null) {
+   public static final void cancelAllDeferredEvents(long sourceID, int triggerIndex, Object context) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper != null) {
          if (_engine == null) {
             _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
          }
 
          if (_engine != null) {
-            _engine.cancelAllDeferredEvents(var4._id, var4._object, var4._level, var2, var3);
+            _engine.cancelAllDeferredEvents(wrapper._id, wrapper._object, wrapper._level, triggerIndex, context);
          }
       }
    }
 
-   public static final int getDeferredEventCount(long var0) {
+   public static final int getDeferredEventCount(long sourceID) {
       if (_engine == null) {
          _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
       }
 
-      return _engine != null ? _engine.getDeferredEventCount(var0) : 0;
+      return _engine != null ? _engine.getDeferredEventCount(sourceID) : 0;
    }
 
-   public static final Object[] getDeferredEvents(long var0) {
+   public static final Object[] getDeferredEvents(long sourceID) {
       if (_engine == null) {
          _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
       }
 
-      return _engine != null ? _engine.getDeferredEvents(var0) : null;
+      return _engine != null ? _engine.getDeferredEvents(sourceID) : null;
    }
 
-   public static final long[] getDeferredEventIds(long var0) {
+   public static final long[] getDeferredEventIds(long sourceID) {
       if (_engine == null) {
          _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
       }
 
-      return _engine != null ? _engine.getDeferredEventIds(var0) : null;
+      return _engine != null ? _engine.getDeferredEventIds(sourceID) : null;
    }
 
-   public static final void registerSource(long var0, Object var2, int var3, long var4) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void registerSource(long sourceID, Object source, int level, long relatedSourceID) {
+      synchronized (_sourcesById) {
+         NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+         if (wrapper == null) {
+            wrapper = new NotificationsManager$Wrapper(null);
+            wrapper._object = source;
+            wrapper._level = level;
+            wrapper._id = sourceID;
+            wrapper._relatedId = relatedSourceID;
+            _sourcesById.put(sourceID, wrapper);
+            _sourcesByObject.put(source, wrapper);
+         } else {
+            if (source != wrapper._object) {
+               _sourcesByObject.remove(wrapper._object);
+               wrapper._object = source;
+               wrapper._level = level;
+               wrapper._relatedId = relatedSourceID;
+               wrapper._hidden = false;
+               _sourcesByObject.put(source, wrapper);
+            }
+
+            wrapper._level = level;
+         }
+
+         sourceUpdated();
+      }
    }
 
-   public static final void moveSource(long var0, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void moveSource(long srcSourceID, long destSourceID) {
+      synchronized (_sourcesById) {
+         NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(srcSourceID);
+         if (wrapper != null) {
+            _sourcesById.remove(wrapper._id);
+            wrapper._id = destSourceID;
+            _sourcesById.put(destSourceID, wrapper);
+            sourceUpdated();
+         }
+      }
    }
 
-   public static final void registerSource(long var0, Object var2, int var3) {
-      registerSource(var0, var2, var3, -1);
+   public static final void registerSource(long sourceID, Object source, int level) {
+      registerSource(sourceID, source, level, -1);
    }
 
-   public static final void deregisterSource(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void deregisterSource(long sourceID) {
+      synchronized (_sourcesById) {
+         NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+         if (wrapper != null) {
+            _sourcesById.remove(sourceID);
+            _sourcesByObject.remove(wrapper._object);
+            sourceUpdated();
+         }
+      }
    }
 
-   public static final void hideSource(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void hideSource(long sourceID) {
+      synchronized (_sourcesById) {
+         NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+         if (wrapper != null) {
+            wrapper._hidden = true;
+            sourceUpdated();
+         }
+      }
    }
 
-   public static final void unHideSource(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void unHideSource(long sourceID) {
+      synchronized (_sourcesById) {
+         NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+         if (wrapper != null) {
+            wrapper._hidden = false;
+            sourceUpdated();
+         }
+      }
    }
 
-   public static final boolean isHidden(long var0) {
-      NotificationsManager$Wrapper var2 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      return var2 != null && var2._hidden;
+   public static final boolean isHidden(long sourceID) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      return wrapper != null && wrapper._hidden;
    }
 
-   public static final Object getSource(long var0) {
+   public static final Object getSource(long sourceID) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      NotificationsManager$Wrapper var2 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      return var2 != null ? var2._object : null;
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      return wrapper != null ? wrapper._object : null;
    }
 
-   public static final long[] getRelatedSourceIds(long var0, boolean var2) {
+   public static final long[] getRelatedSourceIds(long sourceID, boolean includeHiddenSources) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      long[] var3 = new long[0];
-      Enumeration var4 = _sourcesById.elements();
+      long[] result = new long[0];
+      Enumeration objects = _sourcesById.elements();
 
-      while (var4.hasMoreElements()) {
-         NotificationsManager$Wrapper var5 = (NotificationsManager$Wrapper)var4.nextElement();
-         if (var5._relatedId == var0 && (var2 || !var5._hidden)) {
-            Array.resize(var3, var3.length + 1);
-            var3[var3.length - 1] = var5._id;
+      while (objects.hasMoreElements()) {
+         NotificationsManager$Wrapper w = (NotificationsManager$Wrapper)objects.nextElement();
+         if (w._relatedId == sourceID && (includeHiddenSources || !w._hidden)) {
+            Array.resize(result, result.length + 1);
+            result[result.length - 1] = w._id;
          }
       }
 
-      return var3;
+      return result;
    }
 
    public static final long[] getHiddenSourceIds() {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      long[] var0 = new long[0];
-      Enumeration var1 = _sourcesById.elements();
+      long[] result = new long[0];
+      Enumeration objects = _sourcesById.elements();
 
-      while (var1.hasMoreElements()) {
-         NotificationsManager$Wrapper var2 = (NotificationsManager$Wrapper)var1.nextElement();
-         if (var2._hidden) {
-            Array.resize(var0, var0.length + 1);
-            var0[var0.length - 1] = var2._id;
+      while (objects.hasMoreElements()) {
+         NotificationsManager$Wrapper w = (NotificationsManager$Wrapper)objects.nextElement();
+         if (w._hidden) {
+            Array.resize(result, result.length + 1);
+            result[result.length - 1] = w._id;
          }
       }
 
-      return var0;
+      return result;
    }
 
-   public static final long getParentSourceID(long var0) {
+   public static final long getParentSourceID(long sourceID) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      NotificationsManager$Wrapper var2 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      return var2 != null ? var2._relatedId : -1;
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      return wrapper != null ? wrapper._relatedId : -1;
    }
 
    public static final long[] enumerateSourceIds() {
-      throw new RuntimeException("cod2jar: exception table");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      synchronized (_sourcesById) {
+         long[] result = new long[_sourcesById.size()];
+         Enumeration objects = _sourcesById.elements();
+         int count = 0;
+
+         while (objects.hasMoreElements()) {
+            NotificationsManager$Wrapper w = (NotificationsManager$Wrapper)objects.nextElement();
+            result[count++] = w._id;
+         }
+
+         return result;
+      }
    }
 
-   public static final long getSourceId(Object var0) {
+   public static final long getSourceId(Object source) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      NotificationsManager$Wrapper var1 = (NotificationsManager$Wrapper)_sourcesByObject.get(var0);
-      if (var1 == null) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesByObject.get(source);
+      if (wrapper == null) {
          throw new Object();
       } else {
-         return var1._id;
+         return wrapper._id;
       }
    }
 
-   public static final int getSourceLevel(long var0) {
+   public static final int getSourceLevel(long sourceID) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      NotificationsManager$Wrapper var2 = (NotificationsManager$Wrapper)_sourcesById.get(var0);
-      if (var2 == null) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
+      if (wrapper == null) {
          throw new Object();
       } else {
-         return var2._level;
+         return wrapper._level;
       }
    }
 
-   public static final int getSourceLevel(Object var0) {
+   public static final int getSourceLevel(Object source) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      NotificationsManager$Wrapper var1 = (NotificationsManager$Wrapper)_sourcesByObject.get(var0);
-      if (var1 == null) {
+      NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesByObject.get(source);
+      if (wrapper == null) {
          throw new Object();
       } else {
-         return var1._level;
+         return wrapper._level;
       }
    }
 
-   public static final void registerNotificationsEngineListener(long var0, NotificationsEngineListener var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void registerNotificationsEngineListener(long sourceID, NotificationsEngineListener listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void deregisterNotificationsEngineListener(long var0, NotificationsEngineListener var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void deregisterNotificationsEngineListener(long sourceID, NotificationsEngineListener listener) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void fireStateChanged(int var0, long var1, long var3, Object var5, Object var6) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void fireStateChanged(int state, long sourceID, long eventID, Object eventReference, Object context) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void fireDefer(long var0, long var2, Object var4, Object var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void fireDefer(long sourceID, long eventID, Object eventReference, Object context) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   public static final void fireProceed(long var0, long var2, Object var4, Object var5) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void fireProceed(long sourceID, long eventID, Object eventReference, Object context) {
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private static final Object getListenerByID(long var0) {
-      Object var2 = _listenersById.get(var0);
-      if (var2 == null) {
-         var0 = getParentSourceID(var0);
-         var2 = _listenersById.get(var0);
+   private static final Object getListenerByID(long sourceID) {
+      Object target = _listenersById.get(sourceID);
+      if (target == null) {
+         sourceID = getParentSourceID(sourceID);
+         target = _listenersById.get(sourceID);
       }
 
-      return var2;
+      return target;
    }
 
-   public static final void registerConsequence(long var0, Consequence var2) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void registerConsequence(long consequenceID, Consequence consequence) {
+      synchronized (_consequences) {
+         _consequences.put(consequenceID, consequence);
+      }
    }
 
-   public static final void deregisterConsequence(long var0) {
-      throw new RuntimeException("cod2jar: exception table");
+   public static final void deregisterConsequence(long consequenceID) {
+      synchronized (_consequences) {
+         _consequences.remove(consequenceID);
+      }
    }
 
-   public static final Consequence getConsequence(long var0) {
+   public static final Consequence getConsequence(long consequenceID) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      return (Consequence)_consequences.get(var0);
+      return (Consequence)_consequences.get(consequenceID);
    }
 
    public static final LongEnumeration enumerateConsequenceIds() {
@@ -275,23 +342,28 @@ public final class NotificationsManager implements NotificationsConstants {
       return _engine.getLastEventDate();
    }
 
-   public static final boolean isImmediateEventOccuring(long var0) {
+   public static final boolean isImmediateEventOccuring(long sourceIdLong) {
       if (_engine == null) {
          _engine = (NotificationsEngine)ApplicationRegistry.getApplicationRegistry().get(6720217471165517311L);
       }
 
-      return _engine != null ? _engine.isImmediateEventOccuring(var0) : false;
+      return _engine != null ? _engine.isImmediateEventOccuring(sourceIdLong) : false;
    }
 
    private static final void sourceUpdated() {
-      throw new RuntimeException("cod2jar: exception table");
+      for (int i = _sourceListeners.size() - 1; i >= 0; i--) {
+         try {
+            ((NotificationsManager$SourceListener)_sourceListeners.elementAt(i)).sourceUpdated();
+         } catch (Throwable var2) {
+         }
+      }
    }
 
-   public static final void addSourceChangedListener(NotificationsManager$SourceListener var0) {
-      _sourceListeners.addElement(var0);
+   public static final void addSourceChangedListener(NotificationsManager$SourceListener listener) {
+      _sourceListeners.addElement(listener);
    }
 
-   public static final void removeSourceChangedListener(NotificationsManager$SourceListener var0) {
-      _sourceListeners.removeElement(var0);
+   public static final void removeSourceChangedListener(NotificationsManager$SourceListener listener) {
+      _sourceListeners.removeElement(listener);
    }
 }

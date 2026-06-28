@@ -7,9 +7,9 @@ final class ContentHandlerUtilities$StringComparator implements Comparator {
    }
 
    @Override
-   public final int compare(Object var1, Object var2) {
-      Object var3 = var1;
-      Object var4 = var2;
-      return ((String)var3).compareTo((String)var4);
+   public final int compare(Object o1, Object o2) {
+      String s1 = (String)o1;
+      String s2 = (String)o2;
+      return s1.compareTo(s2);
    }
 }

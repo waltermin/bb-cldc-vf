@@ -30,34 +30,34 @@ public class MarkupInputStream extends InputStream {
    static final int UTF8;
 
    public static MarkupInputStream getConvertedInputStream(
-      String var0,
-      String var1,
-      String var2,
-      InputStream var3,
-      int[] var4,
-      byte[] var5,
-      String[] var6,
-      int[] var7,
-      int[] var8,
-      String[] var9,
-      int[] var10,
-      int[] var11,
-      String[] var12,
-      int[] var13,
-      int[] var14,
-      String[] var15,
-      int[] var16,
-      int[] var17
+      String type,
+      String encoding,
+      String defaultEncoding,
+      InputStream bytes,
+      int[] actionStateTable,
+      byte[] configurationData,
+      String[] tags,
+      int[] tagIds,
+      int[] tagIndicies,
+      String[] entities,
+      int[] entityIds,
+      int[] entityIndicies,
+      String[] attributes,
+      int[] attributeIds,
+      int[] attributeIndicies,
+      String[] attributeValues,
+      int[] attributeValueIds,
+      int[] attributeValueIndicies
    ) {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public MarkupInputStream(int var1, InputStream var2, MarkupContext var3, Reader var4, String var5) {
-      this._type = var1;
-      this._primaryInput = var2;
-      this._context = var3;
-      this._reader = var4;
-      this._encoding = var5;
+   public MarkupInputStream(int type, InputStream bytes, MarkupContext context, Reader reader, String encoding) {
+      this._type = type;
+      this._primaryInput = bytes;
+      this._context = context;
+      this._reader = reader;
+      this._encoding = encoding;
    }
 
    public Pipe getPipe() {
@@ -74,32 +74,32 @@ public class MarkupInputStream extends InputStream {
    }
 
    @Override
-   public int read(byte[] var1, int var2, int var3) {
-      if (var3 == 0) {
+   public int read(byte[] b, int offset, int length) {
+      if (length == 0) {
          return 0;
       }
 
-      int var4 = 0;
-      int var5 = 0;
+      int bytesRead = 0;
+      int available = 0;
 
-      while (var3 > 0) {
-         var5 = this._pipeInput.available();
-         if (var5 <= 0 && !this.readNextChunk()) {
-            if (var4 > 0) {
-               return var4;
+      while (length > 0) {
+         available = this._pipeInput.available();
+         if (available <= 0 && !this.readNextChunk()) {
+            if (bytesRead > 0) {
+               return bytesRead;
             }
 
             return -1;
          }
 
-         int var6 = Math.min(var5, var3);
-         var6 = this._pipeInput.read(var1, var2, var6);
-         var2 += var6;
-         var3 -= var6;
-         var4 += var6;
+         int numRead = Math.min(available, length);
+         numRead = this._pipeInput.read(b, offset, numRead);
+         offset += numRead;
+         length -= numRead;
+         bytesRead += numRead;
       }
 
-      return var4 > 0 ? var4 : -1;
+      return bytesRead > 0 ? bytesRead : -1;
    }
 
    @Override
@@ -113,8 +113,8 @@ public class MarkupInputStream extends InputStream {
    }
 
    @Override
-   public void mark(int var1) {
-      this._pipeInput.mark(var1);
+   public void mark(int limit) {
+      this._pipeInput.mark(limit);
    }
 
    @Override
@@ -129,11 +129,11 @@ public class MarkupInputStream extends InputStream {
    }
 
    private boolean readNextChunk() {
-      throw new RuntimeException("cod2jar: exception table");
+      throw new RuntimeException("cod2jar: type check");
    }
 
-   private void setNewEncoding(byte[] var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void setNewEncoding(byte[] encoding) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static native int markupDataChunk(int var0, Object var1, int var2, byte[] var3, MarkupContext var4);

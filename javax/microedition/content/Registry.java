@@ -4,19 +4,21 @@ public class Registry {
    Registry() {
    }
 
-   public static Registry getRegistry(String var0) {
-      return RegistryImpl.getRegistry(var0);
+   public static Registry getRegistry(String classname) {
+      return RegistryImpl.getRegistry(classname);
    }
 
-   public static ContentHandlerServer getServer(String var0) {
-      return RegistryImpl.getServer(var0);
+   public static ContentHandlerServer getServer(String classname) {
+      return RegistryImpl.getServer(classname);
    }
 
-   public ContentHandlerServer register(String var1, String[] var2, String[] var3, String[] var4, ActionNameMap[] var5, String var6, String[] var7) {
+   public ContentHandlerServer register(
+      String classname, String[] types, String[] suffixes, String[] actions, ActionNameMap[] actionnames, String ID, String[] accessAllowed
+   ) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean unregister(String var1) {
+   public boolean unregister(String classname) {
       return false;
    }
 
@@ -36,46 +38,46 @@ public class Registry {
       return null;
    }
 
-   public ContentHandler[] forType(String var1) {
+   public ContentHandler[] forType(String type) {
       return null;
    }
 
-   public ContentHandler[] forAction(String var1) {
+   public ContentHandler[] forAction(String action) {
       return null;
    }
 
-   public ContentHandler[] forSuffix(String var1) {
+   public ContentHandler[] forSuffix(String suffix) {
       return null;
    }
 
-   public ContentHandler forID(String var1, boolean var2) {
+   public ContentHandler forID(String ID, boolean exact) {
       return null;
    }
 
-   public ContentHandler[] findHandler(Invocation var1) {
+   public ContentHandler[] findHandler(Invocation invocation) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public boolean invoke(Invocation var1, Invocation var2) {
+   public boolean invoke(Invocation invocation, Invocation previous) {
       return false;
    }
 
-   public boolean invoke(Invocation var1) {
+   public boolean invoke(Invocation invocation) {
       return false;
    }
 
-   public boolean reinvoke(Invocation var1) {
+   public boolean reinvoke(Invocation invocation) {
       return false;
    }
 
-   public Invocation getResponse(boolean var1) {
+   public Invocation getResponse(boolean wait) {
       return null;
    }
 
    public void cancelGetResponse() {
    }
 
-   public void setListener(ResponseListener var1) {
+   public void setListener(ResponseListener listener) {
    }
 
    public String getID() {

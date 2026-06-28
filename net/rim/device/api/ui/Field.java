@@ -1,6 +1,7 @@
 package net.rim.device.api.ui;
 
 import net.rim.device.api.itpolicy.ITPolicy;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.accessibility.AccessibleText;
@@ -16,6 +17,7 @@ import net.rim.device.internal.ui.Background;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.Cursor;
 import net.rim.tid.awt.Event;
+import net.rim.tid.awt.event.FocusEvent;
 import net.rim.tid.awt.event.InputMethodEvent;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.tid.awt.im.InputMethodRequests;
@@ -110,15 +112,15 @@ public class Field implements IComponent, AccessibleContext {
    public static final int DEBUG_NO_TAG;
    public static final int DEBUG_NO_FOCUS;
 
-   protected void accessibleEventOccurred(int var1, Object var2, Object var3, AccessibleContext var4) {
-      AccessibleEventDispatcher.dispatchAccessibleEvent(var1, var2, var3, var4);
+   protected void accessibleEventOccurred(int event, Object oldValue, Object newValue, AccessibleContext context) {
+      AccessibleEventDispatcher.dispatchAccessibleEvent(event, oldValue, newValue, context);
    }
 
-   public boolean acceptVisitor(FieldVisitor var1) {
-      return var1.visit(this, 3);
+   public boolean acceptVisitor(FieldVisitor visitor) {
+      return visitor.visit(this, 3);
    }
 
-   public int adjustVolume(int var1) {
+   public int adjustVolume(int volumeLevelChange) {
       return -1;
    }
 
@@ -126,16 +128,16 @@ public class Field implements IComponent, AccessibleContext {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected void removeAccessibleState(int var1) {
-      this._accessibleStateSet &= ~var1;
+   protected void removeAccessibleState(int state) {
+      this._accessibleStateSet &= ~state;
    }
 
-   protected void addAccessibleState(int var1) {
+   protected void addAccessibleState(int state) {
       if (this.isAccessibleStateSet(1)) {
          this.removeAccessibleState(1);
       }
 
-      this._accessibleStateSet |= var1;
+      this._accessibleStateSet |= state;
    }
 
    void callOnObscured() {
@@ -163,35 +165,35 @@ public class Field implements IComponent, AccessibleContext {
       if (this._fontSet != null) {
          this._font = this._fontSet;
       } else {
-         Font var1 = null;
+         Font font = null;
          if (this.getState() == 6 && this._themeAttributesFocus != null) {
-            var1 = this._themeAttributesFocus.getFont();
+            font = this._themeAttributesFocus.getFont();
          }
 
-         if (var1 == null && this._themeAttributes != null) {
-            var1 = this._themeAttributes.getFont();
+         if (font == null && this._themeAttributes != null) {
+            font = this._themeAttributes.getFont();
          }
 
-         if (var1 == null) {
-            Manager var2 = this.getManager();
-            if (var2 != null) {
-               var1 = var2._font;
+         if (font == null) {
+            Manager manager = this.getManager();
+            if (manager != null) {
+               font = manager._font;
             }
 
-            if (var1 == null) {
-               var1 = Font.getDefault();
+            if (font == null) {
+               font = Font.getDefault();
             }
          }
 
-         this._font = var1;
+         this._font = font;
       }
    }
 
    protected void applyTheme() {
       this.assertHaveEventLock();
-      Theme var1 = ThemeManager.getActiveTheme();
-      this._themeAttributesAll = var1.getAttributeSet(this, 0);
-      this._themeAttributesFocus = var1.getAttributeSet(this, 6);
+      Theme theme = ThemeManager.getActiveTheme();
+      this._themeAttributesAll = theme.getAttributeSet(this, 0);
+      this._themeAttributesFocus = theme.getAttributeSet(this, 6);
       this.applyThemeOnStateChange();
    }
 
@@ -199,108 +201,139 @@ public class Field implements IComponent, AccessibleContext {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   protected void applyTheme(Graphics var1, boolean var2) {
+   protected void applyTheme(Graphics graphics, boolean drawBackground) {
       this.assertHaveEventLock();
       if (this._themeAttributes != null) {
-         this._themeAttributes.applyToGraphics(var1);
+         this._themeAttributes.applyToGraphics(graphics);
       }
 
       if (this._themeAttributesSpecial != null) {
-         this._themeAttributesSpecial.applyToGraphics(var1);
+         this._themeAttributesSpecial.applyToGraphics(graphics);
       }
 
-      if (var2) {
-         this.paintBackground(var1);
+      if (drawBackground) {
+         this.paintBackground(graphics);
       }
 
-      var1.setFont(this.getFont());
+      graphics.setFont(this.getFont());
    }
 
-   final void applyThemeSpecial(Graphics var1, boolean var2) {
+   final void applyThemeSpecial(Graphics graphics, boolean drawBackground) {
       this.assertHaveEventLock();
-      Font var3 = null;
+      Font font = null;
       if (this._themeAttributesSpecial != null) {
-         this._themeAttributesSpecial.applyToGraphics(var1);
-         var3 = this._themeAttributesSpecial.getFont();
-         boolean var4 = var1.isDrawingStyleSet(8);
-         boolean var5 = var1.isDrawingStyleSet(16);
-         if (!var4 && !var5) {
-            if (var2) {
-               this.paintBackground(var1);
+         this._themeAttributesSpecial.applyToGraphics(graphics);
+         font = this._themeAttributesSpecial.getFont();
+         boolean drawFocus = graphics.isDrawingStyleSet(8);
+         boolean drawSelect = graphics.isDrawingStyleSet(16);
+         if (!drawFocus && !drawSelect) {
+            if (drawBackground) {
+               this.paintBackground(graphics);
             }
          } else {
-            if (var4) {
-               var1.setColor(ThemeAttributeSet.getColor(this, 3));
-               var1.setBackgroundColor(ThemeAttributeSet.getColor(this, 2));
+            if (drawFocus) {
+               graphics.setColor(ThemeAttributeSet.getColor(this, 3));
+               graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 2));
             } else {
-               var1.setColor(ThemeAttributeSet.getColor(this, 5));
-               var1.setBackgroundColor(ThemeAttributeSet.getColor(this, 4));
+               graphics.setColor(ThemeAttributeSet.getColor(this, 5));
+               graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 4));
             }
 
-            var1.setBackgroundImage(null, 0, 0);
-            if (var2) {
-               var1.clear();
+            graphics.setBackgroundImage(null, 0, 0);
+            if (drawBackground) {
+               graphics.clear();
             }
          }
       }
 
-      if (var3 == null) {
-         var3 = this.getFont();
+      if (font == null) {
+         font = this.getFont();
       }
 
-      var1.setFont(var3);
+      graphics.setFont(font);
    }
 
-   void callOnDisplayOrUndisplay(boolean var1) {
-      if (var1) {
+   void callOnDisplayOrUndisplay(boolean attached) {
+      if (attached) {
          this.onDisplay();
       } else {
          this.onUndisplay();
       }
    }
 
-   public void setThemeAttributeSet(ThemeAttributeSet var1) {
-      this._themeAttributes = var1;
-      this._themeAttributesAll = var1;
+   public void setThemeAttributeSet(ThemeAttributeSet themeAttributes) {
+      this._themeAttributes = themeAttributes;
+      this._themeAttributesAll = themeAttributes;
    }
 
-   protected void setThemeAttributesAll(ThemeAttributeSet var1, ThemeAttributeSet var2) {
-      this._themeAttributesAll = var1;
-      this._themeAttributesFocus = var2;
+   protected void setThemeAttributesAll(ThemeAttributeSet themeAttributes, ThemeAttributeSet themeAttributesFocus) {
+      this._themeAttributesAll = themeAttributes;
+      this._themeAttributesFocus = themeAttributesFocus;
    }
 
-   public void setThemeAttributesSpecial(ThemeAttributeSet var1, Graphics var2) {
-      this._themeAttributesSpecial = var1;
-      if (var2 != null) {
-         this.applyThemeSpecial(var2, this.isState(32));
+   public void setThemeAttributesSpecial(ThemeAttributeSet themeAttributesSpecial, Graphics graphics) {
+      this._themeAttributesSpecial = themeAttributesSpecial;
+      if (graphics != null) {
+         this.applyThemeSpecial(graphics, this.isState(32));
       }
    }
 
-   public void setThemeAttributesSpecialClear(boolean var1) {
-      this.setState(32, var1);
+   public void setThemeAttributesSpecialClear(boolean setThemeAttributesSpecialClear) {
+      this.setState(32, setThemeAttributesSpecialClear);
    }
 
-   protected void drawFocus(Graphics var1, boolean var2) {
-      XYRect var3 = Ui.getTmpXYRect();
-      this.getFocusRect(var3);
-      this.drawHighlightRegion(var1, 1, var2, var3.x, var3.y, var3.width, var3.height);
-      Ui.returnTmpXYRect(var3);
+   protected void drawFocus(Graphics graphics, boolean on) {
+      XYRect rect = Ui.getTmpXYRect();
+      this.getFocusRect(rect);
+      this.drawHighlightRegion(graphics, 1, on, rect.x, rect.y, rect.width, rect.height);
+      Ui.returnTmpXYRect(rect);
    }
 
-   protected final void drawHighlightRegion(Graphics var1, int var2, boolean var3, int var4, int var5, int var6, int var7) {
+   protected final void drawHighlightRegion(Graphics graphics, int style, boolean on, int x, int y, int width, int height) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   protected void fieldChangeNotify(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   protected void fieldChangeNotify(int context) {
+      if ((context & -2147483648) != 0) {
+         this.setDirty(false);
+      } else {
+         this.setMuddy(true);
+      }
+
+      if (this._changeListener != null) {
+         try {
+            this._changeListener.fieldChanged(this, context);
+            return;
+         } catch (Throwable var3) {
+         }
+      }
    }
 
-   protected void focusAdd(boolean var1) {
+   protected void focusAdd(boolean draw) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void focusChangeNotify(int var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public void focusChangeNotify(int action) {
+      Screen screen = this.getScreen();
+      if (action == 1
+         && screen != null
+         && screen.isDisplayed()
+         && !(screen instanceof Object)
+         && screen.isScreenFocus()
+         && (this instanceof Object || !(this instanceof Object))) {
+         EventHandler.getInstance().focusGained(this, (int)System.currentTimeMillis(), Application.getApplication().getProcessId());
+      }
+
+      if (this._focusListener != null) {
+         try {
+            this._focusListener.focusChanged(this, action);
+         } catch (Throwable var4) {
+         }
+      }
+
+      if (screen != null) {
+         screen.focusChangeNotifyListeners(this, action);
+      }
    }
 
    protected void focusRemove() {
@@ -311,11 +344,11 @@ public class Field implements IComponent, AccessibleContext {
       return this._border;
    }
 
-   public final void getBorder(XYEdges var1) {
-      var1.top = this._borderTop;
-      var1.right = this._borderRight;
-      var1.bottom = this._borderBottom;
-      var1.left = this._borderLeft;
+   public final void getBorder(XYEdges border) {
+      border.top = this._borderTop;
+      border.right = this._borderRight;
+      border.bottom = this._borderBottom;
+      border.left = this._borderLeft;
    }
 
    public final int getBorderBottom() {
@@ -350,8 +383,8 @@ public class Field implements IComponent, AccessibleContext {
       return (XYRect)(new Object(this._content));
    }
 
-   public final void getContentRect(XYRect var1) {
-      var1.set(this._content);
+   public final void getContentRect(XYRect rect) {
+      rect.set(this._content);
    }
 
    public final int getContentTop() {
@@ -363,19 +396,19 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public ContextMenu getContextMenu() {
-      ContextMenu var1 = ContextMenu.getInstance();
-      var1.setTarget(this);
-      this.makeContextMenu(var1);
-      this.addIMActions(var1, 0);
-      return var1;
+      ContextMenu contextMenu = ContextMenu.getInstance();
+      contextMenu.setTarget(this);
+      this.makeContextMenu(contextMenu);
+      this.addIMActions(contextMenu, 0);
+      return contextMenu;
    }
 
-   public ContextMenu getContextMenu(int var1) {
-      ContextMenu var2 = ContextMenu.getInstance();
-      var2.setTarget(this);
-      this.makeContextMenu(var2, var1);
-      this.addIMActions(var2, var1);
-      return var2;
+   public ContextMenu getContextMenu(int instance) {
+      ContextMenu contextMenu = ContextMenu.getInstance();
+      contextMenu.setTarget(this);
+      this.makeContextMenu(contextMenu, instance);
+      this.addIMActions(contextMenu, instance);
+      return contextMenu;
    }
 
    public final Object getCookie() {
@@ -386,13 +419,13 @@ public class Field implements IComponent, AccessibleContext {
       return this._cookie;
    }
 
-   public String getDebugTree(int var1) {
-      Object var2 = new Object();
-      this.getDebugTreeHelper(var1, (StringBuffer)var2, 0);
-      return ((StringBuffer)var2).toString();
+   public String getDebugTree(int treeStyle) {
+      StringBuffer buffer = (StringBuffer)(new Object());
+      this.getDebugTreeHelper(treeStyle, buffer, 0);
+      return buffer.toString();
    }
 
-   void getDebugTreeHelper(int var1, StringBuffer var2, int var3) {
+   void getDebugTreeHelper(int treeStyle, StringBuffer buffer, int indent) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -400,16 +433,16 @@ public class Field implements IComponent, AccessibleContext {
       return this._extent;
    }
 
-   public final void getExtent(XYRect var1) {
-      var1.set(this._extent);
+   public final void getExtent(XYRect extent) {
+      extent.set(this._extent);
    }
 
    public final void assertHaveEventLock() {
-      Screen var1 = this.getScreen();
-      if (var1 != null) {
-         UiEngineImpl var2 = var1.getUiEngineImpl();
-         if (var2 != null) {
-            var2.assertHaveEventLock();
+      Screen screen = this.getScreen();
+      if (screen != null) {
+         UiEngineImpl engine = screen.getUiEngineImpl();
+         if (engine != null) {
+            engine.assertHaveEventLock();
          }
       }
    }
@@ -418,34 +451,34 @@ public class Field implements IComponent, AccessibleContext {
       return this._focusListener;
    }
 
-   public void getFocusRect(XYRect var1) {
-      var1.set(this._extent.x - this._content.x, this._extent.y - this._content.y, this._extent.width, this._extent.height);
+   public void getFocusRect(XYRect rect) {
+      rect.set(this._extent.x - this._content.x, this._extent.y - this._content.y, this._extent.width, this._extent.height);
    }
 
-   public void getFocusRectPhantom(XYRect var1) {
-      this.getFocusRect(var1);
+   public void getFocusRectPhantom(XYRect rect) {
+      this.getFocusRect(rect);
    }
 
-   void doVisibilityWalk(boolean var1) {
-      this.onVisibilityChange(var1);
+   void doVisibilityWalk(boolean visible) {
+      this.onVisibilityChange(visible);
    }
 
    Font getFont0() {
-      Field var1 = this;
+      Field step = this;
 
-      while (var1._fontSet == null) {
-         ThemeAttributeSet var2 = var1._themeAttributes;
-         if (var2 != null && var2.getFont() != null) {
-            return var2.getFont();
+      while (step._fontSet == null) {
+         ThemeAttributeSet theme = step._themeAttributes;
+         if (theme != null && theme.getFont() != null) {
+            return theme.getFont();
          }
 
-         var1 = var1._manager;
-         if (var1 == null) {
+         step = step._manager;
+         if (step == null) {
             return Font.getDefault();
          }
       }
 
-      return var1._fontSet;
+      return step._fontSet;
    }
 
    public Font getFontIfSet() {
@@ -453,14 +486,14 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected final Graphics getGraphics0() {
-      XYRect var1 = Ui.getTmpXYRect();
-      var1.set(0, 0, this.getContentWidth(), this.getContentHeight());
-      Graphics var2 = this.getGraphics0(var1, false);
-      Ui.returnTmpXYRect(var1);
-      return var2;
+      XYRect clip = Ui.getTmpXYRect();
+      clip.set(0, 0, this.getContentWidth(), this.getContentHeight());
+      Graphics graphics = this.getGraphics0(clip, false);
+      Ui.returnTmpXYRect(clip);
+      return graphics;
    }
 
-   Graphics getGraphics0(XYRect var1, boolean var2) {
+   Graphics getGraphics0(XYRect clip, boolean drawBackground) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -484,11 +517,11 @@ public class Field implements IComponent, AccessibleContext {
       return this._extent.x;
    }
 
-   public final void getMargin(XYEdges var1) {
-      var1.top = this._marginTop;
-      var1.right = this._marginRight;
-      var1.bottom = this._marginBottom;
-      var1.left = this._marginLeft;
+   public final void getMargin(XYEdges margin) {
+      margin.top = this._marginTop;
+      margin.right = this._marginRight;
+      margin.bottom = this._marginBottom;
+      margin.left = this._marginLeft;
    }
 
    public final int getMarginBottom() {
@@ -511,19 +544,19 @@ public class Field implements IComponent, AccessibleContext {
       return this._manager;
    }
 
-   public void getNextFocus(int var1, XYRect var2) {
-      this.getFocusRect(var2);
+   public void getNextFocus(int direction, XYRect rect) {
+      this.getFocusRect(rect);
    }
 
    public Field getOriginal() {
       return this;
    }
 
-   public final void getPadding(XYEdges var1) {
-      var1.top = this._paddingTop;
-      var1.right = this._paddingRight;
-      var1.bottom = this._paddingBottom;
-      var1.left = this._paddingLeft;
+   public final void getPadding(XYEdges padding) {
+      padding.top = this._paddingTop;
+      padding.right = this._paddingRight;
+      padding.bottom = this._paddingBottom;
+      padding.left = this._paddingLeft;
    }
 
    public final int getPaddingBottom() {
@@ -583,28 +616,28 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void invalidate() {
-      Manager var1 = this.getManager();
-      if (var1 != null) {
-         XYRect var2 = this.getExtent();
-         var1.invalidate(var2.x, var2.y, var2.width, var2.height);
+      Manager manager = this.getManager();
+      if (manager != null) {
+         XYRect extent = this.getExtent();
+         manager.invalidate(extent.x, extent.y, extent.width, extent.height);
       }
    }
 
-   protected void invalidate(int var1, int var2, int var3, int var4) {
-      XYRect var5 = Ui.getTmpXYRect();
-      this.getContentRect(var5);
-      this.invalidateCommon(var1, var2, var3, var4, var5);
-      Ui.returnTmpXYRect(var5);
+   protected void invalidate(int x, int y, int width, int height) {
+      XYRect content = Ui.getTmpXYRect();
+      this.getContentRect(content);
+      this.invalidateCommon(x, y, width, height, content);
+      Ui.returnTmpXYRect(content);
    }
 
-   protected void invalidateAll(int var1, int var2, int var3, int var4) {
-      this.invalidateCommon(var1, var2, var3, var4, this.getExtent());
+   protected void invalidateAll(int x, int y, int width, int height) {
+      this.invalidateCommon(x, y, width, height, this.getExtent());
    }
 
    void invalidateLayout0() {
    }
 
-   protected boolean invokeAction(int var1) {
+   protected boolean invokeAction(int action) {
       return false;
    }
 
@@ -621,8 +654,8 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    boolean isFieldTransparent() {
-      Background var1 = this.getBackground();
-      return var1 == null || var1.isTransparent();
+      Background background = this.getBackground();
+      return background == null || background.isTransparent();
    }
 
    public boolean isFocus() {
@@ -637,7 +670,7 @@ public class Field implements IComponent, AccessibleContext {
       return true;
    }
 
-   protected void onVisibilityChange(boolean var1) {
+   protected void onVisibilityChange(boolean visible) {
    }
 
    public boolean isMuddy() {
@@ -672,8 +705,8 @@ public class Field implements IComponent, AccessibleContext {
       return (this._style & 3298534883328L) == 1099511627776L;
    }
 
-   public final boolean isStyle(long var1) {
-      return (this._style & var1) == var1;
+   public final boolean isStyle(long style) {
+      return (this._style & style) == style;
    }
 
    public final boolean isVisible() {
@@ -681,17 +714,17 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    boolean isVisible0() {
-      Screen var1 = this.getScreen();
-      return var1 != null && var1.isVisible0();
+      Screen scr = this.getScreen();
+      return scr != null && scr.isVisible0();
    }
 
-   protected boolean keyChar(char var1, int var2, int var3) {
+   protected boolean keyChar(char character, int status, int time) {
       if (this.isSelecting() && !(this instanceof Object)) {
-         switch (var1) {
+         switch (character) {
             case '\b':
             case '\u007f':
                if (this.isSelectionDeleteable()) {
-                  if ((var2 & 2) != 0) {
+                  if ((status & 2) != 0) {
                      if (this.isSelectionCutable() && this.isCutCopyPasteEnabled()) {
                         this.selectionCut(Clipboard.getClipboard());
                      }
@@ -712,15 +745,15 @@ public class Field implements IComponent, AccessibleContext {
       return false;
    }
 
-   protected boolean keyControl(char var1, int var2, int var3) {
+   protected boolean keyControl(char character, int status, int time) {
       if (this.isSelecting()) {
-         switch (var1) {
+         switch (character) {
             case '\u001b':
                this.select(false);
                return true;
             case '\u007f':
                if (this.isSelectionDeleteable()) {
-                  if ((var2 & 2) != 0) {
+                  if ((status & 2) != 0) {
                      if (this.isSelectionCutable() && this.isCutCopyPasteEnabled()) {
                         this.selectionCut(Clipboard.getClipboard());
                         Clipboard.getClipboard().setNotYetPasted(true);
@@ -739,84 +772,84 @@ public class Field implements IComponent, AccessibleContext {
       return false;
    }
 
-   protected boolean keyDown(int var1, int var2) {
+   protected boolean keyDown(int keycode, int time) {
       return false;
    }
 
-   protected boolean keyRepeat(int var1, int var2) {
+   protected boolean keyRepeat(int keycode, int time) {
       return false;
    }
 
-   protected boolean keyStatus(int var1, int var2) {
+   protected boolean keyStatus(int keycode, int time) {
       return false;
    }
 
-   protected boolean keyUp(int var1, int var2) {
+   protected boolean keyUp(int keycode, int time) {
       return false;
    }
 
-   protected void layout(int var1, int var2) {
+   protected void layout(int _1, int _2) {
       throw null;
    }
 
-   protected void makeContextMenu(ContextMenu var1) {
-      this.makeContextMenu(var1, 0);
+   protected void makeContextMenu(ContextMenu contextMenu) {
+      this.makeContextMenu(contextMenu, 0);
    }
 
-   protected void makeContextMenu(ContextMenu var1, int var2) {
+   protected void makeContextMenu(ContextMenu contextMenu, int instance) {
       if (this.isSelectable()) {
          if (this.isSelecting()) {
-            var1.addItem(MenuItem.getPrefab(5));
-         } else if (!this.getScreen().isScrollBehaviourView() && var2 != 65536) {
-            var1.addItem(MenuItem.getPrefab(4));
+            contextMenu.addItem(MenuItem.getPrefab(5));
+         } else if (!this.getScreen().isScrollBehaviourView() && instance != 65536) {
+            contextMenu.addItem(MenuItem.getPrefab(4));
          }
       }
 
       if (this.isSelectionCopyable() && this.isCutCopyPasteEnabled()) {
-         MenuItem var3 = MenuItem.getPrefab(1);
-         var1.addItem(var3);
+         MenuItem copyItem = MenuItem.getPrefab(1);
+         contextMenu.addItem(copyItem);
          if (this.isSelecting()) {
-            var1.setDefaultItem(var3);
+            contextMenu.setDefaultItem(copyItem);
          }
       }
 
       if (this.isSelectionCutable() && this.isCutCopyPasteEnabled()) {
-         var1.addItem(MenuItem.getPrefab(2));
+         contextMenu.addItem(MenuItem.getPrefab(2));
       }
 
       if (this.isPasteable() && Clipboard.getClipboard().get() != null && this.isCutCopyPasteEnabled()) {
-         MenuItem var5 = MenuItem.getPrefab(3);
-         var1.addItem(var5);
-         Clipboard var4 = Clipboard.getClipboard();
-         if (var4.isNotYetPasted() && var4.isTimeForPasteAsDefaultNotPassed()) {
-            var1.setDefaultItem(var5);
+         MenuItem pasteItem = MenuItem.getPrefab(3);
+         contextMenu.addItem(pasteItem);
+         Clipboard clip = Clipboard.getClipboard();
+         if (clip.isNotYetPasted() && clip.isTimeForPasteAsDefaultNotPassed()) {
+            contextMenu.setDefaultItem(pasteItem);
          }
       }
    }
 
-   protected void makeMenu(Menu var1, int var2) {
+   protected void makeMenu(Menu menu, int instance) {
    }
 
-   protected void onMenuDismissed(Menu var1) {
+   protected void onMenuDismissed(Menu menu) {
       this.onMenuDismissed();
    }
 
    protected void onMenuDismissed() {
    }
 
-   protected int moveFocus(int var1, int var2, int var3) {
+   protected int moveFocus(int amount, int status, int time) {
       this.setState(0, 2);
-      return var1;
+      return amount;
    }
 
-   protected void moveFocus(int var1, int var2, int var3, int var4) {
+   protected void moveFocus(int x, int y, int status, int time) {
    }
 
-   boolean moveFocusToPoint(int var1, int var2, int var3, int var4) {
+   boolean moveFocusToPoint(int x, int y, int status, int time) {
       return this.isFocusable();
    }
 
-   protected void onFocus(int var1) {
+   protected void onFocus(int direction) {
       this.setState(4, 0);
       this.applyThemeOnStateChange();
       if (Ui.isTTSEnabled()) {
@@ -835,111 +868,111 @@ public class Field implements IComponent, AccessibleContext {
       this.applyThemeOnStateChange();
    }
 
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics _1) {
       throw null;
    }
 
    Background getBackground() {
-      Background var1 = null;
+      Background background = null;
       if (this._themeAttributesSpecial != null) {
          return this._themeAttributesSpecial.getBackground();
       }
 
       if (this._themeAttributes != null) {
-         var1 = this._themeAttributes.getBackground();
+         background = this._themeAttributes.getBackground();
       }
 
-      return var1;
+      return background;
    }
 
-   protected void paintBackground(Graphics var1) {
+   protected void paintBackground(Graphics graphics) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   void paintBorder(Graphics var1) {
-      Border var2 = this.getBorder();
-      if (var2 != null) {
-         int var3 = var1.getColor();
-         int var4 = var1.getBackgroundColor();
-         var1.setColor(ThemeAttributeSet.getColor(this, 1));
-         var1.setBackgroundColor(ThemeAttributeSet.getColor(this, 0));
-         XYRect var5 = Ui.getTmpXYRect();
-         var5.set(this._extent);
-         var2.paint(var1, var5);
-         Ui.returnTmpXYRect(var5);
-         var1.setColor(var3);
-         var1.setBackgroundColor(var4);
+   void paintBorder(Graphics graphics) {
+      Border border = this.getBorder();
+      if (border != null) {
+         int fgPrevious = graphics.getColor();
+         int bgPrevious = graphics.getBackgroundColor();
+         graphics.setColor(ThemeAttributeSet.getColor(this, 1));
+         graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 0));
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(this._extent);
+         border.paint(graphics, rect);
+         Ui.returnTmpXYRect(rect);
+         graphics.setColor(fgPrevious);
+         graphics.setBackgroundColor(bgPrevious);
       }
    }
 
-   void paintSelf(Graphics var1, boolean var2, int var3, int var4) {
+   void paintSelf(Graphics graphics, boolean addExtent, int xContentAdjust, int yContentAdjust) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   public boolean paste(Clipboard var1) {
+   public boolean paste(Clipboard cb) {
       return false;
    }
 
-   public int processKeyEvent(int var1, char var2, int var3, int var4) {
-      switch (var1) {
+   public int processKeyEvent(int event, char key, int keycode, int time) {
+      switch (event) {
          case 513:
          case 514:
          case 520:
-            return EventHandler.getInstance().processKeyEvent(var1, var3, var2, var3, var4, false);
+            return EventHandler.getInstance().processKeyEvent(event, keycode, key, keycode, time, false);
          default:
             return 0;
       }
    }
 
-   public boolean processNavigationEvent(int var1, int var2, int var3, int var4, int var5) {
+   public boolean processNavigationEvent(int event, int dx, int dy, int status, int time) {
       return false;
    }
 
-   protected final void setExtent(int var1, int var2) {
+   protected final void setExtent(int width, int height) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   boolean validateFieldStyle(long var1) {
-      if ((var1 & 54043195528445952L) == 54043195528445952L) {
+   boolean validateFieldStyle(long style) {
+      if ((style & 54043195528445952L) == 54043195528445952L) {
          return false;
-      } else if ((var1 & 13510798882111488L) == 13510798882111488L) {
+      } else if ((style & 13510798882111488L) == 13510798882111488L) {
          return false;
       } else {
-         return (var1 & 3298534883328L) == 3298534883328L ? false : (var1 & -3526322837558132736L) == 0;
+         return (style & 3298534883328L) == 3298534883328L ? false : (style & -3526322837558132736L) == 0;
       }
    }
 
-   public void setFont(Font var1, boolean var2) {
-      if (this._fontSet != var1) {
-         this._fontSet = var1;
+   public void setFont(Font font, boolean layout) {
+      if (this._fontSet != font) {
+         this._fontSet = font;
          if (this._font != null) {
             this.applyFont();
          }
 
-         if (var2) {
+         if (layout) {
             this.updateLayout();
          }
       }
    }
 
-   protected final void setPosition(int var1, int var2) {
+   protected final void setPosition(int x, int y) {
       throw new RuntimeException("cod2jar: type check");
    }
 
-   final void setStyleSystem(long var1, long var3) {
-      this._style |= var1 & -1;
-      this._style &= var3 & -1 ^ -1;
+   final void setStyleSystem(long on, long off) {
+      this._style |= on & -1;
+      this._style &= off & -1 ^ -1;
    }
 
-   public void setTag(Tag var1) {
-      this._tag = var1;
+   public void setTag(Tag tag) {
+      this._tag = tag;
       if (this._manager != null && this._manager.isValidLayout() && this.getScreen() != null) {
          this.applyTheme();
          this.updateLayout();
       }
    }
 
-   public final void transformToScreen(XYRect var1) {
+   public final void transformToScreen(XYRect rect) {
       throw new RuntimeException("cod2jar: type check");
    }
 
@@ -952,71 +985,71 @@ public class Field implements IComponent, AccessibleContext {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void select(boolean var1) {
+   public void select(boolean enable) {
    }
 
-   public void selectionCopy(Clipboard var1) {
+   public void selectionCopy(Clipboard cb) {
    }
 
-   public void selectionCut(Clipboard var1) {
-      this.selectionCopy(var1);
+   public void selectionCut(Clipboard cb) {
+      this.selectionCopy(cb);
       this.selectionDelete();
    }
 
    public void selectionDelete() {
    }
 
-   public void setBorder(int var1, int var2, int var3, int var4) {
+   public void setBorder(int top, int right, int bottom, int left) {
       this._borderSet = true;
-      this._borderTop = var1;
-      this._borderRight = var2;
-      this._borderBottom = var3;
-      this._borderLeft = var4;
+      this._borderTop = top;
+      this._borderRight = right;
+      this._borderBottom = bottom;
+      this._borderLeft = left;
       this.updateLayout();
    }
 
-   public void setBorder(XYEdges var1) {
+   public void setBorder(XYEdges border) {
       this._borderSet = true;
-      this._borderTop = var1.top;
-      this._borderRight = var1.right;
-      this._borderBottom = var1.bottom;
-      this._borderLeft = var1.left;
+      this._borderTop = border.top;
+      this._borderRight = border.right;
+      this._borderBottom = border.bottom;
+      this._borderLeft = border.left;
       this.updateLayout();
    }
 
-   public void setBorder(Border var1) {
-      this.setBorderWithoutLayout(var1);
+   public void setBorder(Border border) {
+      this.setBorderWithoutLayout(border);
       this.updateLayout();
    }
 
-   public void setBorderWithoutLayout(Border var1) {
+   public void setBorderWithoutLayout(Border border) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setBorder(int var1, Border var2) {
-      if (var1 == 0) {
-         this.setBorder(var2);
+   public void setBorder(int state, Border border) {
+      if (state == 0) {
+         this.setBorder(border);
       }
    }
 
-   public void setChangeListener(FieldChangeListener var1) {
+   public void setChangeListener(FieldChangeListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final void setCookie(Object var1) {
-      this.setCookieInternal(var1);
+   public final void setCookie(Object cookie) {
+      this.setCookieInternal(cookie);
    }
 
-   protected void setCookieInternal(Object var1) {
+   protected void setCookieInternal(Object cookie) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setDirty(boolean var1) {
+   public void setDirty(boolean dirty) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setEditable(boolean var1) {
-      if (var1) {
+   public void setEditable(boolean editable) {
+      if (editable) {
          this._style |= 4503599627370496L;
          this._style &= -9007199254740993L;
       } else {
@@ -1025,10 +1058,10 @@ public class Field implements IComponent, AccessibleContext {
       }
 
       if (this.isFocus() && this.getInputContext() != null) {
-         boolean var2 = this.getInputContext().getInputComponent() == this;
-         if (var1 != var2) {
-            Object var3 = new Object(this, 1004, Event.FOCUS_EVENT_MASK, 0);
-            this.dispatchEvent((Event)var3);
+         boolean isInputComponent = this.getInputContext().getInputComponent() == this;
+         if (editable != isInputComponent) {
+            FocusEvent updateFocus = (FocusEvent)(new Object(this, 1004, Event.FOCUS_EVENT_MASK, 0));
+            this.dispatchEvent(updateFocus);
          }
       }
    }
@@ -1037,62 +1070,62 @@ public class Field implements IComponent, AccessibleContext {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setFocusListener(FocusChangeListener var1) {
+   public void setFocusListener(FocusChangeListener listener) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setId(String var1) {
+   public void setId(String idName) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   final void setIndex(int var1) {
+   final void setIndex(int index) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   void setManager(Manager var1, int var2) {
+   void setManager(Manager manager, int index) {
       throw new RuntimeException("cod2jar: ldc");
    }
 
-   public void setMargin(int var1, int var2, int var3, int var4) {
+   public void setMargin(int top, int right, int bottom, int left) {
       this._marginSet = true;
-      this._marginTop = var1;
-      this._marginRight = var2;
-      this._marginBottom = var3;
-      this._marginLeft = var4;
+      this._marginTop = top;
+      this._marginRight = right;
+      this._marginBottom = bottom;
+      this._marginLeft = left;
    }
 
-   public void setMargin(XYEdges var1) {
+   public void setMargin(XYEdges margin) {
       this._marginSet = true;
-      this._marginTop = var1.top;
-      this._marginRight = var1.right;
-      this._marginBottom = var1.bottom;
-      this._marginLeft = var1.left;
+      this._marginTop = margin.top;
+      this._marginRight = margin.right;
+      this._marginBottom = margin.bottom;
+      this._marginLeft = margin.left;
    }
 
-   public void setPadding(int var1, int var2, int var3, int var4) {
+   public void setPadding(int top, int right, int bottom, int left) {
       this._paddingSet = true;
-      this._paddingTop = var1;
-      this._paddingRight = var2;
-      this._paddingBottom = var3;
-      this._paddingLeft = var4;
+      this._paddingTop = top;
+      this._paddingRight = right;
+      this._paddingBottom = bottom;
+      this._paddingLeft = left;
       this.updateExtent();
    }
 
-   public void setPadding(XYEdges var1) {
+   public void setPadding(XYEdges padding) {
       this._paddingSet = true;
-      this._paddingTop = var1.top;
-      this._paddingRight = var1.right;
-      this._paddingBottom = var1.bottom;
-      this._paddingLeft = var1.left;
+      this._paddingTop = padding.top;
+      this._paddingRight = padding.right;
+      this._paddingBottom = padding.bottom;
+      this._paddingLeft = padding.left;
       this.updateExtent();
    }
 
-   public void setMuddy(boolean var1) {
+   public void setMuddy(boolean muddy) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
-   public void setNonSpellCheckable(boolean var1) {
-      if (var1) {
+   public void setNonSpellCheckable(boolean nonSpellCheckable) {
+      if (nonSpellCheckable) {
          this._style |= 2199023255552L;
          this._style &= -1099511627777L;
       } else {
@@ -1101,23 +1134,23 @@ public class Field implements IComponent, AccessibleContext {
       }
    }
 
-   protected boolean stylusDown(int var1, int var2, int var3, int var4) {
+   protected boolean stylusDown(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean stylusDrag(int var1, int var2, int var3, int var4) {
+   protected boolean stylusDrag(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean stylusUp(int var1, int var2, int var3, int var4) {
+   protected boolean stylusUp(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean stylusTap(int var1, int var2, int var3, int var4) {
+   protected boolean stylusTap(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean onCursorHover(int var1, int var2) {
+   protected boolean onCursorHover(int x, int y) {
       return false;
    }
 
@@ -1125,22 +1158,22 @@ public class Field implements IComponent, AccessibleContext {
       return Cursor.getPredefinedCursor(0);
    }
 
-   protected boolean stylusDoubleTap(int var1, int var2, int var3, int var4) {
+   protected boolean stylusDoubleTap(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean stylusTapHold(int var1, int var2, int var3, int var4) {
+   protected boolean stylusTapHold(int x, int y, int status, int time) {
       return false;
    }
 
-   protected boolean navigationClick(int var1, int var2) {
-      if ((var1 & 2) != 0 && (var1 & 4) == 0 && this.isPasteable() && Clipboard.getClipboard().get() != null && this.isCutCopyPasteEnabled()) {
+   protected boolean navigationClick(int status, int time) {
+      if ((status & 2) != 0 && (status & 4) == 0 && this.isPasteable() && Clipboard.getClipboard().get() != null && this.isCutCopyPasteEnabled()) {
          this.paste(Clipboard.getClipboard());
          Clipboard.getClipboard().setNotYetPasted(false);
          return true;
       }
 
-      if ((var1 & 1) == 0 || (var1 & 16) != 0 || !this.isSelectable()) {
+      if ((status & 1) == 0 || (status & 16) != 0 || !this.isSelectable()) {
          return false;
       }
 
@@ -1158,22 +1191,22 @@ public class Field implements IComponent, AccessibleContext {
       }
    }
 
-   protected boolean navigationUnclick(int var1, int var2) {
+   protected boolean navigationUnclick(int status, int time) {
       return false;
    }
 
-   protected boolean navigationMovement(int var1, int var2, int var3, int var4) {
+   protected boolean navigationMovement(int dx, int dy, int status, int time) {
       return false;
    }
 
-   protected boolean trackwheelClick(int var1, int var2) {
-      if ((var1 & 2) != 0 && (var1 & 4) == 0 && this.isPasteable() && Clipboard.getClipboard().get() != null && this.isCutCopyPasteEnabled()) {
+   protected boolean trackwheelClick(int status, int time) {
+      if ((status & 2) != 0 && (status & 4) == 0 && this.isPasteable() && Clipboard.getClipboard().get() != null && this.isCutCopyPasteEnabled()) {
          this.paste(Clipboard.getClipboard());
          Clipboard.getClipboard().setNotYetPasted(false);
          return true;
       }
 
-      if ((var1 & 1) == 0 || (var1 & 16) != 0 || !this.isSelectable()) {
+      if ((status & 1) == 0 || (status & 16) != 0 || !this.isSelectable()) {
          return false;
       }
 
@@ -1191,17 +1224,17 @@ public class Field implements IComponent, AccessibleContext {
       }
    }
 
-   protected boolean trackwheelUnclick(int var1, int var2) {
+   protected boolean trackwheelUnclick(int status, int time) {
       return false;
    }
 
-   protected boolean trackwheelRoll(int var1, int var2, int var3) {
+   protected boolean trackwheelRoll(int amount, int status, int time) {
       return false;
    }
 
    @Override
-   public void setFont(Font var1) {
-      this.setFont(var1, true);
+   public void setFont(Font font) {
+      this.setFont(font, true);
    }
 
    @Override
@@ -1219,16 +1252,16 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    @Override
-   public int caretPositionChanged(InputMethodEvent var1) {
+   public int caretPositionChanged(InputMethodEvent event) {
       return 1;
    }
 
    @Override
-   public void setIMCookieCache(Object var1) {
+   public void setIMCookieCache(Object cookie) {
    }
 
    @Override
-   public int inputMethodTextChanged(InputMethodEvent var1) {
+   public int inputMethodTextChanged(InputMethodEvent event) {
       return 1;
    }
 
@@ -1238,20 +1271,20 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    @Override
-   public void dispatchEvent(Event var1) {
+   public void dispatchEvent(Event rEvent) {
       if (this.isState(64)) {
-         if (var1 instanceof Object) {
-            InputContext var2 = this.getInputContext();
-            if (var2 != null) {
-               var2.dispatchEvent(var1);
+         if (rEvent instanceof Object) {
+            InputContext ic = this.getInputContext();
+            if (ic != null) {
+               ic.dispatchEvent(rEvent);
             }
          }
       }
    }
 
    @Override
-   public void enableInputMethods(boolean var1) {
-      this.setState(64, var1);
+   public void enableInputMethods(boolean enable) {
+      this.setState(64, enable);
    }
 
    @Override
@@ -1290,7 +1323,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleChildAt(int var1) {
+   public AccessibleContext getAccessibleChildAt(int index) {
       return null;
    }
 
@@ -1314,8 +1347,8 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    @Override
-   public boolean isAccessibleStateSet(int var1) {
-      return (this._accessibleStateSet & var1) != 0;
+   public boolean isAccessibleStateSet(int state) {
+      return (this._accessibleStateSet & state) != 0;
    }
 
    @Override
@@ -1329,34 +1362,34 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    @Override
-   public AccessibleContext getAccessibleSelectionAt(int var1) {
+   public AccessibleContext getAccessibleSelectionAt(int index) {
       return null;
    }
 
    @Override
-   public boolean isAccessibleChildSelected(int var1) {
+   public boolean isAccessibleChildSelected(int index) {
       return false;
    }
 
    @Override
-   public void actionPerformed(int var1, Object var2) {
+   public void actionPerformed(int action, Object parameter) {
    }
 
-   private void invalidateCommon(int var1, int var2, int var3, int var4, XYRect var5) {
-      if (var3 > 0 && var4 > 0) {
-         Manager var6 = this.getManager();
-         if (var6 != null) {
-            int var7 = var5.x;
-            int var8 = var5.x + var5.width;
-            int var9 = var5.y;
-            int var10 = var5.y + var5.height;
-            var1 += var7;
-            var2 += var9;
-            int var11 = MathUtilities.clamp(var7, var1, var8);
-            int var12 = MathUtilities.clamp(var7, var1 + var3, var8);
-            int var13 = MathUtilities.clamp(var9, var2, var10);
-            int var14 = MathUtilities.clamp(var9, var2 + var4, var10);
-            var6.invalidate(var11, var13, var12 - var11, var14 - var13);
+   private void invalidateCommon(int x, int y, int width, int height, XYRect extent) {
+      if (width > 0 && height > 0) {
+         Manager manager = this.getManager();
+         if (manager != null) {
+            int clipx1 = extent.x;
+            int clipx2 = extent.x + extent.width;
+            int clipy1 = extent.y;
+            int clipy2 = extent.y + extent.height;
+            x += clipx1;
+            y += clipy1;
+            int newx1 = MathUtilities.clamp(clipx1, x, clipx2);
+            int newx2 = MathUtilities.clamp(clipx1, x + width, clipx2);
+            int newy1 = MathUtilities.clamp(clipy1, y, clipy2);
+            int newy2 = MathUtilities.clamp(clipy1, y + height, clipy2);
+            manager.invalidate(newx1, newy1, newx2 - newx1, newy2 - newy1);
          }
       }
    }
@@ -1366,14 +1399,14 @@ public class Field implements IComponent, AccessibleContext {
          || this._themeAttributesSpecial != null && this._themeAttributesSpecial.isBackgroundDefined();
    }
 
-   private boolean isState(int var1) {
-      return (this._state & var1) == var1;
+   private boolean isState(int state) {
+      return (this._state & state) == state;
    }
 
    private boolean isCutCopyPasteEnabled() {
       if (!this.isState(16)) {
-         boolean var1 = !ITPolicy.getBoolean(24, 36, false);
-         this.setState(8, var1);
+         boolean isClipboardEnabled = !ITPolicy.getBoolean(24, 36, false);
+         this.setState(8, isClipboardEnabled);
          this.setState(16, 0);
       }
 
@@ -1381,67 +1414,67 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    private boolean isEventLockRequired() {
-      Screen var1 = this.getScreen();
-      if (var1 != null) {
-         UiEngineImpl var2 = var1.getUiEngineImpl();
-         if (var2 != null) {
-            return var2.isEventLockRequired();
+      Screen screen = this.getScreen();
+      if (screen != null) {
+         UiEngineImpl engine = screen.getUiEngineImpl();
+         if (engine != null) {
+            return engine.isEventLockRequired();
          }
       }
 
       return false;
    }
 
-   protected Field(long var1) {
+   protected Field(long style) {
       this.setTag(TAG);
-      if ((var1 & 54043195528445952L) == 0) {
-         var1 |= 36028797018963968L;
+      if ((style & 54043195528445952L) == 0) {
+         style |= 36028797018963968L;
       }
 
-      if ((var1 & 13510798882111488L) == 0) {
-         var1 |= 9007199254740992L;
+      if ((style & 13510798882111488L) == 0) {
+         style |= 9007199254740992L;
       }
 
-      if ((var1 & 3298534883328L) == 0) {
-         var1 |= 2199023255552L;
+      if ((style & 3298534883328L) == 0) {
+         style |= 2199023255552L;
       }
 
-      if (!this.validateFieldStyle(var1)) {
+      if (!this.validateFieldStyle(style)) {
          throw new Object();
       }
 
-      this._style = var1;
+      this._style = style;
    }
 
-   private void addIMActions(ContextMenu var1, int var2) {
-      if (var2 == 0) {
-         InvokableAction[] var3 = this.getInputContext().getIMActions(this);
-         if (var3 != null && var3.length > 0) {
-            if (!var1.isEmpty()) {
-               var1.addSeparatorInternal();
+   private void addIMActions(ContextMenu contextMenu, int instance) {
+      if (instance == 0) {
+         InvokableAction[] actions = this.getInputContext().getIMActions(this);
+         if (actions != null && actions.length > 0) {
+            if (!contextMenu.isEmpty()) {
+               contextMenu.addSeparatorInternal();
             }
 
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               MenuItemPrefab var5 = MenuItemPrefab.get(var3[var4]);
-               var1.addItem(var5);
-               if (var3[var4].isDefault()) {
-                  var1.setDefaultItem(var5);
+            for (int i = 0; i < actions.length; i++) {
+               MenuItem item = MenuItemPrefab.get(actions[i]);
+               contextMenu.addItem(item);
+               if (actions[i].isDefault()) {
+                  contextMenu.setDefaultItem(item);
                }
             }
          }
       }
    }
 
-   private final void setState(int var1, int var2) {
-      this._state |= var1;
-      this._state &= ~var2;
+   private final void setState(int on, int off) {
+      this._state |= on;
+      this._state &= ~off;
    }
 
-   private final void setState(int var1, boolean var2) {
-      if (var2) {
-         this._state |= var1;
+   private final void setState(int state, boolean on) {
+      if (on) {
+         this._state |= state;
       } else {
-         this._state &= ~var1;
+         this._state &= ~state;
       }
    }
 

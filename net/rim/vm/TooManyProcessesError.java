@@ -4,6 +4,6 @@ public final class TooManyProcessesError extends OutOfMemoryError {
    public TooManyProcessesError() {
    }
 
-   public TooManyProcessesError(String var1) {
+   public TooManyProcessesError(String s) {
    }
 }

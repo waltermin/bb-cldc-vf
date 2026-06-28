@@ -9,7 +9,7 @@ class RecordStoreSyncCollection$RMSSyncObject implements SyncObject {
    String _midletSuiteName;
    boolean _dirty;
 
-   public void setDirty(boolean var1) {
+   public void setDirty(boolean dirty) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
@@ -30,10 +30,10 @@ class RecordStoreSyncCollection$RMSSyncObject implements SyncObject {
       return this._dirty;
    }
 
-   public RecordStoreSyncCollection$RMSSyncObject(String var1, Hashtable var2) {
-      this._uid = RecordStoreSyncCollection.getUID(var1);
-      this._midletSuiteName = var1;
-      this._data = var2;
+   public RecordStoreSyncCollection$RMSSyncObject(String midletSuiteName, Hashtable data) {
+      this._uid = RecordStoreSyncCollection.getUID(midletSuiteName);
+      this._midletSuiteName = midletSuiteName;
+      this._data = data;
       this._dirty = false;
    }
 }

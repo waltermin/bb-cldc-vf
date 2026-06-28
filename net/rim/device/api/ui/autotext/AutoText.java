@@ -15,31 +15,31 @@ public class AutoText implements ReadableSet, CollectionEventSource {
       return (AutoText)ApplicationRegistry.getApplicationRegistry().waitFor(-8979623067881713245L);
    }
 
-   public Object add(String var1, String var2, int var3, Locale var4) {
+   public Object add(String _1, String _2, int _3, Locale _4) {
       throw null;
    }
 
-   public void remove(String var1, Locale var2) {
+   public void remove(String _1, Locale _2) {
       throw null;
    }
 
-   public String getReplacedString(Object var1) {
+   public String getReplacedString(Object _1) {
       throw null;
    }
 
-   public String getReplacementStringPattern(Object var1) {
+   public String getReplacementStringPattern(Object _1) {
       throw null;
    }
 
-   public int getReplacementCase(Object var1) {
+   public int getReplacementCase(Object _1) {
       throw null;
    }
 
-   public int getLocaleCode(Object var1) {
+   public int getLocaleCode(Object _1) {
       throw null;
    }
 
-   public Object checkWord(String var1) {
+   public Object checkWord(String _1) {
       throw null;
    }
 
@@ -55,11 +55,11 @@ public class AutoText implements ReadableSet, CollectionEventSource {
       throw null;
    }
 
-   public String getMacroText(int var1) {
+   public String getMacroText(int _1) {
       throw null;
    }
 
-   public boolean isClauseSeparator(char var1) {
+   public boolean isClauseSeparator(char _1) {
       throw null;
    }
 
@@ -67,7 +67,7 @@ public class AutoText implements ReadableSet, CollectionEventSource {
       throw null;
    }
 
-   public boolean isNoAutoPeriodCharacter(char var1) {
+   public boolean isNoAutoPeriodCharacter(char _1) {
       throw null;
    }
 
@@ -75,7 +75,7 @@ public class AutoText implements ReadableSet, CollectionEventSource {
       throw null;
    }
 
-   public boolean isSentenceTerminator(char var1) {
+   public boolean isSentenceTerminator(char _1) {
       throw null;
    }
 
@@ -83,11 +83,11 @@ public class AutoText implements ReadableSet, CollectionEventSource {
       return 0;
    }
 
-   public void setDataVersion(int var1) {
+   public void setDataVersion(int version) {
    }
 
    @Override
-   public int getElements(Object[] var1) {
+   public int getElements(Object[] _1) {
       throw null;
    }
 
@@ -97,7 +97,7 @@ public class AutoText implements ReadableSet, CollectionEventSource {
    }
 
    @Override
-   public boolean contains(Object var1) {
+   public boolean contains(Object _1) {
       throw null;
    }
 
@@ -107,12 +107,12 @@ public class AutoText implements ReadableSet, CollectionEventSource {
    }
 
    @Override
-   public void removeCollectionListener(Object var1) {
+   public void removeCollectionListener(Object _1) {
       throw null;
    }
 
    @Override
-   public void addCollectionListener(Object var1) {
+   public void addCollectionListener(Object _1) {
       throw null;
    }
 }

@@ -7,7 +7,7 @@ class Form$FormChangeListener implements FieldChangeListener {
    public ItemStateListener _itemStateListener;
 
    @Override
-   public void fieldChanged(Field var1, int var2) {
+   public void fieldChanged(Field field, int context) {
       throw new RuntimeException("cod2jar: type check");
    }
 }

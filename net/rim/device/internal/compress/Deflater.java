@@ -26,8 +26,8 @@ public final class Deflater {
    public static final int STRATEGY_DEFAULT;
    public static final int Z_DEF_MEM_LEVEL;
 
-   public Deflater(int var1, int var2, int var3) {
-      this.init(var1, var3, 1, var2);
+   public Deflater(int level, int strategy, int windowbits) {
+      this.init(level, windowbits, 1, strategy);
    }
 
    private final native void init(int var1, int var2, int var3, int var4);

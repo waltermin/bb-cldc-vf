@@ -36,27 +36,27 @@ public class LabelField extends Field implements DrawStyle {
       this(null);
    }
 
-   public LabelField(Object var1) {
-      this(var1, 0, -1, 0);
+   public LabelField(Object text) {
+      this(text, 0, -1, 0);
    }
 
-   public LabelField(Object var1, long var2) {
-      this(var1, 0, -1, var2);
+   public LabelField(Object text, long style) {
+      this(text, 0, -1, style);
    }
 
-   public LabelField(Object var1, int var2, int var3, long var4) {
-      super(var4);
-      if ((var4 & 18014398509481984L) != 0) {
+   public LabelField(Object text, int offset, int length, long style) {
+      super(style);
+      if ((style & 18014398509481984L) != 0) {
          this._position = 1;
       }
 
       this._labelText = (TextRect)(new Object(this, this.getFieldStyle() & 199));
-      this.setText(var1, var2, var3);
+      this.setText(text, offset, length);
    }
 
-   public LabelField(ResourceBundleFamily var1, int var2) {
+   public LabelField(ResourceBundleFamily rb, int key) {
       this(null);
-      this.setText(var1, var2);
+      this.setText(rb, key);
    }
 
    private void checkLocale() {
@@ -80,19 +80,19 @@ public class LabelField extends Field implements DrawStyle {
    @Override
    public int getPreferredWidth() {
       this.checkLocale();
-      Font var1 = this.getFont();
-      int var2 = 0;
+      Font font = this.getFont();
+      int width = 0;
       if (this._image != null) {
-         var2 += this._image.getWidth();
-         var2 += var1.getHeight() >> 2;
+         width += this._image.getWidth();
+         width += font.getHeight() >> 2;
       }
 
       if (this._length != 0) {
-         int var3 = Math.min(this._length, Display.getWidth() >> 1);
-         var2 += var1.getBounds(this._text, 0, var3) + this._position + 1;
+         int measureLength = Math.min(this._length, Display.getWidth() >> 1);
+         width += font.getBounds(this._text, 0, measureLength) + this._position + 1;
       }
 
-      return var2;
+      return width;
    }
 
    public String getText() {
@@ -101,55 +101,55 @@ public class LabelField extends Field implements DrawStyle {
    }
 
    @Override
-   protected void layout(int var1, int var2) {
+   protected void layout(int width, int height) {
       throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
-   protected void paint(Graphics var1) {
+   protected void paint(Graphics graphics) {
       this.checkLocale();
-      int var2 = this._position;
-      int var3 = 0;
-      int var4 = this.getFont().getHeight();
+      int x = this._position;
+      int imageHeight = 0;
+      int textHeight = this.getFont().getHeight();
       if (this._image != null) {
-         var3 = this._image.getHeight();
-         var1.drawBitmap(var2, 0, this._image.getWidth(), var3, this._image, 0, 0);
-         var2 += this._image.getWidth();
-         var2 += var4 >> 2;
+         imageHeight = this._image.getHeight();
+         graphics.drawBitmap(x, 0, this._image.getWidth(), imageHeight, this._image, 0, 0);
+         x += this._image.getWidth();
+         x += textHeight >> 2;
       }
 
       if (this._isSingleLine) {
-         int var5 = 0;
-         int var6 = this._labelText.getHeight();
-         if (var3 > var6) {
-            var5 = var3 - var6 >> 1;
+         int y = 0;
+         int labelTextHeight = this._labelText.getHeight();
+         if (imageHeight > labelTextHeight) {
+            y = imageHeight - labelTextHeight >> 1;
          }
 
-         var5 = Math.max(var6 - var4, var5);
-         int var7 = this.getContentWidth() - 1 - var2;
-         var1.drawText(this._text, var2, var5, this.getFieldStyle() & 199, var7);
+         y = Math.max(labelTextHeight - textHeight, y);
+         int width = this.getContentWidth() - 1 - x;
+         graphics.drawText(this._text, x, y, this.getFieldStyle() & 199, width);
       } else {
-         this._labelText.paintSelf(var1);
+         this._labelText.paintSelf(graphics);
       }
    }
 
    @Override
-   public void selectionCopy(Clipboard var1) {
-      var1.put(this.getText());
+   public void selectionCopy(Clipboard cb) {
+      cb.put(this.getText());
    }
 
-   public void setImage(Bitmap var1) {
+   public void setImage(Bitmap image) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   public void setPosition(int var1) {
-      if (var1 < 0) {
+   public void setPosition(int position) {
+      if (position < 0) {
          throw new Object();
       }
 
-      this._position = var1;
-      Manager var2 = this.getManager();
-      if (var2 != null && this.isStyle(1152921504606846976L)) {
+      this._position = position;
+      Manager manager = this.getManager();
+      if (manager != null && this.isStyle(1152921504606846976L)) {
          this.updateLayout();
          this.focusAdd(false);
       }
@@ -157,26 +157,26 @@ public class LabelField extends Field implements DrawStyle {
       this.invalidate();
    }
 
-   public void setText(Object var1) {
-      this.setText(var1, 0, -1);
+   public void setText(Object text) {
+      this.setText(text, 0, -1);
    }
 
-   public void setText(Object var1, int var2, int var3) {
+   public void setText(Object text, int offset, int length) {
       this._rbId = 0;
       this._rbName = null;
-      this.setTextInternal(var1, var2, var3);
+      this.setTextInternal(text, offset, length);
    }
 
-   public void setText(String var1, int var2, int var3) {
-      this.setText((Object)var1, var2, var3);
+   public void setText(String text, int offset, int length) {
+      this.setText((Object)text, offset, length);
    }
 
-   public void setText(ResourceBundleFamily var1, int var2) {
+   public void setText(ResourceBundleFamily rb, int key) {
       throw new RuntimeException("cod2jar: string-special");
    }
 
-   private void setTextInternal(Object var1, int var2, int var3) {
-      throw new RuntimeException("cod2jar: exception table");
+   private void setTextInternal(Object text, int offset, int length) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override

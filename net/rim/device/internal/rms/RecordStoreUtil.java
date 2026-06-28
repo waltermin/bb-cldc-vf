@@ -4,7 +4,7 @@ public class RecordStoreUtil {
    private RecordStoreUtil() {
    }
 
-   public static boolean isOnDevice(String var0) {
+   public static boolean isOnDevice(String midletSuiteName) {
       throw new RuntimeException("cod2jar: ldc");
    }
 }

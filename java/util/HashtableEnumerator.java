@@ -5,24 +5,24 @@ class HashtableEnumerator implements Enumeration {
    Object _empty;
    int _index;
 
-   HashtableEnumerator(Object[] var1, Object var2) {
-      this._table = var1;
+   HashtableEnumerator(Object[] table, Object empty) {
+      this._table = table;
       this._index = 0;
-      this._empty = var2;
+      this._empty = empty;
    }
 
    boolean getNextElement() {
-      int var1 = this._index;
+      int i = this._index;
 
-      for (int var2 = this._table.length; var1 < var2; var1++) {
-         Object var3 = this._table[var1];
-         if (var3 != null && var3 != this._empty) {
-            this._index = var1;
+      for (int len = this._table.length; i < len; i++) {
+         Object key = this._table[i];
+         if (key != null && key != this._empty) {
+            this._index = i;
             return true;
          }
       }
 
-      this._index = var1;
+      this._index = i;
       return false;
    }
 

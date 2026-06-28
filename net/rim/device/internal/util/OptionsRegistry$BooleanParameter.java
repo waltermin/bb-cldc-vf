@@ -9,7 +9,7 @@ public final class OptionsRegistry$BooleanParameter implements Persistable {
       return this._value;
    }
 
-   final void setValue(boolean var1) {
+   final void setValue(boolean value) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 }

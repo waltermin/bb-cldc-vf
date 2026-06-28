@@ -5,13 +5,13 @@ import net.rim.device.api.system.Application;
 class IPCInvokerStrong extends IPCInvoker {
    private Object _listener;
 
-   IPCInvokerStrong(Application var1, Object var2) {
-      this(var1, var2, null);
+   IPCInvokerStrong(Application app, Object listener) {
+      this(app, listener, null);
    }
 
-   IPCInvokerStrong(Application var1, Object var2, IPCRunnable var3) {
-      super(var1, var3);
-      this._listener = var2;
+   IPCInvokerStrong(Application app, Object listener, IPCRunnable runnable) {
+      super(app, runnable);
+      this._listener = listener;
    }
 
    @Override

@@ -16,24 +16,24 @@ public class AbstractMAC {
       throw null;
    }
 
-   public void update(int var1) {
+   public void update(int data) {
       if (this.buffer == null) {
          this.buffer = new byte[1];
       }
 
-      this.buffer[0] = (byte)var1;
+      this.buffer[0] = (byte)data;
       this.update(this.buffer, 0, 1);
    }
 
-   public void update(byte[] var1) {
-      if (var1 == null) {
+   public void update(byte[] data) {
+      if (data == null) {
          throw new Object();
       }
 
-      this.update(var1, 0, var1.length);
+      this.update(data, 0, data.length);
    }
 
-   public void update(byte[] var1, int var2, int var3) {
+   public void update(byte[] _1, int _2, int _3) {
       throw null;
    }
 
@@ -45,38 +45,38 @@ public class AbstractMAC {
       return this.getMAC(true);
    }
 
-   public byte[] getMAC(boolean var1) {
-      byte[] var2 = new byte[this.getLength()];
-      this.getMAC(var2, 0, var1);
-      return var2;
+   public byte[] getMAC(boolean reset) {
+      byte[] buffer = new byte[this.getLength()];
+      this.getMAC(buffer, 0, reset);
+      return buffer;
    }
 
-   public int getMAC(byte[] var1, int var2) {
-      return this.getMAC(var1, var2, true);
+   public int getMAC(byte[] buffer, int offset) {
+      return this.getMAC(buffer, offset, true);
    }
 
-   public int getMAC(byte[] var1, int var2, boolean var3) {
+   public int getMAC(byte[] _1, int _2, boolean _3) {
       throw null;
    }
 
-   public boolean checkMAC(byte[] var1) {
-      return this.checkMAC(var1, 0, true);
+   public boolean checkMAC(byte[] mac) {
+      return this.checkMAC(mac, 0, true);
    }
 
-   public boolean checkMAC(byte[] var1, boolean var2) {
-      return this.checkMAC(var1, 0, var2);
+   public boolean checkMAC(byte[] mac, boolean reset) {
+      return this.checkMAC(mac, 0, reset);
    }
 
-   public boolean checkMAC(byte[] var1, int var2) {
-      return this.checkMAC(var1, var2, true);
+   public boolean checkMAC(byte[] mac, int offset) {
+      return this.checkMAC(mac, offset, true);
    }
 
-   public boolean checkMAC(byte[] var1, int var2, boolean var3) {
-      int var4 = this.getLength();
-      if (var1 == null || var2 < 0 || var1.length - var4 < var2) {
+   public boolean checkMAC(byte[] mac, int offset, boolean reset) {
+      int length = this.getLength();
+      if (mac == null || offset < 0 || mac.length - length < offset) {
          throw new Object();
       } else {
-         return var4 > 0 ? Arrays.equals(var1, var2, this.getMAC(var3), 0, var4) : true;
+         return length > 0 ? Arrays.equals(mac, offset, this.getMAC(reset), 0, length) : true;
       }
    }
 }

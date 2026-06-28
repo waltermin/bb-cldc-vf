@@ -1,6 +1,7 @@
 package net.rim.device.internal.callcontrol;
 
 import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.util.NumberUtilities;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.Array;
 
@@ -119,204 +120,232 @@ public final class CallControlLogger {
    private static final byte[] XFERACTION;
    private static final byte[] XFERUPDATED;
 
-   public CallControlLogger(String var1, int var2) {
+   public CallControlLogger(String name, int order) {
    }
 
-   private final void log(int var1) {
-      Array.resize(this._buf, var1);
+   private final void log(int len) {
+      Array.resize(this._buf, len);
       this.log(this._buf);
    }
 
-   private final void log(byte[] var1) {
-      EventLogger.logEvent(this._eventGUID, var1);
+   private final void log(byte[] buf) {
+      EventLogger.logEvent(this._eventGUID, buf);
       this._strbuf.setLength(this._strbufRootLen);
-      StringUtilities.append(this._strbuf, var1, 0, var1.length);
+      StringUtilities.append(this._strbuf, buf, 0, buf.length);
       System.out.println(this._strbuf);
    }
 
-   private final int copy(byte[] var1) {
+   private final int copy(byte[] arg) {
       Array.resize(this._buf, 64);
-      int var2 = var1.length;
-      System.arraycopy(var1, 0, this._buf, 0, var2);
-      return var2;
+      int argLen = arg.length;
+      System.arraycopy(arg, 0, this._buf, 0, argLen);
+      return argLen;
    }
 
-   private final int append(int var1, byte[] var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
+   private final int append(int offset, byte[] arg) {
+      try {
+         if (arg == null) {
+            arg = NULL;
+         }
 
-   private final int append(int var1, long var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private final int append(int var1, char var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private final int append(int var1, boolean var2) {
-      return this.append(var1, var2 ? TRUE : FALSE);
-   }
-
-   private final int append(int var1, Object var2) {
-      throw new RuntimeException("cod2jar: exception table");
-   }
-
-   private final synchronized void logEvent(int var1, byte[] var2, boolean var3) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var4 = this.copy(var2);
-         var4 = this.append(var4, var3);
-         this.log(var4);
+         this._buf[offset++] = 44;
+         int argLen = arg.length;
+         System.arraycopy(arg, 0, this._buf, offset, argLen);
+         return offset + argLen;
+      } catch (IndexOutOfBoundsException ioobe) {
+         return offset;
+      } catch (Exception e) {
+         return offset;
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         this.log(var2);
+   private final int append(int offset, long arg) {
+      try {
+         this._buf[offset++] = 44;
+         int argLen = NumberUtilities.appendNumber(offset, this._buf, arg, 10);
+         return offset + argLen;
+      } catch (IndexOutOfBoundsException ioobe) {
+         return offset;
+      } catch (Exception e) {
+         return offset;
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var4 = this.copy(var2);
-         var4 = this.append(var4, var3);
-         this.log(var4);
+   private final int append(int offset, char arg) {
+      try {
+         this._buf[offset++] = (byte)arg;
+         return offset;
+      } catch (IndexOutOfBoundsException ioobe) {
+         return offset;
+      } catch (Exception e) {
+         return offset;
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, Object var3) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var4 = this.copy(var2);
-         var4 = this.append(var4, var3);
-         this.log(var4);
+   private final int append(int offset, boolean arg) {
+      return this.append(offset, arg ? TRUE : FALSE);
+   }
+
+   private final int append(int offset, Object arg) {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   private final synchronized void logEvent(int level, byte[] argA, boolean argB) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, byte[] var3) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var4 = this.copy(var2);
-         var4 = this.append(var4, var3);
-         this.log(var4);
+   private final synchronized void logEvent(int level, byte[] argA) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         this.log(argA);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, int var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, int argB) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, boolean var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, Object argB) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, Object var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, byte[] argB) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, Object var3, int var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, int argB, int argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, Object var3, Object var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, int argB, boolean argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, byte[] var3, byte[] var4) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var5 = this.copy(var2);
-         var5 = this.append(var5, var3);
-         var5 = this.append(var5, var4);
-         this.log(var5);
+   private final synchronized void logEvent(int level, byte[] argA, int argB, Object argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, int var4, int var5) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var6 = this.copy(var2);
-         var6 = this.append(var6, var3);
-         var6 = this.append(var6, var4);
-         var6 = this.append(var6, var5);
-         this.log(var6);
+   private final synchronized void logEvent(int level, byte[] argA, Object argB, int argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, boolean var3, int var4, Object var5) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var6 = this.copy(var2);
-         var6 = this.append(var6, var3);
-         var6 = this.append(var6, var4);
-         var6 = this.append(var6, var5);
-         this.log(var6);
+   private final synchronized void logEvent(int level, byte[] argA, Object argB, Object argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, int var4, Object var5) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var6 = this.copy(var2);
-         var6 = this.append(var6, var3);
-         var6 = this.append(var6, var4);
-         var6 = this.append(var6, var5);
-         this.log(var6);
+   private final synchronized void logEvent(int level, byte[] argA, byte[] argB, byte[] argC) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, byte[] var3, int var4, boolean var5) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var6 = this.copy(var2);
-         var6 = this.append(var6, var3);
-         var6 = this.append(var6, var4);
-         var6 = this.append(var6, var5);
-         this.log(var6);
+   private final synchronized void logEvent(int level, byte[] argA, int argB, int argC, int argD) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, int var4, boolean var5) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var6 = this.copy(var2);
-         var6 = this.append(var6, var3);
-         var6 = this.append(var6, var4);
-         var6 = this.append(var6, var5);
-         this.log(var6);
+   private final synchronized void logEvent(int level, byte[] argA, boolean argB, int argC, Object argD) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         this.log(len);
       }
    }
 
-   private final synchronized void logEvent(int var1, byte[] var2, int var3, int var4, int var5, int var6, boolean var7, boolean var8) {
-      if (EventLogger.getMinimumLevel() >= var1) {
-         int var9 = this.copy(var2);
-         var9 = this.append(var9, var3);
-         var9 = this.append(var9, var4);
-         var9 = this.append(var9, var5);
-         var9 = this.append(var9, var6);
-         var9 = this.append(var9, var7);
-         var9 = this.append(var9, var8);
-         this.log(var9);
+   private final synchronized void logEvent(int level, byte[] argA, int argB, int argC, Object argD) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         this.log(len);
       }
    }
 
-   private static final String obfuscate(String var0) {
+   private final synchronized void logEvent(int level, byte[] argA, byte[] argB, int argC, boolean argD) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         this.log(len);
+      }
+   }
+
+   private final synchronized void logEvent(int level, byte[] argA, int argB, int argC, boolean argD) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         this.log(len);
+      }
+   }
+
+   private final synchronized void logEvent(int level, byte[] argA, int argB, int argC, int argD, int argE, boolean argF, boolean argG) {
+      if (EventLogger.getMinimumLevel() >= level) {
+         int len = this.copy(argA);
+         len = this.append(len, argB);
+         len = this.append(len, argC);
+         len = this.append(len, argD);
+         len = this.append(len, argE);
+         len = this.append(len, argF);
+         len = this.append(len, argG);
+         this.log(len);
+      }
+   }
+
+   private static final String obfuscate(String str) {
       throw new RuntimeException("cod2jar: string-special");
    }
 }

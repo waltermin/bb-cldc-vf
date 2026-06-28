@@ -10,14 +10,14 @@ public final class YKMixedInputStream extends InputStream {
    private YKDecode _decode;
    private boolean _isClosed;
 
-   public YKMixedInputStream(InputStream var1) {
-      this(var1, 4096);
+   public YKMixedInputStream(InputStream inputStream) {
+      this(inputStream, 4096);
    }
 
-   public YKMixedInputStream(InputStream var1, int var2) {
-      if (var1 != null && var2 >= 1024) {
-         this._inputStream = var1;
-         this._inputBuffer = new byte[var2];
+   public YKMixedInputStream(InputStream inputStream, int inputBufferSize) {
+      if (inputStream != null && inputBufferSize >= 1024) {
+         this._inputStream = inputStream;
+         this._inputBuffer = new byte[inputBufferSize];
          this._decode = new YKDecode(true);
       } else {
          throw new Object();
@@ -30,40 +30,40 @@ public final class YKMixedInputStream extends InputStream {
    }
 
    @Override
-   public final synchronized int read(byte[] var1, int var2, int var3) {
-      if (var1 == null) {
+   public final synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
+      if (buffer == null) {
          throw new Object();
       }
 
-      if (var2 >= 0 && var3 >= 0 && var2 + var3 <= var1.length) {
+      if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
             throw new Object();
          }
 
-         if (var3 == 0) {
+         if (bufferLength == 0) {
             return 0;
          }
 
-         int var4 = 0;
+         int numRead = 0;
 
-         while (var3 > 0) {
+         while (bufferLength > 0) {
             if (this._currentChunk != null && this._currentOffset < this._currentChunk.length) {
-               int var5 = Math.min(this._currentChunk.length - this._currentOffset, var3);
-               System.arraycopy(this._currentChunk, this._currentOffset, var1, var2, var5);
-               this._currentOffset += var5;
-               var2 += var5;
-               var4 += var5;
-               var3 -= var5;
+               int numToWrite = Math.min(this._currentChunk.length - this._currentOffset, bufferLength);
+               System.arraycopy(this._currentChunk, this._currentOffset, buffer, bufferOffset, numToWrite);
+               this._currentOffset += numToWrite;
+               bufferOffset += numToWrite;
+               numRead += numToWrite;
+               bufferLength -= numToWrite;
             } else if (!this.readNextChunk()) {
-               if (var4 > 0) {
-                  return var4;
+               if (numRead > 0) {
+                  return numRead;
                }
 
                return -1;
             }
          }
 
-         return var4 > 0 ? var4 : -1;
+         return numRead > 0 ? numRead : -1;
       } else {
          throw new Object();
       }
@@ -77,20 +77,20 @@ public final class YKMixedInputStream extends InputStream {
       }
    }
 
-   public final synchronized void loadContextMap(byte[] var1) {
+   public final synchronized void loadContextMap(byte[] contextMap) {
       if (this._isClosed) {
          throw new Object();
       }
 
-      this._decode.loadContextMap(var1);
+      this._decode.loadContextMap(contextMap);
    }
 
-   public final synchronized void loadSideData(InputStream var1) {
-      byte[] var2 = new byte[4096];
+   public final synchronized void loadSideData(InputStream sideDataStream) {
+      byte[] buffer = new byte[4096];
 
-      for (int var3 = var1.read(var2); var3 >= 0; var3 = var1.read(var2)) {
-         if (var3 > 0) {
-            this._decode.yk_load_side_data(var2, 0, var3);
+      for (int count = sideDataStream.read(buffer); count >= 0; count = sideDataStream.read(buffer)) {
+         if (count > 0) {
+            this._decode.yk_load_side_data(buffer, 0, count);
          }
       }
    }
@@ -104,9 +104,25 @@ public final class YKMixedInputStream extends InputStream {
       }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: exception table");
+      boolean var2 = false /* VF: Semaphore variable */;
+
+      try {
+         var2 = true;
+         this._inputStream.close();
+         var2 = false;
+      } finally {
+         if (var2) {
+            this._decode.yk_uninit();
+            this._isClosed = true;
+         }
+      }
+
+      this._decode.yk_uninit();
+      this._isClosed = true;
    }
 
    private final boolean readNextChunk() {
@@ -114,12 +130,12 @@ public final class YKMixedInputStream extends InputStream {
          throw new Object();
       }
 
-      int var1 = this._inputStream.read(this._inputBuffer);
-      if (var1 < 0) {
+      int numRead = this._inputStream.read(this._inputBuffer);
+      if (numRead < 0) {
          return false;
       }
 
-      this._currentChunk = this._decode.yk_decode(this._inputBuffer, 0, var1);
+      this._currentChunk = this._decode.yk_decode(this._inputBuffer, 0, numRead);
       this._currentOffset = 0;
       return true;
    }

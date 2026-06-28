@@ -33,58 +33,60 @@ public class MIDlet {
       throw null;
    }
 
-   protected void destroyApp(boolean var1) {
+   protected void destroyApp(boolean _1) {
       throw null;
    }
 
    public final void notifyDestroyed() {
-      Object var1 = Application.getApplication();
-      ((MIDletApplication)var1).exit();
+      MIDletApplication ma = (MIDletApplication)Application.getApplication();
+      ma.exit();
    }
 
    public final void notifyPaused() {
       this._main.requestBackground();
    }
 
-   public final String getAppProperty(String var1) {
-      String var2 = TraceBack.getCallingModuleName(2);
-      String var3 = this.getGroupProperty(var2, var1);
-      return var3 != null ? var3 : MIDletApplication.getAppProperty(var2, var1, true);
+   public final String getAppProperty(String key) {
+      String moduleName = TraceBack.getCallingModuleName(2);
+      String property = this.getGroupProperty(moduleName, key);
+      return property != null ? property : MIDletApplication.getAppProperty(moduleName, key, true);
    }
 
    public final void resumeRequest() {
       this._main.requestForeground();
    }
 
-   public final boolean platformRequest(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   public final boolean platformRequest(String URL) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   public final int checkPermission(String var1) {
-      return MIDletSecurity.checkSymbolicPermission(var1);
+   public final int checkPermission(String permission) {
+      return MIDletSecurity.checkSymbolicPermission(permission);
    }
 
-   void setMain(MIDletMain var1) {
+   void setMain(MIDletMain main) {
       throw new RuntimeException("cod2jar: field: receiver depth");
    }
 
-   private String getRequestDomain(String var1) {
-      throw new RuntimeException("cod2jar: exception table");
+   private String getRequestDomain(String URL) {
+      throw new RuntimeException("cod2jar: ldc");
    }
 
-   private String getGroupProperty(String var1, String var2) {
+   private String getGroupProperty(String moduleName, String key) {
       if (this._properties == null) {
          if (!this._lookForGroupProperties) {
             return null;
          }
 
-         CodeModuleGroup[] var3 = CodeModuleGroupManager.loadAll();
-         if (var3 != null) {
-            for (int var4 = 0; var4 < var3.length; var4++) {
-               if (var3[var4].containsModule(var1)) {
-                  CodeModuleGroupPropertiesCollection var5 = CodeModuleGroupPropertiesCollection.getInstance();
-                  if (var5 != null) {
-                     this._properties = (CodeModuleGroupProperties)var5.getSyncObject(CodeModuleGroupPropertiesCollection.getGroupUID(var3[var4].getName()));
+         CodeModuleGroup[] groups = CodeModuleGroupManager.loadAll();
+         if (groups != null) {
+            for (int i = 0; i < groups.length; i++) {
+               if (groups[i].containsModule(moduleName)) {
+                  CodeModuleGroupPropertiesCollection collection = CodeModuleGroupPropertiesCollection.getInstance();
+                  if (collection != null) {
+                     this._properties = (CodeModuleGroupProperties)collection.getSyncObject(
+                        CodeModuleGroupPropertiesCollection.getGroupUID(groups[i].getName())
+                     );
                   }
                   break;
                }
@@ -96,6 +98,6 @@ public class MIDlet {
          }
       }
 
-      return (String)(this._properties == null ? null : this._properties.get(var2));
+      return (String)(this._properties == null ? null : this._properties.get(key));
    }
 }
