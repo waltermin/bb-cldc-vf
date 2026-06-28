@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
+import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.EventLogger;
@@ -388,7 +389,43 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private DNSRequest lookInCache(DNSRequest req) {
-      throw new RuntimeException("cod2jar: type check");
+      Vector cached = null;
+      int queryType = req.getQueryType();
+      String queryStr = req.getQueryString();
+
+      try {
+         cached = this._cache.lookup(queryStr, queryType);
+         if (cached != null) {
+            return this.endQuery(req, queryType == 1 ? 1 : 11, cached);
+         }
+
+         while (queryStr.length() != 0) {
+            cached = this._cache.lookup(queryStr, 2);
+            if (cached != null) {
+               while (cached.size() > 0) {
+                  int i = RandomSource.getInt(cached.size());
+                  Vector IPs = this._cache.lookup((String)cached.elementAt(i), 1);
+                  if (IPs != null && IPs.size() > 0) {
+                     req.setCurrentIpSettings((byte[])IPs.elementAt(RandomSource.getInt(IPs.size())), (String)cached.elementAt(i));
+                     return req;
+                  }
+
+                  cached.removeElementAt(i);
+               }
+            }
+
+            int dot = queryStr.indexOf(46);
+            if (dot < 0) {
+               queryStr = "";
+            } else {
+               queryStr = queryStr.substring(dot + 1);
+            }
+         }
+      } catch (DNSException de) {
+         this.endQuery(req, 7, null);
+      }
+
+      return req;
    }
 
    private void doSimulatorWorkaround(DNSRequest req) {
@@ -640,7 +677,32 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private DNSRequest setupReferredQuery(DNSRequest req) {
-      throw new RuntimeException("cod2jar: type check");
+      Vector authorities = req.getAnswer().getAuthorities();
+      Vector additionals = req.getAnswer().getAdditional();
+      String nsName = null;
+      int authSize = authorities.size();
+
+      for (int i = 0; i < authSize; i++) {
+         DNSMessageIPv4Resource authority = (DNSMessageIPv4Resource)authorities.elementAt(i);
+         if (authority.getType() == 2) {
+            String name = (String)authority.getData();
+            if (nsName == null) {
+               nsName = name;
+            }
+
+            int addSize = additionals.size();
+
+            for (int j = 0; j < addSize; j++) {
+               DNSMessageIPv4Resource additional = (DNSMessageIPv4Resource)additionals.elementAt(j);
+               if (additional.getType() == 1 && name.equals(additional.getName())) {
+                  req.setCurrentIpSettings((byte[])additional.getData(), additional.getName());
+                  return req;
+               }
+            }
+         }
+      }
+
+      return nsName != null ? this.chainQuery(req, nsName) : null;
    }
 
    private DNSRequest setupAliasQuery(DNSRequest req) {

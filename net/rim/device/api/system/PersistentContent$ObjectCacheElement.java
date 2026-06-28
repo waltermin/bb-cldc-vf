@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.util.Arrays;
 import net.rim.vm.WeakReference;
 
 final class PersistentContent$ObjectCacheElement {
@@ -35,6 +36,14 @@ final class PersistentContent$ObjectCacheElement {
    }
 
    private static final Object copy(Object object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (object instanceof byte[]) {
+         boolean plaintext = net.rim.vm.Memory.isPlaintext(object);
+         object = Arrays.copy((byte[])object);
+         if (plaintext) {
+            PersistentContent.markAsPlaintext(object);
+         }
+      }
+
+      return object;
    }
 }

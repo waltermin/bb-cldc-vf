@@ -16,7 +16,47 @@ final class AbstractKeywordFilterList$SearchThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: type check");
+      while (true) {
+         AbstractKeywordFilterList list = this._searcher.getList();
+         synchronized (list) {
+            label69: {
+               synchronized (this.this$0._searchRequestLock) {
+                  if (!this.this$0._currentSearchRequest.isEmpty()) {
+                     if (!this.this$0._nextSearchRequest.isEmpty()) {
+                        if (this.this$0._currentSearchRequest._listener != null) {
+                           this.this$0._currentSearchRequest._listener.filterStarted();
+                           this.this$0._currentSearchRequest._listener.filterDone(true);
+                        }
+
+                        list.filteringComplete();
+                        this.swapRequests();
+                     }
+                     break label69;
+                  }
+               }
+
+               return;
+            }
+         }
+
+         synchronized (this.this$0._source) {
+            try {
+               Object criteria = this.this$0._currentSearchRequest._searchCriteria;
+               if (criteria instanceof String[][]) {
+                  this._searcher.search((String[][])criteria, this.this$0._currentSearchRequest._listener);
+               } else if (criteria instanceof String[]) {
+                  this._searcher.search((String[])criteria, this.this$0._currentSearchRequest._listener);
+               } else {
+                  this._searcher.search((String)criteria, this.this$0._currentSearchRequest._listener);
+               }
+            } catch (Throwable var9) {
+            }
+         }
+
+         synchronized (this.this$0._searchRequestLock) {
+            this.swapRequests();
+         }
+      }
    }
 
    private final void swapRequests() {

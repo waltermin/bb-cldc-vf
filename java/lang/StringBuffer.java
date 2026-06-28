@@ -1,5 +1,7 @@
 package java.lang;
 
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.Array;
 
 public final class StringBuffer {
@@ -24,7 +26,7 @@ public final class StringBuffer {
    }
 
    public final int capacity() {
-      throw new RuntimeException("cod2jar: type check");
+      return !(this.value instanceof byte[]) ? ((char[])this.value).length : ((byte[])this.value).length;
    }
 
    public final synchronized void ensureCapacity(int minimumCapacity) {
@@ -53,25 +55,87 @@ public final class StringBuffer {
    }
 
    public final synchronized void setLength(int newLength) {
-      throw new RuntimeException("cod2jar: type check");
+      if (newLength < 0) {
+         throw new StringIndexOutOfBoundsException(newLength);
+      }
+
+      if (newLength > this.capacity()) {
+         this.expandCapacity(newLength);
+      }
+
+      if (this.count < newLength) {
+         if (!(this.value instanceof byte[])) {
+            Arrays.fill((char[])this.value, '\u0000', this.count, newLength - this.count);
+         } else {
+            Arrays.fill((byte[])this.value, (byte)0, this.count, newLength - this.count);
+         }
+      }
+
+      this.count = newLength;
    }
 
    public final synchronized char charAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      if (index < 0 || index >= this.count) {
+         throw new StringIndexOutOfBoundsException(index);
+      } else {
+         return !(this.value instanceof byte[]) ? ((char[])this.value)[index] : (char)(((byte[])this.value)[index] & 0xFF);
+      }
    }
 
    public final synchronized void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
-      throw new RuntimeException("cod2jar: type check");
+      if (srcBegin < 0 || dstBegin < 0) {
+         throw new StringIndexOutOfBoundsException(srcBegin);
+      }
+
+      if (srcEnd < 0 || srcEnd > this.count) {
+         throw new StringIndexOutOfBoundsException(srcEnd);
+      }
+
+      if (srcBegin > srcEnd) {
+         throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
+      }
+
+      if (dstBegin + (srcEnd - srcBegin) > dst.length) {
+         throw new StringIndexOutOfBoundsException("dst overflow");
+      }
+
+      if (!(this.value instanceof byte[])) {
+         System.arraycopy(this.value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
+      } else {
+         byte[] localValue = (byte[])this.value;
+         int len = srcEnd - srcBegin;
+
+         for (int i = 0; i < len; i++) {
+            dst[dstBegin++] = (char)(localValue[srcBegin++] & 0xFF);
+         }
+      }
    }
 
    private final native void promote();
 
    public final synchronized void setCharAt(int index, char ch) {
-      throw new RuntimeException("cod2jar: type check");
+      if (index < 0 || index >= this.count) {
+         throw new StringIndexOutOfBoundsException(index);
+      }
+
+      if (ch > 255) {
+         this.promote();
+         ((char[])this.value)[index] = ch;
+      } else if (!(this.value instanceof byte[])) {
+         ((char[])this.value)[index] = ch;
+      } else {
+         ((byte[])this.value)[index] = (byte)ch;
+      }
    }
 
    public final synchronized StringBuffer append(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof StringBuffer)) {
+         return this.append(String.valueOf(obj));
+      }
+
+      StringBuffer sb = (StringBuffer)obj;
+      StringUtilities.append(this, sb, 0, sb.length());
+      return this;
    }
 
    public final synchronized StringBuffer append(String str) {
@@ -106,7 +170,7 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer append(char c) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public final StringBuffer append(int i) {
@@ -114,7 +178,16 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer append(long l) {
-      throw new RuntimeException("cod2jar: type check");
+      Object o = this.value;
+      if (!(o instanceof byte[])) {
+         char[] var5 = (char[])o;
+         this.count = this.count + formatNumeric(var5, this.count, 10, l);
+         return this;
+      } else {
+         byte[] bytes = (byte[])o;
+         this.count = this.count + formatNumeric(bytes, this.count, 10, l);
+         return this;
+      }
    }
 
    public final synchronized StringBuffer delete(int start, int end) {
@@ -154,7 +227,28 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer insert(int offset, String str) {
-      throw new RuntimeException("cod2jar: type check");
+      if (offset >= 0 && offset <= this.count) {
+         if (str == null) {
+            str = String.valueOf(str);
+         }
+
+         int len = str.length();
+         int newcount = this.count + len;
+         if (newcount > this.capacity()) {
+            this.expandCapacity(newcount);
+         }
+
+         System.arraycopy(this.value, offset, this.value, offset + len, this.count - offset);
+         this.count = newcount;
+         if (!str.copyInto(this.value, offset)) {
+            this.promote();
+            str.getChars(0, len, (char[])this.value, offset);
+         }
+
+         return this;
+      } else {
+         throw new StringIndexOutOfBoundsException();
+      }
    }
 
    public final synchronized StringBuffer insert(int offset, char[] str) {
@@ -180,7 +274,26 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer insert(int offset, char c) {
-      throw new RuntimeException("cod2jar: type check");
+      int newcount = this.count + 1;
+      if (newcount > this.capacity()) {
+         this.expandCapacity(newcount);
+      }
+
+      System.arraycopy(this.value, offset, this.value, offset + 1, this.count - offset);
+      this.count = newcount;
+      if (c <= 255) {
+         if (!(this.value instanceof byte[])) {
+            ((char[])this.value)[offset] = c;
+            return this;
+         } else {
+            ((byte[])this.value)[offset] = (byte)c;
+            return this;
+         }
+      } else {
+         this.promote();
+         ((char[])this.value)[offset] = c;
+         return this;
+      }
    }
 
    public final StringBuffer insert(int offset, int i) {

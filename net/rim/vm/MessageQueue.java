@@ -57,7 +57,17 @@ public final class MessageQueue {
    }
 
    private final void growTo(int newCapacity) {
-      throw new RuntimeException("cod2jar: type check");
+      this._device = (int[])this.growArray(this._device, new int[newCapacity]);
+      this._event = (int[])this.growArray(this._event, new int[newCapacity]);
+      this._subMessage = (int[])this.growArray(this._subMessage, new int[newCapacity]);
+      this._dataLength = (int[])this.growArray(this._dataLength, new int[newCapacity]);
+      this._data0 = (int[])this.growArray(this._data0, new int[newCapacity]);
+      this._data1 = (int[])this.growArray(this._data1, new int[newCapacity]);
+      this._object0 = (Object[])this.growArray(this._object0, new Object[newCapacity]);
+      this._object1 = (Object[])this.growArray(this._object1, new Object[newCapacity]);
+      this._end = this._capacity;
+      this._start = 0;
+      this._capacity = newCapacity;
    }
 
    private final Object growArray(Object old, Object newArray) {

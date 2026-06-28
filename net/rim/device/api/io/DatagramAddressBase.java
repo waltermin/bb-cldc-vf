@@ -42,7 +42,18 @@ public class DatagramAddressBase {
 
    @Override
    public boolean equals(Object addressBase) {
-      throw new RuntimeException("cod2jar: type check");
+      if (addressBase == this) {
+         return true;
+      } else if (!(addressBase instanceof DatagramAddressBase)) {
+         return false;
+      } else {
+         DatagramAddressBase dab = (DatagramAddressBase)addressBase;
+         if (this._address == null && dab._address == null) {
+            return true;
+         } else {
+            return this._address == null & dab._address != null ? false : this._address.equals(dab._address);
+         }
+      }
    }
 
    @Override

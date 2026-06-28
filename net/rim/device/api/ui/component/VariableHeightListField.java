@@ -9,6 +9,8 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
+import net.rim.device.api.ui.accessibility.AccessibleContextFactory;
+import net.rim.device.api.ui.accessibility.AccessibleContextProxy;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
@@ -219,7 +221,12 @@ public class VariableHeightListField extends Field {
 
    @Override
    public AccessibleContext getAccessibleChildAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      Object temp = this._callback.get(this, index);
+      if (temp != null) {
+         return !(temp instanceof AccessibleContext) ? new AccessibleContextFactory(temp.toString()) : (AccessibleContext)temp;
+      } else {
+         return null;
+      }
    }
 
    @Override
@@ -229,7 +236,21 @@ public class VariableHeightListField extends Field {
 
    @Override
    public AccessibleContext getAccessibleSelectionAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      int[] selectionRange = this.getSelection();
+      if (this._callback != null && index <= selectionRange.length) {
+         Object temp = this._callback.get(this, this.getSelectedIndex() + index);
+         if (temp == null) {
+            return new AccessibleContextFactory(this.getEmptyString(), 25, 4);
+         } else if (temp instanceof AccessibleContext) {
+            return (AccessibleContext)temp;
+         } else {
+            return !(temp instanceof AccessibleContextProxy)
+               ? new AccessibleContextFactory(temp.toString(), 25, 4)
+               : ((AccessibleContextProxy)temp).getAccessibleContext();
+         }
+      } else {
+         return null;
+      }
    }
 
    public VariableHeightListFieldCallback getCallback() {

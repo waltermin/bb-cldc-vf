@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.file.FileConnection;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.io.file.FileHandleProvider;
 
 public class FileDataSource extends DataSourceImpl implements SourceInformationProvider {
    private FileConnection _connection;
@@ -17,7 +18,14 @@ public class FileDataSource extends DataSourceImpl implements SourceInformationP
 
    @Override
    public int getFileHandle() {
-      throw new RuntimeException("cod2jar: type check");
+      if (super._is instanceof FileHandleProvider) {
+         FileHandleProvider fhp = (FileHandleProvider)super._is;
+         if (!fhp.isInputCiphering()) {
+            return fhp.getFileHandle();
+         }
+      }
+
+      return -1;
    }
 
    @Override

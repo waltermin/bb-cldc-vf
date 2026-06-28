@@ -166,7 +166,16 @@ public final class Locale {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == obj) {
+         return true;
+      }
+
+      if (!(obj instanceof Locale)) {
+         return false;
+      }
+
+      Locale l = (Locale)obj;
+      return this._code == l._code && this._variant.equals(l._variant);
    }
 
    public static final Locale get(int code) {

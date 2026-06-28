@@ -10,7 +10,8 @@ final class BreakingDataRegistryHelper {
    }
 
    final byte[][][] getBreakingData(int locale, int dataType) {
-      throw new RuntimeException("cod2jar: type check");
+      BreakingDataRegistryHelper$BreakingData entry = this.runOverTheData(locale, dataType);
+      return (byte[][][])(entry != null ? entry._binaryData : (byte[][])null);
    }
 
    final int getTextProcessingDataID(int locale, int dataType) {

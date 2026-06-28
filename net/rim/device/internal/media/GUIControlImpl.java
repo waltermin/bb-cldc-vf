@@ -13,7 +13,20 @@ public class GUIControlImpl implements GUIControl {
 
    @Override
    public Object initDisplayMode(int mode, Object arg) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._displayModeInitialized) {
+         throw new IllegalStateException();
+      }
+
+      if (mode != 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (arg instanceof String && !((String)arg).equals("javax.microedition.lcdui.Item")) {
+         throw new IllegalArgumentException();
+      }
+
+      this._displayModeInitialized = true;
+      return this._item;
    }
 
    public GUIControlImpl(Item item) {

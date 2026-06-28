@@ -54,6 +54,6 @@ final class CustomTimeZoneImpl extends TimeZone {
 
    @Override
    public final boolean equals(Object o) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(o instanceof CustomTimeZoneImpl) ? false : ((CustomTimeZoneImpl)o).getID().equals(this.getID());
    }
 }

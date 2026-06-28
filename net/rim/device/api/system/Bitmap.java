@@ -1,6 +1,8 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.internal.ui.Image;
 import net.rim.device.resources.Resource;
 import net.rim.device.resources.Resource$Internal;
 import net.rim.vm.TraceBack;
@@ -82,7 +84,30 @@ public final class Bitmap {
    }
 
    public static final Bitmap createGreyscaleBitmap(Object src, int width, int height) {
-      throw new RuntimeException("cod2jar: type check");
+      if (src instanceof Image) {
+         Image img = (Image)src;
+         Bitmap bmp = new Bitmap(197, width, height);
+         bmp.createAlpha(2);
+         Graphics gfx = new Graphics(bmp);
+         gfx.setGlobalAlpha(0);
+         gfx.clear();
+         gfx.setGlobalAlpha(255);
+         img.paint(gfx, 0, 0, width, height);
+         src = bmp;
+      }
+
+      if (src instanceof Bitmap) {
+         Bitmap bmpNew = new Bitmap(197, width, height);
+         bmpNew.createAlpha(2);
+         Graphics gfx = new Graphics(bmpNew);
+         gfx.setGlobalAlpha(0);
+         gfx.clear();
+         gfx.setGlobalAlpha(255);
+         gfx.rop(16, 0, 0, width, height, (Bitmap)src, 0, 0);
+         return bmpNew;
+      } else {
+         return null;
+      }
    }
 
    public final Bitmap createScaledBitmap(int width, int height) {
@@ -280,7 +305,18 @@ public final class Bitmap {
 
    @Override
    public final synchronized boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (obj instanceof Bitmap) {
+         Bitmap otherBitmap = (Bitmap)obj;
+         if (this._type == otherBitmap._type
+            && this._width == otherBitmap._width
+            && this._height == otherBitmap._height
+            && this._numBands == otherBitmap._numBands
+            && this._axesPerBand == otherBitmap._axesPerBand) {
+            return compareBitmapData(this, otherBitmap);
+         }
+      }
+
+      return false;
    }
 
    private static final native boolean compareBitmapData(Bitmap var0, Bitmap var1);

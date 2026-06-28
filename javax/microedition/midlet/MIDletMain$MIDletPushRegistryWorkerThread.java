@@ -50,7 +50,7 @@ final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private final synchronized void waitForResume() {

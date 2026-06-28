@@ -3,8 +3,11 @@ package javax.microedition.content;
 import java.io.IOException;
 import javax.microedition.io.Connection;
 import javax.microedition.io.ConnectionNotFoundException;
+import javax.microedition.io.ContentConnection;
+import javax.microedition.io.HttpConnection;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.cldc.io.dns.DNSException;
 import net.rim.device.internal.io.RIMConnector;
 import net.rim.vm.TraceBack;
@@ -182,7 +185,51 @@ public final class Invocation {
    }
 
    public final String findType() {
-      throw new RuntimeException("cod2jar: type check");
+      String type = this.getType();
+      if (type != null) {
+         return type;
+      }
+
+      if (this._url != null) {
+         if (this._connection == null) {
+            ContentHandlerUtilities.checkURL(this._url);
+            int callingModule = TraceBack.getCallingModule(3);
+            if (callingModule == 0) {
+               callingModule = TraceBack.getCallingModule(0);
+            }
+
+            this.populateStackAndDescriptor();
+
+            try {
+               this._connection = RIMConnector.open(callingModule, this._url, 1, false, this._invokerStack, this._invokerDescriptor);
+            } catch (ControlledAccessException cae) {
+               throw new SecurityException(cae.getMessage());
+            } catch (ConnectionNotFoundException cnfe) {
+               throw new IOException(cnfe.getMessage());
+            }
+         }
+
+         if (!(this._connection instanceof HttpConnection)) {
+            if (this._connection instanceof ContentConnection) {
+               type = ((ContentConnection)this._connection).getType();
+            }
+         } else {
+            HttpConnection httpConnection = (HttpConnection)this._connection;
+            int response = httpConnection.getResponseCode();
+            if (response != 200) {
+               throw new IOException("Error code: " + response);
+            }
+
+            type = httpConnection.getType();
+         }
+      }
+
+      if (type != null) {
+         this.setType(type);
+         return type;
+      } else {
+         throw new ContentHandlerException("Type could not be found from the URL content", 2);
+      }
    }
 
    public final Connection open(boolean timeouts) {

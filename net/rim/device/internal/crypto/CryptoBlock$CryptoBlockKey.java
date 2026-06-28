@@ -12,6 +12,7 @@ import net.rim.device.api.synchronization.UIDGenerator;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.Persistable;
 import net.rim.device.internal.system.InternalServices;
@@ -150,7 +151,34 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
    }
 
    static final int sameDeviceKey(Object oldKey) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (_persistentDeviceKey) {
+         Object currKey = _persistentDeviceKey.getContents();
+         if (!(oldKey instanceof byte[])) {
+            if (oldKey instanceof char[]) {
+               char[] key1 = (char[])oldKey;
+               if (currKey instanceof char[]) {
+                  char[] key2 = (char[])currKey;
+                  return Arrays.equals(key1, key2) ? 1 : 0;
+               }
+
+               if (currKey instanceof byte[]) {
+                  return 0;
+               }
+            }
+         } else {
+            byte[] key1 = (byte[])oldKey;
+            if (currKey instanceof byte[]) {
+               byte[] key2 = (byte[])currKey;
+               return Arrays.equals(key1, key2) ? 1 : 0;
+            }
+
+            if (currKey instanceof char[]) {
+               return 0;
+            }
+         }
+
+         return -1;
+      }
    }
 
    static final void setDeviceKey(Object key, boolean refreshDeviceKey) {
@@ -175,7 +203,7 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
    }
 
    private static final byte[] getDeviceKey() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    public static final boolean areMasterKeysEncrypted() {
@@ -193,7 +221,7 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
    }
 
    static final boolean convert(SyncObject object, DataBuffer buff) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    public static final void registerPersistentContentListener() {
@@ -229,6 +257,20 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
 
    @Override
    public final boolean equals(Object o) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(o instanceof CryptoBlock$CryptoBlockKey)) {
+         return super.equals(o);
+      }
+
+      CryptoBlock$CryptoBlockKey that = (CryptoBlock$CryptoBlockKey)o;
+      return this == that
+         ? true
+         : this._algorithm == that._algorithm
+            && this._uid == that._uid
+            && this._keyLength == that._keyLength
+            && this._expireTime == that._expireTime
+            && this._enterpriseClassKey == that._enterpriseClassKey
+            && this._name.equals(that._name)
+            && this._id.equals(that._id)
+            && Arrays.equals(this.getKey(), that.getKey());
    }
 }

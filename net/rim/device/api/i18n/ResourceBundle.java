@@ -87,7 +87,7 @@ public class ResourceBundle {
    }
 
    public final String[] getStringArray(int key) {
-      throw new RuntimeException("cod2jar: type check");
+      return (String[])this.getObject(key);
    }
 
    protected Object handleGetObject(int _1) {

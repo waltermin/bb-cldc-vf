@@ -103,7 +103,27 @@ public class BitSet implements net.rim.vm.Persistable {
 
    @Override
    public boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof BitSet)) {
+         return false;
+      }
+
+      BitSet b = (BitSet)obj;
+      if (this.getNumSet() != b.getNumSet()) {
+         return false;
+      }
+
+      int len = this._data.length;
+      if (b._data.length < len) {
+         len = b._data.length;
+      }
+
+      for (int i = 0; i < len; i++) {
+         if (this._data[i] != b._data[i]) {
+            return false;
+         }
+      }
+
+      return true;
    }
 
    public int getNextSet(int index) {

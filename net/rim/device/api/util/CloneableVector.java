@@ -26,6 +26,19 @@ public class CloneableVector extends Vector {
    }
 
    public static final Vector clone(Vector vector) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(vector instanceof CloneableVector)) {
+         synchronized (vector) {
+            int size = vector.size();
+            Vector clone = new Vector(size);
+
+            for (int i = 0; i < size; i++) {
+               clone.addElement(vector.elementAt(i));
+            }
+
+            return clone;
+         }
+      } else {
+         return (Vector)((CloneableVector)vector).clone();
+      }
    }
 }

@@ -2,16 +2,23 @@ package net.rim.device.api.io;
 
 import com.sun.cldc.io.ConnectionBaseInterface;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
 import javax.microedition.io.UDPDatagramConnection;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CyclicQueue;
 import net.rim.device.cldc.io.daemon.TransportRegistry;
 import net.rim.device.cldc.io.utility.MalformedURLException;
 import net.rim.device.cldc.io.utility.URL;
+import net.rim.device.internal.firewall.Firewall;
 import net.rim.device.internal.io.TrafficLogger;
+import net.rim.vm.TraceBack;
 
 public class DatagramConnectionBase implements DatagramConnection, IOProperties, ConnectionBaseInterface, UDPDatagramConnection {
    protected DatagramAddressBase _addressBase;
@@ -284,17 +291,128 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
 
    @Override
    public void receive(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._isActive) {
+         throw new IOException();
+      }
+
+      if (this._url != null) {
+         if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)
+            && !Firewall.getInstance().allowConnection(this._url.getScheme(), "", this.getProperties(this._url.toString()))) {
+            throw new IOException("Permission denied");
+         }
+      } else if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)
+         && !Firewall.getInstance().allowConnection(this._name, "", this.getProperties(this._name))) {
+         throw new IOException("Permission denied");
+      }
+
+      DatagramBase receivedDatagram = null;
+      datagram.reset();
+      synchronized (this._datagrams) {
+         if (this._datagrams.isEmpty()) {
+            try {
+               this._datagrams.wait(this._timeout);
+            } catch (InterruptedException var6) {
+            }
+
+            if (this._datagrams.isEmpty()) {
+               if (this._isActive) {
+                  throw new InterruptedIOException();
+               }
+
+               throw new InterruptedIOException();
+            }
+         }
+
+         receivedDatagram = (DatagramBase)this._datagrams.dequeue();
+      }
+
+      if (!(datagram instanceof DatagramBase)) {
+         datagram.setAddress(receivedDatagram);
+         datagram.setData(receivedDatagram.getData(), receivedDatagram.getOffset(), receivedDatagram.getLength());
+      } else {
+         ((DatagramBase)datagram).copy(receivedDatagram);
+      }
+
+      if (this._tLogger != null) {
+         this._tLogger.bytesReceived(this, 1, receivedDatagram.getAddress(), receivedDatagram.getLength(), receivedDatagram.getData());
+      }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void send(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      this.checkForClosed();
+      if (!(datagram instanceof DatagramBase)) {
+         if (datagram.getAddress() == null) {
+            datagram.setAddress(this._addressBase.getAddress());
+         }
+      } else {
+         DatagramBase dgram = (DatagramBase)datagram;
+         if (dgram.getAddressBase() == null) {
+            dgram.setAddressBase(this._addressBase);
+         }
+
+         if (dgram.getDatagramStatusListener() == null) {
+            dgram.setDatagramStatusListener(this._listener);
+         }
+
+         this.copyFlagsInto(dgram);
+      }
+
+      synchronized (this._sendingDatagrams) {
+         Arrays.add(this._sendingDatagrams, datagram);
+      }
+
+      boolean var12 = false /* VF: Semaphore variable */;
+
+      try {
+         var12 = true;
+         this._transport.superSend(datagram);
+         var12 = false;
+      } finally {
+         if (var12) {
+            synchronized (this._sendingDatagrams) {
+               Arrays.remove(this._sendingDatagrams, datagram);
+            }
+         }
+      }
+
+      synchronized (this._sendingDatagrams) {
+         Arrays.remove(this._sendingDatagrams, datagram);
+      }
+
+      if (this._tLogger != null) {
+         this._tLogger.bytesTransmitted(this, 1, datagram.getAddress(), datagram.getLength(), datagram.getData());
+      }
    }
 
    @Override
    public String getLocalAddress() {
-      throw new RuntimeException("cod2jar: type check");
+      this.checkForClosed();
+      int apn = 0;
+      if (this._addressBase instanceof UdpAddress) {
+         UdpAddress a = (UdpAddress)this._addressBase;
+         String apns = a.getApn();
+
+         try {
+            if (apns != null) {
+               apn = RadioInfo.getAccessPointNumber(apns);
+            }
+         } catch (RadioException var5) {
+         }
+      }
+
+      byte[] ip = RadioInfo.getIPAddress(apn);
+      StringBuffer temp = new StringBuffer();
+
+      for (int i = 0; i < ip.length; i++) {
+         temp.append(ip[i] & 255);
+         temp.append('.');
+      }
+
+      temp.deleteCharAt(temp.length() - 1);
+      return temp.toString();
    }
 
    @Override

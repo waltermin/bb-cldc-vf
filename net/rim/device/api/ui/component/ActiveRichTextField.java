@@ -1,10 +1,12 @@
 package net.rim.device.api.ui.component;
 
+import java.util.Vector;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
@@ -52,7 +54,19 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    protected MenuItem addCookieMenuItems(CookieProvider provider, int cookieId, ContextMenu contextMenu, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._cookieIDs != null && this._cookieIDs.containsKey(cookieId) && cookieId >= 0 && this._cookieIDs.get(cookieId) != null) {
+         long[] cookieIDs = (long[])this._cookieIDs.get(cookieId);
+         int numCookies = cookieIDs.length;
+         Object[] cookies = new Object[numCookies];
+
+         for (int i = 0; i < numCookies; i++) {
+            cookies[i] = super._arSupport.createCookie(super._text, cookieIDs[i]);
+         }
+
+         return ActiveRegionSupport.addCookieMenuItems(provider, cookies, contextMenu, context);
+      } else {
+         return null;
+      }
    }
 
    protected MenuItem addCookieMenuItems(CookieProvider provider, Object cookie, ContextMenu contextMenu, Object context) {
@@ -100,7 +114,54 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
 
    @Override
    protected boolean keyDown(int keycode, int time) {
-      throw new RuntimeException("cod2jar: type check");
+      int key = Keypad.key(keycode);
+      Object cookie = this.getCookieWithFocus();
+      ActiveFieldCookie afc = null;
+      switch (key) {
+         case 10:
+            if (cookie instanceof Object[]) {
+               Object[] cookies = (Object[])cookie;
+
+               for (int i = 0; i < cookies.length; i++) {
+                  Object var11 = cookies[i];
+                  if (cookies[i] instanceof ActiveFieldCookie) {
+                     afc = (ActiveFieldCookie)var11;
+                     break;
+                  }
+               }
+            } else if (cookie instanceof ActiveFieldCookie) {
+               afc = (ActiveFieldCookie)cookie;
+            }
+
+            if (afc != null) {
+               MenuItem item = afc.getFocusVerbs(this, this.getContextMenuContext(), new Vector());
+               if (item != null) {
+                  item.run();
+                  return true;
+               }
+            }
+            break;
+         case 21:
+            if (cookie instanceof Object[]) {
+               Object[] cookies = (Object[])cookie;
+
+               for (int i = 0; i < cookies.length; i++) {
+                  Object var10000 = cookies[i];
+                  if (cookies[i] instanceof ActiveFieldCookie) {
+                     afc = (ActiveFieldCookie)var10000;
+                     break;
+                  }
+               }
+            } else if (cookie instanceof ActiveFieldCookie) {
+               afc = (ActiveFieldCookie)cookie;
+            }
+
+            if (afc != null && afc.invokeApplicationKeyVerb()) {
+               return true;
+            }
+      }
+
+      return super.keyDown(keycode, time);
    }
 
    @Override
@@ -455,6 +516,22 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
 
    @Override
    public Object getCookie(int id) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._cookieIDs != null && this._cookieIDs.containsKey(id) && id >= 0 && this._cookieIDs.get(id) != null) {
+         long[] cookieIDs = (long[])this._cookieIDs.get(id);
+         int numCookies = cookieIDs.length;
+         if (numCookies > 1) {
+            Object[] cookies = new Object[numCookies];
+
+            for (int i = 0; i < cookieIDs.length; i++) {
+               cookies[i] = super._arSupport.createCookie(super._text, cookieIDs[i]);
+            }
+
+            return cookies;
+         } else {
+            return numCookies == 1 ? super._arSupport.createCookie(super._text, cookieIDs[0]) : null;
+         }
+      } else {
+         return null;
+      }
    }
 }

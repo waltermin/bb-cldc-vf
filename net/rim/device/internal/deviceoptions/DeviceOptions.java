@@ -53,11 +53,39 @@ public final class DeviceOptions implements GlobalEventListener {
    }
 
    public static final void addOptionsProvider(OptionsProvider provider) {
-      throw new RuntimeException("cod2jar: type check");
+      DeviceOptions instance = getInstance();
+      synchronized (instance._providers) {
+         instance._providers.addElement(provider);
+      }
+
+      if (provider instanceof OptionsProviderGlobalEventListener) {
+         long[] eventUids = ((OptionsProviderGlobalEventListener)provider).getGlobalEventUids();
+         synchronized (instance._globalEventListeners) {
+            for (int i = 0; i < eventUids.length; i++) {
+               instance._globalEventListeners.put(eventUids[i], provider);
+            }
+         }
+      }
+
+      if (provider instanceof OptionsProviderChangeSource) {
+         ((OptionsProviderChangeSource)provider).setOptionsProviderChangeListener(instance._listener);
+      }
    }
 
    public static final void removeOptionsProvider(OptionsProvider provider) {
-      throw new RuntimeException("cod2jar: type check");
+      DeviceOptions instance = getInstance();
+      synchronized (instance._providers) {
+         instance._providers.removeElement(provider);
+      }
+
+      if (provider instanceof OptionsProviderGlobalEventListener) {
+         long[] eventUids = ((OptionsProviderGlobalEventListener)provider).getGlobalEventUids();
+         synchronized (instance._globalEventListeners) {
+            for (int i = 0; i < eventUids.length; i++) {
+               instance._globalEventListeners.remove(eventUids[i]);
+            }
+         }
+      }
    }
 
    public final Vector getOptionsProviders() {
@@ -95,6 +123,16 @@ public final class DeviceOptions implements GlobalEventListener {
    }
 
    public static final void setListener(OptionsProviderChangeListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      DeviceOptions instance = getInstance();
+      synchronized (instance._providers) {
+         instance._listener = listener;
+
+         for (int index = instance._providers.size() - 1; index >= 0; index--) {
+            Object elem = instance._providers.elementAt(index);
+            if (elem instanceof OptionsProviderChangeSource) {
+               ((OptionsProviderChangeSource)elem).setOptionsProviderChangeListener(listener);
+            }
+         }
+      }
    }
 }

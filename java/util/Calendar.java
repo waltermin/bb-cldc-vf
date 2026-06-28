@@ -49,11 +49,11 @@ public class Calendar {
    }
 
    public boolean before(Object when) {
-      throw new RuntimeException("cod2jar: type check");
+      return when instanceof Calendar && ((Calendar)when).getTimeInMillis() > this.getTimeInMillis();
    }
 
    public boolean after(Object when) {
-      throw new RuntimeException("cod2jar: type check");
+      return when instanceof Calendar && ((Calendar)when).getTimeInMillis() < this.getTimeInMillis();
    }
 
    public static Calendar getInstance() {
@@ -109,7 +109,16 @@ public class Calendar {
 
    @Override
    public boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == obj) {
+         return true;
+      }
+
+      if (!(obj instanceof Calendar)) {
+         return false;
+      }
+
+      Calendar that = (Calendar)obj;
+      return this.getTimeInMillis() == that.getTimeInMillis() && this._zone.equals(that._zone);
    }
 
    @Override

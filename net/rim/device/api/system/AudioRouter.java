@@ -27,7 +27,7 @@ public final class AudioRouter implements AudioHeadsetListener {
    private byte[] _volumeBoostData;
    private byte[] _eqPresetData;
    private IntVector _feedbackEnabledSources;
-   private AudioSinkCallback _callback;
+   private AudioSinkCallback _callback = null;
    private static final long GUID;
    private static final long AUDIO_VOLUME_PERSISTENT_KEY;
    static final int EVENT_AUDIO_VOLUME_CHANGED;
@@ -703,6 +703,27 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    private AudioRouter() {
+      this._numAudioSources = new int[11];
+      this._audioControlsForSource = new AudioPathControlImpl[11];
+
+      for (int i = 0; i < 11; i++) {
+         this._audioControlsForSource[i] = new AudioPathControlImpl(this, i);
+      }
+
+      this._masterVolumePersistentObject = RIMPersistentStore.getPersistentObject(1154807502384803209L);
+      synchronized (this._masterVolumePersistentObject) {
+         this._masterVolume = (byte[])this._masterVolumePersistentObject.getContents();
+         if (this._masterVolume == null) {
+            this._masterVolume = new byte[6];
+            Arrays.fill(this._masterVolume, (byte)50);
+            this._masterVolumePersistentObject.setContents(this._masterVolume, 51, false);
+            this._masterVolumePersistentObject.commit();
+         }
+      }
+
+      this._masterVolumeChangeSupported = true;
+      this._feedbackEnabledSources = new IntVector();
+      this.resetSink();
    }
 
    private final boolean checkHeadset(int source) {

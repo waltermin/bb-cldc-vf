@@ -1,6 +1,7 @@
 package net.rim.device.api.io;
 
 import net.rim.device.api.system.SMSPacketHeader;
+import net.rim.device.api.util.Arrays;
 import net.rim.vm.Array;
 
 public final class SmsAddress extends DatagramAddressBase {
@@ -27,6 +28,33 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    public SmsAddress(DatagramAddressBase addressBase) {
+      this._header = new SMSPacketHeader();
+      if (!(addressBase instanceof SmsAddress)) {
+         this.setAddress(addressBase.getAddress());
+      } else {
+         SMSPacketHeader header = ((SmsAddress)addressBase)._header;
+         this._header.setPeerAddress(header.getPeerAddress());
+         this._header.setSCAddress(header.getSCAddress());
+         this._header.setCallbackAddress(header.getCallbackAddress());
+         this._header.setProtocolId(header.getProtocolId());
+         this._header.setMessageCoding(header.getMessageCoding());
+         this._header.setMessageClass(header.getMessageClass());
+         this._header.setPrivacy(header.getPrivacy());
+         this._header.setPriority(header.getPriority());
+         this._header.setLanguage(header.getLanguage());
+         this._header.setStatusReportRequest(header.getStatusReportRequest());
+         this._header.setUserDataHeaderPresent(header.isUserDataHeaderPresent());
+         this._header.setValidityPeriod(header.getValidityPeriod());
+         this._header.setDeliveryPeriod(header.getDeliveryPeriod());
+         this._header.setMessageWaitingType(header.getMessageWaitingType());
+         this._header.setNumMessages(header.getNumMessages());
+         this._statusReportSpecified = ((SmsAddress)addressBase)._statusReportSpecified;
+         this._userHeaderSpecified = ((SmsAddress)addressBase)._userHeaderSpecified;
+         if (((SmsAddress)addressBase)._ports != null) {
+            this._ports = Arrays.copy(((SmsAddress)addressBase)._ports);
+            return;
+         }
+      }
    }
 
    public SmsAddress(String address) {
@@ -107,7 +135,24 @@ public final class SmsAddress extends DatagramAddressBase {
 
    @Override
    public final boolean equals(Object addressBase) {
-      throw new RuntimeException("cod2jar: type check");
+      if (addressBase == this) {
+         return true;
+      }
+
+      if (!(addressBase instanceof SmsAddress)) {
+         return false;
+      }
+
+      SmsAddress address = (SmsAddress)addressBase;
+      String myPeerAddress = this._header.getPeerAddress();
+      String theirPeerAddress = address._header.getPeerAddress();
+      return myPeerAddress != null
+            && myPeerAddress.length() != 0
+            && theirPeerAddress != null
+            && theirPeerAddress.length() != 0
+            && !myPeerAddress.equals(theirPeerAddress)
+         ? false
+         : this.matchPort(address);
    }
 
    @Override

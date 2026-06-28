@@ -74,11 +74,79 @@ public final class Pipe implements Persistable {
    }
 
    public final synchronized int removeSections(int[] offsets, int[] lengths) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    public final synchronized void removeSection(int offset, int length) {
-      throw new RuntimeException("cod2jar: type check");
+      if (length > 0) {
+         if (Memory.isObjectInGroup(this._window)) {
+            this._window = (byte[][][])((byte[][])Memory.expandGroup(this._window));
+
+            for (int i = 0; i < this._window.length; i++) {
+               if (Memory.isObjectInGroup(this._window[i])) {
+                  this._window[i] = (byte[][])((byte[])Memory.expandGroup(this._window[i]));
+               }
+            }
+         }
+
+         int packetsSoFar = 0;
+
+         for (int i = 0; i < this._window.length; i++) {
+            int packetLength = this._window[i].length;
+            int packetOffset = offset - packetsSoFar;
+            if (packetOffset == 0 && length >= packetLength) {
+               this._totalLength -= packetLength;
+               length -= packetLength;
+               offset += packetLength;
+               System.arraycopy(this._window, i + 1, this._window, i, this._window.length - i - 1);
+               Array.resize(this._window, this._window.length - 1);
+               i--;
+            } else if (packetOffset < packetLength && packetOffset + length > packetLength) {
+               if (i > 0 && packetOffset < 2048 && this._window[i - 1].length < 8192) {
+                  int oldWindowSize = this._window[i - 1].length;
+                  Array.resize(this._window[i - 1], oldWindowSize + packetOffset);
+                  System.arraycopy(this._window[i], 0, this._window[i - 1], oldWindowSize, packetOffset);
+                  System.arraycopy(this._window, i + 1, this._window, i, this._window.length - i - 1);
+                  Array.resize(this._window, this._window.length - 1);
+                  i--;
+               } else {
+                  Array.resize(this._window[i], packetOffset);
+               }
+
+               int truncationSize = packetLength - packetOffset;
+               this._totalLength -= truncationSize;
+               length -= truncationSize;
+               offset += truncationSize;
+            } else if (packetOffset < packetLength) {
+               if (i > 0 && packetLength - length < 2048 && this._window[i - 1].length < 8192) {
+                  int oldWindowSize = this._window[i - 1].length;
+                  Array.resize(this._window[i - 1], oldWindowSize + (packetLength - length));
+                  if (packetOffset > 0) {
+                     System.arraycopy(this._window[i], 0, this._window[i - 1], oldWindowSize, packetOffset);
+                     oldWindowSize += packetOffset;
+                  }
+
+                  int endOffset = packetOffset + length;
+                  System.arraycopy(this._window[i], endOffset, this._window[i - 1], oldWindowSize, packetLength - endOffset);
+                  System.arraycopy(this._window, i + 1, this._window, i, this._window.length - i - 1);
+                  Array.resize(this._window, this._window.length - 1);
+                  i--;
+               } else {
+                  int endOffset = packetOffset + length;
+                  System.arraycopy(this._window[i], endOffset, this._window[i], packetOffset, packetLength - endOffset);
+                  Array.resize(this._window[i], packetLength - length);
+               }
+
+               this._totalLength -= length;
+               length = 0;
+            }
+
+            packetsSoFar += packetLength;
+            if (length == 0) {
+               return;
+            }
+         }
+      }
    }
 
    public final synchronized int read(byte[] bytes, int offset, int length, PipeContext position) {

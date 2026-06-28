@@ -1,6 +1,8 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import javax.microedition.io.Datagram;
+import javax.microedition.io.DatagramConnection;
 import net.rim.device.api.util.CyclicQueue;
 
 final class SendPacketThread extends Thread {
@@ -8,7 +10,30 @@ final class SendPacketThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: type check");
+      while (true) {
+         try {
+            SendPacketThread$SPTRequest request;
+            synchronized (this._requests) {
+               if (this._requests.isEmpty()) {
+                  this._requests.wait();
+               }
+
+               request = (SendPacketThread$SPTRequest)this._requests.dequeue();
+            }
+
+            if (!(request._sendObj instanceof DatagramTransportBase)) {
+               if (request._sendObj instanceof DatagramConnection) {
+                  ((DatagramConnection)request._sendObj).send(request._datagram);
+               }
+            } else {
+               ((DatagramTransportBase)request._sendObj).send(request._datagram);
+            }
+         } catch (IOException var10) {
+         } catch (Throwable var11) {
+         } finally {
+            SendPacketThread$SPTRequest request = null;
+         }
+      }
    }
 
    public final void addRequest(Object sendObj, Datagram datagram) {

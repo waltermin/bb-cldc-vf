@@ -245,7 +245,50 @@ public class Application {
    }
 
    public void removeRadioListener(RadioListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (listener instanceof RadioStatusListener) {
+         RadioStatusListener rsl = (RadioStatusListener)listener;
+         this.removeListener(33, new RadioStatusListenerFilter(0, rsl));
+      }
+
+      if (listener instanceof RadioPacketListener) {
+         this.removeListener(34, listener);
+      }
+
+      if (listener instanceof PhoneCallListener) {
+         this.removeListener(52, listener);
+      }
+
+      if (listener instanceof PhoneTimerListener) {
+         this.removeListener(53, listener);
+      }
+
+      if (listener instanceof PhoneControlListener) {
+         this.removeListener(54, listener);
+      }
+
+      if (listener instanceof EngineeringDataListener) {
+         this.removeListener(36, listener);
+      }
+
+      if (listener instanceof ModemListener) {
+         this.removeListener(48, listener);
+      }
+
+      if (listener instanceof DirectConnectListener) {
+         this.removeListener(37, listener);
+      }
+
+      if (listener instanceof WLANListenerInternal) {
+         this.removeListener(18, listener);
+      }
+
+      if (listener instanceof VPNListener) {
+         this.removeListener(51, listener);
+      }
+
+      if (listener instanceof GANStatusListener) {
+         this.removeListener(58, listener);
+      }
    }
 
    public void addIOPortListener(IOPortListener listener) {
@@ -360,7 +403,7 @@ public class Application {
    }
 
    final void processNextMessage(Message message) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    protected boolean allowKeyEventFromPreviousApp(int event, int keycode) {

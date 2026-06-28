@@ -3,6 +3,7 @@ package net.rim.device.api.listener;
 import java.util.Vector;
 import net.rim.device.api.system.Application;
 import net.rim.device.internal.proxy.Proxy;
+import net.rim.vm.Array;
 import net.rim.vm.WeakReference;
 
 public class EventListenerManager {
@@ -20,15 +21,55 @@ public class EventListenerManager {
    }
 
    public synchronized boolean isListener(Object listener) {
-      throw new RuntimeException("cod2jar: type check");
+      for (int i = this._listeners.size() - 1; i >= 0; i--) {
+         Object element = this._listeners.elementAt(i);
+         if (element instanceof WeakReference) {
+            element = ((WeakReference)element).get();
+         }
+
+         if (element == listener) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public synchronized void remove(Object listener) {
-      throw new RuntimeException("cod2jar: type check");
+      for (int i = this._listeners.size() - 1; i >= 0; i--) {
+         Object element = this._listeners.elementAt(i);
+         if (element instanceof WeakReference) {
+            element = ((WeakReference)element).get();
+         }
+
+         if (element == null || element == listener) {
+            this._listeners.removeElementAt(i);
+            this._applications.removeElementAt(i);
+         }
+      }
    }
 
    public synchronized Object[] getListeners(Object[] array) {
-      throw new RuntimeException("cod2jar: type check");
+      int size = this._listeners.size();
+      Array.resize(array, size);
+      int num = 0;
+
+      for (int i = 0; i < size; i++) {
+         Object element = this._listeners.elementAt(i);
+         if (element instanceof WeakReference) {
+            element = ((WeakReference)element).get();
+         }
+
+         if (element != null) {
+            array[num++] = element;
+         }
+      }
+
+      if (num != size) {
+         Array.resize(array, num);
+      }
+
+      return array;
    }
 
    public synchronized void update(Object listener, Event event) {

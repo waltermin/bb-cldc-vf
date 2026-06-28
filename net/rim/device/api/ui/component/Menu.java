@@ -164,7 +164,13 @@ public class Menu {
    }
 
    public Object getCookie(MenuItem item) {
-      throw new RuntimeException("cod2jar: type check");
+      Object cookie = null;
+      if (!(item instanceof Menu$OldMenuItem)) {
+         return item;
+      }
+
+      Menu$OldMenuItem olditem = (Menu$OldMenuItem)item;
+      return olditem.getCookie();
    }
 
    public MenuItem getCurrentMenuItem() {
@@ -233,19 +239,61 @@ public class Menu {
    }
 
    public Object getItemCookie(int position) {
-      throw new RuntimeException("cod2jar: type check");
+      if (position >= 0 && position < this.getSize()) {
+         MenuItem item = this._items[position];
+         Object cookie = item;
+         if (item instanceof Menu$OldMenuItem) {
+            Menu$OldMenuItem oldItem = (Menu$OldMenuItem)item;
+            cookie = oldItem.getCookie();
+         }
+
+         return cookie;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public int getItemId(int position) {
-      throw new RuntimeException("cod2jar: type check");
+      if (position >= 0 && position < this.getSize()) {
+         MenuItem item = this._items[position];
+         int id = -1;
+         if (item instanceof Menu$OldMenuItem) {
+            Menu$OldMenuItem oldItem = (Menu$OldMenuItem)item;
+            id = oldItem.getId();
+         }
+
+         return id;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public int getSelectedId() {
-      throw new RuntimeException("cod2jar: type check");
+      int id = -1;
+      if (this._selectedPosition >= 0) {
+         MenuItem item = this._displayItems[this._selectedPosition];
+         if (item instanceof Menu$OldMenuItem) {
+            Menu$OldMenuItem olditem = (Menu$OldMenuItem)item;
+            id = olditem.getId();
+         }
+      }
+
+      return id;
    }
 
    public Object getSelectedCookie() {
-      throw new RuntimeException("cod2jar: type check");
+      Object cookie = null;
+      if (this._selectedPosition >= 0) {
+         MenuItem item = this._displayItems[this._selectedPosition];
+         if (item instanceof Menu$OldMenuItem) {
+            Menu$OldMenuItem olditem = (Menu$OldMenuItem)item;
+            return olditem.getCookie();
+         }
+
+         cookie = item;
+      }
+
+      return cookie;
    }
 
    public MenuItem getSelectedItem() {

@@ -134,7 +134,16 @@ public final class GPRSQOSInfo implements QOSInfo {
 
    @Override
    public final boolean equals(Object object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof GPRSQOSInfo)) {
+         return false;
+      }
+
+      GPRSQOSInfo gqos = (GPRSQOSInfo)object;
+      return this._preClass == gqos._preClass
+         && this._relClass == gqos._relClass
+         && this._delClass == gqos._delClass
+         && this._peakTPClass == gqos._peakTPClass
+         && this._meanTPClass == gqos._meanTPClass;
    }
 
    @Override

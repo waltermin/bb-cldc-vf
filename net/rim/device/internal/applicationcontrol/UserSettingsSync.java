@@ -312,7 +312,22 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    @Override
    public final boolean convert(SyncObject object, DataBuffer buffer, int version) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof UserSetting)) {
+         return false;
+      }
+
+      UserSetting element = (UserSetting)object;
+      ConverterUtilities.writeShort(buffer, -1, (short)4);
+      ConverterUtilities.writeByteArray(buffer, 0, element.getHash());
+      long permissions = element.getPermissions();
+      permissions ^= 7769595838464L;
+      ConverterUtilities.writeInt(buffer, 1, (int)(permissions >> 32));
+      ConverterUtilities.writeInt(buffer, 2, (int)(element.getDontPrompt() >> 32));
+      ConverterUtilities.writeInt(buffer, 3, (int)(element.getIsSet() >> 32));
+      ConverterUtilities.writeLong(buffer, 4, permissions);
+      ConverterUtilities.writeLong(buffer, 5, element.getDontPrompt());
+      ConverterUtilities.writeLong(buffer, 6, element.getIsSet());
+      return true;
    }
 
    @Override

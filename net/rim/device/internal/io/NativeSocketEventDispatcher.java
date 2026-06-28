@@ -46,6 +46,53 @@ public final class NativeSocketEventDispatcher extends EventDispatcher {
 
    @Override
    public final void dispatch(Message message, Object listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(listener instanceof NativeSocket)) {
+         if (!(listener instanceof BoundNativeSocketListener)) {
+            if (listener instanceof NativeSocketConnectionListener) {
+               NativeSocketConnectionListener socketListener = (NativeSocketConnectionListener)listener;
+               int socketId = message.getData0();
+               switch (message.getEvent()) {
+                  case 9985:
+                     socketListener.socketConnected(socketId);
+                     return;
+                  case 9990:
+                     socketListener.socketDisconnected(socketId);
+                     return;
+                  case 9991:
+                     socketListener.socketWriteReady(socketId);
+               }
+            }
+         } else {
+            BoundNativeSocketListener socket = (BoundNativeSocketListener)listener;
+            if (socket.getSocketId() == message.getData0()) {
+               switch (message.getEvent()) {
+                  case 9988:
+                     break;
+                  case 9989:
+                  default:
+                     socket.socketDataReady();
+                     return;
+                  case 9990:
+                     socket.socketDisconnected();
+                     return;
+                  case 9991:
+                     socket.socketWriteReady();
+                     return;
+               }
+            }
+         }
+      } else {
+         NativeSocket socket = (NativeSocket)listener;
+         if (socket.getSocketId() == message.getData0()) {
+            switch (message.getEvent()) {
+               case 9985:
+                  socket.socketConnected(message.getSubMessage());
+                  return;
+               case 9990:
+                  socket.socketDisconnected();
+                  return;
+            }
+         }
+      }
    }
 }

@@ -23,6 +23,9 @@ class Menu$OldMenuItem extends MenuItem {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._cookie instanceof MenuItem) {
+         MenuItem item = (MenuItem)this._cookie;
+         item.run();
+      }
    }
 }

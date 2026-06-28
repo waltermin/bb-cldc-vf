@@ -274,7 +274,51 @@ public class HexEditField extends EditField {
 
    @Override
    public boolean paste(Clipboard cb) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this.isPasteable()) {
+         return false;
+      }
+
+      if (this.getComposedTextStart() != this.getComposedTextEnd()) {
+         return false;
+      }
+
+      Object pasted = cb.get();
+      AttributedString attrString;
+      if (!(pasted instanceof AttributedString)) {
+         attrString = new AttributedString(cb.toString());
+      } else {
+         attrString = (AttributedString)pasted;
+      }
+
+      int len = attrString.length();
+      if (len % 3 != 0) {
+         return false;
+      }
+
+      for (int i = 0; i < len; i++) {
+         char ch = attrString.charAt(i);
+         if (i % 3 == 2) {
+            if (ch != ' ') {
+               return false;
+            }
+         } else {
+            char converted = this.convert(ch, 0);
+            int hex = NumberUtilities.hexDigitToInt(converted, -1);
+            if (hex == -1 || converted != ch) {
+               return false;
+            }
+         }
+      }
+
+      if (!this._firstNibble) {
+         this._firstNibble = true;
+         attrString.insert(0, ' ');
+      }
+
+      AttributedString$Iterator iter = attrString.getIterator();
+      this.setDefaultInsertionAttributes();
+      this.replace(this.getAnchorPosition(), this.getCaretPosition(), iter, 0, 0, iter.length(), 0, true, 0);
+      return true;
    }
 
    public void setData(byte[] val, int offset, int length) {

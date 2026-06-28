@@ -1,6 +1,7 @@
 package net.rim.device.internal.rms;
 
 import javax.microedition.rms.InvalidRecordIDException;
+import javax.microedition.rms.RecordStoreFullException;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.Persistable;
@@ -91,15 +92,33 @@ public class RecordStoreData implements Persistable {
    }
 
    public synchronized void deleteRecord(int recordId) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._records.containsKey(recordId)) {
+         this.throwInvalidRecordIDException(recordId);
+      }
+
+      byte[] data = (byte[])this._records.remove(recordId);
+      this._memoryUsed -= data.length;
+      this._numRecords--;
+      this.setLastModified();
    }
 
    public synchronized int getRecordSize(int recordId) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._records.containsKey(recordId)) {
+         this.throwInvalidRecordIDException(recordId);
+      }
+
+      return ((byte[])this._records.get(recordId)).length;
    }
 
    public synchronized int getRecord(int recordId, byte[] buffer, int offset) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._records.containsKey(recordId)) {
+         this.throwInvalidRecordIDException(recordId);
+      }
+
+      byte[] data = (byte[])this._records.get(recordId);
+      int size = data.length;
+      System.arraycopy(data, 0, buffer, offset, size);
+      return size;
    }
 
    public byte[] getRecord(int recordId) {
@@ -115,11 +134,27 @@ public class RecordStoreData implements Persistable {
    }
 
    public synchronized byte[] getRecordReadOnly(int recordId) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._records.containsKey(recordId)) {
+         this.throwInvalidRecordIDException(recordId);
+      }
+
+      return (byte[])this._records.get(recordId);
    }
 
    public synchronized void setRecord(int recordId, byte[] newData, int offset, int numBytes) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._records.containsKey(recordId)) {
+         this.throwInvalidRecordIDException(recordId);
+      }
+
+      byte[] data = (byte[])this._records.get(recordId);
+      if (8 + numBytes - data.length > this.getSizeAvailable()) {
+         throw new RecordStoreFullException();
+      }
+
+      this._memoryUsed += numBytes - data.length;
+      Array.resize(data, numBytes);
+      System.arraycopy(newData, offset, data, 0, numBytes);
+      this.setLastModified();
    }
 
    public synchronized void loadRecordIDs(int[] recordIds) {

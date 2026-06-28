@@ -1,6 +1,9 @@
 package net.rim.device.internal.ui;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -9,6 +12,7 @@ import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.KeypadUtil;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
@@ -16,6 +20,7 @@ import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.internal.ui.component.ApplicationIconField;
+import net.rim.vm.Process;
 
 public final class ApplicationSwitcher extends PopupScreen implements FocusChangeListener, ListFieldCallback, TextInputDialog, SystemListener2 {
    private ApplicationDescriptor[] _descriptors;
@@ -207,7 +212,43 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
    }
 
    private final void doCloseAppSwitcher(boolean selected) {
-      throw new RuntimeException("cod2jar: type check");
+      System.out.println("switch");
+      ApplicationManager appManager = ApplicationManager.getApplicationManager();
+      int currentPid = appManager.getForegroundProcessId();
+      int newPid = appManager.getProcessId(this._descriptors[this._selectedApp]);
+      if (selected && newPid == currentPid) {
+         selected = false;
+      }
+
+      if (selected) {
+         Application applicationToSuspend = null;
+         UiEngine engineToSuspend = null;
+         if (selected) {
+            Process proc = Process.getProcess(currentPid);
+            if (proc instanceof ApplicationProcess) {
+               ApplicationProcess appProc = (ApplicationProcess)proc;
+               applicationToSuspend = appProc.getApplication();
+               if (applicationToSuspend instanceof UiApplication) {
+                  engineToSuspend = (UiApplication)applicationToSuspend;
+               }
+            }
+         }
+
+         if (engineToSuspend != null) {
+            engineToSuspend.suspendPainting(true);
+         }
+
+         this._app.popScreen(this);
+         appManager.requestForeground(newPid);
+         if (engineToSuspend != null) {
+            applicationToSuspend.invokeLater(new ApplicationSwitcher$ResumePainting(engineToSuspend), 100, false);
+         }
+      } else {
+         this._app.popScreen(this);
+      }
+
+      this._app.removeSystemListener(this);
+      this._app.invokeLater(this._onExit);
    }
 
    @Override

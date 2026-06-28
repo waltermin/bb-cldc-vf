@@ -64,7 +64,17 @@ public final class ApplicationRegistry {
    }
 
    final Object get(int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey) {
-      throw new RuntimeException("cod2jar: type check");
+      Object obj = this._registry.get(id, protect);
+      if (obj instanceof ControlledAccess) {
+         ControlledAccess ca = (ControlledAccess)obj;
+         obj = ca.getObject();
+         if (!protect) {
+            ca.assertReadPermission(moduleHandle);
+            ca.assertKeys(readKey, replaceKey);
+         }
+      }
+
+      return obj;
    }
 
    public final Object remove(long id) {
@@ -102,7 +112,8 @@ public final class ApplicationRegistry {
    }
 
    final ControlledAccess getControlledAccess(long id, boolean protect) {
-      throw new RuntimeException("cod2jar: type check");
+      Object obj = this._registry.get(id, protect);
+      return !(obj instanceof ControlledAccess) ? null : (ControlledAccess)obj;
    }
 
    public final void put(long id, Object value) {
@@ -114,7 +125,43 @@ public final class ApplicationRegistry {
    }
 
    final Object put(int moduleHandle, long id, boolean protect, Object value, boolean allowReplace) {
-      throw new RuntimeException("cod2jar: type check");
+      Monitor monitor;
+      Object oldValue;
+      synchronized (this._registry) {
+         oldValue = this._registry.get(id, protect);
+         if (id == (int)id && DeviceInfo.isSimulator()) {
+            throw new IllegalArgumentException("32-bit id used");
+         }
+
+         if (!allowReplace && oldValue != null) {
+            throw new IllegalArgumentException("object already exists");
+         }
+
+         if (oldValue instanceof ControlledAccess) {
+            ControlledAccess ca = (ControlledAccess)oldValue;
+            oldValue = ca.getObject();
+            if (!protect) {
+               ca.assertReplacePermission(moduleHandle);
+
+               try {
+                  ca.assertReadPermission(moduleHandle);
+               } catch (ControlledAccessException e) {
+                  oldValue = null;
+               }
+            }
+         }
+
+         this._registry.put(id, value, protect);
+         monitor = (Monitor)this._monitors.remove(id);
+      }
+
+      if (monitor != null) {
+         synchronized (monitor) {
+            monitor.wakeyWakey();
+         }
+      }
+
+      return oldValue;
    }
 
    public final Object waitFor(long id) {

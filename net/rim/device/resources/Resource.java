@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.vm.Array;
 import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
@@ -28,7 +29,35 @@ public class Resource {
    }
 
    private byte[] findResource(String name) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._resources != null) {
+         Object resource = this._resources.get(name);
+         if (!(resource instanceof Integer)) {
+            if (resource instanceof byte[]) {
+               byte[] bytes = (byte[])resource;
+               StringBuffer nameBuffer = new StringBuffer();
+
+               while (true) {
+                  int offset = bytes.length;
+                  nameBuffer.setLength(0);
+                  nameBuffer.append('_').append('_').append(name).append('@').append(offset);
+                  byte[] more = (byte[])this._resources.get(nameBuffer.toString());
+                  if (more == null) {
+                     return bytes;
+                  }
+
+                  Array.resize(bytes, bytes.length + more.length);
+                  System.arraycopy(more, 0, bytes, offset, more.length);
+               }
+            }
+         } else {
+            Integer ordinal = (Integer)resource;
+            if (this._icons != null) {
+               return getIconBytes(this._icons, ordinal);
+            }
+         }
+      }
+
+      return null;
    }
 
    public Vector listResourcesEndingWith(String text) {
@@ -59,7 +88,7 @@ public class Resource {
    }
 
    public byte[] getProperty(String name) {
-      throw new RuntimeException("cod2jar: type check");
+      return this._properties != null ? (byte[])this._properties.get(name) : null;
    }
 
    public static int getIconOffset(byte[] icons, int ordinal) {

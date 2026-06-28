@@ -15,6 +15,7 @@ import net.rim.device.api.system.UnsupportedOperationException;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.vm.Array;
 import net.rim.vm.WeakReference;
 
 public final class FileSystem {
@@ -149,23 +150,141 @@ public final class FileSystem {
    }
 
    public static final boolean addFileSystemListener(FileSystemListener listener, Application app, boolean weakRef) {
-      throw new RuntimeException("cod2jar: type check");
+      assertPermissions();
+      if (listener != null && app != null) {
+         synchronized (_fileSystem._journalLock) {
+            for (int i = 0; i < _fileSystem._fileSystemListeners.length; i++) {
+               Object item = _fileSystem._fileSystemListeners[i];
+               if (item == listener || item instanceof WeakReference && ((WeakReference)item).get() == listener) {
+                  return false;
+               }
+            }
+
+            Object addObj = listener;
+            if (weakRef) {
+               addObj = new WeakReference(listener);
+            }
+
+            Arrays.add(_fileSystem._fileSystemListeners, addObj);
+            Arrays.add(_fileSystem._fileSystemApps, new WeakReference(app));
+            return true;
+         }
+      } else {
+         throw new NullPointerException();
+      }
    }
 
    public static final void checkForDeadListeners() {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (_fileSystem._journalLock) {
+         for (int i = 0; i < _fileSystem._fileSystemListeners.length; i++) {
+            Application app = (Application)_fileSystem._fileSystemApps[i].get();
+            Object obj = _fileSystem._fileSystemListeners[i];
+            if (obj instanceof WeakReference) {
+               obj = ((WeakReference)obj).get();
+            }
+
+            if (obj == null || app == null || !app.isAlive()) {
+               Arrays.removeAt(_fileSystem._fileSystemListeners, i);
+               Arrays.removeAt(_fileSystem._fileSystemApps, i);
+               i--;
+            }
+         }
+
+         for (int i = 0; i < _fileSystem._fileJournalListeners.length; i++) {
+            Application app = (Application)_fileSystem._fileJournalApps[i].get();
+            Object obj = _fileSystem._fileJournalListeners[i];
+            if (obj instanceof WeakReference) {
+               obj = ((WeakReference)obj).get();
+            }
+
+            if (obj == null || app == null || !app.isAlive()) {
+               Arrays.removeAt(_fileSystem._fileJournalListeners, i);
+               Arrays.removeAt(_fileSystem._fileJournalApps, i);
+               i--;
+            }
+         }
+      }
    }
 
    public static final boolean removeFileSystemListener(FileSystemListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (listener == null) {
+         throw new NullPointerException();
+      }
+
+      synchronized (_fileSystem._journalLock) {
+         int index = -1;
+
+         for (int i = 0; i < _fileSystem._fileSystemListeners.length; i++) {
+            Object item = _fileSystem._fileSystemListeners[i];
+            if (item == listener || item instanceof WeakReference && ((WeakReference)item).get() == listener) {
+               index = i;
+               break;
+            }
+         }
+
+         if (index == -1) {
+            return false;
+         }
+
+         Arrays.removeAt(_fileSystem._fileSystemListeners, index);
+         Arrays.removeAt(_fileSystem._fileSystemApps, index);
+         return true;
+      }
    }
 
    public static final boolean addJournalListener(FileSystemJournalListener listener, Application app, boolean weakRef) {
-      throw new RuntimeException("cod2jar: type check");
+      assertPermissions();
+      if (listener != null && app != null) {
+         synchronized (_fileSystem._journalLock) {
+            for (int i = 0; i < _fileSystem._fileJournalListeners.length; i++) {
+               Object item = _fileSystem._fileJournalListeners[i];
+               if (item == listener || item instanceof WeakReference && ((WeakReference)item).get() == listener) {
+                  return false;
+               }
+            }
+
+            Object addObj = listener;
+            if (weakRef) {
+               addObj = new WeakReference(listener);
+            }
+
+            Arrays.add(_fileSystem._fileJournalListeners, addObj);
+            Arrays.add(_fileSystem._fileJournalApps, new WeakReference(app));
+            Array.resize(_fileSystem._fileJournalEventPending, _fileSystem._fileJournalEventPending.length + 1);
+            return true;
+         }
+      } else {
+         throw new NullPointerException();
+      }
    }
 
    public static final boolean removeJournalListener(FileSystemJournalListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (listener == null) {
+         throw new NullPointerException();
+      }
+
+      synchronized (_fileSystem._journalLock) {
+         int index = -1;
+
+         for (int i = 0; i < _fileSystem._fileJournalListeners.length; i++) {
+            Object item = _fileSystem._fileJournalListeners[i];
+            if (item == listener || item instanceof WeakReference && ((WeakReference)item).get() == listener) {
+               index = i;
+               break;
+            }
+         }
+
+         if (index == -1) {
+            return false;
+         }
+
+         Arrays.removeAt(_fileSystem._fileJournalListeners, index);
+         Arrays.removeAt(_fileSystem._fileJournalApps, index);
+         int newLength = _fileSystem._fileJournalEventPending.length - 1;
+         System.arraycopy(_fileSystem._fileJournalEventPending, index + 1, _fileSystem._fileJournalEventPending, index, newLength - index);
+         Array.resize(_fileSystem._fileJournalEventPending, newLength);
+         return true;
+      }
    }
 
    public static final FileSystemJournalEntry getJournalEntry(long usn) {
@@ -238,11 +357,57 @@ public final class FileSystem {
    }
 
    private final void notifyRootChanged(int state, String rootName) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this._journalLock) {
+         for (int i = 0; i < this._fileSystemListeners.length; i++) {
+            Application app = (Application)this._fileSystemApps[i].get();
+            FileSystemListener listener = null;
+            Object obj = this._fileSystemListeners[i];
+            if (!(obj instanceof FileSystemListener)) {
+               if (obj instanceof WeakReference) {
+                  listener = (FileSystemListener)((WeakReference)obj).get();
+               }
+            } else {
+               listener = (FileSystemListener)obj;
+            }
+
+            if (listener != null && app != null && app.isAlive()) {
+               app.invokeLater(new RootChanged(listener, state, rootName));
+            } else {
+               Arrays.removeAt(_fileSystem._fileSystemListeners, i);
+               Arrays.removeAt(_fileSystem._fileSystemApps, i);
+               i--;
+            }
+         }
+      }
    }
 
    private final void notifyJournalChanged() {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this._journalLock) {
+         for (int i = 0; i < this._fileJournalListeners.length; i++) {
+            Application app = (Application)this._fileJournalApps[i].get();
+            FileSystemJournalListener listener = null;
+            Object obj = this._fileJournalListeners[i];
+            if (!(obj instanceof FileSystemJournalListener)) {
+               if (obj instanceof WeakReference) {
+                  listener = (FileSystemJournalListener)((WeakReference)obj).get();
+               }
+            } else {
+               listener = (FileSystemJournalListener)obj;
+            }
+
+            if (listener == null || app == null || !app.isAlive()) {
+               Arrays.removeAt(_fileSystem._fileJournalListeners, i);
+               Arrays.removeAt(_fileSystem._fileJournalApps, i);
+               int newLength = _fileSystem._fileJournalEventPending.length - 1;
+               System.arraycopy(_fileSystem._fileJournalEventPending, i + 1, _fileSystem._fileJournalEventPending, i, newLength - i);
+               Array.resize(_fileSystem._fileJournalEventPending, newLength);
+               i--;
+            } else if (!this._fileJournalEventPending[i]) {
+               this._fileJournalEventPending[i] = true;
+               app.invokeLater(new FileSystem$JournalChanged(this, listener));
+            }
+         }
+      }
    }
 
    public static final boolean isSupported() {

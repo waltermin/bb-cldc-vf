@@ -3,6 +3,7 @@ package net.rim.device.api.system;
 import java.util.Calendar;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.cldc.util.CalendarExtensions;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
@@ -288,7 +289,16 @@ public final class ApplicationDescriptor {
 
    @Override
    public final boolean equals(Object o) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == o) {
+         return true;
+      }
+
+      if (!(o instanceof ApplicationDescriptor)) {
+         return false;
+      }
+
+      ApplicationDescriptor ad = (ApplicationDescriptor)o;
+      return this._moduleHandle == ad._moduleHandle && Arrays.equals(this.getArgs(), ad.getArgs());
    }
 
    public static final ApplicationDescriptor currentApplicationDescriptor() {

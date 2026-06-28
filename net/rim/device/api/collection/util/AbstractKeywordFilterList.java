@@ -251,7 +251,37 @@ public class AbstractKeywordFilterList
 
    @Override
    public void setCriteria(Object criteria, FilterStatusListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (criteria != null && !(criteria instanceof String) && !(criteria instanceof String[]) && !(criteria instanceof String[][])) {
+         throw new IllegalArgumentException();
+      }
+
+      synchronized (this) {
+         if (criteria == null && !this.isInProgress() && this.getSuffix() == null) {
+            if (listener != null) {
+               listener.filterStarted();
+            }
+
+            this.setFilterResult(null, null);
+            if (listener != null) {
+               listener.filterDone(false);
+            }
+         } else {
+            synchronized (this._searchRequestLock) {
+               if (this._currentSearchRequest.isEmpty()) {
+                  this._currentSearchRequest.setup(criteria, listener);
+                  new AbstractKeywordFilterList$SearchThread(this, this._searcher).start();
+               } else {
+                  if (!this._nextSearchRequest.isEmpty()) {
+                     this._nextSearchRequest._listener.filterStarted();
+                     this._nextSearchRequest._listener.filterDone(true);
+                  }
+
+                  this._nextSearchRequest.setup(criteria, listener);
+                  this._searcher.halt();
+               }
+            }
+         }
+      }
    }
 
    @Override

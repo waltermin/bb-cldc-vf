@@ -39,7 +39,14 @@ public final class TextProcessingRegistry {
    }
 
    public final byte[][][] getTextProcessingData(int dataID, int dataType, int[] dataOffset) {
-      throw new RuntimeException("cod2jar: type check");
+      switch (dataType) {
+         case 0:
+            return (byte[][][])this._conversionRegistryHelper.getConversionData(dataID, dataOffset);
+         case 2:
+            return (byte[][][])this._breakingDataRegistryHelper.getBreakingData(dataID, dataType);
+         default:
+            return (byte[][][])((byte[][])null);
+      }
    }
 
    public final String[] getSupported(int dataType) {

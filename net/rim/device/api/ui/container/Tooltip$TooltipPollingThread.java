@@ -1,6 +1,9 @@
 package net.rim.device.api.ui.container;
 
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
 
 final class Tooltip$TooltipPollingThread extends Thread {
@@ -55,6 +58,26 @@ final class Tooltip$TooltipPollingThread extends Thread {
    }
 
    private final Tooltip$TooltipProvider getTooltipProvider() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._app != null && this._app.isForeground()) {
+         Screen screen = this._app.getActiveScreen();
+         if (screen == null) {
+            return null;
+         }
+
+         Field field = screen.getLeafFieldWithFocus();
+         if (field instanceof Tooltip$TooltipProvider) {
+            return (Tooltip$TooltipProvider)field;
+         }
+
+         if (field != null) {
+            for (Manager manager = field.getManager(); manager != null; manager = manager.getManager()) {
+               if (manager instanceof Tooltip$TooltipProvider) {
+                  return (Tooltip$TooltipProvider)manager;
+               }
+            }
+         }
+      }
+
+      return null;
    }
 }

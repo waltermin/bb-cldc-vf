@@ -1,6 +1,7 @@
 package net.rim.device.api.ui.component;
 
 import net.rim.device.api.collection.Collection;
+import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.CollectionListener;
 import net.rim.device.api.collection.ReadableList;
 import net.rim.device.api.system.Application;
@@ -8,6 +9,8 @@ import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
+import net.rim.device.api.ui.accessibility.AccessibleContextFactory;
+import net.rim.device.api.ui.accessibility.AccessibleContextProxy;
 import net.rim.device.api.util.Arrays;
 import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
@@ -43,7 +46,18 @@ public class CollectionListField extends ListField implements FocusChangeListene
    }
 
    public void setList(ReadableList newList) {
-      throw new RuntimeException("cod2jar: type check");
+      if (newList != this._list) {
+         if (this._list instanceof CollectionEventSource) {
+            ((CollectionEventSource)this._list).removeCollectionListener(this._collectionListener);
+         }
+
+         this._list = newList;
+         if (this._list instanceof CollectionEventSource) {
+            ((CollectionEventSource)this._list).addCollectionListener(this._collectionListener);
+         }
+
+         this.invalidate();
+      }
    }
 
    public void setExtraRowAtBottom(boolean isExtraRowAtBottom) {
@@ -139,7 +153,36 @@ public class CollectionListField extends ListField implements FocusChangeListene
 
    @Override
    public AccessibleContext getAccessibleSelectionAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      if (index == 0) {
+         Object temp;
+         if (this._isExtraRowAtBottom) {
+            if (this._extraRowCount > 0 && this.getSelectedIndex() > this.getSize() - 2 * this._extraRowCount) {
+               return new AccessibleContextFactory(this._extraRowName[this.getSelectedIndex() + 2 * this._extraRowCount - this.getSize()], 0, 4);
+            }
+
+            temp = this.getElementAt(this.getSelectedIndex() + this._extraRowCount);
+         } else {
+            if (this._extraRowCount > 0 && this.getSelectedIndex() < this._extraRowCount) {
+               return new AccessibleContextFactory(this._extraRowName[this.getSelectedIndex()], 0, 4);
+            }
+
+            temp = this.getElementAt(this.getSelectedIndex());
+         }
+
+         if (temp != null) {
+            if (!(temp instanceof AccessibleContext)) {
+               if (!(temp instanceof AccessibleContextProxy)) {
+                  return new AccessibleContextFactory(temp.toString(), 0, 4);
+               }
+
+               return ((AccessibleContextProxy)temp).getAccessibleContext();
+            }
+
+            return (AccessibleContext)temp;
+         }
+      }
+
+      return null;
    }
 
    private Application getApplication() {

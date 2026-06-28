@@ -40,6 +40,11 @@ final class CharArrayWrapper extends AbstractStringWrapper {
 
    @Override
    public final void reset(Object string) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(string instanceof char[])) {
+         throw new IllegalArgumentException();
+      }
+
+      char[] str = (char[])string;
+      this._charArray = str;
    }
 }

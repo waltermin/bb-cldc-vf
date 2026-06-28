@@ -80,7 +80,7 @@ public final class Float {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return obj instanceof Float && floatToIntBits(((Float)obj).value) == floatToIntBits(this.value);
    }
 
    public static final native int floatToIntBits(float var0);

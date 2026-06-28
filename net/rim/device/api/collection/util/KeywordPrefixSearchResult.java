@@ -29,6 +29,11 @@ public class KeywordPrefixSearchResult {
 
    @Override
    public boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof KeywordPrefixSearchResult)) {
+         return false;
+      }
+
+      KeywordPrefixSearchResult p = (KeywordPrefixSearchResult)obj;
+      return this._primarySet.equals(p._primarySet) && this._secondarySet.equals(p._secondarySet);
    }
 }

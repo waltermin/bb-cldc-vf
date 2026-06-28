@@ -151,11 +151,23 @@ class TitleStatusManager extends Manager {
    }
 
    public void setTitle(String text) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(this._title instanceof LabelField)) {
+         this.setTitle(new LabelField(text, 64));
+      } else {
+         LabelField label = (LabelField)this._title;
+         label.setText(text);
+      }
    }
 
    public void setTitle(ResourceBundleFamily family, int id) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(this._title instanceof LabelField)) {
+         LabelField label = new LabelField("", 64);
+         label.setText(family, id);
+         this.setTitle(label);
+      } else {
+         LabelField label = (LabelField)this._title;
+         label.setText(family, id);
+      }
    }
 
    @Override

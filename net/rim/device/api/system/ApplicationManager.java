@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
 public class ApplicationManager {
@@ -109,7 +110,8 @@ public class ApplicationManager {
    }
 
    public static final ApplicationManager getApplicationManager() {
-      throw new RuntimeException("cod2jar: type check");
+      Process process = Process.currentProcess();
+      return !(process instanceof ApplicationProcess) ? _appManager : ((ApplicationProcess)process).getApplicationManager();
    }
 
    public boolean wasDeviceTimeValidOnStartup() {

@@ -2,8 +2,10 @@ package net.rim.device.internal.ui.component;
 
 import javax.microedition.media.Player;
 import javax.microedition.media.PlayerListener;
+import net.rim.device.api.media.control.VideoPositionControl;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
@@ -11,6 +13,7 @@ import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
+import net.rim.device.internal.media.PlayerRegistry;
 
 public class MMAPIMediaField extends Field implements LcduiPlayerController, PlayerListener {
    private Player _player;
@@ -149,7 +152,41 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    private void layoutMedia(boolean visible) {
-      throw new RuntimeException("cod2jar: type check");
+      XYRect absoluteRect = new XYRect();
+      this.getFocusRect(absoluteRect);
+      this.transformToScreen(absoluteRect);
+      if (this._width < absoluteRect.width) {
+         absoluteRect.width = this._width;
+      }
+
+      if (this._height < absoluteRect.height) {
+         absoluteRect.height = this._height;
+      }
+
+      int displayWidth = Display.getWidth();
+      int displayHeight = Display.getHeight();
+      boolean isOnScreen = absoluteRect.x >= 0
+         && absoluteRect.x <= displayWidth
+         && absoluteRect.y >= 0
+         && absoluteRect.y <= displayHeight
+         && absoluteRect.width >= 0
+         && absoluteRect.width <= displayWidth
+         && absoluteRect.height >= 0
+         && absoluteRect.height <= displayHeight;
+      if (this._player instanceof VideoPositionControl) {
+         ((VideoPositionControl)this._player).setOnScreen(isOnScreen);
+      }
+
+      if (isOnScreen) {
+         if (!absoluteRect.equals(this._currentRect)) {
+            this._currentRect = absoluteRect;
+            PlayerRegistry.getMMAPIConnector().notifyPlayerPositionChange(this._player, this._currentRect);
+         }
+
+         this.toggleVideoVisibility(visible);
+      } else {
+         this.toggleVideoVisibility(false);
+      }
    }
 
    private void toggleVideoVisibility(boolean visible) {

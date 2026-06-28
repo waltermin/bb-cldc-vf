@@ -68,7 +68,59 @@ public final class TimeService {
    }
 
    private final void intializeTimeZones() {
-      throw new RuntimeException("cod2jar: type check");
+      this._timeZoneTable = new IntHashtable(88);
+      this._persistableTimeZoneData = RIMPersistentStore.getPersistentObject(6330365711713234846L);
+      this._sortedTimeZoneDataObjectList = (TimeZoneDataObject[])this._persistableTimeZoneData.getContents();
+      if (this._sortedTimeZoneDataObjectList != null) {
+         for (int i = 0; i < this._sortedTimeZoneDataObjectList.length; i++) {
+            TimeZoneDataObject tzdo = this._sortedTimeZoneDataObjectList[i];
+            this._timeZoneTable.put(tzdo.getTimeZoneID(), tzdo);
+         }
+      } else {
+         this._sortedTimeZoneDataObjectList = new TimeZoneDataObject[88];
+
+         for (int i = 0; i < 88; i++) {
+            int dataOffset = i * 9;
+            int idOffset = TimeZoneData.ZONE_ID_OFFSETS[i];
+            int idLength = TimeZoneData.ZONE_ID_OFFSETS[i + 1] - idOffset;
+            String tzName = new String(TimeZoneData.ZONE_ID_DATA, idOffset, idLength);
+            short[] tzdata = TimeZoneData.ZONE_DATA;
+            TimeZoneDataObject tzdo = new TimeZoneDataObject(
+               tzdata[dataOffset + 0],
+               tzName,
+               tzdata[dataOffset + 1],
+               tzdata[dataOffset + 2],
+               (tzdata[dataOffset + 3] & 3840) >> 8,
+               (tzdata[dataOffset + 3] & 240) >> 4,
+               tzdata[dataOffset + 3] & 15,
+               tzdata[dataOffset + 4],
+               tzdata[dataOffset + 5],
+               (tzdata[dataOffset + 6] & 3840) >> 8,
+               (tzdata[dataOffset + 6] & 240) >> 4,
+               tzdata[dataOffset + 6] & 15,
+               tzdata[dataOffset + 7],
+               tzdata[dataOffset + 8],
+               null,
+               null,
+               -1,
+               false
+            );
+            tzdo.setBuiltInIndex(i);
+            this._timeZoneTable.put(tzdata[dataOffset + 0], tzdo);
+            this._sortedTimeZoneDataObjectList[i] = tzdo;
+         }
+
+         Arrays.sort(this._sortedTimeZoneDataObjectList, TimeZoneDataObject.getComparator());
+         this._persistableTimeZoneData.setContents(this._sortedTimeZoneDataObjectList, 51, false);
+         this._persistableTimeZoneData.commit();
+      }
+
+      this._indexMap = new int[this._sortedTimeZoneDataObjectList.length];
+      int i = 0;
+
+      while (i < this._sortedTimeZoneDataObjectList.length) {
+         this._indexMap[i] = i++;
+      }
    }
 
    private final int getTimeZoneBuiltInIndex(int tzid) {

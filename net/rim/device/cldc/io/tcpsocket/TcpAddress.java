@@ -90,7 +90,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    protected final void parseAddress(String address) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public final void setLocalPort(int port) {
@@ -107,7 +107,19 @@ final class TcpAddress extends DatagramAddressBase {
 
    @Override
    public final boolean equals(Object dgramAddress) {
-      throw new RuntimeException("cod2jar: type check");
+      if (dgramAddress == this) {
+         return true;
+      }
+
+      if (!(dgramAddress instanceof TcpAddress)) {
+         return false;
+      }
+
+      TcpAddress address = (TcpAddress)dgramAddress;
+      return (this._ipAddress == TCP_IP_ADDRESS_NONE || address._ipAddress == TCP_IP_ADDRESS_NONE || this._ipAddress == address._ipAddress)
+         && (this._port == TCP_PORT_NONE || address._port == TCP_PORT_NONE || this._port == address._port)
+         && (this._localPort == TCP_PORT_NONE || address._localPort == TCP_PORT_NONE || this._localPort == address._localPort)
+         && (this._apnName == null || this.compareApn(address._apnName));
    }
 
    @Override

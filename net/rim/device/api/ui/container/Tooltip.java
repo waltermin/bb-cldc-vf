@@ -4,6 +4,7 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYPoint;
+import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.theme.Tag;
 
 public final class Tooltip {
@@ -44,7 +45,12 @@ public final class Tooltip {
    }
 
    public final void setContent(String text) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(this._content instanceof LabelField)) {
+         this._content = new LabelField(text);
+      } else {
+         LabelField field = (LabelField)this._content;
+         field.setText(text);
+      }
    }
 
    public final void setDuration(int duration) {

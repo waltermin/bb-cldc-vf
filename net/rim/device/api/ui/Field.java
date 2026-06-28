@@ -604,7 +604,72 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    void getDebugTreeHelper(int treeStyle, StringBuffer buffer, int indent) {
-      throw new RuntimeException("cod2jar: type check");
+      for (int index = 4 * indent - 1; index >= 0; index--) {
+         buffer.append(' ');
+      }
+
+      String className = this.getClass().getName();
+      int dot = className.lastIndexOf(46);
+      if ((treeStyle & 2) == 0 && dot >= 0) {
+         className = className.substring(dot + 1);
+      }
+
+      buffer.append(className);
+      if ((treeStyle & 1) == 0) {
+         buffer.append(' ');
+         buffer.append('(');
+         buffer.append(this.getLeft());
+         buffer.append(',');
+         buffer.append(' ');
+         buffer.append(this.getTop());
+         buffer.append(')');
+         buffer.append('+');
+         buffer.append('(');
+         buffer.append(this.getWidth());
+         buffer.append(',');
+         buffer.append(' ');
+         buffer.append(this.getHeight());
+         buffer.append(')');
+         if (this instanceof Manager) {
+            Manager manager = (Manager)this;
+            buffer.append(' ');
+            buffer.append('[');
+            buffer.append(manager.getVirtualWidth());
+            buffer.append(',');
+            buffer.append(' ');
+            buffer.append(manager.getVirtualHeight());
+            buffer.append(']');
+            if (manager.isStyle(281474976710656L)) {
+               buffer.append(' ');
+               buffer.append('V');
+               buffer.append('+');
+               buffer.append(manager.getVerticalScroll());
+            }
+
+            if (manager.isStyle(1125899906842624L)) {
+               buffer.append(' ');
+               buffer.append('H');
+               buffer.append('+');
+               buffer.append(manager.getHorizontalScroll());
+            }
+         }
+      }
+
+      if ((treeStyle & 4) == 0) {
+         buffer.append(' ');
+         buffer.append('"');
+         buffer.append(this.getTag().toString());
+         buffer.append('"');
+      }
+
+      if ((treeStyle & 8) == 0) {
+         Manager manager = this.getManager();
+         if (manager != null && manager.getFieldWithFocus() == this) {
+            buffer.append(" *focus*");
+         }
+      }
+
+      buffer.append('\n');
    }
 
    public final XYRect getExtent() {
@@ -672,7 +737,31 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    Graphics getGraphics0(XYRect clip, boolean drawBackground) {
-      throw new RuntimeException("cod2jar: type check");
+      clip.intersect(0, 0, this.getContentWidth(), this.getContentHeight());
+      int offsetX = 0;
+      int offsetY = 0;
+      if (this instanceof Manager) {
+         Manager manager = (Manager)this;
+         offsetX = manager.getHorizontalScroll();
+         offsetY = manager.getVerticalScroll();
+         clip.translate(offsetX, offsetY);
+      }
+
+      this.transformToScreen(clip);
+      boolean drawManagersBackground;
+      Manager manager;
+      if (!(this instanceof Screen)) {
+         manager = this.getManager();
+         drawManagersBackground = drawBackground && this.isFieldTransparent();
+      } else {
+         manager = (Screen)this;
+         drawManagersBackground = false;
+      }
+
+      Graphics graphics = manager.getGraphics0(clip, drawManagersBackground);
+      graphics.pushRegion(this.getContentRect(), -offsetX, -offsetY);
+      this.applyTheme(graphics, drawBackground);
+      return graphics;
    }
 
    public final int getHeight() {
@@ -762,7 +851,16 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public final Screen getScreen() {
-      throw new RuntimeException("cod2jar: type check");
+      Field step = this;
+
+      while (true) {
+         Field parent = step.getManager();
+         if (parent == null) {
+            return !(step instanceof Screen) ? null : (Screen)step;
+         }
+
+         step = parent;
+      }
    }
 
    public int getState() {
@@ -1064,7 +1162,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void paintBackground(Graphics graphics) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    void paintBorder(Graphics graphics) {
@@ -1084,7 +1182,66 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    void paintSelf(Graphics graphics, boolean addExtent, int xContentAdjust, int yContentAdjust) {
-      throw new RuntimeException("cod2jar: type check");
+      this.paintBorder(graphics);
+      boolean paddingPushed = false;
+      XYRect rect = Ui.getTmpXYRect();
+      if (addExtent) {
+         rect.x = this._extent.x + this._borderLeft;
+         rect.y = this._extent.y + this._borderTop;
+      } else {
+         rect.x = this._borderLeft;
+         rect.y = this._borderTop;
+      }
+
+      rect.width = this._extent.width - this._borderLeft - this._borderRight;
+      rect.height = this._extent.height - this._borderTop - this._borderBottom;
+      boolean notEmpty = graphics.pushRegion(rect, xContentAdjust, yContentAdjust);
+      Ui.returnTmpXYRect(rect);
+      if (notEmpty) {
+         this.applyTheme(graphics, true);
+         if (this.isPaddingDefined()) {
+            rect = Ui.getTmpXYRect();
+            rect.x = this._paddingLeft;
+            rect.y = this._paddingTop;
+            rect.width = this._content.width;
+            rect.height = this._content.height;
+            if (this instanceof Manager) {
+               Manager manager = (Manager)this;
+               rect.width = Math.max(manager.getVirtualWidth(), rect.width);
+               rect.height = Math.max(manager.getVirtualHeight(), rect.height);
+            }
+
+            paddingPushed = true;
+            notEmpty = graphics.pushRegion(rect);
+            Ui.returnTmpXYRect(rect);
+         }
+
+         graphics.setStipple(-1);
+         int depth = graphics.getContextStackSize();
+         this.paint(graphics);
+         if (graphics.getContextStackSize() > depth) {
+            throw new IllegalStackSizeException("push(paint)", this.getClass(), graphics, depth);
+         }
+
+         if (graphics.getContextStackSize() < depth) {
+            throw new IllegalStackSizeException("pop(paint)", this.getClass(), graphics, depth);
+         }
+
+         if (!(this instanceof Manager)
+            && this._manager != null
+            && this._manager.getFieldWithFocus() == this
+            && Ui.DRAW_FOCUS_IN_PAINT
+            && !Ui.IN_MAKE_REGION_VISIBLE) {
+            graphics.setDrawingStyle(8, true);
+            this.drawFocus(graphics, true);
+            graphics.setDrawingStyle(8, false);
+         }
+      }
+
+      graphics.popContext();
+      if (paddingPushed) {
+         graphics.popContext();
+      }
    }
 
    public boolean paste(Clipboard cb) {
@@ -1107,7 +1264,17 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected final void setExtent(int width, int height) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this instanceof Screen) {
+         Screen screen = (Screen)this;
+         if (!screen.isInLayout()) {
+            throw new IllegalStateException("setExtent called outside of layout");
+         }
+      }
+
+      this._content.width = width;
+      this._content.height = height;
+      this.updateExtent();
+      this.setState(256, 0);
    }
 
    boolean validateFieldStyle(long style) {
@@ -1134,7 +1301,18 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected final void setPosition(int x, int y) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this instanceof Screen) {
+         Screen screen = (Screen)this;
+         if (!screen.isInLayout()) {
+            throw new IllegalStateException("setPosition called outside of layout");
+         }
+      }
+
+      this._extent.x = x;
+      this._extent.y = y;
+      this._content.x = x + this._borderLeft + this._paddingLeft;
+      this._content.y = y + this._borderTop + this._paddingTop;
+      this.setState(128, 0);
    }
 
    final void setStyleSystem(long on, long off) {
@@ -1151,7 +1329,23 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public final void transformToScreen(XYRect rect) {
-      throw new RuntimeException("cod2jar: type check");
+      rect.translate(this._content.x, this._content.y);
+      if (this instanceof Manager) {
+         Manager manager = (Manager)this;
+         int dx = manager.getHorizontalScroll();
+         int dy = manager.getVerticalScroll();
+         rect.translate(-dx, -dy);
+      }
+
+      rect.intersect(this._content);
+
+      for (Manager manager = this.getManager(); manager != null; manager = manager.getManager()) {
+         Field field = manager;
+         int dx = manager.getHorizontalScroll();
+         int dy = manager.getVerticalScroll();
+         rect.translate(field._content.x - dx, field._content.y - dy);
+         rect.intersect(field._content);
+      }
    }
 
    protected final void updateLayout() {

@@ -14,6 +14,7 @@ import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.system.RealtimeClockListener;
 import net.rim.device.api.system.SystemListener;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.proxy.Proxy;
@@ -181,7 +182,9 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    public final synchronized MemoryCleanerListener[] getListeners() {
-      throw new RuntimeException("cod2jar: type check");
+      MemoryCleanerListener[] listeners = (MemoryCleanerListener[])this._listeners.getListeners(new MemoryCleanerListener[0]);
+      Arrays.sort(listeners, this);
+      return listeners;
    }
 
    public final boolean isUpdateComplete() {

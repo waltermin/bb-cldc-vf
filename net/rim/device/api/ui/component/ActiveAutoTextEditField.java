@@ -3,6 +3,7 @@ package net.rim.device.api.ui.component;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
@@ -130,7 +131,23 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    public Object getCookie(int id) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._cookieID != null && this._cookieID.containsKey(id) && id >= 0) {
+         long[] cookieIDs = (long[])this._cookieID.get(id);
+         int numCookies = cookieIDs.length;
+         if (numCookies > 1) {
+            Object[] cookies = new Object[numCookies];
+
+            for (int i = 0; i < numCookies; i++) {
+               cookies[i] = this._arSupport.createCookie(super._text, cookieIDs[i]);
+            }
+
+            return cookies;
+         } else {
+            return numCookies == 1 ? this._arSupport.createCookie(super._text, cookieIDs[0]) : null;
+         }
+      } else {
+         return null;
+      }
    }
 
    @Override
@@ -293,7 +310,29 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    protected boolean keyDown(int keycode, int time) {
-      throw new RuntimeException("cod2jar: type check");
+      if (Keypad.key(keycode) == 21) {
+         Object cookie = this.getCookieWithFocus();
+         ActiveFieldCookie afc = null;
+         if (cookie instanceof Object[]) {
+            Object[] cookies = (Object[])cookie;
+
+            for (int i = 0; i < cookies.length; i++) {
+               Object var10000 = cookies[i];
+               if (cookies[i] instanceof ActiveFieldCookie) {
+                  afc = (ActiveFieldCookie)var10000;
+                  break;
+               }
+            }
+         } else if (cookie instanceof ActiveFieldCookie) {
+            afc = (ActiveFieldCookie)cookie;
+         }
+
+         if (afc != null && afc.invokeApplicationKeyVerb()) {
+            return true;
+         }
+      }
+
+      return super.keyDown(keycode, time);
    }
 
    @Override
@@ -373,7 +412,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    }
 
    private void postResults(int version) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
    @Override

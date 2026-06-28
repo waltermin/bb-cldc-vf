@@ -2,6 +2,7 @@ package net.rim.device.api.util;
 
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.util.ExternalStringPattern;
 
 public final class StringPatternRepository {
    private StringPatternContainer _container = new StringPatternContainer(new StringPattern[0]);
@@ -25,7 +26,24 @@ public final class StringPatternRepository {
    }
 
    private final synchronized void remove(long[] ids) {
-      throw new RuntimeException("cod2jar: type check");
+      StringPattern[] origPatterns = this._container.getElements();
+      StringPattern[] newPatterns = new StringPattern[origPatterns.length];
+      System.arraycopy(origPatterns, 0, newPatterns, 0, origPatterns.length);
+
+      for (int i = 0; i < ids.length; i++) {
+         for (int j = 0; j < origPatterns.length; j++) {
+            StringPattern var10000 = origPatterns[j];
+            if (origPatterns[j] instanceof ExternalStringPattern) {
+               ExternalStringPattern pattern = (ExternalStringPattern)var10000;
+               if (pattern.getID() == ids[i]) {
+                  Arrays.remove(newPatterns, origPatterns[j]);
+                  break;
+               }
+            }
+         }
+      }
+
+      this._container = new StringPatternContainer(newPatterns);
    }
 
    private final synchronized StringPatternContainer getContainer() {

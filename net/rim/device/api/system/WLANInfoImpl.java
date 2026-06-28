@@ -34,11 +34,19 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
    }
 
    final void addListener(WLANListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (listener instanceof WLANConnectionListener) {
+         WLANConnectionListener wcListener = (WLANConnectionListener)listener;
+         MyWLANConnectionListener myListener = new MyWLANConnectionListener(wcListener);
+         Application.getApplication().addRadioListener(myListener);
+      }
    }
 
    final void removeListener(WLANListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      if (listener instanceof WLANConnectionListener) {
+         WLANConnectionListener wcListener = (WLANConnectionListener)listener;
+         MyWLANConnectionListener myListener = new MyWLANConnectionListener(wcListener);
+         Application.getApplication().removeRadioListener(myListener);
+      }
    }
 
    final synchronized boolean isConnected() {

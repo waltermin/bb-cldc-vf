@@ -2,6 +2,7 @@ package net.rim.device.api.io;
 
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.WeakReferenceUtilities;
@@ -35,7 +36,17 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
    }
 
    public void init(DatagramConnection subConnection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (subConnection != null) {
+         if (!(subConnection instanceof DatagramConnectionBase)) {
+            throw new RuntimeException();
+         }
+
+         DatagramConnectionBase subConnectionBase = (DatagramConnectionBase)subConnection;
+         this._subConnection = subConnectionBase;
+         this.addSubConnection(subConnectionBase);
+      }
+
+      Application.getApplication().addGlobalEventListener(this);
    }
 
    public void addConnection(DatagramConnection connection) {
@@ -70,8 +81,76 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
       return this.getMaximumLength();
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void superSend(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      DatagramBase dgram = null;
+      if (datagram instanceof DatagramBase) {
+         dgram = (DatagramBase)datagram;
+      }
+
+      DatagramStatusListener listener = null;
+      int dgramId = 0;
+      if (dgram != null) {
+         listener = dgram.getDatagramStatusListener();
+         dgramId = dgram.getDatagramId();
+      }
+
+      this.xmitDgslEvent(listener, dgramId, 1, null);
+      boolean cancelled = false;
+      synchronized (this._sendDatagramList) {
+         Thread thread = Thread.currentThread();
+         if (this._sendCurrentDatagram != null || this._sendListCount > 0) {
+            this.addDatagramForSend(datagram, thread);
+
+            try {
+               this._sendDatagramList.wait();
+            } catch (InterruptedException var22) {
+            }
+
+            int index = this.findDatagramForSend(datagram, thread);
+            if (index >= 0) {
+               this.removeDatagramForSend(index);
+            } else {
+               cancelled = true;
+            }
+         }
+
+         this._sendCurrentDatagram = datagram;
+         this._sendCurrentThread = thread;
+      }
+
+      boolean var19 = false /* VF: Semaphore variable */;
+
+      try {
+         var19 = true;
+         if (cancelled) {
+            this.xmitDgslEvent(listener, dgramId, 129, null);
+            throw new IOCancelledException();
+         }
+
+         if (dgram != null) {
+            this.send(datagram, dgram.getAddressBase(), dgram, listener, dgramId);
+            var19 = false;
+         } else {
+            this.send(datagram);
+            var19 = false;
+         }
+      } finally {
+         if (var19) {
+            synchronized (this._sendDatagramList) {
+               this._sendCurrentDatagram = null;
+               this._sendCurrentThread = null;
+               this._sendDatagramList.notify();
+            }
+         }
+      }
+
+      synchronized (this._sendDatagramList) {
+         this._sendCurrentDatagram = null;
+         this._sendCurrentThread = null;
+         this._sendDatagramList.notify();
+      }
    }
 
    private void addDatagramForSend(Datagram datagram, Thread thread) {
@@ -204,7 +283,38 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
    }
 
    protected boolean passUpDatagram(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      DatagramAddressBase addressBase = null;
+      String address = null;
+      if (!(datagram instanceof DatagramBase)) {
+         address = datagram.getAddress();
+      } else {
+         addressBase = ((DatagramBase)datagram).getAddressBase();
+      }
+
+      int datagramReceived = 0;
+      synchronized (this._superConnections) {
+         for (int i = this._superConnections.length - 1; i >= 0; i--) {
+            WeakReference w = this._superConnections[i];
+            DatagramConnectionBase c;
+            if (w != null && (c = (DatagramConnectionBase)w.get()) != null) {
+               boolean ret;
+               if (addressBase != null) {
+                  ret = c.isAddressed(addressBase);
+               } else {
+                  ret = c.isAddressed(address);
+               }
+
+               if (ret) {
+                  c.processReceivedDatagram(datagram);
+                  datagramReceived++;
+               }
+            } else {
+               Arrays.removeAt(this._superConnections, i);
+            }
+         }
+      }
+
+      return datagramReceived > 0;
    }
 
    protected void processReceivedDatagram(Datagram _1) {
@@ -224,7 +334,14 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
    }
 
    public int allocateDatagramId(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      int datagramId = 0;
+      if (datagram instanceof DatagramBase) {
+         DatagramBase dgram = (DatagramBase)datagram;
+         datagramId = this.getNextDatagramId(dgram);
+         dgram.setDatagramId(datagramId);
+      }
+
+      return datagramId;
    }
 
    protected void forwardDgslEvent(int index, int event, Object context) {

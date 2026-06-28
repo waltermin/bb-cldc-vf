@@ -1,12 +1,14 @@
 package net.rim.tid.awt.im;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.InvokableAction;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.tid.awt.Event;
@@ -23,6 +25,7 @@ import net.rim.tid.itie.IMManager;
 import net.rim.tid.itie.ISecureInputMethodBuffer;
 import net.rim.tid.itie.LingDataRegistry;
 import net.rim.tid.text.AttributedString;
+import net.rim.vm.Monitor;
 import net.rim.vm.WeakReference;
 
 public class InputContext {
@@ -375,7 +378,22 @@ public class InputContext {
    }
 
    private boolean isUnicodeInputAllowed() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._inputMethod != null && this._isComponentAllowed) {
+         if (this._cachedLocale != null) {
+            return false;
+         }
+
+         IComponent c = this.getInputComponent();
+         if (c == null) {
+            return true;
+         }
+
+         if (c instanceof TextField) {
+            return ((TextField)c).isUnicodeInputAllowed();
+         }
+      }
+
+      return true;
    }
 
    public synchronized int getAppId() {
@@ -460,7 +478,34 @@ public class InputContext {
    }
 
    private void updateHanMask(IComponent comp, Locale locale) {
-      throw new RuntimeException("cod2jar: type check");
+      if (comp != null && locale != null) {
+         int hanMask = this.getHanMaskForLocale(locale);
+         if (hanMask != 0) {
+            Font curFont = FontRegistry.getDefaultFont();
+            Font appFont = Font.getDefault();
+            if (curFont != appFont) {
+               if ((appFont.getStyle() & hanMask) != hanMask) {
+                  Font.setDefaultFont(this.getFontForHanMask(appFont, hanMask));
+               }
+
+               curFont = appFont;
+            }
+
+            if (comp instanceof BasicEditField) {
+               Font f = ((BasicEditField)comp).getFont();
+               if (f != null && f != curFont && (f.getStyle() & hanMask) != hanMask) {
+                  Font newFont = this.getFontForHanMask(f, hanMask);
+                  Application app = Application.getApplication();
+                  if (app == null || Monitor.monitorOwned(Application.getEventLock())) {
+                     comp.setFont(newFont);
+                     return;
+                  }
+
+                  app.invokeLater(new InputContext$1(this, comp, newFont));
+               }
+            }
+         }
+      }
    }
 
    private Font getFontForHanMask(Font origin, int mask) {

@@ -68,7 +68,18 @@ final class ConversionDataRegistryHelper {
    }
 
    final synchronized byte[][][] getConversionData(int id, int[] dataOffset) {
-      throw new RuntimeException("cod2jar: type check");
+      id &= -268435457;
+      int length = this._encodingMappingTable.length;
+
+      for (int i = 0; i < length; i++) {
+         ConversionDataRegistryHelper$EncodingMappingData eData = this._encodingMappingTable[i];
+         if (eData != null && eData._id == id) {
+            dataOffset[0] = eData._encodingDataOffset;
+            return eData._binaryData;
+         }
+      }
+
+      return (byte[][][])((byte[][])null);
    }
 
    final int getEncodingIDLocal(String encoding) {

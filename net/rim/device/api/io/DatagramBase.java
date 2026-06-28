@@ -108,7 +108,12 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
 
    @Override
    public void setAddress(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(datagram instanceof DatagramBase)) {
+         this.setAddress(datagram.getAddress());
+      } else {
+         DatagramBase datagramBase = (DatagramBase)datagram;
+         this._addressBase = datagramBase._addressBase;
+      }
    }
 
    @Override

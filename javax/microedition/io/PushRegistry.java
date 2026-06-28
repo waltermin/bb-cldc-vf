@@ -2,6 +2,8 @@ package javax.microedition.io;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Vector;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
@@ -21,15 +23,64 @@ public class PushRegistry {
    }
 
    public static String getFilter(String connection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (connection != null && connection.length() != 0) {
+         String suiteName = PushRegistryHelper.getMidletProperty("MIDlet-Name");
+         PushRegistryHelper prh = PushRegistryHelper.getInstance();
+         String[] array = (String[])prh._filterMap.get(connection);
+         return array != null && array[0].equals(suiteName) ? array[1] : null;
+      } else {
+         return null;
+      }
    }
 
    public static String getMIDlet(String connection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (connection != null && connection.length() != 0) {
+         PushRegistryHelper prh = PushRegistryHelper.getInstance();
+         String[] array = (String[])prh._connectionMap.get(connection);
+         if (array != null) {
+            String suiteName = PushRegistryHelper.getMidletProperty("MIDlet-Name");
+            if (suiteName != null && suiteName.equals(array[0])) {
+               return array[1];
+            }
+         }
+
+         return null;
+      } else {
+         return null;
+      }
    }
 
    public static String[] listConnections(boolean available) {
-      throw new RuntimeException("cod2jar: type check");
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      String suiteName = PushRegistryHelper.getMidletProperty("MIDlet-Name");
+      Vector connections = new Vector(5);
+      removeStaleEntries();
+      Enumeration e = prh._connectionMap.keys();
+
+      while (e.hasMoreElements()) {
+         String connection = (String)e.nextElement();
+         String[] array = (String[])prh._connectionMap.get(connection);
+         if (array != null && array[0].equals(suiteName)) {
+            connections.addElement(connection);
+         }
+      }
+
+      if (available) {
+         for (int i = connections.size() - 1; i >= 0; i--) {
+            String connection = (String)connections.elementAt(i);
+            if (null == prh.get(connection)) {
+               connections.removeElement(connection);
+            }
+         }
+      }
+
+      String[] out = new String[0];
+      if (!connections.isEmpty()) {
+         out = new String[connections.size()];
+         connections.copyInto(out);
+      }
+
+      return out;
    }
 
    public static long registerAlarm(String midlet, long time) {
@@ -177,11 +228,51 @@ public class PushRegistry {
    }
 
    public static boolean unregisterConnection(String connection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (connection != null && connection.length() != 0) {
+         PushRegistryHelper prh = PushRegistryHelper.getInstance();
+         String callingprocess = PushRegistryHelper.getCallingMidletName();
+         String suite = PushRegistryHelper.getMidletProperty("MIDlet-Name");
+         String[] array = (String[])prh._connectionMap.get(connection);
+         if (array == null) {
+            return false;
+         } else if (!array[0].equals(suite)) {
+            throw new SecurityException();
+         } else if (!removeStaleConnection(connection)) {
+            return false;
+         } else {
+            String midlet = array[1];
+            prh._connectionMap.remove(connection);
+            prh._filterMap.remove(connection);
+            String midletprocess = CodeModuleManager.getModuleName(getModuleHandleForMidletClass(midlet));
+            if (midletprocess.equals(callingprocess)) {
+               MIDletApplication ma = (MIDletApplication)Application.getApplication();
+               ma.removePushRegistry(midlet, connection);
+               return true;
+            } else {
+               launchMidlet(midlet, new String[]{PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_SHUTDOWN_PUSH_REGISTRY_WORK, midlet, connection}, false);
+               return true;
+            }
+         }
+      } else {
+         return false;
+      }
    }
 
    private static boolean removeStaleConnection(String connection) {
-      throw new RuntimeException("cod2jar: type check");
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      String[] array = (String[])prh._connectionMap.get(connection);
+      if (array == null) {
+         return true;
+      } else {
+         String midlet = array[1];
+         if (getModuleHandleForMidletClass(midlet) == -1) {
+            prh._connectionMap.remove(connection);
+            prh._filterMap.remove(connection);
+            return false;
+         } else {
+            return true;
+         }
+      }
    }
 
    private static void removeStaleEntries() {

@@ -14,7 +14,12 @@ public class ColorChoiceField$NamedColor {
 
    @Override
    public boolean equals(Object object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof ColorChoiceField$NamedColor)) {
+         return false;
+      }
+
+      ColorChoiceField$NamedColor other = (ColorChoiceField$NamedColor)object;
+      return this._color == other._color;
    }
 
    public int getColor() {

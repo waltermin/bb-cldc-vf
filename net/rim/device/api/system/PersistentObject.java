@@ -41,7 +41,19 @@ public final class PersistentObject extends PersistentRootObject implements Pers
    }
 
    private final synchronized Object getContents(int moduleHandle, CodeSigningKey readKey, CodeSigningKey replaceKey) {
-      throw new RuntimeException("cod2jar: type check");
+      Object obj = super._contents;
+      if (!(obj instanceof ControlledAccess)) {
+         if (obj != null && (readKey != null || replaceKey != null)) {
+            throw new ControlledAccessException();
+         }
+      } else {
+         ControlledAccess ca = (ControlledAccess)obj;
+         obj = ca.getObject();
+         ca.assertReadPermission(moduleHandle);
+         ca.assertKeys(readKey, replaceKey);
+      }
+
+      return obj;
    }
 
    public final synchronized void setContents(Object contents) {
@@ -72,11 +84,16 @@ public final class PersistentObject extends PersistentRootObject implements Pers
    }
 
    private final synchronized void setContents(int moduleHandle, Object contents) {
-      throw new RuntimeException("cod2jar: type check");
+      if (super._contents instanceof ControlledAccess) {
+         ControlledAccess ca = (ControlledAccess)super._contents;
+         ca.assertReplacePermission(moduleHandle);
+      }
+
+      super._contents = contents;
    }
 
    public final ControlledAccess getControlledAccess() {
-      throw new RuntimeException("cod2jar: type check");
+      return !(super._contents instanceof ControlledAccess) ? new ControlledAccess(super._contents, null, null) : (ControlledAccess)super._contents;
    }
 
    public final void setReservedMemorySize(int size) {

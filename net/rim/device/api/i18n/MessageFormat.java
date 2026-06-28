@@ -1,5 +1,7 @@
 package net.rim.device.api.i18n;
 
+import java.util.Date;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.Array;
 
 public class MessageFormat extends Format {
@@ -106,7 +108,14 @@ public class MessageFormat extends Format {
 
    @Override
    public final StringBuffer format(Object arguments, StringBuffer result, FieldPosition ignored) {
-      throw new RuntimeException("cod2jar: type check");
+      Object[] objs;
+      try {
+         objs = (Object[])arguments;
+      } catch (ClassCastException cce) {
+         throw new IllegalArgumentException("argument should be an array");
+      }
+
+      return this.format(objs, result, ignored, 0);
    }
 
    public static String format(String pattern, Object[] arguments) {
@@ -115,7 +124,51 @@ public class MessageFormat extends Format {
    }
 
    private StringBuffer format(Object[] arguments, StringBuffer result, FieldPosition status, int recursionProtection) {
-      throw new RuntimeException("cod2jar: type check");
+      int lastOffset = 0;
+
+      for (int i = 0; i <= this.maxOffset; i++) {
+         StringUtilities.append(result, this.pattern, lastOffset, this.offsets[i] - lastOffset);
+         lastOffset = this.offsets[i];
+         int argumentNumber = this.argumentNumbers[i];
+         if (arguments != null && argumentNumber < arguments.length) {
+            Object obj = arguments[argumentNumber];
+            boolean tryRecursion = false;
+            Format subformat = null;
+            if (this._formats != null && this._formats.length > i) {
+               subformat = this._formats[i];
+            }
+
+            String arg;
+            if (obj == null) {
+               arg = "null";
+            } else if (subformat != null) {
+               arg = subformat.format(obj);
+            } else if (obj instanceof Date) {
+               arg = DateFormat.getInstance(63).format(obj);
+            } else if (!(obj instanceof String)) {
+               arg = obj.toString();
+               if (arg == null) {
+                  arg = "null";
+               }
+            } else {
+               arg = (String)obj;
+            }
+
+            if (tryRecursion && arg.indexOf(123) >= 0) {
+               MessageFormat temp = new MessageFormat(arg, this._locale);
+               temp.format(arguments, result, status, recursionProtection);
+            } else {
+               result.append(arg);
+            }
+         } else {
+            result.append('{');
+            result.append(argumentNumber);
+            result.append('}');
+         }
+      }
+
+      StringUtilities.append(result, this.pattern, lastOffset, this.pattern.length() - lastOffset);
+      return result;
    }
 
    @Override

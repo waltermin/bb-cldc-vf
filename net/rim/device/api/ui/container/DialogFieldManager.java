@@ -228,6 +228,6 @@ public class DialogFieldManager extends Manager {
 
    @Override
    protected void sublayout(int width, int height) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 }

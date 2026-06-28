@@ -274,6 +274,38 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    final void dispatch(Message message) {
-      throw new RuntimeException("cod2jar: type check");
+      if (message.getSubMessage() == this._portHandle) {
+         int data0 = message.getData0();
+         switch (message.getEvent()) {
+            case 10752:
+               break;
+            case 10753:
+               this._listener.dtrStateChange(data0 != 0);
+               return;
+            case 10754:
+               this._listener.dataReceived(data0);
+               return;
+            case 10755:
+               this._listener.dataSent();
+               break;
+            case 10756:
+            default:
+               boolean success = data0 == 0;
+               this._listener.deviceConnected(success);
+               this._remoteAddress = (byte[])message.getObject0();
+               if (this._sdpRecordHandle != -1) {
+                  BluetoothSDP.updateServiceAvailability(this._sdpRecordHandle, 0);
+                  return;
+               }
+               break;
+            case 10757:
+               this._listener.deviceDisconnected();
+               this._remoteAddress = null;
+               if (this._sdpRecordHandle != -1) {
+                  BluetoothSDP.updateServiceAvailability(this._sdpRecordHandle, 255);
+                  return;
+               }
+         }
+      }
    }
 }

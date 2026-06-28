@@ -243,6 +243,16 @@ public final class CellBroadcast {
    private static final native void writeLanguagePrefInternal(int var0, boolean var1, int var2);
 
    private static final CellBroadcast$ChannelInfo[] getInternalChannelInfos() {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (PersistentStore.getSynchObject()) {
+         PersistentObject po = PersistentStore.getPersistentObject(757118313738273256L);
+         CellBroadcast$ChannelInfo[] infos = (CellBroadcast$ChannelInfo[])po.getContents();
+         if (infos == null) {
+            infos = new CellBroadcast$ChannelInfo[0];
+            po.setContents(infos, 51);
+            po.commit();
+         }
+
+         return infos;
+      }
    }
 }

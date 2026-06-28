@@ -9,6 +9,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.container.VerticalFieldManager;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.LongHashtable;
 import net.rim.device.api.util.ToIntHashtable;
 import net.rim.device.internal.ui.Border;
@@ -208,7 +209,60 @@ public class Theme {
    }
 
    public synchronized void apply() {
-      throw new RuntimeException("cod2jar: type check");
+      this.applyIconCollections();
+      String prefix = "osicon_";
+      Enumeration descriptors = this._themeImageDescriptors.elements();
+
+      while (descriptors.hasMoreElements()) {
+         Theme$ImageDescriptor descriptor = (Theme$ImageDescriptor)descriptors.nextElement();
+         String name = descriptor.getName();
+         this.applyUiIcon(name, descriptor);
+         if (name.startsWith(prefix)) {
+            this.applyOsIcon(name, descriptor);
+         }
+      }
+
+      descriptors = this._defaultImageDescriptors.elements();
+
+      while (descriptors.hasMoreElements()) {
+         Theme$ImageDescriptor descriptor = (Theme$ImageDescriptor)descriptors.nextElement();
+         String name = descriptor.getName();
+         this.applyUiIcon(name, descriptor);
+         if (name.startsWith(prefix)) {
+            this.applyOsIcon(name, descriptor);
+         }
+      }
+
+      this.applyOsIcons(OS_ICONS, true);
+      this.applyKeyStateIcons(this._isKeyStateIconsVisible);
+      this.applyRadioIcons(this._isRadioIconsVisible);
+      descriptors = this._fonts.keys();
+
+      while (descriptors.hasMoreElements()) {
+         String name = (String)descriptors.nextElement();
+         String realName = name;
+         int dash = name.indexOf("$_sf");
+         if (dash != -1) {
+            realName = name.substring(0, dash);
+         }
+
+         int handle = FontRegistry.loadFont((byte[])this._fonts.get(name), realName, false);
+         if (handle >> 16 == -2) {
+            String originalName = FontRegistry.getTypefaceName(handle & 0xFF);
+            handle = FontRegistry.loadFont((byte[])this._fonts.get(name), originalName, false);
+            if (this._registeredFontNames == null) {
+               this._registeredFontNames = new Hashtable(10);
+            }
+
+            this._registeredFontNames.put(name, originalName);
+         }
+
+         if (handle >= 0) {
+            Arrays.add(this._fontHandles, handle);
+         }
+      }
+
+      this.applyFont();
    }
 
    synchronized String getRegisteredFontNameHack(String name) {
@@ -719,7 +773,7 @@ public class Theme {
    }
 
    public Bitmap[] getScrollbar(String name) {
-      throw new RuntimeException("cod2jar: type check");
+      return (Bitmap[])this._scrollbars.get(name);
    }
 
    public int getBorderStyle() {
@@ -731,7 +785,7 @@ public class Theme {
    }
 
    public byte[] getRingtone(String name) {
-      throw new RuntimeException("cod2jar: type check");
+      return name == null ? null : (byte[])this._ringtones.get(name);
    }
 
    public int getWidthOfKeyStateIcons() {

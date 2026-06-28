@@ -1,6 +1,7 @@
 package javax.microedition.lcdui;
 
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.internal.lcdui.Lcdui;
 
 class MIDPScreen$MyMenuItem extends MenuItem {
    Object _cookie;
@@ -14,6 +15,19 @@ class MIDPScreen$MyMenuItem extends MenuItem {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._cookie == null) {
+         this.this$0.destroyMIDlet();
+      } else {
+         if (this._cookie instanceof MIDPScreen$CommandCookie) {
+            Command command = ((MIDPScreen$CommandCookie)this._cookie)._cmd;
+            Item commandOwner = ((MIDPScreen$CommandCookie)this._cookie)._owner;
+            if (commandOwner != null) {
+               commandOwner.getItemCommandListener().commandAction(command, commandOwner);
+               return;
+            }
+
+            Lcdui.setCommandActionCallback(this.this$0._commandListener, command, this.this$0.getDisplayable());
+         }
+      }
    }
 }

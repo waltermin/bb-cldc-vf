@@ -29,27 +29,48 @@ final class SoftwareHMACCryptoToken extends HMACCryptoToken implements Persistab
 
    @Override
    public final int extractKeyLength(CryptoTokenMACKeyData cryptoTokenData) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(cryptoTokenData instanceof SoftwareHMACCryptoToken$HMACKeyData)) {
+         throw new IllegalArgumentException();
+      } else {
+         return ((SoftwareHMACCryptoToken$HMACKeyData)cryptoTokenData).getLength();
+      }
    }
 
    @Override
    public final byte[] extractKeyData(CryptoTokenMACKeyData cryptoTokenData) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(cryptoTokenData instanceof SoftwareHMACCryptoToken$HMACKeyData)) {
+         throw new IllegalArgumentException();
+      } else {
+         return ((SoftwareHMACCryptoToken$HMACKeyData)cryptoTokenData).getData();
+      }
    }
 
    @Override
    public final CryptoTokenMACContext initialize(CryptoTokenMACKeyData keyData, Digest digest) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(keyData instanceof SoftwareHMACCryptoToken$HMACKeyData)) {
+         throw new IllegalArgumentException();
+      }
+
+      SoftwareHMACCryptoToken$HMACKeyData hMACKeyData = (SoftwareHMACCryptoToken$HMACKeyData)keyData;
+      return new SoftwareHMACCryptoToken$HMACContext(hMACKeyData, digest);
    }
 
    @Override
    public final void reset(CryptoTokenMACContext context) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(context instanceof SoftwareHMACCryptoToken$HMACContext)) {
+         throw new IllegalArgumentException();
+      }
+
+      ((SoftwareHMACCryptoToken$HMACContext)context).reset();
    }
 
    @Override
    public final int getMAC(CryptoTokenMACContext context, byte[] buffer, int offset, boolean reset) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(context instanceof SoftwareHMACCryptoToken$HMACContext)) {
+         throw new IllegalArgumentException();
+      } else {
+         return ((SoftwareHMACCryptoToken$HMACContext)context).getMAC(buffer, offset, reset);
+      }
    }
 
    public static final void selfTest() {

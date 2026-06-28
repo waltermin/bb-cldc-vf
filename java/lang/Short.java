@@ -38,6 +38,6 @@ public final class Short {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(obj instanceof Short) ? false : ((Short)obj).value == this.value;
    }
 }

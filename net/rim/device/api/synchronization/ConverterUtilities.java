@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.TimeZone;
+import net.rim.device.api.io.ReservableSize;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.DateTimeUtilities;
@@ -576,7 +577,42 @@ public final class ConverterUtilities {
    }
 
    public static final void readByteStream(DataBuffer buffer, boolean markConsumed, OutputStream out) {
-      throw new RuntimeException("cod2jar: type check");
+      long length = readLong(buffer, markConsumed);
+      if (out instanceof ReservableSize) {
+         ReservableSize reservable = (ReservableSize)out;
+
+         try {
+            reservable.reserveSize(length);
+         } catch (IOException e) {
+            throw new IllegalStateException(e.toString());
+         }
+      }
+
+      long lastSegment = (length + 65534) / 65535;
+
+      try {
+         for (long segment = 0; segment < lastSegment; segment += 1) {
+            int bufflen = buffer.available();
+            if (bufflen < 3) {
+               throw new EOFException();
+            }
+
+            int len = buffer.readUnsignedShort();
+            markConsumed(buffer, markConsumed);
+            if (bufflen - 3 < len) {
+               throw new EOFException();
+            }
+
+            byte[] data = buffer.getArray();
+            int offset = buffer.getArrayPosition();
+            out.write(data, offset, len);
+            buffer.skipBytes(len);
+         }
+      } catch (EOFException e) {
+         throw e;
+      } catch (IOException e) {
+         throw new IllegalStateException(e.toString());
+      }
    }
 
    public static final short[] readShortArray(DataBuffer buffer) {

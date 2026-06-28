@@ -9,10 +9,12 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.io.PushRegistryHelper;
 import net.rim.device.internal.system.ApplicationManagerInternal;
+import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.LockEventLogger;
 import net.rim.device.internal.system.SecurityManager;
+import net.rim.device.internal.ui.MIDletApplication;
 import net.rim.vm.Array;
 import net.rim.vm.DebugSupport;
 import net.rim.vm.Message;
@@ -418,7 +420,62 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final int runApplication(ApplicationDescriptor descriptor, boolean grabForeground, Thread testingThread, int callingModule) {
-      throw new RuntimeException("cod2jar: type check");
+      this.checkDescriptorSecurity(descriptor, callingModule);
+      synchronized (this._processes) {
+         String name = null;
+
+         int var10000;
+         try {
+            name = descriptor.getModuleName();
+            System.out.println("Starting " + name);
+            ApplicationProcess process = this.findProcess(descriptor);
+            if (process != null) {
+               System.out.println(name + " already running");
+               if (grabForeground) {
+                  Application a = process.getApplication();
+                  if (!(a instanceof MIDletApplication)) {
+                     this.requestForeground(process, false);
+                  } else {
+                     MIDletApplication ma = (MIDletApplication)a;
+                     ma.bringToForeground();
+                  }
+               }
+
+               if (testingThread != null) {
+                  process.addThread(testingThread);
+               }
+
+               return process.getProcessId();
+            }
+
+            process = new ApplicationProcess(this, descriptor, grabForeground);
+            int moduleHandle = descriptor.getModuleHandle();
+            int index = 0;
+            if (CodeModuleManager.isLibrary(moduleHandle)) {
+               index = 1;
+            }
+
+            if (!CodeStore.checkDRMTrailer(moduleHandle)) {
+               throw new RuntimeException("DRM violation");
+            }
+
+            process.start(moduleHandle, name, descriptor.getArgs(), index);
+            this._processes.addProcess(process);
+            int pid = process.getProcessId();
+            System.out.println("Started " + name + '(' + pid + ')');
+            if (testingThread != null) {
+               process.addThread(testingThread);
+            }
+
+            var10000 = pid;
+         } catch (Exception ex) {
+            String msg = "Error starting " + name + ": " + ex.getMessage();
+            appError(msg);
+            throw new ApplicationManagerException(msg);
+         }
+
+         return var10000;
+      }
    }
 
    @Override
@@ -659,7 +716,7 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void processExited(boolean inStartup) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override

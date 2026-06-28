@@ -1,6 +1,7 @@
 package net.rim.vm;
 
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
 
 public class CodeUpgrade {
@@ -38,7 +39,15 @@ public class CodeUpgrade {
    }
 
    public static void start(boolean undo) {
-      throw new RuntimeException("cod2jar: type check");
+      IntHashtable ht = getMessages();
+      IntEnumeration ie = ht.keys();
+
+      while (ie.hasMoreElements()) {
+         int id = ie.nextElement();
+         setMessage0(id, (byte[])ht.get(id));
+      }
+
+      start0(undo);
    }
 
    private static native void start0(boolean var0);

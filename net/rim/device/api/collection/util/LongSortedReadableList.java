@@ -39,7 +39,7 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
    }
 
    protected void mergeCollection(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    public long getKey(int offset) {

@@ -10,10 +10,12 @@ import net.rim.device.api.io.DatagramStatusListener;
 import net.rim.device.api.io.IOFormatException;
 import net.rim.device.api.io.IOProperties;
 import net.rim.device.api.io.SmsAddress;
+import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.SMSPacketHeader;
 import net.rim.device.api.system.SMSPacketListener;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CRC16;
 import net.rim.device.cldc.io.nativebase.NativeTransport;
 import net.rim.device.internal.system.VoiceDataUsage;
 import net.rim.vm.WeakReference;
@@ -39,7 +41,22 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final void nativeSendVerify(DatagramAddressBase addressBase, Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      SmsAddress addr = null;
+      if (addressBase instanceof SmsAddress) {
+         addr = (SmsAddress)addressBase;
+      }
+
+      if (addr == null) {
+         addr = new SmsAddress(datagram.getAddress());
+      }
+
+      if (datagram.getLength() <= super._maxPacketSize && addr.getHeader().getPeerAddress() != null) {
+         super._txAddressBase = addr;
+      } else {
+         EventLogger.logEvent(super.GUID, 1413834351, 2);
+         this.xmitDgslEvent(super._txListener, super._txDgramId, 12674, null);
+         throw new IOFormatException();
+      }
    }
 
    @Override
@@ -212,7 +229,74 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final void send(Datagram datagram, DatagramAddressBase addressBase, IOProperties properties, DatagramStatusListener listener, int dgramId) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!ITPolicy.getBoolean(15, true)) {
+         throw new SecurityException("Disabled by IT Policy");
+      }
+
+      SmsAddress addr = null;
+      if (addressBase instanceof SmsAddress) {
+         addr = (SmsAddress)addressBase;
+      }
+
+      if (addr == null) {
+         addr = new SmsAddress(datagram.getAddress());
+         SMSPacketHeader header = addr.getHeader();
+         header.setMessageCoding(0);
+      }
+
+      int udhLength = 0;
+      if (datagram instanceof DatagramBase) {
+         Integer integer = (Integer)((DatagramBase)datagram).getProperty(Protocol.PROPERTY_USER_DATA_HEADER_LENGTH);
+         if (integer != null) {
+            udhLength = integer;
+         }
+      }
+
+      SMSPacketHeader header = addr.getHeader();
+      int messageCoding = header.getMessageCoding();
+      int characters = (datagram.getLength() - udhLength) / SMSPacketHeader.getBytesPerCharacter(messageCoding);
+      int totalSegments = 0;
+      if (header.getProtocolMeaning() == 255) {
+         totalSegments = SMSPacketHeader.getSegmentsCDMA(characters, messageCoding, 3);
+      } else {
+         totalSegments = SMSPacketHeader.getSegments(characters, messageCoding, udhLength);
+      }
+
+      if (totalSegments == 1) {
+         super.send(datagram, addr, properties, listener, dgramId);
+         this.notifyListener(datagram);
+      } else {
+         byte[] data = new byte[datagram.getLength()];
+         System.arraycopy(datagram.getData(), 0, data, 0, datagram.getLength());
+         datagram.setData(null, 0, 0);
+         int refNumber = dgramId;
+         refNumber = CRC16.update(refNumber, data);
+         boolean alreadyHasUDH = header.isUserDataHeaderPresent();
+         SMSSegmentListener segListener = new SMSSegmentListener(listener, totalSegments, dgramId);
+         synchronized (segListener) {
+            for (int i = 0; i < totalSegments; i++) {
+               if (header.getProtocolMeaning() == 255) {
+                  SmsUtil.constructSegmentCDMA(datagram, header, data, totalSegments, i);
+               } else {
+                  SmsUtil.constructSegment(datagram, header, data, totalSegments, i, refNumber, alreadyHasUDH);
+               }
+
+               this.allocateDatagramId(datagram);
+               super.send(datagram, addr, properties, segListener, dgramId);
+
+               try {
+                  segListener.wait();
+               } catch (InterruptedException var20) {
+               }
+
+               if (segListener.errorOccurred()) {
+                  break;
+               }
+
+               this.notifyListener(datagram);
+            }
+         }
+      }
    }
 
    private final void notifyListener(Datagram d) {
@@ -227,7 +311,14 @@ public final class Transport extends NativeTransport implements SMSPacketListene
    }
 
    public final void addOutboundMessageListener(MessageListener l) {
-      throw new RuntimeException("cod2jar: type check");
+      if (l == null) {
+         this._outboundListener = null;
+      } else {
+         if (l instanceof OutboundMessageListener) {
+            OutboundMessageListener oml = (OutboundMessageListener)l;
+            this._outboundListener = oml;
+         }
+      }
    }
 
    @Override

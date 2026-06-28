@@ -673,7 +673,12 @@ public final class CodeModuleGroup {
 
    @Override
    public final boolean equals(Object o) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(o instanceof CodeModuleGroup)) {
+         return false;
+      }
+
+      CodeModuleGroup cmg = (CodeModuleGroup)o;
+      return this._groupName.equals(cmg._groupName);
    }
 
    public static final CodeModuleGroup load(String groupName) {

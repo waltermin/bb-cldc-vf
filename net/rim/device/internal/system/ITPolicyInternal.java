@@ -215,7 +215,7 @@ public final class ITPolicyInternal {
    }
 
    private static final byte[][][] getSecondaryPublicKeys() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    private static final boolean updateStatusAndNotify(DataBuffer data) {

@@ -38,6 +38,6 @@ public final class Byte {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(obj instanceof Byte) ? false : ((Byte)obj).value == this.value;
    }
 }

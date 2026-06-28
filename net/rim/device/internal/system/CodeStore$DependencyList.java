@@ -102,7 +102,31 @@ class CodeStore$DependencyList {
    }
 
    private IntIntHashtable buildModuleDependencyList(int moduleHandle) {
-      throw new RuntimeException("cod2jar: type check");
+      long start = System.currentTimeMillis();
+      IntIntHashtable moduleDependencyList = new IntIntHashtable();
+      moduleDependencyList.put(moduleHandle, 1);
+      this._queue[0] = moduleHandle;
+      int read = 0;
+      int write = 1;
+
+      while (read < write) {
+         int handle = this._queue[read++];
+         int[] dependencies = (int[])this._moduleHandleToDependencyHandles.get(handle);
+         int numDependencies = dependencies == null ? 0 : dependencies.length;
+         if (numDependencies > 0) {
+            for (int j = numDependencies - 1; j >= 0; j--) {
+               int h = dependencies[j];
+               if (moduleDependencyList.put(h, 1) != 1) {
+                  this._queue[write++] = h;
+               }
+            }
+         } else {
+            System.out.println("CodeStore.DependencyList.buildModuleDependencyList() - found no dependencies for " + handle);
+         }
+      }
+
+      System.out.println("CodeStore.DependencyList.buildModuleDependencyList() took " + (System.currentTimeMillis() - start) + " - [" + write + "]");
+      return moduleDependencyList;
    }
 
    synchronized boolean isDependency(int processModuleHandle, int callingModuleHandle) {

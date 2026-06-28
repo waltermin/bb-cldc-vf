@@ -27,6 +27,13 @@ final class YKCleaner implements Runnable {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: type check");
+      this._registered = false;
+      if (!(this._objToClean instanceof YKDecode)) {
+         if (this._objToClean instanceof YKEncode) {
+            ((YKEncode)this._objToClean).yk_uninit();
+         }
+      } else {
+         ((YKDecode)this._objToClean).yk_uninit();
+      }
    }
 }

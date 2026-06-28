@@ -7,6 +7,8 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.util.AbstractString;
 import net.rim.device.api.util.FactoryUtil;
+import net.rim.device.api.util.StringPattern;
+import net.rim.device.api.util.StringPattern$Match;
 import net.rim.device.api.util.StringPatternContainer;
 import net.rim.device.internal.ui.ArticInterface$Line;
 import net.rim.device.internal.ui.ArticInterface$LineInfo;
@@ -230,11 +232,59 @@ class ActiveRegionSupport {
       Object context,
       int instance
    ) {
-      throw new RuntimeException("cod2jar: type check");
+      if (patterns != null) {
+         StringPattern$Match match = new StringPattern$Match();
+
+         for (int idx = 0; idx < patterns.size(); idx++) {
+            StringPattern pattern = (StringPattern)patterns.getAt(idx);
+
+            try {
+               if (pattern.findMatch(str, minIndex, curIndex, maxIndex, match)) {
+                  char[] data = new char[match.endIndex - match.beginIndex];
+                  str.getChars(match.beginIndex, match.endIndex, data, 0);
+                  Object cookie = createCookie(match.id, new String(data));
+                  if (cookie instanceof ActiveFieldCookie) {
+                     ActiveFieldCookie afc = (ActiveFieldCookie)cookie;
+                     Vector items = new Vector();
+                     MenuItem defaultItem = afc.getFocusVerbs(provider, context, items);
+                     if (instance == 0) {
+                        for (int i = 0; i < items.size(); i++) {
+                           if (items.elementAt(i) instanceof MenuItem) {
+                              contextMenu.addItem((MenuItem)items.elementAt(i));
+                           }
+                        }
+                     } else if (defaultItem != null && contextMenu != null) {
+                        contextMenu.addItem(defaultItem);
+                     }
+                  }
+               }
+            } catch (IndexOutOfBoundsException var18) {
+            }
+         }
+      }
    }
 
    static MenuItem addCookieMenuItems(CookieProvider provider, Object cookie, ContextMenu contextMenu, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      MenuItem defaultItem = null;
+      if (!(cookie instanceof ActiveFieldCookie)) {
+         if (cookie instanceof Object[]) {
+            Object[] cookies = (Object[])cookie;
+
+            for (int i = 0; i < cookies.length; i++) {
+               Object var10000 = cookies[i];
+               if (cookies[i] instanceof ActiveFieldCookie) {
+                  MenuItem currDefault = cookieToMenuItem((ActiveFieldCookie)var10000, provider, contextMenu, context);
+                  if (currDefault != null) {
+                     defaultItem = currDefault;
+                  }
+               }
+            }
+         }
+      } else {
+         defaultItem = cookieToMenuItem((ActiveFieldCookie)cookie, provider, contextMenu, context);
+      }
+
+      return defaultItem;
    }
 
    private static MenuItem cookieToMenuItem(ActiveFieldCookie cookie, CookieProvider provider, ContextMenu contextMenu, Object context) {

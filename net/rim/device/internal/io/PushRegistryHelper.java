@@ -1,5 +1,6 @@
 package net.rim.device.internal.io;
 
+import java.io.IOException;
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
 import net.rim.device.api.system.ApplicationRegistry;
@@ -139,6 +140,16 @@ public class PushRegistryHelper {
    }
 
    public static Connection checkConnection(String connection) {
-      throw new RuntimeException("cod2jar: type check");
+      PushRegistryHelper prh = getInstance();
+      String[] array = (String[])prh._connectionMap.get(connection);
+      if (array != null && array.length > 0) {
+         String suite = array[0];
+         String suiteName = getMidletProperty("MIDlet-Name");
+         if (!suiteName.equals(suite)) {
+            throw new IOException("Connection " + connection + " registered by another midlet!");
+         }
+      }
+
+      return prh.get(connection);
    }
 }

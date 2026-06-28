@@ -4,12 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.microedition.rms.InvalidRecordIDException;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.synchronization.SyncCollection;
 import net.rim.device.api.synchronization.SyncCollectionStatistics;
 import net.rim.device.api.synchronization.SyncCollectionStatisticsManager;
 import net.rim.device.api.synchronization.SyncConverter;
 import net.rim.device.api.synchronization.SyncObject;
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.IntHashtable;
@@ -34,7 +36,79 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
 
    @Override
    public boolean convert(SyncObject object, DataBuffer buffer, int version) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof RecordStoreSyncCollection$RMSSyncObject)) {
+         return false;
+      }
+
+      RecordStoreSyncCollection$RMSSyncObject rmso = (RecordStoreSyncCollection$RMSSyncObject)object;
+      DataBuffer dataBuffer = new DataBuffer(buffer.isBigEndian());
+      String midletSuiteName = rmso.getMidletSuiteName();
+      Hashtable rmsdata = rmso.getData();
+      int recordStoreCount = rmsdata.size();
+
+      try {
+         dataBuffer.writeUTF(midletSuiteName);
+      } catch (IOException e) {
+         return false;
+      }
+
+      dataBuffer.writeInt(recordStoreCount);
+      Enumeration keys = rmsdata.keys();
+
+      while (keys.hasMoreElements()) {
+         String recordStoreName = (String)keys.nextElement();
+         RecordStoreData recordStoreData = (RecordStoreData)rmsdata.get(recordStoreName);
+         int recordCount = recordStoreData.getNumRecords();
+         int[] recordIds = new int[recordCount];
+         recordStoreData.loadRecordIDs(recordIds);
+
+         try {
+            dataBuffer.writeUTF(recordStoreName);
+         } catch (IOException e) {
+            return false;
+         }
+
+         dataBuffer.writeInt(recordStoreData.getVersion());
+         dataBuffer.writeInt(recordStoreData.getNextRecordID());
+         dataBuffer.writeInt(recordStoreData.getSize());
+         dataBuffer.writeLong(recordStoreData.getLastModified());
+         dataBuffer.writeInt(recordCount);
+         dataBuffer.writeInt(recordStoreData.getAuthMode());
+
+         for (int i = 0; i < recordCount; i++) {
+            int recordId = recordIds[i];
+
+            byte[] value;
+            try {
+               value = recordStoreData.getRecordReadOnly(recordId);
+            } catch (InvalidRecordIDException e) {
+               continue;
+            }
+
+            dataBuffer.writeInt(recordId);
+            dataBuffer.writeByteArray(value);
+         }
+      }
+
+      byte[] data = dataBuffer.toArray();
+      int written = 0;
+      int offset = 0;
+      int toWrite = data.length;
+
+      while (true) {
+         written = Math.min(toWrite, 65535);
+         buffer.writeShort(written);
+         toWrite -= written;
+         if (toWrite <= 0) {
+            buffer.writeByte(0);
+            buffer.write(data, offset, written);
+            return true;
+         }
+
+         buffer.writeByte(1);
+         buffer.write(data, offset, written);
+         offset += written;
+      }
    }
 
    @Override
@@ -97,17 +171,105 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
 
    @Override
    public boolean addSyncObject(SyncObject object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof RecordStoreSyncCollection$RMSSyncObject)) {
+         return false;
+      }
+
+      RecordStoreSyncCollection$RMSSyncObject rmso = (RecordStoreSyncCollection$RMSSyncObject)object;
+      Hashtable data = rmso.getData();
+      String midletSuiteName = rmso.getMidletSuiteName();
+      if (!RecordStoreUtil.isOnDevice(midletSuiteName)) {
+         return true;
+      }
+
+      synchronized (_allRecordStores) {
+         _allRecordStores.put(midletSuiteName, data);
+      }
+
+      Enumeration e = data.elements();
+      synchronized (_activeStores) {
+         while (e.hasMoreElements()) {
+            RecordStoreData recordStoreData = (RecordStoreData)e.nextElement();
+            RecordStoreManagerProxy rsmp = (RecordStoreManagerProxy)ApplicationRegistry.getApplicationRegistry().getOrWaitFor(6635119920104263588L);
+            if (rsmp != null) {
+               _activeStores.put(recordStoreData, rsmp.createRecordStore(recordStoreData));
+            }
+         }
+
+         _persistentObject.commit();
+         return true;
+      }
    }
 
    @Override
    public boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
-      throw new RuntimeException("cod2jar: type check");
+      if (newObject instanceof RecordStoreSyncCollection$RMSSyncObject) {
+         RecordStoreSyncCollection$RMSSyncObject nrmso = (RecordStoreSyncCollection$RMSSyncObject)newObject;
+         if (oldObject instanceof RecordStoreSyncCollection$RMSSyncObject) {
+            RecordStoreSyncCollection$RMSSyncObject ormso = (RecordStoreSyncCollection$RMSSyncObject)oldObject;
+            String midletSuiteName = nrmso.getMidletSuiteName();
+            if (midletSuiteName != null && midletSuiteName.equals(ormso.getMidletSuiteName())) {
+               Hashtable data = nrmso.getData();
+               synchronized (_allRecordStores) {
+                  if (_allRecordStores.get(midletSuiteName) == null) {
+                     return false;
+                  }
+
+                  _allRecordStores.put(midletSuiteName, data);
+               }
+
+               Enumeration e = ormso.getData().elements();
+               synchronized (_activeStores) {
+                  while (e.hasMoreElements()) {
+                     RecordStoreData recordStoreData = (RecordStoreData)e.nextElement();
+                     _activeStores.remove(recordStoreData);
+                  }
+
+                  e = data.elements();
+
+                  while (e.hasMoreElements()) {
+                     RecordStoreData recordStoreData = (RecordStoreData)e.nextElement();
+                     RecordStoreManagerProxy rsmp = (RecordStoreManagerProxy)ApplicationRegistry.getApplicationRegistry().getOrWaitFor(6635119920104263588L);
+                     if (rsmp != null) {
+                        _activeStores.put(recordStoreData, rsmp.createRecordStore(recordStoreData));
+                     }
+                  }
+
+                  _persistentObject.commit();
+                  return true;
+               }
+            }
+
+            return false;
+         }
+      }
+
+      return false;
    }
 
    @Override
    public boolean removeSyncObject(SyncObject object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (object instanceof RecordStoreSyncCollection$RMSSyncObject) {
+         RecordStoreSyncCollection$RMSSyncObject rmso = (RecordStoreSyncCollection$RMSSyncObject)object;
+         String midletSuiteName = rmso.getMidletSuiteName();
+         if (midletSuiteName != null) {
+            synchronized (_allRecordStores) {
+               _allRecordStores.remove(midletSuiteName);
+            }
+
+            Enumeration e = rmso.getData().elements();
+            synchronized (_activeStores) {
+               while (e.hasMoreElements()) {
+                  _activeStores.remove(e.nextElement());
+               }
+
+               _persistentObject.commit();
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    @Override
@@ -147,17 +309,21 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
 
    @Override
    public boolean isSyncObjectDirty(SyncObject object) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(object instanceof RecordStoreSyncCollection$RMSSyncObject) ? false : ((RecordStoreSyncCollection$RMSSyncObject)object).isDirty();
    }
 
    @Override
    public void setSyncObjectDirty(SyncObject object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (object instanceof RecordStoreSyncCollection$RMSSyncObject) {
+         ((RecordStoreSyncCollection$RMSSyncObject)object).setDirty(true);
+      }
    }
 
    @Override
    public void clearSyncObjectDirty(SyncObject object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (object instanceof RecordStoreSyncCollection$RMSSyncObject) {
+         ((RecordStoreSyncCollection$RMSSyncObject)object).setDirty(false);
+      }
    }
 
    @Override

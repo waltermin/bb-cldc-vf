@@ -8,6 +8,7 @@ import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
@@ -16,12 +17,15 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.system.CodeStore;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.MessageListener;
 import net.rim.device.internal.system.UnhandledGlobalKeyListener;
 import net.rim.device.internal.ui.BackingStore;
 import net.rim.device.internal.ui.MIDletApplication;
 import net.rim.device.internal.ui.UiInternalListener;
+import net.rim.device.internal.util.TestException;
 import net.rim.vm.Message;
+import net.rim.vm.MessageQueue;
 import net.rim.vm.Monitor;
 import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
@@ -168,7 +172,19 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    final void removeLocalWrappedScreens() {
-      throw new RuntimeException("cod2jar: type check");
+      for (int i = this._screenList.getLocalScreenCount() - 1; i >= 0; i--) {
+         Screen next = this._screenList.getScreen(i);
+         if (next instanceof UiEngineImpl$ProxyScreen) {
+            ((UiEngineImpl$ProxyScreen)next).getWrappedScreen().setBackingStoreUpdated(false);
+            ((UiEngineImpl$ProxyScreen)next).getWrappedScreen().invalidateInternal();
+            this._screenList.pop(next);
+         }
+      }
+
+      Screen topmostLocal = this._screenList.getTopmostLocalScreen();
+      if (topmostLocal != null && this._screenList.getGlobalScreenCount() > 0) {
+         topmostLocal.invalidate();
+      }
    }
 
    final void injectLocalWrappedScreens(Screen[] screens) {
@@ -334,7 +350,7 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    public final int getUiApplicationStyle() {
-      throw new RuntimeException("cod2jar: type check");
+      return !(this._app instanceof UiApplication) ? 0 : ((UiApplication)this._app).getStyle();
    }
 
    final int getScreenIndex(Screen screen) {
@@ -369,7 +385,146 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void pushGlobalScreen(Screen screen, int priority, int flags) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen.isGlobal()) {
+         throw new IllegalStateException("Global screen already pushed.");
+      }
+
+      if (screen.getUiEngine() != null) {
+         throw new IllegalStateException("Global screen already pushed as a local.");
+      }
+
+      this.assertHaveEventLock();
+      boolean modal = (flags & 1) != 0;
+      if (modal && !this._app.isEventThread()) {
+         throw new RuntimeException("pushGlobalScreen(modal) called by a non-event thread");
+      }
+
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onPushGlobalScreen(this, screen, priority, flags);
+      }
+
+      Object[] listeners = this._uiEngineListener;
+      if (listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            ((UiEngineListener)listeners[i]).onPushGlobalScreen(screen, priority, flags);
+         }
+      }
+
+      screen.setPushMethod(0);
+      Screen screenObscured = null;
+      UiEngineImpl$FocusNotifier focusNotifier = null;
+      Throwable exception = null;
+      synchronized (GlobalScreenManager.getLock()) {
+         screenObscured = this._screenList.getTopmostScreen();
+         GlobalScreenManager.push(screen, priority, flags, Process.currentProcess().getProcessId(), this);
+         this._screenList.copyGlobalScreens();
+         Screen newTopmost = this._screenList.getTopmostScreen();
+         if (newTopmost == screenObscured) {
+            screenObscured = null;
+         }
+
+         if (screen.acceptsInput()) {
+            focusNotifier = this.setInputScreen();
+         }
+      }
+
+      if (_layoutGeneration != screen._layoutGeneration) {
+         screen.invalidateLayout0();
+         screen._layoutGeneration = _layoutGeneration;
+      }
+
+      try {
+         screen.doLayout();
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      this._somethingInvalid = true;
+
+      try {
+         screen.callOnUiEngineAttached(true);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      if (this._app.isForeground()) {
+         try {
+            this.notifyPaintableScreens(true);
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+
+         try {
+            this.notifyVisibleScreens(true);
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      try {
+         this.notifyPaintableGlobalScreens(true);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      try {
+         this.notifyVisibleGlobalScreens(true);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      if (screenObscured != null && screenObscured.isUiEngineAttached()) {
+         try {
+            screenObscured.callOnObscured();
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      if (focusNotifier != null) {
+         try {
+            focusNotifier.run();
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      this.notifyNewlyHiddenGlobalScreens();
+      screen.invalidate();
+      if (!this._app.isEventThread() && this._app.hasEventThread()) {
+         this.doPainting();
+      }
+
+      if (exception != null) {
+         if (!(exception instanceof RuntimeException)) {
+            throw (Error)exception;
+         } else {
+            throw (RuntimeException)exception;
+         }
+      } else {
+         if (modal) {
+            this.doPainting();
+            UiModalEventThread thread = new UiModalEventThread(screen);
+            this._app.startModalEventThread(thread);
+         }
+      }
    }
 
    @Override
@@ -381,7 +536,325 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void processMessage(Object eventLock, Message message, boolean consumed) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (eventLock) {
+         boolean suppressPaint = false;
+         boolean updateDisplayOutsideNormalPaint = false;
+         if (!consumed) {
+            int event = message.getEvent();
+            Screen inputScreen = this._inputScreen;
+            label279:
+            switch (message.getDevice()) {
+               case 0:
+                  switch (event) {
+                     case 3:
+                        this.repaint();
+                        suppressPaint = true;
+                        if (InternalServices.isFermion()) {
+                           RIMGlobalMessagePoster.postGlobalEvent(-8341035019292897176L);
+                        }
+                        break label279;
+                     case 10:
+                        Class cls;
+                        try {
+                           cls = Class.forName("net.rim.device.internal.ui.Backdoor");
+                        } catch (ClassNotFoundException cnfe) {
+                           break label279;
+                        }
+
+                        Object obj;
+                        try {
+                           obj = cls.newInstance();
+                        } catch (InstantiationException ie) {
+                           break label279;
+                        } catch (IllegalAccessException aie) {
+                           break label279;
+                        }
+
+                        ((Runnable)obj).run();
+                        break label279;
+                     case 12:
+                        UiEngineImpl$FocusNotifier focusNotifier = null;
+                        if (this._app.isForeground()) {
+                           GlobalScreenManager.setForegroundEngine(this);
+                        }
+
+                        synchronized (GlobalScreenManager.getLock()) {
+                           this._screenList.copyGlobalScreens();
+                           focusNotifier = this.setInputScreen();
+                        }
+
+                        if (focusNotifier != null) {
+                           focusNotifier.run();
+                        }
+
+                        Screen topmostScreen = this._screenList.getTopmostScreen();
+                        if (this.isInProcess(topmostScreen) && !topmostScreen.isGlobal()) {
+                           topmostScreen.callOnExposed();
+                        }
+
+                        this.notifyPaintableScreens(true);
+                        this.notifyVisibleScreens(true);
+                        suppressPaint = true;
+                        Trackball.updateDeviceWithAppSettings();
+                        Keypad.updateKeyTone();
+                        Object[] listeners = this._uiEngineListener;
+                        if (listeners == null) {
+                           break label279;
+                        }
+
+                        int i = listeners.length - 1;
+
+                        while (true) {
+                           if (i < 0) {
+                              break label279;
+                           }
+
+                           ((UiEngineListener)listeners[i]).onForeground();
+                           i--;
+                        }
+                     case 13:
+                        if (!this._app.isForeground()) {
+                           UiEngineImpl$FocusNotifier focusNotifier = null;
+                           synchronized (GlobalScreenManager.getLock()) {
+                              focusNotifier = this.setInputScreen();
+                           }
+
+                           if (focusNotifier != null) {
+                              focusNotifier.run();
+                           }
+
+                           Screen topmostScreen = this._screenList.getTopmostScreen();
+                           if (this.isInProcess(topmostScreen) && !topmostScreen.isGlobal()) {
+                              topmostScreen.callOnObscured();
+                           }
+
+                           Screen screen = topmostScreen;
+
+                           for (;
+                              screen != null && screen.isGlobal();
+                              screen = this._screenList.getIndex(screen) == 0 ? null : this._screenList.getScreenBelow(screen)
+                           ) {
+                              if (this.isInProcess(screen)) {
+                                 screen.invalidate();
+                              }
+                           }
+
+                           for (int i = 0; i < this._screenList.getLocalScreenCount(); i++) {
+                              this.releaseBackingStore(this._screenList.getLocalScreen(i));
+                           }
+
+                           this.notifyPaintableScreens(false);
+                           this.notifyVisibleScreens(false);
+                           this.notifyPaintableGlobalScreens(true);
+                           this.notifyPaintableWrappedLocalScreens(true);
+                           Object[] listeners = this._uiEngineListener;
+                           if (listeners != null) {
+                              for (int i = listeners.length - 1; i >= 0; i--) {
+                                 ((UiEngineListener)listeners[i]).onBackground();
+                              }
+                           }
+                        } else {
+                           String errMessage = "UIE: JVM_SWITCH_BACKGROUND and isForeground()";
+                           System.out.println(errMessage);
+                           EventLogger.logEvent(-4685663286194863677L, errMessage.getBytes(), 0);
+                        }
+                     default:
+                        break label279;
+                  }
+               case 2:
+                  this.notifyUserInputEventListener(1);
+                  if (inputScreen == null || inputScreen != GlobalScreenManager.getScreenWithFocus()) {
+                     Screen previous = GlobalScreenManager.getScreenWithFocus();
+                     String errMessage = "UIE: Focus - target lost, prev="
+                        + previous
+                        + ", input="
+                        + inputScreen
+                        + ", app="
+                        + this._app
+                        + ", "
+                        + this._screenList.getScreenListDebugging();
+                     System.out.println(errMessage);
+                     EventLogger.logEvent(-4685663286194863677L, errMessage.getBytes(), 0);
+                     UiEngineImpl$FocusNotifier focusNotifier = null;
+                     synchronized (GlobalScreenManager.getLock()) {
+                        this._screenList.copyGlobalScreens();
+                        this._inputScreen = null;
+                        focusNotifier = this.setInputScreen();
+                        inputScreen = this._inputScreen;
+                     }
+
+                     if (focusNotifier != null) {
+                        focusNotifier.run();
+                     }
+                  }
+
+                  if (inputScreen == null) {
+                     this.keyNotHandled(message);
+                     break;
+                  }
+
+                  switch (event) {
+                     case 515:
+                     case 518:
+                        char key = (char)message.getSubMessage();
+                        int keycode = message.getData0();
+                        int time = message.getData1();
+                        UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+                        if (listener != null) {
+                           listener.onUserKey(this, inputScreen, event, key, keycode, time);
+                        }
+
+                        if ((keycode & 128) != 0 && inputScreen.ignoreBacklightOffKeyEvent(event, key, keycode, time)) {
+                           this.keyNotHandled(message);
+                        } else {
+                           int code = Keypad.key(keycode);
+                           boolean isVolumeKey = false;
+                           char volumeKey = 0;
+                           if (4096 == code || 4097 == code) {
+                              if (event == 515) {
+                                 break;
+                              }
+
+                              event = 32768;
+                              volumeKey = (char)(code == 4096 ? 150 : 151);
+                              isVolumeKey = true;
+                           }
+
+                           boolean handled;
+                           char charkey;
+                           if (event != 32768) {
+                              int result = inputScreen.processKeyEvent(event, key, keycode, time);
+                              handled = (result & 65536) != 0;
+                              charkey = (char)(result & 65535);
+                           } else {
+                              charkey = isVolumeKey ? volumeKey : key;
+                              handled = inputScreen.dispatchKeyEvent(32768, charkey, keycode, time);
+                           }
+
+                           int status = Keypad.status(keycode);
+                           if (!handled) {
+                              int amount = 0;
+                              int trackwheelEvent = 519;
+                              switch (charkey) {
+                                 case '\u0081':
+                                    amount = -1;
+                                    break;
+                                 case '\u0082':
+                                    amount = 1;
+                                    break;
+                                 case '\u0083':
+                                    amount = -1;
+                                    status |= 1;
+                                    break;
+                                 case '\u0084':
+                                    amount = 1;
+                                    status |= 1;
+                                    break;
+                                 case '\u0090':
+                                    trackwheelEvent = 516;
+                                    amount = 1;
+                              }
+
+                              if (amount != 0) {
+                                 handled = inputScreen.dispatchNavigationEvent(trackwheelEvent, 0, amount, status | 1073741824, message.getData1());
+                              }
+                           }
+
+                           if (!handled) {
+                              this.keyNotHandled(message);
+                           }
+                        }
+                        break;
+                     case 516:
+                     case 517:
+                     case 519:
+                     default:
+                        int status = message.getData0();
+                        int time = message.getData1();
+                        UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+                        if (listener != null) {
+                           listener.onUserTrackwheel(this, inputScreen, event, message.getSubMessage(), status, time);
+                        }
+
+                        if ((status & 128) == 0 || DeviceInfo.isInHolster()) {
+                           inputScreen.dispatchNavigationEvent(event, 0, message.getSubMessage(), status | 1073741824, time);
+                        }
+                  }
+
+                  updateDisplayOutsideNormalPaint = true;
+                  break;
+               case 26:
+                  this.notifyUserInputEventListener(3);
+                  if (inputScreen != null) {
+                     int subMessage = message.getSubMessage();
+                     int x = subMessage & 65535;
+                     int y = subMessage >> 16 & 65535;
+                     int status = message.getData0();
+                     int time = message.getData1();
+                     this.setStylusPos(x, y);
+                     UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+                     if (listener != null) {
+                        listener.onUserStylus(this, inputScreen, event, x, y, status, time);
+                     }
+
+                     inputScreen.dispatchStylusEvent(event, x, y, status, time);
+                     this.setStylusPos(-1, -1);
+                     updateDisplayOutsideNormalPaint = true;
+                  }
+                  break;
+               case 27:
+                  this.notifyUserInputEventListener(4);
+                  if (inputScreen != null) {
+                     int status = message.getData0();
+                     int time = message.getData1();
+                     if ((status & 128) == 0) {
+                        int subMessage = message.getSubMessage();
+                        int dx = (short)subMessage;
+                        int dy = -(subMessage >> 16);
+                        UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+                        if (listener != null) {
+                           listener.onUserTrackball(this, inputScreen, event, dx, dy, status, time);
+                        }
+
+                        inputScreen.dispatchNavigationEvent(event, dx, dy, status | 536870912, time);
+                        updateDisplayOutsideNormalPaint = true;
+                     }
+                  }
+            }
+         }
+
+         if (!this._isMidlet) {
+            if (this._appInvalid.width > 0 && this._appInvalid.height > 0) {
+               Thread thread = Thread.currentThread();
+               if (thread instanceof UiModalEventThread) {
+                  UiModalEventThread modalThread = (UiModalEventThread)thread;
+                  if (modalThread.getScreen().getUiEngine() == null) {
+                     return;
+                  }
+               }
+
+               suppressPaint = false;
+            }
+
+            if (!suppressPaint) {
+               MessageQueue messageQueue = Process.currentProcess().getMessageQueue();
+               if (messageQueue.getSize() >= 5) {
+                  suppressPaint = true;
+               }
+            }
+
+            if (!suppressPaint) {
+               this.doPainting();
+               if (updateDisplayOutsideNormalPaint) {
+                  this.updateDisplay();
+               }
+            }
+         }
+      }
+
+      if (this._isMidlet) {
+         ((MIDletApplication)this._app).updateScreen();
+      }
    }
 
    @Override
@@ -414,7 +887,55 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
-      throw new RuntimeException("cod2jar: type check");
+      if (guid == 5961289116197897667L) {
+         if (data0 == 3) {
+            if (this._app.isForeground() && object0 instanceof GlobalRepaintNotifier) {
+               GlobalRepaintNotifier notifier = (GlobalRepaintNotifier)object0;
+               synchronized (notifier) {
+                  boolean screenExtentChanged = notifier.isExtentChanged();
+                  if (screenExtentChanged) {
+                     this.layoutOutOfProcessGlobalScreens();
+                  }
+
+                  this._somethingInvalid = true;
+                  notifier.reset();
+               }
+
+               this.doPainting();
+            }
+         } else if ((object0 == null || object0 instanceof XYRect) && (object1 == null || object1 instanceof Integer)) {
+            this.globalScreenEventCommon(data0, (XYRect)object0, (Integer)object1);
+         }
+      }
+
+      if (guid == 1286649819098130486L && this.equals(GlobalScreenManager.getPaintControlEngine())) {
+         this._somethingInvalid = true;
+         this.doPainting();
+      }
+
+      if (guid == 3160755958169834551L && this.equals(GlobalScreenManager.getPaintControlEngine()) && object0 instanceof Screen[]) {
+         this.injectLocalWrappedScreens((Screen[])object0);
+      }
+
+      if (guid == -4394903006263251010L) {
+         this.applyFont();
+      }
+
+      if (guid == 2573494863350550132L) {
+         this.applyTheme();
+      }
+
+      if (guid == -4394903006263251010L || guid == 2573494863350550132L || guid == -7464003439710973532L || guid == 7207871974803693937L) {
+         this.relayout();
+      }
+
+      if (guid == 3596208183088439728L || guid == 8877632280522743328L) {
+         this.appInvalidate(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+      }
+
+      if (guid == -2650018024822507413L) {
+         Display.$init();
+      }
    }
 
    @Override
@@ -508,7 +1029,167 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void popScreen(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      this.assertHaveEventLock();
+      if (screen.getUiEngine() != this) {
+         throw new IllegalArgumentException("popScreen: UiEngine is " + screen.getUiEngine() + " != " + this);
+      }
+
+      if (this._isInPopScreen) {
+         throw new IllegalStateException("popScreen: Already in popScreen");
+      }
+
+      if (screen.getPushMethod() == 1) {
+         throw new IllegalStateException("Cannot mix queueStatus-dismissStatus with pushGlobalScreen-popScreen.");
+      }
+
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onPopScreen(this, screen);
+      }
+
+      Object[] listeners = this._uiEngineListener;
+      if (listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            ((UiEngineListener)listeners[i]).onPopScreen(screen);
+         }
+      }
+
+      Throwable exception = null;
+      UiEngineImpl$FocusNotifier focusNotifier = null;
+      Screen screenExposed = null;
+      this._isInPopScreen = true;
+      boolean topmost = this._screenList.isTopmost(screen);
+      if (!screen.isGlobal()) {
+         if (topmost) {
+            Graphics.resetOverlays();
+            Graphics.releaseGraphics(screen);
+         }
+
+         this._appInvalid.unionNoEmpty(screen.getExtent());
+         this._somethingInvalid = true;
+         synchronized (GlobalScreenManager.getLock()) {
+            this._screenList.pop(screen);
+         }
+      } else {
+         synchronized (GlobalScreenManager.getLock()) {
+            screen.setDismissing(true);
+            GlobalScreenManager.dismiss(screen, this, false, Process.currentProcess().getProcessId());
+            screen.setDismissing(false);
+            this._screenList.copyGlobalScreens();
+         }
+      }
+
+      synchronized (GlobalScreenManager.getLock()) {
+         if (screen == this._inputScreen) {
+            focusNotifier = this.setInputScreen();
+         }
+      }
+
+      if (topmost) {
+         screenExposed = this._screenList.getTopmostScreen();
+         if (screenExposed != null && (!this.isInProcess(screenExposed) || !screenExposed.isGlobal() && !this._app.isForeground())) {
+            screenExposed = null;
+         }
+      }
+
+      this._isInPopScreen = false;
+      if (screenExposed != null) {
+         try {
+            screenExposed.callOnExposed();
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      if (this._app.isForeground()) {
+         try {
+            this.notifyPaintableScreens(true);
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+
+         try {
+            this.notifyVisibleScreens(true);
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      try {
+         this.notifyPaintableGlobalScreens(true);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      try {
+         this.notifyVisibleGlobalScreens(true);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      try {
+         screen.doPaintabilityWalk(false);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      try {
+         screen.doVisibilityWalk(false);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      if (focusNotifier != null) {
+         try {
+            focusNotifier.run();
+         } catch (TestException e) {
+            exception = e;
+         } catch (Throwable e) {
+            exception = e;
+         }
+      }
+
+      try {
+         screen.callOnUiEngineAttached(false);
+      } catch (TestException e) {
+         exception = e;
+      } catch (Throwable e) {
+         exception = e;
+      }
+
+      if (screen.isGlobal()) {
+         this.notifyNewlyExposedGlobalScreens();
+      } else {
+         GlobalScreenManager.updateInjectedScreens(this);
+      }
+
+      screen.setUiEngine(null);
+      this.releaseBackingStore(screen);
+      if (!this._app.isEventThread() && this._app.hasEventThread() && this._app.getMessageQueueSize() == 0) {
+         this._app.invokeLater(Ui.nullRunnable);
+      }
+
+      if (exception != null) {
+         if (!(exception instanceof RuntimeException)) {
+            throw (Error)exception;
+         } else {
+            throw (RuntimeException)exception;
+         }
+      }
    }
 
    @Override
@@ -579,7 +1260,148 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void pushScreen(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      this.assertHaveEventLock();
+      Throwable exception = null;
+      UiInternalListener listener = GlobalScreenManager.getUiInternalListener();
+      if (listener != null) {
+         listener.onPushScreen(this, screen);
+      }
+
+      Object[] listeners = this._uiEngineListener;
+      if (listeners != null) {
+         for (int i = listeners.length - 1; i >= 0; i--) {
+            ((UiEngineListener)listeners[i]).onPushScreen(screen);
+         }
+      }
+
+      screen.setUiEngine(this);
+      screen.setPushMethod(0);
+      Graphics.resetOverlays();
+      Screen screenObscured = null;
+      UiEngineImpl$FocusNotifier focusNotifier = null;
+      synchronized (GlobalScreenManager.getLock()) {
+         screenObscured = this._screenList.getTopmostLocalScreen();
+         this._screenList.push(screen);
+         if (screen.acceptsInput()) {
+            focusNotifier = this.setInputScreen();
+         }
+      }
+
+      if (_layoutGeneration != screen._layoutGeneration) {
+         screen.invalidateLayout0();
+         screen._layoutGeneration = _layoutGeneration;
+      }
+
+      try {
+         screen.doLayout();
+      } catch (TestException e) {
+         if (exception == null) {
+            exception = e;
+         }
+      } catch (Throwable e) {
+         if (exception == null) {
+            exception = e;
+         }
+      }
+
+      this._screenList.updateExtent(screen);
+      GlobalScreenManager.updateInjectedScreens(this);
+      this._somethingInvalid = true;
+
+      try {
+         screen.callOnUiEngineAttached(true);
+      } catch (TestException e) {
+         if (exception == null) {
+            exception = e;
+         }
+      } catch (Throwable e) {
+         if (exception == null) {
+            exception = e;
+         }
+      }
+
+      try {
+         if (this._app.isForeground() && this._screenList.isTopmost(screen)) {
+            screen.callOnExposed();
+         } else {
+            screen.callOnObscured();
+         }
+      } catch (TestException e) {
+         if (exception == null) {
+            exception = e;
+         }
+      } catch (Throwable e) {
+         if (exception == null) {
+            exception = e;
+         }
+      }
+
+      if (this._app.isForeground()) {
+         try {
+            this.notifyPaintableScreens(true);
+         } catch (TestException e) {
+            if (exception == null) {
+               exception = e;
+            }
+         } catch (Throwable e) {
+            if (exception == null) {
+               exception = e;
+            }
+         }
+
+         try {
+            this.notifyVisibleScreens(true);
+         } catch (TestException e) {
+            if (exception == null) {
+               exception = e;
+            }
+         } catch (Throwable e) {
+            if (exception == null) {
+               exception = e;
+            }
+         }
+      }
+
+      if (screenObscured != null && screenObscured.isUiEngineAttached()) {
+         try {
+            screenObscured.callOnObscured();
+         } catch (TestException e) {
+            if (exception == null) {
+               exception = e;
+            }
+         } catch (Throwable e) {
+            if (exception == null) {
+               exception = e;
+            }
+         }
+      }
+
+      if (focusNotifier != null) {
+         try {
+            focusNotifier.run();
+         } catch (TestException e) {
+            if (exception == null) {
+               exception = e;
+            }
+         } catch (Throwable e) {
+            if (exception == null) {
+               exception = e;
+            }
+         }
+      }
+
+      screen.invalidate();
+      if (!this._app.isEventThread() && this._app.hasEventThread()) {
+         this.doPainting();
+      }
+
+      if (exception != null) {
+         if (!(exception instanceof RuntimeException)) {
+            throw (Error)exception;
+         } else {
+            throw (RuntimeException)exception;
+         }
+      }
    }
 
    @Override
@@ -864,7 +1686,16 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final void notifyNewlyExposedGlobalScreens() {
-      throw new RuntimeException("cod2jar: type check");
+      int screenCount = this._screenList.getScreenCount();
+
+      for (int i = this._screenList.getLocalScreenCount(); i < screenCount; i++) {
+         Screen globalScreen = this._screenList.getScreen(i);
+         if (globalScreen instanceof UiEngineImpl$ProxyScreen) {
+            globalScreen = ((UiEngineImpl$ProxyScreen)globalScreen).getWrappedScreen();
+         }
+
+         globalScreen.invalidate();
+      }
    }
 
    private final void globalScreenEventCommon(int type, XYRect appInvalid, Integer processId) {
@@ -1001,7 +1832,11 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final boolean isScreenDisplayed(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         screen = ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen();
+      }
+
+      return screen.isDisplayed();
    }
 
    static final UiEngineImpl getUiEngine() {
@@ -1040,23 +1875,43 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private final XYRect getScreenExtent(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         screen = ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen();
+      }
+
+      return screen.getExtent();
    }
 
    private final void getScreenExtent(Screen screen, XYRect extent) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         screen = ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen();
+      }
+
+      screen.getExtent(extent);
    }
 
    private final XYRect getScreenInvalid(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         ((UiEngineImpl$ProxyScreen)screen).updateInvalid();
+      }
+
+      return screen.getInvalid();
    }
 
    private final boolean isScreenTransparent(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         screen = ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen();
+      }
+
+      return screen.isTransparent();
    }
 
    private final boolean isScreenTransparentBorder(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      if (screen instanceof UiEngineImpl$ProxyScreen) {
+         screen = ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen();
+      }
+
+      return screen.isTransparentBorder();
    }
 
    private final void notifyVisibleScreens(boolean visible) {

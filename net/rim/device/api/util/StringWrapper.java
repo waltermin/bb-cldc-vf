@@ -39,6 +39,11 @@ final class StringWrapper extends AbstractStringWrapper {
 
    @Override
    public final void reset(Object string) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(string instanceof String)) {
+         throw new IllegalArgumentException();
+      }
+
+      String str = (String)string;
+      this._string = str;
    }
 }

@@ -100,7 +100,16 @@ public final class OTAUpgrade {
    }
 
    public static final SyncCollection[] getOTASLOnlyCollections() {
-      throw new RuntimeException("cod2jar: type check");
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      Object o = ar.get(3338648511322103566L);
+      if (!(o instanceof Vector)) {
+         return new SyncCollection[0];
+      }
+
+      Vector v = (Vector)o;
+      SyncCollection[] a = new SyncCollection[v.size()];
+      v.copyInto(a);
+      return a;
    }
 
    public static final boolean isOTASLInProgress() {

@@ -3,11 +3,17 @@ package net.rim.device.api.collection.util;
 import net.rim.device.api.collection.BulkUpdateCollectionListener;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
+import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.CollectionLock;
 import net.rim.device.api.collection.CollectionWithVersion;
 import net.rim.device.api.collection.ReadableList;
+import net.rim.device.api.lowmemory.LowMemoryManager;
+import net.rim.device.api.system.PersistentContent;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.BitSet;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.Array;
+import net.rim.vm.Memory;
 import net.rim.vm.WeakReference;
 
 public class PrefixKeywordFilterList extends AbstractKeywordFilterList implements ChainableCollection, CollectionWithVersion, BulkUpdateCollectionListener {
@@ -42,7 +48,41 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    public boolean matches(Object object, String suffix) {
-      throw new RuntimeException("cod2jar: type check");
+      boolean matches = false;
+      String[] criteria = null;
+      Object searchCriteria = this.getCriteria();
+      if (searchCriteria instanceof String) {
+         criteria = new String[]{(String)searchCriteria};
+      } else if (searchCriteria instanceof String[]) {
+         criteria = (String[])searchCriteria;
+      }
+
+      if (criteria == null && suffix == null) {
+         return true;
+      }
+
+      int length = criteria != null ? criteria.length : 0;
+      int i = 0;
+
+      do {
+         String string = criteria != null ? criteria[i] : null;
+         if (string == null) {
+            string = "";
+         } else {
+            string = string + ' ';
+         }
+
+         if (suffix != null) {
+            string = string + suffix;
+         }
+
+         String[] words = StringUtilities.stringToKeywords(string);
+         if (this._keywordHelper.checkForMatch(object, words)) {
+            return true;
+         }
+      } while (++i < length);
+
+      return matches;
    }
 
    @Override
@@ -157,7 +197,50 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    private void reload(ReadableList source) {
-      throw new RuntimeException("cod2jar: type check");
+      if (source instanceof CollectionWithVersion) {
+         CollectionWithVersion versionedCollection = (CollectionWithVersion)source;
+         if (source.size() == this._filterListData._orderList.size()
+            && versionedCollection.getVersion() == this._filterListData._version
+            && this._filterListData._version != 0) {
+            return;
+         }
+      }
+
+      this.reset();
+      Object ticket = PersistentContent.getTicket();
+      if (ticket == null) {
+         this.commit(false);
+      } else {
+         LowMemoryManager.poll();
+         synchronized (CollectionLock.getGlobalLock()) {
+            int count = source.size();
+
+            for (int i = 0; i < count; i++) {
+               this.addToIndex(i, source.getAt(i));
+            }
+         }
+
+         synchronized (RIMPersistentStore.getSynchObject()) {
+            synchronized (this) {
+               LowMemoryManager.poll();
+               this._orderList.optimize();
+               LowMemoryManager.poll();
+               Memory.moveToFlash(this._orderList);
+               LowMemoryManager.poll();
+               this._prefixList.sort();
+               LowMemoryManager.poll();
+               Object criteria = this.getCriteria();
+               if (criteria != null || this.getSuffix() != null) {
+                  this.setCriteria(criteria, new PrefixKeywordFilterList$1(this));
+                  this.waitForComplete();
+               }
+
+               LowMemoryManager.poll();
+               this.doCommit(source, true);
+               LowMemoryManager.poll();
+            }
+         }
+      }
    }
 
    @Override
@@ -166,6 +249,23 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper, PrefixKeywordFilterListData filterListData) {
+      super(source);
+      this.setSearcher(new KeywordSearcher(this));
+      this._filterListData = filterListData;
+      this._objectList = this._filterListData._objectList;
+      this._prefixList = this._filterListData._prefixList;
+      this._orderList = this._filterListData._orderList;
+      this._firstWordBias = this._filterListData._firstWordBias;
+      this._keywordsWR = new WeakReference(null);
+      this._keywordHelper = helper;
+      if (source instanceof CollectionEventSource) {
+         CollectionEventSource collectionEventSource = (CollectionEventSource)source;
+         WeakReference weak = new WeakReference(this);
+         collectionEventSource.addCollectionListener(weak);
+      }
+
+      this.reload(source);
+      PersistentContent.addWeakListener(this);
    }
 
    @Override
@@ -246,7 +346,58 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    private boolean doAddCheck(Object element) {
-      throw new RuntimeException("cod2jar: type check");
+      boolean changed = false;
+      String[] criteria = null;
+      KeywordPrefixSearchResult tmpResult = null;
+      synchronized (this) {
+         Object searchCriteria = this.getCriteria();
+         if (searchCriteria instanceof String) {
+            criteria = new String[]{(String)searchCriteria};
+         } else if (searchCriteria instanceof String[]) {
+            criteria = (String[])searchCriteria;
+         }
+
+         String suffix = this.getSuffix();
+         if (super._filterResult != null && (criteria != null || suffix != null)) {
+            int searches = criteria != null ? criteria.length : 0;
+            int i = 0;
+
+            do {
+               String string = criteria != null ? criteria[i] : null;
+               if (string == null) {
+                  string = "";
+               } else {
+                  string = string + ' ';
+               }
+
+               if (suffix != null) {
+                  string = string + suffix;
+               }
+
+               tmpResult = this.search(StringUtilities.stringToKeywords(string));
+               super._filterResult.getPrimaryMatches().or(tmpResult.getPrimaryMatches());
+               super._filterResult.getSecondaryMatches().or(tmpResult.getSecondaryMatches());
+            } while (++i < searches);
+
+            BitSet primaryMatches = super._filterResult.getPrimaryMatches();
+            BitSet notPrimary = new BitSet(primaryMatches);
+            notPrimary.not();
+            BitSet secondaryMatches = super._filterResult.getSecondaryMatches();
+            secondaryMatches.and(notPrimary);
+            int id = this._objectList.getKey(element);
+            if (primaryMatches.isSet(id) || secondaryMatches.isSet(id)) {
+               changed = true;
+            }
+         } else {
+            changed = true;
+         }
+
+         if (changed) {
+            this.clearFilteredElementList();
+         }
+
+         return changed;
+      }
    }
 
    private int removeFromIndex(Object element) {
@@ -297,7 +448,16 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
 
    @Override
    public void reset(Collection collection) {
-      throw new RuntimeException("cod2jar: type check");
+      this.clearPrefixCache();
+      if (!(collection instanceof ReadableList)) {
+         this.reset();
+         this.doCommit(null, true);
+      } else {
+         ReadableList r = (ReadableList)collection;
+         this.reload(r);
+      }
+
+      this.fireReset();
    }
 
    public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper) {
@@ -305,11 +465,29 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    private void doCommit(Collection collection, boolean afterReload) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._commitsSuspended) {
+         if (collection instanceof CollectionWithVersion) {
+            CollectionWithVersion collectionWithVersion = (CollectionWithVersion)collection;
+            this._filterListData._version = collectionWithVersion.getVersion();
+         }
+
+         this.commit(afterReload);
+      }
    }
 
    @Override
    public void persistentContentModeChanged(int generation) {
-      throw new RuntimeException("cod2jar: type check");
+      super.persistentContentModeChanged(generation);
+      if (super._source instanceof CollectionWithVersion) {
+         CollectionWithVersion versionedCollection = (CollectionWithVersion)super._source;
+         if (super._source.size() == this._filterListData._orderList.size()
+            && versionedCollection.getVersion() == this._filterListData._version
+            && this._filterListData._version != 0) {
+            return;
+         }
+      }
+
+      this.reset();
+      this.commit(false);
    }
 }

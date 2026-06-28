@@ -1,5 +1,6 @@
 package net.rim.device.api.collection.util;
 
+import java.util.Enumeration;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
 import net.rim.device.api.collection.CollectionEventSource;
@@ -40,7 +41,42 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
    }
 
    protected void mergeCollection(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this) {
+         if (!(collection instanceof ReadableList)) {
+            if (collection instanceof ReadableSet) {
+               ReadableSet setCollection = (ReadableSet)collection;
+               synchronized (setCollection) {
+                  int addedCount = setCollection.size();
+                  Enumeration enumeration = setCollection.getElements();
+                  this.makeRoomFor(this._numElements + addedCount);
+
+                  while (enumeration.hasMoreElements()) {
+                     if (this._numElements == this._dataArray.length) {
+                        this.makeRoomFor(this._numElements + 20);
+                     }
+
+                     this._dataArray[this._numElements] = enumeration.nextElement();
+                     this._keyArray[this._numElements] = this._keyProvider.getIntKey(this._dataArray[this._numElements]);
+                     this._numElements++;
+                  }
+               }
+            }
+         } else {
+            ReadableList list = (ReadableList)collection;
+            synchronized (list) {
+               int addedCount = list.size();
+               this.makeRoomFor(this._numElements + addedCount);
+               list.getAt(0, addedCount, this._dataArray, this._numElements);
+
+               for (int i = 0; i < addedCount; i++) {
+                  this._keyArray[this._numElements] = this._keyProvider.getIntKey(this._dataArray[this._numElements]);
+                  this._numElements++;
+               }
+            }
+         }
+
+         Arrays.sort(this._keyArray, 0, this._numElements, this._dataArray);
+      }
    }
 
    public int getKey(int offset) {

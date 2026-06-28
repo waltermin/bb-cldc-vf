@@ -38,7 +38,19 @@ public class WipeablePolicyCryptoBlock {
    }
 
    public static Object decode(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (obj != null && obj instanceof byte[]) {
+         Object decoding = null;
+
+         try {
+            decoding = PersistentContent.convertByteArrayToEncoding(decrypt((byte[])obj));
+            PersistentContent.markAsPlaintext(decoding);
+            return decoding;
+         } catch (IllegalArgumentException var3) {
+            return decoding;
+         }
+      } else {
+         return null;
+      }
    }
 
    public static byte[] encrypt(byte[] input) {
@@ -69,7 +81,7 @@ public class WipeablePolicyCryptoBlock {
    }
 
    private static byte[] getWLANKey(boolean blockingCall) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    private static void setNvStoreWLANKey(byte[] key) {

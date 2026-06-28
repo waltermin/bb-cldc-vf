@@ -4,6 +4,7 @@ import java.util.Vector;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
 import net.rim.device.api.collection.CollectionCombiner;
+import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.IntRangedActionTarget;
 import net.rim.device.api.collection.LongRangedActionTarget;
 import net.rim.device.api.collection.NotificationSuspension;
@@ -26,7 +27,18 @@ public class ReadableListCombiner
 
    @Override
    public void apply(int lowValue, int highValue, long action, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            Collection collection = (Collection)this._sources.elementAt(i);
+            synchronized (collection) {
+               if (collection instanceof IntRangedActionTarget) {
+                  ((IntRangedActionTarget)collection).apply(lowValue, highValue, action, context);
+               }
+            }
+         }
+      }
    }
 
    @Override
@@ -60,12 +72,45 @@ public class ReadableListCombiner
 
    @Override
    public void addSource(Object source) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(source instanceof ReadableList)) {
+         throw new IllegalArgumentException();
+      }
+
+      boolean resetRequired = false;
+      synchronized (this._sources) {
+         if (this._sources.indexOf(source) == -1) {
+            this._sources.addElement(source);
+            if (source instanceof CollectionEventSource) {
+               ((CollectionEventSource)source).addCollectionListener(this);
+            }
+
+            resetRequired = ((ReadableList)source).size() > 0;
+         }
+      }
+
+      if (resetRequired) {
+         this._listeners.fireReset(this);
+      }
    }
 
    @Override
    public void removeSource(Object source) {
-      throw new RuntimeException("cod2jar: type check");
+      boolean resetRequired = false;
+      synchronized (this._sources) {
+         int index = this._sources.indexOf(source);
+         if (index != -1) {
+            this._sources.removeElementAt(index);
+            if (source instanceof CollectionEventSource) {
+               ((CollectionEventSource)source).removeCollectionListener(this);
+            }
+
+            resetRequired = ((ReadableList)source).size() > 0;
+         }
+      }
+
+      if (resetRequired) {
+         this._listeners.fireReset(this);
+      }
    }
 
    @Override
@@ -156,7 +201,18 @@ public class ReadableListCombiner
 
    @Override
    public void apply(long lowValue, long highValue, long action, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this._sources) {
+         int sourceCount = this._sources.size();
+
+         for (int i = 0; i < sourceCount; i++) {
+            Collection collection = (Collection)this._sources.elementAt(i);
+            synchronized (collection) {
+               if (collection instanceof LongRangedActionTarget) {
+                  ((LongRangedActionTarget)collection).apply(lowValue, highValue, action, context);
+               }
+            }
+         }
+      }
    }
 
    @Override
@@ -166,11 +222,25 @@ public class ReadableListCombiner
 
    @Override
    public void suspendNotification(Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      int sourceCount = this._sources.size();
+
+      for (int i = 0; i < sourceCount; i++) {
+         Collection collection = (Collection)this._sources.elementAt(i);
+         if (collection instanceof NotificationSuspension) {
+            ((NotificationSuspension)collection).suspendNotification(context);
+         }
+      }
    }
 
    @Override
    public void resumeNotification(Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      int sourceCount = this._sources.size();
+
+      for (int i = 0; i < sourceCount; i++) {
+         Collection collection = (Collection)this._sources.elementAt(i);
+         if (collection instanceof NotificationSuspension) {
+            ((NotificationSuspension)collection).resumeNotification(context);
+         }
+      }
    }
 }

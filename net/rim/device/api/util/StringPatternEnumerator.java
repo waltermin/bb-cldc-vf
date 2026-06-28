@@ -171,7 +171,21 @@ public final class StringPatternEnumerator {
    }
 
    private final void setStringToScan(Object stringToScan) {
-      throw new RuntimeException("cod2jar: type check");
+      if (stringToScan == null) {
+         this._string = null;
+      } else if (stringToScan instanceof AbstractString) {
+         this._string = (AbstractString)stringToScan;
+      } else if (!(this._string instanceof AbstractStringWrapper)) {
+         this._string = AbstractStringWrapper.createInstance(stringToScan);
+      } else {
+         AbstractStringWrapper strWrap = (AbstractStringWrapper)this._string;
+
+         try {
+            strWrap.reset(stringToScan);
+         } catch (IllegalArgumentException e) {
+            this._string = AbstractStringWrapper.createInstance(stringToScan);
+         }
+      }
    }
 
    private final void resetScanRange(int beginIndex, int endIndex) {

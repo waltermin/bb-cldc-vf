@@ -10,6 +10,18 @@ public final class Bitmap$PNGInfo {
    public int alpha_bit_depth;
 
    public final void getPNGInfo(byte[] png, int offset, int length) {
-      throw new RuntimeException("cod2jar: type check");
+      EncodedImage image = EncodedImage.createEncodedImage(png, offset, length);
+      if (!(image instanceof PNGEncodedImage)) {
+         throw new IllegalArgumentException();
+      }
+
+      PNGEncodedImage pngImage = (PNGEncodedImage)image;
+      this.width = (short)pngImage.getWidth();
+      this.height = (short)pngImage.getHeight();
+      this.color_type = (byte)pngImage.getColorType();
+      this.bit_depth = (byte)pngImage.getBitDepth();
+      this.transparency = pngImage.hasTransparency();
+      this.alpha = pngImage.hasAlpha();
+      this.alpha_bit_depth = pngImage.getAlphaBitDepth();
    }
 }

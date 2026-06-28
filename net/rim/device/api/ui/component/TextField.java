@@ -43,9 +43,11 @@ import net.rim.device.internal.ui.Formatter$TextRenderer;
 import net.rim.device.internal.ui.StringBufferGap;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.InputMethodEvent;
+import net.rim.tid.awt.event.KeyEvent;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.tid.awt.im.InputMethodRequests;
 import net.rim.tid.im.SLControlObject;
+import net.rim.tid.im.layout.SLKeyLayout;
 import net.rim.tid.itie.EventHandler;
 import net.rim.tid.text.AttributedString;
 import net.rim.tid.text.AttributedString$Iterator;
@@ -1467,7 +1469,44 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public boolean paste(Clipboard cb) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this.isPasteable()) {
+         return false;
+      }
+
+      if (this._composedStart != this._composedEnd) {
+         return false;
+      }
+
+      Object pasted = cb.get();
+      AttributedString attrString;
+      if (!(pasted instanceof AttributedString)) {
+         String iter = cb.toString();
+         StringBuffer buffer = new StringBuffer(iter.length());
+
+         for (int i = 0; i < iter.length(); i++) {
+            char character = iter.charAt(i);
+            if (this._filter != null) {
+               character = this._filter.convert(character, 32768);
+            }
+
+            if (this.validate(character)) {
+               buffer.append(character);
+            }
+         }
+
+         attrString = new AttributedString(this.convert(buffer.toString(), this._cursor));
+      } else {
+         attrString = (AttributedString)pasted;
+         String original = attrString.toString();
+         String converted = this.convert(original, this._cursor);
+         if (original != converted) {
+            attrString = new AttributedString(converted);
+         }
+      }
+
+      AttributedString$Iterator iter = attrString.getIterator();
+      this.replace(this._anchor, this._cursor, iter, 0, 0, iter.length(), 0, true, 0);
+      return true;
    }
 
    private void setPreferredXToLineStartOrEnd(ArticInterface$Line line, boolean isLineStart) {
@@ -2191,7 +2230,32 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public void dispatchEvent(Event rEvent) {
-      throw new RuntimeException("cod2jar: type check");
+      super.dispatchEvent(rEvent);
+      if (rEvent.getID() == 1004) {
+         if (this.isInputMethodEnabled()) {
+            this.updateInputStyle();
+            return;
+         }
+      } else if (!rEvent.isConsumed() && rEvent.isComponentDispatchEnabled() && rEvent instanceof KeyEvent) {
+         KeyEvent event = (KeyEvent)rEvent;
+         int status = SLKeyLayout.convertModifiersToStatus(event.getModifiers());
+         switch (event.getID()) {
+            case 512:
+               break;
+            case 513:
+            case 514:
+            default:
+               if (this.keyDown(event.getKeyCode() << 16 | status, (int)event.getWhen()) || this.keyChar(event.getKeyChar(), status, (int)event.getWhen())) {
+                  event.consume();
+                  return;
+               }
+               break;
+            case 515:
+               if (this.keyUp(event.getKeyCode() << 16 | status, (int)event.getWhen())) {
+                  event.consume();
+               }
+         }
+      }
    }
 
    @Override

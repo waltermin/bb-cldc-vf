@@ -1,6 +1,7 @@
 package net.rim.device.internal.util;
 
 import net.rim.device.api.crypto.HashCodeCalculator;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Persistable;
 
 public final class ByteArray implements Persistable {
@@ -21,6 +22,17 @@ public final class ByteArray implements Persistable {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (obj == this) {
+         return true;
+      }
+
+      if (obj instanceof ByteArray) {
+         ByteArray array = (ByteArray)obj;
+         if (Arrays.equals(this._array, array._array)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 }

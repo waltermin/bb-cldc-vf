@@ -1,5 +1,7 @@
 package net.rim.device.internal.util;
 
+import java.io.IOException;
+import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.DataBuffer;
@@ -341,7 +343,68 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
 
    @Override
    public void getOptionsData(DataBuffer buffer) {
-      throw new RuntimeException("cod2jar: type check");
+      try {
+         DataBuffer temp = new DataBuffer();
+         LongEnumeration enumeration = this.getKeys();
+
+         while (enumeration.hasMoreElements()) {
+            long key = enumeration.nextElement();
+            if (this.isBackupParam(key)) {
+               temp.writeLong(key);
+               Object object = this.get(key);
+               if (!(object instanceof OptionsRegistry$StringParameter)) {
+                  if (!(object instanceof OptionsRegistry$BooleanParameter)) {
+                     if (!(object instanceof OptionsRegistry$IntParameter)) {
+                        if (!(object instanceof OptionsRegistry$LongParameter)) {
+                           if (!(object instanceof OptionsRegistry$DoubleParameter)) {
+                              if (!(object instanceof OptionsRegistry$ByteArrayParameter)) {
+                                 if (object instanceof OptionsRegistry$CharParameter) {
+                                    char value = ((OptionsRegistry$CharParameter)object).getValue();
+                                    temp.writeInt(7);
+                                    temp.writeChar(value);
+                                 }
+                              } else {
+                                 byte[] value = ((OptionsRegistry$ByteArrayParameter)object).getValue();
+                                 if (value != null) {
+                                    temp.writeInt(4);
+                                    temp.writeByteArray(value);
+                                 }
+                              }
+                           } else {
+                              double value = ((OptionsRegistry$DoubleParameter)object).getValue();
+                              temp.writeInt(5);
+                              temp.writeDouble(value);
+                           }
+                        } else {
+                           long value = ((OptionsRegistry$LongParameter)object).getValue();
+                           temp.writeInt(3);
+                           temp.writeLong(value);
+                        }
+                     } else {
+                        int value = ((OptionsRegistry$IntParameter)object).getValue();
+                        temp.writeInt(2);
+                        temp.writeInt(value);
+                     }
+                  } else {
+                     boolean value = ((OptionsRegistry$BooleanParameter)object).getValue();
+                     temp.writeInt(6);
+                     temp.writeBoolean(value);
+                  }
+               } else {
+                  String value = ((OptionsRegistry$StringParameter)object).getValue();
+                  if (value != null) {
+                     temp.writeInt(0);
+                     temp.writeUTF(value);
+                  }
+               }
+
+               byte[] bytes = temp.toArray();
+               ConverterUtilities.writeByteArray(buffer, 1, bytes);
+               temp.reset();
+            }
+         }
+      } catch (IOException var9) {
+      }
    }
 
    private void notifyListeners(long key) {

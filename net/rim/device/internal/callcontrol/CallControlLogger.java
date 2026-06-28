@@ -197,7 +197,40 @@ public final class CallControlLogger {
    }
 
    private final int append(int offset, Object arg) {
-      throw new RuntimeException("cod2jar: type check");
+      try {
+         if (arg == null) {
+            return this.append(offset, NULL);
+         }
+
+         if (arg instanceof String) {
+            StringBuffer strbuf = new StringBuffer((String)arg);
+            strbuf.insert(0, '"');
+            strbuf.append('"');
+            return this.append(offset, strbuf.toString().getBytes());
+         }
+
+         if (!(arg instanceof int[])) {
+            return this.append(offset, arg.toString().getBytes());
+         }
+
+         int[] array = (int[])arg;
+         int len = array.length;
+         offset = this.append(offset, '[');
+         if (len > 0) {
+            offset += NumberUtilities.appendNumber(offset, this._buf, array[0], 10);
+
+            for (int idx = 1; idx < len; idx++) {
+               offset = this.append(offset, ',');
+               offset += NumberUtilities.appendNumber(offset, this._buf, array[idx], 10);
+            }
+         }
+
+         return this.append(offset, (char)93);
+      } catch (IndexOutOfBoundsException ioobe) {
+         return offset;
+      } catch (Exception e) {
+         return offset;
+      }
    }
 
    private final synchronized void logEvent(int level, byte[] argA, boolean argB) {

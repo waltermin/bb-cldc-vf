@@ -11,17 +11,20 @@ import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.itpolicy.ITPolicy;
+import net.rim.device.api.memorycleaner.MemoryCleanerManager;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CRC32;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.Persistable;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.internal.compress.CompressUtilities;
 import net.rim.device.internal.crypto.EncryptionUtilities;
 import net.rim.device.internal.system.NvStore;
 import net.rim.device.internal.system.Security;
 import net.rim.vm.Array;
+import net.rim.vm.Process;
 import net.rim.vm.WeakReference;
 
 public final class PersistentContent {
@@ -251,7 +254,138 @@ public final class PersistentContent {
    }
 
    private final void checkSecureLoop() {
-      throw new RuntimeException("cod2jar: type check");
+      ApplicationManager applicationManager = ApplicationManager.getApplicationManager();
+
+      while (applicationManager.inStartup()) {
+         try {
+            Thread.sleep(10000);
+         } catch (InterruptedException var21) {
+         }
+      }
+
+      synchronized (_instance) {
+         if (this._encrypt) {
+            this._listeners.modeChanged(this._modeGeneration);
+         }
+      }
+
+      MemoryCleanerManager memoryCleanerManager = MemoryCleanerManager.getInstance();
+      int maxCheckSecureDelay = 60000;
+      boolean ticketAvailable = true;
+      int numPlaintext = 0;
+      int numPlaintextSpecial = 0;
+
+      while (true) {
+         int checkSecureDelay;
+         synchronized (this) {
+            this._listeners.updateStateIndicator();
+            this._checkSecureDelay = Math.min(this._checkSecureDelay * 2, maxCheckSecureDelay);
+            checkSecureDelay = this._checkSecureDelay;
+         }
+
+         synchronized (this._checkSecureThread) {
+            try {
+               this._checkSecureThread.wait(checkSecureDelay);
+            } catch (InterruptedException var16) {
+            }
+
+            for (int loop = 0; loop < 120 && DeviceInfo.getIdleTime() < 3; loop++) {
+               try {
+                  this._checkSecureThread.wait(1000);
+               } catch (InterruptedException var15) {
+               }
+            }
+
+            int loop = 0;
+
+            for (int lastIdleCounter = Process.getLastIdleCounter(); loop < 120 && lastIdleCounter == Process.getLastIdleCounter(); loop++) {
+               try {
+                  this._checkSecureThread.wait(1000);
+               } catch (InterruptedException var20) {
+               }
+            }
+         }
+
+         synchronized (this) {
+            if (this._r != null && System.currentTimeMillis() - this._rTimestamp > 600000) {
+               this._r = null;
+               this._passwordKey = null;
+            }
+
+            if (this._checkSecureDelay == 1000) {
+               continue;
+            }
+
+            ticketAvailable = this._ticket != null;
+            if (!ticketAvailable) {
+               System.out.println("PC: checking...");
+               maxCheckSecureDelay = 3000;
+               if (Phone.isSupported() && Phone.getInstance().isActive()) {
+                  System.out.println("PC: phone is active");
+                  continue;
+               }
+
+               if (this._secureGCNeeded) {
+                  System.out.println("PC: starting secureGC");
+                  net.rim.vm.Memory.secureThoroughGC();
+                  System.out.println("PC: finished secureGC");
+                  this._secureGCNeeded = false;
+               }
+
+               maxCheckSecureDelay = 60000;
+               ticketAvailable = this._ticketWR.get() != null;
+               if (ticketAvailable) {
+                  net.rim.vm.Memory.fullGC();
+                  ticketAvailable = this._ticketWR.get() != null;
+                  if (ticketAvailable) {
+                     System.out.println("PC: locked, ticket in use");
+                     continue;
+                  }
+               }
+
+               if (!this._listeners.isUpdateComplete()) {
+                  System.out.println("PC: locked, updating PC listeners");
+                  continue;
+               }
+
+               if (this._devicePrivateKeys != null) {
+                  System.out.println("PC: locked, erasing key");
+                  this._deviceSymmetricKey = null;
+                  this._devicePrivateKeys = (byte[][][])((byte[][])null);
+                  this._symmetricKeyCache = new PersistentContent$SymmetricKeyCache();
+                  memoryCleanerManager.cleanPersistentContent();
+                  this._checkSecureDelay = 1000;
+               }
+
+               if (!memoryCleanerManager.isUpdateComplete()) {
+                  System.out.println("PC: locked, updating mem listeners");
+                  continue;
+               }
+
+               System.out.println("PC: locked, as secure as we're gonna be");
+               this._secure = true;
+               this._listeners.stateChanged(3, this._lockGeneration);
+               maxCheckSecureDelay = 3600000;
+               numPlaintext = net.rim.vm.Memory.numPlaintext();
+               if (numPlaintext > 0) {
+                  numPlaintextSpecial = net.rim.vm.Memory.numPlaintextSpecial();
+                  if (numPlaintext - numPlaintextSpecial > 0) {
+                     System.out.println("PC: locked, plaintext found");
+                     memoryCleanerManager.cleanPersistentContent();
+                     continue;
+                  }
+               }
+            }
+         }
+
+         synchronized (this._checkSecureThread) {
+            try {
+               System.out.println("PC: waiting");
+               this._checkSecureThread.wait();
+            } catch (InterruptedException var18) {
+            }
+         }
+      }
    }
 
    final void encryptPassword(String password, boolean force) {
@@ -573,7 +707,27 @@ public final class PersistentContent {
    }
 
    private static final Object copy(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (encoding instanceof String) {
+         return (String)encoding;
+      }
+
+      if (!(encoding instanceof byte[])) {
+         if (encoding instanceof char[]) {
+            return !_fileHook ? Arrays.copy((char[])encoding) : encoding;
+         }
+
+         if (!(encoding instanceof PersistentContent$CharArrayWrapper)) {
+            if (encoding == null) {
+               return encoding;
+            } else {
+               throw new IllegalArgumentException();
+            }
+         } else {
+            return ((PersistentContent$CharArrayWrapper)encoding).copy();
+         }
+      } else {
+         return Arrays.copy((byte[])encoding);
+      }
    }
 
    public static final Object getTicket() {
@@ -603,7 +757,15 @@ public final class PersistentContent {
    }
 
    public static final Object encodeObject(Object obj, boolean compress, boolean encrypt) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof String)) {
+         if (!(obj instanceof byte[])) {
+            return obj instanceof char[] ? new PersistentContent$CharArrayWrapper((char[])obj) : obj;
+         } else {
+            return encode((byte[])obj, compress, encrypt);
+         }
+      } else {
+         return encode((String)obj, compress, encrypt);
+      }
    }
 
    public static final Object encode(String string) {
@@ -627,7 +789,44 @@ public final class PersistentContent {
    }
 
    public static final Object encodeAndAppend(String string, int index, int length, boolean compress, boolean encrypt, Object content) {
-      throw new RuntimeException("cod2jar: type check");
+      if (string == null) {
+         return content;
+      }
+
+      if (index < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      int maxLength = string.length();
+      if (length < 0) {
+         length = maxLength - index;
+      }
+
+      if (index + length > maxLength) {
+         throw new IllegalArgumentException();
+      }
+
+      if (length == 0) {
+         return content != null ? content : _instance._emptyString;
+      }
+
+      if (content != null) {
+         if (content instanceof String) {
+            string = content + string.substring(index, index + length);
+            index = 0;
+            length = string.length();
+            maxLength = length;
+            content = null;
+         } else if (!(content instanceof char[])) {
+            throw new IllegalArgumentException();
+         }
+      }
+
+      int charSize = StringUtilities.getCharacterSize(string);
+      int stringLength = length;
+      int byteLength = stringLength * charSize;
+      int byteOffset = index * charSize;
+      return _instance.encode(string, byteOffset, byteLength, stringLength, maxLength, true, compress, encrypt, (char[])content);
    }
 
    public static final Object encode(byte[] data) {
@@ -651,7 +850,47 @@ public final class PersistentContent {
    }
 
    public static final Object encodeAndAppend(byte[] data, int offset, int length, boolean compress, boolean encrypt, Object content) {
-      throw new RuntimeException("cod2jar: type check");
+      if (data == null) {
+         return content;
+      }
+
+      if (offset < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      int maxLength = data.length;
+      if (length < 0) {
+         length = maxLength - offset;
+      }
+
+      if (offset + length > maxLength) {
+         throw new IllegalArgumentException();
+      }
+
+      if (length == 0) {
+         return content != null ? content : _instance._emptyByteArray;
+      }
+
+      if (content != null) {
+         if (!(content instanceof byte[])) {
+            if (!(content instanceof char[])) {
+               throw new IllegalArgumentException();
+            }
+         } else {
+            byte[] contentData = (byte[])content;
+            int contentDataLength = contentData.length;
+            int newDataLength = contentDataLength + length;
+            byte[] newData = new byte[newDataLength];
+            System.arraycopy(content, 0, newData, 0, contentDataLength);
+            System.arraycopy(data, offset, newData, contentDataLength, length);
+            data = newData;
+            offset = 0;
+            length = newDataLength;
+            content = null;
+         }
+      }
+
+      return _instance.encode(data, offset, length, length, maxLength, false, compress, encrypt, (char[])content);
    }
 
    private static final char[] read(char[] o) {
@@ -659,7 +898,7 @@ public final class PersistentContent {
    }
 
    private static final char[] write(char[] o) {
-      throw new RuntimeException("cod2jar: type check");
+      return !_fileHook ? o : (char[])Array.writeToFile(o);
    }
 
    private final synchronized Object encode(
@@ -673,7 +912,91 @@ public final class PersistentContent {
       boolean encrypt,
       char[] output
    ) {
-      throw new RuntimeException("cod2jar: type check");
+      boolean bytes = inputElementLength == inputByteLength;
+      RandomSource.add(input);
+      int header;
+      int outputByteOffset;
+      if (output == null) {
+         compress &= this._compress && inputByteLength >= 32;
+         encrypt &= this._encrypt;
+         if (!encrypt && !compress && !_fileHook) {
+            if (inputByteOffset == 0 && inputElementLength == inputMaxElementLength) {
+               return input;
+            }
+
+            if (!(input instanceof String)) {
+               byte[] array = (byte[])input;
+               return Arrays.copy(array, inputByteOffset, inputByteLength);
+            }
+
+            String s = (String)input;
+            int startIndex = inputByteOffset;
+            if (!bytes) {
+               startIndex >>= 1;
+            }
+
+            return s.substring(startIndex, startIndex + inputElementLength);
+         }
+
+         header = createMasterHeader(this._compress, encrypt, string, bytes, inputByteLength);
+         outputByteOffset = 0;
+      } else {
+         output = read(output);
+         header = getMasterHeader(output);
+         if (getFlag(header, 4) != string) {
+            throw new IllegalArgumentException();
+         }
+
+         compress = getFlag(header, 1) && inputByteLength >= 32;
+         encrypt = getFlag(header, 2);
+         if (bytes) {
+            if (!getFlag(header, 8)) {
+               header += inputByteLength << 4;
+            }
+         } else if (getFlag(header, 8)) {
+            header &= -9;
+            header += header & -16;
+         }
+
+         header += inputByteLength << 4;
+         outputByteOffset = getOutputByteOffset(output);
+      }
+
+      int encryptionOverhead;
+      int eccCurveId;
+      byte[] symmetricKey;
+      int publicKeyLength;
+      if (encrypt) {
+         this.setPlaintext(input);
+         encryptionOverhead = this._encryptionOverhead;
+         if (this._devicePrivateKeys != null) {
+            symmetricKey = this._deviceSymmetricKey;
+            eccCurveId = 0;
+            publicKeyLength = 0;
+         } else {
+            symmetricKey = null;
+            eccCurveId = getEncryptionStrength();
+            publicKeyLength = this._publicKeyLengths[eccCurveId];
+            this._listeners.stateChanged(4, this._lockGeneration);
+         }
+      } else {
+         encryptionOverhead = 0;
+         symmetricKey = null;
+         eccCurveId = 0;
+         publicKeyLength = 0;
+      }
+
+      int numBlocks = inputByteLength + 4096 - 1 >> 12;
+      output = this.grow(output, outputByteOffset + inputByteLength + numBlocks * (2 + encryptionOverhead) + 1 + publicKeyLength);
+      outputByteOffset = this.encodeBlocks(
+         input, inputByteOffset, inputByteLength, compress, encrypt, symmetricKey, eccCurveId, bytes, output, outputByteOffset
+      );
+      setBytes(output, outputByteOffset, header, 3);
+      outputByteOffset += 3;
+      int outputCharOffset = outputByteOffset + 1 >> 1;
+      Array.resize(output, outputCharOffset);
+      RandomSource.add(output);
+      return write(output);
    }
 
    private final char[] grow(char[] output, int maxByteOffset) {
@@ -780,15 +1103,19 @@ public final class PersistentContent {
    }
 
    public static final byte[] decodeByteArray(Object content) {
-      throw new RuntimeException("cod2jar: type check");
+      return (byte[])decode(content, false);
    }
 
    public static final byte[] decodeByteArray(Object content, boolean firstBlockOnly) {
-      throw new RuntimeException("cod2jar: type check");
+      return (byte[])decode(content, firstBlockOnly);
    }
 
    public static final Object decode(Object content, boolean firstBlockOnly) {
-      throw new RuntimeException("cod2jar: type check");
+      if (content instanceof char[]) {
+         return _instance.decode((char[])content, firstBlockOnly, false);
+      } else {
+         return !(content instanceof PersistentContent$CharArrayWrapper) ? content : ((PersistentContent$CharArrayWrapper)content).getArray();
+      }
    }
 
    final synchronized Object decode(char[] input, boolean firstBlockOnly, boolean keepPlaintextInRAM) {
@@ -980,23 +1307,74 @@ public final class PersistentContent {
    static final native int getBytes(Object var0, int var1, int var2);
 
    public static final boolean isCompressed(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(encoding instanceof char[])) {
+         return false;
+      }
+
+      int masterHeader = getMasterHeader((char[])encoding);
+      return getFlag(masterHeader, 1);
    }
 
    public static final boolean isEncrypted(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(encoding instanceof char[])) {
+         return false;
+      }
+
+      int masterHeader = getMasterHeader((char[])encoding);
+      return getFlag(masterHeader, 2);
    }
 
    public static final boolean isString(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (encoding instanceof String) {
+         return true;
+      }
+
+      if (!(encoding instanceof char[])) {
+         return false;
+      }
+
+      encoding = read((char[])encoding);
+      int header = getMasterHeader((char[])encoding);
+      return getFlag(header, 4);
    }
 
    public static final boolean isByteArray(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (encoding instanceof byte[]) {
+         return true;
+      }
+
+      if (!(encoding instanceof char[])) {
+         return false;
+      }
+
+      encoding = read((char[])encoding);
+      int header = getMasterHeader((char[])encoding);
+      boolean string = getFlag(header, 4);
+      return !string;
    }
 
    public static final int getLength(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(encoding instanceof String)) {
+         if (!(encoding instanceof byte[])) {
+            if (!(encoding instanceof char[])) {
+               throw new IllegalArgumentException();
+            }
+
+            Object var4 = read((char[])encoding);
+            int header = getMasterHeader(var4);
+            boolean bytes = getFlag(header, 8);
+            int byteLength = header >> 4;
+            if (!bytes) {
+               byteLength >>= 1;
+            }
+
+            return byteLength;
+         } else {
+            return ((byte[])encoding).length;
+         }
+      } else {
+         return ((String)encoding).length();
+      }
    }
 
    public static final boolean checkEncoding(Object encoding) {
@@ -1008,7 +1386,72 @@ public final class PersistentContent {
    }
 
    private final synchronized boolean checkEncoding2(Object encoding, boolean compress, boolean encrypt) {
-      throw new RuntimeException("cod2jar: type check");
+      compress &= _instance._compress;
+      encrypt &= _instance._encrypt;
+      if (!(encoding instanceof String)) {
+         if (!(encoding instanceof byte[])) {
+            if (!(encoding instanceof char[])) {
+               return true;
+            }
+
+            Object var12 = read((char[])encoding);
+            int masterHeader = getMasterHeader(var12);
+            boolean encodingEncrypt = getFlag(masterHeader, 2);
+            boolean encodingCompress = getFlag(masterHeader, 1);
+            if (encrypt == encodingEncrypt && this._compress == encodingCompress) {
+               if (encrypt && this._devicePrivateKeys != null) {
+                  char[] input = var12;
+                  int inputByteOffset = 0;
+                  int inputByteLength = (input.length << 1) - 4 - 2;
+
+                  do {
+                     int blockHeader = getBytes(input, inputByteOffset, 2);
+                     inputByteOffset += 2;
+                     if (getFlag(blockHeader, 2)) {
+                        return false;
+                     }
+
+                     int plaintextByteLength = blockHeader >> 4;
+                     if (plaintextByteLength == 0) {
+                        plaintextByteLength = 4096;
+                     }
+
+                     inputByteOffset += EncryptionUtilities.getCiphertextLength(plaintextByteLength);
+                  } while (inputByteOffset < inputByteLength);
+               }
+
+               return true;
+            } else {
+               if (encrypt && !encodingEncrypt) {
+                  this.setPlaintext(var12);
+               }
+
+               return encodingEncrypt && this._devicePrivateKeys == null;
+            }
+         } else {
+            int length = ((byte[])encoding).length;
+            if (length == 0) {
+               return true;
+            }
+
+            if (encrypt) {
+               this.setPlaintext(encoding);
+            }
+
+            return !encrypt && (!compress || length < 32);
+         }
+      } else {
+         int length = ((String)encoding).length();
+         if (length == 0) {
+            return true;
+         }
+
+         if (encrypt) {
+            this.setPlaintext(encoding);
+         }
+
+         return !encrypt && (!compress || length < 32);
+      }
    }
 
    public static final Object reEncode(Object encoding) {
@@ -1016,11 +1459,77 @@ public final class PersistentContent {
    }
 
    public static final Object reEncode(Object encoding, boolean compress, boolean encrypt) {
-      throw new RuntimeException("cod2jar: type check");
+      int firstBlockByteLength = 0;
+      Object originalEncoding = encoding;
+      if (encoding instanceof char[]) {
+         Object var10 = read((char[])encoding);
+         int blockHeader = getBytes(var10, 0, 2);
+         firstBlockByteLength = blockHeader >> 4;
+         boolean decrypting = !encrypt && getFlag(getMasterHeader(var10), 2);
+
+         try {
+            encoding = decode(originalEncoding, false);
+            if (decrypting) {
+               net.rim.vm.Memory.clearPlaintext(encoding);
+            }
+         } catch (IllegalStateException e) {
+            return originalEncoding;
+         }
+      }
+
+      Object newEncoding = null;
+      if (!(encoding instanceof String)) {
+         if (!(encoding instanceof byte[])) {
+            newEncoding = encoding;
+         } else {
+            byte[] bytes = (byte[])encoding;
+            int secondBlockByteLength = bytes.length - firstBlockByteLength;
+            newEncoding = encode(bytes, 0, firstBlockByteLength, compress, encrypt);
+            if (secondBlockByteLength > 0) {
+               newEncoding = encodeAndAppend(bytes, firstBlockByteLength, secondBlockByteLength, compress, encrypt, newEncoding);
+            }
+         }
+      } else {
+         String string = (String)encoding;
+         int firstBlockCharLength = firstBlockByteLength / StringUtilities.getCharacterSize(string);
+         int secondBlockCharLength = string.length() - firstBlockCharLength;
+         newEncoding = encode(string, 0, firstBlockCharLength, compress, encrypt);
+         if (secondBlockCharLength > 0) {
+            newEncoding = encodeAndAppend(string, firstBlockCharLength, secondBlockCharLength, compress, encrypt, newEncoding);
+         }
+      }
+
+      return newEncoding;
    }
 
    public static final byte[] convertEncodingToByteArray(Object encoding) {
-      throw new RuntimeException("cod2jar: type check");
+      byte type;
+      int byteLength;
+      if (encoding instanceof byte[]) {
+         type = 0;
+         byteLength = ((byte[])encoding).length;
+      } else if (!(encoding instanceof String)) {
+         if (!(encoding instanceof char[])) {
+            if (encoding == null) {
+               return _instance._emptyByteArray;
+            }
+
+            throw new IllegalArgumentException();
+         }
+
+         encoding = read((char[])encoding);
+         type = 3;
+         byteLength = ((char[])encoding).length * 2;
+      } else {
+         String string = (String)encoding;
+         type = (byte)StringUtilities.getCharacterSize(string);
+         byteLength = string.length() * type;
+      }
+
+      byte[] array = new byte[1 + byteLength];
+      array[0] = type;
+      copyBytes(encoding, 0, array, 1, byteLength, false);
+      return array;
    }
 
    public static final Object convertByteArrayToEncoding(byte[] array) {

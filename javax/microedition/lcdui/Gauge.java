@@ -37,7 +37,7 @@ public class Gauge extends Item {
    }
 
    private void updatePeer() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private boolean validateMaxValue(int maxValue) {

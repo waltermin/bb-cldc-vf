@@ -131,7 +131,26 @@ public class MIDletSecurityCrypto {
    }
 
    public static final byte[] fetchStoredSettings() {
-      throw new RuntimeException("cod2jar: type check");
+      int numMIDlets = CodeModuleManager.getNumMidlets();
+      if (_hashtable.size() > numMIDlets + 25) {
+         Hashtable newHashtable = new Hashtable(numMIDlets);
+         int[] moduleHandles = CodeModuleManager.getModuleHandles();
+
+         for (int i = moduleHandles.length - 1; i >= 0; i--) {
+            int moduleHandle = moduleHandles[i];
+            if (CodeModuleManager.isMidlet(moduleHandle)) {
+               byte[] moduleHash = CodeModuleManager.getModuleHash(moduleHandle);
+               ByteArray moduleHashByteArray = new ByteArray(moduleHash);
+               byte[] settings = (byte[])_hashtable.get(moduleHashByteArray);
+               newHashtable.put(moduleHashByteArray, settings);
+            }
+         }
+
+         _persist.setContents(newHashtable, 51);
+         _hashtable = newHashtable;
+      }
+
+      return (byte[])_hashtable.get(_moduleHashByteArray);
    }
 
    public static final void updateStoredSettings(byte[] settings) {

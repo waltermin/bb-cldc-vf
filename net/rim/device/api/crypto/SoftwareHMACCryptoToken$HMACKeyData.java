@@ -56,6 +56,17 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == obj) {
+         return true;
+      }
+
+      if (obj instanceof SoftwareHMACCryptoToken$HMACKeyData) {
+         SoftwareHMACCryptoToken$HMACKeyData other = (SoftwareHMACCryptoToken$HMACKeyData)obj;
+         if (this._hashCode == other._hashCode) {
+            return Arrays.equals(this._data, other._data);
+         }
+      }
+
+      return false;
    }
 }

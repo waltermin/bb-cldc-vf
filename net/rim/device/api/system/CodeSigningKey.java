@@ -53,7 +53,12 @@ public final class CodeSigningKey implements Persistable {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof CodeSigningKey)) {
+         return false;
+      }
+
+      CodeSigningKey other = (CodeSigningKey)obj;
+      return this._signerId == other._signerId && Arrays.equals(this._publicKey, other._publicKey);
    }
 
    public static final native CodeSigningKey get(Object var0);

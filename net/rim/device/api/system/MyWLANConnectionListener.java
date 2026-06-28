@@ -9,7 +9,12 @@ final class MyWLANConnectionListener implements WLANListenerInternal {
 
    @Override
    public final boolean equals(Object o) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(o instanceof MyWLANConnectionListener)) {
+         return super.equals(o);
+      }
+
+      MyWLANConnectionListener mwcListener = (MyWLANConnectionListener)o;
+      return this._listener.equals(mwcListener._listener);
    }
 
    @Override

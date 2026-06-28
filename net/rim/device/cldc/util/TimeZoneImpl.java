@@ -55,7 +55,7 @@ final class TimeZoneImpl extends TimeZone {
 
    @Override
    public final boolean equals(Object other) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(other instanceof TimeZoneImpl) ? false : ((TimeZoneImpl)other).rawOffset == this.rawOffset;
    }
 
    @Override

@@ -120,6 +120,21 @@ public final class HMACKey implements SymmetricKey, Persistable {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == obj) {
+         return true;
+      }
+
+      if (obj instanceof HMACKey) {
+         HMACKey other = (HMACKey)obj;
+         if (this._hashCode == other._hashCode) {
+            if (this._cryptoToken.equals(other._cryptoToken) && this._cryptoTokenData.equals(other._cryptoTokenData)) {
+               return true;
+            }
+
+            return false;
+         }
+      }
+
+      return false;
    }
 }

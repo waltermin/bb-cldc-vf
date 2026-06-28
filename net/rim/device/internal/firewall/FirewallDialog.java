@@ -95,6 +95,6 @@ public final class FirewallDialog extends PopupDialog {
    }
 
    private final boolean doAction() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 }

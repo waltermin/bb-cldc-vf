@@ -195,7 +195,26 @@ class UiEngineImpl$ScreenList {
    }
 
    public synchronized void updateExtent(Screen screen) {
-      throw new RuntimeException("cod2jar: type check");
+      int index = this.getIndex(screen);
+      XYRect extent = this.this$0.getScreenExtent(screen);
+      XYRect cachedExtent = this.getExtent(index);
+      cachedExtent.set(extent);
+      XYRect opaqueRegion = this.getOpaqueRegion(index);
+      if (this.this$0.isScreenTransparent(screen)) {
+         opaqueRegion.set(0, 0, 0, 0);
+      } else if (this.this$0.isScreenTransparentBorder(screen)) {
+         opaqueRegion.set(extent);
+         XYEdges tmpEdges = Ui._tmpEdges;
+         if (!(screen instanceof UiEngineImpl$ProxyScreen)) {
+            screen.getBorder(tmpEdges);
+         } else {
+            ((UiEngineImpl$ProxyScreen)screen).getWrappedScreen().getBorder(tmpEdges);
+         }
+
+         opaqueRegion.subtract(tmpEdges);
+      } else {
+         opaqueRegion.set(extent);
+      }
    }
 
    public synchronized Screen getScreenAbove(Screen screen) {
@@ -294,6 +313,26 @@ class UiEngineImpl$ScreenList {
    }
 
    private String getScreenListDebugging() {
-      throw new RuntimeException("cod2jar: type check");
+      StringBuffer buffer = new StringBuffer();
+
+      for (int i = 0; i < this._screens.length; i++) {
+         Screen next = this._screens[i];
+         if (!(next instanceof UiEngineImpl$ProxyScreen)) {
+            if (next.isGlobal()) {
+               buffer.append("G,");
+            } else {
+               buffer.append("L,");
+            }
+         } else {
+            next = ((UiEngineImpl$ProxyScreen)next).getWrappedScreen();
+            if (next.isGlobal()) {
+               buffer.append("PG,");
+            } else {
+               buffer.append("PL,");
+            }
+         }
+      }
+
+      return buffer.toString();
    }
 }

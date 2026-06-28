@@ -17,7 +17,13 @@ public class MethodRunnable implements Runnable {
    }
 
    public void checkException() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._throwable != null) {
+         if (!(this._throwable instanceof RuntimeException)) {
+            throw new RuntimeException(this._throwable.toString());
+         } else {
+            throw (RuntimeException)this._throwable;
+         }
+      }
    }
 
    public void runOnProxy() {

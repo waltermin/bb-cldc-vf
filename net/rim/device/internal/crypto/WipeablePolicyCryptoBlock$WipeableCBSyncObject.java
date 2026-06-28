@@ -28,7 +28,13 @@ public final class WipeablePolicyCryptoBlock$WipeableCBSyncObject implements Syn
    }
 
    public static final boolean convert(SyncObject object, DataBuffer buffer) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof WipeablePolicyCryptoBlock$WipeableCBSyncObject)) {
+         return false;
+      }
+
+      WipeablePolicyCryptoBlock$WipeableCBSyncObject wipeableCBSyncObject = (WipeablePolicyCryptoBlock$WipeableCBSyncObject)object;
+      buffer.write(wipeableCBSyncObject.getKeyData());
+      return true;
    }
 
    public static final SyncObject convert(DataBuffer data, int UID) {

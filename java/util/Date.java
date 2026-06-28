@@ -21,7 +21,7 @@ public class Date {
 
    @Override
    public boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return this == obj || obj instanceof Date && ((Date)obj).getTime() == this.getTime();
    }
 
    @Override

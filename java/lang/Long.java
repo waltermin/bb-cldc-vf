@@ -11,7 +11,18 @@ public final class Long {
    }
 
    static final int toString(long i, int radix, Object obuf, int offset) {
-      throw new RuntimeException("cod2jar: type check");
+      if (radix < 2 || radix > 36) {
+         radix = 10;
+      }
+
+      int len;
+      if (!(obuf instanceof byte[])) {
+         len = StringBuffer.formatNumeric((char[])obuf, offset, radix, i);
+      } else {
+         len = StringBuffer.formatNumeric((byte[])obuf, offset, radix, i);
+      }
+
+      return len;
    }
 
    public static final String toString(long i) {
@@ -120,6 +131,6 @@ public final class Long {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(obj instanceof Long) ? false : ((Long)obj).value == this.value;
    }
 }

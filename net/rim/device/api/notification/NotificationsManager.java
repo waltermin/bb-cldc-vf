@@ -287,23 +287,133 @@ public final class NotificationsManager implements NotificationsConstants {
    }
 
    public static final void registerNotificationsEngineListener(long sourceID, NotificationsEngineListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (_listenersById) {
+         Object target = getListenerByID(sourceID);
+         if (target == null) {
+            _listenersById.put(sourceID, listener);
+         } else if (!(target instanceof Vector)) {
+            if (target instanceof NotificationsEngineListener) {
+               Vector newTarget = new Vector();
+               newTarget.addElement(target);
+               newTarget.addElement(listener);
+               _listenersById.put(sourceID, newTarget);
+            }
+         } else {
+            ((Vector)target).addElement(listener);
+         }
+      }
    }
 
    public static final void deregisterNotificationsEngineListener(long sourceID, NotificationsEngineListener listener) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (_listenersById) {
+         Object target = getListenerByID(sourceID);
+         Vector listeners = null;
+         if (target != null) {
+            if (!(target instanceof Vector)) {
+               if (target instanceof NotificationsEngineListener) {
+                  _listenersById.remove(sourceID);
+               }
+            } else {
+               listeners = (Vector)target;
+               listeners.removeElement(listener);
+               if (listeners.size() == 0) {
+                  _listenersById.remove(sourceID);
+               }
+            }
+         }
+      }
    }
 
    public static final void fireStateChanged(int state, long sourceID, long eventID, Object eventReference, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      Object target = null;
+      Vector listeners = null;
+      synchronized (_listenersById) {
+         Enumeration listenerTargets = _listenersById.elements();
+
+         while (listenerTargets.hasMoreElements()) {
+            target = listenerTargets.nextElement();
+            if (target instanceof Vector) {
+               listeners = (Vector)target;
+               int size = listeners.size();
+
+               for (int index = 0; index < size; index++) {
+                  try {
+                     ((NotificationsEngineListener)listeners.elementAt(index))
+                        .notificationsEngineStateChanged(state, sourceID, eventID, eventReference, context);
+                  } catch (Throwable var16) {
+                  }
+               }
+            } else if (target instanceof NotificationsEngineListener) {
+               try {
+                  ((NotificationsEngineListener)target).notificationsEngineStateChanged(state, sourceID, eventID, eventReference, context);
+               } catch (Throwable var15) {
+               }
+            }
+         }
+      }
    }
 
    public static final void fireDefer(long sourceID, long eventID, Object eventReference, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      Vector listeners = null;
+      synchronized (_listenersById) {
+         Object target = getListenerByID(sourceID);
+         NotificationsEngineListener listener = null;
+         if (target != null) {
+            if (!(target instanceof Vector)) {
+               if (target instanceof NotificationsEngineListener) {
+                  try {
+                     listener = (NotificationsEngineListener)target;
+                     listener.deferredEventWasSuperseded(sourceID, eventID, eventReference, context);
+                  } catch (Throwable var14) {
+                  }
+               }
+            } else {
+               listeners = (Vector)target;
+               int size = listeners.size();
+
+               for (int index = 0; index < size; index++) {
+                  try {
+                     listener = (NotificationsEngineListener)listeners.elementAt(index);
+                     listener.deferredEventWasSuperseded(sourceID, eventID, eventReference, context);
+                  } catch (Throwable var15) {
+                  }
+               }
+            }
+         }
+      }
    }
 
    public static final void fireProceed(long sourceID, long eventID, Object eventReference, Object context) {
-      throw new RuntimeException("cod2jar: type check");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      Vector listeners = null;
+      synchronized (_listenersById) {
+         Object target = getListenerByID(sourceID);
+         NotificationsEngineListener listener = null;
+         if (target != null) {
+            if (!(target instanceof Vector)) {
+               if (target instanceof NotificationsEngineListener) {
+                  try {
+                     listener = (NotificationsEngineListener)target;
+                     listener.proceedWithDeferredEvent(sourceID, eventID, eventReference, context);
+                  } catch (Throwable var14) {
+                  }
+               }
+            } else {
+               listeners = (Vector)target;
+               int size = listeners.size();
+
+               for (int index = 0; index < size; index++) {
+                  try {
+                     listener = (NotificationsEngineListener)listeners.elementAt(index);
+                     listener.proceedWithDeferredEvent(sourceID, eventID, eventReference, context);
+                  } catch (Throwable var15) {
+                  }
+               }
+            }
+         }
+      }
    }
 
    private static final Object getListenerByID(long sourceID) {

@@ -5,7 +5,23 @@ public class AbstractStringWrapper implements AbstractString {
    }
 
    public static AbstractStringWrapper createInstance(Object string) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(string instanceof String)) {
+         if (!(string instanceof StringBuffer)) {
+            if (!(string instanceof char[])) {
+               Object var5 = null;
+               throw new IllegalArgumentException();
+            } else {
+               char[] str = (char[])string;
+               return new CharArrayWrapper(str);
+            }
+         } else {
+            StringBuffer str = (StringBuffer)string;
+            return new StringBufferWrapper(str);
+         }
+      } else {
+         String str = (String)string;
+         return new StringWrapper(str);
+      }
    }
 
    public void reset(Object _1) {

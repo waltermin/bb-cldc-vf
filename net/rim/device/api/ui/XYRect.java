@@ -61,7 +61,12 @@ public final class XYRect {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof XYRect)) {
+         return false;
+      }
+
+      XYRect rect = (XYRect)obj;
+      return this.x == rect.x && this.y == rect.y && this.width == rect.width && this.height == rect.height;
    }
 
    public final void intersect(int rect_x, int rect_y, int rect_width, int rect_height) {

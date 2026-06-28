@@ -3,7 +3,12 @@ package net.rim.device.internal.system;
 import net.rim.device.api.crypto.Digest;
 import net.rim.device.api.crypto.MIDletSecurityCrypto;
 import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.CodeSigningKey;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.ui.component.BackgroundDialog;
@@ -42,11 +47,37 @@ public final class MIDletSecurity {
    }
 
    public static final byte[] ensureDefaultUntrustedPolicyInstalled() {
-      throw new RuntimeException("cod2jar: type check");
+      byte[] policy = null;
+      if (Branding.getVendorId() == 1 || DeviceInfo.isSimulator()) {
+         ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+         policy = (byte[])ar.get(-8029111670665436014L);
+         if (policy == null) {
+            policy = new byte[40];
+            Arrays.fill(policy, (byte)5);
+            System.arraycopy(DEFAULT_MIDLET_PERM_SETTING, 0, policy, 0, DEFAULT_MIDLET_PERM_SETTING.length);
+            CodeSigningKey rri = CodeSigningKey.getBuiltInKey(51);
+            ControlledAccess ca = new ControlledAccess(policy, rri);
+            ar.put(-8029111670665436014L, ca);
+         }
+      }
+
+      return policy;
    }
 
    private static final void fillInUntrustedPolicy(byte[] policy) {
-      throw new RuntimeException("cod2jar: type check");
+      _isUntrusted = true;
+      ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
+      byte[] carrierPolicy = (byte[])ar.get(-8029111670665436014L);
+      if (carrierPolicy != null) {
+         int carrierLen = carrierPolicy.length;
+         if (checkValidSettings(carrierPolicy, 0, carrierLen)) {
+            System.arraycopy(carrierPolicy, 0, policy, 0, carrierLen);
+            return;
+         }
+      }
+
+      int length = DEFAULT_MIDLET_PERM_SETTING.length > policy.length ? policy.length : DEFAULT_MIDLET_PERM_SETTING.length;
+      System.arraycopy(DEFAULT_MIDLET_PERM_SETTING, 0, policy, 0, length);
    }
 
    private static final int setDomainCache() {

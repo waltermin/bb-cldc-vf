@@ -1,6 +1,7 @@
 package net.rim.device.api.i18n;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.TimeZone;
 import net.rim.device.cldc.util.CalendarExtensions;
 
@@ -43,7 +44,15 @@ public class DateFormat extends Format {
 
    @Override
    public StringBuffer format(Object obj, StringBuffer toAppendTo_o, FieldPosition pos_io) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof Date)) {
+         return this.format((Calendar)obj, toAppendTo_o, pos_io);
+      }
+
+      Date date = (Date)obj;
+      synchronized (_cal) {
+         _cal.setTime(date);
+         return this.format(_cal, toAppendTo_o, pos_io);
+      }
    }
 
    public static final DateFormat getInstance(int style) {

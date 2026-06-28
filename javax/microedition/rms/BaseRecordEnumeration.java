@@ -40,7 +40,28 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    @Override
    public void keepUpdated(boolean listen) {
-      throw new RuntimeException("cod2jar: type check");
+      this.mustBeValid();
+      if (this._keepUpdated != listen) {
+         this._keepUpdated = listen;
+         if (listen) {
+            this._recordSource.addRecordListener(this);
+         } else {
+            this._recordSource.removeRecordListener(this);
+         }
+
+         RecordEventGenerator reg = this._recordSource;
+
+         while (reg instanceof BaseRecordEnumeration) {
+            BaseRecordEnumeration bre = (BaseRecordEnumeration)reg;
+            if (listen) {
+               this._recordSource.addRecordListener(bre);
+            } else {
+               this._recordSource.removeRecordListener(bre);
+            }
+
+            reg = bre._recordSource;
+         }
+      }
    }
 
    @Override
@@ -136,7 +157,17 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    @Override
    public void rebuild() {
-      throw new RuntimeException("cod2jar: type check");
+      this.mustBeValid();
+      synchronized (this._recordIds) {
+         if (this._recordSource instanceof BaseRecordEnumeration) {
+            BaseRecordEnumeration bre = (BaseRecordEnumeration)this._recordSource;
+            bre.rebuild();
+         }
+
+         this._recordSource.loadRecordIDs(this._recordIds);
+         this._inError = false;
+         this._currentIndex = -1;
+      }
    }
 
    @Override

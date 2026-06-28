@@ -163,7 +163,31 @@ public class Display {
    }
 
    public void setCurrent(Displayable nextDisplayable) {
-      throw new RuntimeException("cod2jar: type check");
+      Application app = Application.getApplication();
+      synchronized (Application.getEventLock()) {
+         Displayable old = getCurrentDisplayable();
+         if (nextDisplayable == null) {
+            moveDisplayToBack(this);
+            app.requestBackground();
+         } else if (!(nextDisplayable instanceof Alert)) {
+            if (nextDisplayable instanceof Canvas) {
+               nextDisplayable.getPeer().init();
+            }
+
+            moveDisplayToFront(this);
+            app.requestForeground();
+            this._current = nextDisplayable;
+            this._lastDisplayable = nextDisplayable;
+         } else {
+            Alert alert = (Alert)nextDisplayable;
+            moveDisplayToFront(this);
+            app.requestForeground();
+            this._current = alert;
+            alert.show(this, this._lastDisplayable);
+         }
+
+         this.startDisplaySwitch(app, old, getCurrentDisplayable());
+      }
    }
 
    private void startDisplaySwitch(Application app, Displayable oldDisplayable, Displayable newDisplayable) {

@@ -36,7 +36,7 @@ public class SharedInputStream extends InputStream {
    }
 
    public static SharedInputStream getSharedInputStream(InputStream input) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(input instanceof SharedInputStream) ? new SharedInputStream(new SharedInputStreamSource(input)) : ((SharedInputStream)input).readInputStream();
    }
 
    public static SharedInputStream getSharedInputStream(byte[] input) {
@@ -48,7 +48,9 @@ public class SharedInputStream extends InputStream {
    }
 
    public static SharedInputStream getSharedInputStream(InputStream input, int length) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(input instanceof SharedInputStream)
+         ? new SharedInputStream(new SharedInputStreamSource(input), 0, length)
+         : ((SharedInputStream)input).readInputStream(length);
    }
 
    public void setLength(int length) {

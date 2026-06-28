@@ -50,6 +50,11 @@ final class StringBufferWrapper extends AbstractStringWrapper {
 
    @Override
    public final void reset(Object string) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(string instanceof StringBuffer)) {
+         throw new IllegalArgumentException();
+      }
+
+      StringBuffer str = (StringBuffer)string;
+      this._stringBuffer = str;
    }
 }

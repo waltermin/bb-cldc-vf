@@ -39,7 +39,7 @@ public final class SyncCollectionSchema {
    }
 
    public final int[] getKeyFieldIds(int recordType) {
-      throw new RuntimeException("cod2jar: type check");
+      return (int[])this._keyFieldIds.get(recordType);
    }
 
    public final void setKeyFieldIds(int recordType, int[] keyFieldIds) {

@@ -238,7 +238,22 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    public void redoSearch(boolean force) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this.getKeywordFilterList() != null) {
+         if (!force) {
+            Object currentCriteria = this.getKeywordFilterList().getCriteria();
+            if (!(currentCriteria instanceof String)) {
+               if (currentCriteria != null) {
+                  force = true;
+               }
+            } else if (!StringUtilities.strEqual((String)currentCriteria, this._searchPattern)) {
+               force = true;
+            }
+         }
+
+         if (force) {
+            this.initiateSearch(this._searchPattern);
+         }
+      }
    }
 
    public void resetSearch() {

@@ -9,29 +9,32 @@ import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
+import net.rim.device.api.ui.accessibility.AccessibleContextFactory;
+import net.rim.device.api.ui.accessibility.AccessibleContextProxy;
 import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.SystemIcon;
 import net.rim.device.internal.ui.Tree;
 
 public class TreeField extends Field implements VariableRowHeightProvider {
-   private Tree _data;
-   private String _emptyString;
-   private int _emptyStyle;
-   private int _rowHeightSet;
+   private Tree _data = new Tree();
+   private String _emptyString = CommonResource.getString(1012);
+   private int _emptyStyle = 4;
+   private int _rowHeightSet = -1;
    private int _rowHeight;
    private int _focusRectX;
    private int _focusRectY;
    private int _focusRectWidth;
    private int _focusRectHeight;
    private TreeFieldCallback _callback;
-   private int _indent;
-   private int _focusNode;
+   private int _indent = 5;
+   private int _focusNode = -1;
    private boolean _haveFocus;
-   private int _lastStartNode;
+   private int _lastStartNode = -1;
    private int _lastStartNodeIndex;
    private int _iconWidth;
    private int _iconGap;
-   private RowHeightAdjuster _rowHeightAdjuster;
+   private RowHeightAdjuster _rowHeightAdjuster = new RowHeightAdjuster();
    private boolean _drawFocus;
    private boolean _iconFocusChanged;
    private static Tag TAG;
@@ -310,7 +313,26 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    private void calcFocusRect() {
-      throw new RuntimeException("cod2jar: type check");
+      int index = 0;
+      int x = 0;
+      int width = this.getWidth();
+      if (this._focusNode != -1) {
+         index = this._data.getIndexOf(this._focusNode, false);
+         if (index == -1) {
+            throw new RuntimeException("unable to find node with focus");
+         }
+
+         x = this.getIndentForNode(this._focusNode) + this._iconWidth + this._iconGap - 1;
+         if (this._callback instanceof TreeFieldCallback2) {
+            TreeFieldCallback2 callback2 = (TreeFieldCallback2)this._callback;
+            width = Math.min(width, callback2.getWidth(this, this._focusNode) + 1);
+         }
+      }
+
+      this._focusRectX = x;
+      this._focusRectY = this.getYForRow(index);
+      this._focusRectWidth = width;
+      this._focusRectHeight = this.getRowHeight(index);
    }
 
    @Override
@@ -602,16 +624,69 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    public TreeField(TreeFieldCallback callback, long style) {
+      super((style & 36028797018963968L) > 0 ? 0 : 18014398509481984L);
+      this.setTag(TAG);
+      if (callback == null) {
+         if (!(this instanceof TreeFieldCallback)) {
+            throw new NullPointerException();
+         }
+
+         callback = (TreeFieldCallback)this;
+      }
+
+      if ((style & -54043195528445953L) != 0) {
+         throw new IllegalArgumentException();
+      }
+
+      this._callback = callback;
    }
 
    @Override
    public AccessibleContext getAccessibleChildAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._data != null) {
+         Object temp = this._data.getCookie(index);
+         if (temp != null) {
+            if (!(temp instanceof AccessibleContext)) {
+               return new AccessibleContextFactory(temp.toString());
+            }
+
+            return (AccessibleContext)temp;
+         }
+      }
+
+      return null;
    }
 
    @Override
    public AccessibleContext getAccessibleSelectionAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this._data != null) {
+         Object temp = null;
+         int tempIndex;
+         if (this._haveFocus) {
+            tempIndex = this._focusNode + index;
+         } else {
+            tempIndex = this._data.getFirstRoot() + index;
+         }
+
+         temp = this._data.getCookie(tempIndex);
+         if (temp != null) {
+            if (!(temp instanceof AccessibleContext)) {
+               if (!(temp instanceof AccessibleContextProxy)) {
+                  return !this.getExpanded(tempIndex)
+                     ? new AccessibleContextFactory(temp.toString(), 27, 256)
+                     : new AccessibleContextFactory(temp.toString(), 27, 512);
+               } else {
+                  return ((AccessibleContextProxy)temp).getAccessibleContext();
+               }
+            } else {
+               return (AccessibleContext)temp;
+            }
+         } else {
+            return new AccessibleContextFactory(this.getEmptyString(), 27, 4);
+         }
+      } else {
+         return null;
+      }
    }
 
    @Override

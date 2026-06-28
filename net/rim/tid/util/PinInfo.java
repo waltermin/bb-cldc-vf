@@ -79,6 +79,11 @@ public class PinInfo {
 
    @Override
    public boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(obj instanceof PinInfo)) {
+         return false;
+      }
+
+      PinInfo info = (PinInfo)obj;
+      return info._word.equals(this._word);
    }
 }

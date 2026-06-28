@@ -1,11 +1,14 @@
 package net.rim.device.internal.ui.component;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.GIFEncodedImage;
+import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.ui.Animation;
@@ -338,7 +341,69 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
 
    @Override
    public boolean animate() {
-      throw new RuntimeException("cod2jar: type check");
+      Field field = this;
+
+      while (field != null) {
+         XYRect e = field.getExtent();
+         Manager mgr = field.getManager();
+         if (mgr != null) {
+            int xLeft = mgr.getHorizontalScroll();
+            int xRight = xLeft + mgr.getWidth();
+            int yTop = mgr.getVerticalScroll();
+            int yBottom = yTop + mgr.getHeight();
+            if (e.y <= yBottom && e.Y2() >= yTop && e.x <= xRight && e.X2() >= xLeft) {
+               field = mgr;
+               continue;
+            }
+
+            this._addedToQueue = false;
+            return false;
+         }
+
+         if (field instanceof Screen) {
+            Screen s = (Screen)field;
+            if (!s.isDisplayed()) {
+               return false;
+            }
+         }
+         break;
+      }
+
+      boolean result = true;
+      if (this._currentFrame == this._frameCount - 1) {
+         this._iterationsLeft--;
+         if (this._iterationsLeft <= 0) {
+            result = false;
+            if (this._running) {
+               this.notify(1);
+            }
+
+            this._running = false;
+         }
+      }
+
+      synchronized (Application.getEventLock()) {
+         this._currentFrame++;
+         if (this._iterationsLeft > 0) {
+            this._currentFrame = this._currentFrame % this._frameCount;
+         }
+
+         if (this._currentFrame < this._frameCount && !this.paintFrame()) {
+            this._currentFrame = -1;
+         }
+      }
+
+      if (this._currentFrame != -1 && this._currentFrame < this._frameCount) {
+         int delay = 66;
+         if (this._image.getImageType() == 1) {
+            delay = Math.max(((GIFEncodedImage)this._image).getFrameDelay(this._currentFrame) * 10, 66);
+         }
+
+         this._timeToExecuteAt = System.currentTimeMillis() + delay;
+      }
+
+      this._addedToQueue = result;
+      return result;
    }
 
    @Override

@@ -92,10 +92,10 @@ public class ActiveRichTextField$RegionQueue {
    }
 
    public void appendCookieID(long id) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    public long[] getSingleCookieRegions() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 }

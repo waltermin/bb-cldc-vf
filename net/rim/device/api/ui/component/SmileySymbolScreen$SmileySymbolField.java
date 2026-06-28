@@ -1,6 +1,7 @@
 package net.rim.device.api.ui.component;
 
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.MediaIcon;
 import net.rim.vm.Array;
@@ -118,6 +119,15 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
 
    @Override
    void send(char ch) {
-      throw new RuntimeException("cod2jar: type check");
+      Screen screen = this.this$0.getTarget().getScreen();
+      if (super._pages[super._currentPage] < super._pagesStandard) {
+         if (this.this$0._targetField instanceof BasicEditField && ((BasicEditField)this.this$0._targetField).validate(ch)) {
+            screen.processKeyEvent(513, ch, 32768, 0);
+            return;
+         }
+      } else if (this.this$0._targetField instanceof BasicEditField) {
+         ((BasicEditField)this.this$0._targetField).insert(SmileySymbolScreen._smileyFacility.emoticonReplacementText(ch), 0, true, true);
+         screen.processKeyEvent(513, ' ', 32768, 0);
+      }
    }
 }

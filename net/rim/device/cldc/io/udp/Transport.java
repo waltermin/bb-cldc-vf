@@ -4,6 +4,7 @@ import java.io.IOException;
 import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
+import net.rim.device.api.io.IOFormatException;
 import net.rim.device.api.io.IOProperties;
 import net.rim.device.api.io.UdpAddress;
 import net.rim.device.api.system.EventLogger;
@@ -110,7 +111,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativeSendSetupData(Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
@@ -179,6 +180,21 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativeSendVerify(DatagramAddressBase addressBase, Datagram datagram) {
-      throw new RuntimeException("cod2jar: type check");
+      UdpAddress addr = null;
+      if (addressBase instanceof UdpAddress) {
+         addr = (UdpAddress)addressBase;
+      }
+
+      if (addr == null) {
+         addr = new UdpAddress(datagram.getAddress());
+      }
+
+      if (datagram.getLength() <= super._maxPacketSize && addr.getIpAddressInt() != -1 && addr.getDestPort() != -1 && addr.getApn() != null) {
+         super._txAddressBase = addr;
+      } else {
+         EventLogger.logEvent(super.GUID, 1413834351, 2);
+         this.xmitDgslEvent(super._txListener, super._txDgramId, 12674, null);
+         throw new IOFormatException();
+      }
    }
 }

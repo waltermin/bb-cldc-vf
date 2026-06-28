@@ -59,7 +59,40 @@ class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
    }
 
    private void updateBundleCache() {
-      throw new RuntimeException("cod2jar: type check");
+      int[] oldModuleHandles = (int[])this._appRegistry.getOrWaitFor(-5612214964325329634L);
+      if (oldModuleHandles == null) {
+         throw new IllegalStateException("getOrWaitFor returned null");
+      }
+
+      int[] moduleHandles = new int[0];
+      int generation = CodeStore.getModuleHandles(moduleHandles);
+      this.setGenerationSingleton(generation, moduleHandles);
+      int oldModuleHandlesCount = oldModuleHandles.length;
+      int moduleHandlesCount = moduleHandles.length;
+      int indexOld = 0;
+      int indexNew = 0;
+
+      while (true) {
+         int newModuleHandle = indexNew < moduleHandlesCount ? moduleHandles[indexNew] : Integer.MAX_VALUE;
+         int oldModuleHandle = indexOld < oldModuleHandlesCount ? oldModuleHandles[indexOld] : Integer.MAX_VALUE;
+         if (oldModuleHandle > newModuleHandle) {
+            if (this.addModule(newModuleHandle)) {
+               indexNew++;
+            } else {
+               Arrays.removeAt(moduleHandles, indexNew);
+               moduleHandlesCount--;
+            }
+         } else if (oldModuleHandle < newModuleHandle) {
+            indexOld++;
+         } else {
+            if (oldModuleHandle == Integer.MAX_VALUE) {
+               return;
+            }
+
+            indexOld++;
+            indexNew++;
+         }
+      }
    }
 
    private void verify() {

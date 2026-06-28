@@ -1,10 +1,12 @@
 package net.rim.device.api.collection.util;
 
+import java.util.Enumeration;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
 import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.LoadableCollection;
 import net.rim.device.api.collection.ReadableList;
+import net.rim.device.api.collection.ReadableSet;
 import net.rim.vm.Array;
 
 public class UnsortedReadableList implements ChainableCollection, LoadableCollection, ReadableList {
@@ -15,7 +17,15 @@ public class UnsortedReadableList implements ChainableCollection, LoadableCollec
 
    @Override
    public void loadFrom(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(collection instanceof ReadableSet)
+         && !(collection instanceof ReadableList)
+         && !(collection instanceof Enumeration)
+         && !(collection instanceof Object[])) {
+         throw new IllegalArgumentException();
+      }
+
+      this.reload(collection);
+      this._listenerManager.fireReset(this);
    }
 
    protected void setElements(Object[] elements, int count) {
@@ -68,7 +78,52 @@ public class UnsortedReadableList implements ChainableCollection, LoadableCollec
    }
 
    protected void reload(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this) {
+         if (!(collection instanceof ReadableList)) {
+            if (collection instanceof Object[]) {
+               Object[] elements = (Object[])collection;
+               this._count = elements.length;
+               Array.resize(this._elements, this._count + 20);
+               System.arraycopy(elements, 0, this._elements, 0, this._count);
+            } else if (!(collection instanceof ReadableSet)) {
+               if (!(collection instanceof Enumeration)) {
+                  this._count = 0;
+                  Array.resize(this._elements, 20);
+               } else {
+                  Enumeration enumeration = (Enumeration)collection;
+                  this._count = 0;
+                  Array.resize(this._elements, 20);
+
+                  while (enumeration.hasMoreElements()) {
+                     this.insertAt(this._count, enumeration.nextElement());
+                  }
+               }
+            } else {
+               ReadableSet set = (ReadableSet)collection;
+               synchronized (set) {
+                  this._count = set.size();
+                  Enumeration enumeration = set.getElements();
+                  Array.resize(this._elements, this._count + 20);
+
+                  int i;
+                  for (i = 0; enumeration.hasMoreElements(); this._elements[i++] = enumeration.nextElement()) {
+                     if (i == this._elements.length) {
+                        Array.resize(this._elements, i + 20);
+                     }
+                  }
+
+                  this._count = i;
+               }
+            }
+         } else {
+            ReadableList list = (ReadableList)collection;
+            synchronized (list) {
+               this._count = list.size();
+               Array.resize(this._elements, this._count + 20);
+               list.getAt(0, this._count, this._elements, 0);
+            }
+         }
+      }
    }
 
    protected synchronized void insertAt(int index, Object element) {

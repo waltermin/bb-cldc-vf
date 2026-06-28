@@ -77,7 +77,7 @@ public final class Double {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return obj instanceof Double && doubleToLongBits(((Double)obj).value) == doubleToLongBits(this.value);
    }
 
    public static final native long doubleToLongBits(double var0);

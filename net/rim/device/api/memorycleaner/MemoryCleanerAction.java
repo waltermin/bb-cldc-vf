@@ -1,5 +1,7 @@
 package net.rim.device.api.memorycleaner;
 
+import net.rim.vm.WeakReference;
+
 public final class MemoryCleanerAction {
    private Object _listener;
 
@@ -8,7 +10,7 @@ public final class MemoryCleanerAction {
    }
 
    public final MemoryCleanerListener getListener() {
-      throw new RuntimeException("cod2jar: type check");
+      return !(this._listener instanceof WeakReference) ? (MemoryCleanerListener)this._listener : (MemoryCleanerListener)((WeakReference)this._listener).get();
    }
 
    public final boolean doAction(int event) {
@@ -42,6 +44,15 @@ public final class MemoryCleanerAction {
 
    @Override
    public final boolean equals(Object other) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this == other) {
+         return true;
+      }
+
+      if (!(other instanceof MemoryCleanerAction)) {
+         return false;
+      }
+
+      MemoryCleanerAction memoryCleanerAction = (MemoryCleanerAction)other;
+      return this.getListener().equals(memoryCleanerAction.getListener());
    }
 }

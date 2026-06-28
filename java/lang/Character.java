@@ -24,7 +24,7 @@ public final class Character {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(obj instanceof Character) ? false : ((Character)obj).value == this.value;
    }
 
    @Override

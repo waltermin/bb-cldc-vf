@@ -5,12 +5,14 @@ import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.UdpAddress;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.cldc.io.nativebase.NativeConnectionBase;
 import net.rim.device.cldc.io.tunnel.Tunnel;
 import net.rim.device.internal.io.PortAssigner;
+import net.rim.vm.Process;
 
 public final class Protocol extends NativeConnectionBase {
    private boolean _promiscuousMode;
@@ -182,7 +184,31 @@ public final class Protocol extends NativeConnectionBase {
    }
 
    private final String midletSpecificWork(String address) {
-      throw new RuntimeException("cod2jar: type check");
+      int mh = Process.currentProcess().getModuleHandle();
+      if (CodeModuleManager.isMidlet(mh) && address != null) {
+         int index = address.indexOf(SLASH_SLASH);
+         if (index > 0) {
+            address = address.substring(index);
+         }
+
+         if (super._addressBase instanceof UdpAddress) {
+            UdpAddress uab = (UdpAddress)super._addressBase;
+            if (uab.getSrcPort() == -1) {
+               address = address + ';' + this._localPort;
+            }
+
+            String apn = uab.getApn();
+            if (apn == null || apn.length() == 0) {
+               apn = this._apnName;
+            }
+
+            if (apn != null && apn.length() > 0) {
+               address = address + SLASH + apn;
+            }
+         }
+      }
+
+      return address;
    }
 
    @Override

@@ -33,7 +33,7 @@ public final class PersistentContentInternal {
    }
 
    public static final byte[] decodeByteArray(Object content, boolean firstBlockOnly, boolean keepPlaintextInRAM) {
-      throw new RuntimeException("cod2jar: type check");
+      return content instanceof char[] ? (byte[])PersistentContent.getInstance().decode((char[])content, firstBlockOnly, keepPlaintextInRAM) : (byte[])content;
    }
 
    public static final byte[] getD() {

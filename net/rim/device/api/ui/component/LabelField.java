@@ -12,6 +12,7 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.text.TextRect;
+import net.rim.device.api.util.StringUtilities;
 
 public class LabelField extends Field implements DrawStyle {
    private long _rbId;
@@ -194,8 +195,121 @@ public class LabelField extends Field implements DrawStyle {
       }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void setTextInternal(Object text, int offset, int length) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this._inSetTextInternal) {
+         boolean var15 = false /* VF: Semaphore variable */;
+
+         try {
+            var15 = true;
+            this._inSetTextInternal = true;
+            String IAException = null;
+            StringBuffer stringBufferValue = null;
+            char[] charValue = null;
+            byte[] byteValue = null;
+            int len;
+            int type;
+            if (text == null) {
+               IAException = "";
+               len = 0;
+               type = 1;
+            } else if (!(text instanceof String)) {
+               if (!(text instanceof StringBuffer)) {
+                  if (!(text instanceof char[])) {
+                     if (!(text instanceof byte[])) {
+                        throw new IllegalArgumentException();
+                     }
+
+                     byteValue = (byte[])text;
+                     len = byteValue.length;
+                     type = 4;
+                  } else {
+                     charValue = (char[])text;
+                     len = charValue.length;
+                     type = 3;
+                  }
+               } else {
+                  stringBufferValue = (StringBuffer)text;
+                  len = stringBufferValue.length();
+                  type = 2;
+               }
+            } else {
+               IAException = (String)text;
+               len = IAException.length();
+               type = 1;
+            }
+
+            if (offset < 0 || offset > len) {
+               throw new IllegalArgumentException();
+            }
+
+            if (length == -1) {
+               length = len - offset;
+            }
+
+            if (length < 0 || offset + length > len) {
+               throw new IllegalArgumentException();
+            }
+
+            if (type == 1) {
+               this._text = IAException.substring(offset, offset + length);
+            } else {
+               switch (type) {
+                  case 1:
+                     break;
+                  case 2:
+                  default:
+                     this._text = stringBufferValue.toString().substring(offset, offset + length);
+                     break;
+                  case 4:
+                     charValue = new char[length];
+
+                     for (int i = 0; i < length; i++) {
+                        charValue[i] = (char)(byteValue[i + offset] & 0xFF);
+                     }
+
+                     offset = 0;
+                  case 3:
+                     this._text = new String(charValue, offset, length);
+               }
+            }
+
+            String temp = this.getText();
+            if (temp != null && !temp.equals(this._text)) {
+               this._text = temp;
+            }
+
+            if (this._text == null) {
+               this._text = "";
+            } else if (this.isStyle(268435456)) {
+               this._text = StringUtilities.removeChars(this._text, "̲");
+            }
+
+            this._length = this._text.length();
+            this._labelText.setText(this._text);
+            if (!this._inLayout) {
+               Manager manager = this.getManager();
+               if (manager != null && (!this.isStyle(1152921504606846976L) || !this._isSingleLine)) {
+                  this.updateLayout();
+                  this.focusAdd(false);
+               }
+
+               this.invalidate();
+            }
+
+            this.fieldChangeNotify(Integer.MIN_VALUE);
+            var15 = false;
+         } catch (IllegalArgumentException IAException) {
+            throw IAException;
+         } finally {
+            if (var15) {
+               this._inSetTextInternal = false;
+            }
+         }
+
+         this._inSetTextInternal = false;
+      }
    }
 
    @Override

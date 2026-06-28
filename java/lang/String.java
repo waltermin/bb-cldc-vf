@@ -90,16 +90,40 @@ public final class String {
    }
 
    public String(StringBuffer buffer) {
+      synchronized (buffer) {
+         Object o = buffer.getValue();
+         int length = buffer.length();
+         Object newValue;
+         if (o instanceof byte[]) {
+            newValue = new byte[length];
+            System.arraycopy(o, 0, newValue, 0, length);
+         } else {
+            newValue = newArrayWithPossibleDemotion((char[])o, 0, length);
+         }
+
+         this.arrayToThisString(newValue);
+      }
    }
 
    public final native void getChars(int var1, int var2, char[] var3, int var4);
 
    public final byte[] getBytes(String enc) {
-      throw new RuntimeException("cod2jar: type check");
+      if (this.usesBytes()) {
+         return Helper.charToByteArray(this.toCharArray(), 0, this.length(), enc);
+      }
+
+      char[] val = (char[])this.getCopyAsArray();
+      return Helper.charToByteArray(val, 0, val.length, enc);
    }
 
    public final byte[] getBytes() {
-      throw new RuntimeException("cod2jar: type check");
+      if (this.usesBytes()) {
+         return (byte[])this.getCopyAsArray();
+      }
+
+      byte[] bytesToReturn = new byte[this.length()];
+      this.getBytesChar(bytesToReturn, 0);
+      return bytesToReturn;
    }
 
    private final native void getBytesChar(byte[] var1, int var2);
@@ -287,7 +311,16 @@ public final class String {
    }
 
    final boolean copyInto(Object dst, int dstOffset) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(dst instanceof byte[])) {
+         return false;
+      }
+
+      if (!this.usesBytes()) {
+         return false;
+      }
+
+      this.getBytesChar((byte[])dst, dstOffset);
+      return true;
    }
 
    public final boolean equalsIgnoreCase(String anotherString) {

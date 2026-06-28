@@ -133,7 +133,14 @@ public class ResourceManager {
    }
 
    public byte[] getData(int id) {
-      throw new RuntimeException("cod2jar: type check");
+      int index = this.firstIndexContainingId(id);
+      if (index < 0) {
+         throw new ResourceException(1, EMPTY);
+      } else if (this._resourceFile[index].getType(id) != 16) {
+         throw new ResourceException(2, EMPTY);
+      } else {
+         return (byte[])this._resourceFile[index].getData(id);
+      }
    }
 
    public Object getResource(int id) {

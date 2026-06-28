@@ -12,6 +12,7 @@ import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.ui.Image;
 import net.rim.device.internal.ui.ImageBitmap;
 import net.rim.device.internal.ui.ImageOverlay;
+import net.rim.device.internal.ui.ScaleBitmap;
 
 public class ApplicationIconField extends Field {
    private String _appName;
@@ -72,7 +73,19 @@ public class ApplicationIconField extends Field {
    }
 
    protected Image convertToImage(Object icon) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(icon instanceof Bitmap)) {
+         return null;
+      }
+
+      Bitmap bmp = (Bitmap)icon;
+      int bmpWidth = bmp.getWidth();
+      int bmpHeight = bmp.getHeight();
+      XYDimension scaledSize = this.getScaledDimensions(bmpWidth, bmpHeight);
+      if (scaledSize.width != bmpWidth || scaledSize.height != bmpHeight) {
+         bmp = ScaleBitmap.scaleBitmap(0, bmp, scaledSize.width, scaledSize.height);
+      }
+
+      return ImageBitmap.create(bmp);
    }
 
    private XYDimension getScaledDimensions(int width, int height) {

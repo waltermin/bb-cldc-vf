@@ -134,7 +134,19 @@ public final class TunnelConfig {
    }
 
    public final boolean equivalent(Object object) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof TunnelConfig)) {
+         return false;
+      }
+
+      TunnelConfig config = (TunnelConfig)object;
+      return this._name.equalsIgnoreCase(config._name)
+         && this.equivalentQos(config._qos)
+         && (
+            this._username == null && config._username == null || this._username != null && config._username != null && this._username.equals(config._username)
+         )
+         && (
+            this._password == null && config._password == null || this._password != null && config._password != null && this._password.equals(config._password)
+         );
    }
 
    private final boolean equivalentQos(QOSInfo qos) {

@@ -1,10 +1,12 @@
 package net.rim.device.api.collection.util;
 
+import java.util.Enumeration;
 import net.rim.device.api.collection.ChainableCollection;
 import net.rim.device.api.collection.Collection;
 import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.LoadableCollection;
 import net.rim.device.api.collection.ReadableList;
+import net.rim.device.api.collection.ReadableSet;
 import net.rim.vm.Array;
 
 public class BigUnsortedReadableList implements ChainableCollection, LoadableCollection, ReadableList {
@@ -16,7 +18,15 @@ public class BigUnsortedReadableList implements ChainableCollection, LoadableCol
 
    @Override
    public void loadFrom(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(collection instanceof ReadableSet)
+         && !(collection instanceof ReadableList)
+         && !(collection instanceof Enumeration)
+         && !(collection instanceof Object[])) {
+         throw new IllegalArgumentException();
+      }
+
+      this.reload(collection);
+      this.fireReset(this);
    }
 
    protected synchronized boolean doRemove(Object element) {
@@ -65,7 +75,51 @@ public class BigUnsortedReadableList implements ChainableCollection, LoadableCol
    }
 
    protected synchronized void reload(Object collection) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(collection instanceof ReadableList)) {
+         if (collection instanceof Object[]) {
+            Object[] elements = (Object[])collection;
+            int count = elements.length;
+            this._elements = new BigVector(64);
+            this._elements.insertElementsAt(elements, 0);
+         } else if (!(collection instanceof ReadableSet)) {
+            if (!(collection instanceof Enumeration)) {
+               this._elements = new BigVector(64);
+            } else {
+               Enumeration enumeration = (Enumeration)collection;
+               this._elements = new BigVector(64);
+
+               while (enumeration.hasMoreElements()) {
+                  this._elements.addElement(enumeration.nextElement());
+               }
+            }
+         } else {
+            ReadableSet set = (ReadableSet)collection;
+            synchronized (set) {
+               int count = set.size();
+               if (count < 64) {
+                  count = 64;
+               }
+
+               this._elements = new BigVector(count);
+               Enumeration enumeration = set.getElements();
+
+               while (enumeration.hasMoreElements()) {
+                  this._elements.addElement(enumeration.nextElement());
+               }
+            }
+         }
+      } else {
+         ReadableList list = (ReadableList)collection;
+         synchronized (list) {
+            int count = list.size();
+            Object[] tmpArray = new Object[count];
+            list.getAt(0, count, tmpArray, 0);
+            this._elements = new BigVector(64);
+            this._elements.insertElementsAt(tmpArray, 0);
+         }
+      }
+
+      this._lastInsertedUpdated = null;
    }
 
    protected synchronized void insertAt(int index, Object element) {

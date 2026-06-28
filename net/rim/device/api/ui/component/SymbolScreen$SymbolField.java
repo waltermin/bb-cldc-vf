@@ -681,7 +681,69 @@ class SymbolScreen$SymbolField extends Field {
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: type check");
+      XYRect clip = graphics.getClippingRect();
+      Field target = this.this$0.getTarget();
+      BasicEditField edit = null;
+      if (target instanceof BasicEditField) {
+         edit = (BasicEditField)target;
+      }
+
+      graphics.setFont(this._keyFont);
+      if (this.this$0._inputMethodID != 512) {
+         graphics.drawText(this._pageBuffer, 0, Integer.MAX_VALUE, 0, 0, 5, this.getWidth() - 10);
+         graphics.drawText(this._description, 0, Integer.MAX_VALUE, 0, this.getHeight(), 108, this.getWidth() - 10);
+      }
+
+      int keyFontHeight = this._keyFont.getHeight();
+      int y = keyFontHeight + 1;
+      int rows = this._layout.length;
+
+      for (int i = 0; i < rows; y += this._yStep) {
+         if (clip.Y2() >= y && y + this._yStep >= clip.y) {
+            int len = this._layout[i].length;
+            int x = this.getWidth() - ((this._keyWidth + this.HORIZONTAL_SPACE) * len - this.HORIZONTAL_SPACE) >> 1;
+
+            for (int j = 0; j < len; j++) {
+               char original = (char)this._keyCodes[i][j];
+               int keyWidth = this._keyWidth;
+               if (original != false) {
+                  String key = this._layout[i][j];
+                  if (key != null && key.length() >= 2) {
+                     keyWidth = Math.max(keyWidth, this._keyFont.getBounds(key) + 4);
+                  }
+
+                  graphics.setFont(this._symbolFont);
+                  int replacement = this._map.get(original);
+                  if (replacement != -1
+                     && (replacement == 8646 || this._pages[this._currentPage] >= this._pagesStandard || edit == null || edit.validate((char)replacement))) {
+                     this.paintSymbol(graphics, (char)replacement, x - this.HORIZONTAL_SPACE, y, keyWidth + 2 * this.HORIZONTAL_SPACE, this._replHeight);
+                  }
+
+                  if (replacement == 8646 && this._tasNext != null) {
+                     graphics.pushContext(0, 0, 1073741823, 1073741823, 0, 0);
+                     this.setThemeAttributesSpecial(this._tasNext, graphics);
+                     graphics.setFont(this._keyFont);
+                     int fg = graphics.getColor();
+                     graphics.setColor(graphics.getBackgroundColor());
+                     graphics.fillRect(x, y + this._replHeight + 1, keyWidth, this._keyHeight);
+                     graphics.setColor(fg);
+                     graphics.drawRect(x, y + this._replHeight + 1, keyWidth, this._keyHeight);
+                     graphics.drawText(key, x, y + this._replHeight + 2, 4, keyWidth - 1);
+                     this.setThemeAttributesSpecial(null, graphics);
+                     graphics.popContext();
+                  } else {
+                     graphics.setFont(this._keyFont);
+                     graphics.drawRect(x, y + this._replHeight + 1, keyWidth, this._keyHeight);
+                     graphics.drawText(key, x, y + this._replHeight + 2, 4, keyWidth - 1);
+                  }
+               }
+
+               x += keyWidth + this.HORIZONTAL_SPACE;
+            }
+         }
+
+         i++;
+      }
    }
 
    protected void paintSymbol(Graphics graphics, char symbol, int x, int y, int width, int height) {

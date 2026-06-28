@@ -1,6 +1,7 @@
 package net.rim.device.internal.io.file;
 
 import net.rim.device.api.io.file.FileSystemJournalListener;
+import net.rim.vm.WeakReference;
 
 class FileSystem$JournalChanged implements Runnable {
    private FileSystemJournalListener _listener;
@@ -13,6 +14,16 @@ class FileSystem$JournalChanged implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (this.this$0) {
+         for (int i = this.this$0._fileJournalListeners.length - 1; i >= 0; i--) {
+            Object obj = FileSystem._fileSystem._fileJournalListeners[i];
+            if (obj == this._listener || obj instanceof WeakReference && ((WeakReference)obj).get() == this._listener) {
+               this.this$0._fileJournalEventPending[i] = false;
+               break;
+            }
+         }
+      }
+
+      this._listener.fileJournalChanged();
    }
 }

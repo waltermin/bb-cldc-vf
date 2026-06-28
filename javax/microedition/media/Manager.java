@@ -13,9 +13,12 @@ import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.media.DataSourceImpl;
+import net.rim.device.internal.media.DeprecatedHttpDataSource;
+import net.rim.device.internal.media.FileDataSource;
 import net.rim.device.internal.media.MediaNatives;
 import net.rim.device.internal.media.PlayerRegistry;
 import net.rim.device.internal.media.RTSPDataSource;
+import net.rim.device.internal.media.RTSPDataSourceFactory;
 import net.rim.device.internal.media.StreamDataControl;
 import net.rim.device.internal.system.InternalServices;
 
@@ -246,7 +249,87 @@ public final class Manager {
    }
 
    public static final Player createPlayer(String locator) {
-      throw new RuntimeException("cod2jar: type check");
+      assertPermission();
+      if (locator == null) {
+         throw new IllegalArgumentException("locator: null");
+      }
+
+      int index = locator.indexOf(58);
+      if (index == -1) {
+         throw new MediaException();
+      }
+
+      String scheme = locator.substring(0, index);
+      DataSource ds = null;
+      if (locator.equals("device://tone")) {
+         return PlayerRegistry.createPlayer("audio/x-tone-seq");
+      }
+
+      if (!locator.equals("device://midi") && !locator.equals("device://nokia-ringtone") && !locator.equals("device://pme")) {
+         if (!scheme.equals("capture")) {
+            if (scheme.equals("http")) {
+               ds = new DeprecatedHttpDataSource(locator);
+            } else if (scheme.equals("file")) {
+               ds = new FileDataSource(locator);
+            } else {
+               if (!scheme.equals("rtsp") || !InternalServices.isSoftwareCapable(13)) {
+                  throw new MediaException("Unsupported type.");
+               }
+
+               ds = RTSPDataSourceFactory.createNewDataSource(locator, null);
+            }
+         } else {
+            String normalizedType = null;
+            int codec;
+            if (locator.equals("capture://audio")) {
+               normalizedType = "audio/amr";
+               codec = 7;
+            } else {
+               String encodingString = "encoding=";
+               int encodingStart = locator.indexOf(encodingString, locator.indexOf(63));
+               if (encodingStart < 0) {
+                  throw new MediaException();
+               }
+
+               int encodingEnd = locator.indexOf(38, encodingStart);
+               String encoding = encodingEnd == -1
+                  ? locator.substring(encodingStart + encodingString.length())
+                  : locator.substring(encodingStart + encodingString.length(), encodingEnd);
+               if (!encoding.equals("amr") && !encoding.equals("audio/amr")) {
+                  if (!encoding.equals("audio/basic") && !encoding.equals("pcm")) {
+                     throw new MediaException("Unsupported record encoding type");
+                  }
+
+                  normalizedType = "audio/basic";
+                  codec = 9;
+               } else {
+                  normalizedType = "audio/amr";
+                  codec = 7;
+               }
+            }
+
+            if (!Audio.isRecordingCodecSupported(codec)) {
+               throw new MediaException("Unsupported record encoding type");
+            }
+
+            try {
+               Class clazz = Class.forName("net.rim.device.internal.media.RecordPlayer");
+               Player recordPlayer = (Player)clazz.newInstance();
+               if (recordPlayer instanceof StreamDataControl) {
+                  ((StreamDataControl)recordPlayer).setKeyValue("mimetype", normalizedType);
+                  return recordPlayer;
+               }
+            } catch (Exception e) {
+               throw new MediaException("Unable to create Player");
+            }
+         }
+      }
+
+      if (ds != null) {
+         return createPlayerImpl(ds);
+      } else {
+         throw new MediaException("Unsupported type.");
+      }
    }
 
    public static final Player createPlayer(DataSource source) {

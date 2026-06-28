@@ -204,7 +204,7 @@ public class MarkupInputStream extends InputStream {
    }
 
    private boolean readNextChunk() {
-      throw new RuntimeException("cod2jar: type check");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private void setNewEncoding(byte[] encoding) {

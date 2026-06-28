@@ -89,11 +89,53 @@ public class Backdoor implements Runnable {
    }
 
    private void dumpField(Field field, String indent, boolean focus) {
-      throw new RuntimeException("cod2jar: type check");
+      String f = focus ? "-" : " ";
+      f = f + (40 + field.getIndex()) + ") ";
+      String name = this.formatClassName(field);
+      String styles = this.styleToString(field.getStyle());
+      String virtualExtent = "";
+      if (field instanceof Manager) {
+         Manager mgr = (Manager)field;
+         virtualExtent = " (" + mgr.getVirtualWidth() + ',' + mgr.getVirtualHeight() + ')';
+      }
+
+      System.out
+         .println(
+            indent
+               + f
+               + name
+               + " ("
+               + field.getLeft()
+               + ','
+               + field.getTop()
+               + ','
+               + field.getWidth()
+               + ','
+               + field.getHeight()
+               + ')'
+               + virtualExtent
+               + " ["
+               + styles
+               + ']'
+         );
    }
 
    private void validateManager(Manager manager, String indent, boolean focusState) {
-      throw new RuntimeException("cod2jar: type check");
+      this.dumpField(manager, indent, focusState);
+      indent = indent + ' ';
+      System.out.println(indent + "  (focus index is " + manager.getFieldWithFocusIndex() + ')');
+      int fieldCount = manager.getFieldCount();
+      Field focus = manager.getFieldWithFocus();
+
+      for (int i = 0; i < fieldCount; i++) {
+         Field field = manager.getField(i);
+         if (!(field instanceof Manager)) {
+            this.dumpField(field, indent, field == focus);
+         } else {
+            Manager m = (Manager)field;
+            this.validateManager(m, indent, field == focus);
+         }
+      }
    }
 
    private void validate(Screen screen) {

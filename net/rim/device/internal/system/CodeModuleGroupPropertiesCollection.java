@@ -299,7 +299,21 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public boolean convert(SyncObject object, DataBuffer data, int version) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!(object instanceof CodeModuleGroupProperties)) {
+         return false;
+      }
+
+      CodeModuleGroupProperties properties = (CodeModuleGroupProperties)object;
+      Enumeration e = properties.keys();
+
+      while (e.hasMoreElements()) {
+         String key = (String)e.nextElement();
+         String value = (String)properties.get(key);
+         ConverterUtilities.writeStringSmart(data, 1, key);
+         ConverterUtilities.writeStringSmart(data, 2, value);
+      }
+
+      return true;
    }
 
    @Override

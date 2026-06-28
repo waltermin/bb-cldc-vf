@@ -30,7 +30,17 @@ public class RIMProcessLauncher implements GlobalEventListener {
 
    @Override
    public void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
-      throw new RuntimeException("cod2jar: type check");
+      if (guid == -1270659756336956134L && object0 instanceof int[]) {
+         int[] deadProcesses = (int[])object0;
+
+         for (int i = deadProcesses.length - 1; i >= 0; i--) {
+            if (deadProcesses[i] == this._pid) {
+               synchronized (_processTermination) {
+                  _processTermination.notify();
+               }
+            }
+         }
+      }
    }
 
    public static int launch(Runnable runnable) {

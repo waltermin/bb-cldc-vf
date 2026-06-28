@@ -97,6 +97,19 @@ final class UserSetting implements Persistable, SyncObject {
 
    @Override
    public final boolean equals(Object obj) {
-      throw new RuntimeException("cod2jar: type check");
+      if (obj == null) {
+         return false;
+      }
+
+      if (this == obj) {
+         return true;
+      }
+
+      if (!(obj instanceof UserSetting)) {
+         return false;
+      }
+
+      UserSetting us = (UserSetting)obj;
+      return Arrays.equals(us._hash, this._hash);
    }
 }

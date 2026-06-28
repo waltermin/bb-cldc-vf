@@ -297,7 +297,17 @@ public class Manager extends Field {
 
    @Override
    void getDebugTreeHelper(int treeStyle, StringBuffer buffer, int indent) {
-      throw new RuntimeException("cod2jar: type check");
+      super.getDebugTreeHelper(treeStyle, buffer, indent);
+      if (this instanceof Screen) {
+         Screen screen = (Screen)this;
+         screen.getDelegate().getDebugTreeHelper(treeStyle, buffer, indent);
+      } else {
+         indent++;
+
+         for (int index = 0; index < this.getFieldCount(); index++) {
+            this.getField(index).getDebugTreeHelper(treeStyle, buffer, indent);
+         }
+      }
    }
 
    @Override
@@ -950,7 +960,7 @@ public class Manager extends Field {
    }
 
    protected boolean drawLeafFocus(boolean drawBackground, boolean drawFocus) {
-      throw new RuntimeException("cod2jar: type check");
+      return !(this._fieldWithFocus instanceof Manager) ? false : ((Manager)this._fieldWithFocus).drawLeafFocus(drawBackground, drawFocus);
    }
 
    public void setNonfocusableOverride(boolean override) {
@@ -1272,11 +1282,142 @@ public class Manager extends Field {
    }
 
    private boolean moveFocusToPoint(int x, int y, int status, int time, int direction, boolean isInManagersCoordinates) {
-      throw new RuntimeException("cod2jar: type check");
+      if (!this.isFocusable()) {
+         return false;
+      }
+
+      if (haveStylus && isInManagersCoordinates) {
+         x += this.getHorizontalScroll();
+         y += this.getVerticalScroll();
+      }
+
+      int startIndex = this.getFieldAtLocation(x, y);
+      if (startIndex < 0) {
+         startIndex = this.getFieldClosestToLocation(x, y, status);
+      }
+
+      int fieldIndex;
+      label62:
+      while (true) {
+         fieldIndex = startIndex;
+         switch (direction & 771) {
+            case 1:
+            case 256:
+               while (fieldIndex < this._fieldsCount) {
+                  if (this.getField(fieldIndex).isFocusable()) {
+                     break label62;
+                  }
+
+                  fieldIndex++;
+               }
+
+               direction = 512;
+               break;
+            case 2:
+            case 512:
+               while (fieldIndex >= 0) {
+                  if (this.getField(fieldIndex).isFocusable()) {
+                     break label62;
+                  }
+
+                  fieldIndex--;
+               }
+
+               int var12 = false;
+               direction = 256;
+               break;
+            default:
+               if (!this.getField(fieldIndex).isFocusable()) {
+                  return false;
+               }
+               break label62;
+         }
+      }
+
+      if (this._fieldWithFocusIndex != fieldIndex) {
+         if (this._fieldWithFocus != null) {
+            this._fieldWithFocus.onUnfocus();
+            this._fieldWithFocus.focusChangeNotify(3);
+         }
+
+         Field field = this.getField(fieldIndex);
+         this._fieldWithFocusIndex = fieldIndex;
+         this._fieldWithFocus = field;
+         if (this._fieldWithFocus instanceof Manager) {
+            this._fieldWithFocus.onFocus(1);
+         } else {
+            this._fieldWithFocus.onFocus(0);
+         }
+
+         this._fieldWithFocus.focusChangeNotify(1);
+      } else {
+         this.focusChangeNotify(2);
+      }
+
+      XYRect extent = this._fieldWithFocus.getExtent();
+      x -= extent.x;
+      y -= extent.y;
+      if (!(this._fieldWithFocus instanceof Manager)) {
+         this._fieldWithFocus.moveFocus(x, y, status, time);
+         return true;
+      } else {
+         return ((Manager)this._fieldWithFocus).moveFocusToPoint(x, y, status, time, direction, isInManagersCoordinates);
+      }
    }
 
    protected boolean moveFocus(int where) {
-      throw new RuntimeException("cod2jar: type check");
+      Field field = this._fieldWithFocus;
+      boolean result = false;
+      if (!this.isStyle(281474976710656L) && field instanceof Manager) {
+         result = ((Manager)field).moveFocus(where);
+      }
+
+      if (!result && (this.isStyle(281474976710656L) || this.getScreen().getDelegate() == this)) {
+         int fontHeight = this.getFont().getHeight();
+         XYRect cursor = Ui.getTmpXYRect();
+         this.getFocusRect(cursor);
+         int x = this.getHorizontalScroll() + cursor.x;
+         int y = this.getVerticalScroll() + cursor.y;
+         Ui.returnTmpXYRect(cursor);
+         int status = 0;
+         if ((where & 256) != 0) {
+            y -= this.getContentHeight() - fontHeight;
+            status |= 512;
+         } else if ((where & 512) != 0) {
+            y += this.getContentHeight() - fontHeight;
+            status |= 256;
+         } else if ((where & 1) != 0) {
+            y = 0;
+            status |= 512;
+         } else if ((where & 2) != 0) {
+            y = this.getVirtualHeight();
+            status |= 256;
+         }
+
+         if ((where & 1024) != 0) {
+            x -= this.getContentWidth() - fontHeight;
+            status |= 2048;
+         } else if ((where & 2048) != 0) {
+            x += this.getContentWidth() - fontHeight;
+            status |= 1024;
+         } else if ((where & 4) != 0) {
+            x = 0;
+            status |= 2048;
+         } else if ((where & 8) != 0) {
+            x = this.getVirtualWidth();
+            status |= 1024;
+         }
+
+         x = MathUtilities.clamp(0, x, this.getVirtualWidth() - 1);
+         y = MathUtilities.clamp(0, y, this.getVirtualHeight() - fontHeight);
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(x, y, 0, fontHeight);
+         this.makeRegionVisible(true, rect, true);
+         Ui.returnTmpXYRect(rect);
+         result = this.moveFocusToPoint(x, y, status, 0, where, false);
+      }
+
+      return result;
    }
 
    public boolean setFocus(int x, int y, int status) {

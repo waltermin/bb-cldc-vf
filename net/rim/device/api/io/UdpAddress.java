@@ -47,6 +47,14 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public UdpAddress(DatagramAddressBase addressBase) {
+      if (!(addressBase instanceof UdpAddress)) {
+         this.setAddress(addressBase.getAddress());
+      } else {
+         UdpAddress addr = (UdpAddress)addressBase;
+         this.init(addr._ipAddress, addr._destPort, addr._srcPort, addr._apn, addr._type);
+         this.setApnUsername(addr._apnUsername);
+         this.setApnPassword(addr._apnPassword);
+      }
    }
 
    public UdpAddress(String address) {
@@ -308,7 +316,20 @@ public class UdpAddress extends DatagramAddressBase {
 
    @Override
    public boolean equals(Object addressBase) {
-      throw new RuntimeException("cod2jar: type check");
+      if (addressBase == this) {
+         return true;
+      }
+
+      if (!(addressBase instanceof UdpAddress)) {
+         return false;
+      }
+
+      UdpAddress address = (UdpAddress)addressBase;
+      return (this._ipAddress == -1 || address._ipAddress == -1 || this._ipAddress == address._ipAddress)
+         && (this._destPort == -1 || address._destPort == -1 || this._destPort == address._destPort)
+         && (this._srcPort == -1 || address._srcPort == -1 || this._srcPort == address._srcPort)
+         && (this._apn == null || address._apn == null || this._apn.equalsIgnoreCase(address._apn))
+         && (this._type == -1 || address._type == -1 || (this._type & address._type) != 0);
    }
 
    @Override

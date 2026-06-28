@@ -8,11 +8,23 @@ public final class WeakReferenceUtilities {
    }
 
    public static final byte[] getByteArray(WeakReference wr, int size) {
-      throw new RuntimeException("cod2jar: type check");
+      byte[] buffer = (byte[])wr.get();
+      if (buffer == null) {
+         buffer = new byte[size];
+         wr.set(buffer);
+      }
+
+      return buffer;
    }
 
    public static final char[] getCharArray(WeakReference wr, int size) {
-      throw new RuntimeException("cod2jar: type check");
+      char[] buffer = (char[])wr.get();
+      if (buffer == null) {
+         buffer = new char[size];
+         wr.set(buffer);
+      }
+
+      return buffer;
    }
 
    public static final StringBuffer getStringBuffer(WeakReference wr) {
@@ -36,11 +48,23 @@ public final class WeakReferenceUtilities {
    }
 
    public static final Object[] getObjectArray(WeakReference wr, int size) {
-      throw new RuntimeException("cod2jar: type check");
+      Object[] array = (Object[])wr.get();
+      if (array == null) {
+         array = new Object[size];
+         wr.set(array);
+      }
+
+      return array;
    }
 
    public static final String[] getStringArray(WeakReference wr, int size) {
-      throw new RuntimeException("cod2jar: type check");
+      String[] array = (String[])wr.get();
+      if (array == null) {
+         array = new String[size];
+         wr.set(array);
+      }
+
+      return array;
    }
 
    public static final int incrementalWRArrayPurge(int curr, WeakReference[] wr) {
@@ -67,7 +91,20 @@ public final class WeakReferenceUtilities {
    }
 
    public static final void purge(IntHashtable ht) {
-      throw new RuntimeException("cod2jar: type check");
+      synchronized (ht) {
+         IntEnumeration keys = ht.keys();
+
+         while (keys.hasMoreElements()) {
+            int v = keys.nextElement();
+            Object o = ht.get(v);
+            if (o instanceof WeakReference) {
+               WeakReference wr = (WeakReference)o;
+               if (wr.get() == null) {
+                  ht.remove(v);
+               }
+            }
+         }
+      }
    }
 
    public static final void purge(Vector v) {

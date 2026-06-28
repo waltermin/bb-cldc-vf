@@ -779,7 +779,8 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public AccessibleContext getAccessibleChildAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      Object temp = this.getChoice(index);
+      return temp != null && temp instanceof AccessibleContext ? (AccessibleContext)temp : null;
    }
 
    @Override
@@ -794,7 +795,14 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public AccessibleContext getAccessibleSelectionAt(int index) {
-      throw new RuntimeException("cod2jar: type check");
+      if (index == 0) {
+         Object temp = this.getChoice(this._selectedIndex);
+         if (temp != null && temp instanceof AccessibleContext) {
+            return (AccessibleContext)temp;
+         }
+      }
+
+      return null;
    }
 
    @Override

@@ -64,11 +64,19 @@ public final class PMEGraphics {
    public static final int PMEGRAPHICS_STATS_SIZE;
 
    public final void setFillContext(Object g) {
-      throw new RuntimeException("cod2jar: type check");
+      if (g instanceof Graphics) {
+         Graphics gfx = (Graphics)g;
+         gfx.setColor(this._gfxContext._fillColour);
+         gfx.setGlobalAlpha(this._gfxContext._fillOpacity);
+      }
    }
 
    public final void setStrokeContext(Object g) {
-      throw new RuntimeException("cod2jar: type check");
+      if (g instanceof Graphics) {
+         Graphics gfx = (Graphics)g;
+         gfx.setColor(this._gfxContext._strokeColour);
+         gfx.setGlobalAlpha(this._gfxContext._strokeOpacity);
+      }
    }
 
    public final int clear(Object g) {
