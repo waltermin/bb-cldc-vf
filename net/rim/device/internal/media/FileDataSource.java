@@ -1,14 +1,80 @@
 package net.rim.device.internal.media;
 
-// $VF: Couldn't be decompiled
-// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-// java.lang.RuntimeException: Constructor net/rim/device/internal/media/DataSourceImpl.<init>()V not found
-//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:49)
-//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:35)
-//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.hideEmptySuper(InitializerProcessor.java:111)
-//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.extractInitializers(InitializerProcessor.java:52)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:128)
-//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:379)
-//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:521)
-//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:200)
-//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:221)
+import java.io.IOException;
+import java.io.InputStream;
+import javax.microedition.io.file.FileConnection;
+import net.rim.device.api.util.StringUtilities;
+
+public class FileDataSource extends DataSourceImpl implements SourceInformationProvider {
+   private FileConnection _connection;
+
+   public void close() {
+      try {
+         this.stop();
+      } catch (IOException var2) {
+      }
+   }
+
+   @Override
+   public int getFileHandle() {
+      throw new RuntimeException("cod2jar: type check");
+   }
+
+   @Override
+   public void connect() {
+      throw new RuntimeException("cod2jar: field: unresolved slot");
+   }
+
+   @Override
+   public void disconnect() {
+      if (super._connected) {
+         if (super._started) {
+            try {
+               this.stop();
+            } catch (IOException var3) {
+            }
+         }
+
+         try {
+            if (this._connection != null) {
+               this._connection.close();
+            }
+         } catch (IOException var2) {
+         }
+
+         super._connected = false;
+      }
+   }
+
+   @Override
+   public void start() {
+      if (super._connected) {
+         if (!super._started) {
+            if (this._connection != null) {
+               super._is = this._connection.openInputStream();
+               super._started = true;
+            } else {
+               throw new IOException("Connection is null");
+            }
+         }
+      } else {
+         throw new IllegalStateException("Not connected");
+      }
+   }
+
+   public FileDataSource(InputStream stream, String contentType, long contentLength) {
+      super(null);
+      this.setInputStream(stream);
+      if (contentType != null) {
+         super._contentType = StringUtilities.toLowerCase(contentType, 1701707776);
+      }
+
+      super._contentLength = contentLength;
+      super._started = true;
+      super._connected = true;
+   }
+
+   public FileDataSource(String locator) {
+      super(locator);
+   }
+}

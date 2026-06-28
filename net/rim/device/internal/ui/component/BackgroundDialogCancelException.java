@@ -5,5 +5,6 @@ public class BackgroundDialogCancelException extends Exception {
    }
 
    public BackgroundDialogCancelException(String msg) {
+      super(msg);
    }
 }

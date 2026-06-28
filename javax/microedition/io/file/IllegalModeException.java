@@ -5,5 +5,6 @@ public class IllegalModeException extends RuntimeException {
    }
 
    public IllegalModeException(String detailMessage) {
+      super(detailMessage);
    }
 }

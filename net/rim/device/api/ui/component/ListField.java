@@ -312,7 +312,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public int getSelectedIndex() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return this.getSelectionAnchor();
    }
 
    public int[] getSelection() {
@@ -454,7 +454,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
    @Override
    public void invalidate() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.invalidate();
    }
 
    public void invalidate(int index) {

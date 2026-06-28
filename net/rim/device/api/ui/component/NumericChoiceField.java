@@ -40,7 +40,7 @@ public class NumericChoiceField extends ChoiceField {
 
    @Override
    public int getPreferredWidth() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getPreferredWidth();
    }
 
    @Override

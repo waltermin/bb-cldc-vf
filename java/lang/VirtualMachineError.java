@@ -5,5 +5,6 @@ public class VirtualMachineError extends Error {
    }
 
    public VirtualMachineError(String s) {
+      super(s);
    }
 }

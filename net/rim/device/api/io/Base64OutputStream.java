@@ -46,7 +46,42 @@ public class Base64OutputStream extends OutputStream {
 
    @Override
    public void write(byte[] data, int dataOffset, int dataLength) {
-      throw new RuntimeException("cod2jar: unsupported opcode");
+      if (data == null || dataOffset < 0 || dataLength < 0 || data.length - dataLength < dataOffset) {
+         throw new IllegalArgumentException();
+      }
+
+      if (this._lastException != null) {
+         throw this._lastException;
+      }
+
+      try {
+         if (this._outputStream == null) {
+            throw new IOException("Stream closed");
+         }
+
+         int inputBufferAvailable = 1539 - this._inputBufferLength;
+         if (dataLength >= inputBufferAvailable) {
+            if (this._inputBufferLength > 0) {
+               System.arraycopy(data, dataOffset, this._inputBuffer, this._inputBufferLength, inputBufferAvailable);
+               this.encode(this._inputBuffer, 0, 1539);
+               this._inputBufferLength = 0;
+               dataOffset += inputBufferAvailable;
+               dataLength -= inputBufferAvailable;
+            }
+
+            while (dataLength >= 1539) {
+               this.encode(data, dataOffset, 1539);
+               dataOffset += 1539;
+               dataLength -= 1539;
+            }
+         }
+
+         System.arraycopy(data, dataOffset, this._inputBuffer, this._inputBufferLength, dataLength);
+         this._inputBufferLength += dataLength;
+      } catch (IOException e) {
+         this._lastException = e;
+         throw e;
+      }
    }
 
    @Override

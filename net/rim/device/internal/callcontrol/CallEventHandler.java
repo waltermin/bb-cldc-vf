@@ -2,6 +2,7 @@ package net.rim.device.internal.callcontrol;
 
 public class CallEventHandler extends AbstractCallEventHandler {
    protected CallEventHandler(int order) {
+      super(order);
    }
 
    @Override

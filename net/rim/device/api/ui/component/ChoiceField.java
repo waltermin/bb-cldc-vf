@@ -470,7 +470,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    protected int moveFocus(int amount, int status, int time) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.moveFocus(amount, status, time);
    }
 
    @Override
@@ -675,7 +675,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public int getAccessibleStateSet() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getAccessibleStateSet();
    }
 
    @Override

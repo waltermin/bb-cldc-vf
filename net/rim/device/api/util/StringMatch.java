@@ -36,11 +36,11 @@ public final class StringMatch implements Persistable {
    }
 
    public final int indexOf(String text, int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return this.KMPMatch(text, offset);
    }
 
    public final int indexOf(StringBuffer text, int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return this.KMPMatch(text, offset);
    }
 
    public final int numStringsInPattern() {

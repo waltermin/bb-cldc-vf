@@ -238,7 +238,7 @@ public class NativeTransport
 
    @Override
    public void fastReset() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.possiblyClearSendStatus();
    }
 
    @Override

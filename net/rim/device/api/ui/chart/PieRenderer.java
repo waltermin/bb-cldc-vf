@@ -12,6 +12,7 @@ public class PieRenderer extends ChartRenderer {
    public static final int PADDING_HIGH;
 
    public PieRenderer(ChartField field) {
+      super(field);
    }
 
    public int getSlicePadding() {

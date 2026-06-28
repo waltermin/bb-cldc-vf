@@ -5,5 +5,6 @@ public class MissingResourceException extends RuntimeException {
    }
 
    public MissingResourceException(String s) {
+      super(s);
    }
 }

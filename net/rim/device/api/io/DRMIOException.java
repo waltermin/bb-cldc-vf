@@ -7,5 +7,6 @@ public class DRMIOException extends IOException {
    }
 
    public DRMIOException(String message) {
+      super(message);
    }
 }

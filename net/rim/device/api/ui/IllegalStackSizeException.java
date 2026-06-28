@@ -6,6 +6,7 @@ public class IllegalStackSizeException extends RuntimeException {
    }
 
    public IllegalStackSizeException(String message) {
+      super(message);
    }
 
    public IllegalStackSizeException(String type, Class clazz, Graphics graphics, int depthExpected) {

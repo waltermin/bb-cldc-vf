@@ -5,5 +5,6 @@ public class InvalidRecordIDException extends RecordStoreException {
    }
 
    public InvalidRecordIDException(String s) {
+      super(s);
    }
 }

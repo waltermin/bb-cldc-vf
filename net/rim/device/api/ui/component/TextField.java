@@ -292,7 +292,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    protected void handleCursorPositionChanged() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.setInsertionAttributesToSelection();
    }
 
    protected void invalidateFocusRect() {
@@ -1654,7 +1654,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    protected void fieldChangeNotify(int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.fieldChangeNotify(context);
    }
 
    private String handleLabelOwnLine(String labelSet) {

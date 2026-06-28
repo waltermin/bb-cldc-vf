@@ -19,5 +19,6 @@ public class IndexOutOfBoundsException extends RuntimeException {
    }
 
    public IndexOutOfBoundsException(String s) {
+      super(s);
    }
 }

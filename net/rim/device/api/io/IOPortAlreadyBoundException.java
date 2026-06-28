@@ -7,5 +7,6 @@ public class IOPortAlreadyBoundException extends IOException {
    }
 
    public IOPortAlreadyBoundException(String msg) {
+      super(msg);
    }
 }

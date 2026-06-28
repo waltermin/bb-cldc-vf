@@ -5,5 +5,6 @@ public class NoClassDefFoundError extends Error {
    }
 
    public NoClassDefFoundError(String s) {
+      super(s);
    }
 }

@@ -39,7 +39,7 @@ public class EditField extends BasicEditField {
 
    @Override
    protected int moveFocus(int amount, int status, int time) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.moveFocus(amount, status, time);
    }
 
    protected boolean isEnteringRollerCharacter() {

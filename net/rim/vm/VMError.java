@@ -5,5 +5,6 @@ public final class VMError extends VirtualMachineError {
    }
 
    public VMError(String s) {
+      super(s);
    }
 }

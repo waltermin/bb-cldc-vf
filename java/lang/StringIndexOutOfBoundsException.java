@@ -5,6 +5,7 @@ public class StringIndexOutOfBoundsException extends IndexOutOfBoundsException {
    }
 
    public StringIndexOutOfBoundsException(String s) {
+      super(s);
    }
 
    public StringIndexOutOfBoundsException(int index) {

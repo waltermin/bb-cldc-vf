@@ -154,7 +154,7 @@ public class ComboField extends HorizontalFieldManager implements FieldChangeLis
 
    @Override
    public int getAccessibleStateSet() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getAccessibleStateSet();
    }
 
    @Override

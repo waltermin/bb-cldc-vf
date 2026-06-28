@@ -538,7 +538,7 @@ public class Manager extends Field {
    }
 
    public void insert(Field field, int index) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.insertInternal(field, index);
    }
 
    private void insertInternal(Field field, int index) {

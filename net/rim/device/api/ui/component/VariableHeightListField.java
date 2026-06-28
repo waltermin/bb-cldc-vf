@@ -199,7 +199,7 @@ public class VariableHeightListField extends Field {
 
    @Override
    public int getAccessibleStateSet() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getAccessibleStateSet();
    }
 
    @Override
@@ -281,7 +281,7 @@ public class VariableHeightListField extends Field {
    }
 
    public int getSelectedIndex() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return this.getSelectionAnchor();
    }
 
    public int[] getSelection() {

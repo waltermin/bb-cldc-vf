@@ -76,7 +76,7 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
 
    @Override
    public final void wlanExtendedInfoChange() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.updateWLANInfo();
    }
 
    @Override
@@ -109,7 +109,7 @@ final class WLANInfoImpl implements WLANExtendedListener, RadioStatusListener {
 
    @Override
    public final void signalLevel(int level) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.updateSignalLevel(level);
    }
 
    @Override

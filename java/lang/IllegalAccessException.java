@@ -5,5 +5,6 @@ public class IllegalAccessException extends Exception {
    }
 
    public IllegalAccessException(String s) {
+      super(s);
    }
 }

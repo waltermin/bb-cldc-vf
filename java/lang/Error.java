@@ -5,5 +5,6 @@ public class Error extends Throwable {
    }
 
    public Error(String s) {
+      super(s);
    }
 }

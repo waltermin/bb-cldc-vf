@@ -5,5 +5,6 @@ public class InvalidKeyException extends CryptoException {
    }
 
    public InvalidKeyException(String msg) {
+      super(msg);
    }
 }

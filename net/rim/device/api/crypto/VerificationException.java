@@ -5,5 +5,6 @@ public class VerificationException extends CryptoException {
    }
 
    public VerificationException(String msg) {
+      super(msg);
    }
 }

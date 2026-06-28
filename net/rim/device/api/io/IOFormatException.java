@@ -7,5 +7,6 @@ public class IOFormatException extends IOException {
    }
 
    public IOFormatException(String msg) {
+      super(msg);
    }
 }

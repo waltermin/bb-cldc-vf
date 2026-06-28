@@ -1330,7 +1330,7 @@ public class Screen extends Manager {
 
    @Override
    protected void onUndisplay() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.onUndisplay();
    }
 
    @Override

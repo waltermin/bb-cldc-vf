@@ -41,7 +41,7 @@ public class LayerManager {
    }
 
    public void remove(Layer l) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.removeImpl(l);
    }
 
    public void paint(Graphics g, int x, int y) {

@@ -78,156 +78,156 @@ public class PasswordEditField extends BasicEditField {
 
    @Override
    protected void onUnfocus() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.onUnfocus();
    }
 
    @Override
    protected boolean backspace() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.backspace();
    }
 
    @Override
    public int backspace(int count) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.backspace(count);
    }
 
    @Override
    protected int backspace(int count, int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.backspace(count, context);
    }
 
    @Override
    public char charAt(int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.charAt(offset);
    }
 
    @Override
    public void clear(int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.clear(context);
    }
 
    @Override
    public void wipe() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.wipe();
    }
 
    @Override
    public void selectionDelete() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.selectionDelete();
    }
 
    @Override
    protected void displayFieldFullMessage() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.displayFieldFullMessage();
    }
 
    @Override
    public String getLabel() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getLabel();
    }
 
    @Override
    public int getLabelLength() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getLabelLength();
    }
 
    @Override
    public int getMaxSize() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getMaxSize();
    }
 
    @Override
    public int getPreferredHeight() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getPreferredHeight();
    }
 
    @Override
    public int getPreferredWidth() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getPreferredWidth();
    }
 
    @Override
    public String getText() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getText();
    }
 
    @Override
    public String getText(int offset, int length) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getText(offset, length);
    }
 
    @Override
    public void getText(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.getText(srcBegin, srcEnd, dst, dstBegin);
    }
 
    @Override
    public AbstractString getTextAbstractString() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getTextAbstractString();
    }
 
    @Override
    public int getTextLength() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getTextLength();
    }
 
    @Override
    public int insert(String text) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.insert(text);
    }
 
    @Override
    protected int insert(String text, int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.insert(text, context);
    }
 
    @Override
    protected boolean isSymbolScreenAllowed() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.isSymbolScreenAllowed();
    }
 
    @Override
    public void setLabel(String newLabel) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setLabel(newLabel);
    }
 
    @Override
    protected void update(int delta) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.update(delta);
    }
 
    @Override
    public void setMaxSize(int maxSize) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setMaxSize(maxSize);
    }
 
    @Override
    public void setCursorPosition(int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setCursorPosition(offset);
    }
 
    @Override
    protected void setCursorPosition(int offset, int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setCursorPosition(offset, context);
    }
 
    @Override
    public int getCursorPosition() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getCursorPosition();
    }
 
    @Override
    public boolean paste(Clipboard cb) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.paste(cb);
    }
 
    @Override
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setText(text);
    }
 
    @Override
    protected void setText(String text, int context) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setText(text, context);
    }
 }

@@ -8,7 +8,7 @@ class FloatingDecimal {
    int nDigits;
    int bigIntExp;
    int bigIntNBits;
-   boolean mustSetRoundDir;
+   boolean mustSetRoundDir = false;
    int roundDir;
    static final long signMask;
    static final long expMask;
@@ -51,7 +51,6 @@ class FloatingDecimal {
    private static final char[] zero;
 
    private FloatingDecimal(boolean negSign, int decExponent, char[] digits, int n, boolean e) {
-      this.mustSetRoundDir = false;
       this.isNegative = negSign;
       this.isExceptional = e;
       this.decExponent = decExponent;
@@ -155,7 +154,31 @@ class FloatingDecimal {
    }
 
    private FDBigInt doubleToBigInt(double dval) {
-      throw new RuntimeException("cod2jar: unsupported opcode");
+      long lbits = Double.doubleToLongBits(dval) & Long.MAX_VALUE;
+      int binexp = (int)(lbits >>> 52);
+      lbits &= 4503599627370495L;
+      if (binexp > 0) {
+         lbits |= 4503599627370496L;
+      } else {
+         if (lbits == 0) {
+            throw new RuntimeException("Assertion botch: doubleToBigInt(0.0)");
+         }
+
+         binexp++;
+
+         while ((lbits & 4503599627370496L) == 0) {
+            lbits <<= 1;
+            binexp--;
+         }
+      }
+
+      binexp -= 1023;
+      int nbits = countBits(lbits);
+      int lowOrderZeros = 53 - nbits;
+      lbits >>>= lowOrderZeros;
+      this.bigIntExp = binexp + 1 - nbits;
+      this.bigIntNBits = nbits;
+      return new FDBigInt(lbits);
    }
 
    private static double ulp(double dval, boolean subtracting) {
@@ -290,10 +313,55 @@ class FloatingDecimal {
    }
 
    public FloatingDecimal(double d) {
+      long dBits = Double.doubleToLongBits(d);
+      if ((dBits & Long.MIN_VALUE) != 0) {
+         this.isNegative = true;
+         dBits ^= Long.MIN_VALUE;
+      } else {
+         this.isNegative = false;
+      }
+
+      int binExp = (int)((dBits & 9218868437227405312L) >> 52);
+      long fractBits = dBits & 4503599627370495L;
+      if (binExp == 2047) {
+         this.isExceptional = true;
+         if (fractBits == 0) {
+            this.digits = infinity;
+         } else {
+            this.digits = notANumber;
+            this.isNegative = false;
+         }
+
+         this.nDigits = this.digits.length;
+      } else {
+         this.isExceptional = false;
+         int nSignificantBits;
+         if (binExp == 0) {
+            if (fractBits == 0) {
+               this.decExponent = 0;
+               this.digits = zero;
+               this.nDigits = 1;
+               return;
+            }
+
+            while ((fractBits & 4503599627370496L) == 0) {
+               fractBits <<= 1;
+               binExp--;
+            }
+
+            nSignificantBits = 52 + binExp + 1;
+            binExp++;
+         } else {
+            fractBits |= 4503599627370496L;
+            nSignificantBits = 53;
+         }
+
+         binExp -= 1023;
+         this.dtoa(binExp, fractBits, nSignificantBits);
+      }
    }
 
    public FloatingDecimal(float f) {
-      this.mustSetRoundDir = false;
       int fBits = Float.floatToIntBits(f);
       if ((fBits & -2147483648) != 0) {
          this.isNegative = true;

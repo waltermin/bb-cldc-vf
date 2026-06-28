@@ -7,5 +7,6 @@ public class IOTransmitterException extends IOException {
    }
 
    public IOTransmitterException(String msg) {
+      super(msg);
    }
 }

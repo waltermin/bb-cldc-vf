@@ -5,5 +5,6 @@ public class NoSuchAlgorithmException extends CryptoException {
    }
 
    public NoSuchAlgorithmException(String msg) {
+      super(msg);
    }
 }

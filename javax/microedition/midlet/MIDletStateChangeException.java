@@ -5,5 +5,6 @@ public class MIDletStateChangeException extends Exception {
    }
 
    public MIDletStateChangeException(String s) {
+      super(s);
    }
 }

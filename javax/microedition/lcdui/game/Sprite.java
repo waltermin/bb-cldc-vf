@@ -224,7 +224,7 @@ public class Sprite extends Layer {
    }
 
    public void setTransform(int transform) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.setTransformImpl(transform);
    }
 
    public final boolean collidesWith(Sprite s, boolean pixelLevel) {

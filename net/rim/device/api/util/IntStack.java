@@ -5,6 +5,7 @@ public class IntStack extends IntVector implements Persistable {
    }
 
    public IntStack(int initialCapacityInt) {
+      super(initialCapacityInt);
    }
 
    public int push(int valueInt) {

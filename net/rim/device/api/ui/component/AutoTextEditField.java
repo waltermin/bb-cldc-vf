@@ -498,12 +498,12 @@ public class AutoTextEditField extends EditField {
 
    @Override
    public void selectionDelete() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.selectionDelete();
    }
 
    @Override
    public int insert(String text, int context, boolean stripInvalid, boolean validateText) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.insert(text, context, stripInvalid, validateText);
    }
 
    @Override

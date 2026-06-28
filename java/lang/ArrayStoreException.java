@@ -5,5 +5,6 @@ public class ArrayStoreException extends RuntimeException {
    }
 
    public ArrayStoreException(String s) {
+      super(s);
    }
 }

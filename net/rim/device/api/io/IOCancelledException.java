@@ -7,5 +7,6 @@ public class IOCancelledException extends IOException {
    }
 
    public IOCancelledException(String msg) {
+      super(msg);
    }
 }

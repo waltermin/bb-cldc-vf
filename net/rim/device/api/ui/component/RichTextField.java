@@ -551,51 +551,51 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
 
    @Override
    public int getCursorPosition() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getCursorPosition();
    }
 
    @Override
    public String getText() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getText();
    }
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.layout(width, height);
    }
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.paint(graphics);
    }
 
    @Override
    public void setCursorPosition(int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setCursorPosition(offset);
    }
 
    @Override
    public String getText(int offset, int length) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getText(offset, length);
    }
 
    @Override
    public int getTextLength() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getTextLength();
    }
 
    @Override
    public boolean isSelectable() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.isSelectable();
    }
 
    @Override
    public char charAt(int offset) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.charAt(offset);
    }
 
    @Override
    public void setFont(Font font) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setFont(font);
    }
 }

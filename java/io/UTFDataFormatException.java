@@ -5,5 +5,6 @@ public class UTFDataFormatException extends IOException {
    }
 
    public UTFDataFormatException(String s) {
+      super(s);
    }
 }

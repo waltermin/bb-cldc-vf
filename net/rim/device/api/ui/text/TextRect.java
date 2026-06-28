@@ -28,7 +28,7 @@ public class TextRect extends TextArea {
 
    @Override
    public void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.layout(width, height);
    }
 
    @Override

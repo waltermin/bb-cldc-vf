@@ -6,6 +6,7 @@ import net.rim.device.internal.i18n.CommonResource;
 
 class TextField$1 extends MenuItem {
    TextField$1(ResourceBundle x0, int x1, int x2, int x3) {
+      super(x0, x1, x2, x3);
    }
 
    @Override

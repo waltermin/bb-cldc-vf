@@ -7,5 +7,6 @@ public class IODatagramLengthException extends IOException {
    }
 
    public IODatagramLengthException(String msg) {
+      super(msg);
    }
 }

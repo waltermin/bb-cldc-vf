@@ -8,6 +8,7 @@ public final class ControlledAccessException extends SecurityException {
    }
 
    public ControlledAccessException(String msg) {
+      super(msg);
    }
 
    public ControlledAccessException(String msg, String deniedPermissionString) {

@@ -23,7 +23,7 @@ public class Thread implements Runnable {
    }
 
    public void interrupt() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.interrupt0();
    }
 
    public final native boolean isAlive();

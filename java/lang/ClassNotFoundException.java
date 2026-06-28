@@ -5,5 +5,6 @@ public class ClassNotFoundException extends Exception {
    }
 
    public ClassNotFoundException(String s) {
+      super(s);
    }
 }

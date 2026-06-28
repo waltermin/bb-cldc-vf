@@ -150,7 +150,7 @@ public class ApplicationIconField extends Field {
    }
 
    public void setBitmap() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.setBitmapInternal();
    }
 
    private void setBitmapInternal() {

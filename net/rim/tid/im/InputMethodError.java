@@ -5,5 +5,6 @@ public class InputMethodError extends Error {
    }
 
    public InputMethodError(String s) {
+      super(s);
    }
 }

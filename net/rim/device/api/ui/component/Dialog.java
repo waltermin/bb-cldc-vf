@@ -262,12 +262,12 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    protected void onExposed() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.onExposed();
    }
 
    @Override
    protected void onObscured() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.onObscured();
    }
 
    public Dialog(int type, String message, int defaultChoice, Bitmap bitmap, long style, boolean dontAskAgain) {
@@ -446,7 +446,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    protected void onUndisplay() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.onUndisplay();
    }
 
    private void addChoice(String choice) {

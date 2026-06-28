@@ -5,5 +5,6 @@ public class ITPolicyParseException extends Exception {
    }
 
    public ITPolicyParseException(String s) {
+      super(s);
    }
 }

@@ -420,7 +420,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
    @Override
    protected void makeContextMenu(ContextMenu contextMenu) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.makeContextMenu(contextMenu);
    }
 
    @Override

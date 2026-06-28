@@ -145,7 +145,7 @@ public class PrintStream extends OutputStream {
    }
 
    public void print(char[] s) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.write(s);
    }
 
    public void print(String s) {
@@ -161,7 +161,7 @@ public class PrintStream extends OutputStream {
    }
 
    public void println() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.newLine();
    }
 
    public void println(boolean x) {

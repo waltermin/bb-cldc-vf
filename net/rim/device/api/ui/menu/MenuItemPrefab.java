@@ -47,7 +47,7 @@ public class MenuItemPrefab extends MenuItem implements FieldChangeListener {
 
    @Override
    public int getPriority() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getPriority();
    }
 
    static int getDefaultPriority(int id) {

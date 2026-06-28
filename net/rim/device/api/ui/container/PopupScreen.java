@@ -25,7 +25,7 @@ public class PopupScreen extends Screen {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.applyTheme();
    }
 
    @Override
@@ -43,6 +43,6 @@ public class PopupScreen extends Screen {
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.paint(graphics);
    }
 }

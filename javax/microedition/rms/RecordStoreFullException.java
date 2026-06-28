@@ -5,5 +5,6 @@ public class RecordStoreFullException extends RecordStoreException {
    }
 
    public RecordStoreFullException(String s) {
+      super(s);
    }
 }

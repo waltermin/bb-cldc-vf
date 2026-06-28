@@ -141,11 +141,41 @@ public final class TextFlowNative$Lines {
    }
 
    public final void appendVerticalSpace(int aHeight, short aXOffset, short aWidth, short aCellId) {
-      throw new RuntimeException("cod2jar: unsupported opcode");
+      int lines = (aHeight + 32767 - 1) / 32767;
+      int old_count = this._count;
+      this.grow(this._count + lines, this._bidiStateCount);
+
+      for (int i = old_count; i < this._count; i++) {
+         this._length[i] = 0;
+         this._xOffset[i] = aXOffset;
+         this._flags[i] = 3;
+         this._width[i] = aWidth;
+         this._widthNominal[i] = aWidth;
+         this._baseline[i] = 0;
+         this._height[i] = (short)Math.min(32767, aHeight);
+         this._cellId[i] = aCellId;
+         this._bidiStateIndex[i] = (short)this._bidiStateCount;
+         aHeight -= 32767;
+      }
    }
 
    public final void appendZeroHeightCharacters(int aChars, short aXOffset, short aWidth, short aCellId) {
-      throw new RuntimeException("cod2jar: unsupported opcode");
+      int lines = (aChars + 32767 - 1) / 32767;
+      int old_count = this._count;
+      this.grow(this._count + lines, this._bidiStateCount);
+
+      for (int i = old_count; i < this._count; i++) {
+         this._length[i] = (short)Math.min(32767, aChars);
+         this._xOffset[i] = aXOffset;
+         this._flags[i] = 3;
+         this._width[i] = aWidth;
+         this._widthNominal[i] = aWidth;
+         this._baseline[i] = 0;
+         this._height[i] = 0;
+         this._cellId[i] = aCellId;
+         this._bidiStateIndex[i] = (short)this._bidiStateCount;
+         aChars -= 32767;
+      }
    }
 
    public final void appendZeroHeightZeroWidthCharacter(short aXOffset, short aCellId) {

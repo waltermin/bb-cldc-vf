@@ -5,21 +5,21 @@ import net.rim.vm.MemStats;
 public final class MemoryStats extends MemStats {
    @Override
    public final int getAllocated() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getAllocated();
    }
 
    @Override
    public final int getFree() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getFree();
    }
 
    @Override
    public final int getObjectSize() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getObjectSize();
    }
 
    @Override
    public final int getObjectCount() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getObjectCount();
    }
 }

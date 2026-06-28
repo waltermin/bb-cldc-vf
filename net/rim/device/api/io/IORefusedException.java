@@ -7,5 +7,6 @@ public class IORefusedException extends IOException {
    }
 
    public IORefusedException(String msg) {
+      super(msg);
    }
 }

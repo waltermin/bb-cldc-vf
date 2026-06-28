@@ -5,5 +5,6 @@ public final class ModuleNotFoundException extends Exception {
    }
 
    public ModuleNotFoundException(String s) {
+      super(s);
    }
 }

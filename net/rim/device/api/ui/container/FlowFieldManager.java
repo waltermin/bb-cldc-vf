@@ -339,6 +339,6 @@ public class FlowFieldManager extends Manager {
 
    @Override
    protected boolean navigationMovement(int dx, int dy, int status, int time) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.navigationMovement(dx, dy, status, time);
    }
 }

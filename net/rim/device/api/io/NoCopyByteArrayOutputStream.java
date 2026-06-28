@@ -7,6 +7,7 @@ public class NoCopyByteArrayOutputStream extends ByteArrayOutputStream {
    }
 
    public NoCopyByteArrayOutputStream(int size) {
+      super(size);
    }
 
    public NoCopyByteArrayOutputStream(byte[] buffer, int offset) {

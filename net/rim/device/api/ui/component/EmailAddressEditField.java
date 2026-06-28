@@ -45,7 +45,7 @@ public class EmailAddressEditField extends EditField {
 
    @Override
    protected boolean insert(char key, int status) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.insert(key, status);
    }
 
    @Override

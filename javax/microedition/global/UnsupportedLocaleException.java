@@ -5,5 +5,6 @@ public final class UnsupportedLocaleException extends RuntimeException {
    }
 
    public UnsupportedLocaleException(String message) {
+      super(message);
    }
 }

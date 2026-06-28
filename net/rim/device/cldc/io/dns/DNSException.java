@@ -9,6 +9,7 @@ public final class DNSException extends IOException {
    }
 
    public DNSException(String s) {
+      super(s);
    }
 
    public DNSException(String s, int errorCode) {

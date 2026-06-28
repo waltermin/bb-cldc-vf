@@ -9,6 +9,7 @@ public class RemoteException extends IOException {
    }
 
    public RemoteException(String s) {
+      super(s);
    }
 
    public RemoteException(String s, Throwable throwable) {

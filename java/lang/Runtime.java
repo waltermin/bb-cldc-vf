@@ -13,7 +13,7 @@ public class Runtime {
    private native void exitInternal(int var1);
 
    public void exit(int status) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.exitInternal(status);
    }
 
    public native long freeMemory();

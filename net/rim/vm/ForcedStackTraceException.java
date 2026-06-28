@@ -5,5 +5,6 @@ public final class ForcedStackTraceException extends Exception {
    }
 
    public ForcedStackTraceException(String s) {
+      super(s);
    }
 }

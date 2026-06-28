@@ -3,6 +3,8 @@ package net.rim.device.internal.browser.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import net.rim.device.api.crypto.RandomSource;
+import net.rim.device.api.io.Base64OutputStream;
+import net.rim.device.api.util.Arrays;
 
 public final class IdEncryptor {
    private static final int VERSION;
@@ -17,7 +19,37 @@ public final class IdEncryptor {
    }
 
    public static final String encrypt(String value, int key) {
-      throw new RuntimeException("cod2jar: unsupported opcode");
+      if (value != null && key >= 0 && key <= 1) {
+         byte[] tempMemory = new byte[128];
+         byte[] input = value.getBytes();
+         int count = (input.length + 100 - 1) / 100;
+         byte[] output = new byte[1 + count * 128];
+         output[0] = 1;
+         byte[] n = key == 0 ? RSA_N_0 : RSA_N_1;
+         int blockLen = 0;
+         int inOffset = 0;
+         int outOffset = 1;
+
+         for (int i = 0; i < count; i++) {
+            Arrays.fill(tempMemory, (byte)0);
+            blockLen = Math.min(100, input.length - inOffset);
+            formatAndEncrypt(n, tempMemory, input, inOffset, blockLen, output, outOffset);
+            inOffset += 100;
+            outOffset += 128;
+         }
+
+         try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            Base64OutputStream b64Out = new Base64OutputStream(outStream);
+            b64Out.write(output);
+            b64Out.close();
+            return outStream.toString();
+         } catch (IOException var12) {
+            return null;
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    private static final void formatAndEncrypt(byte[] n, byte[] temp, byte[] input, int inputOffset, int inputLength, byte[] output, int outputOffset) {

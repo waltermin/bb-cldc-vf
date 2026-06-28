@@ -200,7 +200,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.applyTheme();
    }
 
    @Override

@@ -9,5 +9,6 @@ public class ArrayIndexOutOfBoundsException extends IndexOutOfBoundsException {
    }
 
    public ArrayIndexOutOfBoundsException(String s) {
+      super(s);
    }
 }

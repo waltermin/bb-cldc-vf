@@ -5,5 +5,6 @@ public class SecurityException extends RuntimeException {
    }
 
    public SecurityException(String s) {
+      super(s);
    }
 }

@@ -78,7 +78,7 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    protected int super_scrollVertically(int amount) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.scrollVertically(amount);
    }
 
    public void setText(String name, String text, Font[] fonts, int[] foregroundColors) {

@@ -288,7 +288,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.paint(graphics);
    }
 
    @Override
@@ -437,12 +437,12 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    public boolean paste(Clipboard cb) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.paste(cb);
    }
 
    @Override
    public int insert(String text, int context, boolean stripInvalid, boolean validateText) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.insert(text, context, stripInvalid, validateText);
    }
 
    @Override

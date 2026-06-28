@@ -5,5 +5,6 @@ public class CryptoTokenException extends CryptoException {
    }
 
    public CryptoTokenException(String msg) {
+      super(msg);
    }
 }

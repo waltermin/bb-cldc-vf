@@ -5,6 +5,7 @@ import net.rim.vm.Array;
 
 public class CloneableVector extends Vector {
    public CloneableVector(int initialCapacity, int capacityIncrement) {
+      super(initialCapacity, capacityIncrement);
    }
 
    public CloneableVector(int initialCapacity) {

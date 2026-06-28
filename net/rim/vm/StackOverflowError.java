@@ -5,5 +5,6 @@ public final class StackOverflowError extends VirtualMachineError {
    }
 
    public StackOverflowError(String s) {
+      super(s);
    }
 }

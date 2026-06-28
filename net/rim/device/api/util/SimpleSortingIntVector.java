@@ -37,7 +37,7 @@ public class SimpleSortingIntVector extends IntVector {
    }
 
    public void reSort(short sortType) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      this.doBulkSort(sortType);
    }
 
    @Override
@@ -99,7 +99,7 @@ public class SimpleSortingIntVector extends IntVector {
    }
 
    public int bestGuessBinarySearch(int object) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return this.findObjectUsingNonUniqueComparason(object);
    }
 
    public synchronized int linearSearch(int obj) {

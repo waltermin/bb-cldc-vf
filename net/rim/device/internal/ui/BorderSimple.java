@@ -21,6 +21,7 @@ public class BorderSimple extends Border {
    public static final int STYLE_OUTSET;
 
    public BorderSimple(int top, int right, int bottom, int left) {
+      super(top, right, bottom, left);
    }
 
    public BorderSimple(int top, int right, int bottom, int left, int colorTop, int colorRight, int colorBottom, int colorLeft) {

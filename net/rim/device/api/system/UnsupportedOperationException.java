@@ -5,5 +5,6 @@ public final class UnsupportedOperationException extends RuntimeException {
    }
 
    public UnsupportedOperationException(String msg) {
+      super(msg);
    }
 }

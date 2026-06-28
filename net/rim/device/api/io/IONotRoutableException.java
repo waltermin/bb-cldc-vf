@@ -7,5 +7,6 @@ public class IONotRoutableException extends IOException {
    }
 
    public IONotRoutableException(String msg) {
+      super(msg);
    }
 }

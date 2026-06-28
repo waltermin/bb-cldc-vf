@@ -5,5 +5,6 @@ public class CryptoUnsupportedOperationException extends CryptoException {
    }
 
    public CryptoUnsupportedOperationException(String msg) {
+      super(msg);
    }
 }

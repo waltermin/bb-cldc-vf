@@ -31,7 +31,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    }
 
    public void resetDataBuffer() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.reset();
    }
 
    public void simpleReset() {
@@ -150,7 +150,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
 
    @Override
    public int getLength() {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      return super.getLength();
    }
 
    public DatagramBase(byte[] buffer, int offset, int length, String address) {
@@ -177,7 +177,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
 
    @Override
    public void setLength(int length) {
-      throw new RuntimeException("cod2jar: tail call (jumpspecial)");
+      super.setLength(length);
    }
 
    public DatagramBase(byte[] buffer, int offset, int length, DatagramAddressBase addressBase) {
