@@ -35,7 +35,7 @@ public class IconCollection {
          this._rows = rows;
          this._moduleName = moduleName;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

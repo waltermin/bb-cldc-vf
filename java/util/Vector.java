@@ -75,7 +75,7 @@ public class Vector {
    }
 
    public synchronized Enumeration elements() {
-      return (Enumeration)(new Object(this));
+      return new VectorEnumerator(this);
    }
 
    public boolean contains(Object elem) {
@@ -109,16 +109,16 @@ public class Vector {
    }
 
    public synchronized int lastIndexOf(Object elem, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized Object elementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized Object firstElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[0];
       }
@@ -126,22 +126,22 @@ public class Vector {
 
    public synchronized Object lastElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[this.elementCount - 1];
       }
    }
 
    public synchronized void setElementAt(Object obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized void removeElementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized void insertElementAt(Object obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized void addElement(Object obj) {

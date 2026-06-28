@@ -4,7 +4,7 @@ import net.rim.device.api.listener.EventListenerManager;
 import net.rim.device.internal.proxy.Proxy;
 
 final class PersistentContent$Listeners {
-   private EventListenerManager _listeners = (EventListenerManager)(new Object());
+   private EventListenerManager _listeners = new EventListenerManager();
    private PersistentContent$Listeners$Indicator _indicator;
    private int _state;
    private int _modeGeneration;

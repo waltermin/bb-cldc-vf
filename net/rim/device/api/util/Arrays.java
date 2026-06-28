@@ -272,7 +272,7 @@ public final class Arrays {
 
    public static final int sum(byte[] array, int offset, int length, boolean signed) {
       if (length < 0) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
 
       int sum = 0;
@@ -317,7 +317,7 @@ public final class Arrays {
 
    public static final boolean equals(byte[] a, int aOffset, byte[] a2, int a2Offset, int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return equalsArray(a, aOffset, a2, a2Offset, length);
       }
@@ -329,7 +329,7 @@ public final class Arrays {
 
    public static final boolean equals(char[] a, int aOffset, char[] a2, int a2Offset, int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return equalsArray(a, aOffset, a2, a2Offset, length);
       }
@@ -455,7 +455,7 @@ public final class Arrays {
 
    public static final int binarySearch(int[] a, int key, int fromIndex, int toIndex) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       checkIndices(a.length, fromIndex, toIndex);
@@ -481,7 +481,7 @@ public final class Arrays {
 
    public static final int binarySearch(int[] a, int key, IntComparator c, int fromIndex, int toIndex) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       checkIndices(a.length, fromIndex, toIndex);
@@ -508,7 +508,7 @@ public final class Arrays {
 
    public static final int binarySearch(long[] a, long key, int fromIndex, int toIndex) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       checkIndices(a.length, fromIndex, toIndex);
@@ -534,7 +534,7 @@ public final class Arrays {
 
    public static final int binarySearch(Object[] a, Object key, Comparator c, int fromIndex, int toIndex) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       checkIndices(a.length, fromIndex, toIndex);
@@ -578,9 +578,9 @@ public final class Arrays {
 
    private static final void checkIndices(int len, int low, int high) {
       if (low > high) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else if (low < 0 || high > len) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 

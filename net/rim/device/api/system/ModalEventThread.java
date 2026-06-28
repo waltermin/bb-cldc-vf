@@ -10,19 +10,19 @@ public class ModalEventThread extends Thread {
    @Override
    public void run() {
       Application app = Application.getApplication();
-      boolean var10 = false /* VF: Semaphore variable */;
+      boolean var12 = false /* VF: Semaphore variable */;
 
       try {
-         var10 = true;
-         Object lock = new Object();
+         var12 = true;
+         Message lock = new Message();
 
          while (!this.shouldExit()) {
-            app.processNextMessage((Message)lock);
+            app.processNextMessage(lock);
          }
 
-         var10 = false;
+         var12 = false;
       } finally {
-         if (var10) {
+         if (var12) {
             Object lock = app.getAppEventLock();
             synchronized (lock) {
                this._exiting = true;

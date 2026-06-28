@@ -4,6 +4,7 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.SIMCard;
 import net.rim.device.api.system.SIMCardEFListener;
 import net.rim.device.api.system.SIMCardException;
+import net.rim.device.api.ui.UiApplication;
 
 public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    private int _efId;
@@ -28,14 +29,36 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    private static final int STATE_WRITE_WAIT;
 
    public void startTask(SIMCardEfTask task, boolean wait) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (task == null) {
+         throw new IllegalArgumentException();
+      }
+
+      if (this._task != null) {
+         throw new IllegalStateException();
+      }
+
+      Application app = super._enableKeyUpMessages = (boolean)Application.getApplication();
+      if (app == null) {
+         throw new NullPointerException();
+      }
+
+      this._task = task;
+      this._state = 1;
+      if (wait && !app.isEventThread()) {
+         this.run();
+      } else {
+         new Thread(this).start();
+         if (wait) {
+            this.waitForComplete();
+         }
+      }
    }
 
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public synchronized int writeRequest(int efId, int structure, int record, byte[] buffer) {
       if (this._state != 1) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       this._efId = efId;
@@ -43,25 +66,25 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
       this._recordNumber = record;
       this._buffer = buffer;
       this._state = 4;
-      boolean var9 = false /* VF: Semaphore variable */;
+      boolean var10 = false /* VF: Semaphore variable */;
 
       label59: {
          label60: {
             try {
-               var9 = true;
+               var10 = true;
                SIMCard.requestEFWrite(this._efId, this._fileStructure, this._recordNumber, this._buffer);
-               super.wait();
-               var9 = false;
+               this.wait();
+               var10 = false;
                break label59;
             } catch (InterruptedException ie) {
                this._code = 11;
-               var9 = false;
+               var10 = false;
                break label60;
             } catch (SIMCardException scEx) {
                this._code = 11;
-               var9 = false;
+               var10 = false;
             } finally {
-               if (var9) {
+               if (var10) {
                   this._state = 1;
                }
             }
@@ -111,29 +134,29 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    public synchronized int infoRequest(int efId) {
       this._efId = efId;
       if (this._state != 1) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
-      boolean var6 = false /* VF: Semaphore variable */;
+      boolean var7 = false /* VF: Semaphore variable */;
 
       label57: {
          label58: {
             try {
-               var6 = true;
+               var7 = true;
                this._state = 2;
                SIMCard.requestEFInfo(this._efId);
-               super.wait();
-               var6 = false;
+               this.wait();
+               var7 = false;
                break label57;
             } catch (InterruptedException ie) {
                this._code = 11;
-               var6 = false;
+               var7 = false;
                break label58;
             } catch (SIMCardException scEx) {
                this._code = 11;
-               var6 = false;
+               var7 = false;
             } finally {
-               if (var6) {
+               if (var7) {
                   this._state = 1;
                }
             }
@@ -155,7 +178,7 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    public synchronized int readRequest(int efId, int structure, int record, byte[] buffer) {
       int len = -1;
       if (this._state != 1) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       this._efId = efId;
@@ -163,35 +186,35 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
       this._recordNumber = record;
       this._buffer = buffer;
       this._state = 3;
-      boolean var10 = false /* VF: Semaphore variable */;
+      boolean var11 = false /* VF: Semaphore variable */;
 
       label80: {
          label81: {
             try {
-               var10 = true;
+               var11 = true;
                int scEx = 2;
 
                while (--scEx >= 0) {
                   len = SIMCard.requestEFRead(this._efId, this._fileStructure, this._recordNumber, this._buffer);
                   if (len >= 0) {
-                     var10 = false;
+                     var11 = false;
                      break label80;
                   }
 
-                  super.wait();
+                  this.wait();
                }
 
-               var10 = false;
+               var11 = false;
                break label80;
             } catch (InterruptedException ie) {
                this._code = 11;
-               var10 = false;
+               var11 = false;
                break label81;
             } catch (SIMCardException scEx) {
                this._code = 11;
-               var10 = false;
+               var11 = false;
             } finally {
-               if (var10) {
+               if (var11) {
                   this._state = 1;
                }
             }
@@ -217,19 +240,19 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
    @Override
    public void run() {
       Application application = this._application;
-      boolean var5 = false /* VF: Semaphore variable */;
+      boolean var6 = false /* VF: Semaphore variable */;
 
       label57: {
          try {
-            var5 = true;
+            var6 = true;
             SIMCard.addListener(application, this);
             this._task.doWork(this);
-            var5 = false;
+            var6 = false;
             break label57;
-         } catch (Exception var6) {
-            var5 = false;
+         } catch (Exception var7) {
+            var6 = false;
          } finally {
-            if (var5) {
+            if (var6) {
                this._state = 0;
                this.closeWaitingDialog();
                SIMCard.removeListener(application, this);
@@ -306,11 +329,37 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
 
    private void processResponse(int code) {
       this._code = code;
-      super.notify();
+      this.notify();
    }
 
    private void waitForComplete() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._state != 0) {
+         Application application = this._application;
+         if (application.isEventThread()) {
+            if (!(application instanceof UiApplication)) {
+               throw new IllegalStateException();
+            }
+
+            SIMCardEfHandler$PleaseWaitDialog dialog = new SIMCardEfHandler$PleaseWaitDialog();
+            if (this._state != 0) {
+               this._dialog = dialog;
+               ((UiApplication)application).pushModalScreen(dialog);
+            }
+         } else {
+            try {
+               if (this._gate == null) {
+                  this._gate = new Object();
+               }
+
+               synchronized (this._gate) {
+                  this._gate.wait();
+               }
+            } catch (InterruptedException var5) {
+            }
+         }
+
+         this._state = 0;
+      }
    }
 
    private void closeWaitingDialog() {
@@ -320,7 +369,7 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
          }
       } else {
          Application app = this._application;
-         app.invokeAndWait((Runnable)(new Object(this, app)));
+         app.invokeAndWait(new SIMCardEfHandler$1(this, app));
       }
    }
 }

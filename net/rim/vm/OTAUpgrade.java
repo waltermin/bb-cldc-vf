@@ -45,20 +45,20 @@ public final class OTAUpgrade {
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static final synchronized void requestRadioState(boolean on) {
-      boolean var2 = false /* VF: Semaphore variable */;
+      boolean var3 = false /* VF: Semaphore variable */;
 
       try {
-         var2 = true;
+         var3 = true;
          _considerState = false;
          if (on) {
             Radio.requestPowerOn();
-            var2 = false;
+            var3 = false;
          } else {
             Radio.requestPowerOff();
-            var2 = false;
+            var3 = false;
          }
       } finally {
-         if (var2) {
+         if (var3) {
             _considerState = true;
          }
       }
@@ -69,15 +69,15 @@ public final class OTAUpgrade {
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static final synchronized void activateRadios(int radios) {
-      boolean var2 = false /* VF: Semaphore variable */;
+      boolean var3 = false /* VF: Semaphore variable */;
 
       try {
-         var2 = true;
+         var3 = true;
          _considerState = false;
          RadioInternal.activateRadios(radios);
-         var2 = false;
+         var3 = false;
       } finally {
-         if (var2) {
+         if (var3) {
             _considerState = true;
          }
       }
@@ -89,8 +89,8 @@ public final class OTAUpgrade {
       ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
       synchronized (ar) {
          Object o = ar.get(3338648511322103566L);
-         if (o == null || !(o instanceof Object)) {
-            o = new Object();
+         if (o == null || !(o instanceof Vector)) {
+            o = new Vector();
             ar.put(3338648511322103566L, o);
          }
 

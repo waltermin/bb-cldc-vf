@@ -39,14 +39,14 @@ public class MIDletApplication extends UiApplication {
 
    public static final String getAppProperty(String moduleName, String key, boolean cacheResourceObject) {
       if (key == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Resource resource = Resource$Internal.getResourceClass(moduleName, cacheResourceObject);
       if (resource != null) {
          byte[] data = resource.getProperty(key);
          if (data != null) {
-            return (String)(new Object(data, 2, data.length - 2));
+            return new String(data, 2, data.length - 2);
          }
       }
 

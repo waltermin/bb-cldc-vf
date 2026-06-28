@@ -1,5 +1,8 @@
 package net.rim.device.internal.compress;
 
+import net.rim.device.api.system.ApplicationProcess;
+import net.rim.vm.Process;
+
 final class YKCleaner implements Runnable {
    private boolean _registered;
    private Object _objToClean;
@@ -9,11 +12,17 @@ final class YKCleaner implements Runnable {
    }
 
    public final void register() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (!this._registered) {
+         ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this);
+         this._registered = true;
+      }
    }
 
    public final void unregister() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._registered) {
+         ((ApplicationProcess)Process.currentProcess()).removeCleanupRunnable(this);
+         this._registered = false;
+      }
    }
 
    @Override

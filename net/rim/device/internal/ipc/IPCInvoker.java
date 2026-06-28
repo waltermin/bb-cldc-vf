@@ -14,11 +14,11 @@ public class IPCInvoker {
 
    protected IPCInvoker(Application app, IPCBaseRunnable runnable) {
       if (app == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       ApplicationControl.assertIPCAllowed(true);
-      this._applicationReference = (WeakReference)(new Object(app));
+      this._applicationReference = new WeakReference(app);
       this._runnable = runnable;
    }
 

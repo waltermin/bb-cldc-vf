@@ -14,7 +14,7 @@ public class ToIntHashtable implements Persistable {
 
    public ToIntHashtable(int initialCapacity) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (initialCapacity < 1) {
@@ -41,11 +41,11 @@ public class ToIntHashtable implements Persistable {
    }
 
    public synchronized Enumeration keys() {
-      return (Enumeration)(new Object(this._key, this._empty));
+      return new HashtableObjectEnumerator(this._key, this._empty);
    }
 
    public synchronized IntEnumeration elements() {
-      return (IntEnumeration)(new Object(this._value, this._key, this._empty));
+      return new HashtableIntEnumerator(this._value, this._key, this._empty);
    }
 
    public synchronized boolean contains(int value) {

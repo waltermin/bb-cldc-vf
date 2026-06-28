@@ -111,7 +111,7 @@ public final class UiInternal {
 
       SLKeyLayout layout = useFallback ? DefaultKeyLayout.getDefaultKeyLayout() : UILocaleKeyLayout.getUIKeyLayout();
       if (layout == null) {
-         StringBuffer result = (StringBuffer)(new Object());
+         StringBuffer result = new StringBuffer();
          result.append('\u0000');
          return result;
       } else {

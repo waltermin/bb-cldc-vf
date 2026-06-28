@@ -4,7 +4,6 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Keypad;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.internal.ui.Image;
@@ -29,7 +28,7 @@ public final class Status extends PopupScreen {
    }
 
    private Status(String message, Image image, long style, boolean allowDismiss, boolean block, int priority) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       this.setAcceptsInput(allowDismiss);
       this._dfm = (DialogFieldManager)this.getDelegate();
       this._label = new RichTextField(message, 36028797018963968L);
@@ -38,7 +37,7 @@ public final class Status extends PopupScreen {
       this._block = block;
       this._priority = priority;
       if (image != null) {
-         ImageField ifield = (ImageField)(new Object());
+         ImageField ifield = new ImageField();
          ifield.setImage(image);
          ifield.setPreferredSize(Display.getWidth() >> 2, Display.getHeight() >> 2);
          this._dfm.setIcon(ifield);

@@ -67,7 +67,7 @@ public final class JPEGEncodedImage extends EncodedImage {
       if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return Bitmap.DEFAULT_TYPE;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -76,20 +76,20 @@ public final class JPEGEncodedImage extends EncodedImage {
       if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    final Bitmap getBitmapImpl(int frameIndex) {
       if (frameIndex != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       boolean readonly = (super._decodeMode & 4) != 0;
       int width = this.getScaledWidth();
       int height = this.getScaledHeight();
-      Bitmap bitmap = (Bitmap)(new Object(this.getBitmapType(frameIndex), width, height, null, readonly, false));
+      Bitmap bitmap = new Bitmap(this.getBitmapType(frameIndex), width, height, null, readonly, false);
       this.getJPEGImage(bitmap, super._scaleX, super._scaleY, super._decodeMode);
       bitmap.setAlphaDirect(null);
       return bitmap;

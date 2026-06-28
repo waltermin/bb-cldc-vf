@@ -6,6 +6,7 @@ import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntVector;
@@ -95,12 +96,12 @@ final class ApplicationControlImpl {
 
    static final void addTransactionModule(int newModuleHandle, int transactionHandle) {
       if (_transactions == null) {
-         _transactions = (IntHashtable)(new Object());
+         _transactions = new IntHashtable();
       }
 
       IntVector handles = (IntVector)_transactions.get(transactionHandle);
       if (handles == null) {
-         handles = (IntVector)(new Object());
+         handles = new IntVector();
       }
 
       handles.addElement(newModuleHandle);
@@ -111,7 +112,7 @@ final class ApplicationControlImpl {
       if (_transactions != null) {
          IntVector handles = (IntVector)_transactions.get(transactionHandle);
          if (handles == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          handles.trimToSize();
@@ -163,7 +164,7 @@ final class ApplicationControlImpl {
             byte domainTag = 3;
             return isConnectionAllowed(domain, domainTag, true);
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 
@@ -182,7 +183,7 @@ final class ApplicationControlImpl {
             domainTag = 2;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       return isConnectionAllowed(domain, domainTag, true);
@@ -459,7 +460,7 @@ final class ApplicationControlImpl {
    static final void assertIPCAllowed(boolean checkProcess) {
       if (!_isDesktopVM) {
          if (!ApplicationControl.isIPCAllowed(checkProcess)) {
-            throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[2]);
+            throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[2]);
          }
       }
    }
@@ -563,7 +564,7 @@ final class ApplicationControlImpl {
             setAppPerms
          );
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -583,7 +584,7 @@ final class ApplicationControlImpl {
             oldPermissions = doGetModulePermissions(moduleHandle);
          }
 
-         UserSetting oldUS = (UserSetting)(new Object(us));
+         UserSetting oldUS = new UserSetting(us);
          if (moduleHandle == 0) {
             _userPermissions.setPermissions(oldUS, us, combinePermissions(policyPermissions, permissions));
             if (isMoreRestrictive(oldPermissions, us.getPermissions())) {
@@ -613,7 +614,7 @@ final class ApplicationControlImpl {
             return isMoreRestrictive(oldPermissions, newPermissions);
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -622,7 +623,7 @@ final class ApplicationControlImpl {
       if (moduleHandle == 0) {
          return _permissions.getPermittedPermissions();
       } else if (moduleHash == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return getModulePolicyPermittedPermissions(moduleHandle, moduleHash);
       }
@@ -631,7 +632,7 @@ final class ApplicationControlImpl {
    private static final UserSetting getOrCreateUserSetting(byte[] moduleHash, int moduleHandle) {
       UserSetting us = _userPermissions.getSetting(moduleHandle);
       if (us == null) {
-         us = (UserSetting)(new Object(moduleHash, _userPermissions.getDefaultSetting().getPermissions()));
+         us = new UserSetting(moduleHash, _userPermissions.getDefaultSetting().getPermissions());
          _userPermissions.putSetting(moduleHandle, us, false);
          return us;
       }
@@ -681,18 +682,18 @@ final class ApplicationControlImpl {
          int moduleHandle = handles[i];
          if (!isSignedWithRRI(moduleHandle)) {
             if (!CodeModuleManager.getModuleHash(moduleHandle, hash)) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
 
             UserSetting us = _userPermissions.getSetting(moduleHandle);
             if (us == null) {
-               us = (UserSetting)(new Object(hash, doGetModulePermissions(moduleHandle)));
+               us = new UserSetting(hash, doGetModulePermissions(moduleHandle));
                _userPermissions.putSetting(moduleHandle, us, false);
             } else if (!us.hashEquals(hash)) {
-               throw new Object();
+               throw new RuntimeException();
             }
 
-            UserSetting oldUS = (UserSetting)(new Object(us));
+            UserSetting oldUS = new UserSetting(us);
             long perms = us.getPermissions();
             if (!allow) {
                perms &= allowMask ^ -1;
@@ -721,7 +722,7 @@ final class ApplicationControlImpl {
       }
 
       if (us != null && hash != null) {
-         UserSetting oldUS = (UserSetting)(new Object(us));
+         UserSetting oldUS = new UserSetting(us);
          _userPermissions.resetPrompts(oldUS, us);
          long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
          doSetModulePermissions(moduleHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
@@ -740,7 +741,7 @@ final class ApplicationControlImpl {
       }
 
       if (us != null && hash != null) {
-         UserSetting oldUS = (UserSetting)(new Object(us));
+         UserSetting oldUS = new UserSetting(us);
          _userPermissions.resetPrompt(oldUS, us, Long.MIN_VALUE >>> allowFlag | Long.MIN_VALUE >>> promptFlag);
          long policyPermissions = getModulePolicyPermittedPermissions(moduleHandle, hash);
          doSetModulePermissions(moduleHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
@@ -756,7 +757,7 @@ final class ApplicationControlImpl {
          UserSetting us = _userPermissions.getSetting(currHandle);
          if (us != null) {
             byte[] hash = us.getHash();
-            UserSetting oldUS = (UserSetting)(new Object(us));
+            UserSetting oldUS = new UserSetting(us);
             _userPermissions.resetPrompts(oldUS, us, false);
             long policyPermissions = getModulePolicyPermittedPermissions(currHandle, hash);
             doSetModulePermissions(currHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
@@ -776,7 +777,7 @@ final class ApplicationControlImpl {
          UserSetting us = _userPermissions.getSetting(currHandle);
          if (us != null) {
             byte[] hash = us.getHash();
-            UserSetting oldUS = (UserSetting)(new Object(us));
+            UserSetting oldUS = new UserSetting(us);
             _userPermissions.resetPrompt(oldUS, us, mask, false);
             long policyPermissions = getModulePolicyPermittedPermissions(currHandle, hash);
             doSetModulePermissions(currHandle, combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt()));
@@ -959,7 +960,7 @@ final class ApplicationControlImpl {
    }
 
    static final ApplicationPermissions buildPermissions(long permissions, long nonDefaults) {
-      ApplicationPermissions appPerms = (ApplicationPermissions)(new Object());
+      ApplicationPermissions appPerms = new ApplicationPermissions();
       addAppPermission(appPerms, 0, permissions, nonDefaults, 20);
       addAppPermission(appPerms, 11, permissions, nonDefaults, 2);
       addAppPermissionTernary(appPerms, 10, permissions, nonDefaults, 3, 4);
@@ -1192,7 +1193,7 @@ final class ApplicationControlImpl {
 
    static final void doPromptWork(int ternary, ResourceBundleFamily rb, int rbKey, int allowFlag, int promptFlag) {
       if (rb == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       switch (ternary) {
@@ -1201,7 +1202,7 @@ final class ApplicationControlImpl {
          case 0:
             return;
          case 1:
-            throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
+            throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
          case 2:
          default:
             Process currentProcess = Process.currentProcess();
@@ -1241,14 +1242,14 @@ final class ApplicationControlImpl {
                }
 
                if (stackResponse == 1) {
-                  throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
+                  throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
                }
 
                stackModulesToChange = new int[0];
             }
 
             String message = MessageFormat.format(rb.getString(rbKey), new String[]{currentProcess.getModuleName()});
-            PermissionDialog ptd = (PermissionDialog)(new Object(message, CommonResource.getString(10094), stackModules, stackModulesToChange));
+            PermissionDialog ptd = new PermissionDialog(message, CommonResource.getString(10094), stackModules, stackModulesToChange);
             if (ptd.getPermission()) {
                if (ptd.getUserOptionCheckBoxValue()) {
                   if (somePermRestrictedByPolicy) {
@@ -1268,7 +1269,7 @@ final class ApplicationControlImpl {
                   }
                }
 
-               throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
+               throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[allowFlag]);
             }
       }
    }

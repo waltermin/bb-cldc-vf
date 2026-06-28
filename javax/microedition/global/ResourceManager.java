@@ -25,7 +25,7 @@ public class ResourceManager {
       if (baseName != null && locale != null) {
          String nextLocale = GlobalUtilities.convertUnderscoreToHyphens(locale);
          if (!GlobalUtilities.isValidLocale(nextLocale)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          while (!isSupportedLocale(nextLocale, baseName)) {
@@ -38,7 +38,7 @@ public class ResourceManager {
 
          return new ResourceManager(baseName, nextLocale);
       } else {
-         throw new Object();
+         throw new NullPointerException();
       }
    }
 
@@ -46,7 +46,7 @@ public class ResourceManager {
       if (baseName != null && locales != null) {
          int numLocales = locales.length;
          if (numLocales == 0) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          String[] updatedLocales = new String[numLocales];
@@ -54,7 +54,7 @@ public class ResourceManager {
          for (int i = 0; i < numLocales; i++) {
             updatedLocales[i] = GlobalUtilities.convertUnderscoreToHyphens(locales[i]);
             if (!GlobalUtilities.isValidLocale(updatedLocales[i])) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
          }
 
@@ -66,7 +66,7 @@ public class ResourceManager {
 
          throw new UnsupportedLocaleException();
       } else {
-         throw new Object();
+         throw new NullPointerException();
       }
    }
 
@@ -85,7 +85,7 @@ public class ResourceManager {
 
          return -1;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

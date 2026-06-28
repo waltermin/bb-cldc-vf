@@ -29,7 +29,7 @@ public final class Backlight {
    public static final void enable(boolean enable, int seconds) {
       assertPermission();
       if (seconds < 1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (seconds > 255) {

@@ -37,7 +37,7 @@ public class ObjectChoiceField extends ChoiceField {
       } else if (index >= 0 && this._choices.length > index) {
          return this._choices[index];
       } else {
-         throw new Object(Integer.toString(index));
+         throw new IllegalArgumentException(Integer.toString(index));
       }
    }
 

@@ -159,7 +159,7 @@ public class Menu {
             Array.resize(this._highlights, newLength);
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -228,7 +228,7 @@ public class Menu {
       if (position >= 0 && position < this.getSize()) {
          return this._items[position];
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -314,7 +314,7 @@ public class Menu {
          if (position >= 0 && position < this.getSize()) {
             this._default = position;
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }

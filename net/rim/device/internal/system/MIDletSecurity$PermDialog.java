@@ -2,7 +2,7 @@ package net.rim.device.internal.system;
 
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
@@ -15,16 +15,16 @@ class MIDletSecurity$PermDialog extends PopupDialog {
    int _setting;
 
    MIDletSecurity$PermDialog(int perm, int setting, ApplicationDescriptor descriptor, String target) {
-      super((Manager)(new Object()), 33554432);
+      super(new DialogFieldManager(), 33554432);
       this.setStatusPriority(-2147483643);
       String message = this.getMessage(perm, descriptor, target);
       String[] yesNo = CommonResource.getStringArray(10012);
       this._dfm = (DialogFieldManager)this.getDelegate();
-      RichTextField label = (RichTextField)(new Object(message, 45035996273704960L));
+      RichTextField label = new RichTextField(message, 45035996273704960L);
       this._dfm.setMessage(label);
-      this._yesButton = (Field)(new Object(yesNo[0]));
+      this._yesButton = new ButtonField(yesNo[0]);
       this._dfm.addCustomField(this._yesButton);
-      this._noButton = (Field)(new Object(yesNo[1]));
+      this._noButton = new ButtonField(yesNo[1]);
       this._dfm.addCustomField(this._noButton);
       switch (setting) {
          case 2:

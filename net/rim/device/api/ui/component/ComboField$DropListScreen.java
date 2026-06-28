@@ -7,6 +7,7 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.tid.itie.EventHandler;
 
 class ComboField$DropListScreen extends Screen implements TextInputDialog, TextInputObscuringScreen {
@@ -16,7 +17,7 @@ class ComboField$DropListScreen extends Screen implements TextInputDialog, TextI
    private final ComboField this$0;
 
    public ComboField$DropListScreen(ComboField _1) {
-      super((Manager)(new Object(281474976710656L)), 281474976710656L);
+      super(new VerticalFieldManager(281474976710656L), 281474976710656L);
       this.this$0 = _1;
       this.add(_1._list);
    }
@@ -113,7 +114,7 @@ class ComboField$DropListScreen extends Screen implements TextInputDialog, TextI
             }
 
             if (Ui.isTTSEnabled()) {
-               super.accessibleEventOccurred(6, new Object(1), new Object(2), this.this$0._list);
+               super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this.this$0._list);
             }
 
             return result;
@@ -134,7 +135,7 @@ class ComboField$DropListScreen extends Screen implements TextInputDialog, TextI
             }
          default:
             if (Ui.isTTSEnabled()) {
-               super.accessibleEventOccurred(6, new Object(1), new Object(2), this.this$0._list);
+               super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this.this$0._list);
             }
 
             return EventHandler.getInstance().processNavigationEvent(event, dx, dy, status, time);

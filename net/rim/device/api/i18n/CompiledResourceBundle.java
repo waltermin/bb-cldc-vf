@@ -75,9 +75,9 @@ public class CompiledResourceBundle extends ResourceBundle {
 
       String result;
       try {
-         result = (String)(new Object(this._data, this._offset, length, ENCODINGS[encoding]));
+         result = new String(this._data, this._offset, length, ENCODINGS[encoding]);
       } catch (UnsupportedEncodingException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       }
 
       this._offset += length;

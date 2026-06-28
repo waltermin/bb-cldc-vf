@@ -9,7 +9,7 @@ public final class Float {
    public static final float MIN_VALUE;
 
    public static final String toString(float f) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      return new FloatingDecimal(f).toJavaFormatString();
    }
 
    public static final Float valueOf(String s) {

@@ -12,7 +12,7 @@ import net.rim.device.api.ui.Trackball;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
-import net.rim.device.api.ui.accessibility.AccessibleText;
+import net.rim.device.api.ui.accessibility.AccessibleContextFactory;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
@@ -120,7 +120,7 @@ class SymbolScreen$SymbolField extends Field {
    public AccessibleContext getAccessibleSelectionAt(int index) {
       char focusChar = this.getFocusChar();
       char symbol = (char)this._map.get(Character.toUpperCase(focusChar));
-      return (AccessibleContext)(new Object(String.valueOf(symbol), String.valueOf(focusChar), 22, 4, this, (AccessibleText)(new Object())));
+      return new AccessibleContextFactory(String.valueOf(symbol), String.valueOf(focusChar), 22, 4, this, new TextField());
    }
 
    @Override
@@ -604,7 +604,7 @@ class SymbolScreen$SymbolField extends Field {
       }
 
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
       }
 
       return ret;
@@ -704,7 +704,7 @@ class SymbolScreen$SymbolField extends Field {
             return;
          }
       } else {
-         Object[] params = new Object[]{new Object(this._currentPage + 1), new Object(this._pages.length)};
+         Object[] params = new Object[]{new Integer(this._currentPage + 1), new Integer(this._pages.length)};
          this._pageBuffer.setLength(0);
          this._pageFormatter.format(params, this._pageBuffer, null);
       }

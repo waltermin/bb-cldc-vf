@@ -3,7 +3,7 @@ package net.rim.device.internal.proxy;
 import net.rim.device.api.util.CyclicQueue;
 
 final class RunnableThread extends Thread {
-   private CyclicQueue _queue = (CyclicQueue)(new Object());
+   private CyclicQueue _queue = new CyclicQueue();
 
    final void add(Runnable runnable) {
       synchronized (this._queue) {
@@ -26,7 +26,7 @@ final class RunnableThread extends Thread {
             }
 
             runnable.run();
-         } catch (Throwable var3) {
+         } catch (Throwable var5) {
          }
       }
    }

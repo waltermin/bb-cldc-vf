@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import javax.microedition.io.PushRegistry;
+import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
 import net.rim.device.api.i18n.ResourceBundle;
@@ -23,8 +24,8 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    private String _moduleClassName;
    private boolean _active;
    private boolean _foregroundable = false;
-   private Hashtable _workerThreadMap = (Hashtable)(new Object());
-   private Vector _alarmThreadCache = (Vector)(new Object());
+   private Hashtable _workerThreadMap = new Hashtable();
+   private Vector _alarmThreadCache = new Vector();
    private static final long MIDLETSUITEMAP_ID;
    private static ResourceBundle _resources;
    private static final long MIDLET_ID_MASK;
@@ -86,7 +87,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
 
    @Override
    public void registerAlarm(Runnable r) {
-      this._alarmThreadCache.addElement(new Object(r));
+      this._alarmThreadCache.addElement(new WeakReference(r));
    }
 
    private boolean keepAliveProcess() {
@@ -125,7 +126,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    }
 
    private static void initializePushRegistry(String midletname) {
-      StringBuffer sb = (StringBuffer)(new Object(PushRegistryHelper.MIDLET_PUSH_PROPERTY_NAME_PREFIX));
+      StringBuffer sb = new StringBuffer(PushRegistryHelper.MIDLET_PUSH_PROPERTY_NAME_PREFIX);
       sb.append('n');
       int charindex = sb.length() - 1;
       int i = 1;
@@ -148,7 +149,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
                PushRegistry.registerConnection(connectionUrl, midletClassName, filter);
             } catch (Exception e) {
                removeInstance(midletname, m);
-               throw new Object(e.toString());
+               throw new RuntimeException(e.toString());
             }
          }
 
@@ -159,7 +160,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    @Override
    public void addPushRegistry(String midletname, String connection) {
       PushRegistryHelper prh = PushRegistryHelper.getInstance();
-      prh._weakreferencemap.put(connection, new Object(this));
+      prh._weakreferencemap.put(connection, new WeakReference(this));
       Thread t = new MIDletMain$MIDletPushRegistryWorkerThread(this, connection);
       this._workerThreadMap.put(connection, t);
       if (this.isHandlingEvents()) {
@@ -207,7 +208,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
          if (!this._active) {
             Display display = Display.getDisplay(this._midlet);
             Displayable currentDisplayable = display.getCurrent();
-            if (currentDisplayable != null && currentDisplayable instanceof Object) {
+            if (currentDisplayable != null && currentDisplayable instanceof Canvas) {
                display.setCurrent(currentDisplayable);
                displayNeedsPainting = false;
             }

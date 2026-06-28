@@ -34,7 +34,7 @@ public final class MessageQueue {
          this._processState = state;
          this.updateMaxCapacity();
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -114,7 +114,7 @@ public final class MessageQueue {
          }
       }
 
-      super.notify();
+      this.notify();
       return ok;
    }
 
@@ -212,7 +212,7 @@ public final class MessageQueue {
 
    public final void setMaxCapacity(int max) {
       if (max + 1 < this._maxCapacity) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._maxCapacity = max + 1;
@@ -231,12 +231,12 @@ public final class MessageQueue {
    }
 
    private static final void appendObjType(StringBuffer buff, Object o) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
    public final String toString() {
-      StringBuffer buf = (StringBuffer)(new Object());
+      StringBuffer buf = new StringBuffer();
       this.dumpMessage(buf, this.minusminus(this._start), true);
 
       for (int i = this._start; i != this._end; i = this.plusplus(i)) {

@@ -28,7 +28,7 @@ class BaseRecordEnumeration extends RecordEventGenerator implements RecordEnumer
 
    protected void mustBeValid() {
       if (this._destroyed) {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 

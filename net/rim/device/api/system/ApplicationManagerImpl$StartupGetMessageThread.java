@@ -4,7 +4,7 @@ import net.rim.vm.Message;
 import net.rim.vm.MessageQueue;
 
 class ApplicationManagerImpl$StartupGetMessageThread extends Thread {
-   private MessageQueue _messageQueue = (MessageQueue)(new Object());
+   private MessageQueue _messageQueue = new MessageQueue();
    private boolean _done;
 
    @Override
@@ -17,7 +17,7 @@ class ApplicationManagerImpl$StartupGetMessageThread extends Thread {
       Message.abortGet(this);
 
       try {
-         super.wait();
+         this.wait();
       } catch (InterruptedException var2) {
       }
 

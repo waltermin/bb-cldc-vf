@@ -18,7 +18,7 @@ public class SimpleDateFormat extends DateFormat {
 
    private SimpleDateFormat(Locale locale, boolean localeFixed) {
       if (locale == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._localeFixed = localeFixed;

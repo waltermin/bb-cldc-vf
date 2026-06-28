@@ -13,7 +13,7 @@ public class IntHashtable implements Persistable {
 
    public IntHashtable(int initialCapacity) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (initialCapacity < 1) {
@@ -39,11 +39,11 @@ public class IntHashtable implements Persistable {
    }
 
    public synchronized IntEnumeration keys() {
-      return (IntEnumeration)(new Object(this._key, this._value, this._empty));
+      return new HashtableIntEnumerator(this._key, this._value, this._empty);
    }
 
    public synchronized Enumeration elements() {
-      return (Enumeration)(new Object(this._value, this._empty));
+      return new HashtableObjectEnumerator(this._value, this._empty);
    }
 
    public synchronized boolean contains(Object value) {
@@ -149,7 +149,7 @@ public class IntHashtable implements Persistable {
 
    public synchronized Object put(int key, Object value) {
       if (value == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._numberOfKeys + 1 > this._threshold) {

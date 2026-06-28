@@ -7,7 +7,7 @@ import net.rim.device.api.media.MetaDataObject;
 import net.rim.device.api.media.control.BinaryMetaDataControl;
 
 public class MetaDataControlImpl implements MetaDataControl, BinaryMetaDataControl {
-   private Hashtable _metaData = (Hashtable)(new Object());
+   private Hashtable _metaData = new Hashtable();
    private MetaDataObject[] _binaryObjects = new MetaDataObject[0];
 
    public void put(String key, String value) {
@@ -54,7 +54,7 @@ public class MetaDataControlImpl implements MetaDataControl, BinaryMetaDataContr
          }
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    @Override

@@ -23,7 +23,7 @@ public class MediaRemoteControl {
    }
 
    public static void postPanelEvent(int operation, int action) {
-      Message msg = (Message)(new Object(28, operation, action));
+      Message msg = new Message(28, operation, action);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }

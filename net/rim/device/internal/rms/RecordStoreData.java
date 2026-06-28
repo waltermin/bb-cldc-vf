@@ -22,7 +22,7 @@ public class RecordStoreData implements Persistable {
    public RecordStoreData(String name) {
       this._name = name;
       this._availableId = 1;
-      this._records = (IntHashtable)(new Object());
+      this._records = new IntHashtable();
       this._version = 16777216;
       this.setLastModified();
    }

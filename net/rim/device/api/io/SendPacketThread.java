@@ -4,7 +4,7 @@ import javax.microedition.io.Datagram;
 import net.rim.device.api.util.CyclicQueue;
 
 final class SendPacketThread extends Thread {
-   private CyclicQueue _requests = (CyclicQueue)(new Object(8));
+   private CyclicQueue _requests = new CyclicQueue(8);
 
    @Override
    public final void run() {

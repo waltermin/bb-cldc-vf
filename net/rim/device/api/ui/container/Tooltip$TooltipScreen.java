@@ -2,12 +2,12 @@ package net.rim.device.api.ui.container;
 
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontRegistry;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.UserInputEventListener;
 import net.rim.device.api.ui.XYPoint;
 import net.rim.device.api.ui.XYRect;
+import net.rim.device.internal.ui.HorizontalFieldManager3;
 
 class Tooltip$TooltipScreen extends Screen implements UserInputEventListener {
    private Tooltip _tooltip;
@@ -51,7 +51,7 @@ class Tooltip$TooltipScreen extends Screen implements UserInputEventListener {
    }
 
    public Tooltip$TooltipScreen(Tooltip _1) {
-      super((Manager)(new Object()));
+      super(new HorizontalFieldManager3());
       this.this$0 = _1;
       this.setTag(Tooltip.TAG);
       this.setAcceptsInput(false);

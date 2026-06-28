@@ -65,7 +65,7 @@ public class HTTPDataSource extends DataSource implements SourceStream {
 
    @Override
    public ContentDescriptor getContentDescriptor() {
-      return (ContentDescriptor)(new Object(this._contentType));
+      return new ContentDescriptor(this._contentType);
    }
 
    @Override
@@ -120,7 +120,7 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    @Override
    public Control[] getControls() {
       if (this._buffer == null) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return null;
       }
@@ -129,7 +129,7 @@ public class HTTPDataSource extends DataSource implements SourceStream {
    @Override
    public Control getControl(String controlType) {
       if (this._buffer == null) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return null;
       }

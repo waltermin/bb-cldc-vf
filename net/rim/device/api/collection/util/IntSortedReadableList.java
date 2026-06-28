@@ -36,7 +36,7 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
 
    public int getKey(int offset) {
       if (offset >= this._numElements) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       } else {
          return this._keyArray[offset];
       }
@@ -61,7 +61,7 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
 
          return length;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -211,14 +211,14 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
 
          return length;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
    @Override
    public Object getAt(int offset) {
       if (offset >= this._numElements) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       } else {
          return this._dataArray[offset];
       }
@@ -237,7 +237,7 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
 
    public IntSortedReadableList(IntKeyProviderAdaptor adaptor) {
       if (adaptor == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._keyProvider = adaptor;
@@ -246,7 +246,7 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
    public IntSortedReadableList(CollectionEventSource sourceCollection, IntKeyProviderAdaptor adaptor) {
       this(adaptor);
       if (!(sourceCollection instanceof ReadableList) && !(sourceCollection instanceof ReadableSet)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       sourceCollection.addCollectionListener(this);

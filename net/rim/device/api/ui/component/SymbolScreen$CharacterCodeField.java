@@ -26,7 +26,7 @@ class SymbolScreen$CharacterCodeField extends Field {
    SymbolScreen$CharacterCodeField(SymbolScreen _1, int type, Font font) {
       super(0);
       this.this$0 = _1;
-      this._buf = (StringBuffer)(new Object());
+      this._buf = new StringBuffer();
       this._type = 0;
       this._charCode = -1;
       this._row = -1;

@@ -83,7 +83,7 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
       }
 
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
       }
    }
 

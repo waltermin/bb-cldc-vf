@@ -49,7 +49,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
 
    public int getAddressByHostname(String hostname, DNSListener listener, int apnId) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       DNSRequest req = new DNSRequest(hostname, listener, apnId);
@@ -80,7 +80,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
 
    public int getHostnameByAddress(byte[] ipAddr, DNSListener listener, int apnId) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       DNSRequest req = new DNSRequest(ipAddr, listener, apnId);
@@ -113,7 +113,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
 
    public int doQuery(DNSRequest req) {
       if (req.getListener() == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this.prepRequest(req, false);
@@ -150,7 +150,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
             DNSMessageIPv4 answer;
             try {
                answer = new DNSMessageIPv4();
-               answer.readMessage((DataBuffer)(new Object(data, 0, data.length, true)));
+               answer.readMessage(new DataBuffer(data, 0, data.length, true));
             } catch (EOFException e) {
                return;
             }
@@ -196,7 +196,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
          case 0:
          default:
             this._cache.addToCache(req);
-            results = (Vector)(new Object());
+            results = new Vector();
             req.setStatus(10);
             boolean cnameSpecified = false;
             int desiredType = req.getQueryType() == 1 ? 1 : 12;
@@ -314,7 +314,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
 
    private void doRawQuery(DNSRequest req) {
       while (true) {
-         DataBuffer buffer = (DataBuffer)(new Object(true));
+         DataBuffer buffer = new DataBuffer(true);
          DNSMessageIPv4Question question = (DNSMessageIPv4Question)req.getQuery().getQuestions().elementAt(0);
          String name = req.getQueryString();
          if (req.isFlagSet(1)) {
@@ -350,7 +350,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
                   EventLogger.logEvent(1197736374800106759L, 1415082868, 3);
                   this.failRequest(req, -100 + currentPacketID);
                }
-            } catch (RadioException var10) {
+            } catch (RadioException var11) {
                EventLogger.logEvent(1197736374800106759L, 1415082868, 2);
                this.failRequest(req, -3);
             }
@@ -381,7 +381,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
       }
 
       if (results != null) {
-         v = (Vector)(new Object(results.length));
+         v = new Vector(results.length);
 
          for (int i = 0; i < results.length; i++) {
             v.addElement(results[i]);
@@ -564,7 +564,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private UDPPacketHeader makeUDPPacketHeader(byte[] destAddr, int srcPort, int apn) {
-      UDPPacketHeader udpHeader = (UDPPacketHeader)(new Object());
+      UDPPacketHeader udpHeader = new UDPPacketHeader();
       udpHeader.setDestinationAddress(destAddr);
       udpHeader.setSourcePort(srcPort);
       udpHeader.setDestinationPort(53);

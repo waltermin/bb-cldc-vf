@@ -1,5 +1,6 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
 import net.rim.vm.Array;
 
 public class ByteVector implements Persistable {
@@ -101,16 +102,16 @@ public class ByteVector implements Persistable {
    }
 
    public int lastIndexOf(byte elem, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public byte elementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public byte firstElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[0];
       }
@@ -118,22 +119,22 @@ public class ByteVector implements Persistable {
 
    public byte lastElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[this.elementCount - 1];
       }
    }
 
    public void setElementAt(byte obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void removeElementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void insertElementAt(byte obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void addElement(byte obj) {

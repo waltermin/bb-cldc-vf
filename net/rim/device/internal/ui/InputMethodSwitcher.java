@@ -8,11 +8,11 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FocusChangeListener;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.container.PopupScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.vm.TraceBack;
 
@@ -85,7 +85,7 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    public InputMethodSwitcher(Locale[] inputLocales, String[] inputLocalesNames, boolean startedFromMenu, Runnable onExit) {
-      super((Manager)(new Object(299067162755072L)), 0);
+      super(new VerticalFieldManager(299067162755072L), 0);
       this._startedFromMenu = startedFromMenu;
       if (this._startedFromMenu) {
          InputContext.getInstance().setIMSwitchEnabled(false);
@@ -96,7 +96,7 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
       this._app.addGlobalEventListener(this);
       this._imNames = inputLocalesNames;
       this._imLocales = inputLocales;
-      this._listField = (ListField)(new Object(this._imLocales.length, 8));
+      this._listField = new ListField(this._imLocales.length, 8);
       this._listField.setCallback(this);
       this._listField.setFocusListener(this);
       this.add(this._listField);

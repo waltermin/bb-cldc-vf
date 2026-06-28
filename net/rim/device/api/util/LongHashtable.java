@@ -13,7 +13,7 @@ public class LongHashtable implements Persistable {
 
    public LongHashtable(int initialCapacity) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (initialCapacity < 1) {
@@ -55,11 +55,11 @@ public class LongHashtable implements Persistable {
    }
 
    public synchronized Enumeration elements() {
-      return (Enumeration)(new Object(this._value, this._empty));
+      return new HashtableObjectEnumerator(this._value, this._empty);
    }
 
    public synchronized void resetElements(Enumeration e) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      ((HashtableObjectEnumerator)e).resetEnumeration(this._value, this._empty);
    }
 
    public synchronized boolean contains(Object value) {
@@ -166,7 +166,7 @@ public class LongHashtable implements Persistable {
 
    public synchronized Object put(long key, Object value) {
       if (value == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._numberOfKeys + 1 > this._threshold) {

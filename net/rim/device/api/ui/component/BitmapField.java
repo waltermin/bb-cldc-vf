@@ -131,18 +131,18 @@ public class BitmapField extends Field implements DrawStyle {
    @Override
    protected void paint(Graphics graphics) {
       int oldDecodeMode = 0;
-      boolean var6 = false /* VF: Semaphore variable */;
+      boolean var7 = false /* VF: Semaphore variable */;
 
       label102: {
          try {
-            var6 = true;
+            var7 = true;
             Bitmap bitmap = null;
             if (this._image != null) {
                oldDecodeMode = this._image.getDecodeMode();
                int bitmapType = this._image.getBitmapType(0);
                if (bitmapType != 129 && bitmapType != 1) {
                   this.paintImage(graphics, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), this._image, 0, 0, 0);
-                  var6 = false;
+                  var7 = false;
                   break label102;
                }
 
@@ -157,16 +157,16 @@ public class BitmapField extends Field implements DrawStyle {
             if (bitmap != null) {
                if (this.isStyle(65536) && Graphics.isColor() && bitmap.getType() == 129 && bitmap.hasAlpha()) {
                   graphics.rop(-96, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), bitmap, 0, 0);
-                  var6 = false;
+                  var7 = false;
                } else {
                   this.paintBitmap(graphics, this._x, this._y, this.getBitmapWidth(), this.getBitmapHeight(), bitmap, 0, 0);
-                  var6 = false;
+                  var7 = false;
                }
             } else {
-               var6 = false;
+               var7 = false;
             }
          } finally {
-            if (var6) {
+            if (var7) {
                if (this._image != null) {
                   this._image.setDecodeMode(oldDecodeMode);
                }

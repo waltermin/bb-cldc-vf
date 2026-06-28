@@ -228,7 +228,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
    public void setIndentWidth(int indent) {
       if (indent < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._indent = indent;
@@ -333,11 +333,11 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       if (expanding) {
          this.showDescendants(this._focusNode);
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(1, new Object(1024), new Object(512), this);
+            super.accessibleEventOccurred(1, new Integer(1024), new Integer(512), this);
             return true;
          }
       } else if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(1, new Object(512), new Object(1024), this);
+         super.accessibleEventOccurred(1, new Integer(512), new Integer(1024), this);
       }
 
       return true;
@@ -414,7 +414,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
       this._focusNode = node;
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
       }
    }
 
@@ -456,7 +456,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
          }
 
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+            super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
          }
 
          return 0;
@@ -487,7 +487,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
       }
 
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
       }
 
       super.onFocus(direction);

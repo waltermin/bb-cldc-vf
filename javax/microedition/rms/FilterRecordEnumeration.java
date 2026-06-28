@@ -26,7 +26,7 @@ class FilterRecordEnumeration extends BaseRecordEnumeration {
                   super._recordIds[dest++] = recordId;
                }
             }
-         } catch (InvalidRecordIDException var6) {
+         } catch (InvalidRecordIDException var7) {
          }
 
          Array.resize(super._recordIds, dest);
@@ -50,7 +50,7 @@ class FilterRecordEnumeration extends BaseRecordEnumeration {
                super._recordIds[count] = recordID;
                this.notifyRecordAdded(recordStore, recordID);
             }
-         } catch (InvalidRecordIDException var5) {
+         } catch (InvalidRecordIDException var6) {
          }
       }
    }
@@ -76,7 +76,7 @@ class FilterRecordEnumeration extends BaseRecordEnumeration {
             } else if (index < count) {
                this.recordDeleted(recordStore, recordID);
             }
-         } catch (InvalidRecordIDException var7) {
+         } catch (InvalidRecordIDException var8) {
          }
       }
    }

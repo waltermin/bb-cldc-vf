@@ -7,6 +7,7 @@ import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.accessibility.AccessibleText;
 import net.rim.device.api.ui.accessibility.AccessibleValue;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.device.api.ui.menu.MenuItemPrefab;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
@@ -17,6 +18,7 @@ import net.rim.device.internal.ui.Background;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.Cursor;
 import net.rim.tid.awt.Event;
+import net.rim.tid.awt.event.ComponentEvent;
 import net.rim.tid.awt.event.FocusEvent;
 import net.rim.tid.awt.event.InputMethodEvent;
 import net.rim.tid.awt.im.InputContext;
@@ -26,8 +28,8 @@ import net.rim.tid.itie.IComponent;
 
 public class Field implements IComponent, AccessibleContext {
    private Manager _manager;
-   private XYRect _extent = (XYRect)(new Object());
-   private XYRect _content = (XYRect)(new Object());
+   private XYRect _extent = new XYRect();
+   private XYRect _content = new XYRect();
    private Object _cookie;
    private int _index = -1;
    private long _style;
@@ -318,9 +320,9 @@ public class Field implements IComponent, AccessibleContext {
       if (action == 1
          && screen != null
          && screen.isDisplayed()
-         && !(screen instanceof Object)
+         && !(screen instanceof TextInputDialog)
          && screen.isScreenFocus()
-         && (this instanceof Object || !(this instanceof Object))) {
+         && (this instanceof Screen || !(this instanceof Manager))) {
          EventHandler.getInstance().focusGained(this, (int)System.currentTimeMillis(), Application.getApplication().getProcessId());
       }
 
@@ -380,7 +382,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public final XYRect getContentRect() {
-      return (XYRect)(new Object(this._content));
+      return new XYRect(this._content);
    }
 
    public final void getContentRect(XYRect rect) {
@@ -420,7 +422,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public String getDebugTree(int treeStyle) {
-      StringBuffer buffer = (StringBuffer)(new Object());
+      StringBuffer buffer = new StringBuffer();
       this.getDebugTreeHelper(treeStyle, buffer, 0);
       return buffer.toString();
    }
@@ -719,7 +721,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected boolean keyChar(char character, int status, int time) {
-      if (this.isSelecting() && !(this instanceof Object)) {
+      if (this.isSelecting() && !(this instanceof Manager)) {
          switch (character) {
             case '\b':
             case '\u007f':
@@ -854,7 +856,7 @@ public class Field implements IComponent, AccessibleContext {
       this.applyThemeOnStateChange();
       if (Ui.isTTSEnabled()) {
          this.addAccessibleState(2);
-         this.accessibleEventOccurred(1, null, new Object(2), this);
+         this.accessibleEventOccurred(1, null, new Integer(2), this);
       }
    }
 
@@ -1060,7 +1062,7 @@ public class Field implements IComponent, AccessibleContext {
       if (this.isFocus() && this.getInputContext() != null) {
          boolean isInputComponent = this.getInputContext().getInputComponent() == this;
          if (editable != isInputComponent) {
-            FocusEvent updateFocus = (FocusEvent)(new Object(this, 1004, Event.FOCUS_EVENT_MASK, 0));
+            FocusEvent updateFocus = new FocusEvent(this, 1004, Event.FOCUS_EVENT_MASK, 0);
             this.dispatchEvent(updateFocus);
          }
       }
@@ -1273,7 +1275,7 @@ public class Field implements IComponent, AccessibleContext {
    @Override
    public void dispatchEvent(Event rEvent) {
       if (this.isState(64)) {
-         if (rEvent instanceof Object) {
+         if (rEvent instanceof ComponentEvent) {
             InputContext ic = this.getInputContext();
             if (ic != null) {
                ic.dispatchEvent(rEvent);
@@ -1440,7 +1442,7 @@ public class Field implements IComponent, AccessibleContext {
       }
 
       if (!this.validateFieldStyle(style)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._style = style;

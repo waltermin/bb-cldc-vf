@@ -7,8 +7,8 @@ public class Graphics {
    private net.rim.device.api.ui.Graphics _peer;
    private Font _font;
    private int _strokeStyle = 0;
-   private XYRect _clipRect = (XYRect)(new Object());
-   private XYPoint _translation = (XYPoint)(new Object());
+   private XYRect _clipRect = new XYRect();
+   private XYPoint _translation = new XYPoint();
    private int[] _xPts4 = new int[4];
    private int[] _yPts4 = new int[4];
    private int[] _xPts3 = new int[3];
@@ -156,7 +156,7 @@ public class Graphics {
    }
 
    public synchronized void clipRect(int x, int y, int width, int height) {
-      XYRect newClip = (XYRect)(new Object(x, y, width, height));
+      XYRect newClip = new XYRect(x, y, width, height);
       this._clipRect.intersect(newClip);
       this.updateClipAndOffset();
    }
@@ -196,7 +196,7 @@ public class Graphics {
 
    public synchronized void drawString(String str, int x, int y, int anchor) {
       if (str == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this.validateTextAnchor(anchor);
@@ -228,7 +228,7 @@ public class Graphics {
 
    private int translateAnchorToDrawStyle(int anchor) {
       if ((anchor & -128) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int flags;
@@ -244,7 +244,7 @@ public class Graphics {
             flags = 8;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       switch (anchor & 13) {
@@ -256,13 +256,13 @@ public class Graphics {
          case 8:
             return flags | 5;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 
    private void validateTextAnchor(int anchor) {
       if ((anchor & -128) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -276,7 +276,7 @@ public class Graphics {
          case 8:
             return x - width;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 
@@ -290,7 +290,7 @@ public class Graphics {
          case 64:
             return 8;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 
@@ -310,7 +310,7 @@ public class Graphics {
             this._peer.drawText(data, offset, length, x, y, flags, width);
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -328,7 +328,7 @@ public class Graphics {
             x -= width;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       switch (anchor & 114) {
@@ -342,7 +342,7 @@ public class Graphics {
             y -= height;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       this._peer.drawBitmap(x, y, width, height, img.getBitmap(), 0, 0);
@@ -362,7 +362,7 @@ public class Graphics {
             result = x_dest - rectRight;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       return result;
@@ -382,7 +382,7 @@ public class Graphics {
             result = y_dest - rectBottom;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       return result;
@@ -394,7 +394,7 @@ public class Graphics {
 
    public synchronized void copyArea(int x_src, int y_src, int width, int height, int x_dest, int y_dest, int anchor) {
       if (this._image == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (x_src + this._translation.x >= 0
@@ -414,7 +414,7 @@ public class Graphics {
                dx -= width;
                break;
             default:
-               throw new Object();
+               throw new IllegalArgumentException();
          }
 
          switch (anchor & 114) {
@@ -428,12 +428,12 @@ public class Graphics {
                dy -= height;
                break;
             default:
-               throw new Object();
+               throw new IllegalArgumentException();
          }
 
          this._peer.copyArea(x_src, y_src, width, height, dx, dy);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -461,7 +461,7 @@ public class Graphics {
             this._peer.drawRGB(rgbData, offset, scanlength, x, y, width, height);
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 

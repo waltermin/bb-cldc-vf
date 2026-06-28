@@ -45,7 +45,7 @@ public final class StreamingNatives {
       try {
          return readBuffer0(handle, data, startOffset, length);
       } catch (IOException e) {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 
@@ -65,7 +65,7 @@ public final class StreamingNatives {
       try {
          return writeBuffer0(handle, data, startOffset, length);
       } catch (IOException e) {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 

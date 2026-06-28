@@ -260,7 +260,7 @@ public final class NotificationsManager implements NotificationsConstants {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
       NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesByObject.get(source);
       if (wrapper == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return wrapper._id;
       }
@@ -270,7 +270,7 @@ public final class NotificationsManager implements NotificationsConstants {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
       NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesById.get(sourceID);
       if (wrapper == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return wrapper._level;
       }
@@ -280,7 +280,7 @@ public final class NotificationsManager implements NotificationsConstants {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
       NotificationsManager$Wrapper wrapper = (NotificationsManager$Wrapper)_sourcesByObject.get(source);
       if (wrapper == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return wrapper._level;
       }

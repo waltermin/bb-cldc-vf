@@ -62,7 +62,7 @@ public final class PNGEncodedImage extends EncodedImage {
    @Override
    public final int getAlphaType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if ((super._decodeMode & 1) != 0 && this.getFrameTransparency(frameIndex)) {
@@ -86,7 +86,7 @@ public final class PNGEncodedImage extends EncodedImage {
    @Override
    final Bitmap getBitmapImpl(int frameIndex) {
       if (frameIndex != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       boolean readonly = (super._decodeMode & 4) != 0;
@@ -94,10 +94,10 @@ public final class PNGEncodedImage extends EncodedImage {
       int alphaType = this.getAlphaType(frameIndex);
       int width = this.getScaledWidth();
       int height = this.getScaledHeight();
-      Bitmap bitmap = (Bitmap)(new Object(type, width, height, null, readonly, false));
+      Bitmap bitmap = new Bitmap(type, width, height, null, readonly, false);
       Bitmap alpha = null;
       if (alphaType != 0) {
-         alpha = (Bitmap)(new Object(alphaType, width, height, null, readonly, false));
+         alpha = new Bitmap(alphaType, width, height, null, readonly, false);
       }
 
       this.getPNGImage(bitmap, alpha, super._scaleX, super._scaleY, -1, super._decodeSteps, super._decodeMode);
@@ -108,7 +108,7 @@ public final class PNGEncodedImage extends EncodedImage {
    @Override
    public final int getBitmapType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 2) == 0 && this._pngInfo.colourType == 0 && this._pngInfo.bitDepth == 1
             ? Bitmap.DEFAULT_TYPE & 128 | 0 | 1

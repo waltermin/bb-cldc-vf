@@ -2,6 +2,7 @@ package net.rim.tid.itie;
 
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.device.internal.ui.UiSettings;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.FocusEvent;
@@ -177,7 +178,7 @@ public final class EventHandler {
 
    private final void focusLost0(IComponent src, int time, int appID) {
       this.fillFocusHistory(appID, src, false);
-      if (src instanceof Object) {
+      if (src instanceof TextInputDialog) {
          InputContext.getInstance().endComposition();
       } else {
          IComponent registeredInputComponent = InputContext.getInstance().getInputComponent();

@@ -60,7 +60,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
          case 8:
          case 15:
             if (performComplete) {
-               throw new Object(field);
+               throw new ArrayIndexOutOfBoundsException(field);
             }
 
             return 0;
@@ -103,7 +103,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
          case 3:
          case 4:
          case 8:
-            throw new Object(field);
+            throw new ArrayIndexOutOfBoundsException(field);
          case 0:
          default:
             this._eraVal = value;
@@ -252,7 +252,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
             switch (field) {
                case 4:
                case 8:
-                  throw new Object();
+                  throw new IllegalArgumentException();
                case 5:
                case 6:
                case 7:
@@ -311,7 +311,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
             case 3:
             case 4:
             case 8:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 2:
                int mon = (this._monthVal + amount) % 12;
                if (mon < 0) {
@@ -479,7 +479,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
          case 3:
          case 4:
          case 8:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             if (this._eraStamp != 0) {

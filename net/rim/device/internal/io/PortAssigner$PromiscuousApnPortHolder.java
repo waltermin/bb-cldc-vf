@@ -1,6 +1,9 @@
 package net.rim.device.internal.io;
 
 import java.util.Vector;
+import net.rim.device.api.io.IOPortAlreadyBoundException;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioStatusListener;
@@ -76,7 +79,7 @@ final class PortAssigner$PromiscuousApnPortHolder implements RadioStatusListener
 
                this.triggerPromiscuousPortsRegistration(apnName);
                return;
-            } catch (Exception var9) {
+            } catch (Exception var11) {
                return;
             }
          default:
@@ -87,7 +90,52 @@ final class PortAssigner$PromiscuousApnPortHolder implements RadioStatusListener
    }
 
    private final void registerPromiscuousPort(int port, Object connection) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      Vector v = (Vector)this.get(port);
+      boolean firstClient = false;
+      if (v == null) {
+         firstClient = true;
+      } else if (v.size() > 0) {
+         WeakReference wk = (WeakReference)v.elementAt(0);
+         if (wk == null || wk.get() == null) {
+            this.deregisterPromiscuousPort(port, connection);
+            firstClient = this.getClients(port) <= 0;
+         }
+      }
+
+      if (firstClient) {
+         v = new Vector(2);
+         v.addElement(new WeakReference(connection));
+         this.put(port, v);
+      }
+
+      if (this.getClients(port) > 0) {
+         try {
+            ControlledAccess.assertRRISignatures(true);
+         } catch (ControlledAccessException cae) {
+            throw new IOPortAlreadyBoundException(PortAssigner.PORT_ALREADY_BOUND_ERROR_STRING + port);
+         }
+      }
+
+      this.addClient(port);
+      v.setElementAt(new WeakReference(connection), 0);
+      if (this.getClients(port) <= 1) {
+         Object[] apns = null;
+         synchronized (this._activeApns) {
+            if (this._activeApns.length <= 0) {
+               return;
+            }
+
+            apns = new Object[this._activeApns.length];
+            System.arraycopy(this._activeApns, 0, apns, 0, this._activeApns.length);
+         }
+
+         for (int i = apns.length - 1; i >= 0; i--) {
+            String apn = (String)apns[i];
+            if (this.this$0.registerConnection(port, connection, apn, false) && v.indexOf(apn) < 0) {
+               v.addElement(apn);
+            }
+         }
+      }
    }
 
    private final void deregisterPromiscuousPort(int port, Object connection) {

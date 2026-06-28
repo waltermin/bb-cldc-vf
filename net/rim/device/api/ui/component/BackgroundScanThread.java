@@ -43,7 +43,7 @@ class BackgroundScanThread extends Thread {
          this._headIndex = 0;
       }
 
-      super.notify();
+      this.notify();
    }
 
    private synchronized Runnable get() {
@@ -57,7 +57,7 @@ class BackgroundScanThread extends Thread {
                return null;
             }
 
-            super.wait(delta);
+            this.wait(delta);
          } catch (InterruptedException var6) {
          } catch (Exception var7) {
          }

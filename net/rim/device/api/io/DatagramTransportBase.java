@@ -42,7 +42,7 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
       synchronized (this._superConnections) {
          this._superConnectionsPurge = WeakReferenceUtilities.incrementalWRArrayPurge(this._superConnectionsPurge, this._superConnections);
          ((DatagramConnectionBase)connection).setTrafficLogger(super._tLogger);
-         Arrays.add(this._superConnections, new Object(connection));
+         Arrays.add(this._superConnections, new WeakReference(connection));
       }
    }
 
@@ -172,7 +172,7 @@ public class DatagramTransportBase extends TransportBase implements GlobalEventL
    protected void addDgramId(DatagramStatusListener listener, int datagramId, int subId) {
       if (listener != null) {
          synchronized (this._dgsls) {
-            this._dgsls[this._nextIdIndex] = (WeakReference)(new Object(listener));
+            this._dgsls[this._nextIdIndex] = new WeakReference(listener);
             this._datagramIds[this._nextIdIndex] = datagramId;
             this._subIds[this._nextIdIndex] = subId;
             this._nextIdIndex++;

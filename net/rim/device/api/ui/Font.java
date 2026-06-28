@@ -185,12 +185,12 @@ public class Font {
          }
 
          if (offset < 0 || length < 0 || offset + length > tLength) {
-            throw new Object();
+            throw new IllegalArgumentException();
          } else {
             return tLength == 0 ? 0 : this._getAdvance(text, offset, length);
          }
       } else if ((offset != 0 || length != 0) && length != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return 0;
       }
@@ -205,12 +205,12 @@ public class Font {
          }
 
          if (offset < 0 || length < 0 || offset + length > text.length) {
-            throw new Object();
+            throw new IllegalArgumentException();
          } else {
             return text.length == 0 ? 0 : this._getAdvance(text, offset, length);
          }
       } else if ((offset != 0 || length != 0) && length != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return 0;
       }
@@ -441,13 +441,13 @@ public class Font {
       if (family != null && size != 0) {
          FontRegistry.setDefaultFont(family, style, size, units);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public String getCopyright() {
@@ -461,7 +461,7 @@ public class Font {
    public String getName(int aNameCode) {
       char[] s = new char[0];
       this.getName(s, aNameCode);
-      return (String)(new Object(s));
+      return new String(s);
    }
 
    private native void getName(char[] var1, int var2);

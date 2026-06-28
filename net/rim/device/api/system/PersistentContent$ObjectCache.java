@@ -6,7 +6,7 @@ import net.rim.device.api.memorycleaner.MemoryCleanerListener;
 import net.rim.device.api.util.IntHashtable;
 
 final class PersistentContent$ObjectCache implements MemoryCleanerListener {
-   private IntHashtable _hashtable = (IntHashtable)(new Object(131));
+   private IntHashtable _hashtable = new IntHashtable(131);
    private int[] _hashes = new int[131];
    private int _victim;
    private static final int SIZE;

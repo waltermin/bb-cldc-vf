@@ -6,13 +6,13 @@ import net.rim.device.internal.proxy.Proxy;
 import net.rim.vm.WeakReference;
 
 public class EventListenerManager {
-   private Vector _listeners = (Vector)(new Object());
-   private Vector _applications = (Vector)(new Object());
-   private Vector _eventNotifications = (Vector)(new Object());
+   private Vector _listeners = new Vector();
+   private Vector _applications = new Vector();
+   private Vector _eventNotifications = new Vector();
    private Thread _eventNotificationsThread;
    private boolean _eventNotificationsThreadRunning;
    private Application _proxy = Proxy.getInstance();
-   private WeakReference _proxyWR = (WeakReference)(new Object(this._proxy));
+   private WeakReference _proxyWR = new WeakReference(this._proxy);
    private int _proxyProcessID = this._proxy.getProcessId();
 
    public synchronized void add(Object listener, boolean weakListener) {
@@ -33,12 +33,12 @@ public class EventListenerManager {
 
    public synchronized void update(Object listener, Event event) {
       if (event == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       WeakReference callersApplicationWR;
       try {
-         callersApplicationWR = (WeakReference)(new Object(Application.getApplication()));
+         callersApplicationWR = new WeakReference(Application.getApplication());
       } catch (IllegalStateException e) {
          callersApplicationWR = this._proxyWR;
       }
@@ -53,12 +53,12 @@ public class EventListenerManager {
 
    public synchronized void update(Event event) {
       if (event == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       WeakReference callersApplicationWR;
       try {
-         callersApplicationWR = (WeakReference)(new Object(Application.getApplication()));
+         callersApplicationWR = new WeakReference(Application.getApplication());
       } catch (IllegalStateException e) {
          callersApplicationWR = this._proxyWR;
       }

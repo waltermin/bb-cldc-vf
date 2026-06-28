@@ -220,7 +220,7 @@ public final class Ui {
       try {
          return (DrawTextParam)_tmpDrawStack.pop();
       } catch (EmptyStackException e) {
-         return (DrawTextParam)(new Object());
+         return new DrawTextParam();
       }
    }
 
@@ -236,7 +236,7 @@ public final class Ui {
       try {
          return (XYRect)_tmpXYRectStack.pop();
       } catch (EmptyStackException e) {
-         return (XYRect)(new Object());
+         return new XYRect();
       }
    }
 
@@ -277,14 +277,14 @@ public final class Ui {
       if (mode >= 0 && 2 >= mode) {
          UiOptionsRegistry.getInstance().setInt(-7317849688793253196L, mode);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public static final void setIncreaseDirection(int direction) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
       if (direction != -1 && direction != 1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       UiOptionsRegistry registry = UiOptionsRegistry.getInstance();

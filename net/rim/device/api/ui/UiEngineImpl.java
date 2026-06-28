@@ -2,6 +2,7 @@ package net.rim.device.api.ui;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.DeviceInfo;
@@ -15,6 +16,7 @@ import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.internal.system.MessageListener;
 import net.rim.device.internal.system.UnhandledGlobalKeyListener;
 import net.rim.device.internal.ui.BackingStore;
+import net.rim.device.internal.ui.MIDletApplication;
 import net.rim.device.internal.ui.UiInternalListener;
 import net.rim.vm.Message;
 import net.rim.vm.Monitor;
@@ -22,11 +24,11 @@ import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
 final class UiEngineImpl implements GlobalEventListener, HolsterListener, MessageListener, SystemListener2, UiEngine {
-   private UiEngineImpl$ScreenList _screenList;
+   private UiEngineImpl$ScreenList _screenList = new UiEngineImpl$ScreenList(this);
    private Screen _inputScreen;
-   private XYRect _appInvalid;
+   private XYRect _appInvalid = new XYRect();
    private boolean _somethingInvalid;
-   private XYRect _fullScreenRect;
+   private XYRect _fullScreenRect = new XYRect(0, 0, Display.getWidth(), Display.getHeight());
    private UiEngineImpl$BottomScreen _bottomScreen;
    private int _suspendPainting;
    private Application _app;
@@ -34,10 +36,10 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    private boolean _isInPopScreen;
    private Object[] _uiEngineListener;
    private Object[] _userInputEventListener;
-   private GlobalRepaintNotifier _globalRepaintNotifier;
-   Graphics _fbGraphics;
-   private int _stylusX;
-   private int _stylusY;
+   private GlobalRepaintNotifier _globalRepaintNotifier = new GlobalRepaintNotifier();
+   Graphics _fbGraphics = new Graphics();
+   private int _stylusX = -1;
+   private int _stylusY = -1;
    static final boolean DEBUG_PAINT;
    private static final int NO_PAINT_WATERMARK;
    static int _layoutGeneration;
@@ -1176,5 +1178,27 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    private UiEngineImpl(Application app) {
+      this._app = app;
+      if (app instanceof MIDletApplication) {
+         this._isMidlet = true;
+      }
+
+      app.setMessageListener(this);
+      app.addGlobalEventListenerInternal(this);
+      app.addHolsterListener(this);
+      if ((Display.getProperties() & 16384) != 0) {
+         app.addSystemListener(this);
+      }
+
+      this._bottomScreen = new UiEngineImpl$BottomScreen();
+      this._bottomScreen.setUiEngine(this);
+      this._bottomScreen.doLayout();
+      if (app.isForeground() && ((ApplicationProcess)Process.getProcess(app.getProcessId())).acceptsForeground()) {
+         GlobalScreenManager.setForegroundEngine(this);
+      }
+
+      synchronized (GlobalScreenManager.getLock()) {
+         this._screenList.copyGlobalScreens();
+      }
    }
 }

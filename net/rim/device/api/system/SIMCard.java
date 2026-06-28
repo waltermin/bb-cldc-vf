@@ -228,7 +228,7 @@ public final class SIMCard {
          return null;
       }
 
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
       int mncPoint = 4;
       int mcc = 0;
 
@@ -260,7 +260,7 @@ public final class SIMCard {
          return null;
       }
 
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
 
       for (int i = 0; i < iccid.length; i++) {
          int bcdDigit = iccid[i] & 15;
@@ -477,7 +477,7 @@ public final class SIMCard {
          openAPDUConnection(null, tag, fcpResponseType);
       } else {
          if (aid.length - offset < aidlen) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          openAPDUConnection(Arrays.copy(aid, offset, aidlen), tag, fcpResponseType);

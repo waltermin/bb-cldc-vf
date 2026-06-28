@@ -19,7 +19,7 @@ public final class USBPort extends IOPort {
 
    public USBPort(int channel) {
       assertPermission();
-      this._usbPortInternal = (USBPortInternal)(new Object(channel));
+      this._usbPortInternal = new USBPortInternal(channel);
    }
 
    @Override

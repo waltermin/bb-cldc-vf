@@ -49,7 +49,7 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
    public synchronized Enumeration elements() {
       Enumeration enumeration = super.elements();
       if (this._protected) {
-         enumeration = (Enumeration)(new Object(enumeration));
+         enumeration = new ContentProtectedEnumeration(enumeration);
       }
 
       return enumeration;
@@ -80,7 +80,7 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
 
    @Override
    public synchronized int lastIndexOf(Object elem, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override

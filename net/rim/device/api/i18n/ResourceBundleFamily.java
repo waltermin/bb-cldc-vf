@@ -6,6 +6,7 @@ import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.CodeSigningKey;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.vm.TraceBack;
@@ -15,7 +16,7 @@ public class ResourceBundleFamily extends ResourceBundle {
    private final String _name;
    private CodeSigningKey _key;
    private String _module;
-   private Hashtable _table = (Hashtable)(new Object());
+   private Hashtable _table = new Hashtable();
    private ResourceBundle _bundleFallback;
    private ResourceBundle _bundleSystem;
    private ResourceBundle _bundleApp;
@@ -110,7 +111,7 @@ public class ResourceBundleFamily extends ResourceBundle {
    }
 
    private synchronized ResourceBundle getInstance(Locale locale) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    void onModuleLoad() {
@@ -130,13 +131,13 @@ public class ResourceBundleFamily extends ResourceBundle {
 
    public synchronized void put(Locale locale, ResourceBundle bundle) {
       if (this._key != null && !ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), this._key)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
 
       if (this._module == null) {
          this.setModule(ApplicationDescriptor.currentApplicationDescriptor().getModuleName());
       } else if (!ApplicationDescriptor.currentApplicationDescriptor().getModuleName().startsWith(this._module)) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       Locale localeParent = locale.getParent();

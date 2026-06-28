@@ -21,13 +21,13 @@ public class CryptoByteArrayArithmetic {
 
          return true;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public static boolean isZero(byte[] a) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return isZero(a, 0, a.length);
       }
@@ -48,13 +48,13 @@ public class CryptoByteArrayArithmetic {
 
          return true;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public static boolean isOne(byte[] a) {
       if (a == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return isOne(a, 0, a.length);
       }
@@ -62,7 +62,7 @@ public class CryptoByteArrayArithmetic {
 
    public static int findFirstNonZeroByte(byte[] a, int offset, int length) {
       if (a == null || length < 0 || offset < 0 || a.length - length < offset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (length != 0 && a.length != 0 && offset <= a.length) {
@@ -85,7 +85,7 @@ public class CryptoByteArrayArithmetic {
       try {
          return compare(a, 0, a.length, b, 0, b.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -95,7 +95,7 @@ public class CryptoByteArrayArithmetic {
       try {
          multiplyByTwo(a, 0, a.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -105,7 +105,7 @@ public class CryptoByteArrayArithmetic {
       try {
          multiplyByTwo(a, 0, a.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -115,7 +115,7 @@ public class CryptoByteArrayArithmetic {
       try {
          divideByTwo(a, 0, a.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -125,7 +125,7 @@ public class CryptoByteArrayArithmetic {
       try {
          divideByTwo(a, 0, a.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -137,7 +137,7 @@ public class CryptoByteArrayArithmetic {
       try {
          add(a, 0, a.length, b, 0, b.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -147,7 +147,7 @@ public class CryptoByteArrayArithmetic {
       try {
          add(a, 0, a.length, b, 0, b.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -159,7 +159,7 @@ public class CryptoByteArrayArithmetic {
       try {
          subtract(a, 0, a.length, b, 0, b.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -169,7 +169,7 @@ public class CryptoByteArrayArithmetic {
       try {
          subtract(a, 0, a.length, b, 0, b.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -181,7 +181,7 @@ public class CryptoByteArrayArithmetic {
       try {
          multiply(a, 0, a.length, b, 0, b.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -191,7 +191,7 @@ public class CryptoByteArrayArithmetic {
       try {
          multiply(a, 0, a.length, b, 0, b.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -201,7 +201,7 @@ public class CryptoByteArrayArithmetic {
       try {
          square(a, 0, a.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -211,7 +211,7 @@ public class CryptoByteArrayArithmetic {
       try {
          square(a, 0, a.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -221,7 +221,7 @@ public class CryptoByteArrayArithmetic {
       try {
          mod(a, 0, a.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -231,7 +231,7 @@ public class CryptoByteArrayArithmetic {
       try {
          mod(a, 0, a.length, log2modulus, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -241,7 +241,7 @@ public class CryptoByteArrayArithmetic {
       try {
          invert(a, 0, a.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -251,7 +251,7 @@ public class CryptoByteArrayArithmetic {
       try {
          gcd(a, 0, a.length, b, 0, b.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -283,7 +283,7 @@ public class CryptoByteArrayArithmetic {
       try {
          exponent(base, 0, base.length, exponent, 0, exponent.length, modulus, 0, modulus.length, result, 0, result.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -293,7 +293,7 @@ public class CryptoByteArrayArithmetic {
       try {
          add(a, aOffset, aLength, ONE, 0, 1, modulus, modulusOffset, modulusLength, result, resultOffset, resultLength);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -305,7 +305,7 @@ public class CryptoByteArrayArithmetic {
       try {
          add(a, aOffset, aLength, ONE, 0, 1, log2modulus, result, resultOffset, resultLength);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -319,7 +319,7 @@ public class CryptoByteArrayArithmetic {
       try {
          subtract(a, aOffset, aLength, ONE, 0, 1, modulus, modulusOffset, modulusLength, result, resultOffset, resultLength);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -331,7 +331,7 @@ public class CryptoByteArrayArithmetic {
       try {
          subtract(a, aOffset, aLength, ONE, 0, 1, log2modulus, result, resultOffset, resultLength);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -347,13 +347,13 @@ public class CryptoByteArrayArithmetic {
       try {
          divide(dividend, 0, dividend.length, divisor, 0, divisor.length, quotient, 0, quotient.length, remainder, 0, remainder.length);
       } catch (NullPointerException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public static byte[] trim(byte[] array) {
       if (array == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int zeros = 0;
@@ -367,7 +367,7 @@ public class CryptoByteArrayArithmetic {
 
    public static byte[] pad(byte[] array, int numberOfZeros) {
       if (array == null || numberOfZeros < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (numberOfZeros == 0) {
@@ -390,7 +390,7 @@ public class CryptoByteArrayArithmetic {
 
             for (int i = 0; i < numZeros; i++) {
                if (array[i] != 0) {
-                  throw new Object();
+                  throw new NumberFormatException();
                }
             }
 
@@ -399,13 +399,13 @@ public class CryptoByteArrayArithmetic {
 
          return array;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public static byte[] valueOf(long i) {
       if (i < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (i == 0) {
@@ -433,7 +433,7 @@ public class CryptoByteArrayArithmetic {
       array = trim(array);
       int length = array.length;
       if (length > 8) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       long n = 0;
@@ -448,7 +448,7 @@ public class CryptoByteArrayArithmetic {
 
    public static byte[] createArray(int log2n) {
       if (log2n < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] n = new byte[(log2n + 8) / 8];
@@ -458,7 +458,7 @@ public class CryptoByteArrayArithmetic {
 
    public static int getNumBits(byte[] array) {
       if (array == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int length = array.length;

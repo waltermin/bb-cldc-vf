@@ -4,10 +4,11 @@ import java.util.Vector;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.PersistentContentListener;
 import net.rim.device.api.util.WeakReferenceUtilities;
+import net.rim.vm.WeakReference;
 
 class Helper$ReferenceCleaner implements PersistentContentListener {
    private boolean _keepStrongReferences = true;
-   private Vector _references = (Vector)(new Object());
+   private Vector _references = new Vector();
 
    private Helper$ReferenceCleaner() {
    }
@@ -29,7 +30,7 @@ class Helper$ReferenceCleaner implements PersistentContentListener {
 
    public synchronized void addLocalStrongReferences(Helper$LocalStrongReferences localStrongReferences) {
       WeakReferenceUtilities.purge(this._references);
-      this._references.addElement(new Object(localStrongReferences));
+      this._references.addElement(new WeakReference(localStrongReferences));
    }
 
    public boolean keepStrongReferences() {
@@ -38,7 +39,22 @@ class Helper$ReferenceCleaner implements PersistentContentListener {
 
    @Override
    public synchronized void persistentContentStateChanged(int state) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (state == 1) {
+         this._keepStrongReferences = true;
+      } else {
+         if (this._keepStrongReferences) {
+            this._keepStrongReferences = false;
+
+            for (int i = this._references.size() - 1; i >= 0; i--) {
+               Helper$LocalStrongReferences localStrongReferences = (Helper$LocalStrongReferences)((WeakReference)this._references.elementAt(i)).get();
+               if (localStrongReferences != null) {
+                  localStrongReferences.clearStrongReferences();
+               } else {
+                  this._references.removeElementAt(i);
+               }
+            }
+         }
+      }
    }
 
    @Override

@@ -103,7 +103,7 @@ public class PointRenderer extends ChartRenderer {
    public void setPointSize(int pointSize) {
       if (this._pointSize != pointSize) {
          if (pointSize < 0) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._pointSize = pointSize;

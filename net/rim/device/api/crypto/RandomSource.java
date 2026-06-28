@@ -16,7 +16,7 @@ public final class RandomSource {
 
    public static final long getLong(long num) {
       if (num <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if ((num & -num) == num) {
@@ -35,7 +35,7 @@ public final class RandomSource {
 
    public static final int getInt(int num) {
       if (num <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if ((num & -num) == num) {
@@ -56,7 +56,7 @@ public final class RandomSource {
 
    public static final byte[] getBytes(int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] buffer = new byte[length];
@@ -66,7 +66,7 @@ public final class RandomSource {
 
    public static final void getBytes(byte[] buffer) {
       if (buffer == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       getBytes(buffer, 0, buffer == null ? 0 : buffer.length);

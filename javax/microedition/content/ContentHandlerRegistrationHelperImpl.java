@@ -56,7 +56,7 @@ class ContentHandlerRegistrationHelperImpl extends ContentHandlerRegistrationHel
          result = s.substring(comma + 1);
       }
 
-      StringTokenizer tokens = (StringTokenizer)(new Object(values));
+      StringTokenizer tokens = new StringTokenizer(values);
 
       while (tokens.hasMoreTokens()) {
          Arrays.add(a, tokens.nextToken());

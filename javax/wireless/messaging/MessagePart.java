@@ -1,5 +1,6 @@
 package javax.wireless.messaging;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public class MessagePart {
@@ -13,7 +14,7 @@ public class MessagePart {
       if (mimeType != null && contentId != null && length >= 0 && offset >= 0) {
          if (contents != null) {
             if (offset + length > contents.length) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
 
             this._contents = new byte[length];
@@ -22,32 +23,32 @@ public class MessagePart {
 
          this._mimeType = mimeType;
          if (contentId != null && !this.isASCII(contentId)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (contentLocation != null && !this.isASCII(contentLocation)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._contentId = contentId;
          this._contentLocation = contentLocation;
          this._enc = enc;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public MessagePart(byte[] contents, String mimeType, String contentId, String contentLocation, String enc) {
       if (mimeType == null || contentId == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (contentId != null && !this.isASCII(contentId)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (contentLocation != null && !this.isASCII(contentLocation)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (contents != null) {
@@ -63,15 +64,15 @@ public class MessagePart {
 
    public MessagePart(InputStream is, String mimeType, String contentId, String contentLocation, String enc) {
       if (mimeType == null || contentId == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (contentId != null && !this.isASCII(contentId)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (contentLocation != null && !this.isASCII(contentLocation)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (is != null) {
@@ -90,7 +91,7 @@ public class MessagePart {
    }
 
    public InputStream getContentAsStream() {
-      return (InputStream)(this._contents == null ? new Object(new byte[0]) : new Object(this._contents));
+      return this._contents == null ? new ByteArrayInputStream(new byte[0]) : new ByteArrayInputStream(this._contents);
    }
 
    public String getContentID() {

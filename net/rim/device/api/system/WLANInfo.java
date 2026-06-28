@@ -15,7 +15,7 @@ public class WLANInfo {
 
    public static void addListener(WLANListener listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (WLAN.isSupported()) {

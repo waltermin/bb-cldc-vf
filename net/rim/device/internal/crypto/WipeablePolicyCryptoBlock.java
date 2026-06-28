@@ -44,7 +44,7 @@ public class WipeablePolicyCryptoBlock {
    public static byte[] encrypt(byte[] input) {
       PersistentContent.markAsPlaintext(input);
       if (input == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] cipherText = new byte[EncryptionUtilities.getCiphertextLength(input.length)];
@@ -54,7 +54,7 @@ public class WipeablePolicyCryptoBlock {
 
    public static byte[] decrypt(byte[] input) {
       if (input == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] plainText = new byte[input.length];

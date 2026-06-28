@@ -82,7 +82,7 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    public void setText(String name, String text, Font[] fonts, int[] foregroundColors) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
    @Override
@@ -122,7 +122,7 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
 
    protected ActiveRichTextField(String text, long style, StringPatternContainer patterns, ActiveRichTextField$RegionQueue rq) {
       super(text, rq.offsets, rq.attributes, rq.fonts, null, style);
-      this._smileySupport = (SmileySupport)(new Object(this));
+      this._smileySupport = new SmileySupport(this);
       this.setAttributes(rq.foregroundColors, rq.backgroundColors);
       this._cookieID = rq.getSingleCookieRegions();
       this._cookieIDs = rq.cookieID;
@@ -278,12 +278,12 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
 
       try {
          lockObject = Application.getEventLock();
-      } catch (IllegalStateException var14) {
+      } catch (IllegalStateException var15) {
       }
 
       synchronized (lockObject) {
          AttributedString attribText = this.getAttributedText();
-         attribText = (AttributedString)(new Object(attribText, this.getLabelLength(), attribText.length()));
+         attribText = new AttributedString(attribText, this.getLabelLength(), attribText.length());
          if (this.getText().equals(text)
             && Arrays.equals(offsets, this.getOffsets())
             && Arrays.equals(attributes, this.getAttributes())

@@ -51,14 +51,14 @@ public class Sprite extends Layer {
          this.initCollisionRectBounds();
          this.setTransformImpl(0);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public Sprite(Sprite s) {
       super(s != null ? s.getWidth() : 0, s != null ? s.getHeight() : 0);
       if (s == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this.sourceImage = Image.createImage(s.sourceImage);
@@ -107,7 +107,7 @@ public class Sprite extends Layer {
       if (sequenceIndex >= 0 && sequenceIndex < this.frameSequence.length) {
          this.sequenceIndex = sequenceIndex;
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -138,7 +138,7 @@ public class Sprite extends Layer {
    @Override
    public final void paint(Graphics g) {
       if (g == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (super.visible) {
@@ -168,12 +168,12 @@ public class Sprite extends Layer {
          }
       } else {
          if (sequence.length < 1) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          for (int i = 0; i < sequence.length; i++) {
             if (sequence[i] < 0 || sequence[i] >= this.numberFrames) {
-               throw new Object();
+               throw new ArrayIndexOutOfBoundsException();
             }
          }
 
@@ -207,7 +207,7 @@ public class Sprite extends Layer {
             this.computeTransformedBounds(this.t_currentTransformation);
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -219,7 +219,7 @@ public class Sprite extends Layer {
          this.collisionRectHeight = height;
          this.setTransformImpl(this.t_currentTransformation);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -724,7 +724,7 @@ public class Sprite extends Layer {
    private void computeTransformedBounds(int transform) {
       switch (transform) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             this.t_collisionRectX = this.collisionRectX;
@@ -796,7 +796,7 @@ public class Sprite extends Layer {
       int t_x = 0;
       switch (transform) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             t_x = x;
@@ -830,7 +830,7 @@ public class Sprite extends Layer {
       int t_y = 0;
       switch (transform) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             t_y = y;

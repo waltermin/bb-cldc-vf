@@ -310,7 +310,7 @@ class FloatingDecimal {
          }
       }
 
-      return (String)(new Object(result, 0, i));
+      return new String(result, 0, i);
    }
 
    public static FloatingDecimal readJavaFormatString(String in) {

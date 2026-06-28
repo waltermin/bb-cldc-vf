@@ -96,7 +96,7 @@ public final class ThemeAttributeSet {
 
    public ThemeAttributeSet(ThemeAttributeSet themeAttributes) {
       if (themeAttributes == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.clone(themeAttributes);
@@ -309,7 +309,7 @@ public final class ThemeAttributeSet {
       if (ta == null) {
          switch (colorType) {
             case -1:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 0:
             default:
                return 16777215;
@@ -437,7 +437,7 @@ public final class ThemeAttributeSet {
    }
 
    public final ThemeAttributeSet$Writer getWriterInternal() {
-      return this.getWriterInternal((ResourceFetcher)(new Object()));
+      return this.getWriterInternal(new DefaultResourceFetcher());
    }
 
    public final ThemeAttributeSet$Writer getWriterInternal(ResourceFetcher resourceFetcher) {

@@ -112,7 +112,7 @@ public final class Graphics implements DrawStyle {
    public static final int SIGMOID_GAMMA;
 
    Graphics() {
-      this._objectClippingRect = (XYRect)(new Object());
+      this._objectClippingRect = new XYRect();
       this.createFrontbufferSurface();
       this.createStack(Display.getWidth(), Display.getHeight());
    }
@@ -524,7 +524,7 @@ public final class Graphics implements DrawStyle {
 
    public final void setFont(Font font) {
       if (font == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._font = font;
@@ -621,7 +621,7 @@ public final class Graphics implements DrawStyle {
 
    private final void setOverlayInternal(int index, Bitmap bitmap, int x, int y, boolean immediate) {
       if (bitmap != null && bitmap.getType() != Bitmap.getDefaultType()) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (this._backBufferBitmap != null) {

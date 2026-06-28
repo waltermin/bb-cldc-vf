@@ -77,7 +77,7 @@ public final class ThemeAttributeSet$Writer {
    }
 
    public final void setPosition(int x, int y, int width, int height) {
-      this.this$0._position = (XYRect)(new Object(x, y, width, height));
+      this.this$0._position = new XYRect(x, y, width, height);
    }
 
    public final void setFocusStyle(int style) {

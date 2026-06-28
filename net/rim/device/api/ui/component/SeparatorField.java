@@ -2,6 +2,7 @@ package net.rim.device.api.ui.component;
 
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.theme.Tag;
 
 public class SeparatorField extends Field {
@@ -38,7 +39,7 @@ public class SeparatorField extends Field {
       if ((style & 196608) == 65536) {
          return true;
       } else {
-         return (style & 196608) == 131072 ? false : !(this.getManager() instanceof Object);
+         return (style & 196608) == 131072 ? false : !(this.getManager() instanceof HorizontalFieldManager);
       }
    }
 

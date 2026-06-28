@@ -33,7 +33,7 @@ public class PleaseWaitDialog extends PopupScreen {
       super.onUiEngineAttached(attached);
       if (attached) {
          synchronized (this) {
-            super.notify();
+            this.notify();
             this._displayed = true;
          }
       }
@@ -42,7 +42,7 @@ public class PleaseWaitDialog extends PopupScreen {
    synchronized void waitForDialog() {
       if (!this._displayed) {
          try {
-            super.wait();
+            this.wait();
          } catch (InterruptedException var2) {
          }
       }

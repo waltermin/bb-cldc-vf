@@ -10,7 +10,7 @@ public class EventInjector$KeyCodeEvent extends EventInjector$Event {
    public EventInjector$KeyCodeEvent(int event, char keyName, int status, int time) {
       super(2, event, 0, charToScancode(keyName, status), time, null, null);
       if (!this.isVaildStatus(status)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -21,7 +21,7 @@ public class EventInjector$KeyCodeEvent extends EventInjector$Event {
 
    public void setKeyCode(char keyName, int status) {
       if (!this.isVaildStatus(status)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       super._msg.setData0(charToScancode(keyName, status));
@@ -30,7 +30,7 @@ public class EventInjector$KeyCodeEvent extends EventInjector$Event {
    @Override
    public void setStatus(int status) {
       if (!this.isVaildStatus(status)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int keyCode = this.getKeyCode();

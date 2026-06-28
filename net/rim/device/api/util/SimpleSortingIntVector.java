@@ -94,7 +94,7 @@ public class SimpleSortingIntVector extends IntVector {
       } else if (this._sortComparator != null && sortType == 2) {
          return Arrays.binarySearch(super.elementData, obj, this._sortComparator, 0, super.elementCount);
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 

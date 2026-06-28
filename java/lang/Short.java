@@ -14,7 +14,7 @@ public final class Short {
       if (i >= -32768 && i <= 32767) {
          return (short)i;
       } else {
-         throw new Object();
+         throw new NumberFormatException();
       }
    }
 

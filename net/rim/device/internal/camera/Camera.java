@@ -88,7 +88,7 @@ public final class Camera {
       if (_pictureWidth != -1 && _pictureHeight != -1 && _pictureQuality != -1) {
          return getPicture(_pictureWidth, _pictureHeight, _pictureQuality, timeStamp, model);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -115,7 +115,7 @@ public final class Camera {
             }
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

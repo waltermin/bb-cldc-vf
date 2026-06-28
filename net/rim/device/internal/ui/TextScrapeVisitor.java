@@ -5,9 +5,9 @@ import net.rim.device.api.ui.FieldVisitor;
 import net.rim.device.api.util.IntStack;
 
 public class TextScrapeVisitor implements FieldVisitor {
-   private StringBuffer _buffer = (StringBuffer)(new Object());
+   private StringBuffer _buffer = new StringBuffer();
    private boolean _addLineFeed = true;
-   private IntStack stack = (IntStack)(new Object());
+   private IntStack stack = new IntStack();
 
    public StringBuffer getStringBuffer() {
       return this._buffer;

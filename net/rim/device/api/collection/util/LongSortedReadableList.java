@@ -35,7 +35,7 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
 
    public long getKey(int offset) {
       if (offset >= this._numElements) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       } else {
          return this._keyArray[offset];
       }
@@ -60,7 +60,7 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
 
          return length;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -150,14 +150,14 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
 
          return length;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
    @Override
    public Object getAt(int offset) {
       if (offset >= this._numElements) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       } else {
          return this._dataArray[offset];
       }
@@ -176,7 +176,7 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
 
    public LongSortedReadableList(LongKeyProviderAdaptor adaptor) {
       if (adaptor == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._keyProvider = adaptor;
@@ -185,7 +185,7 @@ public class LongSortedReadableList implements ChainableCollection, LoadableColl
    public LongSortedReadableList(CollectionEventSource sourceCollection, LongKeyProviderAdaptor adaptor) {
       this(adaptor);
       if (!(sourceCollection instanceof ReadableList) && !(sourceCollection instanceof ReadableSet)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       sourceCollection.addCollectionListener(this);

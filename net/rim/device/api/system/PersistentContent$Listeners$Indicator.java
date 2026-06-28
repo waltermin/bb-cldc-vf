@@ -28,7 +28,7 @@ class PersistentContent$Listeners$Indicator implements Runnable {
 
       try {
          this._listener.persistentContentStateChanged(this._state);
-      } catch (Throwable var2) {
+      } catch (Throwable var3) {
       }
    }
 }

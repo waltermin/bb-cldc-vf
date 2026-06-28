@@ -9,7 +9,7 @@ public class SimpleSortingVector extends Vector {
    private boolean _sortAsAdded;
 
    public synchronized Vector getVector() {
-      Vector vector = (Vector)(new Object(super.elementCount));
+      Vector vector = new Vector(super.elementCount);
 
       for (int i = 0; i < super.elementCount; i++) {
          vector.addElement(super.elementData[i]);

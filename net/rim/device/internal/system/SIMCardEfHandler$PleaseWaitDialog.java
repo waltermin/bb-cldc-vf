@@ -1,11 +1,11 @@
 package net.rim.device.internal.system;
 
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.container.DialogFieldManager;
 
 final class SIMCardEfHandler$PleaseWaitDialog extends Screen {
    SIMCardEfHandler$PleaseWaitDialog() {
-      super((Manager)(new Object()), 68719476736L);
+      super(new DialogFieldManager(), 68719476736L);
    }
 
    @Override

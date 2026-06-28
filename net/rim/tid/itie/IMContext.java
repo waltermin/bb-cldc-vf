@@ -250,7 +250,7 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    private final void handleException(Throwable th) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override
@@ -401,10 +401,10 @@ public final class IMContext extends InputContext implements InputMethodContext 
 
    private IMContext() {
       super._manager = new IMManager();
-      this._event = (WeakReference)(new Object(null));
+      this._event = new WeakReference(null);
       this._lingDataRegistry = new LingDataRegistry(this);
       this._eventHandler = new EventHandler();
-      this._secureBufferRegistry = (SecureBufferRegistry)(new Object());
+      this._secureBufferRegistry = new SecureBufferRegistry();
    }
 
    @Override

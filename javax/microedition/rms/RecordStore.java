@@ -41,11 +41,11 @@ public class RecordStore {
    public void setMode(int authmode, boolean writable) {
       synchronized (this) {
          if (!RecordStoreManager.checkOwner(this)) {
-            throw new Object();
+            throw new SecurityException();
          }
 
          if (authmode != 0 && authmode != 1) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (authmode == 1 && !writable) {
@@ -118,7 +118,7 @@ public class RecordStore {
    public int addRecord(byte[] data, int offset, int numBytes) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
-         throw new Object();
+         throw new SecurityException();
       }
 
       int id = this._recordStoreData.addRecord(data, offset, numBytes);
@@ -137,7 +137,7 @@ public class RecordStore {
    public void deleteRecord(int recordId) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
-         throw new Object();
+         throw new SecurityException();
       }
 
       this._recordStoreData.deleteRecord(recordId);
@@ -166,7 +166,7 @@ public class RecordStore {
    public void setRecord(int recordId, byte[] newData, int offset, int numBytes) {
       this.mustBeOpen();
       if (!this.checkWritable()) {
-         throw new Object();
+         throw new SecurityException();
       }
 
       this._recordStoreData.setRecord(recordId, newData, offset, numBytes);

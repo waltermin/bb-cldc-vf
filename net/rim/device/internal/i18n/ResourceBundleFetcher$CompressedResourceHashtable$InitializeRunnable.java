@@ -11,18 +11,18 @@ final class ResourceBundleFetcher$CompressedResourceHashtable$InitializeRunnable
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void run() {
-      boolean var7 = false /* VF: Semaphore variable */;
+      boolean var12 = false /* VF: Semaphore variable */;
 
       label66: {
          try {
-            var7 = true;
+            var12 = true;
             this.this$0.initialize();
-            var7 = false;
+            var12 = false;
             break label66;
-         } catch (Exception var11) {
-            var7 = false;
+         } catch (Exception var16) {
+            var12 = false;
          } finally {
-            if (var7) {
+            if (var12) {
                synchronized (this.this$0._lockObject) {
                   this.this$0._lockObject.notify();
                }

@@ -81,7 +81,7 @@ public class Manager extends Field {
    protected Manager(long style) {
       super(validateStyle(style));
       if (!this.validateFieldStyle(style)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.setTag(TAG);
@@ -244,7 +244,7 @@ public class Manager extends Field {
 
    public Field getField(int index) {
       if (index >= this._fieldsCount) {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       } else {
          return this._fields[index];
       }
@@ -641,7 +641,7 @@ public class Manager extends Field {
       if (theme.getAttributeSet(THEME_SCROLLBAR_TAG) != null) {
          if (this.isStyle(17592186044416L) && (temp & 281474976710656L) > 0) {
             widthAdjust = SCROLLBAR_TOTAL_WIDTH;
-            this._verticalScrollbar = (Scrollbar)(new Object(true));
+            this._verticalScrollbar = new Scrollbar(true);
             this._verticalScrollbar.setManager(this, 0);
             if (this._scrollListener == null) {
                this._verticalScrollbar.setClient(this);
@@ -650,7 +650,7 @@ public class Manager extends Field {
 
          if (this.isStyle(70368744177664L) && (temp & 1125899906842624L) > 0) {
             heightAdjust = SCROLLBAR_TOTAL_HEIGHT;
-            this._horizontalScrollbar = (Scrollbar)(new Object(true, true));
+            this._horizontalScrollbar = new Scrollbar(true, true);
             this._horizontalScrollbar.setManager(this, 0);
             if (this._scrollListener == null) {
                this._horizontalScrollbar.setClient(this);
@@ -1001,7 +1001,7 @@ public class Manager extends Field {
 
             return this._fieldWithFocusIndex + 1;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 
@@ -1091,7 +1091,7 @@ public class Manager extends Field {
 
    public void setHorizontalQuantization(int horizontalQuanta) {
       if (horizontalQuanta != -1 && horizontalQuanta <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._horizontalQuanta = horizontalQuanta;
@@ -1111,7 +1111,7 @@ public class Manager extends Field {
 
    public void setVerticalQuantization(int verticalQuanta) {
       if (verticalQuanta != -1 && verticalQuanta <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._verticalQuanta = verticalQuanta;

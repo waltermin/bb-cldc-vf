@@ -9,9 +9,9 @@ import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.StringProvider;
 
 public class PropertyField extends Field implements FieldLabelProvider {
-   private TextRect _label = (TextRect)(new Object(this));
+   private TextRect _label = new TextRect(this);
    private Object _value;
-   private TextRect _text = (TextRect)(new Object(this));
+   private TextRect _text = new TextRect(this);
    private static Tag TAG;
    private static Tag TAG_LABEL;
    private static final int PADDING;

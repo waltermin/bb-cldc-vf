@@ -4,6 +4,7 @@ import net.rim.device.api.applicationcontrol.ApplicationPermissions;
 import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 
 public final class ApplicationControl {
    public static final int LAPI_ALLOWED_FLAG;
@@ -77,7 +78,7 @@ public final class ApplicationControl {
 
    public static final void assertInternalConnectionAllowed(String domain, boolean checkProcess) {
       if (isInternalConnectionAllowed(domain, checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[3]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[3]);
       }
    }
 
@@ -104,7 +105,7 @@ public final class ApplicationControl {
 
    public static final void assertExternalConnectionAllowed(String domain, boolean checkProcess) {
       if (isExternalConnectionAllowed(domain, checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[5]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[5]);
       }
    }
 
@@ -122,7 +123,7 @@ public final class ApplicationControl {
 
    public static final void assertBrowserFilterAllowed(String domain, boolean checkProcess) {
       if (!isBrowserFilterAllowed(domain, checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[12]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[12]);
       }
    }
 
@@ -161,7 +162,7 @@ public final class ApplicationControl {
 
    public static final void assertLocalConnectionAllowed(boolean checkProcess) {
       if (!isLocalConnectionAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[7]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[7]);
       }
    }
 
@@ -175,7 +176,7 @@ public final class ApplicationControl {
 
    public static final void assertPhoneAllowed(boolean checkProcess) {
       if (isPhoneAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[8]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[8]);
       }
    }
 
@@ -198,7 +199,7 @@ public final class ApplicationControl {
 
    public static final void assertPIMAllowed(boolean checkProcess) {
       if (!isPIMAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[11]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[11]);
       }
    }
 
@@ -212,7 +213,7 @@ public final class ApplicationControl {
 
    public static final void assertEventInjectorAllowed(boolean checkProcess) {
       if (!isEventInjectorAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[13]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[13]);
       }
    }
 
@@ -226,7 +227,7 @@ public final class ApplicationControl {
 
    public static final void assertEmailAllowed(boolean checkProcess) {
       if (!isEmailAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[10]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[10]);
       }
    }
 
@@ -244,7 +245,7 @@ public final class ApplicationControl {
 
    public static final void assertBluetoothSerialProfileAllowed(boolean checkProcess) {
       if (!isBluetoothSerialProfileAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[14]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[14]);
       }
    }
 
@@ -258,7 +259,7 @@ public final class ApplicationControl {
 
    public static final void assertHandheldKeyStoreAllowed(boolean checkProcess) {
       if (!isHandheldKeyStoreAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[15]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[15]);
       }
    }
 
@@ -272,7 +273,7 @@ public final class ApplicationControl {
 
    public static final void assertKeyStoreMediumSecurityAllowed(boolean checkProcess) {
       if (!isKeyStoreMediumSecurityAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[16]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[16]);
       }
    }
 
@@ -286,7 +287,7 @@ public final class ApplicationControl {
 
    public static final void assertLocationApiAllowed(boolean checkProcess) {
       if (isLocationApiAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[17]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[17]);
       }
    }
 
@@ -302,7 +303,7 @@ public final class ApplicationControl {
    public static final void assertThemeDataAllowed(int moduleHandle) {
       if (!isThemeDataAllowed(moduleHandle)) {
          ApplicationControlImpl.logDenial(moduleHandle, 19);
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[19]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[19]);
       }
    }
 
@@ -316,7 +317,7 @@ public final class ApplicationControl {
 
    public static final void assertAuthenticatorApiAllowed(boolean checkProcess) {
       if (!isAuthenticatorApiAllowed(checkProcess)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 
@@ -334,7 +335,7 @@ public final class ApplicationControl {
 
    public static final void assertFileApiAllowed(boolean checkProcess) {
       if (!isFileApiAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[21]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[21]);
       }
    }
 
@@ -348,7 +349,7 @@ public final class ApplicationControl {
 
    public static final void assertCMMApiAllowed(boolean checkProcess) {
       if (!isCMMApiAllowed(checkProcess)) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[22]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[22]);
       }
    }
 
@@ -362,7 +363,7 @@ public final class ApplicationControl {
 
    public static final void assertChangeDeviceSettingsAllowed(boolean checkProcess) {
       if (isChangeDeviceSettingsAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[23]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[23]);
       }
    }
 
@@ -381,7 +382,7 @@ public final class ApplicationControl {
 
    public static final void assertScreenCaptureAllowed(boolean checkProcess) {
       if (isScreenCaptureAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[25]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[25]);
       }
    }
 
@@ -404,7 +405,7 @@ public final class ApplicationControl {
 
    public static final void assertWiFiAllowed(boolean checkProcess) {
       if (isWiFiAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[27]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[27]);
       }
    }
 
@@ -423,7 +424,7 @@ public final class ApplicationControl {
 
    public static final void assertIdleTimerAllowed(boolean checkProcess) {
       if (isIdleTimerAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[29]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[29]);
       }
    }
 
@@ -442,7 +443,7 @@ public final class ApplicationControl {
 
    public static final void assertMediaAllowed(boolean checkProcess) {
       if (isMediaAllowed(checkProcess) != 0) {
-         throw new Object(null, ApplicationControlResource.PERMISSIONS_STRINGS[31]);
+         throw new ControlledAccessException(null, ApplicationControlResource.PERMISSIONS_STRINGS[31]);
       }
    }
 

@@ -25,14 +25,14 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    public MMAPIMediaField(int width, int height) {
       this._width = width;
       this._height = height;
-      this._currentRect = (XYRect)(new Object());
+      this._currentRect = new XYRect();
    }
 
    public MMAPIMediaField(int width, int height, long style) {
       super(style);
       this._width = width;
       this._height = height;
-      this._currentRect = (XYRect)(new Object());
+      this._currentRect = new XYRect();
    }
 
    @Override

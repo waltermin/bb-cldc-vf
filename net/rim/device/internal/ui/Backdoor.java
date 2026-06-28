@@ -39,7 +39,7 @@ public class Backdoor implements Runnable {
    }
 
    private void validateManager(Manager manager, String indent, boolean focusState) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void validate(Screen screen) {

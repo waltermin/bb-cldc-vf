@@ -2,6 +2,7 @@ package javax.microedition.lcdui;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 public class TextBox extends Screen {
    MIDPEditField _edit;
@@ -10,7 +11,7 @@ public class TextBox extends Screen {
       super(new MIDPScreen());
       synchronized (Application.getEventLock()) {
          this.getPeer().setDisplayable(this);
-         Manager container = (Manager)(new Object(3459045988797251584L));
+         Manager container = new VerticalFieldManager(3459045988797251584L);
          this.getPeer().add(container);
          this._edit = new MIDPEditField(null, text, maxSize, constraints, null);
          container.add(this._edit);

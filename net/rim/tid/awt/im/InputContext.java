@@ -7,6 +7,7 @@ import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.InvokableAction;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.FocusEvent;
 import net.rim.tid.awt.event.InputMethodEvent;
@@ -224,7 +225,7 @@ public class InputContext {
 
    private void cleanComponent(IComponent component) {
       if (component != null) {
-         InputMethodEvent restartEvent = new InputMethodEvent(component, 1103, 0, (AttributedString)(new Object()), 0, 0, 0, null, null);
+         InputMethodEvent restartEvent = new InputMethodEvent(component, 1103, 0, new AttributedString(), 0, 0, 0, null, null);
          component.inputMethodTextChanged(restartEvent);
       }
    }
@@ -283,7 +284,7 @@ public class InputContext {
          }
 
          Screen topAppScreen = app.getActiveScreen();
-         if (topAppScreen instanceof Object) {
+         if (topAppScreen instanceof TextInputDialog) {
             this.endComposition();
             if (this._inputMethod != null) {
                this._inputMethod.hideWindows();

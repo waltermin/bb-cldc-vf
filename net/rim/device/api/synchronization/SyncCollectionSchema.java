@@ -5,7 +5,7 @@ import net.rim.device.api.util.IntHashtable;
 public final class SyncCollectionSchema {
    private int _recordTypeTag;
    private int _defaultRecordType;
-   private IntHashtable _keyFieldIds = (IntHashtable)(new Object(1));
+   private IntHashtable _keyFieldIds = new IntHashtable(1);
 
    public final int getRecordTypeTag() {
       return this._recordTypeTag;
@@ -21,7 +21,7 @@ public final class SyncCollectionSchema {
 
    public final void setDefaultRecordType(int defaultRecordType) {
       if (defaultRecordType == 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._defaultRecordType = defaultRecordType;
@@ -44,7 +44,7 @@ public final class SyncCollectionSchema {
 
    public final void setKeyFieldIds(int recordType, int[] keyFieldIds) {
       if (recordType == 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (keyFieldIds != null && keyFieldIds.length != 0) {

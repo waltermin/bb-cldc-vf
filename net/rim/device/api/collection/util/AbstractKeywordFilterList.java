@@ -9,6 +9,7 @@ import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.PersistentContentListener;
 import net.rim.device.api.ui.AccessibleEventDispatcher;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
+import net.rim.device.api.ui.accessibility.AccessibleContextFactory;
 import net.rim.device.api.ui.accessibility.AccessibleText;
 import net.rim.device.api.ui.accessibility.AccessibleValue;
 import net.rim.device.api.util.StringUtilities;
@@ -54,7 +55,7 @@ public class AbstractKeywordFilterList
    }
 
    protected synchronized void filteringComplete() {
-      super.notifyAll();
+      this.notifyAll();
    }
 
    public boolean isInProgress() {
@@ -220,7 +221,7 @@ public class AbstractKeywordFilterList
 
          return this._source.getAt(index, count, elements, destIndex);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -328,7 +329,7 @@ public class AbstractKeywordFilterList
    @Override
    public AccessibleContext getAccessibleChildAt(int index) {
       Object temp = this.getAt(index);
-      return (AccessibleContext)(temp != null ? new Object(temp.toString()) : null);
+      return temp != null ? new AccessibleContextFactory(temp.toString()) : null;
    }
 
    @Override
@@ -355,7 +356,7 @@ public class AbstractKeywordFilterList
    public synchronized void waitForComplete() {
       while (this.isInProgress()) {
          try {
-            super.wait();
+            this.wait();
          } catch (InterruptedException var2) {
          }
       }
@@ -384,7 +385,7 @@ public class AbstractKeywordFilterList
 
    protected AbstractKeywordFilterList(ReadableList source) {
       if (source == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._source = source;

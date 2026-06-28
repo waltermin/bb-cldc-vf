@@ -39,7 +39,7 @@ public final class TimeService {
       Integer i = (Integer)this._persistableBitfieldSettings.getContents();
       if (i == null) {
          this._timeServiceSettings = this.TIME_SERVICE_SETTINGS_AUTO_ADJUST_FOR_DST;
-         i = (Integer)(new Object(this._timeServiceSettings));
+         i = new Integer(this._timeServiceSettings);
          this._persistableBitfieldSettings.setContents(i, 51, false);
          this._persistableBitfieldSettings.commit();
       } else {
@@ -55,7 +55,7 @@ public final class TimeService {
    public final synchronized void setAutomaticClockAdjustmentForDST(boolean automaticallyAdjustClockForDSTTime) {
       this._automaticallyAdjustClockForDSTTime = automaticallyAdjustClockForDSTTime;
       this._timeServiceSettings = this._timeServiceSettings | this.TIME_SERVICE_SETTINGS_AUTO_ADJUST_FOR_DST;
-      this._persistableBitfieldSettings.setContents(new Object(this._timeServiceSettings), 51, false);
+      this._persistableBitfieldSettings.setContents(new Integer(this._timeServiceSettings), 51, false);
       this._persistableBitfieldSettings.commit();
    }
 
@@ -475,7 +475,7 @@ public final class TimeService {
          hidden = false;
       }
 
-      tzdo = (TimeZoneDataObject)(new Object(
+      tzdo = new TimeZoneDataObject(
          uid,
          tzid,
          stringID,
@@ -495,7 +495,7 @@ public final class TimeService {
          shortName,
          mappedTZID,
          hidden
-      ));
+      );
       tzdo.setBuiltInIndex(builtIndex);
       int currentTimeZoneID = this.getSerialSyncID(this.getDefaultTimeZoneID());
       boolean currentTimeZoneUpdated = tzid == currentTimeZoneID;

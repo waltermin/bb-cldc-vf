@@ -93,7 +93,7 @@ public final class AudioInternal {
          case 68:
             return 15;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 

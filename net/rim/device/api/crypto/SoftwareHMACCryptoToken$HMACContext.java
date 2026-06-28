@@ -15,7 +15,7 @@ final class SoftwareHMACCryptoToken$HMACContext implements CryptoTokenMACContext
          try {
             this._digest2 = DigestFactory.getInstance(this._digest.getAlgorithm());
          } catch (NoSuchAlgorithmException e) {
-            throw new Object();
+            throw new RuntimeException();
          }
 
          int digestBlockLength = this._digest.getBlockLength();
@@ -37,7 +37,7 @@ final class SoftwareHMACCryptoToken$HMACContext implements CryptoTokenMACContext
 
          this._digest.update(this._ipad);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -58,7 +58,7 @@ final class SoftwareHMACCryptoToken$HMACContext implements CryptoTokenMACContext
 
          return numBytes;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 }

@@ -1,8 +1,7 @@
 package net.rim.device.api.system;
 
-import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.GaugeField;
+import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.component.PopupDialog;
@@ -13,11 +12,11 @@ final class PersistentContent$RandomKeyPressDialog extends PopupDialog {
    int _numBitsObtained;
 
    public PersistentContent$RandomKeyPressDialog(String dialogMessage, int numBitsNeeded, long style) {
-      super((Manager)(new Object(1153220571769602048L)), style);
+      super(new VerticalFieldManager(1153220571769602048L), style);
       VerticalFieldManager vfm = (VerticalFieldManager)this.getDelegate();
       this._numBitsNeeded = numBitsNeeded;
-      vfm.add((Field)(new Object(dialogMessage, 45035996273704960L)));
-      this._gaugeField = (GaugeField)(new Object(CommonResource.getString(10017), 0, numBitsNeeded, 0, 0));
+      vfm.add(new RichTextField(dialogMessage, 45035996273704960L));
+      this._gaugeField = new GaugeField(CommonResource.getString(10017), 0, numBitsNeeded, 0, 0);
       vfm.add(this._gaugeField);
    }
 

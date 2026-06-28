@@ -65,7 +65,7 @@ public final class DateFormatSymbols implements Persistable {
       } else if ((style & 4) != 0) {
          return timePattern;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

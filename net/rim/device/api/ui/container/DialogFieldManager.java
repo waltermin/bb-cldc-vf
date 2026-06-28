@@ -113,7 +113,7 @@ public class DialogFieldManager extends Manager {
                : this._bottomManager.getField(index - this._buttonManager.getFieldCount() - this._middleManager.getFieldCount());
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

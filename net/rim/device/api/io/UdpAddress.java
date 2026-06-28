@@ -185,7 +185,7 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public static String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type, String apnUsername, String apnPassword) {
-      StringBuffer buf = (StringBuffer)(new Object(128));
+      StringBuffer buf = new StringBuffer(128);
       appendAddress(buf, open, ipAddress, destPort, srcPort, apn, type, apnUsername, apnPassword);
       return buf.toString();
    }

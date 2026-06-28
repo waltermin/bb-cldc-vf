@@ -50,7 +50,7 @@ public class MenuItem implements Runnable, AccessibleContext {
 
          this._icon = null;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -65,7 +65,7 @@ public class MenuItem implements Runnable, AccessibleContext {
          this._priority = priority;
          this._icon = icon;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

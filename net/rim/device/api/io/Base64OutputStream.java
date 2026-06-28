@@ -22,7 +22,7 @@ public class Base64OutputStream extends OutputStream {
 
    public Base64OutputStream(OutputStream outputStream, boolean insertCR, boolean insertLF) {
       if (outputStream == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._inputBuffer = new byte[1539];
@@ -99,7 +99,7 @@ public class Base64OutputStream extends OutputStream {
 
          return output;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

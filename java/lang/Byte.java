@@ -14,7 +14,7 @@ public final class Byte {
       if (i >= -128 && i <= 127) {
          return (byte)i;
       } else {
-         throw new Object();
+         throw new NumberFormatException();
       }
    }
 

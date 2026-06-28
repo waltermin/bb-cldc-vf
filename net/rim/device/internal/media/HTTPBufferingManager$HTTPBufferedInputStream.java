@@ -61,7 +61,7 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
 
             try {
                this.this$0._lock.wait();
-            } catch (InterruptedException var8) {
+            } catch (InterruptedException var11) {
             }
          }
 

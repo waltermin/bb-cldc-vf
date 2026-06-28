@@ -37,7 +37,7 @@ public final class ControlledAccess implements Persistable {
 
    private static final void assertSignature(int moduleHandle, CodeSigningKey key) {
       if (key != null && !CodeModuleManager.verifySignature(moduleHandle, key.getSignerIdAsInt(), key.getPublicKeyInternal())) {
-         throw new Object(key);
+         throw new ControlledAccessException(key);
       }
    }
 
@@ -47,7 +47,7 @@ public final class ControlledAccess implements Persistable {
 
    public final void assertKeys(CodeSigningKey readKey, CodeSigningKey replaceKey) {
       if (!this.checkKeys(readKey, replaceKey)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 
@@ -61,13 +61,13 @@ public final class ControlledAccess implements Persistable {
 
    public static final void assertRRISignature(int moduleHandle) {
       if (!verifyCodeModuleSignature(moduleHandle, 51)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 
    public static final void assertRCISignature(int moduleHandle) {
       if (!verifyCodeModuleSignature(moduleHandle, 4801362)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 
@@ -101,7 +101,7 @@ public final class ControlledAccess implements Persistable {
 
    public static final void assertRRISignatures(boolean checkProcess) {
       if (!verifyRRISignatures(checkProcess)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 
@@ -111,7 +111,7 @@ public final class ControlledAccess implements Persistable {
 
    public static final void assertRCISignatures(boolean checkProcess) {
       if (!verifyRCISignatures(checkProcess)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 }

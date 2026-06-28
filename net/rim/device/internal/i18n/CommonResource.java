@@ -35,7 +35,7 @@ public final class CommonResource implements net.rim.device.internal.resource.Co
 
    public static final String format(int key, Object[] params) {
       String message = _bundle.getString(key);
-      MessageFormat format = (MessageFormat)(new Object(message));
+      MessageFormat format = new MessageFormat(message);
       StringBuffer _buffer = WeakReferenceUtilities.getStringBuffer(_bufferWR);
       synchronized (_buffer) {
          format.format(params, _buffer, null);

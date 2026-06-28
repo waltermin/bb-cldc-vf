@@ -2,6 +2,7 @@ package net.rim.device.internal.system;
 
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.vm.Process;
 
 public class CodeStore {
@@ -44,7 +45,7 @@ public class CodeStore {
 
    public static void assertIsPartOfCurrentApp(int caller) {
       if (!isPartOfCurrentApp(caller)) {
-         throw new Object();
+         throw new ControlledAccessException();
       }
    }
 

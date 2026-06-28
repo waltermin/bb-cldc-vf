@@ -24,14 +24,14 @@ public final class TraceBackDialog extends Dialog {
             return super.openProductionBackdoor(backdoorCode);
          case 1145197895:
          default:
-            StringBuffer message = (StringBuffer)(new Object());
+            StringBuffer message = new StringBuffer();
             TraceBackDialog$TraceBackScreen fs = new TraceBackDialog$TraceBackScreen(this);
             int i = 0;
 
             while (true) {
                String extra = TraceBack.getMessage(this._backTrace, i);
                if (extra == null) {
-                  RichTextField text = (RichTextField)(new Object(message.toString()));
+                  RichTextField text = new RichTextField(message.toString());
                   fs.add(text);
                   this._app.pushGlobalScreen(fs, 10, 2);
                   return true;

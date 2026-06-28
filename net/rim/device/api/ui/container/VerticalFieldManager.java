@@ -55,7 +55,7 @@ public class VerticalFieldManager extends Manager {
    @Override
    protected boolean incrementalLayout(int index, int added, int deleted) {
       long style = this.getStyle();
-      if (_myclass != super.getClass() && (style & 576460752303423488L) == 0) {
+      if (_myclass != this.getClass() && (style & 576460752303423488L) == 0) {
          return false;
       }
 

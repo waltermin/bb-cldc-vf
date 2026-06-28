@@ -7,7 +7,6 @@ import net.rim.device.api.io.IOProperties;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
-import net.rim.device.api.system.RadioPacketHeader;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.system.UDPPacketListener;
 import net.rim.device.api.util.Arrays;
@@ -43,7 +42,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
       }
 
       int type = 1;
-      DatagramBase dgram = (DatagramBase)(new Object(data, 0, data.length, new UdpInternalAddress(ipAddress, destPort, srcPort, apn, type, data)));
+      DatagramBase dgram = new DatagramBase(data, 0, data.length, new UdpInternalAddress(ipAddress, destPort, srcPort, apn, type, data));
       EventLogger.logEvent(super.GUID, 1381527669, 5);
       if (this.passUpDatagram(dgram)) {
          if (!super._itPolicyEnabled) {
@@ -79,7 +78,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativeSendSetupData(Datagram datagram) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -141,7 +140,7 @@ public final class Transport extends NativeTransport implements UDPPacketListene
    public final void nativeInit() {
       super._networkServiceMask = 4;
       super._maxPacketSize = UDPPacketHeader.getMaxPacketSize();
-      super._txHeader = (RadioPacketHeader)(new Object());
+      super._txHeader = new UDPPacketHeader();
       this._txEncode = new byte[super._maxPacketSize];
       DataRecovery.getInstance().addListener(this);
    }

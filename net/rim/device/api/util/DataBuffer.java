@@ -3,6 +3,7 @@ package net.rim.device.api.util;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
+import java.io.EOFException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import net.rim.vm.Array;
@@ -36,7 +37,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          this._position = this._start;
          this._useBigEndianFlag = bigEndianFlag;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -67,7 +68,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
 
    public void setLength(int newLength) {
       if (newLength < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       newLength += this._start;
@@ -214,7 +215,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          System.arraycopy(b, offset, this._buffer, this._position, length);
          this._position += length;
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -254,14 +255,14 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
 
          return bytesToWrite;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public byte[] readByteArray() {
       int size = this.readCompressedInt();
       if (this._position + size > this._length) {
-         throw new Object();
+         throw new EOFException();
       }
 
       byte[] data = new byte[size];
@@ -300,7 +301,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          }
 
          if (++used > 9) {
-            throw new Object();
+            throw new NumberFormatException();
          }
 
          i <<= 7;
@@ -320,7 +321,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
 
          used++;
          if (used > 4 || used == 4 && (i & 234881024) != 0) {
-            throw new Object();
+            throw new NumberFormatException();
          }
 
          i <<= 7;
@@ -345,7 +346,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    @Override
    public short readShort() {
       if (this._position + 2 > this._length) {
-         throw new Object();
+         throw new EOFException();
       }
 
       int b1;
@@ -373,7 +374,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
          System.arraycopy(b, off, this._buffer, this._position, len);
          this._position += len;
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -390,7 +391,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    @Override
    public long readLong() {
       if (this._position + 8 > this._length) {
-         throw new Object();
+         throw new EOFException();
       }
 
       long b1;
@@ -427,7 +428,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    @Override
    public int readInt() {
       if (this._position + 4 > this._length) {
-         throw new Object();
+         throw new EOFException();
       }
 
       int b1;
@@ -493,7 +494,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    @Override
    public void readFully(byte[] outputBuffer, int outputBufferOffset, int outputBufferLength) {
       if (outputBufferLength > this._length - this._position) {
-         throw new Object();
+         throw new EOFException();
       }
 
       if (outputBufferLength != 0) {
@@ -511,7 +512,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    @Override
    public char readChar() {
       if (this._position + 2 > this._length) {
-         throw new Object();
+         throw new EOFException();
       }
 
       int b1;

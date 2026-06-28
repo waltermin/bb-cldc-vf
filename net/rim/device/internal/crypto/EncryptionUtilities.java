@@ -43,7 +43,7 @@ public final class EncryptionUtilities {
    public static final int getPublicKeyLength(int curve) {
       switch (curve) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             return 21;
@@ -61,7 +61,7 @@ public final class EncryptionUtilities {
    public static final int getPrivateKeyLength(int curve) {
       switch (curve) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             return 21;
@@ -79,7 +79,7 @@ public final class EncryptionUtilities {
    public static final int getDerivedKeyLength(int curve) {
       switch (curve) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             return 20;

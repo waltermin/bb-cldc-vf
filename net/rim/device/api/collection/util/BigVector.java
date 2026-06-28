@@ -48,7 +48,7 @@ public class BigVector implements Persistable {
    }
 
    private void cacheIndex(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void splitCurrentChunk(int splitPoint) {
@@ -106,7 +106,7 @@ public class BigVector implements Persistable {
          this._arrayChunkSize = chunkSize;
          this._numArrayChunks = this.getNumChunks(initialCapacity);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -171,7 +171,7 @@ public class BigVector implements Persistable {
    }
 
    public synchronized Object elementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized int firstIndexOf(Object value) {
@@ -198,7 +198,7 @@ public class BigVector implements Persistable {
    }
 
    public synchronized void setElementAt(Object value, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized void removeElementAt(int index) {
@@ -328,7 +328,7 @@ public class BigVector implements Persistable {
 
          return len;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 

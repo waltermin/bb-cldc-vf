@@ -14,7 +14,7 @@ public class DigestFactory {
 
    public static Digest getInstance(String algorithm) {
       if (algorithm == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       String checkAlgorithm = algorithm;
@@ -26,7 +26,7 @@ public class DigestFactory {
             try {
                return factory.create(baseAlgorithm);
             } catch (ClassCastException e) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
          }
 
@@ -48,7 +48,7 @@ public class DigestFactory {
 
    public static void register(DigestFactory factory) {
       if (factory == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       String[] algorithms = factory.getFactoryAlgorithms();

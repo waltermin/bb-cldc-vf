@@ -26,7 +26,7 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
 
    public void setColorConfigurationInternal(int type, int onTime, int offTime, int color) {
       if (!isValidColor(color)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (!this.isLEDAccessLocked()) {

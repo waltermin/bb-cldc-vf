@@ -55,7 +55,7 @@ class ThreadPool {
       }
 
       this._lastTimeUsed = System.currentTimeMillis();
-      super.notify();
+      this.notify();
    }
 
    private synchronized Runnable get() {
@@ -66,7 +66,7 @@ class ThreadPool {
                return null;
             }
 
-            super.wait(delta);
+            this.wait(delta);
          } catch (InterruptedException var3) {
          } catch (Exception var4) {
          }

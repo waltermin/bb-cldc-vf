@@ -31,7 +31,7 @@ public class Resource {
    }
 
    public Vector listResourcesEndingWith(String text) {
-      Vector matches = (Vector)(new Object());
+      Vector matches = new Vector();
       if (this._resources != null) {
          Enumeration enu = this._resources.keys();
 
@@ -84,7 +84,7 @@ public class Resource {
       } catch (ArrayIndexOutOfBoundsException var8) {
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    public static int getIconLength(byte[] icons, int offset) {
@@ -96,7 +96,7 @@ public class Resource {
       } catch (ArrayIndexOutOfBoundsException var3) {
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    public static byte[] getIconBytes(byte[] icons, int ordinal) {

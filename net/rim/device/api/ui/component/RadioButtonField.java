@@ -23,8 +23,8 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    private Bitmap _image;
    private int _iconWidth;
    private int _iconHeight;
-   private TextRect _text = (TextRect)(new Object(this));
-   private XYRect _focus = (XYRect)(new Object());
+   private TextRect _text = new TextRect(this);
+   private XYRect _focus = new XYRect();
    private static Tag TAG;
    private static final int PADDING;
    public static final long NO_USE_ALL_WIDTH;
@@ -42,7 +42,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
       try {
          return this._group.getSelectedIndex() == this._index;
       } catch (NullPointerException npe) {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 
@@ -123,7 +123,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
                this.setSelected(true, 0);
                result = true;
                if (Ui.isTTSEnabled()) {
-                  super.accessibleEventOccurred(1, new Object(2), new Object(4), this);
+                  super.accessibleEventOccurred(1, new Integer(2), new Integer(4), this);
                }
          }
       }
@@ -231,7 +231,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    private void setSelected(boolean selected, int context) {
       if (this._group == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (selected) {
@@ -246,7 +246,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    @Override
    protected boolean trackwheelClick(int status, int time) {
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(1, new Object(2), new Object(4), this);
+         super.accessibleEventOccurred(1, new Integer(2), new Integer(4), this);
       }
 
       return super.trackwheelClick(status, time);

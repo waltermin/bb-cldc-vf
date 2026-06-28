@@ -15,7 +15,7 @@ public final class BMPEncodedImage extends EncodedImage {
       super._info = this._bmpInfo;
       this.populateBMPInfo();
       super._frameInfo = new EncodedImage$FrameInfo[1];
-      super._frameInfo[0] = (EncodedImage$FrameInfo)(new Object());
+      super._frameInfo[0] = new EncodedImage$FrameInfo();
       super._frameInfo[0].width = this._bmpInfo.width;
       super._frameInfo[0].height = this._bmpInfo.height;
       super._frameInfo[0].isMonochrome = this._bmpInfo.isMonochrome;
@@ -36,7 +36,7 @@ public final class BMPEncodedImage extends EncodedImage {
       if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return Bitmap.DEFAULT_TYPE;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -45,14 +45,14 @@ public final class BMPEncodedImage extends EncodedImage {
       if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    final Bitmap getBitmapImpl(int frameIndex) {
       if (frameIndex != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       boolean readonly = (super._decodeMode & 4) != 0;

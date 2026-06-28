@@ -42,7 +42,7 @@ public class Calendar {
    protected Calendar() {
       this.setTimeZone(TimeZone.getDefault());
       this.setTimeInMillis(System.currentTimeMillis());
-      if (!(this instanceof Object)) {
+      if (!(this instanceof net.rim.device.cldc.util.GregorianCalendar)) {
          this.fields = new int[15];
          this.isSet = new boolean[15];
       }
@@ -57,11 +57,11 @@ public class Calendar {
    }
 
    public static Calendar getInstance() {
-      return (Calendar)(new Object());
+      return new net.rim.device.cldc.util.GregorianCalendar();
    }
 
    public static Calendar getInstance(TimeZone zone) {
-      Calendar cal = (Calendar)(new Object());
+      Calendar cal = new net.rim.device.cldc.util.GregorianCalendar();
       cal.setTimeZone(zone);
       return cal;
    }
@@ -75,11 +75,20 @@ public class Calendar {
    }
 
    public final int get(int field) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      try {
+         return ((net.rim.device.cldc.util.GregorianCalendar)this).internalGet(field, true);
+      } catch (ClassCastException e) {
+         return this.fields[field];
+      }
    }
 
    public final void set(int field, int value) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      try {
+         ((net.rim.device.cldc.util.GregorianCalendar)this).internalSet(field, value);
+      } catch (ClassCastException e) {
+         this.fields[field] = value;
+         this.isSet[field] = true;
+      }
    }
 
    public final void setTime(Date date) {

@@ -285,7 +285,7 @@ public final class InternalServices {
       long driverVersion = getDriverVersion(driverType);
       int version = (int)(driverVersion >>> 32);
       int format = (int)(driverVersion & 4294967295L);
-      StringBuffer buff = (StringBuffer)(new Object(16));
+      StringBuffer buff = new StringBuffer(16);
       switch (format) {
          case -1:
             break;

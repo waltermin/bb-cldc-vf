@@ -62,13 +62,13 @@ public final class StringUtilities {
          return null;
       }
 
-      StringBuffer buffer = (StringBuffer)(new Object());
+      StringBuffer buffer = new StringBuffer();
 
       for (int lv = 24; lv >= 0; lv -= 8) {
          char ch = (char)(code >> lv & 0xFF);
          if (ch == 0) {
             if (code != 0) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
             break;
          }
@@ -158,7 +158,7 @@ public final class StringUtilities {
          i--;
       }
 
-      return (String)(new Object(b, start, i));
+      return new String(b, start, i);
    }
 
    public static final int compareObjectToStringIgnoreCase(Object o1, Object o2) {
@@ -208,7 +208,7 @@ public final class StringUtilities {
    }
 
    public static final long stringHashToLong(String key) {
-      SHA1Digest digest = (SHA1Digest)(new Object());
+      SHA1Digest digest = new SHA1Digest();
       digest.update(key.getBytes());
       byte[] hashValBytes = digest.getDigest();
       long hashValLong = 0;
@@ -236,7 +236,7 @@ public final class StringUtilities {
             doAppend(strBuf, buffer, offset, length);
             return strBuf;
          } else {
-            throw new Object();
+            throw new ArrayIndexOutOfBoundsException();
          }
       }
    }
@@ -253,7 +253,7 @@ public final class StringUtilities {
       synchronized (other) {
          synchronized (strBuf) {
             if (offset < 0 || length < 0 || offset + length > other.length()) {
-               throw new Object();
+               throw new ArrayIndexOutOfBoundsException();
             }
 
             doAppend(strBuf, other, offset, length);

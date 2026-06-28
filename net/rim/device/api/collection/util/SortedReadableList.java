@@ -39,7 +39,7 @@ public class SortedReadableList extends UnsortedReadableList implements Sortable
 
    public SortedReadableList(Comparator comparator) {
       if (comparator == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._comparator = comparator;

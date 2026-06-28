@@ -10,7 +10,7 @@ public final class Tooltip {
    private int _duration = 2000;
    Field _content;
    XYPoint _calloutPoint;
-   final XYPoint _position = (XYPoint)(new Object());
+   final XYPoint _position = new XYPoint();
    private final Tooltip$PopScreenRunnable _popScreenRunnable = new Tooltip$PopScreenRunnable(this);
    private final Tooltip$TooltipScreen _screen = new Tooltip$TooltipScreen(this);
    private static final Tag TAG;

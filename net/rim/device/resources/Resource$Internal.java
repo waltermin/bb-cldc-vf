@@ -48,7 +48,7 @@ public final class Resource$Internal {
    }
 
    public static final ToIntHashtable getResourceCache(String endsWithText) {
-      ToIntHashtable cache = (ToIntHashtable)(new Object());
+      ToIntHashtable cache = new ToIntHashtable();
       String ext = getExtension(endsWithText);
 
       for (int moduleHandle = 0; moduleHandle < MAX_MODULES; moduleHandle++) {

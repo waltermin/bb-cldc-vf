@@ -17,7 +17,7 @@ class PushRegistry$AlarmPermissionCheckRunnable implements Runnable {
             MIDletSecurity.checkPermission(8);
          } catch (Exception e) {
             this._failed = true;
-            if (e instanceof Object) {
+            if (e instanceof RuntimeException) {
                this._re = (RuntimeException)e;
             }
          }

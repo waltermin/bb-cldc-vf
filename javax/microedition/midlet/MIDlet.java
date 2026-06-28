@@ -19,7 +19,7 @@ public class MIDlet {
 
    protected MIDlet() {
       if (!_instantiationAllowed) {
-         throw new Object();
+         throw new SecurityException();
       }
 
       MIDletSecurity.checkMIDletCreation();
@@ -98,6 +98,6 @@ public class MIDlet {
          }
       }
 
-      return (String)(this._properties == null ? null : this._properties.get(key));
+      return this._properties == null ? null : (String)this._properties.get(key);
    }
 }

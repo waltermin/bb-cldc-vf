@@ -15,10 +15,10 @@ class MediaItem extends Item {
    MediaItem(String label, int width, int height) {
       synchronized (Application.getEventLock()) {
          this.setLayout(0);
-         this._container = (VerticalFieldManager)(new Object(1152921504606846976L));
+         this._container = new VerticalFieldManager(1152921504606846976L);
          this._container.setCookie(this);
          this.setLabel(label);
-         this._media = (MMAPIMediaField)(new Object(width, height));
+         this._media = new MMAPIMediaField(width, height);
          this._container.add(this._media);
          this.setPeer(this._container);
          this._media.setComponent(this);
@@ -39,7 +39,7 @@ class MediaItem extends Item {
                this._label = null;
             }
          } else if (this._label == null) {
-            this._label = (LabelField)(new Object(label, Item.getFieldLayoutStyle(this.getLayout(), 1) | 1152921504606846976L));
+            this._label = new LabelField(label, Item.getFieldLayoutStyle(this.getLayout(), 1) | 1152921504606846976L);
             this._container.insert(this._label, 0);
          } else {
             this._label.setText(label);

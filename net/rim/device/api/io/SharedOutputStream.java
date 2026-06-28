@@ -11,7 +11,7 @@ public class SharedOutputStream {
    public SharedOutputStream(OutputStream out) {
       this._out = out;
       this._currentIndex = 0;
-      this._sharedStreams = (Vector)(new Object());
+      this._sharedStreams = new Vector();
    }
 
    public synchronized OutputStream getOutputStream() {
@@ -26,12 +26,12 @@ public class SharedOutputStream {
          if (stream.isWritable()) {
             stream.getStream().write(buffer, offset, length);
          } else {
-            throw new Object();
+            throw new IllegalStateException();
          }
       } else if (index == this._currentIndex) {
          this._out.write(buffer, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 
@@ -41,12 +41,12 @@ public class SharedOutputStream {
          if (stream.isWritable()) {
             stream.getStream().flush();
          } else {
-            throw new Object();
+            throw new IllegalStateException();
          }
       } else if (index == this._currentIndex) {
          this._out.flush();
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 
@@ -76,7 +76,7 @@ public class SharedOutputStream {
             this._currentIndex++;
          }
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 

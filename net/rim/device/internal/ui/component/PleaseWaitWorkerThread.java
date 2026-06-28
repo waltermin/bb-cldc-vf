@@ -16,19 +16,19 @@ public class PleaseWaitWorkerThread extends Thread {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void run() {
-      boolean var4 = false /* VF: Semaphore variable */;
+      boolean var5 = false /* VF: Semaphore variable */;
 
       label27: {
          try {
-            var4 = true;
+            var5 = true;
             this.doWork();
-            var4 = false;
+            var5 = false;
             break label27;
          } catch (Throwable t) {
             this.setThrowable(t);
-            var4 = false;
+            var5 = false;
          } finally {
-            if (var4) {
+            if (var5) {
                this._pleaseWaitDialog.waitForDialog();
                this._application.invokeLater(this._screenPopper);
             }

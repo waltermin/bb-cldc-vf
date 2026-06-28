@@ -12,7 +12,7 @@ public class IntMultiMap implements Persistable {
 
    public IntMultiMap(int initialCapacity, boolean allowDuplicates) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._ints = new int[initialCapacity + 1];
@@ -142,17 +142,17 @@ public class IntMultiMap implements Persistable {
 
    public IntEnumeration keys() {
       this.verifySorted();
-      return (IntEnumeration)(new Object(this));
+      return new IntMultiMap$KeysEnumeration(this);
    }
 
    public Enumeration elements(int key) {
       this.verifySorted();
-      return (Enumeration)(new Object(this, key));
+      return new IntMultiMap$KeyValuesEnumeration(this, key);
    }
 
    public Enumeration elements() {
       this.verifySorted();
-      return (Enumeration)(new Object(this));
+      return new IntMultiMap$ValuesEnumeration(this);
    }
 
    public int size() {

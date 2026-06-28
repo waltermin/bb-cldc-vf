@@ -26,7 +26,7 @@ final class TextField$ConvertedString implements AbstractString {
    }
 
    final String getConvertedInsertionString() {
-      return (String)(new Object(this._insertedFilteredChars, 0, this._filteredCharsCount));
+      return new String(this._insertedFilteredChars, 0, this._filteredCharsCount);
    }
 
    @Override

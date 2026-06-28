@@ -72,7 +72,15 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
 
    @Override
    public final boolean addSyncObject(SyncObject object) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      synchronized (CryptoBlock._persistentKeysById) {
+         Hashtable h = (Hashtable)this._root.getContents();
+         if (h != null && this.okToInject()) {
+            h.put(((CryptoBlock$CryptoBlockKey)object).getHashKey(this.isByID()), object);
+            this._root.commit();
+         }
+
+         return true;
+      }
    }
 
    @Override

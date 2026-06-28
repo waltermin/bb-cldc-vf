@@ -33,7 +33,7 @@ public final class RIMSignature {
 
          return -1;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -68,7 +68,7 @@ public final class RIMSignature {
       int expectedHeaderByte = 128 | expectedPacketType << 2;
       int lengthType = headerByte ^ expectedHeaderByte;
       if (lengthType >= 3) {
-         throw new Object();
+         throw new IOException();
       } else {
          return 1 + (1 << lengthType);
       }
@@ -90,7 +90,7 @@ public final class RIMSignature {
       byte[] digestPrefix;
       switch (hashAlgorithm) {
          case 0:
-            throw new Object();
+            throw new IOException();
          case 1:
          default:
             digest = new MD5Digest();
@@ -108,7 +108,7 @@ public final class RIMSignature {
       byte publicKeyVersion = publicKeyBytes[publicKeyOffset++];
       switch (publicKeyVersion) {
          case 2:
-            throw new Object();
+            throw new IOException();
          case 3:
          default:
             publicKeyOffset += 6;
@@ -127,7 +127,7 @@ public final class RIMSignature {
             verified = verifyPGPDSASignature(digest.getDigest(), signatureBytes, signatureOffset, publicKeyBytes, publicKeyOffset);
             break;
          default:
-            throw new Object();
+            throw new IOException();
       }
 
       return !verified ? 0 : signingTimeInSeconds * 1000;
@@ -178,7 +178,7 @@ public final class RIMSignature {
 
    private static final void assertByte(byte[] bytes, int offset, int value) {
       if (value != (bytes[offset++] & 255)) {
-         throw new Object();
+         throw new IOException();
       }
    }
 

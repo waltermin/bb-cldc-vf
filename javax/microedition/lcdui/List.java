@@ -2,6 +2,7 @@ package javax.microedition.lcdui;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 
 public class List extends Screen implements Choice {
    ChoiceGroup _list;
@@ -147,7 +148,7 @@ public class List extends Screen implements Choice {
    private void init(String title, int listType, String[] stringElements, Image[] imageElements, boolean validateElements) {
       synchronized (Application.getEventLock()) {
          this.getPeer().setDisplayable(this);
-         Manager container = (Manager)(new Object(3459045988797251584L));
+         Manager container = new VerticalFieldManager(3459045988797251584L);
          this.getPeer().add(container);
          this._list = new ChoiceGroup(listType, stringElements, imageElements, validateElements);
          container.add(this._list.addToForm(null));

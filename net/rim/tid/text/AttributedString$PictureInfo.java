@@ -11,7 +11,7 @@ public final class AttributedString$PictureInfo {
 
    public AttributedString$PictureInfo(AttributedString$Picture aPicture) {
       if (aPicture == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._picture = aPicture;

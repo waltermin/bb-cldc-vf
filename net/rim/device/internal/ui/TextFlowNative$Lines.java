@@ -67,7 +67,7 @@ public final class TextFlowNative$Lines {
 
    public final void replace(int aDestStart, int aDestCount, TextFlowNative$Lines aSourceLines, int aSourceStart, int aSourceCount) {
       if (aDestStart < 0 || aDestCount < 0 || aDestStart + aDestCount > this._count) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (aSourceStart >= 0 && aSourceCount >= 0 && aSourceStart + aSourceCount <= aSourceLines._count) {
@@ -136,7 +136,7 @@ public final class TextFlowNative$Lines {
             this._bidiStateIndex[i] = (short)(this._bidiStateIndex[i] + diff);
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

@@ -84,7 +84,7 @@ public class Form extends Screen {
    public void set(int itemNum, Item item) {
       synchronized (Application.getEventLock()) {
          if (itemNum == this._container.getFieldCount()) {
-            throw new Object();
+            throw new IndexOutOfBoundsException();
          }
 
          this.insert(itemNum, item);

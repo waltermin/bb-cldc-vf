@@ -2,9 +2,10 @@ package net.rim.device.api.synchronization;
 
 import net.rim.device.api.collection.CollectionEventSource;
 import net.rim.device.api.collection.util.CollectionListenerManager;
+import net.rim.vm.WeakReference;
 
 public class OTASyncCapableSyncItem extends SyncItem implements OTASyncCapable, CollectionEventSource {
-   private CollectionListenerManager _collectionListeners = (CollectionListenerManager)(new Object());
+   private CollectionListenerManager _collectionListeners = new CollectionListenerManager();
 
    protected OTASyncCapableSyncItem() {
    }
@@ -20,7 +21,7 @@ public class OTASyncCapableSyncItem extends SyncItem implements OTASyncCapable, 
 
    @Override
    public void addCollectionListener(Object listener) {
-      this._collectionListeners.addCollectionListener(new Object(listener));
+      this._collectionListeners.addCollectionListener(new WeakReference(listener));
    }
 
    @Override

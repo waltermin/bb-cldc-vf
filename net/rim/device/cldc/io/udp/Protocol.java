@@ -3,6 +3,10 @@ package net.rim.device.cldc.io.udp;
 import javax.microedition.io.Connection;
 import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
+import net.rim.device.api.io.DatagramBase;
+import net.rim.device.api.io.UdpAddress;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.cldc.io.nativebase.NativeConnectionBase;
 import net.rim.device.cldc.io.tunnel.Tunnel;
@@ -27,7 +31,7 @@ public final class Protocol extends NativeConnectionBase {
 
    @Override
    public final Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: field: unresolved slot");
    }
 
    @Override
@@ -50,7 +54,8 @@ public final class Protocol extends NativeConnectionBase {
 
    @Override
    public final int getLocalPort() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      this.checkForClosed();
+      return ((UdpAddress)super._receiveFilter).getDestPort();
    }
 
    @Override
@@ -101,7 +106,15 @@ public final class Protocol extends NativeConnectionBase {
 
    @Override
    public final int getMaximumLength() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      this.checkForClosed();
+      int length = super._transport.getMaximumLength();
+      switch (((UdpAddress)super._addressBase).getType()) {
+         case 2:
+         case 4:
+            length -= GpakUtil.getHeaderSize();
+         default:
+            return length;
+      }
    }
 
    @Override
@@ -117,12 +130,55 @@ public final class Protocol extends NativeConnectionBase {
 
    @Override
    public final void receive(Datagram datagram) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      super.receive(datagram);
+      int type = ((UdpAddress)super._receiveFilter).getType();
+      if (type != -1 && (type & 6) != 0) {
+         if (datagram instanceof DatagramBase) {
+            UdpInternalAddress addressBase = new UdpInternalAddress(((DatagramBase)datagram).getAddressBase());
+            int packetType = GpakUtil.decode(datagram, addressBase);
+            addressBase.setType(packetType);
+            ((DatagramBase)datagram).setAddressBase(addressBase);
+            return;
+         }
+
+         UdpInternalAddress addressBase = new UdpInternalAddress(datagram.getAddress());
+         int packetType = GpakUtil.decode(datagram);
+         addressBase.setType(packetType);
+         datagram.setAddress(addressBase.getAddress());
+      }
    }
 
    @Override
    public final byte[] setup(int callType, Object context) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      switch (callType) {
+         case -157135626:
+            return super.setup(callType, context);
+         case -157135625:
+         default:
+            if (!this._promiscuousMode) {
+               try {
+                  ControlledAccess.assertRRISignatures(true);
+               } catch (ControlledAccessException cae) {
+                  return null;
+               }
+
+               this._promiscuousMode = true;
+               ((UdpAddress)super._receiveFilter).setDestPort(-1);
+               if (this._localPort != -1 && _hpa != null) {
+                  synchronized (_hpa) {
+                     _hpa.deregisterConnection(this._localPort, this, this._apnName);
+                  }
+               }
+
+               this._localPort = -1;
+               if (this._tunnel != null) {
+                  this._tunnel.close();
+                  return null;
+               }
+            }
+
+            return null;
+      }
    }
 
    private final String midletSpecificWork(String address) {

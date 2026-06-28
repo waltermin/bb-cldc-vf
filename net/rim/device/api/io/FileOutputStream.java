@@ -1,6 +1,8 @@
 package net.rim.device.api.io;
 
 import java.io.OutputStream;
+import net.rim.device.api.system.ApplicationProcess;
+import net.rim.vm.Process;
 
 public final class FileOutputStream extends OutputStream {
    private FileEventDispatcher _dispatcher;
@@ -35,7 +37,7 @@ public final class FileOutputStream extends OutputStream {
             this._offset += bytesToCopy;
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -46,6 +48,9 @@ public final class FileOutputStream extends OutputStream {
 
    @Override
    public final synchronized void close() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      this.flush();
+      File.close(this._handle);
+      this._handle = -1;
+      ((ApplicationProcess)Process.currentProcess()).removeCleanupRunnable(this._cleanupRunnable);
    }
 }

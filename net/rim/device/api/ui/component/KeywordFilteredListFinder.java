@@ -58,7 +58,7 @@ public class KeywordFilteredListFinder extends BasicEditField {
 
    private String composeLanguageAdjustedPattern() {
       if (this._acceptYomiSearch && this.getInputContext().getActiveInputMethodID() == 512) {
-         StringBuffer compositeSearchPattern = (StringBuffer)(new Object());
+         StringBuffer compositeSearchPattern = new StringBuffer();
          AttributedString attributedString = this.getAttributedText();
          int composedTextEnd = this.getComposedTextEnd();
          boolean hasHanSymbols = false;

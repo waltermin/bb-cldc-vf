@@ -2,6 +2,7 @@ package javax.microedition.lcdui;
 
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.XYRect;
+import net.rim.device.api.ui.container.DialogFieldManager;
 
 class MIDPAlert extends MIDPScreen {
    private AlertType _alertType;
@@ -15,7 +16,16 @@ class MIDPAlert extends MIDPScreen {
 
    @Override
    protected void onUiEngineAttached(boolean attached) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      super.onUiEngineAttached(attached);
+      if (attached) {
+         if (this._alertType != null) {
+            this._alertType.playSound();
+         }
+
+         Manager cfm = ((DialogFieldManager)this.getDelegate()).getCustomManager();
+         if (cfm.getVirtualHeight() <= cfm.getHeight()) {
+         }
+      }
    }
 
    @Override

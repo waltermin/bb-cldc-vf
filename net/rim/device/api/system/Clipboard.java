@@ -39,7 +39,7 @@ public final class Clipboard {
          return true;
       }
 
-      if (o != null && !(o instanceof Object) && !(o instanceof Object)) {
+      if (o != null && !(o instanceof String) && !(o instanceof StringBuffer)) {
          int callingModule = TraceBack.getCallingModule(2);
          if (!ControlledAccess.verifyCodeModuleSignature(callingModule, 51)) {
             return true;
@@ -69,7 +69,7 @@ public final class Clipboard {
       }
 
       if (this.isClipboardAccessRestricted(o)) {
-         throw new Object();
+         throw new SecurityException();
       }
 
       Object temp = this._object;

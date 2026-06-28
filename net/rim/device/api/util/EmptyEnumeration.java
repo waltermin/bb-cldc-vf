@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 public final class EmptyEnumeration implements Enumeration {
    @Override
@@ -10,6 +11,6 @@ public final class EmptyEnumeration implements Enumeration {
 
    @Override
    public final Object nextElement() {
-      throw new Object();
+      throw new NoSuchElementException();
    }
 }

@@ -18,7 +18,7 @@ class AbstractCallCommandHandler extends Phone {
       if (this._order >= 100 && this._order <= 2000) {
          internalRegister(this);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

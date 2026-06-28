@@ -1,6 +1,7 @@
 package net.rim.device.cldc.io.nativebase;
 
 import javax.microedition.io.Connection;
+import javax.microedition.io.ConnectionNotFoundException;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.DatagramConnectionBase;
@@ -10,7 +11,7 @@ public class NativeConnectionBase extends DatagramConnectionBase {
    @Override
    public Connection openPrim(String name, int mode, boolean timeouts) {
       if (!this.checkNetwork()) {
-         throw new Object();
+         throw new ConnectionNotFoundException();
       }
 
       super.openPrim(name, mode, timeouts);

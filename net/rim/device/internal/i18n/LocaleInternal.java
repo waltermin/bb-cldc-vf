@@ -17,7 +17,7 @@ public final class LocaleInternal {
    public static final void addLocale() {
       String module = ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
       if (module.startsWith(RUNTIME_RESOURCES)) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       Locale.addLocaleInternal(getLocaleFromModule());

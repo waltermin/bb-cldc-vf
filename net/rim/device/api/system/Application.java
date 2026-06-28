@@ -4,11 +4,15 @@ import javax.microedition.io.file.FileSystemListener;
 import net.rim.device.api.io.file.FileSystemJournalListener;
 import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.crypto.vpn.VPNListener;
 import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.io.NativeSocketListener;
 import net.rim.device.internal.io.file.FileSystem;
+import net.rim.device.internal.system.EngineeringDataListener;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.MessageListener;
+import net.rim.device.internal.system.RadioStatusListenerFilter;
 import net.rim.vm.Message;
 import net.rim.vm.MessageQueue;
 import net.rim.vm.Process;
@@ -94,8 +98,8 @@ public class Application {
 
    public synchronized void addListener(int device, Object listener) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
-      if (device == 57 && !(listener instanceof Object)) {
-         throw new Object();
+      if (device == 57 && !(listener instanceof NativeSocketListener)) {
+         throw new IllegalArgumentException();
       }
 
       this._listeners[device] = ListenerUtilities.addListener(this._listeners[device], listener);
@@ -182,39 +186,39 @@ public class Application {
 
    public void addRadioListener(int WAFFilter, RadioListener listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof RadioStatusListener) {
          if ((WAFFilter & 4) != 0) {
             ApplicationControl.assertWiFiPermitted(true, CommonResource.getBundle(), 10165);
          }
 
          RadioStatusListener rsl = (RadioStatusListener)listener;
-         this.addListener(33, new Object(WAFFilter, rsl));
+         this.addListener(33, new RadioStatusListenerFilter(WAFFilter, rsl));
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof RadioPacketListener) {
          this.addListener(34, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof PhoneCallListener) {
          this.addListener(52, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof PhoneTimerListener) {
          this.addListener(53, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof PhoneControlListener) {
          this.addListener(54, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof EngineeringDataListener) {
          this.addListener(36, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof ModemListener) {
          this.addListener(48, listener);
       }
 
@@ -222,15 +226,15 @@ public class Application {
          this.addListener(37, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof WLANListenerInternal) {
          this.addListener(18, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof VPNListener) {
          this.addListener(51, listener);
       }
 
-      if (listener instanceof Object) {
+      if (listener instanceof GANStatusListener) {
          this.addListener(58, listener);
       }
    }
@@ -241,11 +245,11 @@ public class Application {
 
    public void addIOPortListener(IOPortListener listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       ApplicationControl.assertLocalConnectionAllowed(true);
-      if (listener instanceof Object) {
+      if (listener instanceof USBPortListener) {
          this.addListener(14, listener);
       }
    }
@@ -369,7 +373,7 @@ public class Application {
 
    public final void invokeLaterSpecial(Runnable runnable, int data0) {
       if (runnable == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       synchronized (this._invokeLaterMessage) {
@@ -406,7 +410,7 @@ public class Application {
          runnable.run();
       } else {
          if (runnable == null) {
-            throw new Object();
+            throw new NullPointerException();
          }
 
          synchronized (this._invokeAndWaitMonitor) {
@@ -420,7 +424,7 @@ public class Application {
 
                try {
                   this._invokeLaterMessage.wait();
-               } catch (InterruptedException var5) {
+               } catch (InterruptedException var7) {
                }
             }
          }

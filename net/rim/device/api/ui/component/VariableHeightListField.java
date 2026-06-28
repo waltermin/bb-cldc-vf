@@ -21,7 +21,7 @@ public class VariableHeightListField extends Field {
    private boolean _upScrollArrowVisible;
    private boolean _downScrollArrowVisible;
    private boolean _layoutOnSizeChange;
-   private XYRect _focusRect = (XYRect)(new Object());
+   private XYRect _focusRect = new XYRect();
    private int _selectionRange;
    private VariableHeightListFieldCallback _callback;
    private String _emptyString;
@@ -63,7 +63,7 @@ public class VariableHeightListField extends Field {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void calcFocusRect(boolean move) {
@@ -172,7 +172,7 @@ public class VariableHeightListField extends Field {
 
          this.updateScrollbar();
       } else {
-         throw new Object(index);
+         throw new ArrayIndexOutOfBoundsException(index);
       }
    }
 
@@ -338,7 +338,7 @@ public class VariableHeightListField extends Field {
 
    protected int getYForRow(int row) {
       if (row < this._topRow) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int offset = 0;
@@ -382,7 +382,7 @@ public class VariableHeightListField extends Field {
          this.fieldChangeNotify(Integer.MIN_VALUE);
          this.updateScrollbar();
       } else {
-         throw new Object(index);
+         throw new ArrayIndexOutOfBoundsException(index);
       }
    }
 
@@ -401,7 +401,7 @@ public class VariableHeightListField extends Field {
 
    public void invalidateRange(int start, int end) {
       if (end < start) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (start < this._topRow) {

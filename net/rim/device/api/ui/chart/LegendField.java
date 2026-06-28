@@ -81,7 +81,7 @@ public class LegendField extends ChartField {
       try {
          return this._labels[index];
       } catch (ArrayIndexOutOfBoundsException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -94,7 +94,7 @@ public class LegendField extends ChartField {
 
       for (int i = labels.length - 1; i >= 0; i--) {
          if (labels[i] == null) {
-            throw new Object();
+            throw new NullPointerException();
          }
       }
 
@@ -111,7 +111,7 @@ public class LegendField extends ChartField {
             this.updateChart();
          }
       } catch (ArrayIndexOutOfBoundsException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

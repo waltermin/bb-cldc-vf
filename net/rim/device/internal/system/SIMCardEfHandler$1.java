@@ -1,6 +1,7 @@
 package net.rim.device.internal.system;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.UiApplication;
 
 class SIMCardEfHandler$1 implements Runnable {
    private final Application val$app;
@@ -13,6 +14,9 @@ class SIMCardEfHandler$1 implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this.val$app instanceof UiApplication && this.this$0._dialog != null) {
+         ((UiApplication)this.val$app).popScreen(this.this$0._dialog);
+         this.this$0._dialog = null;
+      }
    }
 }

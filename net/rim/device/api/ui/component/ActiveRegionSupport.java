@@ -239,7 +239,7 @@ class ActiveRegionSupport {
 
    private static MenuItem cookieToMenuItem(ActiveFieldCookie cookie, CookieProvider provider, ContextMenu contextMenu, Object context) {
       MenuItem defaultItem = null;
-      Vector items = (Vector)(new Object());
+      Vector items = new Vector();
       defaultItem = cookie.getFocusVerbs(provider, context, items);
       int count = items.size();
 

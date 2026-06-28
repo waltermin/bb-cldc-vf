@@ -1,6 +1,6 @@
 package net.rim.device.api.ui.component;
 
-import net.rim.device.api.ui.text.TextFilter;
+import net.rim.device.api.ui.text.EmailAddressTextFilter;
 import net.rim.device.internal.ui.FormatParams;
 
 public class EmailAddressEditField extends EditField {
@@ -23,7 +23,7 @@ public class EmailAddressEditField extends EditField {
    }
 
    private void commonInit() {
-      this.setFilter((TextFilter)(new Object()));
+      this.setFilter(new EmailAddressTextFilter());
       this.setNonSpellCheckable(true);
       this.setAllowUnicodeInput(false);
    }

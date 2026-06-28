@@ -70,7 +70,7 @@ class BasicChoice extends Item implements Choice {
    public void setSelectedFlags(boolean[] selectedArray) {
       synchronized (Application.getEventLock()) {
          if (selectedArray.length < this._numChoices) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (this._numChoices != 0) {
@@ -88,7 +88,7 @@ class BasicChoice extends Item implements Choice {
             }
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -125,7 +125,7 @@ class BasicChoice extends Item implements Choice {
       synchronized (Application.getEventLock()) {
          int count = this._numChoices;
          if (selectedArray_return.length < count) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          int selectedCount = 0;
@@ -196,7 +196,7 @@ class BasicChoice extends Item implements Choice {
             this._numChoices++;
             Arrays.insertAt(this._fonts, Font.getDefaultFont(), elementNum);
          } else {
-            throw new Object();
+            throw new IndexOutOfBoundsException();
          }
       }
    }
@@ -238,7 +238,7 @@ class BasicChoice extends Item implements Choice {
 
    private void checkIndex(int index) {
       if (index < 0 || index >= this._numChoices) {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 }

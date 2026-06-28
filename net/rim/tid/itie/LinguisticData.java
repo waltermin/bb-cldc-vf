@@ -48,7 +48,7 @@ public class LinguisticData {
          this._diagnosticMessage = diagnosticMessage;
          this._codFile = codFileName;
       } else {
-         throw new Object();
+         throw new NullPointerException();
       }
    }
 

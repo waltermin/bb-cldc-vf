@@ -69,7 +69,7 @@ public class PieRenderer extends ChartRenderer {
          case 12:
             return;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
    }
 }

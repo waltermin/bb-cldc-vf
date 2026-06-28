@@ -3,6 +3,7 @@ package net.rim.device.internal.io;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import javax.microedition.io.Connection;
+import javax.microedition.io.ConnectionNotFoundException;
 import javax.microedition.io.InputConnection;
 import javax.microedition.io.OutputConnection;
 import net.rim.device.api.system.ApplicationDescriptor;
@@ -44,15 +45,15 @@ public class RIMConnector {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static DataInputStream openDataInputStream(int moduleHandle, String name) {
       InputConnection con = (InputConnection)open(moduleHandle, name, 1, false, null);
-      boolean var4 = false /* VF: Semaphore variable */;
+      boolean var6 = false /* VF: Semaphore variable */;
 
       DataInputStream var3;
       try {
-         var4 = true;
+         var6 = true;
          var3 = con.openDataInputStream();
-         var4 = false;
+         var6 = false;
       } finally {
-         if (var4) {
+         if (var6) {
             con.close();
          }
       }
@@ -65,15 +66,15 @@ public class RIMConnector {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static DataOutputStream openDataOutputStream(int moduleHandle, String name) {
       OutputConnection con = (OutputConnection)open(moduleHandle, name, 2, false, null);
-      boolean var4 = false /* VF: Semaphore variable */;
+      boolean var6 = false /* VF: Semaphore variable */;
 
       DataOutputStream var3;
       try {
-         var4 = true;
+         var6 = true;
          var3 = con.openDataOutputStream();
-         var4 = false;
+         var6 = false;
       } finally {
-         if (var4) {
+         if (var6) {
             con.close();
          }
       }
@@ -84,7 +85,7 @@ public class RIMConnector {
 
    private static void checkConnectionSupported(String name) {
       if (MIDPSupport.connectionNotSupported(name)) {
-         throw new Object();
+         throw new ConnectionNotFoundException();
       }
    }
 }

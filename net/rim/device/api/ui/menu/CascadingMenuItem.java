@@ -27,7 +27,7 @@ public final class CascadingMenuItem extends MenuItem {
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public final void invokeSubMenu(Menu parentMenu, int xOffset, int yOffset) {
-      Menu menu = (Menu)(new Object(327680));
+      Menu menu = new Menu(327680);
       if (this._subItems != null) {
          for (int i = 0; i < this._subItems.length; i++) {
             menu.add(this._subItems[i]);
@@ -39,14 +39,14 @@ public final class CascadingMenuItem extends MenuItem {
       Field tempTarget = ContextMenu.getInstance().getTarget();
       Screen targetScreen = Menu.getTargetScreen();
       menu.setTargetScreenVirtual(targetScreen);
-      boolean var8 = false /* VF: Semaphore variable */;
+      boolean var9 = false /* VF: Semaphore variable */;
 
       try {
-         var8 = true;
+         var9 = true;
          menu.show();
-         var8 = false;
+         var9 = false;
       } finally {
-         if (var8) {
+         if (var9) {
             ContextMenu.getInstance().setTarget(tempTarget);
             Menu.setTargetScreen(targetScreen);
          }

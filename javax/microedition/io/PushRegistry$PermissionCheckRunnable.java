@@ -21,7 +21,7 @@ class PushRegistry$PermissionCheckRunnable implements Runnable {
             PushRegistry.checkPermissionPrimitive(this._moduleHandle, this._permission, this._url);
          } catch (Exception e) {
             this._failed = true;
-            if (e instanceof Object) {
+            if (e instanceof RuntimeException) {
                this._re = (RuntimeException)e;
             }
          }

@@ -24,8 +24,8 @@ final class GlobalScreenManager implements GlobalEventListener {
    private WeakReference _focusScreen;
    private UiEngineImpl _paintControlEngine;
    private UiEngineImpl _foregroundEngine;
-   private Stack _backingStoreStack = (Stack)(new Object());
-   private Stack _transparentBackingStoreStack = (Stack)(new Object());
+   private Stack _backingStoreStack = new Stack();
+   private Stack _transparentBackingStoreStack = new Stack();
    public static final long GUID_GLOBAL_SCREEN;
    static final long GUID_LOCAL_WRAPPED_SCREEN;
    static final long GUID_LOCAL_WRAPPED_SCREENS_SET;
@@ -39,7 +39,7 @@ final class GlobalScreenManager implements GlobalEventListener {
    private static final int PAINT_CONTROL_DISMISS;
 
    private GlobalScreenManager() {
-      this._statusQueue = (Vector)(new Object());
+      this._statusQueue = new Vector();
       this._appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       Proxy.getInstance().addGlobalEventListener(this);
    }
@@ -114,7 +114,7 @@ final class GlobalScreenManager implements GlobalEventListener {
       if (oldNotification) {
          current.engine.statusDismissedEvent(current.screen);
       } else {
-         RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, exposedExtents, new Object(processId));
+         RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, exposedExtents, new Integer(processId));
       }
 
       this.updatePaintControl(2, false, engine);
@@ -132,7 +132,7 @@ final class GlobalScreenManager implements GlobalEventListener {
          }
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    public static final Screen getCurrentGlobalScreen() {
@@ -240,7 +240,7 @@ final class GlobalScreenManager implements GlobalEventListener {
 
    public static final void setScreenWithFocus(Screen screen) {
       synchronized (_statusManager) {
-         _statusManager._focusScreen = (WeakReference)(new Object(screen));
+         _statusManager._focusScreen = new WeakReference(screen);
       }
    }
 
@@ -253,15 +253,15 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    static final BackingStore getBackingStore() {
-      return (BackingStore)(_statusManager._backingStoreStack.isEmpty()
-         ? new Object(Display.getWidth(), Display.getHeight(), false)
-         : _statusManager._backingStoreStack.pop());
+      return _statusManager._backingStoreStack.isEmpty()
+         ? new BackingStore(Display.getWidth(), Display.getHeight(), false)
+         : (BackingStore)_statusManager._backingStoreStack.pop();
    }
 
    static final BackingStore getTransparentBackingStore() {
-      return (BackingStore)(_statusManager._transparentBackingStoreStack.isEmpty()
-         ? new Object(Display.getWidth(), Display.getHeight(), true)
-         : _statusManager._transparentBackingStoreStack.pop());
+      return _statusManager._transparentBackingStoreStack.isEmpty()
+         ? new BackingStore(Display.getWidth(), Display.getHeight(), true)
+         : (BackingStore)_statusManager._transparentBackingStoreStack.pop();
    }
 
    static final void returnBackingStore(BackingStore backingStore) {

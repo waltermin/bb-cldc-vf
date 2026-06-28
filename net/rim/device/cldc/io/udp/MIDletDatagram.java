@@ -3,6 +3,7 @@ package net.rim.device.cldc.io.udp;
 import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
+import net.rim.device.api.io.UdpAddress;
 
 public class MIDletDatagram extends DatagramBase {
    private boolean initcomplete = true;
@@ -19,7 +20,7 @@ public class MIDletDatagram extends DatagramBase {
 
    @Override
    protected DatagramAddressBase newAddressBase() {
-      return (DatagramAddressBase)(new Object());
+      return new UdpAddress();
    }
 
    @Override
@@ -32,14 +33,14 @@ public class MIDletDatagram extends DatagramBase {
       if (buffer == null || offset < buffer.length && offset + length <= buffer.length && offset + length >= 0) {
          super.setData(buffer, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    public void setLength(int length) {
       if (length > this.getArray().length - this.getArrayStart()) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       super.setLength(length);

@@ -52,7 +52,7 @@ public final class ApplicationProcess extends Process implements Runnable {
 
    public final synchronized void addCleanupRunnable(Runnable runnable) {
       if (this._cleanupRunnables == null) {
-         this._cleanupRunnables = (Vector)(new Object());
+         this._cleanupRunnables = new Vector();
       }
 
       this._cleanupRunnables.addElement(runnable);
@@ -132,7 +132,9 @@ public final class ApplicationProcess extends Process implements Runnable {
    }
 
    final void cleanup() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._cleanupRunnables != null) {
+         new Thread(this).start();
+      }
    }
 
    @Override

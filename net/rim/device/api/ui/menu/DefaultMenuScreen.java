@@ -12,6 +12,7 @@ import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.internal.ui.UiInternal;
+import net.rim.device.internal.ui.VerticalFieldManager3;
 import net.rim.tid.im.layout.SLKeyLayout;
 
 public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
@@ -24,7 +25,7 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
    private static Tag TAG;
 
    public DefaultMenuScreen() {
-      this((Manager)(new Object(299067162755072L)));
+      this(new VerticalFieldManager3(299067162755072L));
    }
 
    public DefaultMenuScreen(Manager manager) {

@@ -10,7 +10,7 @@ public final class EventLog implements EventLogConstants {
 
    public static final String getRegisteredAppName(long guid) {
       byte[] name = getRegisteredAppNameArray(guid);
-      return (String)(name == null ? Long.toString(guid, 16) : new Object(name));
+      return name == null ? Long.toString(guid, 16) : new String(name);
    }
 
    public static final native int getRegisteredAppEventType(long var0);

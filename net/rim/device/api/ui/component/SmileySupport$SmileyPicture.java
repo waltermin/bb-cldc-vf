@@ -26,7 +26,7 @@ class SmileySupport$SmileyPicture implements AttributedString$Picture {
    SmileySupport$SmileyPicture(SmileySupport _1, int id) {
       this.this$0 = _1;
       this._id = id;
-      this._info = (AttributedString$PictureInfo)(new Object(this));
+      this._info = new AttributedString$PictureInfo(this);
       this._info._width = SmileySupport._size;
       this._info._height = SmileySupport._size;
       this._info._advance = SmileySupport._size + 1;

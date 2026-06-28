@@ -21,19 +21,19 @@ public class Theme {
    private Bitmap[] _themeBitmaps = new Bitmap[4];
    private int _borderStyle = 0;
    private int _themeLoadingCount = 0;
-   private WeakReference _weakReference = (WeakReference)(new Object(this));
-   private LongHashtable _attributeSets = (LongHashtable)(new Object(20));
+   private WeakReference _weakReference = new WeakReference(this);
+   private LongHashtable _attributeSets = new LongHashtable(20);
    private Hashtable _moduleDefaults;
    private Hashtable _defaultImageDescriptors;
-   private Hashtable _themeImageDescriptors = (Hashtable)(new Object(200));
-   private Hashtable _borders = (Hashtable)(new Object(10));
-   private Hashtable _scrollbars = (Hashtable)(new Object(10));
+   private Hashtable _themeImageDescriptors = new Hashtable(200);
+   private Hashtable _borders = new Hashtable(10);
+   private Hashtable _scrollbars = new Hashtable(10);
    private Theme$LayoutFactory _layoutFactory;
-   private Hashtable _fonts = (Hashtable)(new Object(10));
-   private Hashtable _registeredFontNames = (Hashtable)(new Object(10));
+   private Hashtable _fonts = new Hashtable(10);
+   private Hashtable _registeredFontNames = new Hashtable(10);
    private int[] _fontHandles = new int[0];
-   private Hashtable _ringtones = (Hashtable)(new Object(10));
-   private ToIntHashtable _palette = (ToIntHashtable)(new Object(10));
+   private Hashtable _ringtones = new Hashtable(10);
+   private ToIntHashtable _palette = new ToIntHashtable(10);
    private ToIntHashtable _iconCollectionNames;
    private EncodedImage[] _osIcons = new EncodedImage[11];
    private int _osKeyIconWidth;
@@ -48,11 +48,11 @@ public class Theme {
    private String _idleScreenName;
    private String _thumbnailName;
    private boolean _thumbnailNameSet;
-   private Hashtable _aliasList = (Hashtable)(new Object());
+   private Hashtable _aliasList = new Hashtable();
    private int _appIconSize;
-   private Hashtable _appIcons = (Hashtable)(new Object());
+   private Hashtable _appIcons = new Hashtable();
    private ResourceBundle _resourceBundle;
-   private Hashtable _options = (Hashtable)(new Object());
+   private Hashtable _options = new Hashtable();
    public static final int FOCUS_STYLE_INVERT;
    public static final int FOCUS_STYLE_INVERT_STRIKE;
    public static final int FOCUS_STYLE_INVERT_BOX;
@@ -122,7 +122,7 @@ public class Theme {
    }
 
    protected void addFont(ResourceFetcher resourceFetcher, String name) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    protected void addImage(ResourceFetcher resourceFetcher, String name, boolean isDefault) {
@@ -137,7 +137,7 @@ public class Theme {
             isIconCollection = true;
             String subName = name.substring(0, iconIndex);
             if (this._iconCollectionNames == null) {
-               this._iconCollectionNames = (ToIntHashtable)(new Object(100));
+               this._iconCollectionNames = new ToIntHashtable(100);
             }
 
             int themeIndex = this._iconCollectionNames.get(subName);
@@ -383,8 +383,7 @@ public class Theme {
       }
 
       long lkey = this.getKey(tag.hashCode(), null, 0);
-      ThemeAttributeSet attributes = (ThemeAttributeSet)this._attributeSets.get(lkey);
-      return attributes;
+      return (ThemeAttributeSet)this._attributeSets.get(lkey);
    }
 
    public ThemeAttributeSet getAttributeSet(Tag tag, String idname, int state) {
@@ -491,8 +490,7 @@ public class Theme {
    }
 
    public Border getBorder(String name) {
-      Border border = (Border)this._borders.get(name);
-      return border;
+      return (Border)this._borders.get(name);
    }
 
    public Bitmap[] getScrollbar(String name) {
@@ -531,7 +529,7 @@ public class Theme {
       if (type >= 0 && type < 4) {
          return ThemeManager.getActiveTheme()._themeBitmaps[type];
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

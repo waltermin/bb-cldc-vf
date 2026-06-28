@@ -1,13 +1,14 @@
 package net.rim.device.api.ui;
 
 import net.rim.device.api.system.Display;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.internal.ui.BackingStore;
 
 class UiEngineImpl$ProxyScreen extends Screen {
    Screen _screen;
 
    public UiEngineImpl$ProxyScreen(Screen screen) {
-      super((Manager)(new Object()), !screen.isTransparent() && !screen.isTransparentBorder() ? 0 : 68719476736L);
+      super(new VerticalFieldManager(), !screen.isTransparent() && !screen.isTransparentBorder() ? 0 : 68719476736L);
       this._screen = screen;
       this.setAcceptsInput(this._screen.acceptsInput());
    }

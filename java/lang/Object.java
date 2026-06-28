@@ -10,7 +10,7 @@ public class Object {
    }
 
    public String toString() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      return this.getClass().getName() + '@' + Integer.toHexString(this.hashCode());
    }
 
    public final native void notify();
@@ -27,7 +27,7 @@ public class Object {
 
          this.wait(timeout);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

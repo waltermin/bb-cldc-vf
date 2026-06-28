@@ -18,7 +18,7 @@ public final class HashCodeCalculator {
       } else if (offset >= 0 && length >= 0 && data.length - length >= offset) {
          return CRC32.update(-length, data, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

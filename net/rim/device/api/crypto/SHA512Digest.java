@@ -31,7 +31,7 @@ public final class SHA512Digest extends AbstractDigest implements Digest {
             length -= updated;
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

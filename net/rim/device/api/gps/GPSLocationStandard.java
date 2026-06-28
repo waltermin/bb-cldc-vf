@@ -47,7 +47,7 @@ public class GPSLocationStandard extends GPSLocation {
       double tempLat = latitude;
       int degree = (int)latitude & 65535;
       tempLat = (tempLat - degree) * 4633641066610819072L;
-      StringBuffer buf = (StringBuffer)(new Object());
+      StringBuffer buf = new StringBuffer();
       buf.append(dirCh).append(' ').append(degree).append('°');
       int temp = (int)tempLat;
       double temp2 = tempLat - temp;
@@ -56,7 +56,7 @@ public class GPSLocationStandard extends GPSLocation {
       tempLat = (int)tempLat + temp2;
       buf.append(' ').append(tempLat).append('\'');
       lat = buf.toString();
-      buf = null;
+      StringBuffer var15 = null;
       return lat;
    }
 
@@ -82,7 +82,7 @@ public class GPSLocationStandard extends GPSLocation {
       double tempLong = longitude;
       int degree = (int)longitude & 65535;
       tempLong = (tempLong - degree) * 4633641066610819072L;
-      StringBuffer buf = (StringBuffer)(new Object());
+      StringBuffer buf = new StringBuffer();
       buf.append(dirCh).append(' ').append(degree).append('°');
       int temp = (int)tempLong;
       double temp2 = tempLong - temp;
@@ -91,7 +91,7 @@ public class GPSLocationStandard extends GPSLocation {
       tempLong = (int)tempLong + temp2;
       buf.append(' ').append(tempLong).append('\'');
       lon = buf.toString();
-      buf = null;
+      StringBuffer var15 = null;
       return lon;
    }
 

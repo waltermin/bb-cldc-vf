@@ -140,7 +140,7 @@ public final class SmsUtil {
                      int addressLengthInNybbles = data[index++];
                      int type = data[index] >> 4 & 7;
                      int plan = data[index++] & 15;
-                     StringBuffer number = (StringBuffer)(new Object());
+                     StringBuffer number = new StringBuffer();
                      boolean lowerNybble = true;
                      int n = 0;
 
@@ -241,16 +241,16 @@ public final class SmsUtil {
          ports = new int[]{65552};
       }
 
-      DatagramBase dgram = (DatagramBase)(new Object(data, 0, data.length));
-      dgram.setAddressBase((DatagramAddressBase)(new Object(header, ports)));
+      DatagramBase dgram = new DatagramBase(data, 0, data.length);
+      dgram.setAddressBase(new SmsAddress(header, ports));
       if (userDataHeader != null) {
          dgram.setProperty(PROPERTY_USER_DATA_HEADER, userDataHeader);
       }
 
       if (totalSegments > 1) {
-         dgram.setProperty(PROPERTY_REF_NUMBER, new Object(refNumber));
-         dgram.setProperty(PROPERTY_TOTAL_SEGMENTS, new Object(totalSegments));
-         dgram.setProperty(PROPERTY_SEGMENT_NUMBER, new Object(segmentNumber));
+         dgram.setProperty(PROPERTY_REF_NUMBER, new Integer(refNumber));
+         dgram.setProperty(PROPERTY_TOTAL_SEGMENTS, new Integer(totalSegments));
+         dgram.setProperty(PROPERTY_SEGMENT_NUMBER, new Integer(segmentNumber));
       }
 
       return dgram;

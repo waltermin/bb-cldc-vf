@@ -27,7 +27,7 @@ import net.rim.device.internal.ui.security.component.LockIconField;
 import net.rim.tid.im.layout.SLKeyLayout;
 
 public class ChoiceField extends Field implements FieldLabelProvider {
-   private TextRect _label = (TextRect)(new Object(this));
+   private TextRect _label = new TextRect(this);
    private String _labelText;
    private int _xPos;
    private int _yPos;
@@ -47,7 +47,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    int _selectedX;
    int _selectedWidth;
    private int _accessibleState = 0;
-   private final StringBufferGap _buffer = (StringBufferGap)(new Object());
+   private final StringBufferGap _buffer = new StringBufferGap();
    private static Tag TAG;
    private static Tag TAG_LABEL;
    public static final int CONTEXT_CHANGE_OPTION;
@@ -65,7 +65,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    boolean internalChangeOptionDialog() {
       if (this.isEditable() && this.getOriginal() == this && this._numChoices != 0) {
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(1, new Object(1024), new Object(512), this);
+            super.accessibleEventOccurred(1, new Integer(1024), new Integer(512), this);
          }
 
          this.removeAccessibleState(1024);
@@ -83,7 +83,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
          }
 
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(1, new Object(512), new Object(1024), this);
+            super.accessibleEventOccurred(1, new Integer(512), new Integer(1024), this);
          }
 
          this.removeAccessibleState(512);
@@ -235,7 +235,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
             this._selectedWidth = 0;
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -306,10 +306,10 @@ public class ChoiceField extends Field implements FieldLabelProvider {
             if ((status & 32768) == 0) {
                keys = layout.getComplementaryChars(key, modif);
                if (keys != null) {
-                  keys = (StringBuffer)(new Object(keys.toString()));
+                  keys = new StringBuffer(keys.toString());
                }
             } else {
-               keys = (StringBuffer)(new Object());
+               keys = new StringBuffer();
                keys.append(key);
             }
 
@@ -317,12 +317,12 @@ public class ChoiceField extends Field implements FieldLabelProvider {
             if (index == -1) {
                keys = layout.getKeyChars(layout.getOriginalKeyCode(key, modif), 8);
                if (keys != null) {
-                  keys = (StringBuffer)(new Object(keys.toString()));
+                  keys = new StringBuffer(keys.toString());
                }
 
                index = this.findNextItem(keys);
                if ((status & 1) != 0 && index == -1) {
-                  keys = (StringBuffer)(new Object(1));
+                  keys = new StringBuffer(1);
                   keys.append(layout.getUnaltedChar(key));
                   index = this.findNextItem(keys);
                }
@@ -335,7 +335,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
          }
 
          if (result && Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(1, new Object(1), new Object(2), this);
+            super.accessibleEventOccurred(1, new Integer(1), new Integer(2), this);
          }
       }
 
@@ -655,7 +655,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public String getAccessibleName() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override

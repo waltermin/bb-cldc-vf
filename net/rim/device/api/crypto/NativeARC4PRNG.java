@@ -22,7 +22,7 @@ final class NativeARC4PRNG {
             this._s[j] = t;
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

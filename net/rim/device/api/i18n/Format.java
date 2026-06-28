@@ -1,7 +1,7 @@
 package net.rim.device.api.i18n;
 
 public class Format {
-   private StringBuffer _buffer = (StringBuffer)(new Object());
+   private StringBuffer _buffer = new StringBuffer();
 
    protected Format() {
    }

@@ -11,7 +11,7 @@ final class SharedInputStreamSource {
 
    public SharedInputStreamSource(byte[] data) {
       if (data == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._data = data;
@@ -20,7 +20,7 @@ final class SharedInputStreamSource {
 
    public SharedInputStreamSource(InputStream input) {
       if (input == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._data = new byte[0];
@@ -29,7 +29,7 @@ final class SharedInputStreamSource {
 
    public final synchronized int read(int position) {
       if (position < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       while (position >= this._data.length) {
@@ -49,7 +49,7 @@ final class SharedInputStreamSource {
 
    public final synchronized int read(int position, byte[] buffer, int offset, int length) {
       if (position < 0 || buffer == null || offset < 0 || length < 0 || buffer.length - length < offset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (length == 0) {
@@ -76,7 +76,7 @@ final class SharedInputStreamSource {
 
    public final synchronized int available(int position) {
       if (position < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          int available = this._data.length - position;
          if (available <= 0 && this._sourceStream != null) {

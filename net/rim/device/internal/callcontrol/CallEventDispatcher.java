@@ -185,20 +185,20 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    private final void postCallEvent(int event, int subMessage, int data0, int data1) {
-      Message msg = (Message)(new Object(52, event, subMessage, data0, data1));
+      Message msg = new Message(52, event, subMessage, data0, data1);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }
 
    private final void postCallEvent(int event, int subMessage, int data0, int data1, Object obj0) {
-      Message msg = (Message)(new Object(52, event, subMessage, data0, data1));
+      Message msg = new Message(52, event, subMessage, data0, data1);
       msg.setObject0(obj0);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }
 
    private final void postTimerEvent(int event, int subMessage, int data0, int data1) {
-      Message msg = (Message)(new Object(53, event, subMessage, data0, data1));
+      Message msg = new Message(53, event, subMessage, data0, data1);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }
@@ -208,7 +208,7 @@ final class CallEventDispatcher extends AbstractCallEventHandler {
    }
 
    private final void postControlEvent(int event, int subMessage, int data0, int data1, Object obj0) {
-      Message msg = (Message)(new Object(54, event, subMessage, data0, data1));
+      Message msg = new Message(54, event, subMessage, data0, data1);
       msg.setObject0(obj0);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);

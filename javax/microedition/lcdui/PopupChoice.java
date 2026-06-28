@@ -8,8 +8,8 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.util.Arrays;
 
 final class PopupChoice extends BasicChoice {
-   HorizontalFieldManager _popupContainer = (HorizontalFieldManager)(new Object());
-   private ObjectChoiceField _popup = (ObjectChoiceField)(new Object());
+   HorizontalFieldManager _popupContainer = new HorizontalFieldManager();
+   private ObjectChoiceField _popup = new ObjectChoiceField();
    private BitmapField[] _popupImages;
    private String[] _popupStrings;
 
@@ -57,7 +57,7 @@ final class PopupChoice extends BasicChoice {
    protected final void doInsert(int elementNum, String stringElement, Image imageElement) {
       Arrays.insertAt(this._popupStrings, stringElement, elementNum);
       if (imageElement != null) {
-         Arrays.insertAt(this._popupImages, new Object(imageElement.getBitmap()), elementNum);
+         Arrays.insertAt(this._popupImages, new BitmapField(imageElement.getBitmap()), elementNum);
          this._popupImages[elementNum].setCookie(imageElement);
       } else {
          Arrays.insertAt(this._popupImages, null, elementNum);
@@ -97,7 +97,7 @@ final class PopupChoice extends BasicChoice {
    protected final void doSet(int elementNum, String stringPart, Image imagePart) {
       int selectedIndex = this.getSelectedIndex();
       this._popupStrings[elementNum] = stringPart;
-      this._popupImages[elementNum] = (BitmapField)(new Object(imagePart.getBitmap()));
+      this._popupImages[elementNum] = new BitmapField(imagePart.getBitmap());
       this._popup.setChoices(this._popupStrings);
       this._popup.setSelectedIndex(selectedIndex);
    }

@@ -101,7 +101,7 @@ public class Canvas extends Displayable {
                }
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             return 1;

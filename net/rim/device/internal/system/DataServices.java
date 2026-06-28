@@ -62,7 +62,7 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
       synchronized (this) {
          switch (linkType) {
             case 0:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 1:
             default:
                switch (connectionType) {
@@ -109,7 +109,7 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
    public final int getMode(int linkType, int connectionType) {
       switch (linkType) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             switch (connectionType) {

@@ -3,6 +3,7 @@ package net.rim.device.internal.ui.component;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.internal.system.InternalServices;
 
@@ -47,7 +48,13 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._volumeText == null) {
+         this._volumeText = new RichTextField(text, 36028797086072832L);
+         this._volumeText.setTag(TAG_TEXT);
+         ((HorizontalFieldManager)this.getDelegate()).insert(this._volumeText, 0);
+      } else {
+         this._volumeText.setText(text);
+      }
    }
 
    @Override

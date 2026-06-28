@@ -2,6 +2,7 @@ package net.rim.device.internal.system;
 
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.util.ListenerUtilities;
+import net.rim.vm.WeakReference;
 
 public final class ActiveMediaObservable {
    private ActiveMedia _user;
@@ -12,7 +13,14 @@ public final class ActiveMediaObservable {
    }
 
    private final synchronized void cleanupWeakRefs() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._listeners != null) {
+         for (int index = this._listeners.length - 1; index >= 0; index--) {
+            ActiveMediaObserver listener = (ActiveMediaObserver)((WeakReference)this._listeners[index]).get();
+            if (listener == null) {
+               this._listeners = ListenerUtilities.removeListener(this._listeners, this._listeners[index]);
+            }
+         }
+      }
    }
 
    public static final ActiveMediaObservable getInstance() {
@@ -72,18 +80,38 @@ public final class ActiveMediaObservable {
    }
 
    private final void notifyChange(Object[] listeners, ActiveMedia fromUser, ActiveMedia toUser) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (listeners != null) {
+         for (int index = listeners.length - 1; index >= 0; index--) {
+            ActiveMediaObserver listener = (ActiveMediaObserver)((WeakReference)listeners[index]).get();
+            if (listener != null) {
+               try {
+                  listener.onChanged(fromUser, toUser);
+               } catch (RuntimeException var7) {
+               }
+            }
+         }
+      }
    }
 
    public static final void addListener(ActiveMediaObserver listener) {
       ActiveMediaObservable observable = getInstance();
       synchronized (observable) {
-         observable._listeners = ListenerUtilities.addListener(observable._listeners, new Object(listener));
+         observable._listeners = ListenerUtilities.addListener(observable._listeners, new WeakReference(listener));
          observable.cleanupWeakRefs();
       }
    }
 
    public static final void removeListener(ActiveMediaObserver listener) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      ActiveMediaObservable observable = getInstance();
+      synchronized (observable) {
+         if (observable._listeners != null) {
+            for (int index = observable._listeners.length - 1; index >= 0; index--) {
+               if (((WeakReference)observable._listeners[index]).get() == listener) {
+                  observable._listeners = ListenerUtilities.removeListener(observable._listeners, observable._listeners[index]);
+                  break;
+               }
+            }
+         }
+      }
    }
 }

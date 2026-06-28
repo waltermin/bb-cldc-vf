@@ -58,6 +58,6 @@ public class UserAuthenticator {
    }
 
    public Class getClassInAuthenticatorModule() {
-      return super.getClass();
+      return this.getClass();
    }
 }

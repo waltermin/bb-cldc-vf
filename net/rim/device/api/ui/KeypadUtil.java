@@ -15,7 +15,7 @@ public class KeypadUtil {
    public static char getKeyChar(int keycode, int mode) {
       switch (mode) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             return UiInternal.map(keycode);
@@ -28,7 +28,7 @@ public class KeypadUtil {
       SLKeyLayout layout = null;
       switch (mode) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          default:
             layout = UILocaleKeyLayout.getUIKeyLayout();

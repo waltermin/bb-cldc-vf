@@ -8,7 +8,7 @@ public class PatriciaTree {
 
    public PatriciaTree(PatriciaTreeData data) {
       if (data == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._data = data;
@@ -27,7 +27,7 @@ public class PatriciaTree {
          this.lookupId(id);
          int cmp = this._data.compareBits(id, this._data.getLeaf(this._leafIndex));
          if (cmp == 0) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          int insertBitNum;
@@ -176,7 +176,7 @@ public class PatriciaTree {
             int leftNodes = this._data.getLeftNodes(nodeIndex);
             int bit = this._data.getBit(id, bitNum);
             if (bit < 0) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
 
             if (bit == 0) {

@@ -18,7 +18,7 @@ public final class SmsAddress extends DatagramAddressBase {
    public static final int PORT_KODIAK_NETWORKS_WV;
 
    public SmsAddress() {
-      this._header = (SMSPacketHeader)(new Object());
+      this._header = new SMSPacketHeader();
    }
 
    public SmsAddress(SMSPacketHeader header, int[] ports) {
@@ -29,7 +29,7 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    public SmsAddress(String address) {
-      this._header = (SMSPacketHeader)(new Object());
+      this._header = new SMSPacketHeader();
       this.setAddress(address);
    }
 
@@ -98,9 +98,9 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    public static final String makeAddress(boolean open, SMSPacketHeader header, int[] ports) {
-      StringBuffer buf = (StringBuffer)(new Object());
+      StringBuffer buf = new StringBuffer();
       if (header == null) {
-         header = (SMSPacketHeader)(new Object());
+         header = new SMSPacketHeader();
       }
 
       appendAddress(buf, open, header.getPeerAddress(), ports);

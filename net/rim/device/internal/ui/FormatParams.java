@@ -20,7 +20,7 @@ public class FormatParams {
    public int _lineCount = 1;
    public ArticInterface$Line _lineList;
    public ArticInterface$LineInfo _cursorLineInfo = new ArticInterface$LineInfo();
-   public XYRect _invalidRect = (XYRect)(new Object());
+   public XYRect _invalidRect = new XYRect();
 
    public void init(int aStart, int aLength, int aNewLength, int aCursorOffset, boolean aMoveCursor, ArticInterface$Line lineList) {
       this._changedTextStart = aStart;

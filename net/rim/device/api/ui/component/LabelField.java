@@ -50,7 +50,7 @@ public class LabelField extends Field implements DrawStyle {
          this._position = 1;
       }
 
-      this._labelText = (TextRect)(new Object(this, this.getFieldStyle() & 199));
+      this._labelText = new TextRect(this, this.getFieldStyle() & 199);
       this.setText(text, offset, length);
    }
 
@@ -144,7 +144,7 @@ public class LabelField extends Field implements DrawStyle {
 
    public void setPosition(int position) {
       if (position < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._position = position;

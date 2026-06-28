@@ -78,7 +78,7 @@ class ResourceFile {
    public Object getData(int id) {
       ResourceFile$Resource res = this.getResource(id);
       int length = res.length;
-      ByteArrayOutputStream baos = (ByteArrayOutputStream)(new Object(length));
+      ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
 
       for (int i = 0; i < length; i++) {
          baos.write(this._filedata[i + res.offset]);

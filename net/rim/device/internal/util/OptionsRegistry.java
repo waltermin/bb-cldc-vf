@@ -17,7 +17,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
    private LongHashtable _persistentData;
    private Object[] _listeners;
    private OptionsProviderChangeListener _syncListener;
-   private final LongHashtable _parameterDefinitions = (LongHashtable)(new Object());
+   private final LongHashtable _parameterDefinitions = new LongHashtable();
    private static final int TAG;
    private static final int TYPE_STRING;
    private static final int TYPE_INTEGER;
@@ -53,7 +53,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$BooleanParameterDefinition pd = (OptionsRegistry$BooleanParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setBoolean(key, pd._default);
@@ -72,7 +72,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$ByteArrayParameterDefinition pd = (OptionsRegistry$ByteArrayParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setByteArray(key, pd._default);
@@ -91,7 +91,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$DoubleParameterDefinition pd = (OptionsRegistry$DoubleParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setDouble(key, pd._default);
@@ -110,7 +110,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$IntParameterDefinition pd = (OptionsRegistry$IntParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setInt(key, pd._default);
@@ -133,7 +133,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$LongParameterDefinition pd = (OptionsRegistry$LongParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setLong(key, pd._default);
@@ -151,12 +151,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$CharParameterDefinition pd = (OptionsRegistry$CharParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$CharParameter param = (OptionsRegistry$CharParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$CharParameter)(new Object());
+            param = new OptionsRegistry$CharParameter();
             this._persistentData.put(key, param);
          }
 
@@ -176,7 +176,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$StringParameterDefinition pd = (OptionsRegistry$StringParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setString(key, pd._default);
@@ -191,7 +191,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       if (param == null) {
          OptionsRegistry$CharParameterDefinition pd = (OptionsRegistry$CharParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setChar(key, pd._default);
@@ -209,12 +209,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$StringParameterDefinition pd = (OptionsRegistry$StringParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$StringParameter param = (OptionsRegistry$StringParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$StringParameter)(new Object());
+            param = new OptionsRegistry$StringParameter();
             this._persistentData.put(key, param);
          }
 
@@ -229,12 +229,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$BooleanParameterDefinition pd = (OptionsRegistry$BooleanParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$BooleanParameter param = (OptionsRegistry$BooleanParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$BooleanParameter)(new Object());
+            param = new OptionsRegistry$BooleanParameter();
             this._persistentData.put(key, param);
          }
 
@@ -249,12 +249,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$DoubleParameterDefinition pd = (OptionsRegistry$DoubleParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$DoubleParameter param = (OptionsRegistry$DoubleParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$DoubleParameter)(new Object());
+            param = new OptionsRegistry$DoubleParameter();
             this._persistentData.put(key, param);
          }
 
@@ -269,12 +269,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$IntParameterDefinition pd = (OptionsRegistry$IntParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$IntParameter param = (OptionsRegistry$IntParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$IntParameter)(new Object());
+            param = new OptionsRegistry$IntParameter();
             this._persistentData.put(key, param);
          }
 
@@ -289,12 +289,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$LongParameterDefinition pd = (OptionsRegistry$LongParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$LongParameter param = (OptionsRegistry$LongParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$LongParameter)(new Object());
+            param = new OptionsRegistry$LongParameter();
             this._persistentData.put(key, param);
          }
 
@@ -309,12 +309,12 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          OptionsRegistry$ByteArrayParameterDefinition pd = (OptionsRegistry$ByteArrayParameterDefinition)this._parameterDefinitions.get(key);
          if (pd == null || !pd.isValid(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          OptionsRegistry$ByteArrayParameter param = (OptionsRegistry$ByteArrayParameter)this.get(key);
          if (param == null) {
-            param = (OptionsRegistry$ByteArrayParameter)(new Object());
+            param = new OptionsRegistry$ByteArrayParameter();
             this._persistentData.put(key, param);
          }
 
@@ -365,7 +365,7 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
       synchronized (this._persistent) {
          this._persistentData = (LongHashtable)this._persistent.getContents();
          if (this._persistentData == null) {
-            this._persistentData = (LongHashtable)(new Object());
+            this._persistentData = new LongHashtable();
             this._persistent.setContents(this._persistentData, 51, false);
             this._persistent.commit();
          }

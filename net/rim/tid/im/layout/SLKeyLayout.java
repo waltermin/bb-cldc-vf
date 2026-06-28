@@ -1,8 +1,10 @@
 package net.rim.tid.im.layout;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.util.CharacterUtilities;
+import net.rim.tid.util.Utils;
 
 public class SLKeyLayout {
    private short[][][] _ranges;
@@ -281,7 +283,7 @@ public class SLKeyLayout {
       }
 
       if (this._bytes2StringCache == null) {
-         this._bytes2StringCache = (StringBuffer)(new Object());
+         this._bytes2StringCache = new StringBuffer();
       }
 
       this._bytes2StringCache.setLength(len);
@@ -379,11 +381,28 @@ public class SLKeyLayout {
    public static SLKeyLayout getLayout(
       Locale originatingLocale, boolean reduced, int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault
    ) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String mapID = getMapID(aKeyboardId, aKeyboardType, anInputLocale, mapLocation, useDefault);
+      byte[] data = null;
+      SLKeyLayout result = null;
+      if (mapID != null) {
+         data = Utils.loadRimRes(mapLocation, MAP_COMMON_PREFIX + mapID + MAP_COMMON_SUFFIX);
+         if (data != null) {
+            result = new SLKeyLayout(originatingLocale, reduced, (byte)0, data);
+            result.setNameID(mapID);
+         }
+      }
+
+      return result;
    }
 
    public static InputStream getLayoutData(int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String mapID = getMapID(aKeyboardId, aKeyboardType, anInputLocale, mapLocation, useDefault);
+      byte[] data = null;
+      if (mapID != null) {
+         data = Utils.loadRimRes(mapLocation, MAP_COMMON_PREFIX + mapID + MAP_COMMON_SUFFIX);
+      }
+
+      return data == null ? null : new ByteArrayInputStream(data);
    }
 
    public static String getKeyboardType(int aLocaleCode) {

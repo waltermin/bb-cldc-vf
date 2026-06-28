@@ -28,7 +28,7 @@ public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource 
          )) {
          this._context = NativeFIPSPRNG.initialize(seed, offset, length, additionalSeed, additionalSeedOffset, additionalSeedLength, useRevisedAlgorithm);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -42,7 +42,7 @@ public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource 
       if (buffer != null && offset >= 0 && length >= 0 && buffer.length - length >= offset) {
          this._context.xorBytes(buffer, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

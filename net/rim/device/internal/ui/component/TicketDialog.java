@@ -49,12 +49,12 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
       if (promptForPassword) {
          if (promptForPasswordString != null) {
             vifm.add(new VerticalSpacerField(4));
-            RichTextField passwordPrompt = (RichTextField)(new Object(promptForPasswordString, 9007199254740992L));
+            RichTextField passwordPrompt = new RichTextField(promptForPasswordString, 9007199254740992L);
             vifm.add(passwordPrompt);
          }
 
          if (numericPasswordEntry) {
-            this._passwordHFM = (HorizontalFieldManager)(new Object());
+            this._passwordHFM = new HorizontalFieldManager();
             vifm.add(this._passwordHFM);
             this._numericPassword = true;
             this.resetPasswordField(false);
@@ -64,11 +64,11 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
          }
       }
 
-      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
-      this._ok = (ButtonField)(new Object(CommonResource.getString(100)));
+      HorizontalFieldManager buttonManager = new HorizontalFieldManager(12884901888L);
+      this._ok = new ButtonField(CommonResource.getString(100));
       this._ok.setChangeListener(this);
       buttonManager.add(this._ok);
-      this._cancel = (ButtonField)(new Object(CommonResource.getString(10005)));
+      this._cancel = new ButtonField(CommonResource.getString(10005));
       this._cancel.setChangeListener(this);
       buttonManager.add(this._cancel);
       vifm.add(buttonManager);

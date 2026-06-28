@@ -128,7 +128,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    @Override
    public final Control[] getControls() {
       if (!this._connected) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return null;
       }
@@ -137,7 +137,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    @Override
    public final Control getControl(String controlType) {
       if (!this._connected) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return null;
       }

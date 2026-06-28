@@ -30,7 +30,7 @@ public final class IDENInfo {
          return null;
       }
 
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
 
       for (int i = 0; i < imei.length; i++) {
          sb.append((char)(imei[i] + 48));

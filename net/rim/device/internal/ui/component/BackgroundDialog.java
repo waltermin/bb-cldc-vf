@@ -11,12 +11,12 @@ public class BackgroundDialog {
    }
 
    public static String getInput(String label, int minLength, int maxLength, int type) {
-      BackgroundDialog$GetInputDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$GetInputDialogDisplayRunnable)(new Object(
+      BackgroundDialog$GetInputDialogDisplayRunnable dialogDisplayRunnable = new BackgroundDialog$GetInputDialogDisplayRunnable(
          label, minLength, maxLength, type
-      ));
+      );
       SimpleOKCancelInputDialog dialog = (SimpleOKCancelInputDialog)dialogDisplayRunnable.runInCorrectProcess();
       if (dialog.getCloseReason() == -1) {
-         throw new Object();
+         throw new BackgroundDialogCancelException();
       } else {
          return dialog.getText();
       }
@@ -31,9 +31,9 @@ public class BackgroundDialog {
    }
 
    public static int getChoice(String label, Object[] choices, int defaultChoice, Bitmap bitmap, int priority) {
-      BackgroundDialog$GetChoiceDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$GetChoiceDialogDisplayRunnable)(new Object(
+      BackgroundDialog$GetChoiceDialogDisplayRunnable dialogDisplayRunnable = new BackgroundDialog$GetChoiceDialogDisplayRunnable(
          label, choices, defaultChoice, bitmap, priority
-      ));
+      );
       SimpleChoiceDialog dialog = (SimpleChoiceDialog)dialogDisplayRunnable.runInCorrectProcess();
       return dialog.getCloseReason() == -1 ? -1 : dialog.getSelectedIndex();
    }
@@ -51,7 +51,7 @@ public class BackgroundDialog {
    }
 
    private static void showMessage(String label, int priority, boolean forceRunInProxy) {
-      BackgroundDialog$ShowMessageDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowMessageDialogDisplayRunnable)(new Object(label, priority));
+      BackgroundDialog$ShowMessageDialogDisplayRunnable dialogDisplayRunnable = new BackgroundDialog$ShowMessageDialogDisplayRunnable(label, priority);
       if (forceRunInProxy) {
          dialogDisplayRunnable.forceRunInProxy();
       }
@@ -60,12 +60,12 @@ public class BackgroundDialog {
    }
 
    public static void show(PopupDialog dialog) {
-      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowDialogDisplayRunnable)(new Object(dialog));
+      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = new BackgroundDialog$ShowDialogDisplayRunnable(dialog);
       dialogDisplayRunnable.runInCorrectProcess();
    }
 
    public static void showOnProxy(PopupDialog dialog) {
-      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = (BackgroundDialog$ShowDialogDisplayRunnable)(new Object(dialog));
+      BackgroundDialog$ShowDialogDisplayRunnable dialogDisplayRunnable = new BackgroundDialog$ShowDialogDisplayRunnable(dialog);
       dialogDisplayRunnable.forceRunInProxy();
       dialogDisplayRunnable.runInCorrectProcess();
    }

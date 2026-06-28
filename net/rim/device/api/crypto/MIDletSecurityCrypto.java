@@ -113,17 +113,17 @@ public class MIDletSecurityCrypto {
          digest.update(codFileTrailer);
 
          try {
-            DataBuffer buffer = (DataBuffer)(new Object(signature, 0, signature.length, true));
+            DataBuffer buffer = new DataBuffer(signature, 0, signature.length, true);
             byte[] r = TLEUtilities.readDataField(buffer, 1);
             byte[] s = TLEUtilities.readDataField(buffer, 2);
             byte[] publicKey = NvStore.readData(23);
             if (publicKey == null) {
-               throw new Object();
+               throw new RuntimeException();
             } else {
                return NativeEC.verifyDSA(CURVE_NAME, publicKey, digest.getDigest(), r, s);
             }
          } catch (EOFException e) {
-            throw new Object();
+            throw new RuntimeException();
          }
       } else {
          return false;

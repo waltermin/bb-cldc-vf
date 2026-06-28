@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import net.rim.device.api.crypto.Digest;
+import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Persistable;
 
@@ -15,7 +16,7 @@ class PersistentContent$ResetPasswordData implements Persistable {
       this._B = B;
       this._D = D;
       this._passwordCiphertext = passwordCiphertext;
-      Digest digest = (Digest)(new Object());
+      Digest digest = new SHA1Digest();
       digest.update(B);
       this._digestOfB = digest.getDigest();
    }

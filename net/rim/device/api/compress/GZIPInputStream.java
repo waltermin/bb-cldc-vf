@@ -1,6 +1,7 @@
 package net.rim.device.api.compress;
 
 import java.io.InputStream;
+import net.rim.device.api.io.IOCancelledException;
 import net.rim.device.internal.compress.Inflater;
 
 public class GZIPInputStream extends InputStream {
@@ -19,9 +20,9 @@ public class GZIPInputStream extends InputStream {
       if (inputStream != null && workingBufferSize >= 1024) {
          this._inputStream = inputStream;
          this._tempBuffer = new byte[workingBufferSize];
-         this._inflater = (Inflater)(new Object(31));
+         this._inflater = new Inflater(31);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -33,12 +34,12 @@ public class GZIPInputStream extends InputStream {
    @Override
    public synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
       if (buffer == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
-            throw new Object();
+            throw new IOCancelledException();
          }
 
          if (bufferLength == 0) {
@@ -66,14 +67,14 @@ public class GZIPInputStream extends InputStream {
 
          return numRead > 0 ? numRead : -1;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    public synchronized int available() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       } else {
          return this._currentChunk != null ? this._currentChunk.length - this._currentOffset : 0;
       }
@@ -87,7 +88,7 @@ public class GZIPInputStream extends InputStream {
 
    private boolean readNextChunk() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       int numRead = this._inputStream.read(this._tempBuffer);

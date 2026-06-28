@@ -36,7 +36,7 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
    private static final int MAX_MESSAGE_INDEX;
 
    public AnimatedBitmapField() {
-      this((Bitmap)((Object)null), 0);
+      this((Bitmap)null, 0);
    }
 
    public AnimatedBitmapField(Bitmap bitmap) {
@@ -48,7 +48,7 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
    }
 
    public AnimatedBitmapField(EncodedImage image, int maxLoopIterations, long style) {
-      super((Bitmap)((Object)null), style);
+      super((Bitmap)null, style);
       this.setImage(image);
       this._maxIterations = maxLoopIterations;
       this._iterationsLeft = this._maxIterations;

@@ -137,12 +137,12 @@ public final class MIDletSecurity {
       synchronized (getSessionCache()) {
          int status = setDomainCache();
          if (status == 2) {
-            throw new Object();
+            throw new SecurityException();
          }
       }
 
       if (!MIDletSecurityCrypto.checkDRMTrailer()) {
-         throw new Object();
+         throw new SecurityException();
       }
    }
 
@@ -247,7 +247,7 @@ public final class MIDletSecurity {
       }
 
       if (setting == 0 && throwExc) {
-         throw new Object(MIDletSecurityConstants.MIDletPermissions[perm]);
+         throw new SecurityException(MIDletSecurityConstants.MIDletPermissions[perm]);
       } else {
          return setting;
       }
@@ -333,7 +333,7 @@ public final class MIDletSecurity {
    public static final void createTrailerFromNvStoreDomain(int field, byte[] policy, byte[] refTrailer) {
       int policyLen = policy[20] & 255;
       if ((policyLen & 3) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Array.resize(refTrailer, policyLen + 4 + 20);
@@ -426,7 +426,7 @@ public final class MIDletSecurity {
 
          return policy;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

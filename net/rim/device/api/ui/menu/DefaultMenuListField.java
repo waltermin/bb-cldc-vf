@@ -199,7 +199,7 @@ class DefaultMenuListField extends Field implements MenuList {
       }
 
       if (Ui.isTTSEnabled()) {
-         this.accessibleEventOccurred(1, new Object(1), new Object(2), this.getCurrentItem());
+         this.accessibleEventOccurred(1, new Integer(1), new Integer(2), this.getCurrentItem());
       }
 
       return 0;

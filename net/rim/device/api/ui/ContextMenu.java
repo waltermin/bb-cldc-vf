@@ -17,7 +17,7 @@ public final class ContextMenu {
 
    public final void addItem(MenuItem item) {
       if (this._target == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       int last = this._items.length;

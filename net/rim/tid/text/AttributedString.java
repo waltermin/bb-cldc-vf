@@ -114,7 +114,7 @@ public class AttributedString {
    }
 
    public AttributedString() {
-      this._text = (StringBufferGap)(new Object());
+      this._text = new StringBufferGap();
       this._run = new AttributedString$Run();
       this._cursor_run = this._run;
    }
@@ -161,7 +161,7 @@ public class AttributedString {
       this._length = aIter.length();
       this._global_attrib = aIter.getGlobalAttrib();
       AttributedString$Run p = null;
-      this._text = (StringBufferGap)(new Object(aIter.text().getText(aIter.pos(), this._length)));
+      this._text = new StringBufferGap(aIter.text().getText(aIter.pos(), this._length));
 
       do {
          AttributedString$Run new_run = new AttributedString$Run(p, null, aIter.runLength(), aIter.runAttrib(), aIter.runXAttrib(), aIter.runPictureInfo());
@@ -229,7 +229,7 @@ public class AttributedString {
             this.seekRun(aPos);
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -324,7 +324,7 @@ public class AttributedString {
 
          this.insert(aChar);
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -343,7 +343,7 @@ public class AttributedString {
             this.insert(aText);
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -371,7 +371,7 @@ public class AttributedString {
             } while (aIter.next());
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -392,7 +392,7 @@ public class AttributedString {
             this.delete(aEnd - aStart);
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -415,7 +415,7 @@ public class AttributedString {
          this.setAttrib(aEnd - aStart, aAttrib, aAttribMask, aXAttrib, aXAttribMask);
          this.seekRun(saved_cursor);
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -423,7 +423,7 @@ public class AttributedString {
       if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
          return this._text.getText(aStart, aEnd - aStart);
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -445,19 +445,19 @@ public class AttributedString {
 
    public void assertValid() {
       if (this._run == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._cursor_run == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._length < 0) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._length != this._text.length()) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._cursor >= this._cursor_run_start && this._cursor <= this._cursor_run_start + this._cursor_run._length) {
@@ -471,7 +471,7 @@ public class AttributedString {
             }
 
             if (r._pictureInfo != null && r._length != 1) {
-               throw new Object();
+               throw new IllegalStateException();
             }
 
             l += r._length;
@@ -479,14 +479,14 @@ public class AttributedString {
          }
 
          if (s != this._cursor_run_start) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          if (l != this._length) {
-            throw new Object();
+            throw new IllegalStateException();
          }
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 }

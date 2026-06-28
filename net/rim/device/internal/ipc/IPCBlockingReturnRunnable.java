@@ -10,22 +10,22 @@ public class IPCBlockingReturnRunnable extends IPCBaseRunnable {
    @Override
    public final void run() {
       Object result = null;
-      boolean var5 = false /* VF: Semaphore variable */;
+      boolean var6 = false /* VF: Semaphore variable */;
 
       label30: {
          try {
-            var5 = true;
+            var6 = true;
             this._result.clear();
             result = this.doRun(this.getListener());
             this._success = true;
-            var5 = false;
+            var6 = false;
             break label30;
          } catch (Throwable t) {
             this.doLogging(t);
             this._success = false;
-            var5 = false;
+            var6 = false;
          } finally {
-            if (var5) {
+            if (var6) {
                this.setResult(result);
             }
          }

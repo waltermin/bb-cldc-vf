@@ -24,7 +24,7 @@ public class MainScreen extends FullScreen {
 
    public void addMenuItem(MenuItem item) {
       if (this._menu == null) {
-         this._menu = (Vector)(new Object());
+         this._menu = new Vector();
       }
 
       this._menu.addElement(item);

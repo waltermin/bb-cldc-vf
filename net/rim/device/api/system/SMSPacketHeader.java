@@ -193,7 +193,7 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       switch (messageCoding) {
          case -1:
          case 3:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          case 4:
          default:
@@ -211,7 +211,7 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
       switch (messageCoding) {
          case -1:
          case 3:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          case 1:
          case 4:

@@ -1,6 +1,7 @@
 package net.rim.device.api.compress;
 
 import java.io.InputStream;
+import net.rim.device.api.io.IOCancelledException;
 import net.rim.device.internal.compress.Inflater;
 
 public class ZLibInputStream extends InputStream {
@@ -30,12 +31,12 @@ public class ZLibInputStream extends InputStream {
    @Override
    public synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
       if (buffer == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
-            throw new Object();
+            throw new IOCancelledException();
          }
 
          if (bufferLength == 0) {
@@ -63,14 +64,14 @@ public class ZLibInputStream extends InputStream {
 
          return numRead > 0 ? numRead : -1;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    public synchronized int available() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       } else {
          return this._currentChunk != null ? this._currentChunk.length - this._currentOffset : 0;
       }
@@ -84,7 +85,7 @@ public class ZLibInputStream extends InputStream {
 
    private boolean readNextChunk() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       int numRead = this._inputStream.read(this._tempBuffer);

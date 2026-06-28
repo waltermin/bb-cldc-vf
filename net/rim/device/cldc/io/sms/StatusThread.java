@@ -5,7 +5,7 @@ import net.rim.device.api.io.DatagramStatusListener;
 
 final class StatusThread extends Thread {
    private Transport _transport;
-   private Vector _status = (Vector)(new Object());
+   private Vector _status = new Vector();
 
    public StatusThread(Transport transport) {
       this._transport = transport;
@@ -40,7 +40,7 @@ final class StatusThread extends Thread {
             } else {
                this._transport.xmitDgslEvent(status._listener, status._id, status._status, status._context);
             }
-         } catch (Throwable var3) {
+         } catch (Throwable var5) {
          }
       }
    }

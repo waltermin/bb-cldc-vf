@@ -146,7 +146,7 @@ public final class AutoOnOff {
    public static final long getNextAutoOffTime(boolean backward) {
       synchronized (_autoOnOffData) {
          Calendar autoOnCal = Calendar.getInstance();
-         autoOnCal.setTime((Date)(new Object(getNextAutoOnTime())));
+         autoOnCal.setTime(new Date(getNextAutoOnTime()));
          long autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong();
          if (!_autoOnOffData._weekendAutoOnOffEnabled && !_autoOnOffData._weekdayAutoOnOffEnabled) {
             return Long.MIN_VALUE;
@@ -161,14 +161,14 @@ public final class AutoOnOff {
          while (autoOnLong > currentTime) {
             autoOnLong -= 86400000;
             if (DateTimeUtilities.isWeekend(autoOnLong) && _autoOnOffData._weekendAutoOnOffEnabled) {
-               autoOnCal.setTime((Date)(new Object(autoOnLong)));
+               autoOnCal.setTime(new Date(autoOnLong));
                DateTimeUtilities.zeroCalendarTime(autoOnCal);
                autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong() + getWeekendOnTime();
                return constructAutoOffTime(autoOnLong, getWeekendOffTime());
             }
 
             if (!DateTimeUtilities.isWeekend(autoOnLong) && _autoOnOffData._weekdayAutoOnOffEnabled) {
-               autoOnCal.setTime((Date)(new Object(autoOnLong)));
+               autoOnCal.setTime(new Date(autoOnLong));
                DateTimeUtilities.zeroCalendarTime(autoOnCal);
                autoOnLong = ((CalendarExtensions)autoOnCal).getTimeLong() + getWeekdayOnTime();
                return constructAutoOffTime(autoOnLong, getWeekdayOffTime());
@@ -181,7 +181,7 @@ public final class AutoOnOff {
 
    private static final long constructAutoOffTime(long autoOnTimeLong, int autoOffTime) {
       Calendar autoOnCal = Calendar.getInstance();
-      autoOnCal.setTime((Date)(new Object(autoOnTimeLong)));
+      autoOnCal.setTime(new Date(autoOnTimeLong));
       int offHoursSinceMidnight = autoOffTime / 3600000;
       int offMinutesSinceMidnight = (autoOffTime - offHoursSinceMidnight * 3600000) / 60000;
       autoOnCal.set(11, offHoursSinceMidnight);

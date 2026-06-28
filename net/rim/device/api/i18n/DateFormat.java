@@ -68,7 +68,7 @@ public class DateFormat extends Format {
 
    public final StringBuffer formatLocal(StringBuffer sb, long date) {
       if (sb == null) {
-         sb = (StringBuffer)(new Object(32));
+         sb = new StringBuffer(32);
       }
 
       synchronized (_cal) {

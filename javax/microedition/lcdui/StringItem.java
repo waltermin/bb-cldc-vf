@@ -27,7 +27,7 @@ public class StringItem extends Item {
       this(label, text);
       synchronized (Application.getEventLock()) {
          if (appearanceMode != 0 && appearanceMode != 1 && appearanceMode != 2) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._appearanceMode = appearanceMode;

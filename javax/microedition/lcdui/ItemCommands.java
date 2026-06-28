@@ -4,7 +4,7 @@ import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.SimpleSortingVector;
 
 class ItemCommands implements Comparator {
-   private SimpleSortingVector _commands = (SimpleSortingVector)(new Object());
+   private SimpleSortingVector _commands = new SimpleSortingVector();
    private Command _defaultCommand;
 
    public SimpleSortingVector getCommands() {

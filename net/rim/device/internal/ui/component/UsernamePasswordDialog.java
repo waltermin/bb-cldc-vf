@@ -2,7 +2,6 @@ package net.rim.device.internal.ui.component;
 
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.EditField;
@@ -36,7 +35,7 @@ public class UsernamePasswordDialog extends PopupDialog implements FieldChangeLi
    }
 
    public UsernamePasswordDialog(String prompt, String username, String domain, String password, int mode, long style) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       this._username = username;
       this._domain = domain;
       this._password = password;

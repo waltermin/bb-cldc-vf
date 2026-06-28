@@ -58,16 +58,16 @@ class LEDEventProcessor extends Thread implements LEDConstants {
             try {
                try {
                   this._events.wait();
-               } catch (InterruptedException var13) {
+               } catch (InterruptedException var14) {
                }
 
-               int var16 = 0;
+               int var17 = 0;
                boolean foundValidEvent = false;
                if (this._guardInvokeId != -1) {
                   try {
                      proxy.cancelInvokeLater(this._guardInvokeId);
                      this._guardInvokeId = -1;
-                  } catch (IllegalArgumentException var12) {
+                  } catch (IllegalArgumentException var13) {
                   }
                }
 
@@ -83,11 +83,11 @@ class LEDEventProcessor extends Thread implements LEDConstants {
                            this._ledEngine.setConfigurationInternal(0, 150, 2850, 1);
                         }
 
-                        var16 = 2;
+                        var17 = 2;
                         this._guardInvokeId = proxy.invokeLater(this._guard, eventExpirationTime - currentTime, false);
                         if (this._guardInvokeId == -1) {
                            EventLogger.logEvent(6390170866224596725L, 1348891500, 2);
-                           var16 = 0;
+                           var17 = 0;
                         }
                         break;
                      }
@@ -104,12 +104,12 @@ class LEDEventProcessor extends Thread implements LEDConstants {
                   }
                }
 
-               if (var16 != lastLedState) {
+               if (var17 != lastLedState) {
                   if (!LED.isPolychromatic()) {
-                     this._ledEngine.setStateInternal(0, var16);
+                     this._ledEngine.setStateInternal(0, var17);
                   }
 
-                  lastLedState = var16;
+                  lastLedState = var17;
                }
             } catch (Throwable t) {
                EventLogger.logEvent(6390170866224596725L, 1345414500, 2);

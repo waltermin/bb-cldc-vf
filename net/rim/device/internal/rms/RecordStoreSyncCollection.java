@@ -40,7 +40,7 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
    @Override
    public SyncObject convert(DataBuffer data, int version, int UID) {
       try {
-         ByteArrayOutputStream buffer = (ByteArrayOutputStream)(new Object());
+         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
          boolean more;
          do {
@@ -55,13 +55,13 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
             buffer.write(section);
          } while (more);
 
-         DataBuffer dataBuffer = (DataBuffer)(new Object(buffer.toByteArray(), 0, buffer.size(), data.isBigEndian()));
+         DataBuffer dataBuffer = new DataBuffer(buffer.toByteArray(), 0, buffer.size(), data.isBigEndian());
          String midletSuiteName = dataBuffer.readUTF();
          int recordStoreCount = dataBuffer.readInt();
-         Hashtable hashtable = (Hashtable)(new Object());
+         Hashtable hashtable = new Hashtable();
 
          for (int i = 0; i < recordStoreCount; i++) {
-            IntHashtable values = (IntHashtable)(new Object());
+            IntHashtable values = new IntHashtable();
             String recordStoreName = dataBuffer.readUTF();
             int rs_version = dataBuffer.readInt();
             int availableId = dataBuffer.readInt();
@@ -81,7 +81,7 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
                values.put(recordId, value);
             }
 
-            RecordStoreData recordStoreData = (RecordStoreData)(new Object(recordStoreName, rs_version, availableId, size, lastModified, values, recordCount));
+            RecordStoreData recordStoreData = new RecordStoreData(recordStoreName, rs_version, availableId, size, lastModified, values, recordCount);
             if (containsMIDP_2_0_Data) {
                recordStoreData.setAuthMode(rs_authmode);
             }

@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import net.rim.device.api.util.Arrays;
+import net.rim.device.internal.system.SIMCardEfHandler;
 
 public final class CellBroadcast {
    private static final long CHANNEL_INFOS_GUID;
@@ -36,7 +37,7 @@ public final class CellBroadcast {
             }
 
             if (i < 0) {
-               Arrays.add(internalInfos, new Object(id));
+               Arrays.add(internalInfos, new CellBroadcast$ChannelInfo(id));
                commit = true;
             }
          }
@@ -139,7 +140,7 @@ public final class CellBroadcast {
          if (prefs[i] == null) {
             for (int bit = 0; bit < MAX_LANG_PREFS; bit++) {
                if ((seenLangs & 1 << bit) == 0) {
-                  prefs[i] = (CellBroadcast$LanguagePreference)(new Object(getLanguagePrefEntry(bit)));
+                  prefs[i] = new CellBroadcast$LanguagePreference(getLanguagePrefEntry(bit));
                   prefs[i].setPriority(i);
                   seenLangs |= 1 << bit;
                   break;
@@ -150,7 +151,39 @@ public final class CellBroadcast {
    }
 
    public static final CellBroadcast$LanguagePreference[] getLanguagePreferences() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      CellBroadcast$LanguagePreference[] prefs = new CellBroadcast$LanguagePreference[MAX_LANG_PREFS];
+      boolean usimPresent = false;
+
+      try {
+         usimPresent = SIMCard.isUSIMPresent();
+      } catch (SIMCardException var9) {
+      }
+
+      if (usimPresent) {
+         CellBroadcast$LanguageIndication _langIndication = new CellBroadcast$LanguageIndication();
+         new SIMCardEfHandler().startTask(_langIndication, true);
+         prefs = _langIndication.getLangPrefs();
+         return removeUnspecifiedFromLangPrefs(prefs);
+      }
+
+      int seenLangs = 0;
+      boolean first = true;
+      synchronized (getInternalChannelInfos()) {
+         CellBroadcast$LanguagePreference pref = new CellBroadcast$LanguagePreference();
+
+         while (getNextLanguagePrefInternal(pref, first)) {
+            first = false;
+            int priority = pref.getPriority();
+            if (priority >= 0 && priority < MAX_LANG_PREFS && prefs[priority] == null) {
+               prefs[priority] = pref;
+               seenLangs |= 1 << getLanguagePrefIndex(pref.getId());
+               pref = new CellBroadcast$LanguagePreference();
+            }
+         }
+
+         fillLP_TableWithDefaults(prefs, seenLangs);
+         return prefs;
+      }
    }
 
    public static final CellBroadcast$LanguagePreference[] removeUnspecifiedFromLangPrefs(CellBroadcast$LanguagePreference[] prefs) {
@@ -182,7 +215,9 @@ public final class CellBroadcast {
    }
 
    public static final boolean setLanguageIndication(CellBroadcast$LanguagePreference[] langPrefs) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      CellBroadcast$LanguageIndicationWriter _liw = new CellBroadcast$LanguageIndicationWriter(langPrefs);
+      new SIMCardEfHandler().startTask(_liw, true);
+      return true;
    }
 
    public static final int getLanguagePrefIndex(int langPref) {

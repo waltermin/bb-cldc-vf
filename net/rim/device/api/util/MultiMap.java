@@ -10,7 +10,7 @@ public class MultiMap implements Persistable {
 
    public MultiMap(int initialHashtableCapacity, int initialVectorCapacity) {
       if (initialVectorCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._hashtable = new Hashtable(initialHashtableCapacity);
@@ -94,7 +94,7 @@ public class MultiMap implements Persistable {
 
    public Enumeration elements(Object key) {
       Vector vector = (Vector)this._hashtable.get(key);
-      return (Enumeration)(vector == null ? new Object() : vector.elements());
+      return vector == null ? new EmptyEnumeration() : vector.elements();
    }
 
    public Enumeration elements() {

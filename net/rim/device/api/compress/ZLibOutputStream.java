@@ -1,5 +1,6 @@
 package net.rim.device.api.compress;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import net.rim.device.internal.compress.Deflater;
 
@@ -47,7 +48,7 @@ public class ZLibOutputStream extends OutputStream {
    @Override
    public void close() {
       if (this._outputStream == null) {
-         throw new Object();
+         throw new IOException();
       }
 
       this._outputStream.write(this._deflater.compress(this._buffer, 0, this._bufferOffset, 4));

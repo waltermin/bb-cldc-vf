@@ -17,14 +17,14 @@ public class MediaPlayerState {
             return;
          }
 
-         instance._mediaPlayer = (WeakReference)(new Object(player));
+         instance._mediaPlayer = new WeakReference(player);
       }
    }
 
    public static void registerPlayer(MediaPlayerStateInstance player) {
       MediaPlayerState instance = getInstance();
       if (instance != null) {
-         WeakReference wr = (WeakReference)(new Object(player));
+         WeakReference wr = new WeakReference(player);
          Arrays.add(instance._players, wr);
       }
 

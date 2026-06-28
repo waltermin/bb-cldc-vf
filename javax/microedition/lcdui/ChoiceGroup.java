@@ -7,7 +7,7 @@ import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 
 public class ChoiceGroup extends Item implements Choice {
-   private VerticalFieldManager _container = (VerticalFieldManager)(new Object(1152921504606846976L));
+   private VerticalFieldManager _container = new VerticalFieldManager(1152921504606846976L);
    private LabelField _label;
    private BasicChoice _choiceImpl;
 
@@ -18,7 +18,7 @@ public class ChoiceGroup extends Item implements Choice {
    public ChoiceGroup(String label, int choiceType) {
       synchronized (Application.getEventLock()) {
          if (choiceType != 1 && choiceType != 2 && choiceType != 4) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setPeer(this._container);
@@ -29,7 +29,7 @@ public class ChoiceGroup extends Item implements Choice {
    public ChoiceGroup(String label, int choiceType, String[] stringElements, Image[] imageElements) {
       synchronized (Application.getEventLock()) {
          if (choiceType != 1 && choiceType != 2 && choiceType != 4) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this.setPeer(this._container);
@@ -42,7 +42,7 @@ public class ChoiceGroup extends Item implements Choice {
          this.setPeer(this._container);
          this.init(null, choiceType, stringElements, imageElements, validateElements);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -59,7 +59,7 @@ public class ChoiceGroup extends Item implements Choice {
                this._label = null;
             }
          } else if (this._label == null) {
-            this._label = (LabelField)(new Object(label));
+            this._label = new LabelField(label);
             this._container.insert(this._label, 0);
          } else {
             this._label.setText(label);

@@ -25,7 +25,7 @@ public class AbstractDigest {
 
    public void update(byte[] data) {
       if (data == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.update(data, 0, data.length);

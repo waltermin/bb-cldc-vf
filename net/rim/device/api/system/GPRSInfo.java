@@ -92,7 +92,7 @@ public final class GPRSInfo {
          return null;
       }
 
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
 
       for (int i = 0; i < imei.length; i++) {
          sb.append((char)(imei[i] + 48));
@@ -109,7 +109,7 @@ public final class GPRSInfo {
          return null;
       }
 
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
 
       for (int i = 0; i < imeisv.length - 2; i++) {
          sb.append((char)(imeisv[i] + 48));

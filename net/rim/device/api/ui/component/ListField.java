@@ -26,11 +26,11 @@ public class ListField extends Field implements VariableRowHeightProvider {
    private int _rowHeight;
    private int _rowCached;
    private int _rowCachedY;
-   private XYRect _focusRect = (XYRect)(new Object());
-   private TextMetrics _metrics = (TextMetrics)(new Object());
+   private XYRect _focusRect = new XYRect();
+   private TextMetrics _metrics = new TextMetrics();
    private RowHeightAdjuster _rowHeightAdjuster;
    private ListFieldCallback _callback;
-   private StringBuffer _prefix = (StringBuffer)(new Object());
+   private StringBuffer _prefix = new StringBuffer();
    private int _prevTime;
    private int _searchResetInterval = 300;
    private String _emptyString;
@@ -89,7 +89,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private void calcFocusRect(boolean move) {
@@ -159,7 +159,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
             this.invalidate(0, this.getYForRow(index), this.getWidth(), 1073741823);
          }
       } else {
-         throw new Object(index);
+         throw new ArrayIndexOutOfBoundsException(index);
       }
    }
 
@@ -443,7 +443,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
          this.fieldChangeNotify(Integer.MIN_VALUE);
       } else {
-         throw new Object(index);
+         throw new ArrayIndexOutOfBoundsException(index);
       }
    }
 
@@ -462,11 +462,11 @@ public class ListField extends Field implements VariableRowHeightProvider {
       }
 
       if (end < start) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (start > this._size) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int y = this.getYForRow(start);
@@ -510,7 +510,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
                if (InputContext.getInstance(false).isSureType()) {
                   this.searchEntryForMultipleChars(key, status);
                   if (Ui.isTTSEnabled()) {
-                     super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+                     super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
                   }
 
                   return true;
@@ -577,7 +577,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
          height = this._rowHeightAdjuster.getHeight();
          this.setExtent(width, height);
       } else {
-         throw new Object();
+         throw new IllegalStateException();
       }
    }
 
@@ -650,7 +650,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
          this.calcFocusRect(false);
          if (amount == 0 && Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+            super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
          }
 
          return amount;
@@ -662,7 +662,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    @Override
    protected void moveFocus(int x, int y, int status, int time) {
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
       }
 
       if (this._size != 0) {
@@ -679,7 +679,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    @Override
    protected void onFocus(int direction) {
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(1, new Object(1), new Object(2), this);
+         super.accessibleEventOccurred(1, new Integer(1), new Integer(2), this);
       }
 
       if (this._cursor < 0) {
@@ -704,7 +704,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
          this.setSelectedIndex(index);
          this.focusChangeNotify(2);
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(6, new Object(1), new Object(2), this);
+            super.accessibleEventOccurred(6, new Integer(1), new Integer(2), this);
          }
       }
 
@@ -756,7 +756,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
    public void setSearchable(boolean searchable) {
       if (searchable) {
-         this._prefix = (StringBuffer)(new Object());
+         this._prefix = new StringBuffer();
       } else {
          this._prefix = null;
       }

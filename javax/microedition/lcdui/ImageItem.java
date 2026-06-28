@@ -36,7 +36,7 @@ public class ImageItem extends Item {
       this(label, image, layout, altText);
       synchronized (Application.getEventLock()) {
          if (appearanceMode != 0 && appearanceMode != 1 && appearanceMode != 2) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._appearanceMode = appearanceMode;
@@ -62,7 +62,7 @@ public class ImageItem extends Item {
                this._image = null;
             }
          } else if (this._image == null) {
-            this._image = (BitmapField)(new Object(img.getBitmap(), Item.getFieldLayoutStyle(this.getLayout(), 1) | 18014398509481984L));
+            this._image = new BitmapField(img.getBitmap(), Item.getFieldLayoutStyle(this.getLayout(), 1) | 18014398509481984L);
             this._container.add(this._image);
          } else {
             this._image.setBitmap(img.getBitmap());
@@ -81,7 +81,7 @@ public class ImageItem extends Item {
                this._label = null;
             }
          } else if (this._label == null) {
-            this._label = (LabelField)(new Object(label, Item.getFieldLayoutStyle(this.getLayout(), 1) | 1152921504606846976L));
+            this._label = new LabelField(label, Item.getFieldLayoutStyle(this.getLayout(), 1) | 1152921504606846976L);
             this._container.insert(this._label, 0);
          } else {
             this._label.setText(label);

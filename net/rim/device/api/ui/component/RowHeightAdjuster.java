@@ -6,13 +6,13 @@ import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntIntHashtable;
 
 final class RowHeightAdjuster implements VariableRowHeightProvider {
-   private IntIntHashtable _rowHeightExceptions = (IntIntHashtable)(new Object());
+   private IntIntHashtable _rowHeightExceptions = new IntIntHashtable();
    private int _rowHeightExceptionsSum;
    private int _rowHeight;
    private int _size;
    private int _lastStartNodeIndex;
    private int _lastStartNodeYPos;
-   private TextMetrics _metrics = (TextMetrics)(new Object());
+   private TextMetrics _metrics = new TextMetrics();
    private int _currentY;
    private int _currentHeight;
    private int _currentAdjustment;
@@ -142,7 +142,7 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
 
    public final void insertedRow(int addedRowNumber) {
       if (this.hasVariableLineHeights()) {
-         IntIntHashtable newRowHeightExceptions = (IntIntHashtable)(new Object(this._rowHeightExceptions.size()));
+         IntIntHashtable newRowHeightExceptions = new IntIntHashtable(this._rowHeightExceptions.size());
          IntEnumeration enumeration = this._rowHeightExceptions.keys();
 
          while (enumeration.hasMoreElements()) {
@@ -163,7 +163,7 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
 
    public final void deletedRow(int deletedRowNumber) {
       if (this.hasVariableLineHeights()) {
-         IntIntHashtable newRowHeightExceptions = (IntIntHashtable)(new Object(this._rowHeightExceptions.size()));
+         IntIntHashtable newRowHeightExceptions = new IntIntHashtable(this._rowHeightExceptions.size());
          IntEnumeration enumeration = this._rowHeightExceptions.keys();
 
          while (enumeration.hasMoreElements()) {

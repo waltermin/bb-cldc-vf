@@ -41,7 +41,7 @@ public class SharedInputStream extends InputStream {
 
    public static SharedInputStream getSharedInputStream(byte[] input) {
       if (input == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return new SharedInputStream(new SharedInputStreamSource(input), 0, input.length);
       }
@@ -55,7 +55,7 @@ public class SharedInputStream extends InputStream {
       if (length + this._startPosition >= 0 && length >= 0) {
          this._maxPosition = this._startPosition + length;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -71,7 +71,7 @@ public class SharedInputStream extends InputStream {
    @Override
    public int read(byte[] buffer, int offset, int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (this._currentPosition >= this._maxPosition) {
@@ -89,7 +89,7 @@ public class SharedInputStream extends InputStream {
    @Override
    public long skip(long n) {
       if (n < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       n = this._source.skip(this._currentPosition, n);
@@ -122,7 +122,7 @@ public class SharedInputStream extends InputStream {
 
    public void setCurrentPosition(int currentPosition) {
       if (currentPosition < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._currentPosition = currentPosition;

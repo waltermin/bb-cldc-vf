@@ -1,5 +1,6 @@
 package net.rim.device.internal.lcdui;
 
+import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
@@ -12,7 +13,7 @@ public final class Lcdui {
    private boolean _paintCallback;
    private Callbacks _paintCallbacks;
    private Screen _screen;
-   private XYRect _invalid = (XYRect)(new Object());
+   private XYRect _invalid = new XYRect();
    private int _callbackType = 0;
    private int _callbackState = 0;
    private Callbacks _keyCallbacks;
@@ -134,7 +135,7 @@ public final class Lcdui {
          case 6:
             if (this._commandListener != null && this._callbackState == 0) {
                this._callbackState = 1;
-               if (this._displayable instanceof Object) {
+               if (this._displayable instanceof Canvas) {
                   synchronized (getEventDeliveryLock()) {
                      this._commandListener.commandAction(this._command, this._displayable);
                   }

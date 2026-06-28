@@ -17,7 +17,7 @@ class Field$UpdateLayoutRunnable implements Runnable {
       }
 
       try {
-         super.wait(50);
+         this.wait(50);
       } catch (InterruptedException var2) {
       }
    }
@@ -26,7 +26,7 @@ class Field$UpdateLayoutRunnable implements Runnable {
    public void run() {
       this.this$0.updateLayoutHelper();
       synchronized (this) {
-         super.notify();
+         this.notify();
       }
    }
 }

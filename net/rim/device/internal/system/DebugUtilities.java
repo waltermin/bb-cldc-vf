@@ -11,7 +11,7 @@ public class DebugUtilities {
 
    public static long logStart(String className, String m) {
       long start = System.currentTimeMillis();
-      StringBuffer buffer = (StringBuffer)(new Object(className));
+      StringBuffer buffer = new StringBuffer(className);
       buffer.append(' ');
       buffer.append(m);
       buffer.append(' ');
@@ -25,7 +25,7 @@ public class DebugUtilities {
 
    public static void logFinish(String className, String m, long start) {
       long end = System.currentTimeMillis();
-      StringBuffer buffer = (StringBuffer)(new Object(className));
+      StringBuffer buffer = new StringBuffer(className);
       buffer.append(' ');
       buffer.append(m);
       buffer.append(' ');

@@ -235,7 +235,7 @@ public final class Keypad {
          synchronized (_persistentKeypadData) {
             Keypad$KeypadData keyPadData = (Keypad$KeypadData)_persistentKeypadData.getContents();
             if (keyPadData == null) {
-               keyPadData = (Keypad$KeypadData)(new Object());
+               keyPadData = new Keypad$KeypadData();
                _persistentKeypadData.setContents(keyPadData, 51, false);
                commit(false, false);
             } else {

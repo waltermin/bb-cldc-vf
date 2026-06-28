@@ -1,5 +1,6 @@
 package net.rim.device.api.compress;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import net.rim.device.internal.compress.Deflater;
 
@@ -26,9 +27,9 @@ public class GZIPOutputStream extends OutputStream {
       if (outputStream != null && compressionValue >= 0 && compressionValue <= 9 && windowLength >= 8 && windowLength <= 15) {
          this._outputStream = outputStream;
          this._buffer = new byte[1024];
-         this._deflater = (Deflater)(new Object(compressionValue, 0, windowLength + 16));
+         this._deflater = new Deflater(compressionValue, 0, windowLength + 16);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -50,7 +51,7 @@ public class GZIPOutputStream extends OutputStream {
    @Override
    public void close() {
       if (this._outputStream == null) {
-         throw new Object();
+         throw new IOException();
       }
 
       this._outputStream.write(this._deflater.compress(this._buffer, 0, this._bufferOffset, 4));

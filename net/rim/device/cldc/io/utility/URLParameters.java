@@ -4,8 +4,8 @@ import java.util.Vector;
 import net.rim.device.api.util.StringUtilities;
 
 public class URLParameters {
-   private Vector _keys = (Vector)(new Object());
-   private Vector _values = (Vector)(new Object());
+   private Vector _keys = new Vector();
+   private Vector _values = new Vector();
 
    public boolean containParameter(String key) {
       int index = this.searchForIndex(key);
@@ -59,7 +59,7 @@ public class URLParameters {
 
    @Override
    public String toString() {
-      StringBuffer buffer = (StringBuffer)(new Object());
+      StringBuffer buffer = new StringBuffer();
       int size = this._keys.size();
 
       for (int i = 0; i < size; i++) {

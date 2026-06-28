@@ -153,7 +153,7 @@ public class CollectionListField extends ListField implements FocusChangeListene
    public CollectionListField(ReadableList list, ListFieldCallback listCallback, long style) {
       super(0, style);
       this._application = Application.getApplication();
-      this._collectionListener = (WeakReference)(new Object(this));
+      this._collectionListener = new WeakReference(this);
       this._updaterRunnable = new CollectionListField$UpdaterRunnable(this);
       this._focusedElementRunnable = new CollectionListField$SetFocusedElementRunnable(this);
       if (listCallback != null) {

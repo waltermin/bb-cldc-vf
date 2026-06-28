@@ -1,6 +1,7 @@
 package net.rim.device.api.ui.theme;
 
 import java.util.Enumeration;
+import net.rim.device.api.util.EmptyEnumeration;
 import net.rim.device.resources.Resource;
 
 class DefaultResourceFetcher implements ResourceFetcher {
@@ -28,7 +29,7 @@ class DefaultResourceFetcher implements ResourceFetcher {
    public Enumeration listResources() {
       this.checkState();
       Enumeration e = this._resources.getResourceKeys();
-      return (Enumeration)(e != null ? e : new Object());
+      return e != null ? e : new EmptyEnumeration();
    }
 
    @Override

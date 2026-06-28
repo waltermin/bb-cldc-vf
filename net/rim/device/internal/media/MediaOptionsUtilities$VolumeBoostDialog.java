@@ -4,6 +4,7 @@ import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.ActiveRichTextField;
+import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
 import net.rim.device.internal.i18n.CommonResource;
@@ -39,7 +40,7 @@ final class MediaOptionsUtilities$VolumeBoostDialog extends Dialog implements Di
 
    @Override
    public final void fieldChanged(Field field, int context) {
-      if (field instanceof Object) {
+      if (field instanceof ButtonField) {
          int choice;
          try {
             choice = _values[this.getLeafFieldWithFocus().getIndex()];
@@ -50,7 +51,7 @@ final class MediaOptionsUtilities$VolumeBoostDialog extends Dialog implements Di
          if (choice == 2) {
             UiApplication app = UiApplication.getUiApplication();
             String data = CommonResource.getString(10172);
-            ActiveRichTextField moreInfoField = (ActiveRichTextField)(new Object(data, 18014398509481984L));
+            ActiveRichTextField moreInfoField = new ActiveRichTextField(data, 18014398509481984L);
             MediaOptionsUtilities$VolumeBoostMoreInformationScreen screen = new MediaOptionsUtilities$VolumeBoostMoreInformationScreen();
             screen.add(moreInfoField);
             app.pushScreen(screen);

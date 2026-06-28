@@ -8,7 +8,7 @@ import net.rim.device.api.collection.ReadableList;
 import net.rim.vm.Array;
 
 public class BigUnsortedReadableList implements ChainableCollection, LoadableCollection, ReadableList {
-   protected BigVector _elements = (BigVector)(new Object(64));
+   protected BigVector _elements = new BigVector(64);
    protected Object _lastInsertedUpdated;
    protected int _lastInsertedUpdatedIndex;
    protected CollectionListenerManager _listenerManager = new CollectionListenerManager();

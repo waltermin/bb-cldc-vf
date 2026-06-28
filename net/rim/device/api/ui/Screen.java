@@ -35,7 +35,7 @@ public class Screen extends Manager {
    private Object[] _stylusListeners;
    private Object[] _trackwheelListeners;
    private Manager _delegate;
-   private XYRect _invalid = (XYRect)(new Object());
+   private XYRect _invalid = new XYRect();
    int _layoutGeneration;
    private int _themeGeneration;
    private int _inPaint;
@@ -322,7 +322,7 @@ public class Screen extends Manager {
       } else {
          try {
             this.doPaint0(false, false);
-         } catch (Throwable var3) {
+         } catch (Throwable var4) {
          }
       }
    }
@@ -420,7 +420,7 @@ public class Screen extends Manager {
    }
 
    public Menu getMenu(int instance) {
-      Menu menu = (Menu)(new Object(65536));
+      Menu menu = new Menu(65536);
       Menu.setTargetScreen(this);
       menu.setTargetScreenVirtual(this);
       menu.setInstance(instance);
@@ -431,7 +431,7 @@ public class Screen extends Manager {
    public Screen getScreenAbove() {
       UiEngineImpl uie = this._uiEngine;
       if (uie == null) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return uie.getScreenAbove(this);
       }
@@ -440,7 +440,7 @@ public class Screen extends Manager {
    public Screen getScreenBelow() {
       UiEngineImpl uie = this._uiEngine;
       if (uie == null) {
-         throw new Object();
+         throw new IllegalStateException();
       } else {
          return uie.getScreenBelow(this);
       }
@@ -465,7 +465,7 @@ public class Screen extends Manager {
 
    public void invalidateLayout() {
       if (this._uiEngine != null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       this.invalidateLayout0();
@@ -688,7 +688,7 @@ public class Screen extends Manager {
       this.applyTrackballOffsets();
       if (Ui.isTTSEnabled()) {
          if (focus) {
-            this.accessibleEventOccurred(1, new Object(this.getAccessibleStateSet()), new Object(2), this);
+            this.accessibleEventOccurred(1, new Integer(this.getAccessibleStateSet()), new Integer(2), this);
             this.addAccessibleState(2);
             return;
          }
@@ -716,17 +716,17 @@ public class Screen extends Manager {
             this._menu.setAlignment(4294967296L, 34359738368L);
          }
 
-         boolean var5 = false /* VF: Semaphore variable */;
+         boolean var6 = false /* VF: Semaphore variable */;
 
          try {
-            var5 = true;
+            var6 = true;
             this._menu.show();
             this.onMenuDismissed(this._menu);
             ContextMenu.getInstance().setTarget(null);
             Menu.setTargetScreen(null);
-            var5 = false;
+            var6 = false;
          } finally {
-            if (var5) {
+            if (var6) {
                this._menu = null;
             }
          }
@@ -1030,7 +1030,7 @@ public class Screen extends Manager {
 
    public final boolean setFocus(Field field, int x, int y, int status, int time) {
       if (field.getScreen() != this) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Screen$LocationFocusSelector selector = Screen$LocationFocusSelector.getSelector(field, x, y, status, time);
@@ -1057,7 +1057,7 @@ public class Screen extends Manager {
 
    public void setTrackballFilter(int filter) {
       if (filter != -1 && (filter & -8) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._trackballFilter = filter;
@@ -1073,7 +1073,7 @@ public class Screen extends Manager {
             this.applyTrackballOffsets();
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -1084,7 +1084,7 @@ public class Screen extends Manager {
             this.applyTrackballOffsets();
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -1571,10 +1571,10 @@ public class Screen extends Manager {
    @Override
    void runLayoutUpdate0(int index, int added, int deleted) {
       this._inLayout++;
-      boolean var8 = false /* VF: Semaphore variable */;
+      boolean var9 = false /* VF: Semaphore variable */;
 
       try {
-         var8 = true;
+         var9 = true;
          UiEngineImpl engine = this._uiEngine;
          if (engine != null) {
             engine.appInvalidate(this.getLeft(), this.getTop(), this.getWidth(), this.getHeight());
@@ -1588,9 +1588,9 @@ public class Screen extends Manager {
          this._invalid.set(0, 0, 0, 0);
          this.invalidate();
          this.ensureFocusVisible();
-         var8 = false;
+         var9 = false;
       } finally {
-         if (var8) {
+         if (var9) {
             this._inLayout--;
          }
       }
@@ -1717,7 +1717,7 @@ public class Screen extends Manager {
 
    @Override
    void setManager(Manager manager, int index) {
-      throw new Object();
+      throw new IllegalStateException();
    }
 
    @Override

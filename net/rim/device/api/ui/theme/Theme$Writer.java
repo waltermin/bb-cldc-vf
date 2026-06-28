@@ -5,6 +5,9 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.internal.ui.Border;
+import net.rim.device.internal.ui.Border3d;
+import net.rim.device.internal.ui.BorderRounded;
+import net.rim.device.internal.ui.BorderSimple;
 
 public final class Theme$Writer {
    private ResourceFetcher _resourceFetcher;
@@ -107,14 +110,14 @@ public final class Theme$Writer {
 
    public final void createBorderRounded(String name, int top, int right, int bottom, int left) {
       if (this.getBorder(name) == null) {
-         Border border = (Border)(new Object(top, right, bottom, left, 2));
+         Border border = new BorderRounded(top, right, bottom, left, 2);
          this.putBorder(name, border);
       }
    }
 
    public final void createBorderSimple(String name, int top, int right, int bottom, int left) {
       if (this.getBorder(name) == null) {
-         Border border = (Border)(new Object(top, right, bottom, left));
+         Border border = new BorderSimple(top, right, bottom, left);
          this.putBorder(name, border);
       }
    }
@@ -135,9 +138,9 @@ public final class Theme$Writer {
       int colorLeft1
    ) {
       if (this.getBorder(name) == null) {
-         Border border = (Border)(new Object(
+         Border border = new Border3d(
             top, right, bottom, left, colorTop0, colorTop1, colorRight0, colorRight1, colorBottom0, colorBottom1, colorLeft0, colorLeft1
-         ));
+         );
          this.putBorder(name, border);
       }
    }
@@ -147,7 +150,7 @@ public final class Theme$Writer {
    }
 
    public final ThemeAttributeSet$Writer createThemeAttributeSetWriter(String element, ResourceFetcher resourceFetcher) {
-      ThemeAttributeSet tas = (ThemeAttributeSet)(new Object(element));
+      ThemeAttributeSet tas = new ThemeAttributeSet(element);
       return tas.getWriterInternal(resourceFetcher);
    }
 
@@ -156,8 +159,7 @@ public final class Theme$Writer {
    }
 
    public final Border getBorder(String name) {
-      Border border = (Border)this.this$0._borders.get(name);
-      return border;
+      return (Border)this.this$0._borders.get(name);
    }
 
    public final int getBorderStyle() {
@@ -168,7 +170,7 @@ public final class Theme$Writer {
       if (style >= 0 && style < 3) {
          this.this$0._borderStyle = style;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -203,7 +205,13 @@ public final class Theme$Writer {
    }
 
    public final void setIdleScreenName(String idleScreenName) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (!this.this$0._idleScreenNameSet) {
+         this.this$0._idleScreenNameSet = true;
+         this.this$0._idleScreenName = idleScreenName;
+         if (this.this$0._idleScreenName != null) {
+            this.this$0._idleScreenName = this._resourceFetcher.getBaseURL() + this.this$0._idleScreenName;
+         }
+      }
    }
 
    public final void setThumbnailName(String thumbnailName) {

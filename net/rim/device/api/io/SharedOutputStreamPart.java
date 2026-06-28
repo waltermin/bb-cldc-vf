@@ -37,7 +37,7 @@ class SharedOutputStreamPart extends OutputStream {
       if (offset >= 0 && length >= 0 && data.length - length >= offset) {
          this._sink.write(this._index, data, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

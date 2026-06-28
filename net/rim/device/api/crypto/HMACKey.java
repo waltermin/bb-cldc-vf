@@ -44,7 +44,7 @@ public final class HMACKey implements SymmetricKey, Persistable {
       if (cryptoToken != null && length >= 0) {
          this.initialize(cryptoToken, cryptoToken.createKey(length));
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -52,7 +52,7 @@ public final class HMACKey implements SymmetricKey, Persistable {
       if (cryptoToken != null && data != null && offset >= 0 && length >= 0 && data.length - length >= offset) {
          this.initialize(cryptoToken, cryptoToken.injectKey(data, offset, length));
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -62,7 +62,7 @@ public final class HMACKey implements SymmetricKey, Persistable {
          this._cryptoTokenData = cryptoTokenData;
          this.setHashCode();
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -86,9 +86,9 @@ public final class HMACKey implements SymmetricKey, Persistable {
       try {
          this.intialize(SoftwareHMACCryptoToken.getInstance(), data, offset, length);
       } catch (CryptoTokenException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       } catch (CryptoUnsupportedOperationException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       }
    }
 
@@ -96,9 +96,9 @@ public final class HMACKey implements SymmetricKey, Persistable {
       try {
          this.initialize(SoftwareHMACCryptoToken.getInstance(), length);
       } catch (CryptoTokenException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       } catch (CryptoUnsupportedOperationException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       }
    }
 

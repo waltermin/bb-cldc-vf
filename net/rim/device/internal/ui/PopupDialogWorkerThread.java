@@ -11,7 +11,7 @@ public class PopupDialogWorkerThread extends PleaseWaitWorkerThread implements P
 
    public PopupDialogWorkerThread(PopupDialog popupDialog) {
       if (popupDialog == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._popupDialog = popupDialog;
@@ -28,8 +28,8 @@ public class PopupDialogWorkerThread extends PleaseWaitWorkerThread implements P
       synchronized (this) {
          while (this._popupDialogDisplayed) {
             try {
-               super.wait();
-            } catch (InterruptedException var3) {
+               this.wait();
+            } catch (InterruptedException var4) {
             }
          }
       }
@@ -40,7 +40,7 @@ public class PopupDialogWorkerThread extends PleaseWaitWorkerThread implements P
       if (popupDialog == this._popupDialog) {
          synchronized (this) {
             this._popupDialogDisplayed = false;
-            super.notifyAll();
+            this.notifyAll();
          }
       }
    }

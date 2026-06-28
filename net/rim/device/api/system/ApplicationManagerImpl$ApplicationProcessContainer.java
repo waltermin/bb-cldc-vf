@@ -36,7 +36,7 @@ class ApplicationManagerImpl$ApplicationProcessContainer {
    void moveProcess(ApplicationProcess process, int destIndex) {
       int srcIndex = this.getProcessIndex(process);
       if (srcIndex == -1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.moveProcess(srcIndex, destIndex);
@@ -45,7 +45,7 @@ class ApplicationManagerImpl$ApplicationProcessContainer {
    void moveProcessToRear(ApplicationProcess process) {
       int srcIndex = this.getProcessIndex(process);
       if (srcIndex == -1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.moveProcessToRear(srcIndex);

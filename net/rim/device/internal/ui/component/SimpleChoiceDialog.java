@@ -3,7 +3,6 @@ package net.rim.device.internal.ui.component;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
@@ -35,7 +34,7 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
 
    @Override
    public void fieldChanged(Field field, int context) {
-      if (field instanceof Object) {
+      if (field instanceof ButtonField) {
          this.select();
       }
    }
@@ -50,7 +49,7 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
    }
 
    public SimpleChoiceDialog(String message, Object[] choices, int defaultChoice, Bitmap bitmap, long style) {
-      this((RichTextField)(new Object(message, 36028797086072832L)), choices, defaultChoice, bitmap, style);
+      this(new RichTextField(message, 36028797086072832L), choices, defaultChoice, bitmap, style);
    }
 
    @Override
@@ -59,14 +58,14 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
    }
 
    public SimpleChoiceDialog(RichTextField message, Object[] choices, int defaultChoice, Bitmap bitmap, long style) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       this._dfm.setMessage(message);
       if (choices != null) {
          this._choices = choices;
          int numChoices = choices.length;
 
          for (int i = 0; i < numChoices; i++) {
-            ButtonField button = (ButtonField)(new Object(choices[i].toString(), 12884901888L));
+            ButtonField button = new ButtonField(choices[i].toString(), 12884901888L);
             button.setChangeListener(this);
             this._dfm.addCustomField(button);
          }
@@ -74,7 +73,7 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
 
       this._defaultChoice = defaultChoice;
       if (bitmap != null) {
-         this._dfm.setIcon((BitmapField)(new Object(bitmap, 32)));
+         this._dfm.setIcon(new BitmapField(bitmap, 32));
       }
    }
 
@@ -110,9 +109,9 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
    }
 
    private static SimpleChoiceDialog createYesNoQuestionDialog(String question, String boldArgument, long style) {
-      RichTextField messageField = (RichTextField)(boldArgument == null
-         ? new Object(question, 45035996273704960L)
-         : MessageFormatUtilities.getBoldArgumentField(question, new String[]{boldArgument}));
+      RichTextField messageField = boldArgument == null
+         ? new RichTextField(question, 45035996273704960L)
+         : MessageFormatUtilities.getBoldArgumentField(question, new String[]{boldArgument});
       String[] yesNo = CommonResource.getStringArray(10012);
       Bitmap bitmap = Bitmap.getPredefinedBitmap(1);
       return new SimpleChoiceDialog(messageField, yesNo, 1, bitmap, style);

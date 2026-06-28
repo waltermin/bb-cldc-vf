@@ -26,7 +26,7 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    private int _port;
    private Protocol$WMAListeningThread _wlt;
    private MessageListener _listener;
-   private Vector _messagequeue = (Vector)(new Object());
+   private Vector _messagequeue = new Vector();
    private boolean _stop;
    public static final int SRC_PORT_INDEX;
    public static final int DEST_PORT_INDEX;
@@ -119,7 +119,13 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
 
    @Override
    public final int getMaximumLength() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      int headerSize = 0;
+      int[] ports = ((SmsAddress)super._addressBase).getPorts();
+      if (ports != null) {
+         headerSize = SmsUtil.getHeaderSize(ports[0]);
+      }
+
+      return super._transport.getMaximumLength() - headerSize;
    }
 
    @Override
@@ -134,19 +140,86 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    private final boolean hasStoreMessage(DatagramBase d) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._messageSegmentQueue == null) {
+         this._messageSegmentQueue = new Protocol$MessageSegmentQueue(10);
+      }
+
+      Integer refNumberInteger = (Integer)d.getProperty(SmsUtil.PROPERTY_REF_NUMBER);
+      if (refNumberInteger != null) {
+         int refNumber = refNumberInteger;
+         SmsAddress a = (SmsAddress)d.getAddressBase();
+         String address = SmsAddress.makeAddress(false, a.getHeader(), null);
+         String key = address + '-' + refNumber;
+
+         for (int i = 0; i < this._messageSegmentQueue.messages.length; i++) {
+            if (this._messageSegmentQueue.messages[i] != null && this._messageSegmentQueue.messages[i].getKey().equals(key)) {
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    private final Message storeMessage(DatagramBase d) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      if (this._messageSegmentQueue == null) {
+         this._messageSegmentQueue = new Protocol$MessageSegmentQueue(10);
+      }
+
+      int refNumber = -1;
+      int totalSegments = 1;
+      Integer ref = (Integer)d.getProperty(SmsUtil.PROPERTY_REF_NUMBER);
+      if (ref == null) {
+         return null;
+      }
+
+      refNumber = ref;
+      ref = (Integer)d.getProperty(SmsUtil.PROPERTY_TOTAL_SEGMENTS);
+      if (ref == null) {
+         return null;
+      }
+
+      totalSegments = ref;
+      SmsAddress a = (SmsAddress)d.getAddressBase();
+      String address = SmsAddress.makeAddress(false, a.getHeader(), null);
+      String key = address + '-' + refNumber;
+      Message msg = null;
+      Protocol$StoreMessage sm = null;
+
+      int i;
+      for (i = 0; i < this._messageSegmentQueue.messages.length; i++) {
+         if (this._messageSegmentQueue.messages[i] != null && this._messageSegmentQueue.messages[i].getKey().equals(key)) {
+            sm = this._messageSegmentQueue.messages[i];
+            break;
+         }
+      }
+
+      if (sm != null) {
+         msg = sm.add(d);
+         if (msg != null) {
+            this._messageSegmentQueue.messages[i] = null;
+            return msg;
+         } else {
+            return null;
+         }
+      } else {
+         sm = new Protocol$StoreMessage(totalSegments, key);
+         msg = sm.add(d);
+         if (msg == null) {
+            this._messageSegmentQueue.add(sm);
+            return null;
+         } else {
+            return msg;
+         }
+      }
    }
 
    static final Message makeMessage(DatagramBase datagram) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private final Message doReceive() {
-      DatagramBase d = (DatagramBase)(new Object());
+      DatagramBase d = new DatagramBase();
 
       while (true) {
          synchronized (this) {

@@ -78,20 +78,20 @@ public class PermissionDialog extends VendorModuleStackDialog implements GlobalE
       super(new VerticalIndentFieldManager(1153220571769602048L), 134217728);
       VerticalIndentFieldManager vifm = (VerticalIndentFieldManager)this.getDelegate();
       if (message != null) {
-         RichTextField label = (RichTextField)(new Object(message));
+         RichTextField label = new RichTextField(message);
          vifm.add(label);
       }
 
       if (checkBoxLabel != null) {
-         this._userOptionCheckbox = (CheckboxField)(new Object(checkBoxLabel, true, 1073741824));
+         this._userOptionCheckbox = new CheckboxField(checkBoxLabel, true, 1073741824);
          vifm.add(this._userOptionCheckbox);
       }
 
-      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
-      this._allow = (ButtonField)(new Object(CommonResource.getStringArray(10170)[0]));
+      HorizontalFieldManager buttonManager = new HorizontalFieldManager(12884901888L);
+      this._allow = new ButtonField(CommonResource.getStringArray(10170)[0]);
       this._allow.setChangeListener(this);
       buttonManager.add(this._allow);
-      this._deny = (ButtonField)(new Object(CommonResource.getStringArray(10170)[1]));
+      this._deny = new ButtonField(CommonResource.getStringArray(10170)[1]);
       this._deny.setChangeListener(this);
       buttonManager.add(this._deny);
       vifm.add(buttonManager);

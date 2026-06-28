@@ -12,7 +12,7 @@ public final class SIMPhoneNumberReader implements SIMCardEfTask {
 
    public SIMPhoneNumberReader(SIMPhoneNumberReader$PhoneNumberList list, int efID, int recNum) {
       if (list == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._list = list;

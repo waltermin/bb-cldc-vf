@@ -76,7 +76,7 @@ public final class Security {
          || this._userAuthenticator != null
          || userAuthenticatorPassword == null
          || !this._registeredUserAuthenticators.contains(userAuthenticator)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (userAuthenticator.initialize(userAuthenticatorPassword)) {
@@ -97,7 +97,7 @@ public final class Security {
 
    public final void reinitializeUserAuthenticatorStateData() {
       if (this._userAuthenticator == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] state = this._userAuthenticator.getStateData();
@@ -457,7 +457,7 @@ public final class Security {
 
    public final synchronized boolean registerUserAuthenticator(UserAuthenticator authenticator) {
       if (authenticator == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       ApplicationControl.assertAuthenticatorApiAllowed(true);
@@ -471,7 +471,7 @@ public final class Security {
       } catch (IllegalAccessException var5) {
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    public final UserAuthenticator getUserAuthenticator() {
@@ -525,8 +525,8 @@ public final class Security {
    }
 
    private final void setPasswordEnableTimeStamp() {
-      DataBuffer buff = (DataBuffer)(new Object(true));
-      DataBuffer timeStampBuffer = (DataBuffer)(new Object(true));
+      DataBuffer buff = new DataBuffer(true);
+      DataBuffer timeStampBuffer = new DataBuffer(true);
       buff.writeLong(System.currentTimeMillis());
       TLEUtilities.writeDataField(timeStampBuffer, 1, buff.toArray());
       NvStore.writeData(39, timeStampBuffer.getArray());
@@ -537,7 +537,7 @@ public final class Security {
       DataBuffer timestampBuffer = null;
       byte[] buffer = NvStore.readData(39);
       if (buffer != null) {
-         timestampBuffer = (DataBuffer)(new Object(true));
+         timestampBuffer = new DataBuffer(true);
          timestampBuffer.setData(buffer, 0, buffer.length, true);
       }
 

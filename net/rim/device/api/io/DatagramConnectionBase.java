@@ -14,7 +14,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    protected DatagramAddressBase _addressBase;
    protected DatagramAddressBase _receiveFilter;
    protected DatagramTransportBase _transport;
-   protected CyclicQueue _datagrams = (CyclicQueue)(new Object(8));
+   protected CyclicQueue _datagrams = new CyclicQueue(8);
    protected Datagram[] _sendingDatagrams = new Datagram[0];
    protected Hashtable _properties;
    protected int _flags;
@@ -156,7 +156,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
          try {
             this._connectionListener.dataAvailable(this);
             return;
-         } catch (Throwable var4) {
+         } catch (Throwable var5) {
          }
       }
    }
@@ -211,7 +211,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    @Override
    public Object setProperty(String name, Object data) {
       if (this._properties == null) {
-         this._properties = (Hashtable)(new Object());
+         this._properties = new Hashtable();
       }
 
       return this._properties.put(name, data);

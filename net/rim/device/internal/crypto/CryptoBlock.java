@@ -79,7 +79,7 @@ public final class CryptoBlock {
 
    public static final String getKeyIDForUID(String uid) {
       if (uid == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
@@ -88,7 +88,7 @@ public final class CryptoBlock {
 
    public static final byte getKeyAlgorithmForUID(String uid) {
       if (uid == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
@@ -97,7 +97,7 @@ public final class CryptoBlock {
 
    public static final String getUIDForKeyId(String keyId) {
       if (keyId == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysById.get(keyId);
@@ -109,12 +109,12 @@ public final class CryptoBlock {
    }
 
    public static final boolean isEnterpriseClassKey(String keyId, String uid) {
-      CryptoBlock$CryptoBlockKey keyByID = (CryptoBlock$CryptoBlockKey)(_keysById != null ? _keysById.get(keyId) : null);
+      CryptoBlock$CryptoBlockKey keyByID = _keysById != null ? (CryptoBlock$CryptoBlockKey)_keysById.get(keyId) : null;
       if (keyByID != null) {
          return keyByID._enterpriseClassKey;
       }
 
-      CryptoBlock$CryptoBlockKey keyByUid = (CryptoBlock$CryptoBlockKey)(uid != null ? _keysByName.get(uid.toLowerCase()) : null);
+      CryptoBlock$CryptoBlockKey keyByUid = uid != null ? (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase()) : null;
       return keyByUid != null ? keyByUid._enterpriseClassKey : false;
    }
 
@@ -124,7 +124,7 @@ public final class CryptoBlock {
 
    public static final boolean isCorporatePeerToPeerKey(String keyID) {
       if (keyID == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       CryptoBlock$CryptoBlockKey keyByID = (CryptoBlock$CryptoBlockKey)_keysById.get(keyID);
@@ -142,7 +142,7 @@ public final class CryptoBlock {
    public static final byte[] getSymmetricKey(String uid) {
       synchronized (_persistentKeysById) {
          if (uid == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysByName.get(uid.toLowerCase());
@@ -154,7 +154,7 @@ public final class CryptoBlock {
       synchronized (_persistentKeysById) {
          boolean result = false;
          if (uid == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          CryptoBlock$CryptoBlockKey key1 = (CryptoBlock$CryptoBlockKey)_keysById.get(keyId);
@@ -203,7 +203,7 @@ public final class CryptoBlock {
    public static final boolean removeSymmetricKey(String uid, byte flags) {
       synchronized (_persistentKeysById) {
          if (uid == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          uid = uid.toLowerCase();
@@ -215,7 +215,7 @@ public final class CryptoBlock {
    public static final boolean removeSymmetricKeyByKeyID(String keyid, byte flags) {
       synchronized (_persistentKeysById) {
          if (keyid == null) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          CryptoBlock$CryptoBlockKey key = (CryptoBlock$CryptoBlockKey)_keysById.get(keyid);
@@ -291,7 +291,7 @@ public final class CryptoBlock {
          for (int i = 0; i < 32; i++) {
             int b = input.readUnsignedByte();
             if (b == 0) {
-               return (String)(new Object(buffer, 0, i));
+               return new String(buffer, 0, i);
             }
 
             buffer[i] = (byte)b;

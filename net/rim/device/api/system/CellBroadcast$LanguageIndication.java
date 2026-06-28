@@ -36,7 +36,7 @@ class CellBroadcast$LanguageIndication implements SIMCardEfTask {
                   int temp = this._buffer[i] << 8;
                   temp |= this._buffer[i + 1];
                   if (temp == CellBroadcast.ISO639_TO_DEFAULTS[j] && curPriority < CellBroadcast.MAX_LANG_PREFS) {
-                     CellBroadcast$LanguagePreference tempPref = (CellBroadcast$LanguagePreference)(new Object(CellBroadcast.langPrefTable[j]));
+                     CellBroadcast$LanguagePreference tempPref = new CellBroadcast$LanguagePreference(CellBroadcast.langPrefTable[j]);
                      tempPref.setPriority(curPriority);
                      tempPref.setEnabled(true);
                      this._prefs[curPriority] = tempPref;

@@ -32,7 +32,7 @@ public class RingBuffer {
 
    public synchronized void close() {
       this._isOpen = false;
-      super.notify();
+      this.notify();
    }
 
    public int getBufferSize() {
@@ -149,7 +149,7 @@ public class RingBuffer {
          if (bytesToIgnore > 0) {
             while (this._dataLength < bytesToIgnore) {
                try {
-                  super.wait();
+                  this.wait();
                } catch (InterruptedException var6) {
                }
             }
@@ -169,7 +169,7 @@ public class RingBuffer {
          }
 
          try {
-            super.wait();
+            this.wait();
          } catch (InterruptedException var5) {
          }
       }
@@ -177,7 +177,7 @@ public class RingBuffer {
 
    public synchronized void setReadEntirelySizeLimit(int maxNumBytes) {
       this._maxBytesToReadEntirely = maxNumBytes;
-      super.notify();
+      this.notify();
    }
 
    public synchronized int write(byte[] buffer, int start, int length) {
@@ -194,7 +194,7 @@ public class RingBuffer {
       }
 
       this._dataLength += bytesWritten;
-      super.notify();
+      this.notify();
       return bytesWritten;
    }
 
@@ -226,7 +226,7 @@ public class RingBuffer {
          this._endIndex = this._buffer.length;
       }
 
-      super.notify();
+      this.notify();
       return bytesWritten;
    }
 }

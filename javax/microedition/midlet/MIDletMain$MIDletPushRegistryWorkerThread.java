@@ -27,7 +27,7 @@ final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
             if (this._connection != null) {
                this._connection.close();
             }
-         } catch (IOException var3) {
+         } catch (IOException var4) {
          }
       }
    }
@@ -39,19 +39,19 @@ final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
    public final synchronized void resume() {
       if (this._paused) {
          this._resume = true;
-         super.notify();
+         this.notify();
       }
    }
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private final synchronized void waitForResume() {
       if (!this._resume) {
          try {
-            super.wait();
+            this.wait();
          } catch (InterruptedException var2) {
          }
       }

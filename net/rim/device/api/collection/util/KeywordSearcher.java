@@ -12,7 +12,7 @@ public class KeywordSearcher implements IDataSearchRepository {
    private AbstractKeywordFilterList _list;
    protected FilterStatusListener _listener;
    protected boolean _interrupted;
-   protected WeakReference _wordBufferWR = (WeakReference)(new Object(null));
+   protected WeakReference _wordBufferWR = new WeakReference(null);
 
    protected AbstractKeywordFilterList getList() {
       return this._list;
@@ -31,10 +31,10 @@ public class KeywordSearcher implements IDataSearchRepository {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected synchronized void search(String words, FilterStatusListener listener) {
       AbstractKeywordFilterList list = this.getList();
-      boolean var9 = false /* VF: Semaphore variable */;
+      boolean var10 = false /* VF: Semaphore variable */;
 
       try {
-         var9 = true;
+         var10 = true;
          this._interrupted = false;
          this.setFilterStatusListener(listener);
          if (listener != null) {
@@ -69,10 +69,10 @@ public class KeywordSearcher implements IDataSearchRepository {
          }
 
          this.setFilterStatusListener(null);
-         super.notify();
-         var9 = false;
+         this.notify();
+         var10 = false;
       } finally {
-         if (var9) {
+         if (var10) {
             list.filteringComplete();
          }
       }
@@ -88,10 +88,10 @@ public class KeywordSearcher implements IDataSearchRepository {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected synchronized void search(String[][][] words, FilterStatusListener listener) {
       AbstractKeywordFilterList list = this.getList();
-      boolean var11 = false /* VF: Semaphore variable */;
+      boolean var12 = false /* VF: Semaphore variable */;
 
       try {
-         var11 = true;
+         var12 = true;
          this._interrupted = false;
          this.setFilterStatusListener(listener);
          if (listener != null) {
@@ -112,10 +112,10 @@ public class KeywordSearcher implements IDataSearchRepository {
                }
 
                if (i == 0) {
-                  primary = (BitSet)(new Object(result.getPrimaryMatches()));
-                  secondary = (BitSet)(new Object(result.getSecondaryMatches()));
+                  primary = new BitSet(result.getPrimaryMatches());
+                  secondary = new BitSet(result.getSecondaryMatches());
                } else {
-                  BitSet tempSet = (BitSet)(new Object(result.getPrimaryMatches()));
+                  BitSet tempSet = new BitSet(result.getPrimaryMatches());
                   tempSet.or(result.getSecondaryMatches());
                   primary.and(tempSet);
                   secondary.and(tempSet);
@@ -129,10 +129,10 @@ public class KeywordSearcher implements IDataSearchRepository {
                String[] suffixString = new String[]{suffix};
                this.search(suffixString, result, null);
                if (words.length == 0) {
-                  primary = (BitSet)(new Object(result.getPrimaryMatches()));
-                  secondary = (BitSet)(new Object(result.getSecondaryMatches()));
+                  primary = new BitSet(result.getPrimaryMatches());
+                  secondary = new BitSet(result.getSecondaryMatches());
                } else {
-                  BitSet tempSet = (BitSet)(new Object(result.getPrimaryMatches()));
+                  BitSet tempSet = new BitSet(result.getPrimaryMatches());
                   tempSet.or(result.getSecondaryMatches());
                   primary.and(tempSet);
                   secondary.and(tempSet);
@@ -142,8 +142,8 @@ public class KeywordSearcher implements IDataSearchRepository {
 
          if (!this._interrupted) {
             if (primary == null) {
-               primary = (BitSet)(new Object());
-               secondary = (BitSet)(new Object());
+               primary = new BitSet();
+               secondary = new BitSet();
             }
 
             result.setResults(primary, secondary);
@@ -156,10 +156,10 @@ public class KeywordSearcher implements IDataSearchRepository {
          }
 
          this.setFilterStatusListener(null);
-         super.notify();
-         var11 = false;
+         this.notify();
+         var12 = false;
       } finally {
-         if (var11) {
+         if (var12) {
             list.filteringComplete();
          }
       }
@@ -181,7 +181,7 @@ public class KeywordSearcher implements IDataSearchRepository {
 
    private BitSet search(String[] words, KeywordPrefixSearchResult result, String suffix) {
       AbstractKeywordFilterList list = this.getList();
-      BitSet returnResult = (BitSet)(new Object());
+      BitSet returnResult = new BitSet();
 
       try {
          KeywordPrefixCache prefixCache = list.getPrefixCache();
@@ -190,7 +190,7 @@ public class KeywordSearcher implements IDataSearchRepository {
          String cacheEntryName = null;
          boolean cacheUsed = false;
          if (prefixCache != null) {
-            StringBuffer tempBuffer = (StringBuffer)(new Object());
+            StringBuffer tempBuffer = new StringBuffer();
             if (words != null) {
                for (int i = 0; i < words.length; i++) {
                   tempBuffer.append('/').append(words[i]);
@@ -212,9 +212,9 @@ public class KeywordSearcher implements IDataSearchRepository {
 
          KeywordPrefixSearchResult tmpResult = null;
          if (!cacheUsed) {
-            returnResult = (BitSet)(new Object());
-            primary = (BitSet)(new Object());
-            secondary = (BitSet)(new Object());
+            returnResult = new BitSet();
+            primary = new BitSet();
+            secondary = new BitSet();
             String[] wordBuffer = WeakReferenceUtilities.getStringArray(this._wordBufferWR, 10);
             int wordsToSearch = words != null ? words.length : 0;
 
@@ -247,7 +247,7 @@ public class KeywordSearcher implements IDataSearchRepository {
                }
             }
 
-            BitSet maskSet = (BitSet)(new Object(primary));
+            BitSet maskSet = new BitSet(primary);
             maskSet.and(secondary);
             secondary.xor(maskSet);
          }

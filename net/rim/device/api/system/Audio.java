@@ -74,15 +74,15 @@ public final class Audio {
    }
 
    public static final int playFile(int audioCodec, int fs, String fileName) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public static final int recordFile(int audioCodec, int fs, String fileName) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public static final int stopFile(int audioCodec, int fs, String fileName) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public static final void addListener(Application app, AudioListener listener) {

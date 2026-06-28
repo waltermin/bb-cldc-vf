@@ -75,7 +75,7 @@ public final class MIMETypeAssociations {
    }
 
    public static final String getExtensionFromMIMEType(String mimeType) {
-      return (String)(mimeType == null ? null : _instance._mimeTypeToExt.get(getNormalizedType(mimeType)));
+      return mimeType == null ? null : (String)_instance._mimeTypeToExt.get(getNormalizedType(mimeType));
    }
 
    public static final void registerType(String extension, String mimeType, int mediaType) {
@@ -89,7 +89,7 @@ public final class MIMETypeAssociations {
             }
          }
       } else {
-         throw new Object();
+         throw new NullPointerException();
       }
    }
 

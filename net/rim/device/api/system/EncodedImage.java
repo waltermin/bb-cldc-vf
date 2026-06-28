@@ -55,7 +55,7 @@ public class EncodedImage {
 
       switch (imageType) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             return new GIFEncodedImage(data, offset, length);
@@ -66,27 +66,27 @@ public class EncodedImage {
                return new JPEGEncodedImage(data, offset, length);
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 4:
             return new WBMPEncodedImage(data, offset, length);
          case 5:
             if (BMPEncodedImage.isBMPSupported()) {
-               return (EncodedImage)(new Object(data, offset, length));
+               return new BMPEncodedImage(data, offset, length);
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 6:
             if (TIFFEncodedImage.isTIFFSupported()) {
                return new TIFFEncodedImage(data, offset, length);
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 7:
          case 8:
             if (ProgressiveImage.isProgressiveSupported()) {
                return new ProgressiveImage(data, offset, length, true);
             } else {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
       }
    }
@@ -101,7 +101,7 @@ public class EncodedImage {
 
       switch (imageType) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             return new GIFEncodedImage(filename);
@@ -112,20 +112,20 @@ public class EncodedImage {
                return new JPEGEncodedImage(filename);
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 4:
             return new WBMPEncodedImage(filename);
          case 5:
             if (BMPEncodedImage.isBMPSupported()) {
-               return (EncodedImage)(new Object(filename));
+               return new BMPEncodedImage(filename);
             }
 
-            throw new Object();
+            throw new IllegalArgumentException();
          case 6:
             if (TIFFEncodedImage.isTIFFSupported()) {
                return new TIFFEncodedImage(filename);
             } else {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
       }
    }
@@ -164,7 +164,7 @@ public class EncodedImage {
 
    public void setScaleX32(int scale) {
       if (scale <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._scaleX = scale;
@@ -172,7 +172,7 @@ public class EncodedImage {
 
    public void setScaleY32(int scale) {
       if (scale <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._scaleY = scale;
@@ -269,7 +269,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return this._frameInfo[frameIndex].width;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -277,7 +277,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return this._frameInfo[frameIndex].height;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -285,7 +285,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[frameIndex].width), this._scaleX));
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -293,7 +293,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return Fixed32.toRoundedInt(Fixed32.div(Fixed32.toFP(this._frameInfo[frameIndex].height), this._scaleY));
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -301,7 +301,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return this._frameInfo[frameIndex].isMonochrome;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -309,7 +309,7 @@ public class EncodedImage {
       if (frameIndex >= 0 && frameIndex <= this._info.frameCount) {
          return this._frameInfo[frameIndex].hasTransparency;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

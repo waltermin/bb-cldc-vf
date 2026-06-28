@@ -6,7 +6,7 @@ import net.rim.device.api.collection.ReadableSet;
 import net.rim.device.api.collection.util.CollectionListenerManager;
 
 public class CustomDictionary implements ReadableSet, CollectionEventSource {
-   protected CollectionListenerManager _listeners = (CollectionListenerManager)(new Object());
+   protected CollectionListenerManager _listeners = new CollectionListenerManager();
    public static final byte NEW_WORDS;
    public static final byte FREQUENCY_WORDS;
    public static final byte URL_EMAIL_WORDS;

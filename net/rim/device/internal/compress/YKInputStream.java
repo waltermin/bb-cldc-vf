@@ -1,6 +1,7 @@
 package net.rim.device.internal.compress;
 
 import java.io.InputStream;
+import net.rim.device.api.io.IOCancelledException;
 
 public final class YKInputStream extends InputStream {
    private InputStream _inputStream;
@@ -20,7 +21,7 @@ public final class YKInputStream extends InputStream {
          this._inputBuffer = new byte[inputBufferSize];
          this._decode = new YKDecode(false);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -32,12 +33,12 @@ public final class YKInputStream extends InputStream {
    @Override
    public final synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
       if (buffer == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (bufferOffset >= 0 && bufferLength >= 0 && bufferOffset + bufferLength <= buffer.length) {
          if (this._isClosed) {
-            throw new Object();
+            throw new IOCancelledException();
          }
 
          if (bufferLength == 0) {
@@ -65,13 +66,13 @@ public final class YKInputStream extends InputStream {
 
          return numRead > 0 ? numRead : -1;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public final synchronized byte[] saveContextMap() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       } else {
          return this._decode.getContextMap();
       }
@@ -79,7 +80,7 @@ public final class YKInputStream extends InputStream {
 
    public final synchronized void loadContextMap(byte[] contextMap) {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       this._decode.loadContextMap(contextMap);
@@ -98,7 +99,7 @@ public final class YKInputStream extends InputStream {
    @Override
    public final synchronized int available() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       } else {
          return this._currentChunk != null ? this._currentChunk.length - this._currentOffset : 0;
       }
@@ -108,14 +109,14 @@ public final class YKInputStream extends InputStream {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void close() {
-      boolean var2 = false /* VF: Semaphore variable */;
+      boolean var3 = false /* VF: Semaphore variable */;
 
       try {
-         var2 = true;
+         var3 = true;
          this._inputStream.close();
-         var2 = false;
+         var3 = false;
       } finally {
-         if (var2) {
+         if (var3) {
             this._decode.yk_uninit();
             this._isClosed = true;
          }
@@ -127,7 +128,7 @@ public final class YKInputStream extends InputStream {
 
    private final boolean readNextChunk() {
       if (this._isClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       int numRead = this._inputStream.read(this._inputBuffer);

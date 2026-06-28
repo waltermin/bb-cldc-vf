@@ -252,18 +252,18 @@ public class AutoTextEditField extends EditField {
    @Override
    protected int moveFocus(int amount, int status, int time) {
       int ret = 0;
-      boolean var6 = false /* VF: Semaphore variable */;
+      boolean var7 = false /* VF: Semaphore variable */;
 
       try {
-         var6 = true;
+         var7 = true;
          if ((status & 8) != 0) {
             this._processingKeyHeldWhileRolling = true;
          }
 
          ret = super.moveFocus(amount, status, time);
-         var6 = false;
+         var7 = false;
       } finally {
-         if (var6) {
+         if (var7) {
             this._processingKeyHeldWhileRolling = false;
          }
       }

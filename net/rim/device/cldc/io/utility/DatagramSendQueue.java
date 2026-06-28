@@ -67,9 +67,9 @@ public final class DatagramSendQueue extends Thread {
          synchronized (this) {
             try {
                if (this.size() == 0) {
-                  super.wait();
+                  this.wait();
                }
-            } catch (InterruptedException var10) {
+            } catch (InterruptedException var11) {
             }
 
             this.dequeueAll();
@@ -84,7 +84,7 @@ public final class DatagramSendQueue extends Thread {
                } catch (IOException e) {
                   e.printStackTrace();
                } finally {
-                  Datagram var12 = null;
+                  Datagram var13 = null;
                }
             }
          }

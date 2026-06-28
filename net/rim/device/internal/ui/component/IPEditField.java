@@ -2,7 +2,7 @@ package net.rim.device.internal.ui.component;
 
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.EditField;
-import net.rim.device.api.ui.text.TextFilter;
+import net.rim.device.api.ui.text.IPTextFilter;
 
 public class IPEditField extends EditField {
    private boolean keyRepeatProcessed;
@@ -10,17 +10,17 @@ public class IPEditField extends EditField {
 
    public IPEditField(String label, String initialValue) {
       super(label, initialValue);
-      this.setFilter((TextFilter)(new Object()));
+      this.setFilter(new IPTextFilter());
    }
 
    public IPEditField(String label, String initialValue, int maxNumChars) {
       super(label, initialValue, maxNumChars, 0);
-      this.setFilter((TextFilter)(new Object()));
+      this.setFilter(new IPTextFilter());
    }
 
    public IPEditField(String label, String initialValue, int maxNumChars, int filterFlags) {
       super(label, initialValue, maxNumChars, 0);
-      this.setFilter((TextFilter)(new Object(filterFlags)));
+      this.setFilter(new IPTextFilter(filterFlags));
    }
 
    @Override

@@ -48,7 +48,7 @@ public class RIMProcessLauncher implements GlobalEventListener {
    private static int launch(Runnable runnable, int flags, RIMProcessLauncher$ApplicationCallback callback) {
       int pid = 0;
       if (runnable == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       try {
@@ -65,7 +65,7 @@ public class RIMProcessLauncher implements GlobalEventListener {
                _data.setCallBack(callback);
             }
 
-            ApplicationDescriptor descriptor = (ApplicationDescriptor)(new Object(_data.getDescriptor(), new String[]{arg}));
+            ApplicationDescriptor descriptor = new ApplicationDescriptor(_data.getDescriptor(), new String[]{arg});
             pid = ApplicationManager.getApplicationManager().runApplication(descriptor);
             if ((flags & 4) != 0) {
                process = Process.getProcess(pid);
@@ -82,14 +82,14 @@ public class RIMProcessLauncher implements GlobalEventListener {
          while (process != null) {
             synchronized (_processTermination) {
                if (!process.isAlive()) {
-                  Process var12 = null;
+                  Process var16 = null;
                   break;
                }
 
                _processTermination.wait();
             }
          }
-      } catch (Exception var11) {
+      } catch (Exception var15) {
       }
 
       return pid;

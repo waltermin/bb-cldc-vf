@@ -7,6 +7,7 @@ import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.DatagramConnectionBase;
 import net.rim.device.api.io.DatagramStatusListener;
+import net.rim.device.api.io.IOFormatException;
 import net.rim.device.api.io.IOProperties;
 import net.rim.device.api.io.SmsAddress;
 import net.rim.device.api.system.EventLogger;
@@ -38,12 +39,28 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final void nativeSendSetupHeader(Datagram datagram, IOProperties properties) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      super._txHeader = ((SmsAddress)super._txAddressBase).getHeader();
    }
 
    @Override
    public final void nativeSendSetupData(Datagram datagram) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      int[] ports = ((SmsAddress)super._txAddressBase).getPorts();
+      if (ports != null && ports[0] == 65536) {
+         int length = SmsUtil.encode(65536, this._txEncode, datagram.getData(), datagram.getOffset(), datagram.getLength());
+         if (length < 0) {
+            EventLogger.logEvent(super.GUID, 1413834351, 2);
+            this.xmitDgslEvent(super._txListener, super._txDgramId, 12674, null);
+            throw new IOFormatException();
+         }
+
+         super._txData = this._txEncode;
+         super._txOffset = 0;
+         super._txLength = length;
+      } else {
+         super._txData = datagram.getData();
+         super._txOffset = datagram.getOffset();
+         super._txLength = datagram.getLength();
+      }
    }
 
    @Override
@@ -170,7 +187,7 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final DatagramAddressBase newDatagramAddressBase(String address, boolean swap) {
-      SmsAddress ret = (SmsAddress)(new Object(address));
+      SmsAddress ret = new SmsAddress(address);
       if (swap) {
          ret.swap();
       }
@@ -180,7 +197,7 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final DatagramAddressBase newDatagramAddressBase(DatagramAddressBase addressBase, boolean swap) {
-      SmsAddress ret = (SmsAddress)(new Object(addressBase));
+      SmsAddress ret = new SmsAddress(addressBase);
       if (swap) {
          ret.swap();
       }
@@ -296,7 +313,7 @@ public final class Transport extends NativeTransport implements SMSPacketListene
       }
 
       int tagIDAndCauseCode = messageTypeAndCauseCode & -65536 | networkId & 65535;
-      Integer intObject = (Integer)(new Object(tagIDAndCauseCode));
+      Integer intObject = new Integer(tagIDAndCauseCode);
       this.queueDgslEvent(networkId, event, intObject);
    }
 }

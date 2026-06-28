@@ -26,7 +26,7 @@ public final class DNSCache implements LowMemoryListener {
 
          for (int i = 0; i < responseRRs.length; i++) {
             if (this._maxSize >= 0 && responseRRs[i].size() > this._maxSize) {
-               responseRRs[i] = (Vector)(new Object());
+               responseRRs[i] = new Vector();
             } else {
                total += responseRRs[i].size();
             }
@@ -92,7 +92,7 @@ public final class DNSCache implements LowMemoryListener {
       Vector finalMatches = null;
       DNSCachedRR[] matched = domainNode.getResources(type);
       if (matched != null && matched.length != 0) {
-         finalMatches = (Vector)(new Object(matched.length));
+         finalMatches = new Vector(matched.length);
 
          for (int i = 0; i < matched.length; i++) {
             finalMatches.addElement(matched[i].getData());
@@ -104,7 +104,7 @@ public final class DNSCache implements LowMemoryListener {
          }
 
          if (touchedLeafs == null) {
-            touchedLeafs = (Vector)(new Object());
+            touchedLeafs = new Vector();
          }
 
          touchedLeafs.addElement(domainNode);
@@ -202,7 +202,7 @@ public final class DNSCache implements LowMemoryListener {
          DNSCachedRR[] matched = domainNode.getResources(5);
          if (matched != null && matched.length > 0) {
             if (touchedLeafs == null) {
-               touchedLeafs = (Vector)(new Object());
+               touchedLeafs = new Vector();
             }
 
             touchedLeafs.addElement(domainNode);

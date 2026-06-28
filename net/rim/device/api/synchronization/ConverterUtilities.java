@@ -78,20 +78,20 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          byte type = markConsumed(buffer, markConsumed);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          String returnedString;
          if ((type & 128) != 0 && (type & 240) != 240) {
             if (len < 2) {
-               throw new Object();
+               throw new EOFException();
             }
 
             returnedString = readStringEncoded(buffer.getArray(), buffer.getArrayPosition(), len, buffer.isBigEndian());
@@ -144,7 +144,7 @@ public final class ConverterUtilities {
    public static final void writeByteArray(DataBuffer buffer, int type, byte[] s) {
       int len = s.length;
       if (len > 65535) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       buffer.ensureCapacity(len + 3);
@@ -155,7 +155,7 @@ public final class ConverterUtilities {
 
    public static final void writeByteStream(DataBuffer buffer, int type, InputStream stream, long length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       writeLong(buffer, type, length);
@@ -174,7 +174,7 @@ public final class ConverterUtilities {
             byte[] data = buffer.getArray();
             int len = stream.read(data, buffer.getArrayPosition(), segmentLength);
             if (len != segmentLength) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
 
             buffer.skipBytes(segmentLength);
@@ -336,7 +336,7 @@ public final class ConverterUtilities {
 
    public static final int getType(DataBuffer buffer, boolean convertTag) {
       if (buffer.available() < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       byte[] data = buffer.getArray();
@@ -352,7 +352,7 @@ public final class ConverterUtilities {
    public static final void skipField(DataBuffer buffer) {
       int len = buffer.readUnsignedShort();
       if (buffer.available() < len + 1) {
-         throw new Object();
+         throw new EOFException();
       }
 
       buffer.skipBytes(len + 1);
@@ -383,14 +383,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          markConsumed(buffer, markConsumed);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          byte[] data = buffer.getArray();
@@ -401,7 +401,7 @@ public final class ConverterUtilities {
             len--;
          }
 
-         return (String)(new Object(data, offset, len));
+         return new String(data, offset, len);
       } catch (EOFException e) {
          buffer.setPosition(pos);
          throw e;
@@ -416,14 +416,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          markConsumed(buffer, markConsumed);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          byte[] data = buffer.getArray();
@@ -446,14 +446,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          buffer.skipBytes(1);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          int count = len >> 1;
@@ -474,14 +474,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          buffer.skipBytes(1);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          int count = len >> 2;
@@ -506,14 +506,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int bufflen = buffer.available();
       if (bufflen < 3) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          buffer.skipBytes(1);
          if (bufflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          int count = len >> 3;
@@ -571,7 +571,7 @@ public final class ConverterUtilities {
          buffer.setPosition(initialPosition);
          return false;
       } catch (EOFException e) {
-         throw new Object();
+         throw new RuntimeException();
       }
    }
 
@@ -599,14 +599,14 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int buflen = buffer.available();
       if (buflen < 4) {
-         throw new Object();
+         throw new EOFException();
       }
 
       try {
          int len = buffer.readUnsignedShort();
          markConsumed(buffer, markConsumed);
          if (buflen - 3 < len) {
-            throw new Object();
+            throw new EOFException();
          }
 
          long value;
@@ -624,7 +624,7 @@ public final class ConverterUtilities {
                value = buffer.readLong();
                break;
             default:
-               throw new Object();
+               throw new EOFException();
          }
 
          return value;
@@ -654,7 +654,7 @@ public final class ConverterUtilities {
       int pos = buffer.getPosition();
       int buflen = buffer.available();
       if (buflen < 13) {
-         throw new Object();
+         throw new EOFException();
       }
 
       initializeCalendars();
@@ -670,7 +670,7 @@ public final class ConverterUtilities {
          int len = buffer.readUnsignedShort();
          markConsumed(buffer, markConsumed);
          if (len != 10) {
-            throw new Object();
+            throw new EOFException();
          }
 
          synchronized (cal) {
@@ -865,7 +865,7 @@ public final class ConverterUtilities {
 
    public static final byte[] addByteTag(byte[] data, byte tag, byte value) {
       if (value == -1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       data = removeTag(data, tag, false);

@@ -186,7 +186,7 @@ public class Process {
 
    public static long ensureMinimumIdleTime(long minimumIdleTime) {
       if (minimumIdleTime <= 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (peekMessage(false)) {

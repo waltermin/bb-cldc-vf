@@ -76,7 +76,7 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
             try {
                this._writeSemaphore.wait();
-            } catch (InterruptedException var7) {
+            } catch (InterruptedException var8) {
             }
          }
       }
@@ -97,12 +97,12 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final DataOutputStream openDataOutputStream() {
-      return (DataOutputStream)(new Object(this.openOutputStream()));
+      return new DataOutputStream(this.openOutputStream());
    }
 
    @Override
    public final DataInputStream openDataInputStream() {
-      return (DataInputStream)(new Object(this.openInputStream()));
+      return new DataInputStream(this.openInputStream());
    }
 
    @Override
@@ -172,7 +172,7 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
       ApplicationControl.assertLocalConnectionAllowed(true);
 
       try {
-         this._port = (IOPort)(new Object(this._channel));
+         this._port = new USBPortInternal(this._channel);
       } catch (IOException ioe) {
          this._exception = ioe;
       }

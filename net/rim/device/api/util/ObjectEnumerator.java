@@ -12,7 +12,7 @@ public class ObjectEnumerator implements Enumeration {
 
    protected void resetEnumeration(Object[] elements) {
       if (elements == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._elements = elements;

@@ -1,5 +1,7 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
+
 final class IntMultiMap$KeysEnumeration implements IntEnumeration {
    private IntMultiMap _map;
    private int _i;
@@ -17,7 +19,7 @@ final class IntMultiMap$KeysEnumeration implements IntEnumeration {
    @Override
    public final int nextElement() {
       if (this._i >= this._map._num) {
-         throw new Object();
+         throw new NoSuchElementException();
       }
 
       int key = this._map._ints[this._i];

@@ -37,7 +37,7 @@ final class Tooltip$TooltipPollingThread extends Thread {
             } else {
                Tooltip$TooltipProvider var8 = null;
                synchronized (this) {
-                  super.wait();
+                  this.wait();
                }
             }
          } catch (InterruptedException var7) {

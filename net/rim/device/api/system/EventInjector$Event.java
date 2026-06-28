@@ -7,7 +7,7 @@ public class EventInjector$Event {
    private static ApplicationManagerImpl _ami;
 
    EventInjector$Event(int device, int event, int subMessage, int data0, int data1, Object o1, Object o2) {
-      this._msg = (Message)(new Object(device, event, subMessage, data0, data1));
+      this._msg = new Message(device, event, subMessage, data0, data1);
       this._msg.setObject0(o1);
       this._msg.setObject1(o2);
    }

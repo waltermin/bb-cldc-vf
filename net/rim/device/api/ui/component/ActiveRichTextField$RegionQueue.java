@@ -76,7 +76,7 @@ public class ActiveRichTextField$RegionQueue {
          } else if (this._maxregions == 0) {
             this.offsets = new int[newCapacity + 1];
             this.attributes = new byte[newCapacity];
-            this.cookieID = (IntHashtable)(new Object(newCapacity));
+            this.cookieID = new IntHashtable(newCapacity);
             this.offsets[0] = 0;
          } else {
             Array.resize(this.offsets, newCapacity + 1);

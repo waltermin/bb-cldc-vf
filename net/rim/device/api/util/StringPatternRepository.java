@@ -35,7 +35,7 @@ public final class StringPatternRepository {
    public static final void addPattern(StringPattern pattern) {
       assertPermission();
       if (pattern == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       getInstance().add(pattern);

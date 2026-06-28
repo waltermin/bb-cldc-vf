@@ -4,11 +4,12 @@ import java.io.EOFException;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.synchronization.OTASyncCapableSyncItem;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.DataBuffer;
 
 public final class IMSwitcherOption extends OTASyncCapableSyncItem {
-   private byte _state;
-   private PersistentObject _store;
+   private byte _state = 1;
+   private PersistentObject _store = RIMPersistentStore.getPersistentObject(-9055322099094090145L);
    public static final byte SHOW_ALWAYS;
    public static final byte DONT_SHOW;
    public static final byte DISABLED;
@@ -22,6 +23,14 @@ public final class IMSwitcherOption extends OTASyncCapableSyncItem {
    }
 
    private IMSwitcherOption() {
+      synchronized (this._store) {
+         if (this._store.getContents() == null) {
+            this._store.setContents(new Byte(this._state), 51);
+            this._store.commit();
+         }
+      }
+
+      this._state = (Byte)this._store.getContents();
    }
 
    @Override
@@ -62,7 +71,7 @@ public final class IMSwitcherOption extends OTASyncCapableSyncItem {
    public final void setState(byte state) {
       if (this._state != state && state != 0) {
          this._state = state;
-         this._store.setContents(new Object(this._state), 51);
+         this._store.setContents(new Byte(this._state), 51);
          this._store.commit();
          this.fireSyncItemUpdated();
       }

@@ -12,7 +12,6 @@ import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntIntHashtable;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.system.EventDispatchManager;
-import net.rim.device.internal.system.EventDispatcher;
 import net.rim.vm.Process;
 
 public final class GPSRegistry {
@@ -52,7 +51,7 @@ public final class GPSRegistry {
          EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
          synchronized (dispatchManager) {
             if (dispatchManager.getDispatcher(22) == null) {
-               dispatchManager.setDispatcher(22, (EventDispatcher)(new Object()));
+               dispatchManager.setDispatcher(22, new FledgeEventDispatcher());
             }
          }
 
@@ -122,7 +121,7 @@ public final class GPSRegistry {
       }
 
       if (criteria == null) {
-         criteria = (GPS$AppCriteria)(new Object());
+         criteria = new GPS$AppCriteria();
       }
 
       if (mode == 2) {
@@ -283,7 +282,7 @@ public final class GPSRegistry {
 
             this._criteriaTable.remove(processId);
             this._gcd = this.getCommonGCD();
-            GPS$AppCriteria criteria = (GPS$AppCriteria)(new Object());
+            GPS$AppCriteria criteria = new GPS$AppCriteria();
             if (RadioInfo.getNetworkType() == 4 && mode == 1) {
                this._pdeTable.remove(processId);
                if (this._assistFixConsumers.size() != 0) {
@@ -336,7 +335,7 @@ public final class GPSRegistry {
          synchronized (_pdeLock) {
             try {
                _pdeLock.wait(3000);
-            } catch (InterruptedException var4) {
+            } catch (InterruptedException var5) {
             }
 
             if (!this._pdeRequestSuccess) {
@@ -406,7 +405,7 @@ public final class GPSRegistry {
          if (RadioInfo.getNetworkType() == 4 && mode == 1) {
             new GPSRegistry$2(this).start();
          } else {
-            GPS.startLocationUpdate(3, mode, this._gcd, (GPS$AppCriteria)(new Object()));
+            GPS.startLocationUpdate(3, mode, this._gcd, new GPS$AppCriteria());
          }
       }
    }

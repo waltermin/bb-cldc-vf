@@ -9,7 +9,7 @@ import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.api.util.LongIntHashtable;
 
 public class ActivationService {
-   public Hashtable _listeners = (Hashtable)(new Object(1));
+   public Hashtable _listeners = new Hashtable(1);
    protected static final long ACTIVATION_SERVICE_ID;
    protected static final long ACTIVATION_KEY_ID;
    public static final byte OTAKEYGEN_ABORT_REASON_NONE;
@@ -111,7 +111,7 @@ public class ActivationService {
       PersistentObject persistentObject = RIMPersistentStore.getPersistentObject(6247846804872834637L);
       LongIntHashtable serviceCompletionHash = (LongIntHashtable)persistentObject.getContents();
       if (serviceCompletionHash == null) {
-         serviceCompletionHash = (LongIntHashtable)(new Object());
+         serviceCompletionHash = new LongIntHashtable();
       }
 
       if (serviceId != -1) {

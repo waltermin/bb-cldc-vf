@@ -50,7 +50,7 @@ public final class IdEncryptor {
          System.arraycopy(input, inputOffset, temp, encodedMessageOffset, inputLength);
          nativeRSAPublicKeyOperation(1024, RSA_E, n, temp, 0, output, outputOffset);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -62,7 +62,7 @@ public final class IdEncryptor {
 
    private static final byte[] getPGPPublicKey(byte[] e, byte[] n) {
       try {
-         ByteArrayOutputStream bytesOut = (ByteArrayOutputStream)(new Object());
+         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
          bytesOut.write(3);
          long time = System.currentTimeMillis() / 1000;
          bytesOut.write((int)(time >> 24) & 0xFF);

@@ -47,15 +47,15 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
 
             count = dest + secondaryMatches.getNumSet();
 
-            for (int var18 = 0; dest < count && var18 < elementCount; var18++) {
-               int id = orderList[var18];
+            for (int var20 = 0; dest < count && var20 < elementCount; var20++) {
+               int id = orderList[var20];
                if (secondaryMatches.isSet(id)) {
-                  matchElements[dest++] = super._source.getAt(var18);
+                  matchElements[dest++] = super._source.getAt(var20);
                }
             }
 
             if (result == super._filterResult && dest != matchElements.length) {
-               BitSet usedIDs = (BitSet)(new Object());
+               BitSet usedIDs = new BitSet();
 
                for (int i = elementCount - 1; i >= 0; i--) {
                   usedIDs.fastSet(orderList[i]);
@@ -115,8 +115,8 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
          return null;
       }
 
-      BitSet visibleSet = (BitSet)(new Object());
-      BitSet primarySet = (BitSet)(new Object());
+      BitSet visibleSet = new BitSet();
+      BitSet primarySet = new BitSet();
       BitSet theSet = visibleSet;
       PatriciaKeywordSearchResult searchData = new PatriciaKeywordSearchResult(this, hitCount, primarySet);
 
@@ -166,7 +166,7 @@ public class PatriciaKeywordFilterList extends AbstractKeywordFilterList {
                theSet.reset();
             }
          } else if (wordCount > 1) {
-            theSet = (BitSet)(new Object());
+            theSet = new BitSet();
          }
 
          if (this._haltSearch) {

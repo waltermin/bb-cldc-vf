@@ -24,7 +24,7 @@ public class Base64InputStream extends InputStream {
 
    public Base64InputStream(InputStream inputStream, boolean treatErrorAsEOF) {
       if (inputStream == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._treatErrorAsEOF = treatErrorAsEOF;
@@ -103,13 +103,13 @@ public class Base64InputStream extends InputStream {
          int remainder = outputLength >> 16;
          outputLength &= 65535;
          if (remainder > 0) {
-            throw new Object();
+            throw new IOException();
          }
 
          Array.resize(output, outputLength);
          return output;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

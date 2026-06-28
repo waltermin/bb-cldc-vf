@@ -6,10 +6,10 @@ import net.rim.device.api.util.DataBuffer;
 public final class DNSMessageIPv4 {
    protected int _id;
    protected int _flags;
-   protected Vector _questionSection = (Vector)(new Object());
-   protected Vector _answerSection = (Vector)(new Object());
-   protected Vector _authoritySection = (Vector)(new Object());
-   protected Vector _additionalSection = (Vector)(new Object());
+   protected Vector _questionSection = new Vector();
+   protected Vector _answerSection = new Vector();
+   protected Vector _authoritySection = new Vector();
+   protected Vector _additionalSection = new Vector();
    public static final int QR_QUERY;
    public static final int QR_RESPONSE;
    public static final int OPCODE_QUERY;
@@ -78,7 +78,7 @@ public final class DNSMessageIPv4 {
 
    public final void setQR(int qr) {
       if (qr != 0 && qr != 32768) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -32769 | qr;
@@ -90,7 +90,7 @@ public final class DNSMessageIPv4 {
 
    public final void setOpcode(int opcode) {
       if (opcode != 0 && opcode != 2048 && opcode != 4096) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -30721 | opcode;
@@ -102,7 +102,7 @@ public final class DNSMessageIPv4 {
 
    public final void setAA(int aa) {
       if (aa != 0 && aa != 1024) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -1025 | aa;
@@ -114,7 +114,7 @@ public final class DNSMessageIPv4 {
 
    public final void setTC(int tc) {
       if (tc != 0 && tc != 512) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -513 | tc;
@@ -126,7 +126,7 @@ public final class DNSMessageIPv4 {
 
    public final void setRD(int rd) {
       if (rd != 0 && rd != 256) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -257 | rd;
@@ -138,7 +138,7 @@ public final class DNSMessageIPv4 {
 
    public final void setRA(int ra) {
       if (ra != 0 && ra != 128) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -129 | ra;
@@ -150,7 +150,7 @@ public final class DNSMessageIPv4 {
 
    public final void setRcode(int rcode) {
       if (rcode != 0 && rcode != 1 && rcode != 2 && rcode != 3 && rcode != 4 && rcode != 5) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._flags = this._flags & -16 | rcode;
@@ -259,7 +259,7 @@ public final class DNSMessageIPv4 {
    }
 
    static final String readDomainName(DataBuffer db) {
-      StringBuffer strBuf = (StringBuffer)(new Object(32));
+      StringBuffer strBuf = new StringBuffer(32);
       readDomainName(db, strBuf);
       return strBuf.toString();
    }

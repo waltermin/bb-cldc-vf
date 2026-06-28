@@ -6,6 +6,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import javax.microedition.io.file.FileSystemListener;
 import net.rim.device.api.io.FileInfo;
+import net.rim.device.api.io.file.FileIOException;
 import net.rim.device.api.io.file.FileSystemJournalEntry;
 import net.rim.device.api.io.file.FileSystemJournalListener;
 import net.rim.device.api.system.Application;
@@ -65,7 +66,7 @@ public final class FileSystem {
             FileSystemInfo fsInfo = new FileSystemInfo();
             int status = getFileSystemInfo(nativeRootId, fsInfo);
             if (status != 0) {
-               throw new Object(status);
+               throw new FileIOException(status);
             }
 
             _fileSystem._maxReadSize[nativeRootId] = fsInfo.getMaxReadLength();
@@ -81,7 +82,7 @@ public final class FileSystem {
             FileSystemInfo fsInfo = new FileSystemInfo();
             int status = getFileSystemInfo(nativeRootId, fsInfo);
             if (status != 0) {
-               throw new Object(status);
+               throw new FileIOException(status);
             }
 
             _fileSystem._maxWriteSize[nativeRootId] = fsInfo.getMaxWriteLength();

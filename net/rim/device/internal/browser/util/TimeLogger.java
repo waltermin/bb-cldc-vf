@@ -3,7 +3,7 @@ package net.rim.device.internal.browser.util;
 import net.rim.vm.Array;
 
 public final class TimeLogger {
-   private StringBuffer _tempSB = (StringBuffer)(new Object());
+   private StringBuffer _tempSB = new StringBuffer();
    private long[] _totalTime = new long[14];
    private long[] _startTime = new long[4];
    private long[] _timerIds = new long[4];

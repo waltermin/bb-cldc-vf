@@ -38,7 +38,7 @@ public final class CodeModuleManager {
 
    public static final int getModuleHandleForObject(Object obj) {
       if (obj == null) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return getModuleHandleForObjectImpl(obj);
       }
@@ -48,7 +48,7 @@ public final class CodeModuleManager {
 
    public static final int getModuleHandleForClass(Class clazz) {
       if (clazz == null) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return getModuleHandleForClassImpl(clazz);
       }
@@ -316,7 +316,7 @@ public final class CodeModuleManager {
    public static final byte[] makeTrailer(int id, int flags, byte[] data) {
       int len = data.length;
       if ((len & 3) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] trailer = new byte[4 + len];

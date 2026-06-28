@@ -5,13 +5,13 @@ import net.rim.device.api.ui.FieldChangeListener;
 
 public class RadioButtonGroup {
    private boolean _notifyReselected;
-   private Vector _buttons = (Vector)(new Object());
+   private Vector _buttons = new Vector();
    private int _selected = -1;
    private FieldChangeListener _changeListener;
 
    public int add(RadioButtonField button) {
       if (button.getGroup() != null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       button._group = this;
@@ -54,7 +54,7 @@ public class RadioButtonGroup {
 
    void setSelectedIndex(int selected, int context) {
       if (selected < -1 || selected >= this._buttons.size()) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (this._selected == selected) {

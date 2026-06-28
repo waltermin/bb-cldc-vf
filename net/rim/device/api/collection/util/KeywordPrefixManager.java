@@ -46,7 +46,7 @@ public class KeywordPrefixManager implements Persistable {
 
    private int getKey(char[] data, int offset, int length) {
       if (data.length < length - offset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return this.getKey0((char)(length > 0 ? data[offset] : 0), (char)(length > 1 ? data[offset + 1] : 0), (char)(length > 2 ? data[offset + 2] : 0));
       }
@@ -74,7 +74,7 @@ public class KeywordPrefixManager implements Persistable {
 
    private long getKeyLong(char[] data, int offset, int length) {
       if (data.length < length - offset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return this.getKeyLong0(length > 0 ? data[offset] : '\u0000', length > 1 ? data[offset + 1] : '\u0000', length > 2 ? data[offset + 2] : '\u0000');
       }

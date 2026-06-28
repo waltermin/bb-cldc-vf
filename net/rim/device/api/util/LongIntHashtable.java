@@ -14,7 +14,7 @@ public class LongIntHashtable implements Persistable {
 
    public LongIntHashtable(int initialCapacity) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (initialCapacity < 1) {
@@ -44,7 +44,7 @@ public class LongIntHashtable implements Persistable {
    }
 
    public synchronized IntEnumeration elements() {
-      return (IntEnumeration)(new Object(this._value, this._occupied));
+      return new LongIntHashtableEnumeratorElements(this._value, this._occupied);
    }
 
    public synchronized boolean contains(int value) {

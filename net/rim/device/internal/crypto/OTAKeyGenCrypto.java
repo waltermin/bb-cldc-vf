@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import net.rim.device.api.crypto.CryptoTokenException;
 import net.rim.device.api.crypto.CryptoUnsupportedOperationException;
-import net.rim.device.api.crypto.Digest;
 import net.rim.device.api.crypto.HMAC;
 import net.rim.device.api.crypto.HMACKey;
 import net.rim.device.api.crypto.RandomSource;
+import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.crypto.SHA512Digest;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.WeakReferenceUtilities;
@@ -19,8 +19,8 @@ public final class OTAKeyGenCrypto {
    private byte[] _deviceSTPublicKey;
    private byte _confirmationDataCounter;
    private ByteArrayOutputStream _confirmationDataStream;
-   private WeakReference _oneByteBufferWR = (WeakReference)(new Object(null));
-   private WeakReference _fourByteBufferWR = (WeakReference)(new Object(null));
+   private WeakReference _oneByteBufferWR = new WeakReference(null);
+   private WeakReference _fourByteBufferWR = new WeakReference(null);
    public static String OTAKEYGEN_CID;
    public static final int SUCCESS;
    public static final int BUFFER_TOO_SMALL;
@@ -43,7 +43,7 @@ public final class OTAKeyGenCrypto {
    private static final byte[] SERVER_CONFIRMATION_DATA_SUFFIX;
 
    public OTAKeyGenCrypto() {
-      this._confirmationDataStream = (ByteArrayOutputStream)(new Object());
+      this._confirmationDataStream = new ByteArrayOutputStream();
    }
 
    public final int beginActivation(byte[] sharedSecret, byte[] deviceSTPublicKeyBuffer) {
@@ -81,7 +81,7 @@ public final class OTAKeyGenCrypto {
    ) {
       byte[] k1 = EncryptionUtilities.calculateKey(2, serverSTPublicKey, this._deviceSTPrivateKey);
       byte[] k2 = EncryptionUtilities.calculateKey(2, serverLTPublicKey, deviceLTPrivateKey);
-      SHA512Digest sha512Digest = (SHA512Digest)(new Object());
+      SHA512Digest sha512Digest = new SHA512Digest();
       sha512Digest.update(k1);
       sha512Digest.update(k2);
       byte[] k_kconf = new byte[sha512Digest.getDigestLength()];
@@ -102,7 +102,7 @@ public final class OTAKeyGenCrypto {
       byte[] xz = EncryptionUtilities.generateECMQVSharedSecret(
          2, deviceLTPrivateKey, this._deviceSTPrivateKey, this._deviceSTPublicKey, serverLTPublicKey, serverSTPublicKey
       );
-      SHA512Digest sha512Digest = (SHA512Digest)(new Object());
+      SHA512Digest sha512Digest = new SHA512Digest();
       sha512Digest.update(xz);
       byte[] k_kconf = new byte[sha512Digest.getDigestLength()];
       sha512Digest.getDigest(k_kconf, 0);
@@ -113,8 +113,8 @@ public final class OTAKeyGenCrypto {
 
    private final int doConfirmationValueWork(byte[] serverConfirmationValue, byte[] deviceConfirmationValueBuffer, byte[] k_kconf) {
       try {
-         HMACKey confirmationHMACKey = (HMACKey)(new Object(k_kconf, 32, 32));
-         HMAC confirmationHMAC = (HMAC)(new Object(confirmationHMACKey, (Digest)(new Object())));
+         HMACKey confirmationHMACKey = new HMACKey(k_kconf, 32, 32);
+         HMAC confirmationHMAC = new HMAC(confirmationHMACKey, new SHA256Digest());
          byte[] confirmationDataBytes = this._confirmationDataStream.toByteArray();
          byte[] expectedServerConfirmationValue = new byte[confirmationHMAC.getLength()];
          confirmationHMAC.update(confirmationDataBytes, 0, confirmationDataBytes.length);

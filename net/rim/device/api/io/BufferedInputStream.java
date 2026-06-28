@@ -1,5 +1,6 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import net.rim.vm.Array;
 
@@ -22,7 +23,7 @@ public final class BufferedInputStream extends InputStream {
          this._buffer = new byte[size];
          this._bufferPos = this._buffer.length;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -31,7 +32,7 @@ public final class BufferedInputStream extends InputStream {
       if (!this._closed && this._currentMarkPos >= 0) {
          this._bufferPos = this._currentMarkPos;
       } else {
-         throw new Object();
+         throw new IOException();
       }
    }
 
@@ -44,14 +45,14 @@ public final class BufferedInputStream extends InputStream {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public final void close() {
-      boolean var2 = false /* VF: Semaphore variable */;
+      boolean var3 = false /* VF: Semaphore variable */;
 
       try {
-         var2 = true;
+         var3 = true;
          super.close();
-         var2 = false;
+         var3 = false;
       } finally {
-         if (var2) {
+         if (var3) {
             this._closed = true;
          }
       }
@@ -62,7 +63,7 @@ public final class BufferedInputStream extends InputStream {
    @Override
    public final synchronized int available() {
       if (this._closed) {
-         throw new Object();
+         throw new IOException();
       } else {
          return this._buffer.length - this._bufferPos;
       }
@@ -107,11 +108,11 @@ public final class BufferedInputStream extends InputStream {
    @Override
    public final synchronized int read(byte[] buffer, int bufferOffset, int bufferLength) {
       if (this._closed) {
-         throw new Object();
+         throw new IOException();
       }
 
       if (buffer == null || bufferOffset < 0 || bufferLength < 0 || buffer.length - bufferLength < bufferOffset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (bufferLength == 0) {

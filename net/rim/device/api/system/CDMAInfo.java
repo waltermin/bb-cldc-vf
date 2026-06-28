@@ -123,7 +123,7 @@ public final class CDMAInfo {
 
    public static final String getNAI(int profileIndex) {
       byte[] nai = RadioInternal.getNAI(profileIndex);
-      return (String)(nai == null ? null : new Object(nai));
+      return nai == null ? null : new String(nai);
    }
 
    private static final native void getCellInfo(CDMAInfo$CDMACellInfo var0);

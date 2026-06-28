@@ -16,6 +16,7 @@ import net.rim.device.api.util.StringPatternContainer;
 import net.rim.device.api.util.StringPatternEnumerator;
 import net.rim.device.api.util.StringPatternRepository$Internal;
 import net.rim.device.internal.ui.FormatParams;
+import net.rim.tid.text.AttributedString;
 import net.rim.tid.text.AttributedString$Iterator;
 import net.rim.vm.Process;
 
@@ -27,7 +28,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    private int _pendingVersion;
    private StringPatternContainer _patterns;
    private StringPatternEnumerator _enumerator;
-   private StringPattern$Match _match = (StringPattern$Match)(new Object());
+   private StringPattern$Match _match = new StringPattern$Match();
    private int[] _pendingOffsets;
    private long[] _pendingCookieID;
    private int _pendingRegionCount;
@@ -84,40 +85,40 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       Process.waitForIdle(1000);
       int version = this.initialize();
       if (version >= 0) {
-         boolean var8 = false /* VF: Semaphore variable */;
+         boolean var13 = false /* VF: Semaphore variable */;
 
          label77: {
             try {
-               var8 = true;
+               var13 = true;
                if (this.scanForActiveRegions(version)) {
                   this.postResults(version);
                   this.invalidate();
-                  var8 = false;
+                  var13 = false;
                } else {
-                  var8 = false;
+                  var13 = false;
                }
                break label77;
-            } catch (IndexOutOfBoundsException var12) {
-               var8 = false;
+            } catch (IndexOutOfBoundsException var17) {
+               var13 = false;
             } finally {
-               if (var8) {
+               if (var13) {
                   synchronized (this) {
                      this._activeThread = null;
-                     super.notify();
+                     this.notify();
                   }
                }
             }
 
             synchronized (this) {
                this._activeThread = null;
-               super.notify();
+               this.notify();
                return;
             }
          }
 
          synchronized (this) {
             this._activeThread = null;
-            super.notify();
+            this.notify();
          }
       }
    }
@@ -175,7 +176,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    @Override
    public void selectionCopy(Clipboard cb) {
       if (!this.isSelecting() && this.regionHasCookie() && this._invertCookieRegion) {
-         cb.put(new Object(super._text, this._arSupport.getRunStart(), this._arSupport.getRunEnd()));
+         cb.put(new AttributedString(super._text, this._arSupport.getRunStart(), this._arSupport.getRunEnd()));
       } else {
          super.selectionCopy(cb);
       }
@@ -231,14 +232,14 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
       super(label, initialValue, maxNumChars, style);
       this._threadSafeIterator = super._text.getIterator();
       this._arSupport = new ActiveRegionSupport(super._text.getIterator(), this);
-      this._smileySupport = (SmileySupport)(new Object(this));
+      this._smileySupport = new SmileySupport(this);
       this._pendingOffsets = new int[16];
       this._pendingCookieID = new long[8];
       this._pendingRegionCount = 0;
       if (patterns != null) {
          for (int index = 0; index < patterns.size(); index++) {
             Object pattern = patterns.getAt(index);
-            if (pattern instanceof Object) {
+            if (pattern instanceof EmoticonStringPattern) {
                this._smileySupport.setPattern((EmoticonStringPattern)pattern);
                if (patterns.size() > 1) {
                   StringPattern[] elements = new StringPattern[patterns.size() - 1];
@@ -249,8 +250,8 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
                      }
                   }
 
-                  this._patterns = (StringPatternContainer)(new Object(elements));
-                  this._enumerator = (StringPatternEnumerator)(new Object(null, this._patterns));
+                  this._patterns = new StringPatternContainer(elements);
+                  this._enumerator = new StringPatternEnumerator(null, this._patterns);
                }
                break;
             }
@@ -259,7 +260,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
       if (this._enumerator == null) {
          this._patterns = StringPatternRepository$Internal.getStringPatterns();
-         this._enumerator = (StringPatternEnumerator)(new Object(null, this._patterns));
+         this._enumerator = new StringPatternEnumerator(null, this._patterns);
       }
    }
 
@@ -333,7 +334,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
          this._waitingThread = Thread.currentThread();
 
          try {
-            super.wait();
+            this.wait();
          } catch (InterruptedException e) {
             this._waitingThread = null;
             return -1;
@@ -372,7 +373,7 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
    }
 
    private void postResults(int version) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

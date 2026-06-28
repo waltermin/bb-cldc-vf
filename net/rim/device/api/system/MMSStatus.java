@@ -47,7 +47,7 @@ final class MMSStatus {
          action.run();
       } else {
          if (this._actions == null) {
-            this._actions = (Vector)(new Object());
+            this._actions = new Vector();
          }
 
          this._actions.addElement(action);

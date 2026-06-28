@@ -43,7 +43,7 @@ public class DateTimeFormatOptions {
          switch (timeFormat) {
             case -2:
             default:
-               throw new Object();
+               throw new IllegalArgumentException();
             case -1:
             case 0:
             case 1:

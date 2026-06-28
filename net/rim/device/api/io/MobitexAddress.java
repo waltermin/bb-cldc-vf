@@ -1,6 +1,7 @@
 package net.rim.device.api.io;
 
 import net.rim.device.api.system.MobitexPacketHeader;
+import net.rim.device.api.system.UnsupportedOperationException;
 
 public final class MobitexAddress extends DatagramAddressBase {
    public static final int TYPE_TEXT;
@@ -9,7 +10,7 @@ public final class MobitexAddress extends DatagramAddressBase {
    public static final int TYPE_HPDATA;
 
    public MobitexAddress() {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public MobitexAddress(int man, int type, int hpid) {
@@ -67,10 +68,10 @@ public final class MobitexAddress extends DatagramAddressBase {
    }
 
    public static final String makeAddress(boolean open, int man, int type, int hpid) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public static final void appendAddress(StringBuffer buf, boolean open, int man, int type, int hpid) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 }

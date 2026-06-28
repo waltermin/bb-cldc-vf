@@ -27,7 +27,7 @@ public class AbstractMAC {
 
    public void update(byte[] data) {
       if (data == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.update(data, 0, data.length);
@@ -74,7 +74,7 @@ public class AbstractMAC {
    public boolean checkMAC(byte[] mac, int offset, boolean reset) {
       int length = this.getLength();
       if (mac == null || offset < 0 || mac.length - length < offset) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return length > 0 ? Arrays.equals(mac, offset, this.getMAC(reset), 0, length) : true;
       }

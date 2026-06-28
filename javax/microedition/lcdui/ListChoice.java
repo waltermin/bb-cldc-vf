@@ -1,7 +1,11 @@
 package javax.microedition.lcdui;
 
+import java.util.Vector;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.component.CheckboxField;
+import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.RadioButtonField;
 import net.rim.device.api.ui.component.RadioButtonGroup;
 
@@ -13,7 +17,7 @@ final class ListChoice extends BasicChoice {
       super._type = choiceType;
       this._choiceGroupFacade = facade;
       if (choiceType == 1) {
-         this._radioGroup = (RadioButtonGroup)(new Object());
+         this._radioGroup = new RadioButtonGroup();
       }
    }
 
@@ -38,17 +42,48 @@ final class ListChoice extends BasicChoice {
 
    @Override
    public final int getSelectedIndex() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      synchronized (Application.getEventLock()) {
+         switch (super._type) {
+            case 1:
+               for (int i = 0; i < super._container.getFieldCount(); i++) {
+                  if (((RadioButtonField)super._container.getField(i)).isSelected()) {
+                     return i;
+                  }
+               }
+               break;
+            case 3:
+               if (!super._onScreen) {
+                  return super._currentlySelectedIndex;
+               }
+
+               int index = super._container.getFieldWithFocusIndex();
+               if (index != -1) {
+                  return index;
+               }
+         }
+
+         return -1;
+      }
    }
 
    @Override
    protected final String doGetString(int elementNum) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      Field field = this.getField(elementNum);
+      switch (super._type) {
+         case 1:
+            return ((RadioButtonField)field).getLabel();
+         case 2:
+            return ((CheckboxField)field).getLabel();
+         case 3:
+         default:
+            return ((LabelField)field).getText();
+      }
    }
 
    @Override
    protected final Image doGetImage(int elementNum) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      Field field = this.getField(elementNum);
+      return (Image)((Vector)field.getCookie()).elementAt(1);
    }
 
    @Override
@@ -82,16 +117,76 @@ final class ListChoice extends BasicChoice {
 
    @Override
    protected final boolean doIsSelected(int elementNum) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      synchronized (Application.getEventLock()) {
+         Field field = this.getField(elementNum);
+         switch (super._type) {
+            case 1:
+               return ((RadioButtonField)field).isSelected();
+            case 3:
+               if (super._onScreen) {
+                  return super._container.getFieldWithFocus() == field;
+               }
+
+               return super._currentlySelectedIndex == elementNum;
+            default:
+               return ((CheckboxField)field).getChecked();
+         }
+      }
    }
 
    @Override
    protected final void doSetSelectedIndex(int elementNum, boolean selected) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      Field field = this.getField(elementNum);
+      switch (super._type) {
+         case 1:
+            if (selected) {
+               ((RadioButtonField)field).setSelected(true);
+               return;
+            }
+            break;
+         case 3:
+            if (selected) {
+               if (super._onScreen) {
+                  field.setFocus();
+               }
+
+               super._currentlySelectedIndex = elementNum;
+               return;
+            }
+            break;
+         default:
+            ((CheckboxField)field).setChecked(selected);
+      }
    }
 
    @Override
    protected final void doSetSelectedFlags(boolean[] selectedArray) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      synchronized (Application.getEventLock()) {
+         int count = this.size();
+         if (super._type == 2) {
+            for (int i = 0; i < count; i++) {
+               ((CheckboxField)super._container.getField(i)).setChecked(selectedArray[i]);
+            }
+         } else {
+            int i = 0;
+
+            while (i < count && !selectedArray[i]) {
+               i++;
+            }
+
+            if (i == count) {
+               i = 0;
+            }
+
+            Field field = super._container.getField(i);
+            switch (super._type) {
+               case 1:
+                  ((RadioButtonField)field).setSelected(true);
+                  break;
+               default:
+                  this.setSelectedIndex(i, true);
+            }
+         }
+      }
    }
 }

@@ -9,7 +9,7 @@ import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
 
 public class SimpleOKCancelInputDialog extends SimpleInputDialog implements FieldChangeListener {
-   private ButtonField _okButton = (ButtonField)(new Object(CommonResource.getString(100), 65536));
+   private ButtonField _okButton = new ButtonField(CommonResource.getString(100), 65536);
    private ButtonField _cancelButton;
    private HorizontalFieldManager _buttonManager;
 
@@ -20,9 +20,9 @@ public class SimpleOKCancelInputDialog extends SimpleInputDialog implements Fiel
    public SimpleOKCancelInputDialog(int type, String prompt, int minLength, int maxLength, long style) {
       super(type, prompt, minLength, maxLength, style);
       this._okButton.setChangeListener(this);
-      this._cancelButton = (ButtonField)(new Object(CommonResource.getString(10005), 65536));
+      this._cancelButton = new ButtonField(CommonResource.getString(10005), 65536);
       this._cancelButton.setChangeListener(this);
-      this._buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
+      this._buttonManager = new HorizontalFieldManager(12884901888L);
       this._buttonManager.add(this._okButton);
       this._buttonManager.add(this._cancelButton);
       DialogFieldManager dfm = (DialogFieldManager)this.getDelegate();

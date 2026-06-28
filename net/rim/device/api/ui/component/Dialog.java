@@ -6,7 +6,6 @@ import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.container.DialogFieldManager;
@@ -95,7 +94,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    public void setIcon(Image image) {
       ImageField field = null;
       if (image != null) {
-         field = (ImageField)(new Object());
+         field = new ImageField();
          field.setImage(image);
       }
 
@@ -112,7 +111,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    public void setIcon(EncodedImage image) {
       BitmapField field = null;
       if (image != null) {
-         field = (BitmapField)(new Object(null, 65568));
+         field = new BitmapField(null, 65568);
          field.setImage(image);
       }
 
@@ -135,7 +134,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    public void setDontAskAgainPrompt(boolean prompt) {
       if (this._dontAskAgainCheckbox != null != prompt) {
          if (prompt) {
-            this._dontAskAgainCheckbox = (CheckboxField)(new Object(CommonResource.getString(10094), false, 1073741824));
+            this._dontAskAgainCheckbox = new CheckboxField(CommonResource.getString(10094), false, 1073741824);
             this._dfm.getBottomManager().add(this._dontAskAgainCheckbox);
             return;
          }
@@ -162,7 +161,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    public void fieldChanged(Field field, int context) {
-      if (field instanceof Object) {
+      if (field instanceof ButtonField) {
          this.select();
       }
    }
@@ -183,7 +182,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap, long style, long drawStyle) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       this._drawStyle = drawStyle;
       this.setup(message, choices, values, defaultChoice, bitmap);
    }
@@ -210,7 +209,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public Dialog(int type, String message, int defaultChoice, Bitmap bitmap, long style) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       if (message == null) {
          message = getResourceMessage(type);
       }
@@ -270,7 +269,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public Dialog(int type, String message, int defaultChoice, Bitmap bitmap, long style, boolean dontAskAgain) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       if (message == null) {
          message = getResourceMessage(type);
       }
@@ -375,7 +374,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap, long style) {
-      super((Manager)(new Object()), style);
+      super(new DialogFieldManager(), style);
       this.setup(message, choices, values, defaultChoice, bitmap);
    }
 

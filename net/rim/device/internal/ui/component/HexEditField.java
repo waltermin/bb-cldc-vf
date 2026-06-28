@@ -14,7 +14,7 @@ public class HexEditField extends EditField {
    private char _firstNibbleChar;
    private StringBuffer _strBuf;
    private int _nibbleInsertionIndex;
-   AttributedString _tempString = (AttributedString)(new Object());
+   AttributedString _tempString = new AttributedString();
    AttributedString$Iterator _iterator = this._tempString.getIterator();
 
    public HexEditField(String label) {
@@ -33,7 +33,7 @@ public class HexEditField extends EditField {
       super(label, null, Integer.MAX_VALUE, 1140850688);
       this._firstNibble = true;
       this._maxBytes = maxBytes;
-      this._strBuf = (StringBuffer)(new Object(4));
+      this._strBuf = new StringBuffer(4);
       this.setData(value, offset, length);
    }
 
@@ -41,7 +41,7 @@ public class HexEditField extends EditField {
       super(label, null, Integer.MAX_VALUE, 1140850688);
       this._firstNibble = true;
       this._maxBytes = maxBytes;
-      this._strBuf = (StringBuffer)(new Object(4));
+      this._strBuf = new StringBuffer(4);
    }
 
    @Override
@@ -191,15 +191,63 @@ public class HexEditField extends EditField {
    }
 
    public void setData(byte[] val, int offset, int length) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      length = Math.min(Math.min(length, val.length - offset), this._maxBytes);
+      StringBuffer strBuf = new StringBuffer(length * 3);
+
+      for (int i = offset; i < length; i++) {
+         strBuf.append(NumberUtilities.intToUpperHexDigit(val[i] >> 4));
+         strBuf.append(NumberUtilities.intToUpperHexDigit(val[i]));
+         strBuf.append(' ');
+      }
+
+      AttributedString$Iterator iter = new AttributedString(strBuf).getIterator();
+      this.setDefaultInsertionAttributes();
+      this.replace(this.getLabelLength(), this.getLabelLength() + this.getTextLength(), iter, 0, 0, iter.length(), 0, true, 0);
+      this._firstNibble = true;
    }
 
    public void setData(int[] val, int offset, int length) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      StringBuffer strBuf = new StringBuffer(val.length * 3 * 4);
+      int max = Math.min(Math.min(length, val.length - offset), this._maxBytes / 4);
+
+      for (int i = 0; i < max; i++) {
+         int nibble = 7;
+         strBuf.append(' ');
+
+         for (; nibble >= 0; nibble--) {
+            strBuf.append(NumberUtilities.intToUpperHexDigit(val[i] >> nibble * 4));
+            if (nibble % 2 == 0 && nibble != 0) {
+               strBuf.append(' ');
+            }
+         }
+      }
+
+      AttributedString$Iterator iter = new AttributedString(strBuf).getIterator();
+      this.setDefaultInsertionAttributes();
+      this.replace(this.getLabelLength(), this.getLabelLength() + this.getTextLength(), iter, 0, 0, iter.length(), 0, true, 0);
+      this._firstNibble = true;
    }
 
    public void setData(short[] val, int offset, int length) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      StringBuffer strBuf = new StringBuffer(val.length * 3 * 2);
+      int max = Math.min(Math.min(length, val.length - offset), this._maxBytes / 2);
+
+      for (int i = offset; i < max; i++) {
+         int nibble = 3;
+         strBuf.append(' ');
+
+         for (; nibble >= 0; nibble--) {
+            strBuf.append(NumberUtilities.intToUpperHexDigit(val[i] >> nibble * 4));
+            if (nibble % 2 == 0 && nibble != 0) {
+               strBuf.append(' ');
+            }
+         }
+      }
+
+      AttributedString$Iterator iter = new AttributedString(strBuf).getIterator();
+      this.setDefaultInsertionAttributes();
+      this.replace(this.getLabelLength(), this.getLabelLength() + this.getTextLength(), iter, 0, 0, iter.length(), 0, true, 0);
+      this._firstNibble = true;
    }
 
    @Override

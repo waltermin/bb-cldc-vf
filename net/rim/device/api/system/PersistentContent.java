@@ -8,10 +8,13 @@ import net.rim.device.api.crypto.CryptoByteArrayArithmetic;
 import net.rim.device.api.crypto.Digest;
 import net.rim.device.api.crypto.ECPointAtInfinityException;
 import net.rim.device.api.crypto.RandomSource;
+import net.rim.device.api.crypto.SHA1Digest;
+import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.api.util.Persistable;
 import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.internal.compress.CompressUtilities;
 import net.rim.device.internal.crypto.EncryptionUtilities;
@@ -206,7 +209,7 @@ public final class PersistentContent {
                EncryptionUtilities.createKeyPair(curve, D, d);
                byte[] sharedPoint = net.rim.vm.Memory.allocRAMOnlyBytes(privateKeyLength);
                EncryptionUtilities.calculateKey(curve, B, d, sharedPoint);
-               Digest digest = (Digest)(new Object());
+               Digest digest = new SHA256Digest();
                byte[] key = net.rim.vm.Memory.allocRAMOnlyBytes(digest.getDigestLength());
                digest.update(sharedPoint);
                digest.getDigest(key, 0);
@@ -222,7 +225,7 @@ public final class PersistentContent {
       byte[] result = null;
       byte[] policyDataBytes = ITPolicy.getByteArray(248);
       if (policyDataBytes != null && policyDataBytes.length >= expectedKeyLength + 2) {
-         DataBuffer policyDataBuffer = (DataBuffer)(new Object(policyDataBytes, 0, policyDataBytes.length, true));
+         DataBuffer policyDataBuffer = new DataBuffer(policyDataBytes, 0, policyDataBytes.length, true);
 
          try {
             byte itemID = policyDataBuffer.readByte();
@@ -266,10 +269,10 @@ public final class PersistentContent {
       try {
          EncryptionUtilities.scalarMultiply(curve, this._r, data.getD(), rD);
       } catch (ECPointAtInfinityException e) {
-         throw new Object(e.toString());
+         throw new RuntimeException(e.toString());
       }
 
-      Digest digest = (Digest)(new Object());
+      Digest digest = new SHA1Digest();
       digest.update(rD);
       this._digestOfrD = digest.getDigest();
       byte[] result = new byte[rD.length];
@@ -303,7 +306,7 @@ public final class PersistentContent {
          CryptoByteArrayArithmetic.invert(this._r, modulus, rInverse);
          byte[] sharedPoint = net.rim.vm.Memory.allocRAMOnlyBytes(privateKeyLength);
          EncryptionUtilities.calculateKey(curve, K, rInverse, sharedPoint);
-         Digest digest = (Digest)(new Object());
+         Digest digest = new SHA256Digest();
          this._passwordKey = net.rim.vm.Memory.allocRAMOnlyBytes(digest.getDigestLength());
          digest.update(sharedPoint);
          digest.getDigest(this._passwordKey, 0);
@@ -322,7 +325,7 @@ public final class PersistentContent {
       byte[] ciphertext = resetPasswordData.getPasswordCiphertext();
       byte[] plaintext = net.rim.vm.Memory.allocRAMOnlyBytes(ciphertext.length);
       int plaintextLength = EncryptionUtilities.decrypt(this._passwordKey, ciphertext, 0, ciphertext.length, plaintext, 0);
-      String password = (String)(new Object(plaintext, 0, plaintextLength));
+      String password = new String(plaintext, 0, plaintextLength);
       net.rim.vm.Memory.setPlaintext(password);
       return password;
    }
@@ -433,7 +436,7 @@ public final class PersistentContent {
    }
 
    private final void addListenerClassName(PersistentContentListener listener) {
-      if (listener instanceof Object) {
+      if (listener instanceof Persistable) {
          String className = listener.getClass().getName();
          this._listenerClassNames.put(className, className);
          this._listenerClassNamesPersistentObject.commit();
@@ -508,7 +511,7 @@ public final class PersistentContent {
          synchronized (_instance) {
             try {
                _instance.wait();
-            } catch (InterruptedException var3) {
+            } catch (InterruptedException var4) {
             }
          }
       }
@@ -721,7 +724,7 @@ public final class PersistentContent {
       boolean string = getFlag(header, 4);
       boolean bytes = getFlag(header, 8);
       if (encrypt && this._devicePrivateKeys == null) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       int byteLength = header >> 4;
@@ -742,7 +745,7 @@ public final class PersistentContent {
          if (keepPlaintextInRAM) {
             output = net.rim.vm.Memory.allocRAMOnlyBytes(byteLength);
             if (output == null) {
-               throw new Object();
+               throw new OutOfMemoryError();
             }
          } else {
             output = new byte[byteLength];
@@ -945,7 +948,7 @@ public final class PersistentContent {
          int type = array[0];
          switch (type) {
             case -1:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 0:
             case 1:
             default:
@@ -959,7 +962,7 @@ public final class PersistentContent {
             case 2:
             case 3:
                if ((byteLength & 1) == 1) {
-                  throw new Object();
+                  throw new IllegalArgumentException();
                } else {
                   char[] encoding = new char[byteLength / 2];
                   copyBytes(array, 1, encoding, 0, byteLength, false);

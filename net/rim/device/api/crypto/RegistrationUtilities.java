@@ -52,7 +52,7 @@ public final class RegistrationUtilities {
 
    public static final void encryptBulkData(byte[] sessionKey, byte[] plainText, byte[] cipherText) {
       if (cipherText.length != getCipherTextLength(plainText.length)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] paddedData = new byte[getCipherTextLength(plainText.length)];
@@ -78,7 +78,7 @@ public final class RegistrationUtilities {
 
    public static final int decryptBulkData(byte[] sessionKey, byte[] cipherText, byte[] plainText) {
       if (cipherText.length % 16 != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int numBlocks = cipherText.length / 16;
@@ -113,7 +113,7 @@ public final class RegistrationUtilities {
    public static final void mac(byte[] data, byte[] macKey, byte[] macValue, int offset) {
       try {
          Digest digest = new SHA1Digest();
-         HMACKey key = (HMACKey)(new Object(macKey));
+         HMACKey key = new HMACKey(macKey);
          HMAC hMac = new HMAC(key, digest);
          hMac.update(data);
          hMac.getMAC(macValue, offset);
@@ -124,7 +124,7 @@ public final class RegistrationUtilities {
    public static final boolean checkMAC(byte[] data, byte[] macKey, byte[] macValue) {
       try {
          Digest digest = new SHA1Digest();
-         HMACKey key = (HMACKey)(new Object(macKey));
+         HMACKey key = new HMACKey(macKey);
          HMAC hMac = new HMAC(key, digest);
          hMac.update(data);
          byte[] checkMAC = new byte[getMACLength()];

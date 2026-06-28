@@ -1,5 +1,7 @@
 package net.rim.device.internal.browser.util;
 
+import java.io.EOFException;
+import net.rim.device.api.io.IOCancelledException;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Persistable;
@@ -62,7 +64,7 @@ public final class Pipe implements Persistable {
          }
 
          if (this._notifyOnWrite && this._window[0] != null && this._window[0].length > 0) {
-            super.notify();
+            this.notify();
          }
       }
    }
@@ -93,7 +95,7 @@ public final class Pipe implements Persistable {
 
    public final synchronized int readCompressedInt(PipeContext position) {
       if (position._readClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       int i = 0;
@@ -102,7 +104,7 @@ public final class Pipe implements Persistable {
       do {
          i = this.read(position);
          if (i == -1) {
-            throw new Object();
+            throw new EOFException();
          }
 
          result = result << 7 | i & 127;
@@ -119,7 +121,7 @@ public final class Pipe implements Persistable {
          i = this.read(position);
          switch (i) {
             case -1:
-               throw new Object();
+               throw new EOFException();
             case 13:
                result = true;
             default:
@@ -132,7 +134,7 @@ public final class Pipe implements Persistable {
 
    public final synchronized String readInlineString(PipeContext position, String encoding) {
       if (position._readClosed) {
-         throw new Object();
+         throw new IOCancelledException();
       }
 
       int packet = position._currentPacket;
@@ -155,7 +157,7 @@ public final class Pipe implements Persistable {
       position._currentReadPos = pos;
       int readSize = this.read(tmpArray, 0, size, position);
       if (readSize != size) {
-         throw new Object();
+         throw new EOFException();
       }
 
       size--;
@@ -190,12 +192,12 @@ public final class Pipe implements Persistable {
 
    public final synchronized void closeWrite() {
       this._writeClosed = true;
-      super.notify();
+      this.notify();
    }
 
    public final synchronized void closeRead(PipeContext position) {
       position._readClosed = true;
-      super.notify();
+      this.notify();
    }
 
    final synchronized boolean isPacketIncluded(int packetNo) {
@@ -238,7 +240,7 @@ public final class Pipe implements Persistable {
             }
 
             EventLogger.logEvent(1907089860548946979L, 1114666867, 5);
-            super.wait(this._timeout);
+            this.wait(this._timeout);
             EventLogger.logEvent(1907089860548946979L, 1114666854, 5);
             if (TimeLogger._loggingEnabled) {
                TimeLogger.getInstance().stopTimer(13, (int)timeBefore);
@@ -324,15 +326,15 @@ public final class Pipe implements Persistable {
    }
 
    public final synchronized PipeInputStream getInputStream() {
-      return (PipeInputStream)(this._writeClosed ? new Object(this) : new Object(this));
+      return this._writeClosed ? new FastPipeInputStream(this) : new PipeInputStream(this);
    }
 
    public final synchronized PipeInputStream getInputStream(int packet, int offset, int length) {
-      return (PipeInputStream)(this._writeClosed ? new Object(this, packet, offset, length) : new Object(this, packet, offset, length));
+      return this._writeClosed ? new FastPipeInputStream(this, packet, offset, length) : new PipeInputStream(this, packet, offset, length);
    }
 
    public final PipeOutputStream getOutputStream() {
-      return (PipeOutputStream)(new Object(this));
+      return new PipeOutputStream(this);
    }
 
    public final void setTimeout(int timeout) {
@@ -341,6 +343,6 @@ public final class Pipe implements Persistable {
 
    public final synchronized void kickReadTimer() {
       this._readKicked = true;
-      super.notify();
+      this.notify();
    }
 }

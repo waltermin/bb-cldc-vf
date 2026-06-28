@@ -67,7 +67,7 @@ public final class ITPolicyExtended {
       int count = 0;
       byte[] aggregatedGroupData = getAggregatedPolicyGroupData(group);
       if (aggregatedGroupData != null) {
-         DataBuffer aggregatedBuffer = (DataBuffer)(new Object(aggregatedGroupData, 0, aggregatedGroupData.length, true));
+         DataBuffer aggregatedBuffer = new DataBuffer(aggregatedGroupData, 0, aggregatedGroupData.length, true);
 
          try {
             while (TLEUtilities.findType(aggregatedBuffer, subGroup)) {
@@ -85,7 +85,7 @@ public final class ITPolicyExtended {
       byte[] targetSubGroup = null;
       byte[] aggregatedGroupData = getAggregatedPolicyGroupData(aggregateGroup);
       if (aggregatedGroupData != null) {
-         DataBuffer aggregatedBuffer = (DataBuffer)(new Object(aggregatedGroupData, 0, aggregatedGroupData.length, true));
+         DataBuffer aggregatedBuffer = new DataBuffer(aggregatedGroupData, 0, aggregatedGroupData.length, true);
          boolean error = false;
 
          for (int i = 0; i < dataId - 1; i++) {
@@ -119,7 +119,7 @@ public final class ITPolicyExtended {
       byte[] aggregatedGroupData = null;
       byte[] wipeablePolicy = readWipeablePolicyData();
       if (wipeablePolicy != null) {
-         DataBuffer policyBuffer = (DataBuffer)(new Object(wipeablePolicy, 0, wipeablePolicy.length, true));
+         DataBuffer policyBuffer = new DataBuffer(wipeablePolicy, 0, wipeablePolicy.length, true);
 
          try {
             if (TLEUtilities.findType(policyBuffer, aggregateGroup)) {
@@ -132,7 +132,7 @@ public final class ITPolicyExtended {
       if (aggregatedGroupData == null) {
          byte[] persistablePolicy = readPersistablePolicyData();
          if (persistablePolicy != null) {
-            DataBuffer policyBuffer = (DataBuffer)(new Object(persistablePolicy, 0, persistablePolicy.length, true));
+            DataBuffer policyBuffer = new DataBuffer(persistablePolicy, 0, persistablePolicy.length, true);
             policyBuffer.skipBytes(1);
 
             try {

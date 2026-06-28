@@ -67,7 +67,7 @@ public final class PersistentObject extends PersistentRootObject implements Pers
 
    public final void setReservedMemorySize(int size) {
       if (size < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       super._reservedMemorySize = size;

@@ -31,7 +31,7 @@ public class TextArea implements Formatter$TextRenderer {
    private long _rbId;
    private String _rbName;
    private Object _textObject;
-   private XYRect _extent = (XYRect)(new Object());
+   private XYRect _extent = new XYRect();
    boolean _layoutValid = false;
    private int _layoutWidth;
    private int _layoutOffsetX = 0;
@@ -42,8 +42,8 @@ public class TextArea implements Formatter$TextRenderer {
    private int _anchor;
    private int _cursor;
    private ArticInterface$Line _lineList;
-   private ArticInterface$LineInfo _tempLineInfo = (ArticInterface$LineInfo)(new Object());
-   private FormatParams _formatParams = (FormatParams)(new Object());
+   private ArticInterface$LineInfo _tempLineInfo = new ArticInterface$LineInfo();
+   private FormatParams _formatParams = new FormatParams();
    private int _lastFormatLength;
    private boolean _removeLastLine;
    protected int _widthForPaintWithEllipsis;
@@ -118,10 +118,10 @@ public class TextArea implements Formatter$TextRenderer {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void paintSelf(Graphics graphics) {
       boolean notEmpty = graphics.pushRegion(this.getExtent());
-      boolean var4 = false /* VF: Semaphore variable */;
+      boolean var5 = false /* VF: Semaphore variable */;
 
       try {
-         var4 = true;
+         var5 = true;
          if (notEmpty) {
             if (this._tas != null) {
                this._field.setThemeAttributesSpecial(this._tas, graphics);
@@ -131,15 +131,15 @@ public class TextArea implements Formatter$TextRenderer {
             this.paint(graphics);
             if (this._tas != null) {
                this._field.setThemeAttributesSpecial(null, graphics);
-               var4 = false;
+               var5 = false;
             } else {
-               var4 = false;
+               var5 = false;
             }
          } else {
-            var4 = false;
+            var5 = false;
          }
       } finally {
-         if (var4) {
+         if (var5) {
             graphics.popContext();
          }
       }
@@ -364,15 +364,15 @@ public class TextArea implements Formatter$TextRenderer {
 
          return y;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    protected TextArea(Field field, int style) {
       this._field = field;
       this._style = style;
-      this._text = (AttributedString)(new Object());
-      this._lineList = (ArticInterface$Line)(new Object());
+      this._text = new AttributedString();
+      this._lineList = new ArticInterface$Line();
       this._lineList._flags = 3;
       this._lineCount = 1;
    }

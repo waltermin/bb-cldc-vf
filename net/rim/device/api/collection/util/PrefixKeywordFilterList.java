@@ -146,7 +146,7 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
       this.resetFilterResults();
       this._objectList.removeAll();
       this._prefixList.reset();
-      this._orderList = (BigIntVector)(new Object(64));
+      this._orderList = new BigIntVector(64);
       this._filterListData._orderList = this._orderList;
       this._filterListData._version = -1;
    }
@@ -217,14 +217,14 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
 
             count = dest + secondaryMatches.getNumSet();
 
-            for (int var13 = 0; dest < count; var13++) {
-               int id = this._orderList.elementAt(var13);
+            for (int var14 = 0; dest < count; var14++) {
+               int id = this._orderList.elementAt(var14);
                if (secondaryMatches.isSet(id)) {
                   matchElements[dest++] = this._objectList.get(id);
                }
             }
          } else {
-            BitSet matches = (BitSet)(new Object(result.getPrimaryMatches()));
+            BitSet matches = new BitSet(result.getPrimaryMatches());
             matches.or(result.getSecondaryMatches());
             int count = matches.getNumSet();
 
@@ -242,13 +242,7 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    public PrefixKeywordFilterList(ReadableList source, KeywordIndexerHelper helper, boolean firstWordBias) {
-      this(
-         source,
-         helper,
-         (PrefixKeywordFilterListData)(new Object(
-            (SparseList)(new Object()), (KeywordPrefixManager)(new Object()), (BigIntVector)(new Object(64)), firstWordBias, 0
-         ))
-      );
+      this(source, helper, new PrefixKeywordFilterListData(new SparseList(), new KeywordPrefixManager(), new BigIntVector(64), firstWordBias, 0));
    }
 
    private boolean doAddCheck(Object element) {

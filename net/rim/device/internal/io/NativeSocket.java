@@ -30,10 +30,10 @@ public final class NativeSocket {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public final void create(int tunnel, int socketType, int protocolType, int localPort) {
       NativeSocketEventDispatcher.addListener(this);
-      boolean var15 = false /* VF: Semaphore variable */;
+      boolean var18 = false /* VF: Semaphore variable */;
 
       try {
-         var15 = true;
+         var18 = true;
          long result;
          int returnCode;
          synchronized (this._operationLock) {
@@ -43,7 +43,7 @@ public final class NativeSocket {
                try {
                   this._operationResult = -100;
                   this._operationLock.wait(120000);
-               } catch (InterruptedException var17) {
+               } catch (InterruptedException var20) {
                }
 
                returnCode = this._operationResult;
@@ -62,7 +62,7 @@ public final class NativeSocket {
                try {
                   this._operationResult = -100;
                   this._operationLock.wait(120000);
-               } catch (InterruptedException var16) {
+               } catch (InterruptedException var19) {
                }
 
                returnCode = this._operationResult;
@@ -70,9 +70,9 @@ public final class NativeSocket {
          }
 
          checkError(returnCode);
-         var15 = false;
+         var18 = false;
       } finally {
-         if (var15) {
+         if (var18) {
             NativeSocketEventDispatcher.removeListener(this);
          }
       }
@@ -90,10 +90,10 @@ public final class NativeSocket {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public final void connectIPv4(int ipv4Addr, int destPort) {
       NativeSocketEventDispatcher.addListener(this);
-      boolean var11 = false /* VF: Semaphore variable */;
+      boolean var13 = false /* VF: Semaphore variable */;
 
       try {
-         var11 = true;
+         var13 = true;
          int returnCode;
          synchronized (this._operationLock) {
             long result = connectIPv4_0(this._socketId, ipv4Addr, destPort);
@@ -102,7 +102,7 @@ public final class NativeSocket {
                try {
                   this._operationResult = -100;
                   this._operationLock.wait(120000);
-               } catch (InterruptedException var12) {
+               } catch (InterruptedException var14) {
                }
 
                returnCode = this._operationResult;
@@ -111,12 +111,12 @@ public final class NativeSocket {
 
          if (returnCode != 1) {
             checkError(returnCode);
-            var11 = false;
+            var13 = false;
          } else {
-            var11 = false;
+            var13 = false;
          }
       } finally {
-         if (var11) {
+         if (var13) {
             NativeSocketEventDispatcher.removeListener(this);
          }
       }

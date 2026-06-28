@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import java.util.EmptyStackException;
 import net.rim.vm.Array;
 
 final class LEDEventProcessor$EventStack {
@@ -54,7 +55,7 @@ final class LEDEventProcessor$EventStack {
 
    public final void peekEvent(LEDEventProcessor$EventHolder anEventHolder) {
       if (this._count == 0) {
-         throw new Object();
+         throw new EmptyStackException();
       }
 
       int index = this._count - 1;

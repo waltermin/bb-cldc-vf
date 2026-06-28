@@ -11,7 +11,7 @@ public final class HMAC extends AbstractMAC implements MAC {
          this._cryptoToken = key.getHMACCryptoToken();
          this._context = this._cryptoToken.initialize(key.getCryptoTokenData(), this._digest);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

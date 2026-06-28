@@ -90,7 +90,7 @@ public final class Trackball {
 
    static final void setFilterInternal(int filter) {
       if (filter != -1 && (filter & -8) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       _filterMask = filter;
@@ -101,7 +101,7 @@ public final class Trackball {
    public static final void setFilterForSystem(int filter) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
       if (filter != -1 && (filter & -8) != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       UiOptionsRegistry.getInstance().setInt(-1211370300138911215L, filter);
@@ -115,7 +115,7 @@ public final class Trackball {
 
    static final void setSensitivityXInternal(int sensitivity) {
       if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       _sensitivityX = sensitivity;
@@ -126,7 +126,7 @@ public final class Trackball {
    public static final void setSensitivityXForSystem(int sensitivity) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
       if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       UiOptionsRegistry.getInstance().setInt(4925806619770988503L, sensitivity);
@@ -140,7 +140,7 @@ public final class Trackball {
 
    static final void setSensitivityYInternal(int sensitivity) {
       if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       _sensitivityY = sensitivity;
@@ -151,7 +151,7 @@ public final class Trackball {
    public static final void setSensitivityYForSystem(int sensitivity) {
       ControlledAccess.assertRRISignature(TraceBack.getCallingModule(2));
       if ((sensitivity < 0 || 100 < sensitivity) && sensitivity != Integer.MAX_VALUE) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       UiOptionsRegistry.getInstance().setInt(1105523701474371332L, sensitivity);

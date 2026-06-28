@@ -18,7 +18,7 @@ public class ReadableListCombiner
    NotificationSuspension {
    private CollectionListenerManager _listeners = new CollectionListenerManager();
    private boolean _inReset;
-   private Vector _sources = (Vector)(new Object());
+   private Vector _sources = new Vector();
 
    protected Vector getSources() {
       return this._sources;

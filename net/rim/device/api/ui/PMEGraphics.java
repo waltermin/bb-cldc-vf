@@ -3,8 +3,8 @@ package net.rim.device.api.ui;
 public final class PMEGraphics {
    private int _returnState;
    private int _lastNode;
-   private XYRect _lastViewport = (XYRect)(new Object());
-   private XYRect _lastClip = (XYRect)(new Object());
+   private XYRect _lastViewport = new XYRect();
+   private XYRect _lastClip = new XYRect();
    private boolean _enabled;
    private int _iNodeRoot = -1;
    private int[] _nodes;
@@ -15,9 +15,9 @@ public final class PMEGraphics {
    private char[][][] _strings;
    private String[] _fontFamilies;
    private String _defaultFontFamily;
-   private XYRect _viewport = (XYRect)(new Object());
+   private XYRect _viewport = new XYRect();
    private int[] _transform;
-   private XYRect _clip = (XYRect)(new Object());
+   private XYRect _clip = new XYRect();
    private int _clipColour = 16711680;
    private int[] _nodeList;
    private int[] _leafNodeList;
@@ -122,7 +122,7 @@ public final class PMEGraphics {
 
    public final int update(int iNodeOffset) {
       if (this._boundsDirty == null) {
-         this._boundsDirty = (XYRect)(new Object());
+         this._boundsDirty = new XYRect();
       }
 
       int numLeafNodes = this.getLeafCount(this._iNodeRoot);

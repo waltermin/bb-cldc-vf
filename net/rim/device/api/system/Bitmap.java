@@ -184,18 +184,18 @@ public final class Bitmap {
       clone._transColour = this._transColour;
       if (this._data != null) {
          if (clone._data == null) {
-            throw new Object();
+            throw new RuntimeException();
          }
 
          System.arraycopy(this._data, 0, clone._data, 0, this._data.length);
          return clone;
       } else {
          if (clone._bands == null) {
-            throw new Object();
+            throw new RuntimeException();
          }
 
          if (clone._numBands != this._numBands) {
-            throw new Object();
+            throw new RuntimeException();
          }
 
          int bands = this._numBands;
@@ -216,15 +216,15 @@ public final class Bitmap {
    public final synchronized void setAlpha(Bitmap alpha) {
       if (alpha != null) {
          if (alpha._alpha != null || alpha._width != this._width || alpha._height != this._height) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (Display.isRowwise()) {
             if ((alpha._type & 128) != 128) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
          } else if (alpha._type != 1) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          alpha = alpha.cloneBitmap();
@@ -240,7 +240,7 @@ public final class Bitmap {
    public final void createAlpha(int bitDepth) {
       switch (bitDepth) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default: {
             Bitmap alpha = new Bitmap(145, this._width, this._height);

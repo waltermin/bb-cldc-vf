@@ -21,7 +21,7 @@ public class URL {
 
    private void initialize(String url) {
       if (url == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.parseUrlString(url);
@@ -29,7 +29,7 @@ public class URL {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      return this._rimParameters != null ? this._urlWithoutRIMParams + this._rimParameters.toString() : this._urlWithoutRIMParams;
    }
 
    public String getScheme() {

@@ -32,7 +32,7 @@ public final class AnimationThread extends Thread implements HolsterListener {
             }
          }
 
-         _waitQueue.addElement(new Object(field));
+         _waitQueue.addElement(new WeakReference(field));
          _waitQueue.notify();
          if (_currentThread == null) {
             _shutdown = false;
@@ -77,10 +77,10 @@ public final class AnimationThread extends Thread implements HolsterListener {
    @Override
    public final void run() {
       Thread.currentThread().setPriority(1);
-      boolean var24 = false /* VF: Semaphore variable */;
+      boolean var29 = false /* VF: Semaphore variable */;
 
       try {
-         var24 = true;
+         var29 = true;
          long timeout = 0;
 
          label184:
@@ -98,14 +98,14 @@ public final class AnimationThread extends Thread implements HolsterListener {
                ref = null;
                synchronized (_waitQueue) {
                   if (_shutdown) {
-                     var24 = false;
+                     var29 = false;
                      break label184;
                   }
 
                   while (_paused) {
                      try {
                         _waitQueue.wait();
-                     } catch (InterruptedException var27) {
+                     } catch (InterruptedException var32) {
                      }
                   }
 
@@ -158,13 +158,13 @@ public final class AnimationThread extends Thread implements HolsterListener {
                      if (_waitQueue.size() == 0) {
                         _shutdown = true;
                      }
-                  } catch (InterruptedException var28) {
+                  } catch (InterruptedException var33) {
                   }
                }
             }
          }
       } finally {
-         if (var24) {
+         if (var29) {
             synchronized (_waitQueue) {
                _currentThread = null;
                _theApplication.removeHolsterListener(this);

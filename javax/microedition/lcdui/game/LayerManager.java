@@ -24,7 +24,7 @@ public class LayerManager {
          this.removeImpl(l);
          this.addImpl(l, index);
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -32,7 +32,7 @@ public class LayerManager {
       if (index >= 0 && index < this.nlayers) {
          return this.component[index];
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -71,7 +71,7 @@ public class LayerManager {
          this.viewWidth = width;
          this.viewHeight = height;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -91,7 +91,7 @@ public class LayerManager {
 
    private void removeImpl(Layer l) {
       if (l == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       int i = this.nlayers;

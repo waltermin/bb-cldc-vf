@@ -91,7 +91,7 @@ final class AudioPathControlImpl implements AudioPathControl {
                      }
                }
             }
-         } catch (MediaException var3) {
+         } catch (MediaException var4) {
          }
       }
    }

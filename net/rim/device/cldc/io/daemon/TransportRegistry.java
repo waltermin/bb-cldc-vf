@@ -1,6 +1,7 @@
 package net.rim.device.cldc.io.daemon;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import net.rim.device.api.io.TransportBase;
 import net.rim.device.api.system.ApplicationRegistry;
@@ -8,7 +9,7 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.io.TrafficLogger;
 
 public final class TransportRegistry extends Thread {
-   private Hashtable _instances = (Hashtable)(new Object());
+   private Hashtable _instances = new Hashtable();
    private TransportRegistry$Request[] _requests = new TransportRegistry$Request[0];
    private TrafficLogger _tLogger;
    private static final long ID;
@@ -28,16 +29,16 @@ public final class TransportRegistry extends Thread {
          try {
             Class transportClass = Class.forName(transportName);
             transport = (TransportBase)transportClass.newInstance();
-         } catch (InstantiationException var8) {
-         } catch (ClassNotFoundException var9) {
-         } catch (IllegalAccessException var10) {
-         } catch (ClassCastException var11) {
+         } catch (InstantiationException var9) {
+         } catch (ClassNotFoundException var10) {
+         } catch (IllegalAccessException var11) {
+         } catch (ClassCastException var12) {
          }
 
          if (transport != null) {
             try {
                transport.init();
-            } catch (IOException var7) {
+            } catch (IOException var8) {
             }
 
             synchronized (this) {
@@ -60,7 +61,7 @@ public final class TransportRegistry extends Thread {
             while (!request._done) {
                try {
                   request.wait();
-               } catch (InterruptedException var12) {
+               } catch (InterruptedException var13) {
                }
             }
 
@@ -78,7 +79,7 @@ public final class TransportRegistry extends Thread {
                try {
                   request = null;
                   this._requests.wait();
-               } catch (InterruptedException var6) {
+               } catch (InterruptedException var8) {
                }
             }
 
@@ -90,7 +91,7 @@ public final class TransportRegistry extends Thread {
 
          try {
             transport = this.getSingleton(request._transportName);
-         } catch (IOException var5) {
+         } catch (IOException var7) {
          }
 
          synchronized (request) {
@@ -120,6 +121,11 @@ public final class TransportRegistry extends Thread {
    }
 
    private final synchronized void setTrafficLoggerInternal(TrafficLogger logger) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      this._tLogger = logger;
+      Enumeration enu = this._instances.elements();
+
+      while (enu.hasMoreElements()) {
+         ((TransportBase)enu.nextElement()).setTrafficLogger(this._tLogger);
+      }
    }
 }

@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.util.Persistable;
 
 public final class ApplicationRegistryHashtable implements Persistable {
@@ -33,7 +34,7 @@ public final class ApplicationRegistryHashtable implements Persistable {
       if (this._value[index] != null && this._value[index] != this._empty) {
          Object result = this._value[index];
          if (!protect && this._protect[index]) {
-            throw new Object();
+            throw new ControlledAccessException();
          }
 
          this._numberOfKeys--;
@@ -55,7 +56,7 @@ public final class ApplicationRegistryHashtable implements Persistable {
       if (this._value[index] == this._empty) {
          return null;
       } else if (!protect && this._protect[index]) {
-         throw new Object();
+         throw new ControlledAccessException();
       } else {
          return this._value[index];
       }

@@ -7,12 +7,12 @@ import net.rim.device.api.util.IntHashtable;
 import net.rim.device.internal.system.CodeStore;
 
 class InvocationCleanupManager implements GlobalEventListener {
-   private IntHashtable _activeInvocations = (IntHashtable)(new Object());
-   private IntHashtable _activeRequestHandlers = (IntHashtable)(new Object());
-   private IntHashtable _activeResponseHandlers = (IntHashtable)(new Object());
-   private IntHashtable _contentHandlerModules = (IntHashtable)(new Object());
-   private Hashtable _moduleNameToHandleMap = (Hashtable)(new Object());
-   private Hashtable _classnameToRegistrationTypeMap = (Hashtable)(new Object());
+   private IntHashtable _activeInvocations = new IntHashtable();
+   private IntHashtable _activeRequestHandlers = new IntHashtable();
+   private IntHashtable _activeResponseHandlers = new IntHashtable();
+   private IntHashtable _contentHandlerModules = new IntHashtable();
+   private Hashtable _moduleNameToHandleMap = new Hashtable();
+   private Hashtable _classnameToRegistrationTypeMap = new Hashtable();
    private int _crc;
    private int[] _currentHandles = new int[0];
    private static final long INVOCATION_CLEANUP_MANAGER_ID;

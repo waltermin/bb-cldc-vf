@@ -40,7 +40,7 @@ public class ChartField extends Field {
 
    protected static void assertLegal(boolean condition) {
       if (!condition) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -56,7 +56,7 @@ public class ChartField extends Field {
       try {
          return this._colors[index];
       } catch (ArrayIndexOutOfBoundsException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -208,7 +208,7 @@ public class ChartField extends Field {
       try {
          this._colors[index] = color;
       } catch (ArrayIndexOutOfBoundsException e) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

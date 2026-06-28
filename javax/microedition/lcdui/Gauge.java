@@ -4,12 +4,13 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.component.GaugeField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.MathUtilities;
 
 public class Gauge extends Item {
-   private VerticalFieldManager _container = (VerticalFieldManager)(new Object(1152921504606846976L));
+   private VerticalFieldManager _container = new VerticalFieldManager(1152921504606846976L);
    private int _maxValue;
    private int _value;
    private boolean _interactive;
@@ -46,7 +47,7 @@ public class Gauge extends Item {
          this._label = label;
          this._interactive = interactive;
          if (!this.validateMaxValue(maxValue)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._maxValue = maxValue;
@@ -55,7 +56,7 @@ public class Gauge extends Item {
          }
 
          if (!this.validateValue(initialValue)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._value = initialValue;
@@ -76,7 +77,7 @@ public class Gauge extends Item {
    public void setValue(int value) {
       synchronized (Application.getEventLock()) {
          if (!this.validateValue(value)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (this._maxValue != -1) {
@@ -90,13 +91,15 @@ public class Gauge extends Item {
    }
 
    public int getValue() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      synchronized (Application.getEventLock()) {
+         return this._maxValue == -1 ? this._value : ((GaugeField)this._peer).getValue();
+      }
    }
 
    public void setMaxValue(int maxValue) {
       synchronized (Application.getEventLock()) {
          if (!this.validateMaxValue(maxValue)) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          int oldMaxValue = this.getMaxValue();

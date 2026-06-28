@@ -88,7 +88,7 @@ public final class Display {
       if (bitmap != null && bitmap.getWidth() == getWidth() && bitmap.getHeight() == getHeight()) {
          screenshot(bitmap, 0, 0, getWidth(), getHeight());
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -102,7 +102,7 @@ public final class Display {
          || y < 0
          || width < 0
          || height < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (InternalServices.isDeviceSecure() && !ITPolicy.getBoolean(24, 78, true)) {
@@ -121,7 +121,7 @@ public final class Display {
             screenshot0(bitmap, x, y, width, height);
             if (tempBitmap != bitmap) {
                ApplicationControl.doPromptWork(isAllowedTernary, CommonResource.getBundle(), 10162, 25, 26);
-               Graphics graphics = (Graphics)(new Object(bitmap));
+               Graphics graphics = new Graphics(bitmap);
                graphics.drawBitmap(0, 0, width, height, tempBitmap, 0, 0);
             }
       }

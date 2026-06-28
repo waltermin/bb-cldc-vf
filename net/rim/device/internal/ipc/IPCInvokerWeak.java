@@ -12,7 +12,7 @@ class IPCInvokerWeak extends IPCInvoker {
 
    IPCInvokerWeak(Application app, Object listener, IPCRunnable runnable) {
       super(app, runnable);
-      this._listenerReference = (WeakReference)(new Object(listener));
+      this._listenerReference = new WeakReference(listener);
    }
 
    @Override

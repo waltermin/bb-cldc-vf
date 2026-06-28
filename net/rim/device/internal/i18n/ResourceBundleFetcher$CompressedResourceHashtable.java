@@ -19,7 +19,7 @@ class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
 
          try {
             this._lockObject.wait();
-         } catch (InterruptedException var3) {
+         } catch (InterruptedException var4) {
          }
       }
    }
@@ -49,7 +49,7 @@ class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
    private void setGenerationSingleton(int generation, int[] moduleHandles) {
       synchronized (this) {
          this._cachedFSGeneration = generation;
-         ApplicationRegistry.getApplicationRegistry().replace(-2054058001874678213L, new Object(generation));
+         ApplicationRegistry.getApplicationRegistry().replace(-2054058001874678213L, new Integer(generation));
          ApplicationRegistry.getApplicationRegistry().replace(-5612214964325329634L, moduleHandles);
       }
    }
@@ -72,7 +72,7 @@ class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
 
             try {
                this._lockObject.wait();
-            } catch (InterruptedException var4) {
+            } catch (InterruptedException var5) {
             }
          }
       }

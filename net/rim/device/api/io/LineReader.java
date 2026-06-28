@@ -14,7 +14,7 @@ public class LineReader {
 
    public LineReader(InputStream stream) {
       if (stream == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._stream = stream;

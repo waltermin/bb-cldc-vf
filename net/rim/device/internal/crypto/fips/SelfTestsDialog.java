@@ -3,7 +3,6 @@ package net.rim.device.internal.crypto.fips;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Display;
-import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.component.ButtonField;
@@ -52,7 +51,7 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
 
    final void testsPassed() {
       synchronized (Application.getApplication().getAppEventLock()) {
-         RichTextField resultsField = (RichTextField)(new Object(this._rb.getString(2), 36028797019226112L));
+         RichTextField resultsField = new RichTextField(this._rb.getString(2), 36028797019226112L);
          this._vfmScroll.add(resultsField);
          if (!this._startupRun) {
             this.addOkButton();
@@ -65,7 +64,7 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
       if (this._startupRun) {
          try {
             Thread.sleep(1000);
-         } catch (InterruptedException var4) {
+         } catch (InterruptedException var6) {
          }
 
          synchronized (Application.getApplication().getAppEventLock()) {
@@ -75,15 +74,15 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
    }
 
    private final void addOkButton() {
-      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
-      this._okButton = (ButtonField)(new Object(CommonResource.getString(100)));
+      HorizontalFieldManager buttonManager = new HorizontalFieldManager(12884901888L);
+      this._okButton = new ButtonField(CommonResource.getString(100));
       buttonManager.add(this._okButton);
       this._vfmScroll.add(buttonManager);
    }
 
    final void testsFailed() {
       synchronized (Application.getApplication().getAppEventLock()) {
-         this._vfmScroll.add((Field)(new Object(this._rb.getString(3), 36028797019226112L)));
+         this._vfmScroll.add(new RichTextField(this._rb.getString(3), 36028797019226112L));
          this.addOkButton();
          this._okButton.setFocus();
       }

@@ -14,6 +14,6 @@ final class TextField$TogglingMenuItem extends MenuItem {
    public final void run() {
       TextField target = (TextField)this.getTarget();
       SLControlObject cObj = (SLControlObject)target.getInputContext().getInputMethodControlObject();
-      cObj.actionPerformed(106, new Object(this._inputMode));
+      cObj.actionPerformed(106, new Integer(this._inputMode));
    }
 }

@@ -12,7 +12,7 @@ public class AbstractPseudoRandomSource {
 
    public void xorBytes(byte[] buffer) {
       if (buffer == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.xorBytes(buffer, 0, buffer.length);
@@ -29,13 +29,13 @@ public class AbstractPseudoRandomSource {
          System.arraycopy(data, dataOffset, buffer, bufferOffset, dataLength);
          this.xorBytes(buffer, bufferOffset, dataLength);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public byte[] xorCopy(byte[] data) {
       if (data == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return this.xorCopy(data, 0, data.length);
       }
@@ -47,7 +47,7 @@ public class AbstractPseudoRandomSource {
          this.xorBytes(data, offset, length, buffer, 0);
          return buffer;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -56,13 +56,13 @@ public class AbstractPseudoRandomSource {
          Arrays.fill(buffer, (byte)0, offset, length);
          this.xorBytes(buffer, offset, length);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    public byte[] getBytes(int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] buffer = new byte[length];
@@ -72,7 +72,7 @@ public class AbstractPseudoRandomSource {
 
    public void getBytes(byte[] buffer) {
       if (buffer == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.getBytes(buffer, 0, buffer.length);

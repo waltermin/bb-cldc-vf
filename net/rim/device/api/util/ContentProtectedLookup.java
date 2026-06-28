@@ -158,13 +158,13 @@ public class ContentProtectedLookup implements PersistentContentListener, Persis
 
    public Enumeration keys() {
       synchronized (this._keys) {
-         return (Enumeration)(new Object(this._keys.elements()));
+         return new ContentProtectedLookup$MyEnumeration(this._keys.elements());
       }
    }
 
    public Enumeration values() {
       synchronized (this._keys) {
-         return (Enumeration)(new Object(this._values.elements()));
+         return new ContentProtectedLookup$MyEnumeration(this._values.elements());
       }
    }
 

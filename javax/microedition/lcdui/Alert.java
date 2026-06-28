@@ -40,11 +40,11 @@ public class Alert extends Screen {
 
    private void init(String title, String alertText, Image alertImage, AlertType alertType) {
       synchronized (Application.getEventLock()) {
-         this._commands = (SimpleSortingVector)(new Object());
+         this._commands = new SimpleSortingVector();
          this._commands.setSortComparator(new Alert$CommandComparator());
          this._commands.setSort(true);
-         this._buttonContainer = (VerticalFieldManager)(new Object(281474976710656L));
-         this._dfm = (DialogFieldManager)(new Object());
+         this._buttonContainer = new VerticalFieldManager(281474976710656L);
+         this._dfm = new DialogFieldManager();
          this._dfm.addCustomField(this._buttonContainer);
          this.setPeer(new MIDPAlert(this._dfm, alertType));
          this.getPeer().setDisplayable(this);
@@ -103,7 +103,7 @@ public class Alert extends Screen {
    public void setTimeout(int time) {
       synchronized (Application.getEventLock()) {
          if (time <= 0 && time != -2) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._timeout = time;
@@ -145,7 +145,7 @@ public class Alert extends Screen {
             }
          } else {
             if (this._text == null) {
-               this._text = (RichTextField)(new Object(str, 36028797018963968L));
+               this._text = new RichTextField(str, 36028797018963968L);
                this._dfm.addCustomField(this._text);
             } else {
                this._text.setText(str);
@@ -171,7 +171,7 @@ public class Alert extends Screen {
                return;
             }
 
-            this._image = (BitmapField)(new Object(img.getBitmap()));
+            this._image = new BitmapField(img.getBitmap());
          } else {
             int type = 0;
             if (this._alertType == AlertType.ALARM || this._alertType == AlertType.ERROR) {
@@ -180,7 +180,7 @@ public class Alert extends Screen {
                type = 1;
             }
 
-            this._image = (BitmapField)(new Object(Bitmap.getPredefinedBitmap(type)));
+            this._image = new BitmapField(Bitmap.getPredefinedBitmap(type));
          }
 
          this._midpImage = img;
@@ -209,7 +209,7 @@ public class Alert extends Screen {
 
          this._indicator = indicator;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -220,14 +220,14 @@ public class Alert extends Screen {
    @Override
    public void addCommand(Command cmd) {
       if (cmd == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (cmd != DISMISS_COMMAND) {
          synchronized (Application.getEventLock()) {
             this._commands.addElement(cmd);
             int commandIndex = this._commands.find(cmd);
-            ButtonField buttonField = (ButtonField)(new Object(cmd.getLabel(), 18014398509481984L));
+            ButtonField buttonField = new ButtonField(cmd.getLabel(), 18014398509481984L);
             buttonField.setCookie(cmd);
             this._buttonContainer.insert(buttonField, commandIndex);
             this.updateModalState();
@@ -276,7 +276,7 @@ public class Alert extends Screen {
       synchronized (Application.getEventLock()) {
          if (this._title == null) {
             if (title != null) {
-               this._title = (RichTextField)(new Object(title, 36028797018963968L));
+               this._title = new RichTextField(title, 36028797018963968L);
                this._dfm.setMessage(this._title);
             }
          } else if (title != null) {

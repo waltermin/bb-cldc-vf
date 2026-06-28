@@ -24,7 +24,7 @@ public class PasswordEditField extends BasicEditField {
    protected StringBufferGap getDisplayText() {
       char[] buffer = new char[super._text.length()];
       Arrays.fill(buffer, '*');
-      return (StringBufferGap)(new Object((String)(new Object(buffer))));
+      return new StringBufferGap(new String(buffer));
    }
 
    @Override

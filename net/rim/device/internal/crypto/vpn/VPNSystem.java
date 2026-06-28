@@ -17,7 +17,7 @@ public class VPNSystem {
       if (VPN.isSupported()) {
          this.setActiveProfileSet(this.createVPNProfileSet());
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -35,7 +35,7 @@ public class VPNSystem {
 
    protected void checkSession() {
       if (this.getActiveProfileSet() == -1) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -117,7 +117,7 @@ public class VPNSystem {
       if (this.getActiveProfileSet() == -1) {
          return createProfileSet();
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

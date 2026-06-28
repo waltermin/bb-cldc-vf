@@ -41,15 +41,15 @@ public final class String {
 
    public String(char[] value, int offset, int length) {
       if (offset < 0) {
-         throw new Object(offset);
+         throw new StringIndexOutOfBoundsException(offset);
       }
 
       if (length < 0) {
-         throw new Object(length);
+         throw new StringIndexOutOfBoundsException(length);
       }
 
       if (offset > value.length - length) {
-         throw new Object(offset + length);
+         throw new StringIndexOutOfBoundsException(offset + length);
       }
 
       this.arrayToThisString(newArrayWithPossibleDemotion(value, offset, length));
@@ -57,15 +57,15 @@ public final class String {
 
    public String(byte[] value, int offset, int length, String enc) {
       if (offset < 0) {
-         throw new Object(offset);
+         throw new StringIndexOutOfBoundsException(offset);
       }
 
       if (length < 0) {
-         throw new Object(length);
+         throw new StringIndexOutOfBoundsException(length);
       }
 
       if (offset > value.length - length) {
-         throw new Object(offset + length);
+         throw new StringIndexOutOfBoundsException(offset + length);
       }
 
       this.arrayToThisString(Helper.byteToCharArray(value, offset, length, enc));
@@ -81,7 +81,7 @@ public final class String {
          System.arraycopy(bytes, off, newValue, 0, len);
          this.arrayToThisString(newValue);
       } else {
-         throw new Object(len);
+         throw new StringIndexOutOfBoundsException(len);
       }
    }
 

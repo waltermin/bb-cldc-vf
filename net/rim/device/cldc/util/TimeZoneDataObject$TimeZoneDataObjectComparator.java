@@ -5,6 +5,12 @@ import net.rim.device.api.util.Comparator;
 class TimeZoneDataObject$TimeZoneDataObjectComparator implements Comparator {
    @Override
    public int compare(Object o1, Object o2) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      int gmtOffsetObject1 = ((TimeZoneDataObject)o1).getGMTOffset();
+      int gmtOffsetObject2 = ((TimeZoneDataObject)o2).getGMTOffset();
+      if (gmtOffsetObject1 < gmtOffsetObject2) {
+         return -1;
+      } else {
+         return gmtOffsetObject1 == gmtOffsetObject2 ? 0 : 1;
+      }
    }
 }

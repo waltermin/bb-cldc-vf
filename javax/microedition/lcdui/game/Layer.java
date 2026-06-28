@@ -54,7 +54,7 @@ public class Layer {
 
    void setWidthImpl(int width) {
       if (width < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.width = width;
@@ -62,7 +62,7 @@ public class Layer {
 
    void setHeightImpl(int height) {
       if (height < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.height = height;

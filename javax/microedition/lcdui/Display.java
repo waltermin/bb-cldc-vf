@@ -9,6 +9,7 @@ import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.menu.MenuScreen;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.system.InternalServices;
 
@@ -63,7 +64,7 @@ public class Display {
       UiApplication app = UiApplication.getUiApplication();
       if (oldDisplayable != newDisplayable) {
          net.rim.device.api.ui.Screen screen = app.getActiveScreen();
-         if (screen instanceof Object) {
+         if (screen instanceof MenuScreen) {
             synchronized (app.getAppEventLock()) {
                app.popScreen(screen);
             }
@@ -104,7 +105,7 @@ public class Display {
    public int getColor(int colorSpecifier) {
       switch (colorSpecifier) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          case 1:
          case 2:
@@ -154,7 +155,7 @@ public class Display {
          alert.getPeer();
          nextDisplayable.getPeer();
          if (nextDisplayable instanceof Alert) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          Displayable old = getCurrentDisplayable();
@@ -179,7 +180,7 @@ public class Display {
                field.setFocus();
             }
          } else {
-            throw new Object();
+            throw new IllegalStateException();
          }
       }
    }
@@ -190,7 +191,7 @@ public class Display {
 
    public boolean flashBacklight(int duration) {
       if (duration < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (this.getCurrent().isShown()) {
@@ -223,7 +224,7 @@ public class Display {
             }
 
             _flashBacklightTask = new Display$FlashBacklightTimerTask(numBacklightOnOffIterations);
-            Timer flashingTimer = (Timer)(new Object());
+            Timer flashingTimer = new Timer();
             flashingTimer.schedule(_flashBacklightTask, 0, 1000);
          }
 
@@ -235,7 +236,7 @@ public class Display {
 
    public boolean vibrate(int duration) {
       if (duration < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Displayable current = this.getCurrent();
@@ -254,7 +255,7 @@ public class Display {
    public int getBestImageWidth(int imageType) {
       switch (imageType) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          case 2:
          default:
@@ -267,7 +268,7 @@ public class Display {
    public int getBestImageHeight(int imageType) {
       switch (imageType) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          case 2:
          default:
@@ -401,7 +402,7 @@ public class Display {
             }
 
             if (keyCode == 0) {
-               throw new Object();
+               throw new IllegalArgumentException();
             } else {
                return 0;
             }

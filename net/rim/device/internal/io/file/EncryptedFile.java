@@ -6,6 +6,7 @@ import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.io.FileInfo;
 import net.rim.device.api.io.NoCopyByteArrayOutputStream;
+import net.rim.device.api.io.file.FileIOException;
 import net.rim.device.api.system.CodeSigningKey;
 import net.rim.device.internal.crypto.EncryptionUtilities;
 import net.rim.device.internal.system.DRMServices;
@@ -15,7 +16,7 @@ public final class EncryptedFile {
    private int _handle;
    private CodeSigningKey _protectionKey;
    private int _headerLength;
-   private FileInfo _fileInfo = (FileInfo)(new Object());
+   private FileInfo _fileInfo = new FileInfo();
    private boolean _drmForwardLocked;
    public static final int BLOCK_LENGTH;
    private static final int SIGNATURE_LENGTH;
@@ -33,8 +34,8 @@ public final class EncryptedFile {
       out.write(77);
       out.write(70);
       out.write(1);
-      NoCopyByteArrayOutputStream bytesOut = (NoCopyByteArrayOutputStream)(new Object());
-      DataOutputStream dataOut = (DataOutputStream)(new Object(bytesOut));
+      NoCopyByteArrayOutputStream bytesOut = new NoCopyByteArrayOutputStream();
+      DataOutputStream dataOut = new DataOutputStream(bytesOut);
       dataOut.write(0);
       dataOut.write(0);
       if (protectionKey == null) {
@@ -61,7 +62,7 @@ public final class EncryptedFile {
       byte[] sessionKey = new byte[32];
       RandomSource.getBytes(sessionKey);
       dataOut.writeShort(sessionKey.length);
-      SHA256Digest digest = (SHA256Digest)(new Object());
+      SHA256Digest digest = new SHA256Digest();
       if (!isDRMProtected) {
          dataOut.write(1);
          dataOut.write(sessionKey);
@@ -97,20 +98,20 @@ public final class EncryptedFile {
    }
 
    public final long getFileSize() {
-      FileInfo info = (FileInfo)(new Object());
+      FileInfo info = new FileInfo();
       int status = FileSystem.getFileInfo(this._handle, info);
       if (status != 0) {
-         throw new Object(status);
+         throw new FileIOException(status);
       } else {
          long bytesToSkip = (info.getFileSize() - FileSystem.tell(this._handle)) / 16 * 16;
          status = FileSystem.seek(this._handle, bytesToSkip, 1);
          if (status != 0) {
-            throw new Object(status);
+            throw new FileIOException(status);
          } else {
             byte[] lastByte = new byte[1];
             long readStatus = FileSystem.read(this._handle, lastByte);
             if ((int)readStatus != 0) {
-               throw new Object((int)readStatus);
+               throw new FileIOException((int)readStatus);
             } else {
                int size = (int)(readStatus >> 32);
                if (size != 1) {
@@ -118,7 +119,7 @@ public final class EncryptedFile {
                } else if (lastByte[0] > 0 && lastByte[0] <= 16) {
                   return bytesToSkip - (16 - lastByte[0]);
                } else {
-                  throw new Object(6);
+                  throw new FileIOException(6);
                }
             }
          }

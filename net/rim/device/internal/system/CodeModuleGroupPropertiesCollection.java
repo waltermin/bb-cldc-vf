@@ -28,7 +28,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
    private PersistentObject _persist;
    private IntHashtable _properties;
    private CodeModuleGroupPropertiesCollection$CheckGroupsThread _checkGroupsThread;
-   private CollectionListenerManager _listeners = (CollectionListenerManager)(new Object());
+   private CollectionListenerManager _listeners = new CollectionListenerManager();
    private static final long PROPERTIES_ID;
    private static final int TYPE_PROPERTY_KEY;
    private static final int TYPE_PROPERTY_VALUE;
@@ -38,7 +38,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
       this._persist = RIMPersistentStore.getPersistentObject(-1494190557092396307L);
       synchronized (this._persist) {
          if (this._persist.getContents() == null) {
-            this._persist.setContents(new Object(), 51);
+            this._persist.setContents(new IntHashtable(), 51);
             this._persist.commit();
          }
       }
@@ -122,7 +122,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    private CodeModuleGroupProperties createGroupProperties(CodeModuleGroup group) {
       int uid = getGroupUID(group.getName());
-      CodeModuleGroupProperties properties = (CodeModuleGroupProperties)(new Object(uid));
+      CodeModuleGroupProperties properties = new CodeModuleGroupProperties(uid);
       Enumeration e = group.getPropertyNames();
 
       while (e.hasMoreElements()) {
@@ -134,7 +134,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
    }
 
    private IntVector getCurrentModuleGroupUIDs(CodeModuleGroup[] groups) {
-      IntVector uids = (IntVector)(new Object(groups.length));
+      IntVector uids = new IntVector(groups.length);
 
       for (int i = 0; i < groups.length; i++) {
          uids.addElement(getGroupUID(groups[i].getName()));
@@ -145,7 +145,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public boolean addSyncObject(SyncObject object) {
-      if (object instanceof Object) {
+      if (object instanceof CodeModuleGroupProperties) {
          synchronized (this._properties) {
             this._properties.put(object.getUID(), object);
             this._persist.commit();
@@ -233,7 +233,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public boolean removeSyncObject(SyncObject object) {
-      if (object instanceof Object) {
+      if (object instanceof CodeModuleGroupProperties) {
          synchronized (this._properties) {
             this._properties.remove(object.getUID());
             this._persist.commit();
@@ -252,7 +252,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
-      if (oldObject instanceof Object && newObject instanceof Object) {
+      if (oldObject instanceof CodeModuleGroupProperties && newObject instanceof CodeModuleGroupProperties) {
          synchronized (this._properties) {
             this._properties.remove(oldObject.getUID());
             this._properties.put(newObject.getUID(), newObject);
@@ -268,7 +268,7 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public SyncObject convert(DataBuffer data, int version, int UID) {
-      CodeModuleGroupProperties properties = (CodeModuleGroupProperties)(new Object(UID));
+      CodeModuleGroupProperties properties = new CodeModuleGroupProperties(UID);
 
       try {
          data.rewind();

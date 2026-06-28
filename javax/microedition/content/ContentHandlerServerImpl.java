@@ -75,7 +75,7 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
          if (next == null && wait) {
             try {
                this._queue.wait();
-            } catch (InterruptedException var6) {
+            } catch (InterruptedException var7) {
             }
 
             next = this._queue.nextInvocation();
@@ -141,7 +141,7 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
 
       try {
          pid = am.runApplication(this._application, grabForeground);
-      } catch (ApplicationManagerException var7) {
+      } catch (ApplicationManagerException var8) {
       } finally {
          if (pid == -1) {
             return pid;
@@ -149,7 +149,7 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
       }
 
       if (this._listener != null) {
-         Message invokeLaterMessage = (Message)(new Object(0, 2, new ContentHandlerServerImpl$1(this), null));
+         Message invokeLaterMessage = new Message(0, 2, new ContentHandlerServerImpl$1(this), null);
          ((ApplicationManagerInternal)am).postMessage(pid, invokeLaterMessage);
       }
 

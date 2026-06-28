@@ -12,7 +12,7 @@ public class Hashtable {
 
    public Hashtable(int initialCapacity) {
       if (initialCapacity < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (initialCapacity < 1) {
@@ -39,16 +39,16 @@ public class Hashtable {
    }
 
    public synchronized Enumeration keys() {
-      return (Enumeration)(new Object(this._key, this._empty));
+      return new HashtableEnumerator(this._key, this._empty);
    }
 
    public synchronized Enumeration elements() {
-      return (Enumeration)(new Object(this._value, this._empty));
+      return new HashtableEnumerator(this._value, this._empty);
    }
 
    public synchronized boolean contains(Object value) {
       if (value == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Object empty = this._empty;
@@ -80,7 +80,7 @@ public class Hashtable {
 
    @Override
    public synchronized String toString() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public synchronized Object remove(Object key) {
@@ -138,7 +138,7 @@ public class Hashtable {
 
    public synchronized Object put(Object key, Object value) {
       if (value == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       int hashcode = key.hashCode();

@@ -89,11 +89,11 @@ public class ApplicationIconField extends Field {
             desiredHeight -= max_dH;
          }
 
-         return (XYDimension)(desiredWidth * height / width > desiredHeight
-            ? new Object(desiredHeight * width / height, desiredHeight)
-            : new Object(desiredWidth, desiredWidth * height / width));
+         return desiredWidth * height / width > desiredHeight
+            ? new XYDimension(desiredHeight * width / height, desiredHeight)
+            : new XYDimension(desiredWidth, desiredWidth * height / width);
       } else {
-         return (XYDimension)(new Object(width, height));
+         return new XYDimension(width, height);
       }
    }
 

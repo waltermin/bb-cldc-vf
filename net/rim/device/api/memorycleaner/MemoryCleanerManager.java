@@ -94,7 +94,7 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
 
    public final synchronized void addListener(MemoryCleanerListener listener, boolean weak, boolean enable) {
       if (listener == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._listeners.add(listener, weak);

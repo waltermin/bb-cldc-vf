@@ -24,7 +24,7 @@ public final class DateTimeUtilities {
 
    public static final boolean isWeekend(long date) {
       if (date < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Calendar cal = Calendar.getInstance();
@@ -39,7 +39,7 @@ public final class DateTimeUtilities {
 
    public static final Calendar getNextDate(int millisSinceMidnight) {
       if (millisSinceMidnight < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Calendar c = getDate(millisSinceMidnight);
@@ -53,7 +53,7 @@ public final class DateTimeUtilities {
 
    public static final Calendar getDate(int millisSinceMidnight) {
       if (millisSinceMidnight < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int hoursSinceMidnight = millisSinceMidnight / 3600000;
@@ -68,7 +68,7 @@ public final class DateTimeUtilities {
 
    public static final void formatElapsedTime(long time, StringBuffer sb, boolean reset) {
       if (time < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (reset) {

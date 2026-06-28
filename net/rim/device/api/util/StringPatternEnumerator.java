@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.util.Vector;
+import net.rim.device.internal.util.ExternalStringPattern;
 
 public final class StringPatternEnumerator {
    private StringPatternContainer _patterns;
@@ -24,7 +25,7 @@ public final class StringPatternEnumerator {
       this._endIndicies = new int[patternCount];
       this._matchIndicies = new long[patternCount];
       this._prefixLengths = new int[patternCount];
-      this._queuedMatches = (Vector)(new Object(1));
+      this._queuedMatches = new Vector(1);
       if (stringToScan == null) {
          this._string = null;
          this._endOfEnum = true;
@@ -146,7 +147,7 @@ public final class StringPatternEnumerator {
                      if (this._beginIndicies[idx] < this._beginIndicies[nextMatchIndex]) {
                         nextMatchIndex = idx;
                         this._queuedMatches.removeAllElements();
-                     } else if (currentPattern instanceof Object && this._beginIndicies[idx] == this._beginIndicies[nextMatchIndex]) {
+                     } else if (currentPattern instanceof ExternalStringPattern && this._beginIndicies[idx] == this._beginIndicies[nextMatchIndex]) {
                         StringPattern$Match queuedMatch = new StringPattern$Match();
                         queuedMatch.beginIndex = this._beginIndicies[nextMatchIndex];
                         queuedMatch.endIndex = this._endIndicies[nextMatchIndex];

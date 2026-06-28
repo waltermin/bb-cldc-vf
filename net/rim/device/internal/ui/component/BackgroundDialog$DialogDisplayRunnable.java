@@ -79,8 +79,8 @@ class BackgroundDialog$DialogDisplayRunnable implements Runnable, PopupDialogClo
          synchronized (this) {
             while (this._dialogOnDisplay) {
                try {
-                  super.wait();
-               } catch (InterruptedException var6) {
+                  this.wait();
+               } catch (InterruptedException var7) {
                }
             }
          }
@@ -90,6 +90,6 @@ class BackgroundDialog$DialogDisplayRunnable implements Runnable, PopupDialogClo
    @Override
    public final synchronized void dialogClosed(PopupDialog popupDialog, int choice) {
       this._dialogOnDisplay = false;
-      super.notifyAll();
+      this.notifyAll();
    }
 }

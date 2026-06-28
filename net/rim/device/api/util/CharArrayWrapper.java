@@ -9,7 +9,7 @@ final class CharArrayWrapper extends AbstractStringWrapper {
 
    @Override
    public final String toString() {
-      return (String)(new Object(this._charArray));
+      return new String(this._charArray);
    }
 
    @Override

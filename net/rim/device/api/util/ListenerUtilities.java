@@ -9,7 +9,7 @@ public final class ListenerUtilities {
 
    public static final Vector addListener(Vector listeners, Object listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Vector newVector;
@@ -29,7 +29,7 @@ public final class ListenerUtilities {
 
    public static final Vector fastAddListener(Vector listeners, Object listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Vector newVector;
@@ -63,7 +63,7 @@ public final class ListenerUtilities {
 
    public static final Object[] addListener(Object[] listeners, Object listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Object[] newArray;
@@ -87,7 +87,7 @@ public final class ListenerUtilities {
 
    public static final Object[] fastAddListener(Object[] listeners, Object listener) {
       if (listener == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Object[] newArray;

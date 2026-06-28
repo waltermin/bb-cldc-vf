@@ -100,7 +100,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    @Override
    public Object setProperty(String name, Object data) {
       if (this._properties == null) {
-         this._properties = (Hashtable)(new Object());
+         this._properties = new Hashtable();
       }
 
       return this._properties.put(name, data);
@@ -142,7 +142,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    @Override
    public void setData(byte[] buffer, int offset, int length) {
       if (buffer != null && offset + length > buffer.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.setData(buffer, offset, length, true);
@@ -156,7 +156,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    public DatagramBase(byte[] buffer, int offset, int length, String address) {
       super(buffer, offset, length, true);
       if (buffer != null && offset + length > buffer.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.setAddress(address);
@@ -165,7 +165,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    public DatagramBase(byte[] buffer, int offset, int length) {
       super(buffer, offset, length, true);
       if (buffer != null && offset + length > buffer.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -183,7 +183,7 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    public DatagramBase(byte[] buffer, int offset, int length, DatagramAddressBase addressBase) {
       super(buffer, offset, length, true);
       if (buffer != null && offset + length > buffer.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this.setAddressBase(addressBase);

@@ -19,7 +19,7 @@ public final class TextMessageImpl extends MessageImpl implements TextMessage {
       }
 
       try {
-         return (String)(new Object(super._buffer, this._encoder));
+         return new String(super._buffer, this._encoder);
       } catch (UnsupportedEncodingException e) {
          return null;
       }

@@ -137,7 +137,7 @@ public class Formatter {
                case -1:
                   return;
                case 0:
-                  throw new Object();
+                  throw new IllegalArgumentException();
                case 1:
                case 2:
                case 3:
@@ -150,7 +150,7 @@ public class Formatter {
                case -1:
                   return;
                case 0:
-                  throw new Object();
+                  throw new IllegalArgumentException();
                case 2:
                   graphics.invert(x, y, width, height);
                   return;
@@ -180,7 +180,7 @@ public class Formatter {
                case -1:
                   return;
                case 0:
-                  throw new Object();
+                  throw new IllegalArgumentException();
                case 1:
                   graphics.drawRect(x, y, width, height);
                   return;
@@ -200,7 +200,7 @@ public class Formatter {
                   case -1:
                      break;
                   case 0:
-                     throw new Object();
+                     throw new IllegalArgumentException();
                   case 1:
                   case 3:
                   default:

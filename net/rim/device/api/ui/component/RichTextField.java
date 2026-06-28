@@ -144,7 +144,7 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
             this.updateLayout();
          }
       } else {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
    }
 
@@ -154,11 +154,11 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       }
 
       if (colorForeground != null && colorForeground.length != this._fonts.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (colorBackground != null && colorBackground.length != this._fonts.length) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._colorForeground = Arrays.copy(colorForeground);
@@ -443,7 +443,7 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
       this._legacyArraysUpdated = false;
       this._legacyAttributesUsed = false;
       this.setText(text, offsets, attributes, fonts, cookies);
-      this._arSupport = (ActiveRegionSupport)(new Object(super._text.getIterator(), this));
+      this._arSupport = new ActiveRegionSupport(super._text.getIterator(), this);
    }
 
    @Override

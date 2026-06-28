@@ -29,7 +29,7 @@ public final class TLEUtilities {
       if (buf.readUnsignedByte() == type) {
          return readIntegerField(buf);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -41,7 +41,7 @@ public final class TLEUtilities {
       switch (length) {
          case 0:
          case 3:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             return buf.readUnsignedByte();
@@ -56,7 +56,7 @@ public final class TLEUtilities {
       if (buf.readUnsignedByte() == type) {
          return readDataField(buf);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -72,7 +72,7 @@ public final class TLEUtilities {
 
    public static final String readStringField(DataBuffer buf, int type, boolean stripNull) {
       if (buf.readUnsignedByte() != type) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return readStringField(buf, stripNull);
       }
@@ -93,7 +93,7 @@ public final class TLEUtilities {
 
       try {
          if (encoded && length < 1) {
-            throw new Object();
+            throw new EOFException();
          }
 
          returnedString = UnicodeServiceUtilities.readString(data, offset, length, encoded);
@@ -204,7 +204,7 @@ public final class TLEUtilities {
 
    public static final int getType(DataBuffer buffer, boolean convertTag) {
       if (buffer.available() < 1) {
-         throw new Object();
+         throw new EOFException();
       }
 
       int type = buffer.getArray()[buffer.getArrayPosition()] & 255;

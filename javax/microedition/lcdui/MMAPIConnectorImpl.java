@@ -4,6 +4,7 @@ import javax.microedition.media.Player;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
 import net.rim.device.internal.lcdui.MMAPIConnector;
+import net.rim.device.internal.ui.component.MMAPIMediaField;
 
 class MMAPIConnectorImpl implements MMAPIConnector {
    @Override
@@ -23,7 +24,7 @@ class MMAPIConnectorImpl implements MMAPIConnector {
 
    @Override
    public LcduiPlayerController getMediaField(Player player, int width, int height) {
-      LcduiPlayerController controller = (LcduiPlayerController)(new Object(width, height));
+      LcduiPlayerController controller = new MMAPIMediaField(width, height);
       controller.setComponent(controller);
       controller.setPlayer(player);
       return controller;

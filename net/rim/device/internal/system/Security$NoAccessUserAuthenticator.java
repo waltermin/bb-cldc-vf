@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.UserAuthenticationException;
 import net.rim.device.api.system.UserAuthenticator;
 
 public final class Security$NoAccessUserAuthenticator extends UserAuthenticator {
@@ -20,7 +21,7 @@ public final class Security$NoAccessUserAuthenticator extends UserAuthenticator 
 
    @Override
    public final boolean initialize(String password) {
-      throw new Object();
+      throw new UserAuthenticationException();
    }
 
    @Override

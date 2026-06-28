@@ -30,7 +30,7 @@ public final class TunnelWorker implements TunnelListener {
       synchronized (this) {
          this._tunnelState = status;
          this._tunnelCode = code;
-         super.notify();
+         this.notify();
       }
    }
 }

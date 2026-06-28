@@ -3,6 +3,7 @@ package net.rim.device.api.collection.util;
 import java.util.Enumeration;
 import net.rim.device.api.collection.ReadableIntMap;
 import net.rim.device.api.collection.WritableList;
+import net.rim.device.api.util.ObjectEnumerator;
 import net.rim.device.api.util.Persistable;
 import net.rim.vm.Array;
 
@@ -14,13 +15,13 @@ public class SparseList implements Persistable, WritableList, ReadableIntMap {
    private int _holeCount;
 
    public Enumeration elements() {
-      return (Enumeration)(new Object(this._objects));
+      return new ObjectEnumerator(this._objects);
    }
 
    public int addAndGetIndex(Object element) {
       int insertLocation = -1;
       if (element == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._holeCount > 0) {
@@ -41,7 +42,7 @@ public class SparseList implements Persistable, WritableList, ReadableIntMap {
    @Override
    public void insertAt(int index, Object element) {
       if (element == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this.get(index);
@@ -64,7 +65,7 @@ public class SparseList implements Persistable, WritableList, ReadableIntMap {
             this.removeUnneededHoles();
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 

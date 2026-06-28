@@ -60,13 +60,13 @@ public final class BreakIterator {
             return null;
          case 0:
          default:
-            return (StringBufferGap)(new Object(this._str));
+            return new StringBufferGap(this._str);
          case 1:
-            return (StringBufferGap)(new Object(this._strB));
+            return new StringBufferGap(this._strB);
          case 2:
             return this._strBG;
          case 3:
-            return (StringBufferGap)(new Object((String)(new Object(this._charArr))));
+            return new StringBufferGap(new String(this._charArr));
       }
    }
 

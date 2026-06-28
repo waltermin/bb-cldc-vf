@@ -34,7 +34,7 @@ public final class WBMPEncodedImage extends EncodedImage {
    @Override
    public final int getBitmapType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 2) != 0 ? Bitmap.DEFAULT_TYPE : Bitmap.DEFAULT_TYPE & 128 | 0 | 1;
       }
@@ -45,20 +45,20 @@ public final class WBMPEncodedImage extends EncodedImage {
       if (frameIndex >= 0 && frameIndex < super._info.frameCount) {
          return 0;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
    @Override
    final Bitmap getBitmapImpl(int frameIndex) {
       if (frameIndex != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       boolean readonly = (super._decodeMode & 4) != 0;
       int width = this.getScaledWidth();
       int height = this.getScaledHeight();
-      Bitmap bitmap = (Bitmap)(new Object(this.getBitmapType(frameIndex), width, height, null, readonly, false));
+      Bitmap bitmap = new Bitmap(this.getBitmapType(frameIndex), width, height, null, readonly, false);
       this.getWBMPImage(bitmap, super._scaleX, super._scaleY, super._decodeMode);
       return bitmap;
    }

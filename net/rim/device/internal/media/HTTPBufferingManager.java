@@ -1,5 +1,6 @@
 package net.rim.device.internal.media;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.HttpConnection;
@@ -60,12 +61,12 @@ public final class HTTPBufferingManager extends Thread {
 
       try {
          this._subIn.close();
-      } catch (IOException var4) {
+      } catch (IOException var5) {
       }
 
       try {
          this._inputConnection.close();
-      } catch (IOException var3) {
+      } catch (IOException var4) {
       }
 
       synchronized (this._lock) {
@@ -100,7 +101,7 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    public final InputStream getInputStream() {
-      return (InputStream)(this.bufferContainsAllContent() ? new Object(this._buffer) : new HTTPBufferingManager$HTTPBufferedInputStream(this));
+      return this.bufferContainsAllContent() ? new ByteArrayInputStream(this._buffer) : new HTTPBufferingManager$HTTPBufferedInputStream(this);
    }
 
    public final void setEstimatedTime(long time) {
@@ -158,12 +159,12 @@ public final class HTTPBufferingManager extends Thread {
       int watermarkCheckSize = 30720;
 
       while (true) {
-         boolean var21 = false /* VF: Semaphore variable */;
+         boolean var25 = false /* VF: Semaphore variable */;
 
          try {
-            var21 = true;
+            var25 = true;
             if (this._shutdown) {
-               var21 = false;
+               var25 = false;
                break;
             }
 
@@ -221,7 +222,7 @@ public final class HTTPBufferingManager extends Thread {
 
                      try {
                         this._lock.wait();
-                     } catch (InterruptedException var24) {
+                     } catch (InterruptedException var28) {
                      }
                   }
                }
@@ -247,7 +248,7 @@ public final class HTTPBufferingManager extends Thread {
                   }
 
                   this._lock.notifyAll();
-                  var21 = false;
+                  var25 = false;
                   break;
                }
             }
@@ -260,10 +261,10 @@ public final class HTTPBufferingManager extends Thread {
                this._lock.notifyAll();
                continue;
             }
-         } catch (IOException var26) {
-            var21 = false;
+         } catch (IOException var30) {
+            var25 = false;
          } finally {
-            if (var21) {
+            if (var25) {
                Application.getApplication().cancelInvokeLater(this._progressStatusId);
                if (!this._shutdown) {
                   this.shutdown();

@@ -64,7 +64,7 @@ public final class FontRegistry {
    }
 
    private final synchronized int loadSplitFontInternal(String aFileName, int aFileCount, String aLocation, String aTypefaceName, boolean aIsPublic) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public static final int loadFont(byte[] data, String typefaceName, boolean isPublic) {
@@ -151,7 +151,7 @@ public final class FontRegistry {
 
    private final int unloadFont0(String typefaceName) {
       int rc = -1;
-      synchronized (super.getClass()) {
+      synchronized (this.getClass()) {
          IntEnumeration e = this._fontInfo.keys();
          FontRegistry$FontInfo fi = null;
 
@@ -169,7 +169,7 @@ public final class FontRegistry {
 
    private final int unloadFont0(int aHandle) {
       int rc = -1;
-      synchronized (super.getClass()) {
+      synchronized (this.getClass()) {
          if (aHandle < 0) {
             return rc;
          } else {
@@ -289,7 +289,7 @@ public final class FontRegistry {
    public static final String[] getFontFamilies() {
       FontRegistry registry = getInstance();
       synchronized (registry) {
-         Hashtable t = (Hashtable)(new Object());
+         Hashtable t = new Hashtable();
          Enumeration en = registry._fontInfo.elements();
 
          while (en.hasMoreElements()) {

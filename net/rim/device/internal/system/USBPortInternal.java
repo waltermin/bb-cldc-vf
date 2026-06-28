@@ -1,6 +1,8 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.IOPort;
+import net.rim.vm.Process;
 
 public final class USBPortInternal extends IOPort {
    private int _channel;
@@ -15,11 +17,16 @@ public final class USBPortInternal extends IOPort {
    }
 
    public USBPortInternal(int channel) {
+      openChannel(channel);
+      this._channel = channel;
+      this._cleanupRunnable = new USBPortInternal$USBPortCleanupRunnable(this);
+      ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this._cleanupRunnable);
    }
 
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      closeChannel(this._channel);
+      ((ApplicationProcess)Process.currentProcess()).removeCleanupRunnable(this._cleanupRunnable);
    }
 
    @Override

@@ -166,7 +166,7 @@ public final class Alert {
    }
 
    public static final int startADPCM(byte[] tune, boolean interruptable) {
-      throw new Object();
+      throw new UnsupportedOperationException();
    }
 
    public static final void stopADPCM() {

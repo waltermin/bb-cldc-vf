@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import java.io.IOException;
 import java.io.InputStream;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
@@ -18,11 +19,11 @@ public class Image {
    public static Image createImage(int width, int height) {
       if (width > 0 && height > 0) {
          Image image = new Image();
-         image._bitmap = (Bitmap)(new Object(width, height));
+         image._bitmap = new Bitmap(width, height);
          image._mutable = true;
          return image;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -50,7 +51,7 @@ public class Image {
          img._mutable = false;
          return img;
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -72,7 +73,7 @@ public class Image {
    public static Image createImage(Image image, int x, int y, int width, int height, int transform) {
       image.isMutable();
       if (x < 0 || y < 0 || x + width > image.getWidth() || y + height > image.getHeight() || width <= 0 || height <= 0 || transform < 0 || transform > 7) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (x == 0 && y == 0 && width == image.getWidth() && height == image.getHeight() && transform == 0) {
@@ -86,7 +87,7 @@ public class Image {
       Image resultImage;
       if (transform == 0) {
          resultImage = new Image();
-         resultImage._bitmap = (Bitmap)(new Object(width, height));
+         resultImage._bitmap = new Bitmap(width, height);
          resultImage._bitmap.setARGB(rgbData, 0, width, 0, 0, width, height);
       } else {
          int startPosX = 0;
@@ -156,7 +157,7 @@ public class Image {
          }
 
          resultImage = new Image();
-         resultImage._bitmap = (Bitmap)(new Object(newWidth, newHeight));
+         resultImage._bitmap = new Bitmap(newWidth, newHeight);
          resultImage._bitmap.setARGB(rgbDestData, 0, newWidth, 0, 0, newWidth, newHeight);
       }
 
@@ -166,7 +167,7 @@ public class Image {
    public static Image createImage(InputStream stream) {
       int blocksize = 4096;
       if (stream == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       int l = stream.available();
@@ -188,7 +189,7 @@ public class Image {
       try {
          encodedImage = EncodedImage.createEncodedImage(buffer, 0, length);
       } catch (IllegalArgumentException iae) {
-         throw new Object(iae.getMessage());
+         throw new IOException(iae.getMessage());
       }
 
       image._bitmap = encodedImage.getBitmap();
@@ -199,11 +200,11 @@ public class Image {
 
    public Graphics getGraphics() {
       if (!this._mutable) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       Graphics graphics = new Graphics(this);
-      net.rim.device.api.ui.Graphics rimGraphics = (net.rim.device.api.ui.Graphics)(new Object(this._bitmap));
+      net.rim.device.api.ui.Graphics rimGraphics = new net.rim.device.api.ui.Graphics(this._bitmap);
       rimGraphics.pushRegion(0, 0, this.getWidth(), this.getHeight(), 0, 0);
       graphics.setGraphics(rimGraphics, false);
       return graphics;
@@ -224,11 +225,11 @@ public class Image {
    public static Image createRGBImage(int[] rgb, int width, int height, boolean processAlpha) {
       if (width > 0 && height > 0) {
          if (rgb.length < width * height) {
-            throw new Object();
+            throw new ArrayIndexOutOfBoundsException();
          }
 
          Image image = new Image();
-         image._bitmap = (Bitmap)(new Object(width, height));
+         image._bitmap = new Bitmap(width, height);
          image._bitmap.setARGB(rgb, 0, image.getWidth(), 0, 0, width, height);
          if (!processAlpha) {
             image._bitmap.setAlpha(null);
@@ -237,7 +238,7 @@ public class Image {
          image._mutable = false;
          return image;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -247,7 +248,7 @@ public class Image {
       if (!exceedsBounds && Math.abs(scanlength) >= width) {
          if (width > 0 && height > 0) {
             if (offset < 0 || offset + (height - 1) * scanlength + width > rgbDataLength || offset + (height - 1) * scanlength < 0) {
-               throw new Object();
+               throw new ArrayIndexOutOfBoundsException();
             }
 
             if (scanlength < 0) {
@@ -262,7 +263,7 @@ public class Image {
             }
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 }

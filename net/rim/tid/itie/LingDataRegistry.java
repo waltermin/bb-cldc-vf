@@ -12,7 +12,7 @@ import net.rim.tid.awt.im.spi.InputMethod;
 public class LingDataRegistry {
    private IMContext _context;
    private int _idCounter;
-   private IntHashtable _store = (IntHashtable)(new Object());
+   private IntHashtable _store = new IntHashtable();
    private Vector _lingDataRegistryListeners;
 
    LingDataRegistry(IMContext context) {
@@ -200,7 +200,7 @@ public class LingDataRegistry {
 
    public synchronized void addLingDataRegistryListener(LingDataRegistryListener l) {
       if (this._lingDataRegistryListeners == null) {
-         this._lingDataRegistryListeners = (Vector)(new Object());
+         this._lingDataRegistryListeners = new Vector();
       }
 
       this._lingDataRegistryListeners.addElement(l);

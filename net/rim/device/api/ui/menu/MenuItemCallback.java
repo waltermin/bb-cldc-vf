@@ -10,7 +10,7 @@ public class MenuItemCallback extends MenuItem {
    public MenuItemCallback(MenuHandler handler, ResourceBundle bundle, int id, int ordinal, int priority) {
       super(bundle, id, ordinal, priority);
       if (handler == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._handler = handler;
@@ -19,7 +19,7 @@ public class MenuItemCallback extends MenuItem {
    public MenuItemCallback(MenuHandler handler, String text, int ordinal, int priority) {
       super(text, ordinal, priority);
       if (handler == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._handler = handler;
@@ -27,7 +27,7 @@ public class MenuItemCallback extends MenuItem {
 
    public static void add(Menu menu, MenuHandler handler, ResourceBundle bundle, int[] data) {
       if (data.length % 3 != 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int end = data.length;

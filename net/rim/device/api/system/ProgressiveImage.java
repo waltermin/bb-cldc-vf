@@ -81,7 +81,7 @@ public class ProgressiveImage extends EncodedImage {
    @Override
    public int getBitmapType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 2) == 0 && super._frameInfo[frameIndex].isMonochrome ? Bitmap.DEFAULT_TYPE & 128 | 0 | 1 : Bitmap.DEFAULT_TYPE;
       }
@@ -90,7 +90,7 @@ public class ProgressiveImage extends EncodedImage {
    @Override
    public int getAlphaType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 1) != 0 && this.getFrameTransparency(frameIndex) ? Bitmap.DEFAULT_TYPE & 128 | 0 | 1 : 0;
       }
@@ -103,17 +103,17 @@ public class ProgressiveImage extends EncodedImage {
          int alphaType = this.getAlphaType(frameIndex);
          int width = this.getFrameWidth(frameIndex);
          int height = this.getFrameHeight(frameIndex);
-         Bitmap bitmap = (Bitmap)(new Object(this.getBitmapType(frameIndex), width, height, null, readonly, false));
+         Bitmap bitmap = new Bitmap(this.getBitmapType(frameIndex), width, height, null, readonly, false);
          Bitmap alpha = null;
          if (alphaType != 0) {
-            alpha = (Bitmap)(new Object(alphaType, width, height, null, readonly, false));
+            alpha = new Bitmap(alphaType, width, height, null, readonly, false);
          }
 
          decodeBitmaps(bitmap, alpha, super._data, super._offset, super._length, frameIndex, super._scaleX, super._scaleY, super._decodeMode);
          bitmap.setAlphaDirect(alpha);
          return bitmap;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

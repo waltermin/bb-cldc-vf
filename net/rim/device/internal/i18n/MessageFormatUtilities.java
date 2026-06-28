@@ -14,12 +14,12 @@ public final class MessageFormatUtilities {
       byte[] attributes = new byte[0];
       Font[] fonts = new Font[0];
       String message = getParametersForBoldArgumentField(pattern, arguments, offsets, attributes, fonts);
-      return (RichTextField)(new Object(message, offsets, attributes, fonts, richTextStyle));
+      return new RichTextField(message, offsets, attributes, fonts, richTextStyle);
    }
 
    public static final String getParametersForBoldArgumentField(String pattern, String[] arguments, int[] offsets, byte[] attributes, Font[] fonts) {
       if (fonts == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Array.resize(fonts, 2);

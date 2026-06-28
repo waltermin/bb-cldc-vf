@@ -8,7 +8,7 @@ public final class ImageBitmap implements Image {
 
    public static final Image create(Bitmap bitmap) {
       if (bitmap == null) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return new ImageBitmap(bitmap);
       }

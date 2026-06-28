@@ -69,7 +69,7 @@ public final class DRMServices {
 
    private static final byte[] getHash(byte[] data) {
       if (data != null) {
-         SHA1Digest digest = (SHA1Digest)(new Object());
+         SHA1Digest digest = new SHA1Digest();
          digest.update(data);
          data = digest.getDigest();
       }

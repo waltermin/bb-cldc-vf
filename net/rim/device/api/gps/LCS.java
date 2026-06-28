@@ -2,7 +2,6 @@ package net.rim.device.api.gps;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.internal.system.EventDispatchManager;
-import net.rim.device.internal.system.EventDispatcher;
 
 public final class LCS {
    public static final int LCS_NOTIFICATION_ONLY;
@@ -13,7 +12,7 @@ public final class LCS {
       EventDispatchManager dispatchManager = EventDispatchManager.getInstance();
       synchronized (dispatchManager) {
          if (dispatchManager.getDispatcher(23) == null) {
-            dispatchManager.setDispatcher(23, (EventDispatcher)(new Object()));
+            dispatchManager.setDispatcher(23, new GPSEventDispatcher());
          }
       }
 

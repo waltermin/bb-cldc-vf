@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import net.rim.device.api.util.Arrays;
 
 class Alert$MidiListener implements AlertListener2 {
@@ -11,7 +12,7 @@ class Alert$MidiListener implements AlertListener2 {
    }
 
    private synchronized int midiStart(AlertListener2 listener, int ret) {
-      Arrays.add(this._midiListeners, listener == null ? null : new Object(listener));
+      Arrays.add(this._midiListeners, listener == null ? null : new WeakReference(listener));
       return ret;
    }
 

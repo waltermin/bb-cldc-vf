@@ -89,7 +89,7 @@ public final class NumberUtilities {
    }
 
    public static final String toString(int num, int radix, int minWidth) {
-      StringBuffer strBuf = (StringBuffer)(new Object(Math.max(10, minWidth)));
+      StringBuffer strBuf = new StringBuffer(Math.max(10, minWidth));
       appendNumber(strBuf, num, radix, minWidth);
       return strBuf.toString();
    }
@@ -109,7 +109,7 @@ public final class NumberUtilities {
    }
 
    public static final String toString(long num, int radix, int minWidth) {
-      StringBuffer strBuf = (StringBuffer)(new Object(Math.max(20, minWidth)));
+      StringBuffer strBuf = new StringBuffer(Math.max(20, minWidth));
       appendNumber(strBuf, num, radix, minWidth);
       return strBuf.toString();
    }
@@ -152,7 +152,7 @@ public final class NumberUtilities {
          case 'f':
             return dig - 97 + 10;
          default:
-            throw new Object();
+            throw new NumberFormatException();
       }
    }
 

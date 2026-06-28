@@ -10,7 +10,6 @@ import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.api.synchronization.SyncObject;
 import net.rim.device.api.synchronization.UIDGenerator;
 import net.rim.device.api.system.PersistentContent;
-import net.rim.device.api.system.PersistentContentListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.Persistable;
@@ -74,7 +73,7 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
          this._expireTime = expireTime;
          this._enterpriseClassKey = enterpriseClassKey;
       } catch (IOException e) {
-         throw new Object();
+         throw new CryptoBlockException();
       }
    }
 
@@ -184,7 +183,7 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
    }
 
    public static final void registerPersistentContentListener() {
-      PersistentContent.addListener((PersistentContentListener)(new Object(null)));
+      PersistentContent.addListener(new CryptoBlock$CryptoBlockKey$MyPersistentContentListener(null));
    }
 
    CryptoBlock$CryptoBlockKey(String name, String id, byte algorithm, int uid, int keyLength, byte[] data, long expireTime, boolean enterpriseClassKey) {

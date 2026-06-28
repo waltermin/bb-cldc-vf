@@ -3,7 +3,7 @@ package net.rim.device.api.i18n;
 import net.rim.device.api.util.IntHashtable;
 
 public class HashResourceBundle extends ResourceBundle {
-   private IntHashtable _contents = (IntHashtable)(new Object());
+   private IntHashtable _contents = new IntHashtable();
 
    public HashResourceBundle(Locale locale) {
       super(locale);

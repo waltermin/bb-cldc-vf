@@ -8,10 +8,10 @@ import net.rim.device.api.util.LongHashtable;
 import net.rim.device.internal.proxy.Proxy;
 
 public final class DeviceOptions implements GlobalEventListener {
-   private Vector _legacyListeners = (Vector)(new Object());
-   private Vector _providers = (Vector)(new Object());
+   private Vector _legacyListeners = new Vector();
+   private Vector _providers = new Vector();
    private OptionsProviderChangeListener _listener;
-   private LongHashtable _globalEventListeners = (LongHashtable)(new Object(9));
+   private LongHashtable _globalEventListeners = new LongHashtable(9);
    private static final long ID;
    private static final int INITIAL_GLOBAL_EVENT_LISTENER_COUNT;
    private static DeviceOptions _instance;

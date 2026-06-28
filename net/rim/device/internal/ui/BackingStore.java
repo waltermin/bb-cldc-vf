@@ -10,8 +10,8 @@ public class BackingStore {
    private boolean _transparency;
    private Bitmap _backBuffer;
    private Bitmap _frontBuffer;
-   private XYRect _dirty = (XYRect)(new Object(0, 0, 0, 0));
-   private XYRect _totalDirty = (XYRect)(new Object(0, 0, 0, 0));
+   private XYRect _dirty = new XYRect(0, 0, 0, 0);
+   private XYRect _totalDirty = new XYRect(0, 0, 0, 0);
 
    public BackingStore(int width, int height, boolean transparency) {
       this._width = width;
@@ -21,14 +21,14 @@ public class BackingStore {
 
    public void cleanBackingStore() {
       if (this._backBuffer != null) {
-         Graphics cleanGraphics = (Graphics)(new Object(this._backBuffer));
+         Graphics cleanGraphics = new Graphics(this._backBuffer);
          cleanGraphics.setGlobalAlpha(0);
          cleanGraphics.setBackgroundColor(0);
          cleanGraphics.clear();
       }
 
       if (this._frontBuffer != null) {
-         Graphics cleanGraphics = (Graphics)(new Object(this._frontBuffer));
+         Graphics cleanGraphics = new Graphics(this._frontBuffer);
          cleanGraphics.setGlobalAlpha(0);
          cleanGraphics.setBackgroundColor(0);
          cleanGraphics.clear();
@@ -69,21 +69,21 @@ public class BackingStore {
             }
          }
 
-         boolean var5 = false /* VF: Semaphore variable */;
+         boolean var7 = false /* VF: Semaphore variable */;
 
          try {
-            var5 = true;
+            var7 = true;
             synchronized (this._frontBuffer) {
-               Graphics graphics = (Graphics)(new Object(this._frontBuffer));
+               Graphics graphics = new Graphics(this._frontBuffer);
                graphics.setGlobalAlpha(0);
                graphics.clear(this._dirty.x, this._dirty.y, this._dirty.width, this._dirty.height);
                graphics.rop(-97, this._dirty.x, this._dirty.y, this._dirty.width, this._dirty.height, this._backBuffer, this._dirty.x, this._dirty.y);
             }
 
             this._totalDirty.unionNoEmpty(this._dirty);
-            var5 = false;
+            var7 = false;
          } finally {
-            if (var5) {
+            if (var7) {
                this._dirty.set(0, 0, 0, 0);
             }
          }

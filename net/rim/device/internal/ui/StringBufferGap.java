@@ -33,7 +33,7 @@ public final class StringBufferGap implements AbstractString {
 
    public final void delete(int count) {
       if (count < 0) {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       }
 
       count = Math.min(this._gapStart, count);

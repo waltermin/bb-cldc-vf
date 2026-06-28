@@ -19,7 +19,7 @@ final class Display$CallSeriallyQueue extends Vector implements Runnable {
 
       try {
          r = (Runnable)this.elementAt(0);
-      } catch (Exception var7) {
+      } catch (Exception var9) {
       } finally {
          if (r == null) {
             return;

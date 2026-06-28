@@ -18,7 +18,7 @@ import net.rim.device.api.util.DataBuffer;
 
 final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics, SyncConverter, OTASyncCapable, CollectionEventSource, Runnable {
    private UserPermissions _userPermissions;
-   private CollectionListenerManager _collectionListenerManager = (CollectionListenerManager)(new Object());
+   private CollectionListenerManager _collectionListenerManager = new CollectionListenerManager();
    private SyncCollectionSchema _schema;
    private static final int USR_RESET_INTERVAL;
    private static final int DEFAULT_RECORD_TYPE;
@@ -55,7 +55,7 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    @Override
    public final boolean removeSyncObject(SyncObject object) {
-      if (object instanceof Object && this._userPermissions.getStorage() != null) {
+      if (object instanceof UserSetting && this._userPermissions.getStorage() != null) {
          UserSetting element = (UserSetting)object;
          if (!element.hashEquals(ApplicationControlConstants.EMPTY_HASH)) {
             if (element.hashEquals(ApplicationControlConstants.FILLED_HASH)) {
@@ -239,7 +239,7 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
                }
             }
 
-            return (SyncObject)(new Object(hash, permissions, dontPrompt, isSet, uid));
+            return new UserSetting(hash, permissions, dontPrompt, isSet, uid);
          } else {
             return null;
          }
@@ -260,7 +260,7 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    UserSettingsSync(UserPermissions userPermissions) {
       this._userPermissions = userPermissions;
-      this._schema = (SyncCollectionSchema)(new Object());
+      this._schema = new SyncCollectionSchema();
       this._schema.setDefaultRecordType(1);
       this._schema.setKeyFieldIds(1, KEY_FIELD_IDS);
    }

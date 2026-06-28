@@ -11,7 +11,7 @@ public class CodeUpgrade {
       synchronized (appRegistry) {
          IntHashtable ht = (IntHashtable)appRegistry.get(-4292848197358216020L);
          if (ht == null) {
-            ht = (IntHashtable)(new Object());
+            ht = new IntHashtable();
             appRegistry.put(-4292848197358216020L, ht);
          }
 

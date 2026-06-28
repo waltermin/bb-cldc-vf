@@ -157,7 +157,7 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    public final void setNativeSocketProcess() {
       synchronized (this._processes) {
          if (this._nativeSocketProcess != null) {
-            throw new Object();
+            throw new RuntimeException();
          }
 
          this._nativeSocketProcess = (ApplicationProcess)Process.currentProcess();
@@ -571,7 +571,7 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
 
             try {
                this._processes.wait();
-            } catch (InterruptedException var3) {
+            } catch (InterruptedException var4) {
             }
          }
       }
@@ -650,14 +650,14 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
 
    ApplicationManagerImpl() {
       this._applicationRegistry = new ApplicationRegistry();
-      this._eventLogger = (EventLogger)(new Object());
+      this._eventLogger = new EventLogger();
       this._processes = new ApplicationManagerImpl$ApplicationProcessContainer();
-      this._scheduledApps = (Vector)(new Object());
+      this._scheduledApps = new Vector();
       this._thisProcess = Process.currentProcess();
-      this._switchForegroundMessage = (Message)(new Object(0, 12));
-      this._switchBackgroundMessage = (Message)(new Object(0, 13));
-      this._refreshDisplayMessage = (Message)(new Object(0, 3));
-      this._globalEventMessage = (Message)(new Object(32, 0));
+      this._switchForegroundMessage = new Message(0, 12);
+      this._switchBackgroundMessage = new Message(0, 13);
+      this._refreshDisplayMessage = new Message(0, 3);
+      this._globalEventMessage = new Message(32, 0);
       this._eventDispatchManager = EventDispatchManager.getInstance();
       if (!InternalServices.isDateTimeValid()) {
          this._dateTimeWasValidOnStartup = false;

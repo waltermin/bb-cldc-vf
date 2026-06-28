@@ -23,7 +23,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    private Bitmap _image;
    private int _iconWidth;
    private int _iconHeight;
-   private TextRect _text = (TextRect)(new Object(this));
+   private TextRect _text = new TextRect(this);
    private static Tag TAG;
    private static final char CHECKED;
    private static final char UNCHECKED;
@@ -129,7 +129,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
       if (this.isEditable() && key == ' ') {
          this.toggle();
          if (Ui.isTTSEnabled()) {
-            super.accessibleEventOccurred(1, new Object(2), new Object(64), this);
+            super.accessibleEventOccurred(1, new Integer(2), new Integer(64), this);
          }
 
          return true;
@@ -292,7 +292,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    @Override
    protected boolean trackwheelClick(int status, int time) {
       if (Ui.isTTSEnabled()) {
-         super.accessibleEventOccurred(1, new Object(2), new Object(64), this);
+         super.accessibleEventOccurred(1, new Integer(2), new Integer(64), this);
       }
 
       if (this.isStyle(1073741824) && this.isEditable()) {

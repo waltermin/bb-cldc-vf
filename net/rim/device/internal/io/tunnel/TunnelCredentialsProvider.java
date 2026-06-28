@@ -26,7 +26,7 @@ public final class TunnelCredentialsProvider implements GlobalEventListener {
    private TunnelCredentialsProvider() {
       this._tunnelCredentials = (TunnelCredentials)this._persistentObject.getContents();
       if (this._tunnelCredentials == null) {
-         this._tunnelCredentials = (TunnelCredentials)(new Object(true, true, true));
+         this._tunnelCredentials = new TunnelCredentials(true, true, true);
          this._persistentObject.setContents(this._tunnelCredentials, 51);
          this._persistentObject.commit();
       }
@@ -82,7 +82,7 @@ public final class TunnelCredentialsProvider implements GlobalEventListener {
                this._persistentObject.commit();
             }
          } else {
-            TunnelCredentials tunnelCredentials = (TunnelCredentials)(new Object(true, true, false));
+            TunnelCredentials tunnelCredentials = new TunnelCredentials(true, true, false);
             synchronized (this) {
                this._tunnelCredentials = tunnelCredentials;
                this._persistentObject.setContents(this._tunnelCredentials, 51);

@@ -60,8 +60,7 @@ public class MediaPlayer implements MediaEventListener {
          if (this._mediaHandle != -1 && this._screenBitmap != null) {
             Bitmap var10000;
             try {
-               var10000 = ((Bitmap)(new Object(197, this._width, this._height)))
-                  .setRGB565(this._screenBitmap, 0, this._width << 1, 0, 0, this._width, this._height);
+               var10000 = new Bitmap(197, this._width, this._height).setRGB565(this._screenBitmap, 0, this._width << 1, 0, 0, this._width, this._height);
             } catch (Exception e) {
                return null;
             }
@@ -118,7 +117,7 @@ public class MediaPlayer implements MediaEventListener {
          if (this._streamingSession != null) {
             try {
                this._streamingSession.unregisterMediaPlayer(this);
-            } catch (IllegalStateException var3) {
+            } catch (IllegalStateException var4) {
             }
          }
 
@@ -410,7 +409,7 @@ public class MediaPlayer implements MediaEventListener {
 
          try {
             this._myLock.wait(1000);
-         } catch (Exception var3) {
+         } catch (Exception var4) {
          }
       }
    }

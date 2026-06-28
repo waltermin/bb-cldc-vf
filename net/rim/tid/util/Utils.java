@@ -164,7 +164,7 @@ public class Utils {
    }
 
    public static Locale[] getAvailableInputLocales(boolean reorder) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    private static boolean localesEqual(Locale first, Locale second) {

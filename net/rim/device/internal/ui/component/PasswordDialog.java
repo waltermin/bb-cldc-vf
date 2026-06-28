@@ -4,6 +4,7 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
@@ -82,18 +83,18 @@ public class PasswordDialog extends PopupDialog implements FieldChangeListener {
          vifm.add(layout);
       }
 
-      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
-      this._ok = (ButtonField)(new Object(CommonResource.getString(100)));
+      HorizontalFieldManager buttonManager = new HorizontalFieldManager(12884901888L);
+      this._ok = new ButtonField(CommonResource.getString(100));
       this._ok.setChangeListener(this);
       buttonManager.add(this._ok);
-      this._cancel = (ButtonField)(new Object(CommonResource.getString(10005)));
+      this._cancel = new ButtonField(CommonResource.getString(10005));
       this._cancel.setChangeListener(this);
       buttonManager.add(this._cancel);
       vifm.add(buttonManager);
    }
 
    private BasicEditField createPasswordEditField(boolean revealPassword, int maxPasswordLength) {
-      return (BasicEditField)(revealPassword ? new Object(null, null, maxPasswordLength, 1073741824) : new Object(null, null, maxPasswordLength, 1073741824));
+      return revealPassword ? new BasicEditField(null, null, maxPasswordLength, 1073741824) : new PasswordEditField(null, null, maxPasswordLength, 1073741824);
    }
 
    public PasswordDialog(String passwordLabel) {

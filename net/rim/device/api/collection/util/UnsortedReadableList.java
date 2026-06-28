@@ -23,7 +23,7 @@ public class UnsortedReadableList implements ChainableCollection, LoadableCollec
       if (count <= elements.length && count >= 0) {
          this._count = count;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -95,7 +95,7 @@ public class UnsortedReadableList implements ChainableCollection, LoadableCollec
    @Override
    public Object getAt(int index) {
       if (index >= this._count) {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       } else {
          return this._elements[index];
       }

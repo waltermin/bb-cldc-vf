@@ -7,7 +7,7 @@ import net.rim.device.api.util.LongHashtable;
 
 public class FontFamily {
    private String _name;
-   private LongHashtable _fontsUsed = (LongHashtable)(new Object());
+   private LongHashtable _fontsUsed = new LongHashtable();
    private Font[] _fonts;
    private int[] _heights;
    private int _type;
@@ -27,7 +27,7 @@ public class FontFamily {
    public static FontFamily forName(String name) {
       FontFamily f = FontRegistry.get(name);
       if (f == null) {
-         throw new Object();
+         throw new ClassNotFoundException();
       } else {
          return f;
       }

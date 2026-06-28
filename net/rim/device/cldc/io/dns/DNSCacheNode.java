@@ -17,7 +17,7 @@ public final class DNSCacheNode {
 
    public DNSCacheNode(String label, DNSCachedRR resource) {
       this._domainLabel = label;
-      this._resources = (Vector)(new Object());
+      this._resources = new Vector();
       this._resources.addElement(resource);
       this._expiryTime = resource.getExpiryTime();
    }
@@ -25,7 +25,7 @@ public final class DNSCacheNode {
    public DNSCacheNode(String label, DNSCachedRR[] resources) {
       this._domainLabel = label;
       if (resources != null && resources.length > 0) {
-         this._resources = (Vector)(new Object(resources.length));
+         this._resources = new Vector(resources.length);
          this._expiryTime = resources[0].getExpiryTime();
 
          for (int i = 0; i < resources.length; i++) {
@@ -48,7 +48,7 @@ public final class DNSCacheNode {
    public final void addToResources(DNSCachedRR[] resources) {
       if (resources.length != 0) {
          if (this._resources == null) {
-            this._resources = (Vector)(new Object(resources.length));
+            this._resources = new Vector(resources.length);
             this._expiryTime = resources[0].getExpiryTime();
             this._nameError = false;
          } else {
@@ -64,7 +64,7 @@ public final class DNSCacheNode {
 
    public final int setResources(DNSCachedRR resource) {
       int size = this._resources == null ? 0 : this._resources.size();
-      this._resources = (Vector)(new Object());
+      this._resources = new Vector();
       this._resources.addElement(resource);
       this._expiryTime = resource.getExpiryTime();
       this._nameError = false;
@@ -74,7 +74,7 @@ public final class DNSCacheNode {
    public final int setResources(DNSCachedRR[] resources) {
       int size = this._resources == null ? 0 : this._resources.size();
       if (resources.length > 0) {
-         this._resources = (Vector)(new Object(resources.length));
+         this._resources = new Vector(resources.length);
          this._expiryTime = resources[0].getExpiryTime();
 
          for (int i = 0; i < resources.length; i++) {
@@ -127,7 +127,7 @@ public final class DNSCacheNode {
          return null;
       }
 
-      Vector matched = (Vector)(new Object(this._resources.size()));
+      Vector matched = new Vector(this._resources.size());
 
       for (int i = this._resources.size() - 1; i >= 0; i--) {
          DNSCachedRR current = (DNSCachedRR)this._resources.elementAt(i);

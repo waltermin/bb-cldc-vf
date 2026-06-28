@@ -220,11 +220,22 @@ public final class Locale {
    }
 
    public final String getCountry() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String country = EMPTY;
+      if ((this._code & 65535) != 0) {
+         country = EMPTY + (char)(this._code >> 8 & 0xFF) + (char)(this._code >> 0 & 0xFF);
+      }
+
+      return country;
    }
 
    public static final String getDefaultCountry() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String country = EMPTY;
+      int code = getDefaultLanguageLocale();
+      if ((code & 65535) != 0) {
+         country = EMPTY + (char)(code >> 8 & 0xFF) + (char)(code >> 0 & 0xFF);
+      }
+
+      return country;
    }
 
    public static final Locale getDefault() {
@@ -382,7 +393,12 @@ public final class Locale {
    }
 
    public final String getLanguage() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String language = EMPTY;
+      if ((this._code & -65536) != 0) {
+         language = EMPTY + (char)(this._code >> 24 & 0xFF) + (char)(this._code >> 16 & 0xFF);
+      }
+
+      return language;
    }
 
    final Locale getParent() {

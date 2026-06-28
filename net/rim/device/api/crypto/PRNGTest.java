@@ -13,7 +13,7 @@ public final class PRNGTest {
 
    public static final int testPRNG(PseudoRandomSource source) {
       if (source == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return testForRandomness(source.getBytes(2500));
       }

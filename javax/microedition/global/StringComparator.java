@@ -22,7 +22,7 @@ public final class StringComparator {
 
    public final int compare(String s1, String s2) {
       if (s1 == null || s2 == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._locale == null) {

@@ -9,7 +9,7 @@ public final class Double {
    public static final double MIN_VALUE;
 
    public static final String toString(double d) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      return new FloatingDecimal(d).toJavaFormatString();
    }
 
    public static final Double valueOf(String s) {

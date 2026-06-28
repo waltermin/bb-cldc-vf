@@ -21,7 +21,7 @@ public class DateField extends Item {
    private int toRimMode(int mode) {
       switch (mode) {
          case 0:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 1:
          default:
             return 16;
@@ -38,7 +38,7 @@ public class DateField extends Item {
 
    public DateField(String label, int mode, TimeZone timeZone) {
       synchronized (Application.getEventLock()) {
-         this._field = (net.rim.device.api.ui.component.DateField)(new Object(label, 0, this.toRimMode(mode)));
+         this._field = new net.rim.device.api.ui.component.DateField(label, 0, this.toRimMode(mode));
          this._field.setCookie(this);
          this.setInputMode(mode);
          if (timeZone != null) {
@@ -78,16 +78,16 @@ public class DateField extends Item {
                   return null;
                }
             case 3: {
-               CalendarExtensions cal = this._calendar;
+               CalendarExtensions cal = (CalendarExtensions)this._calendar;
                this._calendar.setTimeZone(this._field.getTimeZone());
-               ((CalendarExtensions)cal).setTimeLong(millis);
+               cal.setTimeLong(millis);
                this._calendar.set(13, 0);
                this._calendar.set(14, 0);
-               millis = ((CalendarExtensions)cal).getTimeLong();
+               millis = cal.getTimeLong();
             }
          }
 
-         return (Date)(new Object(millis));
+         return new Date(millis);
       }
    }
 
@@ -111,7 +111,7 @@ public class DateField extends Item {
       synchronized (Application.getEventLock()) {
          switch (mode) {
             case 0:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 1:
             default:
                this._field.setFormat(DateFormat.getInstance(48));

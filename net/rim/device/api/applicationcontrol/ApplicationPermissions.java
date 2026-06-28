@@ -5,7 +5,7 @@ import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntIntHashtable;
 
 public final class ApplicationPermissions {
-   private IntIntHashtable _permissions = (IntIntHashtable)(new Object());
+   private IntIntHashtable _permissions = new IntIntHashtable();
    public static final int PERMISSION_AUTHENTICATOR_API;
    public static final int PERMISSION_BLUETOOTH;
    public static final int PERMISSION_BROWSER_FILTER;
@@ -40,7 +40,7 @@ public final class ApplicationPermissions {
 
    public final void addPermission(int permission, int value) {
       if (!this.isValidPermission(permission)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._permissions.put(permission, value);
@@ -48,20 +48,20 @@ public final class ApplicationPermissions {
 
    public final int getPermission(int permission) {
       if (!this.isValidPermission(permission)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          int result = this._permissions.get(permission);
          if (result != -1) {
             return result;
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
 
    public final int getPermissionInternal(int permission) {
       if (!this.isValidPermission(permission)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       int result = this._permissions.get(permission);
@@ -70,7 +70,7 @@ public final class ApplicationPermissions {
 
    public final int[] difference(ApplicationPermissions other) {
       if (other == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       int[] differenceSet = new int[0];
@@ -101,7 +101,7 @@ public final class ApplicationPermissions {
 
    public final boolean containsPermissionKey(int permission) {
       if (!this.isValidPermission(permission)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return this._permissions.containsKey(permission);
       }

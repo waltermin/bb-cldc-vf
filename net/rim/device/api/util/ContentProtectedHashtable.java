@@ -31,7 +31,7 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
 
    public ContentProtectedHashtable(Hashtable hashtable, boolean protect) {
       if (hashtable == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       Enumeration enumeration = hashtable.keys();
@@ -53,7 +53,7 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
       }
 
       if (value == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       Enumeration enumeration = super.elements();
@@ -72,7 +72,7 @@ public class ContentProtectedHashtable extends Hashtable implements Persistable,
    public synchronized Enumeration elements() {
       Enumeration enumeration = super.elements();
       if (this._protected) {
-         enumeration = (Enumeration)(new Object(enumeration));
+         enumeration = new ContentProtectedEnumeration(enumeration);
       }
 
       return enumeration;

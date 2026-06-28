@@ -49,7 +49,7 @@ public final class ITPolicyInternal {
    private static final boolean itadminDataIsEnabled(int flag) {
       byte[] itadminData = NvStore.readData(5);
       if (itadminData != null && itadminData.length > 0) {
-         DataBuffer data = (DataBuffer)(new Object(itadminData, 0, itadminData.length, true));
+         DataBuffer data = new DataBuffer(itadminData, 0, itadminData.length, true);
          data.skipBytes(5);
 
          try {
@@ -112,7 +112,7 @@ public final class ITPolicyInternal {
       byte[][][] secondaryKeys = getSecondaryPublicKeys();
       byte[] policyWithoutSignature = null;
       byte[] signedPolicyWithoutVersionAndSignature = null;
-      DataBuffer policyBuffer = (DataBuffer)(new Object(policy, 0, policy.length, true));
+      DataBuffer policyBuffer = new DataBuffer(policy, 0, policy.length, true);
 
       try {
          policyBuffer.skipBytes(1);
@@ -123,7 +123,7 @@ public final class ITPolicyInternal {
                   switch (tag) {
                      case 251:
                         byte[] secondarySignatures = TLEUtilities.readDataField(policyBuffer, 251);
-                        DataBuffer signaturesBuffer = (DataBuffer)(new Object(secondarySignatures, 0, secondarySignatures.length, true));
+                        DataBuffer signaturesBuffer = new DataBuffer(secondarySignatures, 0, secondarySignatures.length, true);
 
                         while (!signaturesBuffer.eof()) {
                            int subTag = TLEUtilities.getType(signaturesBuffer);
@@ -225,8 +225,8 @@ public final class ITPolicyInternal {
    }
 
    private static final void setProcessedItadminTimeStamp() {
-      DataBuffer buff = (DataBuffer)(new Object(true));
-      DataBuffer itadminStatusBuffer = (DataBuffer)(new Object(true));
+      DataBuffer buff = new DataBuffer(true);
+      DataBuffer itadminStatusBuffer = new DataBuffer(true);
       buff.writeLong(System.currentTimeMillis());
       TLEUtilities.writeDataField(itadminStatusBuffer, 1, buff.toArray());
       NvStore.writeData(7, itadminStatusBuffer.getArray());
@@ -237,7 +237,7 @@ public final class ITPolicyInternal {
       DataBuffer itadminStatusBuffer = null;
       byte[] itadminStatus = NvStore.readData(7);
       if (itadminStatus != null) {
-         itadminStatusBuffer = (DataBuffer)(new Object(true));
+         itadminStatusBuffer = new DataBuffer(true);
          itadminStatusBuffer.setData(itadminStatus, 0, itadminStatus.length, true);
       }
 
@@ -266,7 +266,7 @@ public final class ITPolicyInternal {
       int itAdminTimeStamp = 0;
       byte[] itadminData = NvStore.readData(5);
       if (itadminData != null) {
-         DataBuffer itadminDataBuffer = (DataBuffer)(new Object(itadminData, 0, itadminData.length, true));
+         DataBuffer itadminDataBuffer = new DataBuffer(itadminData, 0, itadminData.length, true);
 
          try {
             itadminDataBuffer.skipBytes(1);
@@ -321,8 +321,8 @@ public final class ITPolicyInternal {
    }
 
    private static final void scrubWipeableBlob(int group, DataBuffer scrubbedITPolicy, byte[] buffer, int offset, int length) {
-      DataBuffer blobToScrub = (DataBuffer)(new Object(buffer, offset, length, true));
-      DataBuffer persistableSettings = (DataBuffer)(new Object());
+      DataBuffer blobToScrub = new DataBuffer(buffer, offset, length, true);
+      DataBuffer persistableSettings = new DataBuffer();
 
       try {
          blobToScrub.readByte();
@@ -376,7 +376,7 @@ public final class ITPolicyInternal {
 
    public static final Byte readByteInternal(byte[] data, int group, int type) {
       if (data != null) {
-         DataBuffer policyBuffer = (DataBuffer)(new Object(data, 0, data.length, true));
+         DataBuffer policyBuffer = new DataBuffer(data, 0, data.length, true);
 
          try {
             if (TLEUtilities.findType(policyBuffer, group)) {
@@ -392,13 +392,13 @@ public final class ITPolicyInternal {
 
    public static final Byte readByte(byte[] groupData, int id) {
       if (groupData != null) {
-         DataBuffer groupBuffer = (DataBuffer)(new Object(groupData, 0, groupData.length, true));
+         DataBuffer groupBuffer = new DataBuffer(groupData, 0, groupData.length, true);
 
          try {
             if (TLEUtilities.findType(groupBuffer, id)) {
                byte[] field = TLEUtilities.readDataField(groupBuffer, id);
                if (field != null && field.length > 0) {
-                  return (Byte)(new Object(field[0]));
+                  return new Byte(field[0]);
                }
             }
          } catch (Exception var4) {
@@ -410,7 +410,7 @@ public final class ITPolicyInternal {
 
    public static final String readStringInternal(byte[] data, int group, int id) {
       if (data != null) {
-         DataBuffer policyBuffer = (DataBuffer)(new Object(data, 0, data.length, true));
+         DataBuffer policyBuffer = new DataBuffer(data, 0, data.length, true);
 
          try {
             if (TLEUtilities.findType(policyBuffer, group)) {
@@ -426,7 +426,7 @@ public final class ITPolicyInternal {
 
    public static final String readString(byte[] groupData, int id) {
       if (groupData != null) {
-         DataBuffer groupBuffer = (DataBuffer)(new Object(groupData, 0, groupData.length, true));
+         DataBuffer groupBuffer = new DataBuffer(groupData, 0, groupData.length, true);
 
          try {
             if (TLEUtilities.findType(groupBuffer, id)) {
@@ -441,7 +441,7 @@ public final class ITPolicyInternal {
 
    public static final Integer readIntegerInternal(byte[] data, int group, int id) {
       if (data != null) {
-         DataBuffer policyBuffer = (DataBuffer)(new Object(data, 0, data.length, true));
+         DataBuffer policyBuffer = new DataBuffer(data, 0, data.length, true);
 
          try {
             if (TLEUtilities.findType(policyBuffer, group)) {
@@ -457,11 +457,11 @@ public final class ITPolicyInternal {
 
    public static final Integer readInteger(byte[] groupData, int id) {
       if (groupData != null) {
-         DataBuffer groupBuffer = (DataBuffer)(new Object(groupData, 0, groupData.length, true));
+         DataBuffer groupBuffer = new DataBuffer(groupData, 0, groupData.length, true);
 
          try {
             if (TLEUtilities.findType(groupBuffer, id)) {
-               return (Integer)(new Object(TLEUtilities.readIntegerField(groupBuffer, id)));
+               return new Integer(TLEUtilities.readIntegerField(groupBuffer, id));
             }
          } catch (Exception var4) {
          }
@@ -472,7 +472,7 @@ public final class ITPolicyInternal {
 
    public static final byte[] readByteArrayInternal(byte[] data, int group, int id) {
       if (data != null) {
-         DataBuffer policyBuffer = (DataBuffer)(new Object(data, 0, data.length, true));
+         DataBuffer policyBuffer = new DataBuffer(data, 0, data.length, true);
 
          try {
             if (TLEUtilities.findType(policyBuffer, group)) {
@@ -488,7 +488,7 @@ public final class ITPolicyInternal {
 
    public static final byte[] readByteArray(byte[] groupData, int id) {
       if (groupData != null) {
-         DataBuffer groupBuffer = (DataBuffer)(new Object(groupData, 0, groupData.length, true));
+         DataBuffer groupBuffer = new DataBuffer(groupData, 0, groupData.length, true);
 
          try {
             if (TLEUtilities.findType(groupBuffer, id)) {

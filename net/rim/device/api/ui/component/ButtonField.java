@@ -16,6 +16,8 @@ import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.StringProvider;
 import net.rim.device.internal.ui.Border;
+import net.rim.device.internal.ui.BorderRounded;
+import net.rim.device.internal.ui.BorderTransparent;
 import net.rim.device.internal.ui.Image;
 
 public class ButtonField extends Field implements DrawStyle, FieldLabelProvider {
@@ -518,7 +520,7 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
       super(verifyStyle(style));
       this.setTag(TAG);
       this._label = label;
-      this._text = (TextRect)(new Object(this));
+      this._text = new TextRect(this);
       this._text.setText(this._label);
       this._text.setStyle(64);
    }
@@ -571,16 +573,16 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
       if (this._borderAll == null) {
          boolean bare = this.isStyle(1024);
          if (bare) {
-            this._borderAll = (Border)(new Object(2, 4, 2, 4));
+            this._borderAll = new BorderTransparent(2, 4, 2, 4);
             this._borderDisabled = this._borderAll;
          } else {
-            this._borderAll = (Border)(new Object(2, 4, 2, 4, 4));
-            this._borderDisabled = (Border)(new Object(2, 4, 2, 4, 6));
+            this._borderAll = new BorderRounded(2, 4, 2, 4, 4);
+            this._borderDisabled = new BorderRounded(2, 4, 2, 4, 6);
          }
 
          int style = 4 | (bare ? 0 : 1);
-         this._borderFocus = (Border)(new Object(2, 4, 2, 4, style));
-         this._borderDisabledFocus = (Border)(new Object(2, 4, 2, 4, style | 1));
+         this._borderFocus = new BorderRounded(2, 4, 2, 4, style);
+         this._borderDisabledFocus = new BorderRounded(2, 4, 2, 4, style | 1);
       }
 
       this.calculateFocusDifference();

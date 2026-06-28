@@ -44,7 +44,7 @@ final class ContentHandlerUtilities {
 
    private static final String getStringValue(String key, Resource resource) {
       byte[] data = resource.getProperty(key);
-      return (String)(data != null ? new Object(data, 2, data.length - 2) : null);
+      return data != null ? new String(data, 2, data.length - 2) : null;
    }
 
    static final String checkURL(String url) {
@@ -64,14 +64,14 @@ final class ContentHandlerUtilities {
          }
 
          if (application == null && descriptors[0] != null) {
-            return (ApplicationDescriptor)(new Object(descriptors[0], new String[]{classname}));
+            return new ApplicationDescriptor(descriptors[0], new String[]{classname});
          }
       } else {
          if (descriptors != null && descriptors.length > 0) {
-            return (ApplicationDescriptor)(new Object(descriptors[0], new String[0]));
+            return new ApplicationDescriptor(descriptors[0], new String[0]);
          }
 
-         application = (ApplicationDescriptor)(new Object(ApplicationDescriptor.currentApplicationDescriptor(), new String[0]));
+         application = new ApplicationDescriptor(ApplicationDescriptor.currentApplicationDescriptor(), new String[0]);
       }
 
       return application;

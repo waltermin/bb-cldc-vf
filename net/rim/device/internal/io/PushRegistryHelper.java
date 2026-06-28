@@ -14,11 +14,11 @@ import net.rim.device.resources.Resource$Internal;
 import net.rim.vm.Process;
 
 public class PushRegistryHelper {
-   private Hashtable _pushRegsitryConnections = (Hashtable)(new Object());
-   public Hashtable _weakreferencemap = (Hashtable)(new Object());
-   public Hashtable _filterMap = (Hashtable)(new Object());
-   public Hashtable _connectionMap = (Hashtable)(new Object());
-   public Hashtable _alarmMap = (Hashtable)(new Object());
+   private Hashtable _pushRegsitryConnections = new Hashtable();
+   public Hashtable _weakreferencemap = new Hashtable();
+   public Hashtable _filterMap = new Hashtable();
+   public Hashtable _connectionMap = new Hashtable();
+   public Hashtable _alarmMap = new Hashtable();
    private static final long ID;
    public static String APPLICATION_DESCRIPTOR_NAME_PUSH_REGISTRY_WORK;
    public static String APPLICATION_DESCRIPTOR_ARG_PUSH_REGISTRY_WORK;
@@ -57,7 +57,7 @@ public class PushRegistryHelper {
       if (resource != null) {
          byte[] data = resource.getProperty(key);
          if (data != null) {
-            return (String)(new Object(data, 2, data.length - 2));
+            return new String(data, 2, data.length - 2);
          }
       }
 
@@ -115,7 +115,7 @@ public class PushRegistryHelper {
       if (permissions != null) {
          URL url;
          try {
-            url = (URL)(new Object(pushURL));
+            url = new URL(pushURL);
          } catch (MalformedURLException e) {
             return false;
          }
@@ -124,7 +124,7 @@ public class PushRegistryHelper {
          int index = Arrays.getIndex(PUSH_TRANSPORTS, scheme);
          if (index > 0) {
             String permission = PUSH_TRANSPORT_PERMISSIONS[index];
-            StringTokenizer stringTokenizer = (StringTokenizer)(new Object(permissions, ','));
+            StringTokenizer stringTokenizer = new StringTokenizer(permissions, ',');
 
             while (stringTokenizer.hasMoreTokens()) {
                String token = stringTokenizer.nextToken().trim();

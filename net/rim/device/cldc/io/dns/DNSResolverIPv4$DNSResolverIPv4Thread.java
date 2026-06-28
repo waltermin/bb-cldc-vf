@@ -9,7 +9,7 @@ class DNSResolverIPv4$DNSResolverIPv4Thread extends Thread {
 
    DNSResolverIPv4$DNSResolverIPv4Thread(DNSResolverIPv4 resolver) {
       this._resolver = resolver;
-      this._queue = (Vector)(new Object());
+      this._queue = new Vector();
    }
 
    public void addRequest(DNSRequest req) {
@@ -29,7 +29,7 @@ class DNSResolverIPv4$DNSResolverIPv4Thread extends Thread {
             while (this._queue.size() == 0) {
                try {
                   this._queue.wait();
-               } catch (InterruptedException var4) {
+               } catch (InterruptedException var5) {
                }
             }
 
@@ -48,10 +48,10 @@ class DNSResolverIPv4$DNSResolverIPv4Thread extends Thread {
             if (req.getListener() != null) {
                req.getListener().DNSEvent(req.getPacketId(), status, null);
             }
-         } catch (Throwable var7) {
+         } catch (Throwable var8) {
          }
 
-         DNSRequest var8 = null;
+         DNSRequest var9 = null;
       }
    }
 }

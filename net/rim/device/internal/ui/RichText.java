@@ -154,7 +154,7 @@ public final class RichText {
 
             return 0;
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       } else {
          return 0;
@@ -179,7 +179,7 @@ public final class RichText {
 
             return rtlCount;
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       } else {
          return 0;

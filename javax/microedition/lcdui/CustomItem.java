@@ -21,7 +21,7 @@ public class CustomItem extends Item {
 
    protected CustomItem(String label) {
       synchronized (Application.getEventLock()) {
-         this._container = (VerticalFieldManager)(new Object(1152921504606846976L));
+         this._container = new VerticalFieldManager(1152921504606846976L);
          this._field = new CustomField(this);
          this._container.setCookie(this);
          this.setLabel(label);

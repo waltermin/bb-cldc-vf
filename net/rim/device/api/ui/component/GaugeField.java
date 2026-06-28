@@ -30,7 +30,7 @@ public class GaugeField extends Field implements FieldLabelProvider {
    private int _barBorderTop = 0;
    private int _barBorderBottom = 0;
    private int _barBorderLeft = 0;
-   private StringBuffer _value = (StringBuffer)(new Object());
+   private StringBuffer _value = new StringBuffer();
    private static Tag TAG;
    private static Tag TAG_FILL;
    private static Tag TAG_BAR;

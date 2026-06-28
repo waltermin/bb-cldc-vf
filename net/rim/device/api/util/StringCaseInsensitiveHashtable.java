@@ -28,11 +28,11 @@ public class StringCaseInsensitiveHashtable implements Persistable {
    }
 
    public synchronized Enumeration keys() {
-      return (Enumeration)(new Object(this._key, this._empty));
+      return new HashtableObjectEnumerator(this._key, this._empty);
    }
 
    public synchronized Enumeration elements() {
-      return (Enumeration)(new Object(this._value, this._empty));
+      return new HashtableObjectEnumerator(this._value, this._empty);
    }
 
    public synchronized boolean contains(Object value) {

@@ -121,7 +121,7 @@ public class Item {
    void setOwner(Screen owner) {
       synchronized (Application.getEventLock()) {
          if (this._owner != null && owner != null) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          this._owner = owner;
@@ -159,11 +159,11 @@ public class Item {
    public void setLayout(int layout) {
       synchronized (Application.getEventLock()) {
          if ((layout & ~VALID_LAYOUT) != 0) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          if (this._owner instanceof Alert) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          this._layoutMode = layout;
@@ -174,7 +174,7 @@ public class Item {
       synchronized (Application.getEventLock()) {
          cmd.getPriority();
          if (this._owner != null && this._owner instanceof Alert) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          this._commands.addCommand(cmd);
@@ -190,7 +190,7 @@ public class Item {
    public void setItemCommandListener(ItemCommandListener l) {
       synchronized (Application.getEventLock()) {
          if (this._owner != null && this._owner instanceof Alert) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          this._itemCommandListener = l;
@@ -234,7 +234,7 @@ public class Item {
    public void setDefaultCommand(Command cmd) {
       synchronized (Application.getEventLock()) {
          if (this._owner != null && this._owner instanceof Alert) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          this._commands.setDefaultCommand(cmd);
@@ -245,7 +245,7 @@ public class Item {
       synchronized (Application.getEventLock()) {
          Form ownerForm = (Form)this._owner;
          if (ownerForm == null) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          ItemStateListener ownerFormISL = ownerForm.getItemStateListener();

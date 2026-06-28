@@ -105,7 +105,7 @@ public final class DNSMessageIPv4Resource {
          case 13:
          case 16:
             int length = this._rdlength;
-            Vector v = (Vector)(new Object());
+            Vector v = new Vector();
 
             while (length > 0) {
                byte[] array = new byte[db.readUnsignedByte()];

@@ -27,8 +27,8 @@ final class UserPermissions {
          synchronized (this._persistentStorage) {
             this._storage = (Vector)this._persistentStorage.getContents();
             if (this._storage == null) {
-               this._storage = (Vector)(new Object());
-               UserSetting defaults = (UserSetting)(new Object(ApplicationControlConstants.EMPTY_HASH, defaultPermissions));
+               this._storage = new Vector();
+               UserSetting defaults = new UserSetting(ApplicationControlConstants.EMPTY_HASH, defaultPermissions);
                this._storage.addElement(defaults);
                this._sync.settingAdded(defaults);
                this._persistentStorage.setContents(this._storage, 51);
@@ -326,13 +326,13 @@ final class UserPermissions {
                UserSetting sus = this.getSetting(sibling);
                if (sus == null) {
                   if (CodeModuleManager.getModuleHash(sibling, hash) && !remove && this.getSetting(hash) == null) {
-                     sus = (UserSetting)(new Object(hash, us.getPermissions(), us.getDontPrompt(), us.getIsSet()));
+                     sus = new UserSetting(hash, us.getPermissions(), us.getDontPrompt(), us.getIsSet());
                      this.putSetting(sibling, sus, false, false);
                   }
                } else if (remove) {
                   ApplicationControlImpl.removeUserSetting(sibling);
                } else {
-                  UserSetting oldUS = (UserSetting)(new Object(sus));
+                  UserSetting oldUS = new UserSetting(sus);
                   this.setPermissions(oldUS, sus, us, false, false);
                }
             }

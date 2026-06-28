@@ -193,7 +193,7 @@ public final class WLAN {
       String macAddress = null;
       if (bssid != null) {
          try {
-            StringBuffer macStringBuffer = (StringBuffer)(new Object(bssid.length * 3));
+            StringBuffer macStringBuffer = new StringBuffer(bssid.length * 3);
 
             for (int i = 0; i < bssid.length; i++) {
                if (macStringBuffer.length() > 1) {
@@ -263,7 +263,7 @@ public final class WLAN {
             return retCode;
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -316,7 +316,7 @@ public final class WLAN {
             return retCode;
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 

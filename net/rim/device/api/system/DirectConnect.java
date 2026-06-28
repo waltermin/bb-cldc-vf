@@ -47,7 +47,7 @@ public final class DirectConnect {
 
    public static final String getUFMI() {
       assertPermission();
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
       sb.append(getId(1));
       sb.append('*');
       sb.append(getId(2));

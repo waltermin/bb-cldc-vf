@@ -1,6 +1,6 @@
 package net.rim.device.api.ui.component;
 
-import net.rim.device.api.ui.text.TextFilter;
+import net.rim.device.api.ui.text.HexadecimalTextFilter;
 import net.rim.device.internal.util.AddressUtilities;
 
 public final class PINAddressEditField extends EditField {
@@ -10,7 +10,7 @@ public final class PINAddressEditField extends EditField {
          super.setText(initialValue);
       }
 
-      super.setFilter((TextFilter)(new Object()));
+      super.setFilter(new HexadecimalTextFilter());
    }
 
    public PINAddressEditField(String label, String initialValue, int maxNumChars) {
@@ -19,7 +19,7 @@ public final class PINAddressEditField extends EditField {
          super.setText(initialValue);
       }
 
-      super.setFilter((TextFilter)(new Object()));
+      super.setFilter(new HexadecimalTextFilter());
    }
 
    @Override

@@ -1,5 +1,6 @@
 package net.rim.device.internal.crypto;
 
+import net.rim.device.api.crypto.CryptoSelfTestError;
 import net.rim.device.api.crypto.SelfTestModule;
 import net.rim.device.internal.i18n.CommonResource;
 
@@ -16,7 +17,7 @@ public final class CryptoBlockSelfTestModule implements SelfTestModule {
             CryptoBlock.selfTest();
             return;
          default:
-            throw new Object();
+            throw new CryptoSelfTestError();
       }
    }
 

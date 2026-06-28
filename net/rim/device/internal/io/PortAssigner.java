@@ -59,11 +59,11 @@ public final class PortAssigner {
             this._protocolType = protocol;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
-      this._apnPortMap = (Hashtable)(new Object(2));
-      this._apnPortMapAux = (Hashtable)(new Object(2));
+      this._apnPortMap = new Hashtable(2);
+      this._apnPortMapAux = new Hashtable(2);
       this._apnName = TunnelCredentialsProvider.getInstance().getApn();
       this._promiscuousApnPortHolder = new PortAssigner$PromiscuousApnPortHolder(this, null);
       EventLogger.register(this._id, str, 2);
@@ -79,7 +79,7 @@ public final class PortAssigner {
             id = -7261558872584336485L;
             break;
          default:
-            throw new Object();
+            throw new IllegalArgumentException();
       }
 
       ApplicationRegistry ar = ApplicationRegistry.getApplicationRegistry();
@@ -93,7 +93,7 @@ public final class PortAssigner {
    }
 
    public final PortAssigner$PortAssignedConnectionString checkPorts(String name) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public final void registerConnection(int port, Object connection) {

@@ -9,8 +9,8 @@ import net.rim.device.internal.system.ApplicationRegistryHashtable;
 import net.rim.vm.Process;
 
 public final class ApplicationRegistry {
-   private ApplicationRegistryHashtable _registry = (ApplicationRegistryHashtable)(new Object(1223));
-   private LongHashtable _monitors = (LongHashtable)(new Object());
+   private ApplicationRegistryHashtable _registry = new ApplicationRegistryHashtable(1223);
+   private LongHashtable _monitors = new LongHashtable();
    private boolean _startupComplete;
    public static final int MAX_WAIT_MILLIS;
    private static final int TYPE_HASHTABLE;
@@ -95,7 +95,7 @@ public final class ApplicationRegistry {
 
          monitor = (Monitor)this._monitors.get(id);
          if (monitor == null) {
-            monitor = (Monitor)(new Object(id));
+            monitor = new Monitor(id);
             this._monitors.put(id, monitor);
          }
       }
@@ -139,22 +139,22 @@ public final class ApplicationRegistry {
          if (obj == null) {
             switch (type) {
                case 0:
-                  throw new Object();
+                  throw new IllegalArgumentException();
                case 1:
                default:
-                  obj = new Object();
+                  obj = new Hashtable();
                   break;
                case 2:
-                  obj = new Object();
+                  obj = new LongHashtable();
                   break;
                case 3:
-                  obj = new Object();
+                  obj = new IntHashtable();
                   break;
                case 4:
-                  obj = new Object();
+                  obj = new Vector();
                   break;
                case 5:
-                  obj = new Object();
+                  obj = new IntVector();
                   break;
                case 6:
                   obj = new Object();

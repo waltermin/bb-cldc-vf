@@ -2,6 +2,7 @@ package net.rim.device.internal.media;
 
 import java.util.Hashtable;
 import javax.microedition.lcdui.List;
+import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.ControlledAccess;
@@ -20,10 +21,9 @@ public class PlayerRegistry {
       String classname = (String)_classnames.get(contentType);
       if (classname != null) {
          try {
-            Player player = (Player)Class.forName(classname).newInstance();
-            return player;
+            return (Player)Class.forName(classname).newInstance();
          } catch (Exception e) {
-            throw new Object(e.getMessage());
+            throw new MediaException(e.getMessage());
          }
       } else {
          return null;

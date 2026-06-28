@@ -19,6 +19,7 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.ui.IconCollection;
 import net.rim.device.internal.ui.Image;
+import net.rim.device.internal.ui.ImageThemed;
 import net.rim.device.internal.ui.NamedIconCollection;
 import net.rim.device.internal.ui.UiOptionsRegistry;
 import net.rim.device.internal.ui.UiSettings;
@@ -32,15 +33,15 @@ public class ThemeManager {
    private boolean _activated;
    private Theme$Factory _defaultThemeFactory;
    private int _generation = 1;
-   private Hashtable _iconCollections = (Hashtable)(new Object(60));
+   private Hashtable _iconCollections = new Hashtable(60);
    private int _nextTagId = 2;
-   private IntHashtable _intToTag = (IntHashtable)(new Object(80));
-   private Hashtable _nameToTag = (Hashtable)(new Object(80));
-   private ThemeManager$Listeners _listeners = (ThemeManager$Listeners)(new Object());
-   private Hashtable _moduleDefaults = (Hashtable)(new Object(10));
-   private Hashtable _defaultImageDescriptors = (Hashtable)(new Object(200));
-   private final Comparator _comparatorFactoryFactory = (Comparator)(new Object(this));
-   private final Comparator _comparatorStringFactory = (Comparator)(new Object(this));
+   private IntHashtable _intToTag = new IntHashtable(80);
+   private Hashtable _nameToTag = new Hashtable(80);
+   private ThemeManager$Listeners _listeners = new ThemeManager$Listeners();
+   private Hashtable _moduleDefaults = new Hashtable(10);
+   private Hashtable _defaultImageDescriptors = new Hashtable(200);
+   private final Comparator _comparatorFactoryFactory = new ThemeManager$1(this);
+   private final Comparator _comparatorStringFactory = new ThemeManager$2(this);
    public static final long GUID_THEME_CHANGED;
    public static final long GUID_THEME_ADDED;
    public static final long GUID_THEME_RESET;
@@ -56,11 +57,11 @@ public class ThemeManager {
       this._nameToTag.put(ATTRIBUTE_ROOT.toString(), ATTRIBUTE_ROOT);
       this._intToTag.put(ATTRIBUTE_ROOT.hashCode(), ATTRIBUTE_ROOT);
       this.verifyActiveTheme();
-      this._defaultThemeFactory = (Theme$Factory)(new Object());
+      this._defaultThemeFactory = new ThemeManager$DefaultThemeFactory();
       this.addInternal(this._defaultThemeFactory);
-      DefaultResourceFetcher fetcher = (DefaultResourceFetcher)(new Object());
+      DefaultResourceFetcher fetcher = new DefaultResourceFetcher();
       fetcher.setResourcesFromModule(TraceBack.getCallingModuleName(0));
-      this._activeTheme = (Theme)(new Object(this._moduleDefaults, this._defaultImageDescriptors, fetcher));
+      this._activeTheme = new Theme(this._moduleDefaults, this._defaultImageDescriptors, fetcher);
       UiSettings.addListener(this._listeners);
       LowMemoryManager.addLowMemoryListener(this._listeners);
       Proxy.getInstance().addGlobalEventListener(this._listeners);
@@ -113,7 +114,7 @@ public class ThemeManager {
    }
 
    public static Theme createTheme(Theme$Factory factory) {
-      Theme theme = (Theme)(new Object(_instance._moduleDefaults, _instance._defaultImageDescriptors, factory.getResourceFetcher()));
+      Theme theme = new Theme(_instance._moduleDefaults, _instance._defaultImageDescriptors, factory.getResourceFetcher());
       theme.$init0();
       createThemeHelper(factory, theme);
       return theme;
@@ -190,15 +191,14 @@ public class ThemeManager {
    }
 
    static synchronized IconCollection getIconCollection(String name) {
-      IconCollection collection = (IconCollection)_instance._iconCollections.get(name);
-      return collection;
+      return (IconCollection)_instance._iconCollections.get(name);
    }
 
    public static IconCollection getIconCollection(String name, int columns, int rows, String moduleName) {
       synchronized (_instance) {
          NamedIconCollection collection = (NamedIconCollection)_instance._iconCollections.get(name);
          if (collection == null) {
-            collection = (NamedIconCollection)(new Object(name, columns, rows, moduleName));
+            collection = new NamedIconCollection(name, columns, rows, moduleName);
             getActiveTheme().initializeIconCollection(collection, moduleName);
             _instance._iconCollections.put(name, collection);
          } else {
@@ -255,12 +255,7 @@ public class ThemeManager {
    }
 
    static Tag getTag(String tagName) {
-      if (tagName == null) {
-         return ATTRIBUTE_INHERIT;
-      }
-
-      Tag tag = (Tag)_instance._nameToTag.get(tagName);
-      return tag;
+      return tagName == null ? ATTRIBUTE_INHERIT : (Tag)_instance._nameToTag.get(tagName);
    }
 
    public static Theme getTheme(String name) {
@@ -270,7 +265,7 @@ public class ThemeManager {
 
    public static Image getThemeAwareImage(String name) {
       String moduleName = TraceBack.getCallingModuleName(0);
-      return (Image)(new Object(name, moduleName));
+      return new ImageThemed(name, moduleName);
    }
 
    public static Theme$Factory getThemeFactory(String name) {
@@ -343,7 +338,7 @@ public class ThemeManager {
          if (index >= 0) {
             Theme$Factory factory = _instance._factories[index];
             if (!factory.isRemovable()) {
-               throw new Object();
+               throw new SecurityException();
             }
 
             boolean removingActive = _instance._defaultThemeFactory == factory;
@@ -360,10 +355,10 @@ public class ThemeManager {
             }
 
             if (rc != 3) {
-               UiApplication.getUiApplication().invokeLater((Runnable)(new Object(message)));
+               UiApplication.getUiApplication().invokeLater(new ThemeManager$3(message));
             }
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
@@ -386,7 +381,7 @@ public class ThemeManager {
             Theme$Factory factory = _instance._factories[index];
             return factory.isRemovable();
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }

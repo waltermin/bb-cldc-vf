@@ -15,7 +15,7 @@ final class StackTracePermissions {
       synchronized (this._persistentDelegate) {
          this._delegate = (IntHashtable)this._persistentDelegate.getContents();
          if (this._delegate == null) {
-            this._delegate = (IntHashtable)(new Object());
+            this._delegate = new IntHashtable();
             this._persistentDelegate.setContents(this._delegate, 51);
             this._persistentDelegate.commit();
          }
@@ -27,13 +27,13 @@ final class StackTracePermissions {
       if (stackHash != null) {
          Vector stackTracePermissionsVector = this.getResponses(processHandle);
          if (stackTracePermissionsVector == null) {
-            stackTracePermissionsVector = (Vector)(new Object());
+            stackTracePermissionsVector = new Vector();
             this._delegate.put(processHandle, stackTracePermissionsVector);
          }
 
          CachedStackTraceResponse stackTraceResponse = this.getResponse(stackTracePermissionsVector, stackHash);
          if (stackTraceResponse == null) {
-            stackTraceResponse = (CachedStackTraceResponse)(new Object(stackHash));
+            stackTraceResponse = new CachedStackTraceResponse(stackHash);
             stackTracePermissionsVector.addElement(stackTraceResponse);
          }
 

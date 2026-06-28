@@ -26,7 +26,7 @@ class RecordStoreManager implements RecordStoreManagerProxy {
                throw new RecordStoreNotFoundException(recordStoreName);
             }
 
-            recordStoreData = (RecordStoreData)(new Object(recordStoreName));
+            recordStoreData = new RecordStoreData(recordStoreName);
             _midletStores.put(recordStoreName, recordStoreData);
             PersistentObject.commit(_midletStores);
          }
@@ -44,7 +44,30 @@ class RecordStoreManager implements RecordStoreManagerProxy {
    }
 
    static RecordStore getRecordStore(String recordStoreName, String vendorName, String suiteName) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String midletPropertiesHashString = suiteName + vendorName;
+      Hashtable allRecordStores = (Hashtable)_persistentObject.getContents();
+      RecordStoreData recordStoreData;
+      synchronized (allRecordStores) {
+         Hashtable midletSuiteStores = (Hashtable)allRecordStores.get(midletPropertiesHashString);
+         if (midletSuiteStores == null) {
+            throw new RecordStoreNotFoundException();
+         }
+
+         recordStoreData = (RecordStoreData)midletSuiteStores.get(recordStoreName);
+         if (recordStoreData == null) {
+            throw new RecordStoreNotFoundException(recordStoreName);
+         }
+      }
+
+      synchronized (_activeStores) {
+         RecordStore recordStore = (RecordStore)_activeStores.get(recordStoreData);
+         if (recordStore == null) {
+            recordStore = new RecordStore(recordStoreData);
+            _activeStores.put(recordStoreData, recordStore);
+         }
+
+         return recordStore;
+      }
    }
 
    static void deleteRecordStore(String recordStoreName) {
@@ -97,12 +120,21 @@ class RecordStoreManager implements RecordStoreManagerProxy {
 
    @Override
    public void deleteRecordStores(String midletSuiteName, String midletSuiteVendor) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String midletPropertiesHashString = midletSuiteVendor == null ? midletSuiteName : midletSuiteName + midletSuiteVendor;
+      synchronized (_persistentObject) {
+         Hashtable allRecordStores = (Hashtable)_persistentObject.getContents();
+         _rsml.deleteRecordStoresWithKey(midletPropertiesHashString, allRecordStores);
+         _persistentObject.commit();
+      }
    }
 
    @Override
    public boolean recordStoresExistForSuite(String midletSuiteName, String midletSuiteVendor) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      String midletPropertiesHashString = midletSuiteVendor == null ? midletSuiteName : midletSuiteName + midletSuiteVendor;
+      synchronized (_persistentObject) {
+         Hashtable allRecordStores = (Hashtable)_persistentObject.getContents();
+         return allRecordStores.containsKey(midletPropertiesHashString);
+      }
    }
 
    @Override

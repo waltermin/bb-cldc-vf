@@ -1,13 +1,17 @@
 package net.rim.device.api.bluetooth;
 
+import java.io.IOException;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.IOPort;
+import net.rim.device.api.system.UnsupportedOperationException;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.bluetooth.BluetoothDeviceManager;
 import net.rim.device.internal.bluetooth.BluetoothME;
 import net.rim.device.internal.bluetooth.BluetoothSDP;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.vm.Message;
+import net.rim.vm.Process;
 
 public final class BluetoothSerialPort extends IOPort {
    private int _portHandle;
@@ -55,6 +59,21 @@ public final class BluetoothSerialPort extends IOPort {
    public BluetoothSerialPort(
       BluetoothSerialPortInfo info, int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener
    ) {
+      this();
+      this.addListener(listener);
+      this._remoteAddress = info.getDeviceAddress();
+
+      try {
+         this._portHandle = openClientPort(
+            this._remoteAddress, info.getDevicePageScanInfo(), info.getServerID(), baudRate, dataFormat, flowControl, rxBufferSize, txBufferSize
+         );
+      } catch (IOException e) {
+         this._app.removeListener(42, this);
+         throw e;
+      }
+
+      this._cleanupRunnable = new BluetoothSerialPort$BluetoothSerialPortCleanupRunnable(this);
+      ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this._cleanupRunnable);
    }
 
    public BluetoothSerialPort(
@@ -71,6 +90,19 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    public BluetoothSerialPort(int baudRate, int dataFormat, int flowControl, int rxBufferSize, int txBufferSize, BluetoothSerialPortListener listener) {
+      this();
+      this._isServer = true;
+      this.addListener(listener);
+
+      try {
+         this._portHandle = openServerPort(baudRate, dataFormat, flowControl, rxBufferSize, txBufferSize);
+      } catch (IOException e) {
+         this._app.removeListener(42, this);
+         throw e;
+      }
+
+      this._cleanupRunnable = new BluetoothSerialPort$BluetoothSerialPortCleanupRunnable(this);
+      ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this._cleanupRunnable);
    }
 
    public final int getSDPRecordHandle() {
@@ -124,7 +156,10 @@ public final class BluetoothSerialPort extends IOPort {
 
    @Override
    public final void close() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      assertPermission();
+      this.closePort();
+      this._app.removeListener(42, this);
+      ((ApplicationProcess)Process.currentProcess()).removeCleanupRunnable(this._cleanupRunnable);
    }
 
    private final void closePort() {
@@ -179,7 +214,7 @@ public final class BluetoothSerialPort extends IOPort {
       assertPermission();
       BluetoothDeviceManager btManager = BluetoothDeviceManager.getInstance();
       if (btManager == null) {
-         throw new Object();
+         throw new UnsupportedOperationException();
       } else {
          return btManager.getSerialPortInfo();
       }

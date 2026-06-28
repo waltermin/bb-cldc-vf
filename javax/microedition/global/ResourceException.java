@@ -17,7 +17,7 @@ public final class ResourceException extends RuntimeException {
       if (err >= 0 && err <= 7) {
          this._err = err;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

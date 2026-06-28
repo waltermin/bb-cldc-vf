@@ -21,7 +21,7 @@ class RecordKeystrokes extends MainScreen {
 
          for (int r = 0; r < repeat; r++) {
             for (int m = 0; m < this._messages.size(); m++) {
-               msgs[i] = (Message)(new Object());
+               msgs[i] = new Message();
                msgs[i].copy((Message)this._messages.elementAt(m));
                i++;
             }
@@ -44,7 +44,7 @@ class RecordKeystrokes extends MainScreen {
    }
 
    private void output(String msg) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    @Override

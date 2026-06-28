@@ -1,5 +1,6 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
 import net.rim.vm.Array;
 
 public class IntVector implements Persistable {
@@ -101,16 +102,16 @@ public class IntVector implements Persistable {
    }
 
    public int lastIndexOf(int elem, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public int elementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public int firstElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[0];
       }
@@ -118,22 +119,22 @@ public class IntVector implements Persistable {
 
    public int lastElement() {
       if (this.elementCount == 0) {
-         throw new Object();
+         throw new NoSuchElementException();
       } else {
          return this.elementData[this.elementCount - 1];
       }
    }
 
    public void setElementAt(int obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void removeElementAt(int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void insertElementAt(int obj, int index) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 
    public void addElement(int obj) {

@@ -49,7 +49,7 @@ class RegistryImpl extends Registry {
 
    private RegistryImpl(String classname) {
       this._classname = classname;
-      this._queue = (InvocationQueue)(new Object());
+      this._queue = new InvocationQueue();
    }
 
    static RegistryImpl getRegistryImpl() {
@@ -82,7 +82,7 @@ class RegistryImpl extends Registry {
       ApplicationDescriptor application,
       int moduleHandle
    ) {
-      ContentHandlerServerImpl server = (ContentHandlerServerImpl)(new Object());
+      ContentHandlerServerImpl server = new ContentHandlerServerImpl();
       server.init(types, suffixes, actions, actionnames, ID, accessAllowed);
       verifyID(server.getID(), classname, false);
       server.setApplicationDescriptor(application);
@@ -145,14 +145,14 @@ class RegistryImpl extends Registry {
    boolean unregisterInternal(String classname) {
       ContentHandlerServerImpl server = null;
       if (_registry.containsKey(classname)) {
-         ContentHandlerServerImpl var3 = _registry.remove(classname);
-         this.removeHandler(_handlersByType, (ContentHandler)var3);
-         this.removeHandler(_handlersByAction, (ContentHandler)var3);
-         this.removeHandler(_handlersBySuffix, (ContentHandler)var3);
-         _handlersByID.remove(((ContentHandlerServerImpl)var3).getID());
+         server = (ContentHandlerServerImpl)_registry.remove(classname);
+         this.removeHandler(_handlersByType, server);
+         this.removeHandler(_handlersByAction, server);
+         this.removeHandler(_handlersBySuffix, server);
+         _handlersByID.remove(server.getID());
          _persistedHandlers.remove(classname);
          _persist.commit();
-         InvocationCleanupManager.getInstance().removeContentHandler(((ContentHandlerServerImpl)var3).getModuleHandle(), classname);
+         InvocationCleanupManager.getInstance().removeContentHandler(server.getModuleHandle(), classname);
          return true;
       } else {
          return false;
@@ -250,7 +250,7 @@ class RegistryImpl extends Registry {
             ContentHandlerServerImpl server = (ContentHandlerServerImpl)handlers.elementAt(i);
             if (server.isAccessAllowed(this.getID())) {
                Array.resize(results, results.length + 1);
-               results[results.length - 1] = (ContentHandler)(new Object(server));
+               results[results.length - 1] = new ContentHandlerImpl(server);
             }
          }
       }
@@ -325,7 +325,7 @@ class RegistryImpl extends Registry {
          if (next == null && wait) {
             try {
                this._queue.wait();
-            } catch (InterruptedException var5) {
+            } catch (InterruptedException var6) {
             }
 
             next = this._queue.nextInvocation();
@@ -395,7 +395,7 @@ class RegistryImpl extends Registry {
 
       try {
          pid = am.runApplication(this._application, grabForeground);
-      } catch (ApplicationManagerException var7) {
+      } catch (ApplicationManagerException var8) {
       } finally {
          if (pid == -1) {
             return -1;
@@ -403,7 +403,7 @@ class RegistryImpl extends Registry {
       }
 
       if (this._listener != null) {
-         Message invokeLaterMessage = (Message)(new Object(0, 2, new RegistryImpl$1(this), null));
+         Message invokeLaterMessage = new Message(0, 2, new RegistryImpl$1(this), null);
          ((ApplicationManagerInternal)am).postMessage(pid, invokeLaterMessage);
       }
 

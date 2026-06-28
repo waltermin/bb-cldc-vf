@@ -3,7 +3,7 @@ package net.rim.device.api.system;
 import net.rim.vm.WeakReference;
 
 final class PersistentContent$ObjectCacheElement {
-   private WeakReference _encodingWR = (WeakReference)(new Object(null));
+   private WeakReference _encodingWR = new WeakReference(null);
    private boolean _firstChunkOnly;
    private int _encodingLength;
    private Object _object;

@@ -523,7 +523,7 @@ public class NativeTransport
 
             try {
                this._sendStatusIds.wait();
-            } catch (InterruptedException var3) {
+            } catch (InterruptedException var4) {
             }
 
             this._sendStatusWaiting = false;

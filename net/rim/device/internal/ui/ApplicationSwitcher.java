@@ -69,7 +69,7 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
 
          Field focus = this._icons.getFieldWithFocus();
          if (focus != null) {
-            this._selectedTitle.setText(focus.getCookie());
+            this._selectedTitle.setText((String)focus.getCookie());
             this._selectedApp = focus.getIndex();
          }
       }
@@ -179,7 +179,7 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
          this._listField.setSelectedIndex(this._selectedApp);
       } else {
          this._appIcons[this._selectedApp].setFocus();
-         this._selectedTitle.setText(this._appIcons[this._selectedApp].getCookie());
+         this._selectedTitle.setText((String)this._appIcons[this._selectedApp].getCookie());
       }
    }
 
@@ -218,7 +218,7 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
       int end = this._descriptors.length;
 
       for (int lv = 0; lv < end; lv++) {
-         if (this.startsWithCharacterUnderscored(ch, (String)(this._verticalDisplay ? this._appNames[lv] : this._appIcons[lv].getCookie()))) {
+         if (this.startsWithCharacterUnderscored(ch, this._verticalDisplay ? this._appNames[lv] : (String)this._appIcons[lv].getCookie())) {
             this.setIndex(lv);
             break;
          }

@@ -201,7 +201,7 @@ public class DataInputStream extends InputStream implements DataInput {
          }
       }
 
-      return (String)(new Object(str));
+      return new String(str);
    }
 
    @Override

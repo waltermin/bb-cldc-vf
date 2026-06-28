@@ -30,18 +30,18 @@ final class ResourceBundleFetcher$ResourceBundleFetcherRequestRunnable implement
    @Override
    public final void run() {
       if (this._requestName != null) {
-         boolean var7 = false /* VF: Semaphore variable */;
+         boolean var12 = false /* VF: Semaphore variable */;
 
          label72: {
             try {
-               var7 = true;
+               var12 = true;
                this._bundle = ResourceBundleFetcher.fetchResourceBundleInternal(this._requestName, this._requestHandle);
-               var7 = false;
+               var12 = false;
                break label72;
-            } catch (Exception var11) {
-               var7 = false;
+            } catch (Exception var16) {
+               var12 = false;
             } finally {
-               if (var7) {
+               if (var12) {
                   synchronized (this._lockObject) {
                      this._lockObject.notify();
                   }

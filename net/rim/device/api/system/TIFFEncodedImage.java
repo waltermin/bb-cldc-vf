@@ -33,7 +33,7 @@ public final class TIFFEncodedImage extends EncodedImage {
    @Override
    public final int getBitmapType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 2) == 0 && this._tiffFrameInfo[frameIndex].isMonochrome ? Bitmap.DEFAULT_TYPE & 128 | 0 | 1 : Bitmap.DEFAULT_TYPE;
       }
@@ -42,7 +42,7 @@ public final class TIFFEncodedImage extends EncodedImage {
    @Override
    public final int getAlphaType(int frameIndex) {
       if (frameIndex < 0 || frameIndex >= super._info.frameCount) {
-         throw new Object();
+         throw new IllegalArgumentException();
       } else {
          return (super._decodeMode & 1) != 0 && this.getFrameTransparency(frameIndex) ? 1 | Bitmap.DEFAULT_TYPE & 128 : 0;
       }
@@ -56,17 +56,17 @@ public final class TIFFEncodedImage extends EncodedImage {
          int alphaType = this.getAlphaType(frameIndex);
          int width = this.getFrameWidth(frameIndex);
          int height = this.getFrameHeight(frameIndex);
-         Bitmap bitmap = (Bitmap)(new Object(type, width, height, null, readonly, false));
+         Bitmap bitmap = new Bitmap(type, width, height, null, readonly, false);
          Bitmap alpha = null;
          if (alphaType != 0) {
-            alpha = (Bitmap)(new Object(alphaType, width, height, null, readonly, false));
+            alpha = new Bitmap(alphaType, width, height, null, readonly, false);
          }
 
          this.getTIFFImage(bitmap, alpha, super._scaleX, super._scaleY, -1, frameIndex, super._decodeMode);
          bitmap.setAlphaDirect(alpha);
          return bitmap;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

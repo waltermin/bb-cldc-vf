@@ -3,13 +3,14 @@ package net.rim.device.internal.crypto.fips;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
-import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.GaugeField;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
 
 final class SelfTestsStartupDialog extends PopupScreen {
@@ -24,15 +25,15 @@ final class SelfTestsStartupDialog extends PopupScreen {
    private static final ResourceBundle _rb;
 
    SelfTestsStartupDialog(SelfTests selfTests, String[] tests) {
-      super((Manager)(new Object()));
+      super(new VerticalFieldManager());
       this._selfTests = selfTests;
       this._tests = tests;
       this._testResults = new boolean[tests.length];
-      this.add((Field)(new Object(_rb.getString(5), 36028797018963968L)));
-      this.add((Field)(new Object()));
-      this._gaugeField = (GaugeField)(new Object(null, 0, this._tests.length, 0, 4));
+      this.add(new RichTextField(_rb.getString(5), 36028797018963968L));
+      this.add(new SeparatorField());
+      this._gaugeField = new GaugeField(null, 0, this._tests.length, 0, 4);
       this.add(this._gaugeField);
-      this._resultField = (RichTextField)(new Object(null, 36028797019226112L));
+      this._resultField = new RichTextField(null, 36028797019226112L);
       this.add(this._resultField);
    }
 
@@ -64,7 +65,7 @@ final class SelfTestsStartupDialog extends PopupScreen {
 
       try {
          Thread.sleep(1000);
-      } catch (InterruptedException var3) {
+      } catch (InterruptedException var5) {
       }
 
       synchronized (Application.getApplication().getAppEventLock()) {
@@ -73,9 +74,9 @@ final class SelfTestsStartupDialog extends PopupScreen {
    }
 
    private final void addFailButtons() {
-      HorizontalFieldManager buttonManager = (HorizontalFieldManager)(new Object(12884901888L));
-      this._okButton = (ButtonField)(new Object(CommonResource.getString(100)));
-      this._detailsButton = (ButtonField)(new Object(_rb.getString(7)));
+      HorizontalFieldManager buttonManager = new HorizontalFieldManager(12884901888L);
+      this._okButton = new ButtonField(CommonResource.getString(100));
+      this._detailsButton = new ButtonField(_rb.getString(7));
       buttonManager.add(this._okButton);
       buttonManager.add(this._detailsButton);
       this.add(buttonManager);

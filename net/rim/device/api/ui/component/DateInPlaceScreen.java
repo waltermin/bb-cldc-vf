@@ -4,7 +4,7 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.container.InPlaceScreen;
 
 class DateInPlaceScreen extends InPlaceScreen {
-   private XYRect _rect = (XYRect)(new Object());
+   private XYRect _rect = new XYRect();
 
    public DateInPlaceScreen(DateField original, DateField fake, long style) {
       super(original, fake, style | 1);

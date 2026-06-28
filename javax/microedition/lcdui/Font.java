@@ -20,7 +20,7 @@ public final class Font {
    public static final Font getFont(int fontSpecifier) {
       switch (fontSpecifier) {
          case -1:
-            throw new Object();
+            throw new IllegalArgumentException();
          case 0:
          case 1:
          default:
@@ -110,23 +110,23 @@ public final class Font {
 
    public final int charsWidth(char[] ch, int offset, int length) {
       if (ch == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (offset >= 0 && offset <= ch.length && offset + length <= ch.length && length >= 0 && length <= ch.length) {
          try {
             return this._font.getAdvance(ch, offset, length);
          } catch (IllegalArgumentException iae) {
-            throw new Object();
+            throw new ArrayIndexOutOfBoundsException();
          }
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
    public final int stringWidth(String str) {
       if (str == null) {
-         throw new Object();
+         throw new NullPointerException();
       } else {
          return this._font.getAdvance(str);
       }

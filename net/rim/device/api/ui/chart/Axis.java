@@ -245,7 +245,7 @@ public class Axis {
    public void setIncrement(int increment) {
       if (this._increment != increment) {
          if (0 >= increment || increment > this._max - this._min) {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
 
          this._increment = increment;
@@ -254,7 +254,7 @@ public class Axis {
 
    public void setMinMax(int min, int max) {
       if (min >= max) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._min = min;
@@ -276,7 +276,7 @@ public class Axis {
                this._scalePadding = scalePadding;
                break;
             default:
-               throw new Object();
+               throw new IllegalArgumentException();
          }
       }
    }

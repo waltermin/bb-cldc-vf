@@ -79,7 +79,7 @@ public final class Tree {
       } catch (ArrayIndexOutOfBoundsException e) {
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    private final void validateNodeId(int node) {
@@ -90,7 +90,7 @@ public final class Tree {
       } catch (ArrayIndexOutOfBoundsException e) {
       }
 
-      throw new Object();
+      throw new IllegalArgumentException();
    }
 
    public final void setDefaultExpansion(boolean expanded) {

@@ -17,11 +17,11 @@ class MIDPEditField extends VerticalFieldManager {
       super(1152921504606846976L);
       this._item = item;
       if (!this.validateText(text, constraints)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (!this.init(label, text, maxSize, constraints)) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -62,9 +62,9 @@ class MIDPEditField extends VerticalFieldManager {
          String text = null;
          if (data != null) {
             try {
-               text = (String)(new Object(data, offset, length));
+               text = new String(data, offset, length);
             } catch (StringIndexOutOfBoundsException e) {
-               throw new Object();
+               throw new ArrayIndexOutOfBoundsException();
             }
          }
 
@@ -79,9 +79,9 @@ class MIDPEditField extends VerticalFieldManager {
    public void insert(char[] data, int offset, int length, int position) {
       synchronized (Application.getEventLock()) {
          if (offset >= 0 && length >= 0 && offset <= data.length - length) {
-            this.insert((String)(new Object(data, offset, length)), position);
+            this.insert(new String(data, offset, length), position);
          } else {
-            throw new Object();
+            throw new ArrayIndexOutOfBoundsException();
          }
       }
    }
@@ -90,9 +90,9 @@ class MIDPEditField extends VerticalFieldManager {
       synchronized (Application.getEventLock()) {
          if (length > 0) {
             String currentText = this._field.getText();
-            StringBuffer textAfterDelete = (StringBuffer)(new Object(currentText));
+            StringBuffer textAfterDelete = new StringBuffer(currentText);
             if (!this.validateText(textAfterDelete.delete(offset, offset + length).toString(), this._constraints)) {
-               throw new Object();
+               throw new IllegalArgumentException();
             }
          }
 
@@ -100,7 +100,7 @@ class MIDPEditField extends VerticalFieldManager {
             this._field.setCursorPosition(offset + length);
             this._field.backspace(length);
          } else {
-            throw new Object();
+            throw new StringIndexOutOfBoundsException();
          }
       }
    }

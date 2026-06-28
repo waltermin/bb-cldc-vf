@@ -15,7 +15,7 @@ public class Spacer extends Item {
             this.setPeer(this._spacerField);
             this.setPreferredSize(minWidth, minHeight);
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
@@ -32,24 +32,24 @@ public class Spacer extends Item {
          if (minWidth >= 0 && minHeight >= 0) {
             this._spacerField.setSize(minWidth, minHeight);
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
 
    @Override
    public void addCommand(Command cmd) {
-      throw new Object();
+      throw new IllegalStateException();
    }
 
    @Override
    public void setDefaultCommand(Command cmd) {
-      throw new Object();
+      throw new IllegalStateException();
    }
 
    @Override
    public void setLabel(String label) {
-      throw new Object();
+      throw new IllegalStateException();
    }
 
    @Override

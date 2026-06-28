@@ -49,7 +49,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
    final void write(byte[] data, int offset, int length) {
       synchronized (this._writeLock) {
          if (this._outputStreamState == 3) {
-            throw new Object();
+            throw new IOException();
          }
 
          if (data != null && offset >= 0 && length >= 0 && offset + length <= data.length) {
@@ -58,7 +58,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
                if (result == 0) {
                   try {
                      this._writeLock.wait();
-                  } catch (InterruptedException var7) {
+                  } catch (InterruptedException var8) {
                   }
                } else {
                   offset += result;
@@ -66,14 +66,14 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
                }
             }
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
 
    public final void connect(int ipv4Addr, int destPort) {
       if (this._nativeSocket == null) {
-         throw new Object();
+         throw new IOException();
       }
 
       this._nativeSocket.connectIPv4(ipv4Addr, destPort);
@@ -82,7 +82,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
    final void write(int data) {
       synchronized (this._writeLock) {
          if (this._outputStreamState == 3) {
-            throw new Object();
+            throw new IOException();
          }
 
          while (true) {
@@ -93,7 +93,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
             try {
                this._writeLock.wait();
-            } catch (InterruptedException var5) {
+            } catch (InterruptedException var6) {
             }
          }
       }
@@ -102,7 +102,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
    final int read(byte[] data, int offset, int length) {
       synchronized (this._readLock) {
          if (this._inputStreamState == 3) {
-            throw new Object();
+            throw new IOException();
          }
 
          if (length == 0) {
@@ -143,7 +143,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
                try {
                   this._readLock.wait();
-               } catch (InterruptedException var7) {
+               } catch (InterruptedException var8) {
                }
 
                if (this._inputStreamState == 2) {
@@ -151,9 +151,9 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
                }
             } while (this._inputStreamState != 3);
 
-            throw new Object();
+            throw new IOException();
          } else {
-            throw new Object();
+            throw new IllegalArgumentException();
          }
       }
    }
@@ -190,13 +190,13 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
    public final void init() {
       this._nativeSocket.create(this._tunnel.getIdentifier(), 1, 6, this._address.getLocalPort());
-      this._inStream = (InputStream)(new Object(this));
-      this._outStream = (OutputStream)(new Object(this));
+      this._inStream = new TcpInputStream(this);
+      this._outStream = new TcpOutputStream(this);
    }
 
    @Override
    public final DataInputStream openDataInputStream() {
-      return (DataInputStream)(new Object(this.openInputStream()));
+      return new DataInputStream(this.openInputStream());
    }
 
    @Override
@@ -206,7 +206,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
    @Override
    public final DataOutputStream openDataOutputStream() {
-      return (DataOutputStream)(new Object(this.openOutputStream()));
+      return new DataOutputStream(this.openOutputStream());
    }
 
    @Override
@@ -276,7 +276,7 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
       this._readLock = new Object();
       this._writeLock = new Object();
       this._tunnel = tunnel;
-      this._nativeSocket = (NativeSocket)(new Object());
+      this._nativeSocket = new NativeSocket();
       this._address = address;
       PortAssigner.getInstance(6).registerConnection(address.getLocalPort(), this, tunnel.getConfig().getName());
       NativeSocketEventDispatcher.addListener(this);

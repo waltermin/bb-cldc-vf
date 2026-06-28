@@ -31,7 +31,7 @@ public class BigSortedReadableList extends BigUnsortedReadableList implements So
 
          return -(low + 1);
       } else {
-         throw new Object();
+         throw new ArrayIndexOutOfBoundsException();
       }
    }
 
@@ -76,7 +76,7 @@ public class BigSortedReadableList extends BigUnsortedReadableList implements So
 
    public BigSortedReadableList(Comparator comparator) {
       if (comparator == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._comparator = comparator;

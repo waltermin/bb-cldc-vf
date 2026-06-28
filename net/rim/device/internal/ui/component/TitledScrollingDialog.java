@@ -22,7 +22,7 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    private static final int INDENT_PIXEL_WIDTH;
 
    protected void setTitle(String dialogTitle) {
-      LabelField dialogTitleField = (LabelField)(new Object(dialogTitle, 64));
+      LabelField dialogTitleField = new LabelField(dialogTitle, 64);
       dialogTitleField.setFont(this._boldFont);
       this.setTitle(dialogTitleField);
    }
@@ -30,11 +30,11 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    protected void setTitle(Field dialogTitleField) {
       Manager manager = this.getDelegate();
       manager.insert(dialogTitleField, 0);
-      manager.insert((Field)(new Object()), 1);
+      manager.insert(new SeparatorField(), 1);
    }
 
    protected void populateDialog() {
-      this._ok = (ButtonField)(new Object(CommonResource.getString(100), 12884901888L));
+      this._ok = new ButtonField(CommonResource.getString(100), 12884901888L);
       this._ok.setChangeListener(this);
       this.addScrollingField(this._ok);
    }
@@ -57,7 +57,7 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
       synchronized (Application.getEventLock()) {
          int count = this._nonScrollingRegion.getFieldCount();
          if (count == 0) {
-            this._nonScrollingSeparator = (SeparatorField)(new Object());
+            this._nonScrollingSeparator = new SeparatorField();
             this.getDelegate().insert(this._nonScrollingSeparator, this._nonScrollingRegion.getIndex() + 1);
          }
 
@@ -70,7 +70,7 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    }
 
    protected void addNonScrollingText(String text) {
-      LabelField labelField = (LabelField)(new Object(text, 64));
+      LabelField labelField = new LabelField(text, 64);
       labelField.setFont(this._boldFont);
       this.addNonScrollingField(labelField);
    }
@@ -112,9 +112,9 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    }
 
    public TitledScrollingDialog(long style) {
-      super((Manager)(new Object(3458764513820540928L)), style);
+      super(new VerticalFieldManager(3458764513820540928L), style);
       this._boldFont = this._boldFont.derive(this._boldFont.getStyle() | 1);
-      this._nonScrollingRegion = (VerticalFieldManager)(new Object(1152921504606846976L));
+      this._nonScrollingRegion = new VerticalFieldManager(1152921504606846976L);
       this._scrollingRegion = new VerticalIndentFieldManager(1153220571769602048L);
       Manager manager = this.getDelegate();
       manager.add(this._nonScrollingRegion);

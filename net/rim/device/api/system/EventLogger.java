@@ -178,8 +178,8 @@ public final class EventLogger {
    }
 
    public static final void logStackTrace(long guid, String stackTraceReason) {
-      ByteArrayOutputStream out = (ByteArrayOutputStream)(new Object());
-      PrintStream printStream = (PrintStream)(new Object(out));
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      PrintStream printStream = new PrintStream(out);
       if (stackTraceReason != null) {
          printStream.println(stackTraceReason);
       }
@@ -202,7 +202,7 @@ public final class EventLogger {
       synchronized (_theLogger) {
          switch (level) {
             case 2:
-               throw new Object();
+               throw new IllegalArgumentException();
             case 3:
             case 4:
             case 5:

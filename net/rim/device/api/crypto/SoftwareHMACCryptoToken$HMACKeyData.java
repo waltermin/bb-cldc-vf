@@ -11,7 +11,7 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
 
    public SoftwareHMACCryptoToken$HMACKeyData(int length) {
       if (length < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._data = RandomSource.getBytes(length);
@@ -28,7 +28,7 @@ final class SoftwareHMACCryptoToken$HMACKeyData implements CryptoTokenMACKeyData
          PersistentContent.markAsPlaintext(data);
          this.setHashCode();
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 

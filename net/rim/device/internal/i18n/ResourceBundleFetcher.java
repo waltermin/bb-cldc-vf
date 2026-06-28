@@ -49,7 +49,37 @@ public final class ResourceBundleFetcher implements RIMProcessLauncher$Applicati
    }
 
    public static final ResourceBundle fetch(String name) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      ResourceBundleFetcher fetcher = getInstance();
+      synchronized (fetcher._requestLock) {
+         if (fetcher._fetcherAppRef == null) {
+            try {
+               fetcher._requestLock.wait();
+            } catch (InterruptedException var11) {
+            }
+         }
+
+         Object obj = fetcher._bundleCache.get(name);
+         int handle = 0;
+         if (obj != null) {
+            handle = (Integer)obj;
+         }
+
+         fetcher._requestRunnable.reset(name, handle);
+         Object lock = fetcher._requestRunnable.getLock();
+
+         ResourceBundle var10000;
+         try {
+            synchronized (lock) {
+               fetcher._fetcherAppRef.invokeLater(fetcher._requestRunnable);
+               lock.wait();
+               var10000 = fetcher._requestRunnable.getResult();
+            }
+         } catch (InterruptedException var10) {
+            return null;
+         }
+
+         return var10000;
+      }
    }
 
    public static final boolean verifyCompressedResourcePresent(String name) {
@@ -72,7 +102,7 @@ public final class ResourceBundleFetcher implements RIMProcessLauncher$Applicati
 
    private static final ResourceBundle fetchResourceBundleInternal(String name, int module) {
       if (name == null) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       byte[] data = null;

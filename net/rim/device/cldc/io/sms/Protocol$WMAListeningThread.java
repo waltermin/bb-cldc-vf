@@ -29,7 +29,7 @@ final class Protocol$WMAListeningThread extends Thread {
                   }
                }
             }
-         } catch (IOException var3) {
+         } catch (IOException var5) {
          }
       }
    }

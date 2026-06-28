@@ -7,7 +7,7 @@ import net.rim.device.internal.rms.RecordStoreData;
 import net.rim.device.internal.rms.RecordStoreUtil;
 
 class RecordStoreManager$RecordStoreManagerListener implements GlobalEventListener {
-   private Hashtable _toDelete = (Hashtable)(new Object());
+   private Hashtable _toDelete = new Hashtable();
    private static final long TIMEOUT;
 
    public void deleteRecordStoresWithKey(String midletSuiteHashKey, Hashtable recordStores) {
@@ -68,7 +68,7 @@ class RecordStoreManager$RecordStoreManagerListener implements GlobalEventListen
                if (deleteNow) {
                   this.deleteRecordStoresWithKey(midletSuiteHashKey, allRecordStores);
                } else {
-                  this._toDelete.put(midletSuiteHashKey, new Object(System.currentTimeMillis()));
+                  this._toDelete.put(midletSuiteHashKey, new Long(System.currentTimeMillis()));
                }
             }
          }

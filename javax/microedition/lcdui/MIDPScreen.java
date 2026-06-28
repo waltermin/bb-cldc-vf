@@ -9,6 +9,7 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.component.SeparatorField;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.SimpleSortingVector;
 import net.rim.device.internal.i18n.CommonResource;
@@ -22,10 +23,8 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    private LabelField _title;
    private SeparatorField _separator;
    private boolean _fullScreenMode;
-   private XYRect _displayableAreaExtent = (XYRect)(new Object(
-      0, 0, net.rim.device.api.system.Display.getWidth(), net.rim.device.api.system.Display.getHeight()
-   ));
-   private SimpleSortingVector _commands = (SimpleSortingVector)(new Object());
+   private XYRect _displayableAreaExtent = new XYRect(0, 0, net.rim.device.api.system.Display.getWidth(), net.rim.device.api.system.Display.getHeight());
+   private SimpleSortingVector _commands = new SimpleSortingVector();
    private CommandListener _commandListener;
    private Command _escapeCommand;
    private static Runnable _tickerRunnable;
@@ -83,8 +82,8 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
                this._separator = null;
             }
          } else if (this._title == null) {
-            this._separator = (SeparatorField)(new Object());
-            this._title = (LabelField)(new Object(s, 1152921504606846976L));
+            this._separator = new SeparatorField();
+            this._title = new LabelField(s, 1152921504606846976L);
             if (!this._fullScreenMode) {
                this.insert(this._title, 0);
                this.insert(this._separator, 1);
@@ -354,7 +353,7 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    MIDPScreen() {
-      super((Manager)(new Object(3458764513820540928L)), 65536);
+      super(new VerticalFieldManager(3458764513820540928L), 65536);
       this._commands.setSortComparator(this);
       this._commands.setSort(true);
    }

@@ -8,7 +8,7 @@ import net.rim.vm.Message;
 
 public final class VADUserEvents {
    public static final void sendEvent(int event, int context) {
-      Message msg = (Message)(new Object(6, event, context));
+      Message msg = new Message(6, event, context);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }

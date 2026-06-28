@@ -9,8 +9,8 @@ import net.rim.device.api.util.CyclicQueue;
 import net.rim.device.cldc.io.daemon.ProtocolDaemon;
 
 final class DatagramReceiveThread extends Thread implements ConnectionListener {
-   private Hashtable _connections = (Hashtable)(new Object());
-   private CyclicQueue _queue = (CyclicQueue)(new Object(32));
+   private Hashtable _connections = new Hashtable();
+   private CyclicQueue _queue = new CyclicQueue(32);
    private static final long ID;
 
    public static final DatagramReceiveThread getInstance() {
@@ -54,8 +54,8 @@ final class DatagramReceiveThread extends Thread implements ConnectionListener {
             Datagram datagram = connection.newDatagram(0);
             connection.receive(datagram);
             ((DatagramTransportBase)this._connections.get(connection)).superProcessReceivedDatagram(datagram);
-         } catch (IOException var9) {
-         } catch (Throwable var10) {
+         } catch (IOException var11) {
+         } catch (Throwable var12) {
          } finally {
             DatagramConnectionBase connection = null;
             Datagram datagram = null;

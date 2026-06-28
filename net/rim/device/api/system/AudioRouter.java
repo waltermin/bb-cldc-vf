@@ -221,7 +221,7 @@ public final class AudioRouter implements AudioHeadsetListener {
          this._eqPresetData[2] = (byte)eqPreset;
          this.setSink(this.getSink());
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -663,7 +663,7 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    private final void postEvent(int event, int subMessage) {
-      Message msg = (Message)(new Object(8, event, subMessage));
+      Message msg = new Message(8, event, subMessage);
       ApplicationManagerInternal appManager = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       appManager.postMessage(msg);
    }

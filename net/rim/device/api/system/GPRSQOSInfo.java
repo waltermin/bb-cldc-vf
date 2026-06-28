@@ -80,7 +80,7 @@ public final class GPRSQOSInfo implements QOSInfo {
       if (i >= 0 && i <= 3) {
          this._preClass = i;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -92,7 +92,7 @@ public final class GPRSQOSInfo implements QOSInfo {
       if (i >= 0 && i <= 5) {
          this._relClass = i;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -104,7 +104,7 @@ public final class GPRSQOSInfo implements QOSInfo {
       if (i >= 0 && i <= 4) {
          this._delClass = i;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -116,7 +116,7 @@ public final class GPRSQOSInfo implements QOSInfo {
       if (i >= 0 && i <= 9) {
          this._peakTPClass = i;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -126,7 +126,7 @@ public final class GPRSQOSInfo implements QOSInfo {
 
    public final void setMeanThroughputClass(int i) {
       if ((i < 0 || i > 18) && i != 31) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._meanTPClass = i;

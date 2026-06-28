@@ -50,7 +50,7 @@ public class Theme$Factory {
          return false;
       }
 
-      StringTokenizer st = (StringTokenizer)(new Object(this._vendorID));
+      StringTokenizer st = new StringTokenizer(this._vendorID);
 
       while (st.hasMoreTokens()) {
          String next = st.nextToken();

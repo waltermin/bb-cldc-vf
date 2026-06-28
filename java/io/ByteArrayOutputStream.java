@@ -86,7 +86,7 @@ public class ByteArrayOutputStream extends OutputStream {
 
    @Override
    public String toString() {
-      return (String)(new Object(this.buf, 0, this.count));
+      return new String(this.buf, 0, this.count);
    }
 
    @Override

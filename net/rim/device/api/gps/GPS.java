@@ -139,7 +139,7 @@ public final class GPS {
       }
 
       synchronized (_gpsModeStore) {
-         _gpsModeStore.setContents(new Object(mode), 51);
+         _gpsModeStore.setContents(new Integer(mode), 51);
          _gpsModeStore.commit();
       }
 
@@ -147,7 +147,7 @@ public final class GPS {
          nativeRequestModeChange(mode);
       }
 
-      Message message = (Message)(new Object(23, 5889, 1, mode, 0));
+      Message message = new Message(23, 5889, 1, mode, 0);
       ApplicationManagerInternal ami = (ApplicationManagerInternal)ApplicationManager.getApplicationManager();
       ami.postMessage(message);
       return true;

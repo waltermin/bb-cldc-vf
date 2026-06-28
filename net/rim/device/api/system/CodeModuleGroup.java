@@ -6,6 +6,7 @@ import java.util.Vector;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.util.CRC32;
 import net.rim.device.api.util.DataBuffer;
+import net.rim.device.api.util.EmptyEnumeration;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.system.CodeModuleGroupProperties;
 import net.rim.device.internal.system.CodeModuleGroupPropertiesCollection;
@@ -38,8 +39,8 @@ public final class CodeModuleGroup {
 
    CodeModuleGroup(int handle) {
       this._handle = handle;
-      this._moduleNames = (Vector)(new Object());
-      this._dependencies = (Vector)(new Object());
+      this._moduleNames = new Vector();
+      this._dependencies = new Vector();
       this._currentLocaleCode = Locale.getDefault().getCode();
    }
 
@@ -107,7 +108,7 @@ public final class CodeModuleGroup {
 
    public final String getFriendlyName(Locale locale) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._friendlyNameTable == null) {
@@ -124,7 +125,7 @@ public final class CodeModuleGroup {
 
    public final void setFriendlyName(Locale locale, String friendlyName) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._friendlyNameTable == null) {
@@ -159,7 +160,7 @@ public final class CodeModuleGroup {
 
    public final String getDescription(Locale locale) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._descriptionTable == null) {
@@ -176,7 +177,7 @@ public final class CodeModuleGroup {
 
    public final void setDescription(Locale locale, String description) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._descriptionTable == null) {
@@ -211,7 +212,7 @@ public final class CodeModuleGroup {
 
    public final String getVersion(Locale locale) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._versionTable == null) {
@@ -228,7 +229,7 @@ public final class CodeModuleGroup {
 
    public final void setVersion(Locale locale, String version) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._versionTable == null) {
@@ -263,7 +264,7 @@ public final class CodeModuleGroup {
 
    public final String getVendor(Locale locale) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._vendorTable == null) {
@@ -280,7 +281,7 @@ public final class CodeModuleGroup {
 
    public final void setVendor(Locale locale, String vendor) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._vendorTable == null) {
@@ -315,7 +316,7 @@ public final class CodeModuleGroup {
 
    public final String getCopyright(Locale locale) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._copyrightTable == null) {
@@ -332,7 +333,7 @@ public final class CodeModuleGroup {
 
    public final void setCopyright(Locale locale, String copyright) {
       if (locale == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       if (this._copyrightTable == null) {
@@ -375,11 +376,11 @@ public final class CodeModuleGroup {
    }
 
    public final Enumeration getPropertyNames() {
-      return (Enumeration)(this._properties == null ? new Object() : this._properties.keys());
+      return this._properties == null ? new EmptyEnumeration() : this._properties.keys();
    }
 
    public final String getProperty(String name) {
-      return (String)(this._properties == null ? null : this._properties.get(name));
+      return this._properties == null ? null : (String)this._properties.get(name);
    }
 
    public final void setProperty(String name, String value) {
@@ -402,11 +403,11 @@ public final class CodeModuleGroup {
 
    private final boolean localize() {
       if (this._handle == 0) {
-         this._friendlyNameTable = (Hashtable)(new Object());
-         this._descriptionTable = (Hashtable)(new Object());
-         this._vendorTable = (Hashtable)(new Object());
-         this._versionTable = (Hashtable)(new Object());
-         this._copyrightTable = (Hashtable)(new Object());
+         this._friendlyNameTable = new Hashtable();
+         this._descriptionTable = new Hashtable();
+         this._vendorTable = new Hashtable();
+         this._versionTable = new Hashtable();
+         this._copyrightTable = new Hashtable();
          boolean result = true;
          return result;
       } else {
@@ -461,7 +462,7 @@ public final class CodeModuleGroup {
 
    public final synchronized boolean store() {
       this.assertPermission();
-      DataBuffer buf = (DataBuffer)(new Object(false));
+      DataBuffer buf = new DataBuffer(false);
       buf.writeInt(2060613291);
       buf.writeInt(0);
       buf.writeInt(this._flags);

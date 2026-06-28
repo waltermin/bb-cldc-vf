@@ -30,6 +30,7 @@ import net.rim.device.api.util.AbstractStringWrapper;
 import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.StringProvider;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.ArticInterface;
 import net.rim.device.internal.ui.ArticInterface$LayoutRun;
 import net.rim.device.internal.ui.ArticInterface$Line;
@@ -206,7 +207,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    protected synchronized void hitTest(int aIndex, XYRect aResult) {
       if (aIndex < 0 || aIndex > this._text.length()) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       if (this._isPreLayout) {
@@ -387,7 +388,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    public char charAt(int offset) {
       if (offset < 0) {
-         throw new Object();
+         throw new IndexOutOfBoundsException();
       } else {
          return this._text.charAt(offset + this._labelLength);
       }
@@ -558,7 +559,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
          return y;
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -698,7 +699,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
       while (endLineTop < this._lastLabelLineTop) {
          if (endLine == null) {
-            throw new Object();
+            throw new IllegalStateException();
          }
 
          endLineTop += endLine._boundsBottom - endLine._boundsTop;
@@ -754,7 +755,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    synchronized void getCaretRect(int aDocPos, boolean aLeadingEdge, XYRect aCaret) {
       if (this._lineCount == 0) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._isPreLayout) {
@@ -780,7 +781,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    void getDocPos(int aX, int aY, TextHitInfo aDocPosInfo) {
       if (this._lineCount == 0) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._isPreLayout) {
@@ -927,7 +928,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          this._text.getText().seek(offset);
          this.setCursorPosition(offset, true, context);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -945,7 +946,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       this.resetComposedText();
       int oldLabelLength = this._labelLength;
       newLabel = this.handleLabelOwnLine(newLabel);
-      AttributedString attribStr = (AttributedString)(new Object(newLabel, this.getDefaultFontAttributes(), 0));
+      AttributedString attribStr = new AttributedString(newLabel, this.getDefaultFontAttributes(), 0);
       AttributedString$Iterator iter = attribStr.getIterator();
       this.replace(0, oldLabelLength, iter, -1, -1, iter.length(), 0, true, Integer.MIN_VALUE);
       if (!this._isPreLayout) {
@@ -1065,7 +1066,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
             this.setCaretPosition(this._composedStart);
          }
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -1189,7 +1190,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
       this._text.getText().seek(this._cursor);
       if (amount != result && Ui.isTTSEnabled()) {
-         AccessibleEventDispatcher.dispatchAccessibleEvent(3, new Object(cursorBeforeMove), new Object(this._cursor), this);
+         AccessibleEventDispatcher.dispatchAccessibleEvent(3, new Integer(cursorBeforeMove), new Integer(this._cursor), this);
       }
 
       return result;
@@ -1362,7 +1363,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
          adjustedWidth = this.getLayoutWidth(width);
          this.setExtent(adjustedWidth, sumOfHeights);
       } else {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
    }
 
@@ -1412,7 +1413,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       if ((action & 0xFF) > 0) {
          switch (action & 0xFF) {
             case 112:
-               if (parameter != null && parameter instanceof Object) {
+               if (parameter != null && parameter instanceof StringBuffer) {
                   this.fillInternalDebugInfo((StringBuffer)parameter);
                }
                break;
@@ -1638,7 +1639,69 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    protected void makeContextMenu(ContextMenu contextMenu) {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      super.makeContextMenu(contextMenu);
+      if (this.isEditable()) {
+         if (!contextMenu.isEmpty()) {
+            contextMenu.addSeparatorInternal();
+         }
+
+         if (this.isSymbolScreenAllowed()) {
+            contextMenu.addItem(_showSymbolsItem);
+         }
+
+         if (!this.isSelecting() && this.isClearMenuItemAllowed()) {
+            if (!contextMenu.isEmpty()) {
+               contextMenu.addSeparatorInternal();
+            }
+
+            contextMenu.addItem(_clearFieldItem);
+         }
+
+         if (this.getInputContext().getActiveInputMethodID() == 4096) {
+            Object toggleI = _toggleInputItem.get();
+            if (toggleI == null) {
+               toggleI = new TextField$TogglingMenuItem();
+               _toggleInputItem.set(toggleI);
+            }
+
+            SLControlObject co = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+            int currentMode = co.getInputMode();
+            if (currentMode != -1) {
+               TextFilter filter = this.getFilter();
+               int textFilterStyle = 0;
+               if (filter != null) {
+                  textFilterStyle = (int)filter.getPreferredInputStyle();
+               }
+
+               int id = 10091;
+               int inputMode = 0;
+               switch (currentMode) {
+                  case -1:
+                     break;
+                  case 0:
+                  default:
+                     id = 10090;
+                     inputMode = 2;
+                     break;
+                  case 1:
+                     if (((this.getFieldStyle() | textFilterStyle) & 1073741824) != 0) {
+                        id = 10090;
+                        inputMode = 2;
+                     }
+                     break;
+                  case 2:
+                     if (((this.getFieldStyle() | textFilterStyle) & 1073741824) != 0) {
+                        id = 10092;
+                        inputMode = 1;
+                     }
+               }
+
+               ((MenuItem)toggleI).setText(CommonResource.getBundle().getString(id));
+               ((TextField$TogglingMenuItem)toggleI).setInputMode(inputMode);
+               contextMenu.addItem((MenuItem)toggleI);
+            }
+         }
+      }
    }
 
    private void adjustCursorAfterTextChange(FormatParams params) {
@@ -1647,7 +1710,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    private synchronized void setSelection(int aNewCursor, boolean aNewCursorLeadingEdge, int aNewAnchor, boolean setPrefferredX) {
       if (this._lineCount == 0) {
-         throw new Object();
+         throw new IllegalStateException();
       }
 
       if (this._width == -1) {

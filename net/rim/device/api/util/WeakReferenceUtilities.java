@@ -18,7 +18,7 @@ public final class WeakReferenceUtilities {
    public static final StringBuffer getStringBuffer(WeakReference wr) {
       StringBuffer buffer = (StringBuffer)wr.get();
       if (buffer == null) {
-         buffer = (StringBuffer)(new Object());
+         buffer = new StringBuffer();
          wr.set(buffer);
       }
 
@@ -28,7 +28,7 @@ public final class WeakReferenceUtilities {
    public static final DataBuffer getDataBuffer(WeakReference wr, boolean bigEndianFlag) {
       DataBuffer buffer = (DataBuffer)wr.get();
       if (buffer == null) {
-         buffer = (DataBuffer)(new Object(bigEndianFlag));
+         buffer = new DataBuffer(bigEndianFlag);
          wr.set(buffer);
       }
 

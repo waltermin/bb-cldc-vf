@@ -108,7 +108,7 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    public void setTimeZone(TimeZone tz) {
       if (tz == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._timezone = tz;
@@ -760,7 +760,7 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    private boolean usingAlphaMonth() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private boolean isChangeOnVerticalScrollSet() {
@@ -785,6 +785,6 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    @Override
    public String getAccessibleName() {
-      throw new RuntimeException("cod2jar: invokevirtual: slot out of range");
+      throw new RuntimeException("cod2jar: ldc");
    }
 }

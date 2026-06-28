@@ -15,10 +15,10 @@ class KeywordPrefixCache {
 
    KeywordPrefixCache() {
       int initialSize = 171;
-      this._primaryCache = (Hashtable)(new Object(initialSize));
-      this._secondaryCache = (Hashtable)(new Object(initialSize));
-      this._returnResultCache = (Hashtable)(new Object(initialSize));
-      this._timestamps = (ToIntHashtable)(new Object(initialSize));
+      this._primaryCache = new Hashtable(initialSize);
+      this._secondaryCache = new Hashtable(initialSize);
+      this._returnResultCache = new Hashtable(initialSize);
+      this._timestamps = new ToIntHashtable(initialSize);
    }
 
    void reset() {

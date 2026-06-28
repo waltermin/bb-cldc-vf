@@ -28,6 +28,6 @@ final class Monitor {
 
    final void wakeyWakey() {
       this._hasBeenNotified = true;
-      super.notifyAll();
+      this.notifyAll();
    }
 }

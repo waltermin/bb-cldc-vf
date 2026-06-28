@@ -10,7 +10,7 @@ import net.rim.tid.text.AttributedString$Iterator;
 class SmileySupport {
    private TextField _field;
    private EmoticonStringPattern _smileyFacility;
-   private StringPattern$Match _match = (StringPattern$Match)(new Object());
+   private StringPattern$Match _match = new StringPattern$Match();
    private static int _size;
 
    SmileySupport(TextField field) {
@@ -55,9 +55,9 @@ class SmileySupport {
    }
 
    StringBufferGap getDecodedTextAbstractString(int start, int end) {
-      StringBuffer sb = (StringBuffer)(new Object());
+      StringBuffer sb = new StringBuffer();
       sb.append(this.getDecodedText(start, end));
-      StringBufferGap sbg = (StringBufferGap)(new Object());
+      StringBufferGap sbg = new StringBufferGap();
       sbg.insert(sb);
       return sbg;
    }
@@ -75,7 +75,7 @@ class SmileySupport {
    }
 
    private int insertSmiley(StringPattern$Match match) {
-      AttributedString insertedSmiley = (AttributedString)(new Object());
+      AttributedString insertedSmiley = new AttributedString();
       if (!this.isHttpConflict(match)) {
          insertedSmiley.insert(new SmileySupport$SmileyPicture(this, (int)match.id));
          this._field._text.replace(match.beginIndex, match.endIndex, insertedSmiley.getIterator(), 0, 0);

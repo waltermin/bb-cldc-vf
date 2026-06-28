@@ -8,7 +8,7 @@ public class MarkupInputStream extends InputStream {
    private InputStream _primaryInput;
    private int _type;
    private MarkupContext _context;
-   private Pipe _pipe = (Pipe)(new Object());
+   private Pipe _pipe = new Pipe();
    private int _currentPacketNo;
    private String _encoding;
    private Reader _reader;

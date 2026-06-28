@@ -2,6 +2,7 @@ package net.rim.device.internal.media;
 
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.menu.MenuItemPrefab;
 import net.rim.device.internal.util.OptionsRegistry$Listener;
 
 final class MediaOptionsUtilities$VolumeBoostMoreInformationScreen extends MainScreen implements OptionsRegistry$Listener {
@@ -23,7 +24,7 @@ final class MediaOptionsUtilities$VolumeBoostMoreInformationScreen extends MainS
    private final boolean shouldInvoke() {
       boolean invoke = false;
       MenuItem item = this.getDefaultMenuItem(0);
-      if (!(item instanceof Object)) {
+      if (!(item instanceof MenuItemPrefab)) {
          invoke = true;
       }
 

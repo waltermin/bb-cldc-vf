@@ -10,7 +10,7 @@ public final class ImageOverlay implements Image {
       if (image != null && overlay != null) {
          return new ImageOverlay(image, overlay);
       } else {
-         throw new Object();
+         throw new NullPointerException();
       }
    }
 

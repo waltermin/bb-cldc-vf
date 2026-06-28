@@ -12,7 +12,7 @@ public class BitSet implements net.rim.vm.Persistable {
 
    public BitSet(int size) {
       if (size < 0) {
-         throw new Object();
+         throw new IllegalArgumentException();
       }
 
       this._data = new int[size + 31 >> 5];

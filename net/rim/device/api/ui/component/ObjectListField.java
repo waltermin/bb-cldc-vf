@@ -7,9 +7,9 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.internal.i18n.CollatorImpl;
 
 public class ObjectListField extends ListField implements DrawStyle, ListFieldCallback {
-   private Vector _list = (Vector)(new Object());
+   private Vector _list = new Vector();
    private int _prefWidth;
-   private CollatorImpl _collator = (CollatorImpl)(new Object());
+   private CollatorImpl _collator = new CollatorImpl();
    private static String EMPTY_ROW;
    private static final int ATTRIBUTES_MASK;
 
@@ -34,7 +34,7 @@ public class ObjectListField extends ListField implements DrawStyle, ListFieldCa
 
    public void set(int index, Object object) {
       if (object == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._list.setElementAt(object, index);
@@ -44,7 +44,7 @@ public class ObjectListField extends ListField implements DrawStyle, ListFieldCa
 
    public void insert(int index, Object object) {
       if (object == null) {
-         throw new Object();
+         throw new NullPointerException();
       }
 
       this._list.insertElementAt(object, index);
