@@ -19,7 +19,7 @@ final class StringWrapper extends AbstractStringWrapper {
 
    @Override
    public final int length() {
-      throw new RuntimeException("cod2jar: string-special");
+      return this._string.length();
    }
 
    @Override
@@ -34,7 +34,7 @@ final class StringWrapper extends AbstractStringWrapper {
 
    @Override
    public final char charAt(int index) {
-      throw new RuntimeException("cod2jar: string-special");
+      return this._string.charAt(index);
    }
 
    @Override

@@ -13,7 +13,15 @@ public final class DNSMessageIPv4Resource {
    private Object _data;
 
    public final void setName(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name != null) {
+         if (name.length() == 0) {
+            name = null;
+         } else if (name.length() > 255) {
+            throw new IllegalArgumentException("Domain longer than 255 characters");
+         }
+      }
+
+      this._name = name;
    }
 
    public final String getName() {

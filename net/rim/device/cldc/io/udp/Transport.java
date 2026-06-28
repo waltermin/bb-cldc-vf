@@ -1,18 +1,23 @@
 package net.rim.device.cldc.io.udp;
 
+import java.io.IOException;
 import javax.microedition.io.Datagram;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.IOProperties;
+import net.rim.device.api.io.UdpAddress;
 import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.system.UDPPacketListener;
+import net.rim.device.api.system.WLAN;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.cldc.io.datarecovery.DataRecovery;
 import net.rim.device.cldc.io.datarecovery.DataRecoveryListener;
 import net.rim.device.cldc.io.nativebase.NativeTransport;
+import net.rim.device.internal.system.RadioInternal;
 import net.rim.device.internal.system.VoiceDataUsage;
 
 public final class Transport extends NativeTransport implements UDPPacketListener, DataRecoveryListener {
@@ -68,7 +73,34 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativePreSend() {
-      throw new RuntimeException("cod2jar: string-special");
+      UdpAddress addressBase = (UdpAddress)super._txAddressBase;
+      UDPPacketHeader header = (UDPPacketHeader)super._txHeader;
+      String apn = addressBase.getApn();
+      int apnId;
+      if (super._dataServicesEnabled || super._dataServicesMode == 3 && StringUtilities.strEqualIgnoreCase(apn, WLAN.WLAN_PSEUDO_APN, 1701707776)) {
+         try {
+            apnId = RadioInternal.registerAccessPointNumber(
+               apn, 0, apn == null ? 0 : apn.length(), null, null, addressBase.getApnUsername(), addressBase.getApnPassword()
+            );
+         } catch (RadioException e) {
+            EventLogger.logEvent(super.GUID, 1413833072, 2);
+            this.xmitDgslEvent(super._txListener, super._txDgramId, 12689, null);
+            throw new IOException();
+         }
+
+         try {
+            RadioInternal.registerPort(17, 1, header.getSourcePort(), apnId);
+         } catch (RadioException e) {
+            EventLogger.logEvent(super.GUID, 1413836914, 2);
+            this.xmitDgslEvent(super._txListener, super._txDgramId, 12691, null);
+            throw new IOException();
+         }
+      } else {
+         apnId = -1;
+      }
+
+      header.setAccessPointNumber(apnId);
+      super._txApnId = apnId;
    }
 
    @Override

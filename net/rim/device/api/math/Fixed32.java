@@ -102,7 +102,37 @@ public final class Fixed32 {
    public static final native int ArcCos(int var0);
 
    public static final int parseFixed32(String value) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (value == null) {
+         throw new NumberFormatException();
+      }
+
+      int wholePart = 0;
+      int fractionalPart = 0;
+      int indexOfDecimal = value.indexOf(46);
+      if (indexOfDecimal == -1) {
+         wholePart = Integer.parseInt(value);
+      } else {
+         wholePart = indexOfDecimal == 0 ? 0 : Integer.parseInt(value.substring(0, indexOfDecimal));
+         int stringSize = value.length();
+         if (stringSize == indexOfDecimal + 1) {
+            throw new NumberFormatException();
+         }
+
+         for (int i = 3; i >= 0; i--) {
+            int position = indexOfDecimal + i + 1;
+            int valueAtPosition = position >= stringSize ? 0 : value.charAt(position) - '0';
+            if (valueAtPosition < 0 || valueAtPosition > 9) {
+               throw new NumberFormatException();
+            }
+
+            fractionalPart += valueAtPosition * POWERS_OF_TEN[i];
+         }
+
+         fractionalPart = div(fractionalPart << 16, 655360000);
+      }
+
+      boolean positive = value.indexOf(45) == -1;
+      return positive ? (wholePart << 16) + fractionalPart : (wholePart << 16) - fractionalPart;
    }
 
    public static final int divtoInt(int n, int m) {

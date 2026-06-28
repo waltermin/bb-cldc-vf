@@ -274,6 +274,27 @@ public final class Helper {
    }
 
    private static final String resolveAlias(String enc) {
-      throw new RuntimeException("cod2jar: string-special");
+      String[] alias;
+      switch (enc.length()) {
+         case 4:
+            alias = ALIAS_UTF8;
+            break;
+         case 5:
+            alias = enc.charAt(4) != '7' ? ALIAS_ASCII : ALIAS_UTF7;
+            break;
+         case 9:
+            alias = ALIAS_ISO8859_1;
+            break;
+         case 18:
+            alias = ALIAS_UTF16BE;
+            break;
+         case 21:
+            alias = ALIAS_UTF16LE;
+            break;
+         default:
+            return enc;
+      }
+
+      return StringUtilities.strEqualIgnoreCase(enc, alias[0], 1701707776) ? alias[1] : enc;
    }
 }

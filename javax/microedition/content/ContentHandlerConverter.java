@@ -38,7 +38,10 @@ final class ContentHandlerConverter {
    }
 
    private static final void writeString(DataBuffer buffer, int param, String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (str != null && str.length() != 0) {
+         buffer.writeByte(param);
+         buffer.writeUTF(str);
+      }
    }
 
    private static final void writeStringArray(DataBuffer buffer, int param, String[] strs) {

@@ -115,6 +115,15 @@ public class MessagePart {
    }
 
    private boolean isASCII(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = s.length();
+
+      for (int i = 0; i < length; i++) {
+         char c = s.charAt(i);
+         if (c < 0 || c > 127) {
+            return false;
+         }
+      }
+
+      return true;
    }
 }

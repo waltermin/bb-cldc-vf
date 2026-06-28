@@ -27,6 +27,7 @@ import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.AbstractString;
 import net.rim.device.api.util.AbstractStringWrapper;
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.StringProvider;
@@ -57,7 +58,7 @@ import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
 
 public class TextField extends Field implements InputMethodRequests, FieldLabelProvider, Formatter$TextRenderer, AccessibleText {
-   private byte _caretShape;
+   private byte _caretShape = 4;
    private boolean _selecting;
    private int _cursor;
    private boolean _cursorLeadingEdge;
@@ -69,12 +70,12 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    private int _cursorLineStart;
    private int _cursorLineTop;
    private boolean _isDefaultR2L;
-   private int _preferredXCoord;
+   private int _preferredXCoord = -1;
    private boolean _inMoveFocus;
    AttributedString _text;
    private Object _imCookie;
-   private int _width;
-   private int _maxNumChars;
+   private int _width = -1;
+   private int _maxNumChars = 1000000;
    private TextFilter _filter;
    private int _themeGeneration;
    private Font _font;
@@ -88,25 +89,25 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    private int _labelLength;
    private int _lastLabelLineTop;
    private String _labelSet;
-   private XYRect _tempRect;
-   private TextHitInfo _tempDocPosInfo;
-   private ArticInterface$LineInfo _tempLineInfo;
+   private XYRect _tempRect = new XYRect();
+   private TextHitInfo _tempDocPosInfo = new TextHitInfo();
+   private ArticInterface$LineInfo _tempLineInfo = new ArticInterface$LineInfo();
    private AttributedString$Iterator _iterator;
    private long _lastFieldFull;
    private Runnable _fieldFullMsgInvoker;
-   private boolean _pasteable;
+   private boolean _pasteable = true;
    private boolean _cursorPositionSet;
-   private AbstractStringWrapper _stringData;
-   private boolean _notifyingTextChanged;
-   private int _focusOffset;
+   private AbstractStringWrapper _stringData = AbstractStringWrapper.createInstance("");
+   private boolean _notifyingTextChanged = false;
+   private int _focusOffset = -1;
    private int _focus_x;
    private int _focus_y;
    private int _focus_width;
    private int _focus_height;
-   private boolean _isPreLayout;
-   private boolean _inLayout;
-   private int _formatThreadId;
-   private FormatParams _formatParams;
+   private boolean _isPreLayout = true;
+   private boolean _inLayout = false;
+   private int _formatThreadId = -1;
+   private FormatParams _formatParams = new FormatParams();
    private int _lastFormatLength;
    protected long _insertionAttrib;
    protected long _insertionXAttrib;
@@ -115,8 +116,8 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    private boolean _navigationClickHandled;
    private boolean _isAutoSelectModeOn;
    private TextField$ConvertedString _convertedString;
-   private Screen _dependentScreen;
-   private boolean _isUnicodeInputAllowed;
+   private Screen _dependentScreen = null;
+   private boolean _isUnicodeInputAllowed = true;
    private static Tag TAG_EDIT;
    private static final boolean EDIT_DEBUG;
    public static final int DEFAULT_MAXCHARS;
@@ -155,7 +156,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    protected void findDefaultDirectionality(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    TextFilter getFilterFromStyle(long style) {
@@ -469,7 +470,61 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public synchronized int insert(String text, AttributedString$Picture picture, int context, boolean stripInvalid, boolean validateText) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text == null && picture == null) {
+         text = "";
+      }
+
+      this.resetComposedText();
+      if (stripInvalid && this.isStyle(2147483648L)) {
+         text = this.removeNewlines(text);
+      }
+
+      if (validateText && !stripInvalid && !this.validate(text)) {
+         return 0;
+      }
+
+      if (validateText && stripInvalid) {
+         text = this.convert(text, this._cursor);
+      }
+
+      int textLength = text == null ? 1 : text.length();
+      int count = Math.min(textLength, this._maxNumChars - this.getDecodedTextLength());
+      boolean fieldFull = false;
+      if (text != null && textLength > count) {
+         if (count <= 0) {
+            this.displayFieldFullMessage();
+            return 0;
+         }
+
+         fieldFull = true;
+         text = text.substring(0, count);
+         textLength = count;
+      }
+
+      if (this._latestCommittedEnd - this._latestCommittedStart > 0 && this._latestCommittedEnd > this._cursor) {
+         this.resetLatestCommittedText();
+      }
+
+      if (text != null) {
+         this._iterator.set(this._cursor, this._cursor);
+         this._text.setInsertAttrib(this._iterator.runAttrib());
+         this._text.setInsertXAttrib(this._iterator.runXAttrib());
+         this._text.insert(this._cursor, text);
+      } else if (picture != null) {
+         this._text.insert(this._cursor, picture);
+      }
+
+      this.update(this._cursor, 0, textLength, textLength, true, true);
+      if (Ui.isTTSEnabled() && text != null) {
+         this.accessibleEventOccurred(2, null, text, this);
+      }
+
+      this.fieldChangeNotify(context);
+      if (fieldFull) {
+         this.displayFieldFullMessage();
+      }
+
+      return textLength;
    }
 
    int getLayoutWidth(int width) {
@@ -1096,12 +1151,73 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public String getAfterIndex(int part, int index) {
-      throw new RuntimeException("cod2jar: string-special");
+      int start = 0;
+      int end = 0;
+      String simpleText = this._text.getString();
+      switch (part) {
+         case -1:
+            int current = this.getLineInfoForDocPos(index, false)._start + this.getLineInfoForDocPos(index, false)._line._textLength + 1;
+            if (++current < this._text.length()) {
+               ArticInterface$Line line = this.getLineInfoForDocPos(current, false)._line;
+               start = line == null ? 0 : this.getLineInfoForDocPos(current, false)._start;
+               end = line == null ? 0 : start + line._textLength;
+            }
+            break;
+         case 0:
+         default:
+            if (index < simpleText.length() - 2) {
+               start = ++index;
+               end = ++index;
+            }
+            break;
+         case 1:
+            BreakIterator boundary = BreakIterator.getInstance(1, Locale.getDefault());
+            boundary.setText(simpleText);
+            int startResult = boundary.following(index - 1);
+            if (startResult != Integer.MAX_VALUE) {
+               int last = boundary.following(startResult);
+               if (last != Integer.MAX_VALUE) {
+                  int following = boundary.following(last);
+                  end = following == Integer.MAX_VALUE ? simpleText.length() : following;
+                  start = startResult;
+               }
+            }
+      }
+
+      return this._text.getText(start, end);
    }
 
    @Override
    public String getAtIndex(int part, int index) {
-      throw new RuntimeException("cod2jar: string-special");
+      int start = 0;
+      int end = 0;
+      String simpleText = this._text.getString();
+      switch (part) {
+         case -1:
+            if (this.getDisplayLineCount() != 0) {
+               ArticInterface$Line line = this.getLineInfoForDocPos(index, false)._line;
+               start = this.getLineInfoForDocPos(index, false)._start;
+               end = line == null ? 0 : start + line._textLength;
+            }
+            break;
+         case 0:
+         default:
+            if (index > 0) {
+               start = index - 1;
+            }
+
+            end = index;
+            break;
+         case 1:
+            BreakIterator boundary = BreakIterator.getInstance(1, Locale.getDefault());
+            boundary.setText(simpleText);
+            int startResult = boundary.preceding(index);
+            start = startResult == Integer.MAX_VALUE ? 0 : startResult;
+            int endResult = boundary.following(index);
+            end = endResult == Integer.MAX_VALUE ? simpleText.length() : endResult;
+      }
+
+      return this._text.getText(start, end);
    }
 
    @Override
@@ -1364,7 +1480,29 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private String convert(String original, int insertPos) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._filter == null) {
+         return original;
+      }
+
+      if (this._convertedString == null) {
+         this._convertedString = new TextField$ConvertedString(this, null);
+      }
+
+      this._convertedString.init(original.length(), insertPos);
+      boolean conversionNeeded = false;
+
+      for (int i = 0; i < original.length(); i++) {
+         char ch = original.charAt(i);
+         char newCh = this._filter.convert(ch, this._convertedString, insertPos + i, 32768);
+         if (this.validate(newCh)) {
+            this._convertedString.appendFilteredChar(newCh);
+            conversionNeeded = conversionNeeded || newCh != ch;
+         } else {
+            conversionNeeded = true;
+         }
+      }
+
+      return conversionNeeded ? this._convertedString.getConvertedInsertionString() : original;
    }
 
    @Override
@@ -1452,7 +1590,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void setTextInternal(String text, int context, boolean validate) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
@@ -1611,7 +1749,21 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private String removeNewlines(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (str == null) {
+         return null;
+      }
+
+      int l = str.length();
+      StringBuffer sb = new StringBuffer(l);
+
+      for (int i = 0; i < l; i++) {
+         char c;
+         if ((c = str.charAt(i)) != '\n') {
+            sb.append(c);
+         }
+      }
+
+      return sb.toString();
    }
 
    private void removeNewlines(AttributedString str) {
@@ -1658,7 +1810,25 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private String handleLabelOwnLine(String labelSet) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._labelSet = labelSet;
+      if (labelSet == null) {
+         labelSet = "";
+      }
+
+      this._isLabelOwnLine = ThemeManager.getActiveTheme().isLabelOnOwnLine();
+      String label;
+      if (this._isLabelOwnLine && labelSet.length() > 0 && labelSet.charAt(labelSet.length() - 1) != '\n') {
+         label = labelSet + '\n';
+      } else {
+         label = labelSet.length() > 0 && labelSet.charAt(labelSet.length() - 1) != '\n' ? labelSet + '\u200b' : labelSet;
+      }
+
+      if (!this._isUnicodeInputAllowed && label.length() > 0 && label.charAt(label.length() - 1) != 8234 && this.isDirectionalityR2L(label)) {
+         label = label + '\u202a';
+      }
+
+      this._labelLength = label.length();
+      return label;
    }
 
    private final int getLineLength(ArticInterface$Line aLine) {
@@ -1873,6 +2043,31 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public TextField(String label, String initialValue, int maxNumChars, long style) {
+      super(validateStyle(style));
+      this.setTag(TAG_EDIT);
+      this._filter = this.getFilterFromStyle(style);
+      if (this._filter != null && this._filter.getMaxLength() < maxNumChars) {
+         maxNumChars = this._filter.getMaxLength();
+      }
+
+      if (maxNumChars < 1) {
+         throw new IllegalArgumentException("invalid initialValue");
+      }
+
+      this._maxNumChars = Math.min(1000000, maxNumChars);
+      if (initialValue != null && initialValue.length() > maxNumChars) {
+         throw new IllegalArgumentException("invalid initialValue");
+      }
+
+      this._text = new AttributedString();
+      this.setLabel(label);
+      this.setTextInternal(initialValue, Integer.MIN_VALUE, !(this instanceof BasicEditField));
+      this._iterator = this._text.getIterator();
+      this._lineList = new ArticInterface$Line();
+      this._lineList._flags = 3;
+      this._lineCount = 1;
+      this.initCursor();
+      this.setDefaultInsertionAttributes();
    }
 
    @Override
@@ -2094,7 +2289,23 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private boolean isDirectionalityR2L(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      for (int i = 0; i < text.length(); i++) {
+         int type = CharacterUtilities.getBidiType(text.charAt(i)) & 127;
+         if (type != 0) {
+            switch (type) {
+               case 0:
+               case 3:
+                  return true;
+               case 1:
+               case 2:
+               case 4:
+               default:
+                  return false;
+            }
+         }
+      }
+
+      return false;
    }
 
    private void fillInternalDebugInfo(StringBuffer result) {

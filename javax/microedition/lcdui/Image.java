@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.resources.Resource$Internal;
+import net.rim.vm.TraceBack;
 
 public class Image {
    private Bitmap _bitmap;
@@ -41,7 +43,18 @@ public class Image {
    }
 
    public static Image createImage(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name.length() > 0 && name.charAt(0) == '/') {
+         name = name.substring(1);
+      }
+
+      try {
+         byte[] png = Resource$Internal.getResourceClass(TraceBack.getCallingModuleName(2)).getResource(name);
+         return createImage(png, 0, png.length);
+      } catch (NullPointerException npe) {
+         throw new IOException();
+      } catch (IllegalArgumentException iae) {
+         throw new IOException();
+      }
    }
 
    public static Image createImage(byte[] imageData, int imageOffset, int imageLength) {

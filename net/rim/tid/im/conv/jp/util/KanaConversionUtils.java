@@ -1,6 +1,7 @@
 package net.rim.tid.im.conv.jp.util;
 
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CharacterUtilities;
 
 public class KanaConversionUtils implements ISLJpConst {
    protected static final char[] hira2UNICODE;
@@ -152,6 +153,25 @@ public class KanaConversionUtils implements ISLJpConst {
    }
 
    public static String composeAdjustedSearchPatternForJapanese(String pattern) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer compositeSearchPattern = new StringBuffer();
+      boolean hasHanSymbols = false;
+
+      for (int i = 0; i < pattern.length(); i++) {
+         char ch = pattern.charAt(i);
+         hasHanSymbols |= CharacterUtilities.isHan(ch);
+         compositeSearchPattern.append(ch);
+      }
+
+      if (hasHanSymbols) {
+         int lengthBefore = compositeSearchPattern.length();
+         int converted = kanaToHalfWidth(compositeSearchPattern, 0, compositeSearchPattern.length(), compositeSearchPattern);
+         if (converted != lengthBefore) {
+            compositeSearchPattern.setLength(lengthBefore);
+         } else {
+            compositeSearchPattern.delete(0, lengthBefore);
+         }
+      }
+
+      return compositeSearchPattern.toString();
    }
 }

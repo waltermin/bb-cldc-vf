@@ -6,6 +6,7 @@ import java.util.TimeZone;
 import net.rim.device.api.i18n.DateFormat;
 import net.rim.device.api.i18n.DateFormatSymbols;
 import net.rim.device.api.i18n.FieldPosition;
+import net.rim.device.api.i18n.SimpleDateFormat;
 import net.rim.device.api.system.Clipboard;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.ui.ContextMenu;
@@ -26,6 +27,7 @@ import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.StringProvider;
 import net.rim.device.cldc.util.CalendarExtensions;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.tid.im.layout.SLKeyLayout;
 
 public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    private int _minimumWidth;
@@ -293,7 +295,129 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!this.isEditable()) {
+         return false;
+      }
+
+      key = this.transformKeyChar(key, status);
+      if (key == ' ') {
+         int changeAmount;
+         if ((status & 2) != 0) {
+            changeAmount = -1;
+         } else {
+            changeAmount = 1;
+         }
+
+         this.calcDateFromFieldChange(changeAmount);
+      } else {
+         if (key == '\n') {
+            this.focusRemove();
+            boolean result = this.moveFocus(1, 0, 0) == 0;
+            this.focusAdd(true);
+            return result;
+         }
+
+         if (key == 27) {
+            return false;
+         }
+
+         if (this._utilCal == null) {
+            this._utilCal = Calendar.getInstance(this._timezone);
+         }
+
+         boolean numeric = false;
+         int currentField = this._c_fields[this._position];
+         int currentValue = this._utilCal.get(currentField);
+         switch (currentField) {
+            case 0:
+            case 3:
+            case 4:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+               break;
+            case 1:
+            case 5:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            default:
+               numeric = true;
+               break;
+            case 2:
+               if (!this.usingAlphaMonth()) {
+                  numeric = true;
+               }
+         }
+
+         if (numeric && !Character.isDigit(key)) {
+            key = Keypad.getAltedChar(key);
+         }
+
+         if (!Character.isDigit(key)) {
+            key = Character.toLowerCase(key);
+            String[] options = null;
+            switch (currentField) {
+               case 2:
+                  options = this._symbols.getMonths();
+                  break;
+               case 7:
+                  options = this._symbols.getWeekdays();
+                  break;
+               case 9:
+                  options = this._symbols.getAmPmStrings();
+            }
+
+            if (options != null) {
+               SLKeyLayout layout = Keypad.getLayout();
+               int modif = SLKeyLayout.convertStatusToModifiers(status);
+               StringBuffer keysBuffer = layout.getComplementaryChars(key, modif);
+               if (keysBuffer != null) {
+                  String keys = keysBuffer.toString();
+                  int keyLen = keys.length();
+                  int minimum = ((CalendarExtensions)this._utilCal).getActualMinimum(currentField);
+
+                  label101:
+                  for (int i = currentValue + 1 - minimum; i != currentValue - minimum; i++) {
+                     if (i >= options.length) {
+                        i = -1;
+                     } else {
+                        for (int j = 0; j < keyLen; j++) {
+                           if (Character.toLowerCase(options[i].charAt(0)) == keys.charAt(j)) {
+                              ((CalendarExtensions)this._utilCal).add(currentField, i + minimum - currentValue);
+                              break label101;
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         } else {
+            int num = Character.digit(key, 10);
+            int max = ((CalendarExtensions)this._utilCal).getActualMaximum(currentField) + (currentField == 10 ? 1 : 0);
+            int min = ((CalendarExtensions)this._utilCal).getActualMinimum(currentField);
+            int fudge = currentField == 2 ? 1 : 0;
+            int value = this.isMuddy() ? (currentValue + fudge) * 10 + num : num;
+            if (value > max + fudge) {
+               value %= 10;
+            }
+
+            value = Math.max(value, fudge);
+            if (currentField == 10 && value == 12) {
+               value = 0;
+            }
+
+            value = MathUtilities.clamp(min + fudge, value, max + fudge);
+            this._utilCal.set(currentField, value - fudge);
+         }
+      }
+
+      this.calcCachedData();
+      this.fieldChangeNotify(0);
+      return true;
    }
 
    private char transformKeyChar(char key, int status) {
@@ -769,7 +893,22 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    private boolean usingAlphaMonth() {
-      throw new RuntimeException("cod2jar: string-special");
+      String dateFormat = ((SimpleDateFormat)this._format).toPattern();
+      int index = dateFormat.indexOf(77);
+      if (index >= 0) {
+         int numMs = 0;
+
+         do {
+            numMs++;
+            index++;
+         } while (index < dateFormat.length() && dateFormat.charAt(index) == 'M');
+
+         if (numMs > 2) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    private boolean isChangeOnVerticalScrollSet() {

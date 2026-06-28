@@ -4,6 +4,7 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldLabelProvider;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
@@ -91,7 +92,19 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    @Override
    public int getPreferredWidth() {
-      throw new RuntimeException("cod2jar: string-special");
+      Font font = this.getFont();
+      int fontHeight = font.getHeight();
+      int width = 0;
+      if (this._image != null) {
+         width = 2 + this._image.getWidth();
+      }
+
+      if (this._label != null) {
+         width += 2 + font.getBounds(this._label, 0, this._label.length());
+      }
+
+      int iconWidth = SystemIcon.COLLECTION.getWidth(fontHeight, fontHeight);
+      return width + iconWidth;
    }
 
    public RadioButtonField(String label) {
@@ -143,7 +156,33 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._group == null) {
+         throw new IllegalStateException("Displayed RadioButton is not a member of a group.");
+      }
+
+      Font font = this.getFont();
+      int fontHeight = font.getHeight();
+      this._iconWidth = SystemIcon.COLLECTION.getWidth(fontHeight, fontHeight);
+      this._iconHeight = Math.max(fontHeight, SystemIcon.COLLECTION.getHeight(fontHeight, fontHeight));
+      height = this._iconHeight;
+      int x_pos = this._iconWidth;
+      int imageWidth = 0;
+      if (this._image != null) {
+         imageWidth = this._image.getWidth() + 2;
+         height = Math.max(this._image.getHeight(), height);
+      }
+
+      if (this.isStyle(2147483648L)) {
+         width = x_pos + imageWidth + 2;
+         if (this._text.getText() != null) {
+            width += font.getBounds(this._label, 0, this._label.length());
+         }
+      }
+
+      this._text.setPosition(x_pos + imageWidth + 2, 0);
+      this._text.layout(Math.max(width - x_pos - imageWidth - 2, 0), height);
+      height = Math.max(this._text.getHeight(), height);
+      this.setExtent(width, height);
    }
 
    @Override

@@ -229,7 +229,30 @@ public class Graphics {
    }
 
    public synchronized void drawSubstring(String str, int offset, int len, int x, int y, int anchor) {
-      throw new RuntimeException("cod2jar: string-special");
+      int slen = str.length();
+      if (offset >= 0 && offset <= slen && offset + len <= slen && len >= 0) {
+         if (len > 0) {
+            if ((anchor & -21) == 0) {
+               this._peer.drawText(str, offset, len, x, y, this.translateAnchorToDrawStyle(anchor), -1);
+               return;
+            }
+
+            this.validateTextAnchor(anchor);
+
+            int width;
+            try {
+               width = this._font.getPeer().getBounds(str, offset, len);
+            } catch (IllegalArgumentException iae) {
+               throw new StringIndexOutOfBoundsException();
+            }
+
+            x = this.translateHorizontalAnchor(x, width, anchor);
+            int flags = this.translateVerticalAnchor(anchor);
+            this._peer.drawText(str, offset, len, x, y, flags, width);
+         }
+      } else {
+         throw new StringIndexOutOfBoundsException();
+      }
    }
 
    public synchronized void drawChar(char character, int x, int y, int anchor) {

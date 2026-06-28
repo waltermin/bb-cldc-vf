@@ -197,7 +197,14 @@ public class Theme {
    }
 
    protected void addTune(ResourceFetcher resourceFetcher, String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      byte[] data = resourceFetcher.fetchResource(name);
+      int dot = name.lastIndexOf(46);
+      String tuneName = name.substring(0, dot);
+      if (tuneName.startsWith(ThemeConstants.RINGTONE_PREFIX)) {
+         String ringtone = tuneName.substring(ThemeConstants.RINGTONE_PREFIX.length());
+         ringtone = ringtone.replace('_', ' ');
+         this._ringtones.put(ringtone, data);
+      }
    }
 
    public synchronized void apply() {
@@ -794,7 +801,23 @@ public class Theme {
    }
 
    void initializeIconCollectionHelper(NamedIconCollection collection, Hashtable descriptors) {
-      throw new RuntimeException("cod2jar: string-special");
+      String collectionName = collection.getName();
+      Enumeration keys = descriptors.elements();
+
+      while (keys.hasMoreElements()) {
+         Theme$ImageDescriptor descriptor = (Theme$ImageDescriptor)keys.nextElement();
+         String name = descriptor.getName();
+         if (name.startsWith(collectionName)) {
+            int iconsSuffixPos = name.indexOf(ThemeConstants.ICONS_SUFFIX);
+            if (iconsSuffixPos == collectionName.length() && name.length() > iconsSuffixPos + ThemeConstants.ICONS_SUFFIX.length()) {
+               EncodedImage image = descriptor.getImage();
+               int xindex = name.indexOf(120, iconsSuffixPos + ThemeConstants.ICONS_SUFFIX.length());
+               int width = Integer.parseInt(name.substring(iconsSuffixPos + ThemeConstants.ICONS_SUFFIX.length(), xindex));
+               int height = Integer.parseInt(name.substring(xindex + 1));
+               collection.addImage(image, width, height, descriptor.isDefault());
+            }
+         }
+      }
    }
 
    public boolean isLabelOnOwnLine() {

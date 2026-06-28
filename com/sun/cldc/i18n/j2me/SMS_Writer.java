@@ -443,7 +443,9 @@ public final class SMS_Writer extends StreamWriter {
 
    @Override
    public final void write(String str, int off, int len) {
-      throw new RuntimeException("cod2jar: string-special");
+      for (int i = 0; i < len; i++) {
+         this.write(str.charAt(off + i));
+      }
    }
 
    @Override

@@ -20,11 +20,15 @@ import net.rim.device.api.ui.text.TextRect;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.StringProvider;
 import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.ui.Edit$Helper;
+import net.rim.device.internal.ui.RichText;
 import net.rim.device.internal.ui.StringBufferGap;
 import net.rim.device.internal.ui.security.component.LockIconField;
 import net.rim.tid.im.layout.SLKeyLayout;
+import net.rim.vm.Array;
 
 public class ChoiceField extends Field implements FieldLabelProvider {
    private TextRect _label = new TextRect(this);
@@ -360,7 +364,26 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    }
 
    private int findNextItem(StringBuffer keys) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._numChoices != 0 && keys != null) {
+         int keysLen = keys.length();
+
+         for (int index = 0; index < this._numChoices; index++) {
+            String currChoice = this.getChoice((index + this._selectedIndex + 1) % this._numChoices).toString();
+            if (currChoice.length() > 0) {
+               char first = CharacterUtilities.toLowerCase(currChoice.charAt(0));
+
+               for (int i = 0; i < keysLen; i++) {
+                  if (first == CharacterUtilities.toLowerCase(keys.charAt(i))) {
+                     return (index + this._selectedIndex + 1) % this._numChoices;
+                  }
+               }
+            }
+         }
+
+         return -1;
+      } else {
+         return -1;
+      }
    }
 
    @Override
@@ -406,7 +429,49 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    }
 
    private void calculateLengths(int width) {
-      throw new RuntimeException("cod2jar: string-special");
+      width--;
+      this._lengthOfLongestLine = 0;
+      Arrays.fill(this._lengths, (byte)0);
+      if (this._selectedIndex > -1) {
+         int labelWidth = this._label.getWidth() + 2;
+         int totalWidth = labelWidth + this.getWidthOfChoice(this._selectedIndex);
+         boolean labelOnOwnLine = this._isLabelOwnLine;
+         if (this._label.getLineCount() > 1 || totalWidth > width) {
+            totalWidth -= labelWidth;
+            labelOnOwnLine = true;
+         }
+
+         if (totalWidth > width) {
+            if (!labelOnOwnLine && this._label.getLineCount() == 1) {
+               width -= labelWidth;
+            }
+
+            String text = this.getChoiceCached(this._selectedIndex);
+            this._buffer.clear();
+            this._buffer.insert(text);
+            ChoiceField$EditHelperForm.fonts[0] = this.getFont();
+            ChoiceField$EditHelperForm.offsets[1] = text.length();
+            Edit$Helper helper = RichText.calculateLengths(
+               width,
+               0,
+               this._buffer.length(),
+               this._buffer,
+               ChoiceField$EditHelperForm.offsets,
+               ChoiceField$EditHelperForm.attributes,
+               ChoiceField$EditHelperForm.fonts,
+               true
+            );
+            if (this._lengths.length != helper._lineCount) {
+               Array.resize(this._lengths, helper._lineCount);
+            }
+
+            System.arraycopy(helper._lengths, 0, this._lengths, 0, helper._lineCount);
+            this._lengthOfLongestLine = helper._lengthOfLongestLineInPixels;
+            return;
+         }
+
+         this._lengthOfLongestLine = 0;
+      }
    }
 
    private void updateLengths(int width) {

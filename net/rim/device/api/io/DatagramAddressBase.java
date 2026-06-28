@@ -51,7 +51,23 @@ public class DatagramAddressBase {
    }
 
    public static int indexOfNextDelim(String str, int start) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = str.length();
+
+      while (start < length) {
+         switch (str.charAt(start)) {
+            case '$':
+            case '(':
+            case '/':
+            case ':':
+            case ';':
+            case '|':
+               return start;
+            default:
+               start++;
+         }
+      }
+
+      return start;
    }
 
    public static short readShort(byte[] buf, int offset) {
@@ -98,7 +114,19 @@ public class DatagramAddressBase {
    }
 
    public static int parseInt(String buf, int start, int end, int radix) {
-      throw new RuntimeException("cod2jar: string-special");
+      int ret = 0;
+
+      for (int i = start; i < end; i++) {
+         int digit = Character.digit(buf.charAt(i), radix);
+         if (digit < 0) {
+            throw new IllegalArgumentException("Invalid digit");
+         }
+
+         ret *= radix;
+         ret += digit;
+      }
+
+      return ret;
    }
 
    public static int parseInt(byte[] buf, int start, int end, int radix) {
@@ -118,7 +146,19 @@ public class DatagramAddressBase {
    }
 
    public static long parseLong(String buf, int start, int end, int radix) {
-      throw new RuntimeException("cod2jar: string-special");
+      long ret = 0;
+
+      for (int i = start; i < end; i++) {
+         int digit = Character.digit(buf.charAt(i), radix);
+         if (digit < 0) {
+            throw new IllegalArgumentException("Invalid digit");
+         }
+
+         ret *= radix;
+         ret += digit;
+      }
+
+      return ret;
    }
 
    public static void appendHex(StringBuffer buf, int offset, int value, int length) {
@@ -169,6 +209,30 @@ public class DatagramAddressBase {
    }
 
    protected static boolean isDomainName(String address, int startIndex, int endIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (endIndex <= startIndex + 1) {
+         return false;
+      }
+
+      int start = startIndex;
+      int end = startIndex;
+
+      do {
+         end = address.indexOf(46, end);
+         if (end == -1 || end >= endIndex) {
+            end = endIndex;
+         }
+
+         while (start < end && Character.isDigit(address.charAt(start))) {
+            start++;
+         }
+
+         if (start < end) {
+            return true;
+         }
+
+         start = ++end;
+      } while (end < endIndex);
+
+      return false;
    }
 }

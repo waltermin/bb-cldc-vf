@@ -208,7 +208,7 @@ public class Base64InputStream extends InputStream {
    }
 
    public static byte[] decode(String input) {
-      throw new RuntimeException("cod2jar: string-special");
+      return decode(input.getBytes(), 0, input.length());
    }
 
    public static byte[] decode(String input, int inputOffset, int inputLength) {

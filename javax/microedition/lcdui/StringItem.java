@@ -40,7 +40,31 @@ public class StringItem extends Item {
    }
 
    private String makeValue() {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer value = new StringBuffer();
+      if (this._label != null) {
+         value.append(this._label);
+      }
+
+      if (this._text != null) {
+         if (value.length() > 1) {
+            value.append(' ');
+         }
+
+         int beginIndex = 0;
+         int textLength = this._text.length();
+         int endIndex = textLength;
+         if (textLength > 0 && this._text.charAt(0) == '\n') {
+            beginIndex = 1;
+         }
+
+         if (textLength > 1 && this._text.charAt(textLength - 1) == '\n') {
+            endIndex = textLength - 1;
+         }
+
+         value.append(this._text.substring(beginIndex, endIndex));
+      }
+
+      return new String(value);
    }
 
    public String getText() {
@@ -50,7 +74,21 @@ public class StringItem extends Item {
    }
 
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (Application.getEventLock()) {
+         this._text = text;
+         if (this._text != null) {
+            int textLength = this._text.length();
+            if (textLength > 0 && this._text.charAt(0) == '\n') {
+               this.setLayout(this.getLayout() | 256);
+            }
+
+            if (textLength > 1 && this._text.charAt(textLength - 1) == '\n') {
+               this.setLayout(this.getLayout() | 512);
+            }
+         }
+
+         this._field.setText(this.makeValue());
+      }
    }
 
    @Override

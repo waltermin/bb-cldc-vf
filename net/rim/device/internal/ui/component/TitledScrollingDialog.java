@@ -40,7 +40,23 @@ public class TitledScrollingDialog extends PopupDialog implements FieldChangeLis
    }
 
    protected RichTextField addScrollingLabelAndValue(String label, String value) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (label != null && value != null && value.length() != 0) {
+         boolean setFocus = this._scrollingRegion.getFieldCount() == 0;
+         LabelField labelField = new LabelField(label, 64);
+         labelField.setFont(this._boldFont);
+         RichTextField valueField = new RichTextField(value, 9007199254740992L);
+         synchronized (Application.getEventLock()) {
+            this._scrollingRegion.add(labelField);
+            this._scrollingRegion.add(valueField, 12);
+            if (setFocus) {
+               this._scrollingRegion.setFocus();
+            }
+
+            return valueField;
+         }
+      } else {
+         return null;
+      }
    }
 
    protected void addScrollingField(Field field) {

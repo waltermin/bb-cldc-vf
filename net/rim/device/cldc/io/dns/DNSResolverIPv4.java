@@ -11,6 +11,7 @@ import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.system.UDPPacketListener;
+import net.rim.device.api.system.WLAN;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.StringUtilities;
@@ -387,7 +388,7 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private DNSRequest lookInCache(DNSRequest req) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private void doSimulatorWorkaround(DNSRequest req) {
@@ -541,7 +542,18 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private static String addAPNToName(String name, int apnID) {
-      throw new RuntimeException("cod2jar: string-special");
+      String apn = null;
+
+      try {
+         apn = RadioInfo.getAccessPointName(apnID);
+      } catch (RadioException var4) {
+      }
+
+      if (apn != null && apn.length() > 0 && !WLAN.WLAN_PSEUDO_APN.equals(apn)) {
+         name = name + '.' + apn;
+      }
+
+      return name;
    }
 
    private synchronized int getNextPacketId() {
@@ -655,6 +667,18 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private boolean setupNextAttempt(DNSRequest req) {
-      throw new RuntimeException("cod2jar: string-special");
+      String name = req.getQueryString();
+      if (req.getQueryType() == 1 && !req.isFlagSet(1) && name.charAt(name.length() - 1) != '.') {
+         req.setFlag(1);
+         if (req.isFlagSet(2)) {
+            req.setCurrentIpSettings(req.getSecondaryDnsIp(), null);
+            return true;
+         } else {
+            req.setCurrentIpSettings(req.getPrimaryDnsIp(), null);
+            return true;
+         }
+      } else {
+         return false;
+      }
    }
 }

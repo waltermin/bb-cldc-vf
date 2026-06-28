@@ -231,7 +231,23 @@ public final class MessageQueue {
    }
 
    private static final void appendObjType(StringBuffer buff, Object o) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (o != null) {
+         buff.append(' ');
+         buff.append(Integer.toString(Memory.objectToInt(o), 16));
+         buff.append(':');
+         String name = o.getClass().getName();
+         int dotIndex = name.lastIndexOf(46);
+         if (dotIndex != -1) {
+            int dimIndex = name.lastIndexOf(91);
+            if (dimIndex != -1) {
+               name = name.substring(0, dimIndex + 1) + name.substring(dotIndex + 1, name.length() - 1);
+            } else {
+               name = name.substring(dotIndex + 1);
+            }
+         }
+
+         buff.append(name);
+      }
    }
 
    @Override

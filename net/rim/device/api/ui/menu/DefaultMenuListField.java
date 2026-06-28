@@ -6,7 +6,9 @@ import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontLogicHelper;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.TextMetrics;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.theme.Tag;
@@ -14,8 +16,10 @@ import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.Image;
+import net.rim.tid.im.layout.SLKeyLayout;
 
 class DefaultMenuListField extends Field implements MenuList {
    private MenuItem[] _items;
@@ -166,12 +170,73 @@ class DefaultMenuListField extends Field implements MenuList {
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: string-special");
+      int selectedFieldIndex = this._selection;
+      int numFields = this._items.length;
+      this.focusRemove();
+      SLKeyLayout var10000 = Keypad.getLayout();
+      Keypad.getLayout();
+      StringBuffer keys = var10000.getComplementaryChars(key, SLKeyLayout.convertStatusToModifiers(status));
+      if (keys != null) {
+         keys = new StringBuffer(keys.toString());
+      }
+
+      for (int i = selectedFieldIndex + 1; i < numFields; i++) {
+         String text = this._items[i].toString();
+         char ch = text != null && text.length() > 0 ? Character.toLowerCase(CharacterUtilities.getOriginal(text.charAt(0))) : '\u0000';
+         if (this.containsChar(keys, ch) || key == ch) {
+            this._selection = i;
+            this.focusAdd(true);
+            this.invalidate(0, this.getPosOfItem(selectedFieldIndex), this.getWidth(), this.getPosOfItem(i));
+            return true;
+         }
+      }
+
+      for (int i = 0; i < selectedFieldIndex; i++) {
+         String text = this._items[i].toString();
+         char ch = text != null && text.length() > 0 ? Character.toLowerCase(CharacterUtilities.getOriginal(text.charAt(0))) : '\u0000';
+         if (this.containsChar(keys, ch) || key == ch) {
+            this._selection = i;
+            this.focusAdd(true);
+            this.invalidate(0, this.getPosOfItem(i + 1), this.getWidth(), this.getPosOfItem(selectedFieldIndex + 1));
+            return true;
+         }
+      }
+
+      this.focusAdd(true);
+      return false;
    }
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: string-special");
+      width = Math.min(width, this.getPreferredWidth());
+      int length = this._items.length;
+      this._heights = new byte[length];
+      this._offsets = new byte[length];
+      TextMetrics metrics = new TextMetrics();
+
+      for (int index = 0; index < length; index++) {
+         MenuItem item = this._items[index];
+         if (item.isSeparator()) {
+            this._heights[index] = (byte)this._separatorHeight;
+         } else {
+            String text = this._items[index].toString();
+            this._font.measureText(text, 0, text.length(), null, metrics);
+            int above = Math.max(-metrics.iBoundsTlY, this._font.getBaseline());
+            if (above <= this._font.getBaseline() && metrics.iBoundsBrY <= this._font.getDescent()) {
+               this._heights[index] = (byte)this._fontHeight;
+            } else {
+               int below = Math.max(metrics.iBoundsBrY, this._font.getDescent());
+               this._heights[index] = (byte)(above + below);
+               if (metrics.iBoundsBrY > this._font.getDescent()) {
+                  this._offsets[index] = (byte)(metrics.iBoundsBrY - this._font.getDescent());
+               }
+            }
+         }
+      }
+
+      height = Arrays.sum(this._heights, 0, length, false);
+      height += this._focusHeight - this._fontHeight;
+      this.setExtent(width, height);
    }
 
    @Override
@@ -225,7 +290,7 @@ class DefaultMenuListField extends Field implements MenuList {
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: array store: unknown element");
    }
 
    @Override

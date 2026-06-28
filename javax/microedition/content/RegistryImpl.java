@@ -6,9 +6,11 @@ import java.util.Vector;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ApplicationManagerException;
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.CodeModuleGroup;
 import net.rim.device.api.system.CodeModuleGroupManager;
 import net.rim.device.api.system.CodeModuleManager;
+import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DataBuffer;
@@ -16,6 +18,7 @@ import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.content.ContentHandlerRenderingManager;
 import net.rim.device.internal.system.ApplicationManagerInternal;
+import net.rim.device.internal.system.CodeStore;
 import net.rim.vm.Array;
 import net.rim.vm.Message;
 import net.rim.vm.Process;
@@ -379,7 +382,61 @@ class RegistryImpl extends Registry {
 
    @Override
    public ContentHandler[] findHandler(Invocation invocation) {
-      throw new RuntimeException("cod2jar: string-special");
+      String action = invocation.getAction();
+      String ID = invocation.getID();
+      if (ID != null) {
+         ContentHandler handler = this.forID(ID, false);
+         if (handler != null) {
+            return action == null ? new ContentHandler[]{handler} : this.filterByAction(new ContentHandler[]{handler}, action);
+         } else {
+            throw new ContentHandlerException("No ContentHandler found for Invocation ID", 1);
+         }
+      } else {
+         ContentHandler[] handlers = new ContentHandler[0];
+         String type = invocation.getType();
+         if (type == null) {
+            try {
+               type = invocation.findType();
+            } catch (ContentHandlerException var10) {
+            }
+         }
+
+         if (type != null) {
+            handlers = this.forType(type);
+            if (handlers.length > 0) {
+               return action == null ? handlers : this.filterByAction(handlers, action);
+            } else {
+               throw new ContentHandlerException("No ContentHandlers found for type " + type, 1);
+            }
+         } else {
+            String url = invocation.getURL();
+            if (url != null) {
+               int length = url.length();
+
+               for (int i = length - 1; i >= 0; i--) {
+                  ContentHandler[] newMatches = this.forSuffix(url.substring(i));
+                  if (newMatches.length > 0) {
+                     handlers = newMatches;
+                  }
+               }
+
+               if (handlers.length <= 0) {
+                  throw new ContentHandlerException("No ContentHandlers with matching suffix", 1);
+               } else {
+                  return action == null ? handlers : this.filterByAction(handlers, action);
+               }
+            } else if (action != null) {
+               handlers = this.forAction(action);
+               if (handlers.length > 0) {
+                  return handlers;
+               } else {
+                  throw new ContentHandlerException("No ContentHandlers for action " + action, 1);
+               }
+            } else {
+               throw new IllegalArgumentException("No ContentHandlers found");
+            }
+         }
+      }
    }
 
    private ContentHandler[] filterByAction(ContentHandler[] candidateHandlers, String action) {
@@ -755,7 +812,41 @@ class RegistryImpl extends Registry {
    }
 
    private static int verifyClassname(String classname) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (classname == null) {
+         throw new NullPointerException("classname is null");
+      }
+
+      if (classname.length() == 0) {
+         throw new IllegalArgumentException("Invalid classname");
+      }
+
+      Process p = Process.currentProcess();
+      int handle = -1;
+      if (!(p instanceof ApplicationProcess)) {
+         throw new IllegalArgumentException("classname does not implement the application life cycle");
+      }
+
+      Class c = Class.forName(classname);
+      handle = CodeModuleManager.getModuleHandleForClass(c);
+      int currentProcessModuleHandle = p.getModuleHandle();
+      if ((CodeModuleManager.isMidlet(currentProcessModuleHandle) || !ControlledAccess.verifyRRISignatures(false)) && currentProcessModuleHandle != handle) {
+         int[] siblings = CodeStore.getSiblingHandles(handle);
+         boolean isSibling = false;
+
+         for (int i = 0; i < siblings.length; i++) {
+            if (currentProcessModuleHandle == siblings[i]) {
+               isSibling = true;
+               handle = currentProcessModuleHandle;
+               break;
+            }
+         }
+
+         if (!isSibling) {
+            throw new IllegalArgumentException("classname does not exist in the current application package");
+         }
+      }
+
+      return handle;
    }
 
    static void verifyID(String ID, String classname, boolean upgrade) {
@@ -771,7 +862,14 @@ class RegistryImpl extends Registry {
    }
 
    static void verifyCharacters(String ID) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = ID.length();
+
+      for (int i = 0; i < len; i++) {
+         char c = ID.charAt(i);
+         if (c == ' ' || c <= 31) {
+            throw new IllegalArgumentException("Illegal characters in ID");
+         }
+      }
    }
 
    private static void verifyRegistered(int moduleHandle, String classname) {

@@ -15,7 +15,9 @@ import javax.wireless.messaging.MessageConnection;
 import javax.wireless.messaging.MessageListener;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
+import net.rim.device.api.io.IOPortAlreadyBoundException;
 import net.rim.device.api.io.SmsAddress;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.SMSPacketHeader;
@@ -23,7 +25,9 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.cldc.io.nativebase.NativeConnectionBase;
 import net.rim.device.internal.firewall.Firewall;
+import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
+import net.rim.vm.WeakReference;
 
 public final class Protocol extends NativeConnectionBase implements MessageConnection, StreamConnection {
    private Protocol$MessageSegmentQueue _messageSegmentQueue;
@@ -433,11 +437,58 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    private final boolean validateString(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      for (int i = 0; i < str.length(); i++) {
+         char c = str.charAt(i);
+         if (!Character.isDigit(c) && c != '+' && c != ':') {
+            return false;
+         }
+      }
+
+      return true;
    }
 
    @Override
    public final Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!this.validateString(name.substring(2))) {
+         throw new IllegalArgumentException("Illegal opening string");
+      }
+
+      int colon = name.indexOf(58);
+      String portString = null;
+      if (colon != 2) {
+         if (mode == 1) {
+            throw new IllegalArgumentException("Read connection cannot be opened with given parameters");
+         } else {
+            this._address = name.substring(0, name.length());
+            if (this._address.length() == 0) {
+               throw new IllegalArgumentException("Illegal opening string");
+            } else {
+               return super.openPrim(name, mode, timeouts);
+            }
+         }
+      } else {
+         this._isServerMode = true;
+         portString = name.substring(colon + 1);
+         if (portString.length() == 0) {
+            throw new IllegalArgumentException("Illegal opening string");
+         }
+
+         this._port = Integer.parseInt(portString);
+         if (!CodeModuleManager.isMidlet(Process.currentProcess().getModuleHandle()) || this._port >= 0 && this._port <= 65535) {
+            synchronized (_portTable) {
+               if (_portTable.containsKey(this._port)) {
+                  WeakReference ref = (WeakReference)_portTable.get(this._port);
+                  if (ref.get() != null && ((Protocol)ref.get())._isActive) {
+                     throw new IOPortAlreadyBoundException("SMS Port already in use");
+                  }
+               }
+
+               _portTable.put(this._port, new WeakReference(this));
+               return super.openPrim(name, mode, timeouts);
+            }
+         } else {
+            throw new IllegalArgumentException("Illegal port number");
+         }
+      }
    }
 }

@@ -43,7 +43,7 @@ public class UsernamePasswordDialog extends PopupDialog implements FieldChangeLi
    }
 
    private void populateDialog(String prompt, int mode) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public void setAllowUnicodePassword(boolean allow) {

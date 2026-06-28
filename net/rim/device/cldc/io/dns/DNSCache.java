@@ -271,7 +271,23 @@ public final class DNSCache implements LowMemoryListener {
    }
 
    public static final String[] splitDomain(String domain) {
-      throw new RuntimeException("cod2jar: string-special");
+      int prevIndex = 0;
+      Vector pieces = new Vector();
+
+      int index;
+      do {
+         index = domain.indexOf(46, prevIndex);
+         if (index < 0) {
+            pieces.addElement(domain.substring(prevIndex));
+         } else {
+            pieces.addElement(domain.substring(prevIndex, index));
+            prevIndex = index + 1;
+         }
+      } while (index > 0 && prevIndex < domain.length());
+
+      String[] done = new String[pieces.size()];
+      pieces.copyInto(done);
+      return done;
    }
 
    @Override

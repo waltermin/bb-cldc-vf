@@ -5,12 +5,17 @@ import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.ui.Keypad;
 
 public class DefaultKeyLayout {
-   private String[] MAP_LOCATIONS;
+   private String[] MAP_LOCATIONS = new String[]{"net_rim_platform_im_resource", "net_rim_tid"};
    private SLKeyLayout _layout;
    private static final long REGISTRY_NAME;
    private static DefaultKeyLayout _instance;
 
    private DefaultKeyLayout() {
+      try {
+         this.init();
+      } catch (Throwable e) {
+         throw new RuntimeException("DefaultKeyLayout init failed - " + e.toString());
+      }
    }
 
    private synchronized void init() {

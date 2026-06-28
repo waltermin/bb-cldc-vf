@@ -4,15 +4,18 @@ import java.io.InputStream;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.internal.proxy.Proxy;
 
 public class UILocaleKeyLayout implements GlobalEventListener {
-   private String[] MAP_LOCATIONS;
+   private String[] MAP_LOCATIONS = new String[]{"net_rim_platform_im_resource", "net_rim_tid"};
    private SLKeyLayout _layout;
    private Locale _lastLocaleUsed;
    private static final long REGISTRY_NAME;
    private static UILocaleKeyLayout _instance;
 
    private UILocaleKeyLayout() {
+      Proxy.getInstance().addGlobalEventListenerInternal(this);
+      this.init();
    }
 
    public synchronized void init() {

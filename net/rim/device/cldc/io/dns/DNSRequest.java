@@ -1,6 +1,10 @@
 package net.rim.device.cldc.io.dns;
 
 import java.util.Vector;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.system.WLAN;
+import net.rim.device.internal.system.RadioInternal;
 
 public class DNSRequest {
    private DNSListener _listener;
@@ -201,7 +205,40 @@ public class DNSRequest {
    }
 
    private void init(String queryStr, DNSListener listener, int apnId, byte[] primaryDnsAddr, byte[] secondaryDnsAddr, int port) {
-      throw new RuntimeException("cod2jar: string-special");
+      DNSMessageIPv4 query = new DNSMessageIPv4();
+      query.setQR(0);
+      query.setOpcode(0);
+      DNSMessageIPv4Question question = new DNSMessageIPv4Question();
+      question.setQtype(this._queryType);
+      question.setQclass(1);
+      query.addQuestion(question);
+      this._listener = listener;
+      this._message = query;
+      this._apnId = apnId;
+      this._dnsPort = port;
+      if (queryStr.indexOf(46) == -1 && (RadioInfo.getSupportedWAFs() & 4) != 0) {
+         try {
+            String apn = RadioInfo.getAccessPointName(apnId);
+            if (apn != null && WLAN.WLAN_PSEUDO_APN.equals(apn)) {
+               byte[] data = RadioInternal.getNetworkParameter(apnId, 15, 0);
+               if (data != null && data.length > 0) {
+                  String domainName = new String(data);
+                  if (domainName.length() > 0) {
+                     StringBuffer sb = new StringBuffer(queryStr.length() + 1 + domainName.length());
+                     sb.append(queryStr);
+                     sb.append('.');
+                     sb.append(domainName);
+                     queryStr = sb.toString();
+                  }
+               }
+            }
+         } catch (RadioException var13) {
+         }
+      }
+
+      this._name = queryStr;
+      this._primaryDnsIP = primaryDnsAddr;
+      this._secondaryDnsIP = secondaryDnsAddr;
    }
 
    private static String makeInverseQueryHostname(byte[] ipAddr) {

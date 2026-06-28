@@ -1,6 +1,10 @@
 package net.rim.device.api.io;
 
 import java.io.IOException;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
+import net.rim.device.api.system.UDPPacketHeader;
+import net.rim.device.api.util.StringUtilities;
 
 public class UdpAddress extends DatagramAddressBase {
    protected int _ipAddress;
@@ -112,7 +116,7 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public int getApnLength() {
-      throw new RuntimeException("cod2jar: string-special");
+      return this._apn != null ? this._apn.length() : 0;
    }
 
    public int getType() {
@@ -132,7 +136,155 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    private static final String setAddress(UdpAddress udpAddress, String address, boolean resolve, boolean parse) {
-      throw new RuntimeException("cod2jar: string-special");
+      int delim = 0;
+      int length = address.length();
+      int ipAddress = -1;
+      int destPort = -1;
+      int srcPort = -1;
+      String apn = null;
+      int type = -1;
+      int addressFQDN = -1;
+      boolean serverConnection = false;
+      if (length >= 2 && address.charAt(0) == '/' && address.charAt(1) == '/') {
+         addressFQDN = DatagramAddressBase.indexOfNextDelim(address, 2);
+         if (!resolve || !DatagramAddressBase.isDomainName(address, 2, addressFQDN)) {
+            if (!parse) {
+               return address;
+            }
+
+            if (addressFQDN > 2) {
+               ipAddress = DatagramAddressBase.parseIpAddressInt(address, 2);
+               if (ipAddress == -1) {
+                  throw new IllegalArgumentException("Invalid IP_ADDRESS");
+               }
+            } else {
+               serverConnection = true;
+
+               try {
+                  ControlledAccess.assertRRISignatures(true);
+               } catch (ControlledAccessException cae) {
+                  throw new IllegalArgumentException("Invalid IP_ADDRESS");
+               }
+            }
+         }
+
+         delim = addressFQDN;
+      }
+
+      if (length > delim && address.charAt(delim) == ':') {
+         int scan = delim + 1;
+         delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+         if (delim <= scan) {
+            throw new IllegalArgumentException("Bad DEST_PORT");
+         }
+
+         int ret = DatagramAddressBase.parseInt(address, scan, delim, 10);
+         if (ret < 0 || ret > 65535) {
+            throw new IllegalArgumentException("Invalid DEST_PORT");
+         }
+
+         destPort = ret;
+      }
+
+      if (!serverConnection && length > delim && address.charAt(delim) == ';') {
+         int scan = delim + 1;
+         delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+         if (delim <= scan) {
+            throw new IllegalArgumentException("Bad SRC_PORT");
+         }
+
+         int ret = DatagramAddressBase.parseInt(address, scan, delim, 10);
+         if (ret < 0 || ret > 65535) {
+            throw new IllegalArgumentException("Invalid SRC_PORT");
+         }
+
+         srcPort = ret;
+      }
+
+      if (length > delim && address.charAt(delim) == '/') {
+         int scan = delim + 1;
+         delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+         if (delim < scan) {
+            throw new IllegalArgumentException("Bad APN");
+         }
+
+         apn = address.substring(scan, delim);
+      }
+
+      int ret = 0;
+
+      while (length > delim && address.charAt(delim) == '|') {
+         int scan = delim + 1;
+         delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+         if (delim <= scan) {
+            throw new IllegalArgumentException("Bad TYPE");
+         }
+
+         int len = delim - scan;
+         if (StringUtilities.regionMatches(address, false, scan, "UDP", 0, 3, 1701707776) && len == 3) {
+            ret |= 1;
+         } else if (StringUtilities.regionMatches(address, false, scan, "GPAK", 0, 4, 1701707776) && len == 4) {
+            ret |= 2;
+         } else {
+            if (!StringUtilities.regionMatches(address, false, scan, "GCMP", 0, 4, 1701707776) || len != 4) {
+               throw new IllegalArgumentException("Invalid TYPE");
+            }
+
+            ret |= 4;
+         }
+      }
+
+      if (ret != 0) {
+         type = ret;
+      }
+
+      String apnUsername = null;
+      String apnPassword = null;
+      if (delim < length) {
+         String[] apnCredentials = new String[2];
+         delim = parseApnCredentials(address, delim - 1, apnCredentials);
+         apnUsername = apnCredentials[0];
+         apnPassword = apnCredentials[1];
+         if (apn == null && (apnUsername != null || apnPassword != null)) {
+            throw new IllegalArgumentException("Unspecified APN");
+         }
+      }
+
+      if (delim < length) {
+         throw new IllegalArgumentException("Bad address");
+      }
+
+      if (resolve) {
+         byte[] byteAddress = null;
+         if (addressFQDN != -1) {
+            byteAddress = resolveAddress(address.substring(2, addressFQDN), apn, true);
+         }
+
+         if (byteAddress != null && byteAddress.length >= 4 && DatagramAddressBase.readInt(byteAddress, 0) != -1) {
+            StringBuffer buf = new StringBuffer(9 + (length - addressFQDN));
+            buf.append(address.substring(0, 2));
+
+            for (int i = 0; i < 4; i++) {
+               buf.append(byteAddress[i] & 255);
+               if (i != 3) {
+                  buf.append('.');
+               }
+            }
+
+            buf.append(address.substring(addressFQDN, length));
+            address = buf.toString();
+            ipAddress = UDPPacketHeader.IPv4ByteArrayToInt(byteAddress);
+         }
+      }
+
+      if (udpAddress != null) {
+         udpAddress._address = address;
+         udpAddress.init(ipAddress, destPort, srcPort, apn, type);
+         udpAddress.setApnUsername(apnUsername);
+         udpAddress.setApnPassword(apnPassword);
+      }
+
+      return address;
    }
 
    @Override
@@ -173,7 +325,7 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public boolean compareApn(String apn, int apnOffset, int apnLength) {
-      throw new RuntimeException("cod2jar: string-special");
+      return this._apn.length() == apnLength && StringUtilities.regionMatches(this._apn, true, 0, apn, apnOffset, apnLength, 1701707776);
    }
 
    public static String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type) {
@@ -275,18 +427,116 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public static String[] retrieveApnSettings(String address) {
-      throw new RuntimeException("cod2jar: string-special");
+      String[] apnSettings = null;
+      if (address != null && address.length() > 0) {
+         String apn = parseApn(address, 2);
+         if (apn != null && apn.length() > 0) {
+            apnSettings = new String[]{apn, null, null};
+            int index = address.indexOf(59);
+            if (index > 0) {
+               parseApnCredentials(address, index - 1, apnSettings);
+               apnSettings[1] = apnSettings[0];
+               apnSettings[2] = apnSettings[1];
+               apnSettings[0] = apn;
+            }
+         }
+      }
+
+      return apnSettings;
    }
 
    protected static String parseApn(String address, int offset) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (address != null && offset > 0 && offset < address.length()) {
+         String apn = null;
+         int index = address.indexOf(47, offset);
+         if (index >= 0) {
+            int end = DatagramAddressBase.indexOfNextDelim(address, ++index);
+            if (end > index) {
+               apn = address.substring(index, end);
+            }
+         }
+
+         return apn;
+      } else {
+         return null;
+      }
    }
 
    protected static int parseApnCredentials(String address, int offset, String[] types) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (address != null && offset >= 0 && offset < address.length()) {
+         try {
+            types[0] = USERNAME;
+            types[1] = PASSWORD;
+            int i = 0;
+            int length = address.length();
+            int delim = offset;
+            String apnUsername = null;
+            String apnPassword = null;
+
+            while (true) {
+               delim = address.indexOf(59, delim);
+               if (delim != -1 && delim + 1 < length) {
+                  label60: {
+                     int equalSign = address.indexOf(61, delim + 1);
+                     int paramLength = equalSign - (delim + 1);
+                     if (equalSign != -1 && paramLength > 0) {
+                        int j = 0;
+
+                        while (
+                           j < types.length
+                              && (types[j] == null || !StringUtilities.regionMatches(address, true, delim + 1, types[j], 0, paramLength, 1701707776))
+                        ) {
+                           j++;
+                        }
+
+                        if (j < types.length) {
+                           types[j] = null;
+                           i++;
+                           delim = address.indexOf(59, equalSign);
+                           if (delim == -1) {
+                              delim = length;
+                           }
+
+                           String value = address.substring(equalSign + 1, delim);
+                           switch (j) {
+                              case -1:
+                                 break label60;
+                              case 0:
+                              default:
+                                 apnUsername = value;
+                                 break label60;
+                              case 1:
+                                 apnPassword = value;
+                                 break label60;
+                           }
+                        }
+                     }
+
+                     delim++;
+                  }
+
+                  if (i < types.length && delim < length) {
+                     continue;
+                  }
+                  break;
+               }
+
+               delim = length;
+               break;
+            }
+
+            types[0] = apnUsername;
+            types[1] = apnPassword;
+            return delim;
+         } catch (Exception e) {
+            types[0] = types[1] = null;
+         }
+      }
+
+      return offset;
    }
 
    private static byte[] resolveAddress(String address, String apn, boolean randomize) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 }

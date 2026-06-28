@@ -79,6 +79,21 @@ public class PhoneNumberEditField extends EditField {
    }
 
    private static boolean cleanPhoneNumber(String phoneNumber, StringBuffer stringBuffer) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean invalidCharFound = false;
+      synchronized (stringBuffer) {
+         int count = phoneNumber.length();
+         stringBuffer.setLength(0);
+
+         for (int i = 0; i < count; i++) {
+            char c = phoneNumber.charAt(i);
+            if (validCharacter(c, i)) {
+               stringBuffer.append(c);
+            } else {
+               invalidCharFound = true;
+            }
+         }
+
+         return invalidCharFound;
+      }
    }
 }

@@ -7,10 +7,17 @@ import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.util.StringUtilities;
 
 final class ConversionDataRegistryHelper {
-   private final String DEFAULT_ENCODING;
-   private String[] _availableEncodings;
-   private int _supportedEncodingsNum;
-   private ConversionDataRegistryHelper$EncodingMappingData[] _encodingMappingTable;
+   private final String DEFAULT_ENCODING = "ISO-8859-1";
+   private String[] _availableEncodings = new String[]{"US-ASCII", "ISO-8859-1", "UTF-8", "UTF-16BE", "Windows-1252", "UTF-16LE"};
+   private int _supportedEncodingsNum = this._availableEncodings.length;
+   private ConversionDataRegistryHelper$EncodingMappingData[] _encodingMappingTable = new ConversionDataRegistryHelper$EncodingMappingData[]{
+      new ConversionDataRegistryHelper$EncodingMappingData("UTF-8", 27, 0, "BBCondensed"),
+      new ConversionDataRegistryHelper$EncodingMappingData("ISO-8859-1", 1, 1701707776, "System"),
+      new ConversionDataRegistryHelper$EncodingMappingData("US-ASCII", 0, 1701707776, "System"),
+      new ConversionDataRegistryHelper$EncodingMappingData("UTF-16BE", 28, 0, "BBCondensed"),
+      new ConversionDataRegistryHelper$EncodingMappingData("windows-1252", 18, 1701707776, "System"),
+      new ConversionDataRegistryHelper$EncodingMappingData("UTF-16LE", 39, 0, "BBCondensed")
+   };
    private static final int CDBF_CONVERSION_SIGNATURE;
    private static final int CDBF_CURRENT_VERSION_MAJOR;
    private static final int CDBF_CURRENT_VERSION_MINOR;
@@ -65,11 +72,29 @@ final class ConversionDataRegistryHelper {
    }
 
    final int getEncodingIDLocal(String encoding) {
-      throw new RuntimeException("cod2jar: string-special");
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(encoding);
+      if (eData != null) {
+         if (encoding.length() > eData._encoding.length()) {
+            return encoding.charAt(eData._encoding.length()) == 13 ? eData._id | 268435456 : eData._id;
+         } else {
+            return eData._id;
+         }
+      } else {
+         return -1;
+      }
    }
 
    final int getEncodingID(String encoding) {
-      throw new RuntimeException("cod2jar: string-special");
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(encoding);
+      if (eData != null && (this.isAlgorithmicallySupported(eData._id) || eData._binaryData != null)) {
+         if (encoding.length() <= eData._encoding.length()) {
+            return eData._id;
+         } else {
+            return encoding.charAt(eData._encoding.length()) == 13 ? eData._id | 268435456 : eData._id;
+         }
+      } else {
+         return -1;
+      }
    }
 
    private final synchronized ConversionDataRegistryHelper$EncodingMappingData runOverTheData(String encoding) {

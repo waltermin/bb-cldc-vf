@@ -1,28 +1,14 @@
 package net.rim.device.api.system;
 
-public class EventInjector$NavigationEvent extends EventInjector$Event {
-   private boolean _fourWayFlagged;
-   public static final int NAVIGATION_CLICK;
-   public static final int NAVIGATION_UNCLICK;
-   public static final int NAVIGATION_MOVEMENT;
-
-   public EventInjector$NavigationEvent(int event, int dx, int dy, int status) {
-   }
-
-   public void setAmount(int dx, int dy) {
-      super._msg.setSubMessage(-(dy << 16) | dx & 65535);
-   }
-
-   public int getAmountX() {
-      return (short)super._msg.getSubMessage();
-   }
-
-   public int getAmountY() {
-      return -(super._msg.getSubMessage() >> 16);
-   }
-
-   @Override
-   public int getStatus() {
-      return this._fourWayFlagged ? super._msg.getData0() : super._msg.getData0() ^ 536870912;
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.RuntimeException: Constructor net/rim/device/api/system/EventInjector$Event.<init>()V not found
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:49)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:35)
+//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.hideEmptySuper(InitializerProcessor.java:111)
+//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.extractInitializers(InitializerProcessor.java:52)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:128)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:379)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:521)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:200)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:221)

@@ -1282,7 +1282,16 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public void setId(String idName) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (idName != null) {
+         for (int lv = idName.length() - 1; lv >= 0; lv--) {
+            char ch = idName.charAt(lv);
+            if (!Character.isLowerCase(ch) && (ch != '-' || lv == 0)) {
+               throw new IllegalArgumentException();
+            }
+         }
+      }
+
+      this._idName = idName;
    }
 
    final void setIndex(int index) {

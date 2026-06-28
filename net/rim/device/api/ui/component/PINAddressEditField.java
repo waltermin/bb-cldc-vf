@@ -38,7 +38,18 @@ public final class PINAddressEditField extends EditField {
    }
 
    public static final boolean validateText(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null) {
+         int textLength = text.length();
+
+         for (int i = 0; i < textLength; i++) {
+            char key = text.charAt(i);
+            if (!validateCharacter(key)) {
+               return false;
+            }
+         }
+      }
+
+      return true;
    }
 
    @Override

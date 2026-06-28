@@ -19,7 +19,73 @@ public final class Long {
    }
 
    public static final long parseLong(String s, int radix) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s == null) {
+         throw new NumberFormatException("null");
+      }
+
+      if (radix >= 2 && radix <= 36) {
+         long result = 0;
+         boolean negative = false;
+         int i = 0;
+         int max = s.length();
+         if (max <= 0) {
+            throw new NumberFormatException(s);
+         }
+
+         long limit;
+         if (s.charAt(0) == '-') {
+            negative = true;
+            limit = MIN_VALUE;
+            i++;
+         } else {
+            limit = -9223372036854775807L;
+         }
+
+         long multmin = limit / radix;
+         if (i < max) {
+            int digit = Character.digit(s.charAt(i++), radix);
+            if (digit < 0) {
+               throw new NumberFormatException(s);
+            }
+
+            result = -digit;
+         }
+
+         while (i < max) {
+            int digit = Character.digit(s.charAt(i++), radix);
+            if (digit < 0) {
+               throw new NumberFormatException(s);
+            }
+
+            if (result < multmin) {
+               throw new NumberFormatException(s);
+            }
+
+            result *= radix;
+            if (result < limit + digit) {
+               throw new NumberFormatException(s);
+            }
+
+            result -= digit;
+         }
+
+         if (!negative) {
+            return -result;
+         } else if (i > 1) {
+            return result;
+         } else {
+            throw new NumberFormatException(s);
+         }
+      } else {
+         StringBuffer msg = new StringBuffer("radix ").append(radix);
+         if (radix < 2) {
+            msg.append(" less than Character.MIN_RADIX");
+         } else {
+            msg.append(" greater than Character.MAX_RADIX");
+         }
+
+         throw new NumberFormatException(msg.toString());
+      }
    }
 
    public static final long parseLong(String s) {

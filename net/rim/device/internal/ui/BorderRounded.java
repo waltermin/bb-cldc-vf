@@ -1,38 +1,14 @@
 package net.rim.device.internal.ui;
 
-import net.rim.device.api.ui.Graphics;
-import net.rim.device.api.ui.XYRect;
-
-public class BorderRounded extends Border {
-   private boolean _filled;
-   private boolean _dashed;
-   private int _arcWidth;
-   private int _arcHeight;
-   private Border _outerBackground;
-   public static final int FILLED;
-   public static final int DASHED;
-   public static final int TRANSPARENT;
-
-   public BorderRounded(int top, int right, int bottom, int left, int style) {
-   }
-
-   @Override
-   public void paint(Graphics graphics, XYRect rect) {
-      int prevColor = graphics.getColor();
-      graphics.setColor(graphics.getBackgroundColor());
-      this._outerBackground.paint(graphics, rect);
-      graphics.setColor(prevColor);
-      if (this._filled) {
-         graphics.fillRoundRect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, this._arcWidth, this._arcHeight);
-      }
-
-      if (this._dashed) {
-         graphics.setStipple(-858993460);
-      }
-
-      graphics.drawRoundRect(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2, this._arcWidth, this._arcHeight);
-      if (this._dashed) {
-         graphics.setStipple(-1);
-      }
-   }
-}
+// $VF: Couldn't be decompiled
+// Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+// java.lang.RuntimeException: Constructor net/rim/device/internal/ui/Border.<init>()V not found
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:49)
+//   at org.jetbrains.java.decompiler.modules.decompiler.exps.ExprUtil.getSyntheticParametersMask(ExprUtil.java:35)
+//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.hideEmptySuper(InitializerProcessor.java:111)
+//   at org.jetbrains.java.decompiler.modules.decompiler.InitializerProcessor.extractInitializers(InitializerProcessor.java:52)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.invokeProcessors(ClassWriter.java:128)
+//   at org.jetbrains.java.decompiler.main.ClassWriter.writeClass(ClassWriter.java:379)
+//   at org.jetbrains.java.decompiler.main.ClassesProcessor.writeClass(ClassesProcessor.java:521)
+//   at org.jetbrains.java.decompiler.main.Fernflower.getClassContent(Fernflower.java:200)
+//   at org.jetbrains.java.decompiler.struct.ContextUnit.lambda$save$3(ContextUnit.java:221)

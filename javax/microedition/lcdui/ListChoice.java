@@ -88,7 +88,46 @@ final class ListChoice extends BasicChoice {
 
    @Override
    protected final void doInsert(int elementNum, String stringElement, Image imageElement) {
-      throw new RuntimeException("cod2jar: string-special");
+      stringElement.length();
+      Field field;
+      switch (super._type) {
+         case 1:
+            boolean selected = super._container.getFieldCount() == 0;
+            field = new RadioButtonField(stringElement, this._radioGroup, selected);
+            if (imageElement != null) {
+               ((RadioButtonField)field).setImage(imageElement.getBitmap());
+            }
+            break;
+         case 2:
+            field = new CheckboxField(stringElement, false);
+            field.setChangeListener(super._changeListener);
+            if (imageElement != null) {
+               ((CheckboxField)field).setImage(imageElement.getBitmap());
+            }
+            break;
+         case 3:
+         default:
+            field = new LabelField(stringElement, 18014398509481984L);
+            field.setChangeListener(super._changeListener);
+            if (imageElement != null) {
+               ((LabelField)field).setImage(imageElement.getBitmap());
+            }
+      }
+
+      int oldSelectedIndex = this.getSelectedIndex();
+      super._container.insert(field, elementNum);
+      if (this.size() == 0) {
+         if (super._type == 3 || super._type == 1) {
+            this.doSetSelectedIndex(0, true);
+         }
+      } else if (!super._onScreen && super._type == 3 && elementNum < oldSelectedIndex) {
+         this.doSetSelectedIndex(oldSelectedIndex + 1, true);
+      }
+
+      Vector cookieVector = new Vector(2);
+      cookieVector.addElement(this._choiceGroupFacade);
+      cookieVector.addElement(imageElement);
+      field.setCookie(cookieVector);
    }
 
    @Override
@@ -112,7 +151,36 @@ final class ListChoice extends BasicChoice {
 
    @Override
    protected final void doSet(int elementNum, String stringPart, Image imagePart) {
-      throw new RuntimeException("cod2jar: string-special");
+      stringPart.length();
+      Field field = super._container.getField(elementNum);
+      switch (super._type) {
+         case 1:
+            RadioButtonField radio = (RadioButtonField)field;
+            radio.setLabel(stringPart);
+            if (imagePart != null) {
+               radio.setImage(imagePart.getBitmap());
+            }
+            break;
+         case 2:
+            CheckboxField checkbox = (CheckboxField)field;
+            checkbox.setLabel(stringPart);
+            if (imagePart != null) {
+               checkbox.setImage(imagePart.getBitmap());
+            }
+            break;
+         case 3:
+         default:
+            LabelField label = (LabelField)field;
+            label.setText(stringPart);
+            if (imagePart != null) {
+               label.setImage(imagePart.getBitmap());
+            }
+      }
+
+      Vector cookieVector = new Vector(2);
+      cookieVector.addElement(this._choiceGroupFacade);
+      cookieVector.addElement(imagePart);
+      field.setCookie(cookieVector);
    }
 
    @Override

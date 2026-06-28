@@ -207,7 +207,16 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    }
 
    private void checkID(String ID) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = ID.length();
+      if (length == 0) {
+         throw new IllegalArgumentException("ID is an empty String");
+      }
+
+      for (int i = 0; i < length; i++) {
+         if (ID.charAt(i) <= ' ') {
+            throw new IllegalArgumentException("ID contains invalid characters");
+         }
+      }
    }
 
    private void assertPermission() {

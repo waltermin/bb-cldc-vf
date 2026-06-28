@@ -3,7 +3,7 @@ package net.rim.device.api.crypto;
 final class RIMDigestFactoryCrypto10 extends DigestFactory {
    @Override
    protected final String[] getFactoryAlgorithms() {
-      throw new RuntimeException("cod2jar: string-special");
+      return new String[]{"SHA256", "SHA1", "SHA512", "MD5"};
    }
 
    @Override

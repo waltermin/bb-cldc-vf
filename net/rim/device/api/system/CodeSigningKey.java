@@ -77,7 +77,23 @@ public final class CodeSigningKey implements Persistable {
    private static final native CodeSigningKey getBuiltInKey2(int var0);
 
    public static final int convert(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s == null) {
+         throw new IllegalArgumentException();
+      }
+
+      int length = s.length();
+      if (length != 0 && length <= 4) {
+         int id = 0;
+
+         for (int i = length - 1; i >= 0; i--) {
+            id <<= 8;
+            id |= s.charAt(i) & 255;
+         }
+
+         return id;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public static final String convert(int i) {

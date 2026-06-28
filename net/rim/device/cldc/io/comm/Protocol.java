@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.microedition.io.Connection;
+import javax.microedition.io.ConnectionNotFoundException;
 import javax.microedition.io.StreamConnection;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.IOPort;
@@ -40,7 +41,42 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: string-special");
+      ApplicationControl.assertLocalConnectionAllowed(true);
+      if ((mode & 3) != mode) {
+         throw new IllegalArgumentException();
+      }
+
+      String channelName = null;
+      if (!name.startsWith("USB")) {
+         throw new ConnectionNotFoundException();
+      }
+
+      String[] params = new String[]{";baudrate=", ";bitsperchar=", ";stopbits=", ";parity=", ";channel="};
+
+      for (int i = 0; i < params.length; i++) {
+         int start = name.indexOf(params[i]);
+         if (start != -1) {
+            int end = name.indexOf(59, start + 1);
+            if (end == -1) {
+               end = name.length();
+            }
+
+            String value = name.substring(start + params[i].length(), end);
+
+            try {
+               switch (i) {
+                  case 4:
+                     channelName = value;
+               }
+            } catch (NumberFormatException ex) {
+               throw new IllegalArgumentException(value);
+            }
+         }
+      }
+
+      this._channel = USBPortInternal.registerChannel(channelName, 1024, 1024);
+      Application.getApplication().addIOPortListener(this);
+      return this;
    }
 
    @Override

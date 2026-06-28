@@ -286,7 +286,43 @@ public class Utils {
    }
 
    public static String composeResourceID(int aKeyboardId, String aKeyboardType, Locale anInputLocale, boolean useDefaultLang) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (_resourceIdCompositionTempBuffer) {
+         _resourceIdCompositionTempBuffer.setLength(0);
+         if (aKeyboardType != null && aKeyboardType.length() > 0) {
+            _resourceIdCompositionTempBuffer.append(aKeyboardType);
+            _resourceIdCompositionTempBuffer.append("_");
+         }
+
+         int delimCounter = 0;
+         if (useDefaultLang) {
+            _resourceIdCompositionTempBuffer.append("default");
+         } else {
+            _resourceIdCompositionTempBuffer.append(anInputLocale.getLanguage());
+            String country = anInputLocale.getCountry();
+            String variant = anInputLocale.getVariant();
+            if (country.length() > 0) {
+               _resourceIdCompositionTempBuffer.append('_').append(country);
+               delimCounter = 1;
+            }
+
+            if (variant.length() > 0) {
+               addDelimiters(_resourceIdCompositionTempBuffer, 1 - delimCounter);
+               _resourceIdCompositionTempBuffer.append('_').append(variant);
+               delimCounter = 2;
+            }
+         }
+
+         String keyboardID = Locale.convertKeyboardIDToString(aKeyboardId);
+         if (keyboardID != null && keyboardID.length() > 0) {
+            addDelimiters(_resourceIdCompositionTempBuffer, 2 - delimCounter);
+            _resourceIdCompositionTempBuffer.append('_');
+            _resourceIdCompositionTempBuffer.append(keyboardID);
+         }
+
+         String resourceName = _resourceIdCompositionTempBuffer.toString();
+         _resourceIdCompositionTempBuffer.setLength(0);
+         return resourceName;
+      }
    }
 
    private static void addDelimiters(StringBuffer toAdd, int aCount) {

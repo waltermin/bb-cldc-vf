@@ -1,6 +1,7 @@
 package net.rim.device.api.ui.component;
 
 import net.rim.device.api.ui.text.EmailAddressTextFilter;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.ui.FormatParams;
 
 public class EmailAddressEditField extends EditField {
@@ -40,7 +41,22 @@ public class EmailAddressEditField extends EditField {
 
    @Override
    protected int insert(String text, int context) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (StringUtilities.startsWithIgnoreCase(text, "mailto:", 1701707776)) {
+         int beginIndex = text.indexOf(58) + 1;
+         int endIndex = text.length();
+
+         while (beginIndex < endIndex && text.charAt(beginIndex) == '/') {
+            beginIndex++;
+         }
+
+         while (beginIndex < endIndex && text.charAt(endIndex - 1) == '/') {
+            endIndex--;
+         }
+
+         text = text.substring(beginIndex, endIndex);
+      }
+
+      return super.insert(text, context);
    }
 
    @Override

@@ -1,5 +1,6 @@
 package net.rim.device.internal.deviceoptions;
 
+import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 
@@ -23,7 +24,20 @@ public final class Owner {
    }
 
    public static final boolean setOwnerName(String name, boolean force) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!force) {
+         byte allowUserChanges = ITPolicy.getByte(21, 1, (byte)0);
+         if ((allowUserChanges & 2) != 0) {
+            return false;
+         }
+      }
+
+      if (name.length() > 39) {
+         name = name.substring(0, 39);
+      }
+
+      _ownerData._name = name;
+      commit(true);
+      return true;
    }
 
    public static final String getOwnerInfo() {
@@ -35,7 +49,20 @@ public final class Owner {
    }
 
    public static final boolean setOwnerInfo(String info, boolean force) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!force) {
+         byte allowUserChanges = ITPolicy.getByte(21, 1, (byte)0);
+         if ((allowUserChanges & 1) != 0) {
+            return false;
+         }
+      }
+
+      if (info.length() > 127) {
+         info = info.substring(0, 127);
+      }
+
+      _ownerData._info = info;
+      commit(true);
+      return true;
    }
 
    public static final void resetToDefaults() {

@@ -3,6 +3,7 @@ package net.rim.device.internal.ui.component;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.EditField;
 import net.rim.device.api.ui.text.IPTextFilter;
+import net.rim.device.api.util.CharacterUtilities;
 
 public class IPEditField extends EditField {
    private boolean keyRepeatProcessed;
@@ -25,7 +26,45 @@ public class IPEditField extends EditField {
 
    @Override
    protected boolean insert(char key, int status) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (Character.isUpperCase(key)) {
+         key = CharacterUtilities.toLowerCase(key, 1701707776);
+      }
+
+      if (key == ' ' || key == '.' || key == ':') {
+         int portCharactersUsed = 0;
+         int pointCharactersUsed = 0;
+         int lettersUsed = 0;
+         String text = this.getText();
+
+         for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (ch == '.') {
+               pointCharactersUsed++;
+            }
+
+            if (ch == ':') {
+               portCharactersUsed++;
+            }
+
+            if (Character.isLowerCase(ch)) {
+               lettersUsed++;
+            }
+         }
+
+         if (key == ' ') {
+            if (pointCharactersUsed == 3 && lettersUsed == 0) {
+               key = ':';
+            } else {
+               key = '.';
+            }
+         }
+
+         if (key == ':' && portCharactersUsed == 2) {
+            return false;
+         }
+      }
+
+      return super.insert(key, status);
    }
 
    @Override
@@ -59,7 +98,39 @@ public class IPEditField extends EditField {
    }
 
    public static final int parseIpAddr(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      int ipAddr = 0;
+      int index = 0;
+      int nextIndex = str.indexOf(46);
+      int val = 0;
+      boolean badNumber = false;
+
+      int i;
+      for (i = 0; index < str.length(); i++) {
+         nextIndex = str.indexOf(46, index);
+         if (nextIndex == -1) {
+            nextIndex = str.length();
+         }
+
+         try {
+            val = Integer.parseInt(str.substring(index, nextIndex));
+         } catch (NumberFormatException e) {
+            badNumber = true;
+         }
+
+         if (val < 0 || val > 255 || badNumber) {
+            throw new IllegalArgumentException("Invalid IP Address. An octet must be in range 0-255");
+         }
+
+         ipAddr <<= 8;
+         ipAddr |= val;
+         index = nextIndex + 1;
+      }
+
+      if (i != 4) {
+         throw new IllegalArgumentException("Invalid IP Address. Must be ###.###.###.###");
+      } else {
+         return ipAddr;
+      }
    }
 
    public static final void appendIpAddr(StringBuffer strBuf, int ip) {

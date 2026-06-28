@@ -2,6 +2,7 @@ package net.rim.device.internal.bluetooth;
 
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.util.NumberUtilities;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
 
@@ -188,11 +189,36 @@ public final class BluetoothME {
    }
 
    public static final String deviceAddressToString(byte[] address, boolean addColons) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer sb = new StringBuffer();
+
+      for (int i = address.length - 1; i >= 0; i--) {
+         String s = Integer.toHexString(address[i] & 255);
+         if (s.length() == 1) {
+            sb.append('0');
+         }
+
+         sb.append(s);
+         if (i > 0 && addColons) {
+            sb.append(':');
+         }
+      }
+
+      return sb.toString().toUpperCase();
    }
 
    public static final byte[] stringToDeviceAddress(String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string.length() != 12) {
+         throw new IllegalArgumentException();
+      }
+
+      byte[] address = new byte[6];
+
+      for (int i = 0; i < 6; i++) {
+         int stringIndex = i * 2;
+         address[5 - i] = (byte)(NumberUtilities.parseInt(string, stringIndex, stringIndex + 2, 16) & 0xFF);
+      }
+
+      return address;
    }
 
    public static final native int restoreLinkKey(byte[] var0, byte[] var1, int var2);

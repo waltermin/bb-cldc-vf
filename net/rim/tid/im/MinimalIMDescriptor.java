@@ -2,6 +2,7 @@ package net.rim.tid.im;
 
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.internal.i18n.ResourceBundleFetcher;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.util.StringUtilitiesInternal;
 import net.rim.tid.awt.im.repository.CustomWordsRepository;
 import net.rim.tid.awt.im.spi.InputMethod;
@@ -39,7 +40,48 @@ public class MinimalIMDescriptor implements InputMethodDescriptor {
 
    @Override
    public Locale[] getAvailableLocales() {
-      throw new RuntimeException("cod2jar: string-special");
+      if (InternalServices.isReducedFormFactor()) {
+         this._displayLocales = new Locale[0];
+         return new Locale[0];
+      }
+
+      if (this._availableLocales != null) {
+         return this._availableLocales;
+      }
+
+      byte IS_AVAILABLE = 1;
+      byte IS_DISPLAYABLE = 2;
+      byte[] matrix = new byte[this._locales.length];
+      int availableCount = 0;
+      int displayCount = 0;
+
+      for (int i = 0; i < this._locales.length; i++) {
+         if (verifySystemModulePresent(this._locales[i])) {
+            matrix[i] = IS_DISPLAYABLE;
+            availableCount++;
+            displayCount++;
+         } else if (this._locales[i].getVariant().length() > 0
+            && verifySystemModulePresent(Locale.get(this._locales[i].getLanguage(), this._locales[i].getCountry()))) {
+            matrix[i] = IS_AVAILABLE;
+            availableCount++;
+         }
+      }
+
+      this._availableLocales = new Locale[availableCount];
+      this._displayLocales = new Locale[displayCount];
+      availableCount = 0;
+      displayCount = 0;
+
+      for (int i = 0; i < this._locales.length; i++) {
+         if (matrix[i] > 0) {
+            this._availableLocales[availableCount++] = this._locales[i];
+            if (matrix[i] == IS_DISPLAYABLE) {
+               this._displayLocales[displayCount++] = this._locales[i];
+            }
+         }
+      }
+
+      return this._availableLocales;
    }
 
    @Override

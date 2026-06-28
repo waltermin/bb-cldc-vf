@@ -4,14 +4,18 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.TimeZone;
+import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.cldc.util.CalendarExtensions;
 import net.rim.device.internal.i18n.UnicodeServiceUtilities;
 import net.rim.vm.Array;
+import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
 
 public final class ConverterUtilities {
@@ -48,7 +52,20 @@ public final class ConverterUtilities {
    }
 
    public static final synchronized boolean indicatePossibleSerializationEncodings(byte[] clientServiceEncodings, byte[] hostServiceEncodings) {
-      throw new RuntimeException("cod2jar: string-special");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      byte encoding = UnicodeServiceUtilities.resolveEncoding(clientServiceEncodings, hostServiceEncodings);
+      if (encoding == -1) {
+         return false;
+      } else {
+         String encodingName = UnicodeServiceUtilities.getEncoding(encoding);
+         if (encodingName != null && encodingName.length() > 0) {
+            _currentSerializationEncodingByte = encoding;
+            _currentSerializationEncodingName = encodingName;
+            return true;
+         } else {
+            return false;
+         }
+      }
    }
 
    public static final String getConversionCurrentEncodingName() {
@@ -108,35 +125,133 @@ public final class ConverterUtilities {
    }
 
    public static final String readStringEncoded(byte[] dataBuffer, int readPosition, int lengthToRead, boolean isBigEndian) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (lengthToRead >= 1 && readPosition + lengthToRead <= dataBuffer.length) {
+         byte encoding = dataBuffer[readPosition++];
+         lengthToRead--;
+         int oldPosition = readPosition;
+         String encodingName = null;
+         if ((encoding & 128) == 128) {
+            int futureDataLength = detectFutureData(dataBuffer, readPosition - 1, lengthToRead + 1, isBigEndian);
+            if (futureDataLength < 0 || futureDataLength >= lengthToRead) {
+               return "";
+            }
+
+            readPosition += futureDataLength;
+            lengthToRead -= futureDataLength;
+         }
+
+         try {
+            if (encodingName == null) {
+               encodingName = UnicodeServiceUtilities.getEncoding(encoding);
+            }
+
+            if (encodingName != null && encodingName.length() != 0) {
+               return new String(dataBuffer, readPosition, lengthToRead, encodingName);
+            }
+
+            lengthToRead += readPosition - oldPosition + 1;
+            readPosition = --oldPosition;
+            return StringUtilities.decodeBOM(dataBuffer, readPosition, lengthToRead, true);
+         } catch (UnsupportedEncodingException uee) {
+            return new String(dataBuffer, readPosition, lengthToRead);
+         }
+      } else {
+         return null;
+      }
    }
 
    public static final int detectFutureData(byte[] dataBuffer, int readPosition, int lengthToRead, boolean bigEndian) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (lengthToRead >= 1 && readPosition + lengthToRead <= dataBuffer.length) {
+         byte encoding = dataBuffer[readPosition++];
+         lengthToRead--;
+         if ((encoding & 128) == 128) {
+            encoding = (byte)(encoding & -129);
+            String encodingName = UnicodeServiceUtilities.getEncoding(encoding);
+            if (encodingName != null && encodingName.length() > 0) {
+               int oldPosition = readPosition;
+               int lastPosition = readPosition + lengthToRead;
+               int fieldLength = 0;
+
+               while (readPosition + 1 < lastPosition) {
+                  fieldLength = extractCShort(dataBuffer, readPosition, bigEndian) & '\uffff';
+                  if (fieldLength < 0 || readPosition + fieldLength > lastPosition) {
+                     readPosition = lastPosition + 1;
+                     break;
+                  }
+
+                  readPosition += 2;
+                  if (fieldLength == 0) {
+                     return readPosition - oldPosition;
+                  }
+
+                  readPosition += fieldLength + 1;
+               }
+
+               if (lastPosition - readPosition < 0) {
+                  return -1;
+               }
+
+               return 0;
+            }
+         }
+
+         return 0;
+      } else {
+         return 0;
+      }
    }
 
    public static final boolean isIntellisyncCompatible(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      return text != null && StringUtilities.getCharacterSize(text) > 1 ? convertForDesktop(text, 0, text.length(), null, 0, 2) : true;
    }
 
    public static final void writeString(DataBuffer buffer, int type, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public static final boolean writeStringEncoded(DataBuffer buffer, int type, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public static final void writeStringIntellisync(DataBuffer buffer, int type, String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = string.length();
+      if (len > 65534) {
+         throw new IllegalArgumentException();
+      }
+
+      buffer.ensureCapacity(len + 4);
+      buffer.writeShort(len + 1);
+      buffer.writeByte(type);
+      byte[] bufferBytes = buffer.getArray();
+      int arrayPosition = buffer.getArrayPosition();
+      convertForDesktop(string, 0, string.length(), bufferBytes, arrayPosition, 1);
+      buffer.skipBytes(len);
+      buffer.writeByte(0);
    }
 
    public static final boolean writeStringDefault(DataBuffer dataBuffer, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      return text != null && dataBuffer != null ? convertForDesktop(text, 0, text.length(), dataBuffer.getArray(), dataBuffer.getArrayPosition(), 2) : false;
    }
 
    public static final boolean writeStringSmart(DataBuffer buffer, int type, String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string != null) {
+         int len = string.length();
+         buffer.ensureCapacity(len + 4);
+         byte[] bufferBytes = buffer.getArray();
+         int arrayPosition = buffer.getArrayPosition();
+         if (convertForDesktop(string, 0, string.length(), bufferBytes, arrayPosition + 3, 3)) {
+            buffer.writeShort(len + 1);
+            buffer.writeByte(type);
+            buffer.skipBytes(len);
+            buffer.writeByte(0);
+            buffer.trim(false);
+            return false;
+         } else {
+            return writeStringEncoded(buffer, type, string);
+         }
+      } else {
+         return false;
+      }
    }
 
    private static final native boolean convertForDesktop(String var0, int var1, int var2, byte[] var3, int var4, int var5);
@@ -282,7 +397,29 @@ public final class ConverterUtilities {
    }
 
    public static final void convertBinary(DataBuffer buffer, int type, String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = s.length();
+      buffer.ensureCapacity(len + 3);
+      buffer.writeShort(len);
+      buffer.writeByte(type);
+      byte[] tempBytes = WeakReferenceUtilities.getByteArray(_tempBytesWR, 64);
+      synchronized (tempBytes) {
+         char[] tempChars = WeakReferenceUtilities.getCharArray(_tempCharsWR, 64);
+         int i = 0;
+
+         while (len != 0) {
+            int amountToProcess = Math.min(len, 64);
+            int next = i + amountToProcess;
+            s.getChars(i, next, tempChars, 0);
+
+            for (int j = 0; j < amountToProcess; j++) {
+               tempBytes[j] = (byte)tempChars[j];
+            }
+
+            buffer.write(tempBytes, 0, amountToProcess);
+            len -= amountToProcess;
+            i = next;
+         }
+      }
    }
 
    public static final void convertInt(DataBuffer buffer, int type, int value, int size) {
@@ -856,11 +993,55 @@ public final class ConverterUtilities {
    }
 
    private static final String checkForEmptyString(String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string != null) {
+         string = string.trim();
+         if (string.length() == 0) {
+            string = null;
+         }
+      }
+
+      return string;
    }
 
    public static final byte[] addTag(byte[] data, byte tag, String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean tagOutOfRange = ((tag | 128) & 240) == 240;
+      data = removeTag(data, tag, !tagOutOfRange);
+      string = checkForEmptyString(string);
+      if (string != null) {
+         if (data == null) {
+            data = new byte[0];
+         }
+
+         int index = data.length;
+         Array.resize(data, index + 3 + string.length());
+         boolean success = convertForDesktop(string, 0, string.length(), data, index + 3, tagOutOfRange ? 0 : 2);
+         if (success || tagOutOfRange) {
+            int stringLength = string.length();
+            injectCShort(data, index, false, (short)stringLength);
+            data[index + 2] = tag;
+            return data;
+         }
+
+         byte[] rawBytes = null;
+
+         try {
+            rawBytes = string.getBytes(_currentSerializationEncodingName);
+         } catch (UnsupportedEncodingException uee) {
+            rawBytes = string.getBytes();
+         }
+
+         int length = rawBytes != null ? rawBytes.length : 0;
+         Array.resize(data, index + 4 + length);
+         injectCShort(data, index, false, (short)(length + 1));
+         index += 2;
+         data[index++] = (byte)(tag | 128);
+         data[index++] = _currentSerializationEncodingByte;
+         if (rawBytes != null) {
+            System.arraycopy(rawBytes, 0, data, index, length);
+         }
+      }
+
+      return data;
    }
 
    public static final byte[] addByteTag(byte[] data, byte tag, byte value) {

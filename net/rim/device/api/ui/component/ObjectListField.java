@@ -53,7 +53,15 @@ public class ObjectListField extends ListField implements DrawStyle, ListFieldCa
 
    @Override
    public int indexOfList(ListField listField, String prefix, int start) {
-      throw new RuntimeException("cod2jar: string-special");
+      int end = this._list.size();
+
+      for (int lv = start; lv < end; lv++) {
+         if (this._collator.compare(this._list.elementAt(lv).toString(), prefix, prefix.length()) == 0) {
+            return lv;
+         }
+      }
+
+      return -1;
    }
 
    @Override

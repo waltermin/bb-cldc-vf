@@ -105,6 +105,21 @@ public final class Locale {
    public static final int LAST_NAME_ORDER;
 
    private Locale(int code, String variant) {
+      if (!verifyCode(code)) {
+         throw new IllegalArgumentException("Invalid locale code: " + code);
+      }
+
+      if (variant == null || variant.length() == 0) {
+         variant = EMPTY;
+      }
+
+      if (variant != EMPTY && code == 0) {
+         throw new IllegalArgumentException("Invalid locale code: " + code);
+      }
+
+      this._code = code;
+      this._variant = variant;
+      this._keyboardID = -1;
    }
 
    public static final boolean isLatinOneCharacterSetLocale(Locale locale) {
@@ -318,7 +333,22 @@ public final class Locale {
    }
 
    public final String getDisplayName() {
-      throw new RuntimeException("cod2jar: string-special");
+      String language = this.getDisplayLanguage();
+      String country = this.getDisplayCountry();
+      String variant = this.getDisplayVariant();
+      if (country.length() == 0 && variant.length() != 0) {
+         country = variant;
+         variant = EMPTY;
+      }
+
+      String result = null;
+      if (country.length() != 0) {
+         result = MessageFormat.format(LocaleInternal.getString(100), new Object[]{language, country, variant != EMPTY ? "," : EMPTY, variant});
+      } else {
+         result = language;
+      }
+
+      return result;
    }
 
    public final String getDisplayVariant() {
@@ -364,11 +394,40 @@ public final class Locale {
    }
 
    public static final String getPersonalNamesSeparator(int order) {
-      throw new RuntimeException("cod2jar: string-special");
+      String nameSeparator;
+      switch (order) {
+         case -1:
+            throw new IllegalArgumentException("Illegal order ID " + order);
+         case 0:
+         default:
+            nameSeparator = LocaleInternal.getBundle().getString(83539);
+            break;
+         case 1:
+            nameSeparator = LocaleInternal.getBundle().getString(83540);
+      }
+
+      return nameSeparator != null && nameSeparator.length() >= 1 ? nameSeparator : "";
    }
 
    public static final int convertStringToKeyboardID(String variant) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (variant == null) {
+         return -1;
+      }
+
+      if (variant.length() == 0) {
+         return 0;
+      }
+
+      int result = 0;
+      int shift = 24;
+      int length = variant.length();
+
+      for (int lv = 0; lv < length; lv++) {
+         result |= variant.charAt(lv) << shift;
+         shift -= 8;
+      }
+
+      return result;
    }
 
    public static final String[] getISOCountries() {
@@ -460,11 +519,83 @@ public final class Locale {
    }
 
    private static final int pack(String language, String country) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!verifyLanguage(language)) {
+         throw new IllegalArgumentException("Invalid language: " + language);
+      }
+
+      if (!verifyCountry(country)) {
+         throw new IllegalArgumentException("Invalid country: " + country);
+      }
+
+      int code = 0;
+      if (language != null && !language.equals(EMPTY)) {
+         code |= language.charAt(0) << 24 | language.charAt(1) << 16;
+      }
+
+      if (country != null && !country.equals(EMPTY)) {
+         code |= country.charAt(0) << '\b' | country.charAt(1) << 0;
+      }
+
+      return code;
    }
 
    public static final Locale parse(String id) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (id == null) {
+         return null;
+      }
+
+      int code = 0;
+      String variant = null;
+
+      for (int lv = id.length() - 1; lv >= 0; lv--) {
+         char ch = id.charAt(lv);
+         if (ch > 127) {
+            throw new IllegalArgumentException();
+         }
+      }
+
+      int length = id.length();
+      int pos = 0;
+
+      try {
+         if (pos < length) {
+            if (id.charAt(pos) != '_') {
+               char l0 = id.charAt(pos + 0);
+               char l1 = id.charAt(pos + 1);
+               code |= l0 << 24 | l1 << 16;
+               pos += 2;
+            }
+
+            if (pos < length) {
+               if (id.charAt(pos) != '_') {
+                  throw new IllegalArgumentException();
+               }
+
+               if (id.charAt(++pos) != '_') {
+                  char c0 = id.charAt(pos + 0);
+                  char c1 = id.charAt(pos + 1);
+                  code |= c0 << '\b' | c1 << 0;
+                  pos += 2;
+               }
+
+               if (pos < length) {
+                  if (id.charAt(pos) != '_') {
+                     throw new IllegalArgumentException();
+                  }
+
+                  if (++pos == length) {
+                     throw new IllegalArgumentException();
+                  }
+
+                  variant = id.substring(pos);
+               }
+            }
+         }
+      } catch (IndexOutOfBoundsException e) {
+         throw new IllegalArgumentException();
+      }
+
+      return get(code, variant);
    }
 
    public static final boolean isLocaleEligbleForRemovable(Locale locale, boolean inputLocale) {
@@ -654,11 +785,19 @@ public final class Locale {
    }
 
    private static final boolean verifyCountry(String country) {
-      throw new RuntimeException("cod2jar: string-special");
+      try {
+         return country == null || country.equals(EMPTY) || (_countriesISO3166[country.charAt(0) - 'A'] & 1 << country.charAt(1) - 'A') != 0;
+      } catch (Exception e) {
+         return false;
+      }
    }
 
    private static final boolean verifyLanguage(String language) {
-      throw new RuntimeException("cod2jar: string-special");
+      try {
+         return language == null || language.equals(EMPTY) || (_languagesISO639[language.charAt(0) - 'a'] & 1 << language.charAt(1) - 'a') != 0;
+      } catch (Exception e) {
+         return false;
+      }
    }
 
    private static final Locale verifySystemModulePresent(Locale locale) {

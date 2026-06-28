@@ -53,7 +53,9 @@ class RecordKeystrokes extends MainScreen {
    }
 
    private void output(String msg) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._output.setText(this._output.getText() + msg + "\n");
+      this._output.setCursorPosition(this._output.getText().length() - 1);
+      this._output.setFocus();
    }
 
    @Override

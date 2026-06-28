@@ -95,7 +95,7 @@ public final class String {
    public final native void getChars(int var1, int var2, char[] var3, int var4);
 
    public final byte[] getBytes(String enc) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final byte[] getBytes() {
@@ -118,7 +118,7 @@ public final class String {
    }
 
    public final boolean endsWith(String suffix) {
-      throw new RuntimeException("cod2jar: string-special");
+      return this.startsWith(suffix, this.length() - suffix.length());
    }
 
    @Override
@@ -133,7 +133,7 @@ public final class String {
    }
 
    public final int lastIndexOf(int ch) {
-      throw new RuntimeException("cod2jar: string-special");
+      return this.lastIndexOf(ch, this.length() - 1);
    }
 
    public final native int lastIndexOf(int var1, int var2);
@@ -145,21 +145,77 @@ public final class String {
    public final native int indexOf(String var1, int var2);
 
    public final String substring(int beginIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      return this.substring(beginIndex, this.length());
    }
 
    public final String substring(int beginIndex, int endIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (beginIndex < 0) {
+         throw new StringIndexOutOfBoundsException(beginIndex);
+      }
+
+      int count = this.length();
+      if (endIndex > count) {
+         throw new StringIndexOutOfBoundsException(endIndex);
+      }
+
+      if (beginIndex > endIndex) {
+         throw new StringIndexOutOfBoundsException(endIndex - beginIndex);
+      }
+
+      if (beginIndex == 0 && endIndex == count) {
+         return this;
+      }
+
+      int newCount = endIndex - beginIndex;
+      return newCount == 0 ? "" : arrayToString(this.getSubArray(beginIndex, newCount));
    }
 
    private final native void concatBytes(byte[] var1, String var2);
 
    public final String concat(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      int otherLen = str.length();
+      if (otherLen == 0) {
+         return this;
+      } else {
+         int len = this.length();
+         if (this.usesBytes() && str.usesBytes()) {
+            byte[] newValue = new byte[len + otherLen];
+            this.concatBytes(newValue, str);
+            return arrayToString(newValue);
+         } else {
+            char[] buf = new char[len + otherLen];
+            this.getChars(0, len, buf, 0);
+            str.getChars(0, otherLen, buf, len);
+            return arrayToString(buf);
+         }
+      }
    }
 
    public final String replace(char oldChar, char newChar) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (oldChar == newChar) {
+         return this;
+      }
+
+      int count = this.length();
+      int i = 0;
+
+      while (i < count && this.charAt(i) != oldChar) {
+         i++;
+      }
+
+      if (i == count) {
+         return this;
+      }
+
+      Object buf;
+      if (this.usesBytes() && newChar < 256) {
+         buf = new byte[count];
+      } else {
+         buf = new char[count];
+      }
+
+      this.doReplace(buf, oldChar, newChar);
+      return arrayToString(buf);
    }
 
    private final native void doReplace(Object var1, char var2, char var3);
@@ -169,7 +225,19 @@ public final class String {
    public final native String toUpperCase();
 
    public final String trim() {
-      throw new RuntimeException("cod2jar: string-special");
+      int count = this.length();
+      int len = count;
+      int st = 0;
+
+      while (st < len && this.charAt(st) <= ' ') {
+         st++;
+      }
+
+      while (st < len && this.charAt(len - 1) <= ' ') {
+         len--;
+      }
+
+      return st <= 0 && len >= count ? this : this.substring(st, len);
    }
 
    @Override
@@ -178,7 +246,10 @@ public final class String {
    }
 
    public final char[] toCharArray() {
-      throw new RuntimeException("cod2jar: string-special");
+      int count = this.length();
+      char[] result = new char[count];
+      this.getChars(0, count, result, 0);
+      return result;
    }
 
    public static final String valueOf(Object obj) {
@@ -220,7 +291,14 @@ public final class String {
    }
 
    public final boolean equalsIgnoreCase(String anotherString) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (anotherString != null) {
+         int count = this.length();
+         if (count == anotherString.length()) {
+            return this.regionMatches(true, 0, anotherString, 0, count);
+         }
+      }
+
+      return false;
    }
 
    public static final String valueOf(float f) {

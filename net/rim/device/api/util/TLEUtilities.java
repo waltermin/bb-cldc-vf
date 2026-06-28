@@ -79,7 +79,16 @@ public final class TLEUtilities {
    }
 
    public static final String readStringField(DataBuffer buf, boolean stripNull) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = buf.readCompressedInt();
+      byte[] data = buf.getArray();
+      int offset = buf.getArrayPosition();
+      String result = StringUtilities.decodeBOM(data, offset, length);
+      buf.skipBytes(length);
+      if (stripNull && length > 0 && result.charAt(result.length() - 1) == 0) {
+         result = result.substring(0, result.length() - 1);
+      }
+
+      return result;
    }
 
    public static final String readStringFieldEncoded(DataBuffer buf) {
@@ -158,11 +167,13 @@ public final class TLEUtilities {
    }
 
    public static final void writeStringField(DataBuffer buf, int type, String value) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = value != null ? value.length() : 0;
+      writeStringField(buf, type, value, 0, length, false);
    }
 
    public static final void writeStringField(DataBuffer buf, int type, String value, boolean addNull) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = value != null ? value.length() : 0;
+      writeStringField(buf, type, value, 0, length, addNull);
    }
 
    public static final void writeStringField(DataBuffer buf, int type, String value, int offset, int length) {
@@ -174,7 +185,7 @@ public final class TLEUtilities {
    }
 
    public static final void writeStringFieldEncoded(DataBuffer buf, int type, String value, String encodingName) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public static final boolean findType(DataBuffer buffer, int type) {

@@ -3,7 +3,11 @@ package javax.microedition.content;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.system.CodeModuleGroupProperties;
+import net.rim.device.internal.system.CodeModuleGroupPropertiesCollection;
 import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
 
 final class ContentHandlerUtilities {
    private static final String SLASH_SLASH;
@@ -31,7 +35,21 @@ final class ContentHandlerUtilities {
    }
 
    static final void checkStringArrayValues(String[] strings, boolean throwExceptionIfNull) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (strings != null || throwExceptionIfNull) {
+         if (strings == null) {
+            throw new NullPointerException("An array parameter is null");
+         }
+
+         for (int i = 0; i < strings.length; i++) {
+            if (strings[i] == null) {
+               throw new NullPointerException("An array contains a null value");
+            }
+
+            if (strings[i].length() == 0) {
+               throw new IllegalArgumentException("Zero length Strings not permitted");
+            }
+         }
+      }
    }
 
    static final void checkStringArrayValues(String[] strings) {
@@ -39,7 +57,27 @@ final class ContentHandlerUtilities {
    }
 
    static final String getStringValue(String key, int moduleHandle) {
-      throw new RuntimeException("cod2jar: string-special");
+      String value = null;
+      Resource resource = Resource$Internal.getResourceClass(CodeModuleManager.getModuleName(moduleHandle));
+      if (resource != null) {
+         if (CodeModuleManager.isMidlet(moduleHandle) && CodeModuleManager.getModuleTrailer(moduleHandle, 2, 0) == null) {
+            String name = getStringValue("MIDlet-Name", resource);
+            String vendor = getStringValue("MIDlet-Vendor", resource);
+            if (name != null && vendor != null) {
+               int uid = CodeModuleGroupPropertiesCollection.getGroupUID(name + ":" + vendor);
+               CodeModuleGroupProperties cmgp = (CodeModuleGroupProperties)CodeModuleGroupPropertiesCollection.getInstance().getSyncObject(uid);
+               if (cmgp != null) {
+                  value = (String)cmgp.get(key);
+               }
+            }
+         }
+
+         if (value == null || value.length() == 0) {
+            value = getStringValue(key, resource);
+         }
+      }
+
+      return value;
    }
 
    private static final String getStringValue(String key, Resource resource) {
@@ -48,7 +86,39 @@ final class ContentHandlerUtilities {
    }
 
    static final String checkURL(String url) {
-      throw new RuntimeException("cod2jar: string-special");
+      int positionOfColon = url.indexOf(58);
+      if (positionOfColon == -1) {
+         throw new IllegalArgumentException("Invalid URL");
+      }
+
+      String scheme = StringUtilities.toLowerCase(url.substring(0, positionOfColon), 1701707776);
+      if (scheme != null && scheme.length() != 0) {
+         char c = scheme.charAt(0);
+         if (c >= 'a' && c <= 'z') {
+            for (int i = 1; i < scheme.length(); i++) {
+               c = scheme.charAt(i);
+               if (!Character.isDigit(c) && (c < 'a' || c > 'z') && c != '+' && c != '-' && c != '.') {
+                  throw new IllegalArgumentException("Invalid URL");
+               }
+            }
+
+            int slashesIndex = url.indexOf("//");
+            if (slashesIndex == -1) {
+               throw new IllegalArgumentException("Invalid URL");
+            } else {
+               String hostPart = url.substring(slashesIndex + 2);
+               if (hostPart == null || hostPart.length() == 0) {
+                  throw new IllegalArgumentException("Invalid URL");
+               } else {
+                  return scheme.equals("socket") && url.indexOf(";deviceside=") == -1 ? url + ";deviceside=" + "true" : url;
+               }
+            }
+         } else {
+            throw new IllegalArgumentException("Invalid URL");
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid URL");
+      }
    }
 
    static final ApplicationDescriptor findApplicationDescriptor(int moduleHandle, String classname) {

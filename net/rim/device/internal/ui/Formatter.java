@@ -1,8 +1,11 @@
 package net.rim.device.internal.ui;
 
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.DrawTextParam;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.tid.text.AttributedString;
@@ -358,6 +361,110 @@ public class Formatter {
       ArticInterface$Line cursorLine,
       ArticInterface$Line lineList
    ) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (_errorReportCount < 2) {
+         String strText = text.toString();
+         String debugText = "Text: [" + strText + "]\n" + "Text length: " + strText.length() + "\n";
+         if (input == null) {
+            if (cursor == -1) {
+               debugText = debugText + "doc position to find: " + x + "," + y + "\n";
+            } else {
+               debugText = debugText + "position to find: " + cursor + "\n" + "position leading edge: " + cursorLeadingEdge + "\n";
+            }
+         } else {
+            debugText = debugText
+               + "nextStartPosToFormat: "
+               + input._nextStartPosToFormat
+               + "\n"
+               + "formatOldLength: "
+               + input._formatOldLength
+               + "\n"
+               + "formatNewLength: "
+               + input._formatNewLength
+               + "\n"
+               + "cursor: "
+               + cursor
+               + "\n"
+               + "cursorLeadingEdge: "
+               + cursorLeadingEdge
+               + "\n"
+               + "anchor: "
+               + anchor
+               + "\n"
+               + "linesToFormatCount: "
+               + input._linesToFormatCount
+               + "\n"
+               + "formatTextUnchanged: "
+               + input._formatTextUnchanged
+               + "\n"
+               + "formatFlags: "
+               + input._formatFlags
+               + "\n";
+         }
+
+         System.err
+            .println(
+               debugText
+                  + "cursorLineLength: "
+                  + cursorLine._textLength
+                  + "\n"
+                  + "cursorLineStart: "
+                  + cursorLineStart
+                  + "\n"
+                  + "cursorLineTop: "
+                  + cursorLineTop
+                  + "\n"
+                  + "LineList:"
+            );
+         int count = 0;
+
+         for (ArticInterface$Line line = lineList; line != null; line = line._next) {
+            if (count > 0) {
+               System.err.print("->");
+            }
+
+            System.err.print("(" + line._textLength + "," + line._skippedCharacters + "," + line._flags + ")");
+            count++;
+         }
+
+         System.err.println("\nAttributes:");
+         AttributedString$Iterator iter = text.getIterator();
+         count = 0;
+
+         do {
+            if (count > 0) {
+               System.err.print("->");
+            }
+
+            long attrib = iter.runAttrib();
+            Font font = Ui.getFontFromAttributes(attrib, Font.getDefault());
+            System.err
+               .print(
+                  "("
+                     + iter.runLength()
+                     + ";"
+                     + Integer.toHexString((int)(attrib >> 32))
+                     + Integer.toHexString((int)attrib)
+                     + ";Font:"
+                     + font.getFontFamily().getName()
+                     + ","
+                     + font.getHeight()
+                     + ","
+                     + font.getStyle()
+                     + ")"
+               );
+            count++;
+         } while (iter.next());
+
+         System.err.print("\nText in hexa: ");
+
+         for (int i = 0; i < strText.length(); i++) {
+            System.err.print(Integer.toHexString(strText.charAt(i)) + " ");
+         }
+
+         System.err.println("");
+         long LOGWORTHY_REPORT_REQUEST = 2888237357036234703L;
+         RIMGlobalMessagePoster.postGlobalEvent(LOGWORTHY_REPORT_REQUEST, 0, 0, "", null);
+         _errorReportCount++;
+      }
    }
 }

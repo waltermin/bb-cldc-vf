@@ -469,7 +469,16 @@ public class InputContext {
    }
 
    private int getHanMaskForLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      int lCode = locale.getCode();
+      int lang = lCode & -65536;
+      if (lang == Locale.get("ja").getCode()) {
+         return 3072;
+      } else if (lang == 2053636096) {
+         String country = locale.getCountry();
+         return country.length() != 0 && !country.equals("CN") ? 1024 : 2048;
+      } else {
+         return lang == Locale.get("ko").getCode() ? 4096 : 0;
+      }
    }
 
    private synchronized void focusLost(FocusEvent event) {

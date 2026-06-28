@@ -260,7 +260,30 @@ public final class InternalServices {
    private static final native void resetIdleTimeImpl();
 
    public static final int[] parsePlatformVersionString(String pv) {
-      throw new RuntimeException("cod2jar: string-special");
+      int index = 0;
+      if (pv == null) {
+         return null;
+      }
+
+      int[] result = new int[4];
+
+      int octet;
+      for (octet = 0; octet < result.length && index < pv.length(); octet++) {
+         int nextIndex = pv.indexOf(46, index);
+         if (nextIndex == -1) {
+            nextIndex = pv.length();
+         }
+
+         try {
+            result[octet] = Integer.parseInt(pv.substring(index, nextIndex));
+         } catch (NumberFormatException e) {
+            return null;
+         }
+
+         index = nextIndex + 1;
+      }
+
+      return octet == result.length ? result : null;
    }
 
    public static final native int getOSAPIVersion();

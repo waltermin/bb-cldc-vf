@@ -76,11 +76,139 @@ public class SimpleDateFormat extends DateFormat {
    }
 
    private void compilePattern(String pattern) {
-      throw new RuntimeException("cod2jar: string-special");
+      int patternLen = pattern.length();
+      char[] compiledPattern = new char[patternLen * 2];
+      int compiledLength = 0;
+      int numFields = 0;
+      int index = 0;
+
+      while (index < patternLen) {
+         int length;
+         label59: {
+            char ch = pattern.charAt(index);
+            int type;
+            switch (ch) {
+               case '\'':
+                  type = 65535;
+                  break;
+               case 'D':
+                  type = 65533;
+                  break;
+               case 'E':
+                  type = 7;
+                  break;
+               case 'F':
+                  type = 65533;
+                  break;
+               case 'G':
+                  type = 65533;
+                  break;
+               case 'H':
+                  type = 11;
+                  break;
+               case 'M':
+                  type = 2;
+                  break;
+               case 'S':
+                  type = 14;
+                  break;
+               case 'W':
+                  type = 65533;
+                  break;
+               case 'a':
+                  type = 9;
+                  break;
+               case 'd':
+                  type = 5;
+                  break;
+               case 'h':
+                  type = 10;
+                  break;
+               case 'm':
+                  type = 12;
+                  break;
+               case 's':
+                  type = 13;
+                  break;
+               case 'w':
+                  type = 65533;
+                  break;
+               case 'y':
+                  type = 1;
+                  break;
+               case 'z':
+                  type = 90;
+                  break;
+               default:
+                  type = 65534;
+            }
+
+            compiledPattern[compiledLength++] = (char)type;
+            length = 1;
+            int saveCompileIndex;
+            int actualLength;
+            int i;
+            switch (type) {
+               case 65532:
+                  length = findLength(pattern, index, ch);
+                  compiledPattern[compiledLength++] = (char)length;
+                  numFields++;
+                  break label59;
+               case 65533:
+                  length = findLength(pattern, index, ch);
+                  numFields++;
+                  break label59;
+               case 65534:
+                  compiledPattern[compiledLength++] = ch;
+                  break label59;
+               case 65535:
+               default:
+                  length = findLength(pattern, index, ch);
+                  saveCompileIndex = compiledLength++;
+                  actualLength = length >> 1;
+                  i = length;
+            }
+
+            while (i >= 2) {
+               compiledPattern[compiledLength++] = '\'';
+               i -= 2;
+            }
+
+            if (i == 1) {
+               int quoted = pattern.indexOf(39, index + length);
+               if (quoted == -1) {
+                  quoted = patternLen;
+               }
+
+               pattern.getChars(index + length, quoted, compiledPattern, compiledLength);
+               quoted -= index + length;
+               compiledLength += quoted;
+               actualLength += quoted;
+               length += quoted + 1;
+            }
+
+            compiledPattern[saveCompileIndex] = (char)actualLength;
+         }
+
+         index += length;
+      }
+
+      this._compiledPattern = compiledPattern;
+      this._compiledLength = compiledLength;
+      this._numFields = numFields;
    }
 
    private static int findLength(String s, int offset, char ch) {
-      throw new RuntimeException("cod2jar: string-special");
+      int stringLength = s.length();
+      int length = 1;
+      offset++;
+
+      while (offset < stringLength && ch == s.charAt(offset)) {
+         length++;
+         offset++;
+      }
+
+      return length;
    }
 
    @Override

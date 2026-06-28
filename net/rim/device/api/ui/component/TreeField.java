@@ -129,7 +129,9 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    public void setEmptyString(String emptyString, int style) {
-      throw new RuntimeException("cod2jar: string-special");
+      emptyString.length();
+      this._emptyString = emptyString;
+      this._emptyStyle = style;
    }
 
    public String getEmptyString() {

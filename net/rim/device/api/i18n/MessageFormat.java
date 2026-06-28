@@ -23,7 +23,75 @@ public class MessageFormat extends Format {
    }
 
    public void applyPattern(String newPattern) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer[] segments = new StringBuffer[4];
+
+      for (int i = 0; i < segments.length; i++) {
+         segments[i] = new StringBuffer();
+      }
+
+      int part = 0;
+      int formatNumber = 0;
+      boolean inQuote = false;
+      int braceStack = 0;
+      this.maxOffset = -1;
+
+      for (int i = 0; i < newPattern.length(); i++) {
+         char ch = newPattern.charAt(i);
+         if (part == 0) {
+            if (ch == '\'') {
+               if (i + 1 < newPattern.length() && newPattern.charAt(i + 1) == '\'') {
+                  segments[part].append(ch);
+                  i++;
+               } else {
+                  inQuote = !inQuote;
+               }
+            } else if (ch == '{' && !inQuote) {
+               part = 1;
+            } else {
+               segments[part].append(ch);
+            }
+         } else if (inQuote) {
+            segments[part].append(ch);
+            if (ch == '\'') {
+               inQuote = false;
+            }
+         } else {
+            switch (ch) {
+               case '\'':
+                  inQuote = true;
+               default:
+                  segments[part].append(ch);
+                  break;
+               case ',':
+                  if (part < 3) {
+                     part++;
+                  } else {
+                     segments[part].append(ch);
+                  }
+                  break;
+               case '{':
+                  braceStack++;
+                  segments[part].append(ch);
+                  break;
+               case '}':
+                  if (braceStack == 0) {
+                     part = 0;
+                     this.makeFormat(i, formatNumber, segments);
+                     formatNumber++;
+                  } else {
+                     braceStack--;
+                     segments[part].append(ch);
+                  }
+            }
+         }
+      }
+
+      if (braceStack == 0 && part != 0) {
+         this.maxOffset = -1;
+         throw new IllegalArgumentException("Unmatched braces");
+      }
+
+      this.pattern = segments[0].toString();
    }
 
    private static final int findKeyword(String s, String[] list) {

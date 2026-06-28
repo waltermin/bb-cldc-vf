@@ -37,7 +37,7 @@ public class Writer {
    }
 
    public void write(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      this.write(str, 0, str.length());
    }
 
    public void write(String str, int off, int len) {

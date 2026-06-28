@@ -510,7 +510,159 @@ class FloatingDecimal {
    }
 
    public static FloatingDecimal readJavaFormatString(String in) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean isNegative = false;
+      boolean signSeen = false;
+
+      try {
+         in = in.trim();
+         int l = in.length();
+         if (l == 0) {
+            throw new NumberFormatException("empty String");
+         }
+
+         int i = 0;
+         char c;
+         char[] digits;
+         int nDigits;
+         boolean decSeen;
+         int decPt;
+         int nLeadZero;
+         int nTrailZero;
+         switch (c = in.charAt(i)) {
+            case '-':
+               isNegative = true;
+            case '+':
+               i++;
+               signSeen = true;
+            default:
+               digits = new char[l];
+               nDigits = 0;
+               decSeen = false;
+               decPt = 0;
+               nLeadZero = 0;
+               nTrailZero = 0;
+         }
+
+         label92:
+         for (; i < l; i++) {
+            switch (c = in.charAt(i)) {
+               case '-':
+               case '/':
+                  break label92;
+               case '.':
+                  if (decSeen) {
+                     throw new NumberFormatException("multiple points");
+                  }
+
+                  decPt = i;
+                  if (signSeen) {
+                     decPt--;
+                  }
+
+                  decSeen = true;
+                  continue;
+               case '0':
+               default:
+                  if (nDigits > 0) {
+                     nTrailZero++;
+                  } else {
+                     nLeadZero++;
+                  }
+                  continue;
+               case '1':
+               case '2':
+               case '3':
+               case '4':
+               case '5':
+               case '6':
+               case '7':
+               case '8':
+               case '9':
+            }
+
+            while (nTrailZero > 0) {
+               digits[nDigits++] = '0';
+               nTrailZero--;
+            }
+
+            digits[nDigits++] = c;
+         }
+
+         if (nDigits == 0) {
+            digits = zero;
+            nDigits = 1;
+            if (nLeadZero == 0) {
+               throw new NumberFormatException(in);
+            }
+         }
+
+         int decExp;
+         if (decSeen) {
+            decExp = decPt - nLeadZero;
+         } else {
+            decExp = nDigits + nTrailZero;
+         }
+
+         if (i < l && (c = in.charAt(i)) == 'e' || c == 'E') {
+            int expSign = 1;
+            int expVal = 0;
+            int reallyBig = 214748364;
+            boolean expOverflow = false;
+            i++;
+            int expAt;
+            switch (in.charAt(i)) {
+               case '-':
+                  expSign = -1;
+               case '+':
+                  i++;
+               default:
+                  expAt = i;
+            }
+
+            label117:
+            while (i < l) {
+               if (expVal >= reallyBig) {
+                  expOverflow = true;
+               }
+
+               switch (c = in.charAt(i++)) {
+                  case '/':
+                     i--;
+                     break label117;
+                  case '0':
+                  case '1':
+                  case '2':
+                  case '3':
+                  case '4':
+                  case '5':
+                  case '6':
+                  case '7':
+                  case '8':
+                  case '9':
+                  default:
+                     expVal = expVal * 10 + (c - '0');
+               }
+            }
+
+            int expLimit = 324 + nDigits + nTrailZero;
+            if (!expOverflow && expVal <= expLimit) {
+               decExp += expSign * expVal;
+            } else {
+               decExp = expSign * expLimit;
+            }
+
+            if (i == expAt) {
+               throw new NumberFormatException(in);
+            }
+         }
+
+         if (i >= l || i == l - 1 && (in.charAt(i) == 'f' || in.charAt(i) == 'F' || in.charAt(i) == 'd' || in.charAt(i) == 'D')) {
+            return new FloatingDecimal(isNegative, decExp, digits, nDigits, false);
+         }
+      } catch (StringIndexOutOfBoundsException var19) {
+      }
+
+      throw new NumberFormatException(in);
    }
 
    public double doubleValue() {

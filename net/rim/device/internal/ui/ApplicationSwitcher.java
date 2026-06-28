@@ -139,7 +139,8 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
    }
 
    private final boolean startsWithCharacterUnderscored(char ch, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      int index = text.indexOf(818);
+      return index > 0 && Character.toUpperCase(text.charAt(index - 1)) == ch;
    }
 
    @Override

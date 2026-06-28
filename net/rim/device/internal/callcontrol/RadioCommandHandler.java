@@ -5,7 +5,11 @@ import net.rim.device.api.system.DirectConnect;
 import net.rim.device.api.system.Phone;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.system.SIMCard;
+import net.rim.device.api.system.SIMCardException;
+import net.rim.device.api.system.UnsupportedOperationException;
 import net.rim.device.internal.system.PhoneFirmwareImpl;
+import net.rim.device.internal.system.RadioInternal;
 
 final class RadioCommandHandler extends AbstractCallCommandHandler {
    private RadioEventHandler _eventHandler;
@@ -94,7 +98,49 @@ final class RadioCommandHandler extends AbstractCallCommandHandler {
 
    @Override
    public final String getVoiceMailNumber(int line) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (RadioInfo.getNetworkType() == 4) {
+         try {
+            int stringID = line == 2 ? 7 : 1;
+            String number = RadioInternal.readNVString(stringID);
+            if (number != null && number.length() > 0) {
+               return number;
+            }
+         } catch (RadioException var7) {
+         }
+
+         try {
+            String number = this.getAlternateLineNumber(line);
+            if (number != null && number.length() > 0) {
+               return number;
+            }
+         } catch (RadioException var6) {
+         }
+      }
+
+      if (SIMCard.isSupported()) {
+         try {
+            String number = null;
+            switch (line) {
+               case 0:
+                  break;
+               case 1:
+               default:
+                  number = SIMCard.getVoiceMailNumber(0);
+                  break;
+               case 2:
+                  number = SIMCard.getVoiceMailNumber(1);
+            }
+
+            if (number != null && number.length() > 0) {
+               return number;
+            }
+         } catch (SIMCardException var4) {
+            return null;
+         } catch (UnsupportedOperationException var5) {
+         }
+      }
+
+      return null;
    }
 
    @Override

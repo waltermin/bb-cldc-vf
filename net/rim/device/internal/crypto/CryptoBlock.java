@@ -583,7 +583,107 @@ public final class CryptoBlock {
    }
 
    public static final String decode(DataBuffer input, DataBuffer output) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (input != null && output != null) {
+         byte encryptionScheme;
+         try {
+            if (input.readUnsignedByte() != 0) {
+               throw new CryptoBlockException();
+            }
+
+            encryptionScheme = (byte)input.readUnsignedByte();
+         } catch (IOException e) {
+            throw new CryptoBlockException();
+         }
+
+         byte keyAlgorithm = encryptionSchemeToKeyAlgorithm(encryptionScheme);
+         int keyLength = getKeyLength(keyAlgorithm);
+         byte[] validEncryptedSessionKey = null;
+         String validKeyID = null;
+         CryptoBlock$CryptoBlockKey validMasterKey = null;
+         byte[] encryptedSessionKey = new byte[keyLength];
+
+         while (true) {
+            String keyID = readKeyID(input);
+            if (keyID.length() == 0) {
+               int header;
+               try {
+                  header = input.readUnsignedByte();
+               } catch (IOException e) {
+                  throw new CryptoBlockException();
+               }
+
+               boolean decompress = (header & 240) == 16;
+               boolean decrypt = (header & 15) == 9;
+               if (!decrypt) {
+                  if (encryptionScheme != 0) {
+                     throw new CryptoBlockException();
+                  }
+
+                  if (decompress) {
+                     byte[] data = decompress(input.getArray(), input.getArrayPosition(), input.available());
+                     output.setData(data, 0, data.length);
+                     output.skipBytes(data.length);
+                  } else {
+                     int length = input.available();
+                     output.setData(input.getArray(), input.getArrayPosition(), length);
+                     output.skipBytes(length);
+                  }
+               } else {
+                  if (validMasterKey == null) {
+                     throw new CryptoBlockException("No master key");
+                  }
+
+                  if (validMasterKey._algorithm == 1
+                     && ITPolicy.getBoolean(24, 43, false)
+                     && ITPolicyInternal.verifyITAdminService(validMasterKey._name, false)) {
+                     throw new CryptoBlockException("3DES crypto disabled");
+                  }
+
+                  byte[] sessionKey = decrypt(validMasterKey.getKey(), keyAlgorithm, validEncryptedSessionKey, 0, validEncryptedSessionKey.length, 1);
+                  RandomSource.add(sessionKey);
+                  if (!checkSessionKey(sessionKey, encryptionScheme)) {
+                     throw new CryptoBlockException();
+                  }
+
+                  byte[] data;
+                  if (decompress) {
+                     data = decryptDecompress(sessionKey, keyAlgorithm, input.getArray(), input.getArrayPosition(), input.available(), 2);
+                  } else {
+                     data = decrypt(sessionKey, keyAlgorithm, input.getArray(), input.getArrayPosition(), input.available(), 3);
+                  }
+
+                  int dataLength = data.length - checkRedundancy(data, encryptionScheme);
+                  output.setData(data, 0, dataLength);
+                  output.skipBytes(dataLength);
+                  PersistentContent.markAsPlaintext(output.getArray());
+               }
+
+               RandomSource.add(output.getArray());
+               return decrypt ? validKeyID : null;
+            }
+
+            try {
+               input.readFully(encryptedSessionKey);
+            } catch (IOException e) {
+               throw new CryptoBlockException();
+            }
+
+            if (validMasterKey == null) {
+               CryptoBlock$CryptoBlockKey masterKeyForKeyID;
+               synchronized (_persistentKeysById) {
+                  masterKeyForKeyID = (CryptoBlock$CryptoBlockKey)_keysById.get(keyID);
+               }
+
+               if (masterKeyForKeyID != null && masterKeyForKeyID._algorithm == keyAlgorithm) {
+                  validMasterKey = masterKeyForKeyID;
+                  validEncryptedSessionKey = Arrays.copy(encryptedSessionKey);
+                  validKeyID = keyID;
+               }
+            }
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public static final void selfTest() {

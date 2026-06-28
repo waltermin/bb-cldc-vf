@@ -8,7 +8,19 @@ public final class DNSMessageIPv4Question {
    private int _qclass = 1;
 
    public final void setQname(String qname) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (qname == null) {
+         throw new IllegalArgumentException();
+      }
+
+      if (qname.length() == 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (qname.length() > 255) {
+         throw new IllegalArgumentException();
+      }
+
+      this._qname = qname;
    }
 
    public final String getQname() {

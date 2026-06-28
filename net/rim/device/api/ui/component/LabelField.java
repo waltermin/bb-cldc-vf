@@ -1,5 +1,7 @@
 package net.rim.device.api.ui.component;
 
+import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Clipboard;
@@ -60,7 +62,15 @@ public class LabelField extends Field implements DrawStyle {
    }
 
    private void checkLocale() {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._rbId != 0) {
+         int currentCode = Locale.getDefault().getCode();
+         if (this._cachedLocaleCode != currentCode) {
+            this._cachedLocaleCode = currentCode;
+            ResourceBundleFamily family = ResourceBundle.getBundle(this._rbId, this._rbName);
+            String translated = family.getString(this._rbKey);
+            this.setTextInternal(translated, 0, translated.length());
+         }
+      }
    }
 
    @Override
@@ -172,7 +182,16 @@ public class LabelField extends Field implements DrawStyle {
    }
 
    public void setText(ResourceBundleFamily rb, int key) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (rb == null) {
+         this.setText(null);
+      } else {
+         this._cachedLocaleCode = Locale.getDefault().getCode();
+         this._rbId = rb.getId();
+         this._rbName = rb.getName();
+         this._rbKey = key;
+         String translated = rb.getString(key);
+         this.setTextInternal(translated, 0, translated.length());
+      }
    }
 
    private void setTextInternal(Object text, int offset, int length) {

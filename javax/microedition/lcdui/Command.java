@@ -18,6 +18,15 @@ public class Command {
    private static final int LAST_COMMAND_TYPE;
 
    public Command(String label, int commandType, int priority) {
+      label.length();
+      if (commandType >= 1 && commandType <= 8) {
+         this._label = label;
+         this._menuLabel = label;
+         this._commandType = commandType;
+         this._priority = priority;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public Command(String shortLabel, String longLabel, int commandType, int priority) {

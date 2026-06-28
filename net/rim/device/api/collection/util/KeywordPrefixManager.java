@@ -4,6 +4,8 @@ import net.rim.device.api.util.BitSet;
 import net.rim.device.api.util.ByteVector;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.Persistable;
+import net.rim.device.api.util.StringUtilities;
+import net.rim.vm.Array;
 
 public class KeywordPrefixManager implements Persistable {
    private BigIntVector _prefixes;
@@ -41,7 +43,13 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    private int getKey(String str, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (length > str.length() - offset) {
+         throw new IllegalArgumentException();
+      } else {
+         return this.getKey0(
+            (char)(length > 0 ? str.charAt(offset) : 0), (char)(length > 1 ? str.charAt(offset + 1) : 0), (char)(length > 2 ? str.charAt(offset + 2) : 0)
+         );
+      }
    }
 
    private int getKey(char[] data, int offset, int length) {
@@ -69,7 +77,13 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    private long getKeyLong(String str, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (str.length() - offset < length) {
+         throw new IllegalArgumentException();
+      } else {
+         return this.getKeyLong0(
+            length > 0 ? str.charAt(offset) : '\u0000', length > 1 ? str.charAt(offset + 1) : '\u0000', length > 2 ? str.charAt(offset + 2) : '\u0000'
+         );
+      }
    }
 
    private long getKeyLong(char[] data, int offset, int length) {
@@ -135,7 +149,53 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public void addWords(int id, String words, boolean firstFlag, byte propertyIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (words != null) {
+         synchronized (this._prefixes) {
+            synchronized (this._prefixesLong) {
+               int newSize = words.length() / 2 + 1;
+               if (this._tmpStartIndices.length < newSize) {
+                  Array.resize(this._tmpStartIndices, newSize);
+               }
+
+               if (this._tmpEndIndices.length < newSize) {
+                  Array.resize(this._tmpEndIndices, newSize);
+               }
+
+               int wordCount = StringUtilities.stringToWordsOrKeywords(words, this._tmpStartIndices, this._tmpEndIndices, 0, true);
+
+               for (int i = 0; i < wordCount; i++) {
+                  int wordStart = this._tmpStartIndices[i];
+                  int wordLength = this._tmpEndIndices[i] - this._tmpStartIndices[i];
+                  this.addTuples(words, wordStart, wordLength);
+                  if (StringUtilities.getCharacterSize(words) == 2) {
+                     long key = this.getKeyLong(words, wordStart, wordLength) | id;
+                     if (firstFlag) {
+                        key |= 32768;
+                        firstFlag = false;
+                     }
+
+                     if (propertyIndex != 127) {
+                        this.add(key, (byte)(propertyIndex << 4 | (byte)i));
+                     } else {
+                        this.add(key, propertyIndex);
+                     }
+                  } else {
+                     int key = this.getKey(words, wordStart, wordLength) | id;
+                     if (firstFlag) {
+                        key |= 32768;
+                        firstFlag = false;
+                     }
+
+                     if (propertyIndex != 127) {
+                        this.add(key, (byte)(propertyIndex << 4 | (byte)i));
+                     } else {
+                        this.add(key, propertyIndex);
+                     }
+                  }
+               }
+            }
+         }
+      }
    }
 
    public void addWord(int id, String word, boolean firstFlag) {
@@ -143,11 +203,46 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public void addWord(int id, String word, boolean firstFlag, byte wordIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      int wordLength = word.length();
+      this.addTuples(word, 0, wordLength);
+      if (StringUtilities.getCharacterSize(word) == 2) {
+         long key = this.getKeyLong(word, 0, wordLength) | id;
+         if (firstFlag) {
+            key |= 32768;
+         }
+
+         this.add(key, wordIndex);
+      } else {
+         int key = this.getKey(word, 0, wordLength) | id;
+         if (firstFlag) {
+            key |= 32768;
+         }
+
+         this.add(key, wordIndex);
+      }
    }
 
    private int getTuple(String word, int start, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      int wordLength = word.length();
+      if (start + length > wordLength) {
+         length = word.length() - start;
+         if (length <= 0) {
+            return 0;
+         }
+      }
+
+      char c1 = '\u0000';
+      char c2 = 0;
+      char c3 = 0;
+      c1 = CharacterUtilities.getOriginal(word.charAt(start++));
+      if (length > 1) {
+         c2 = CharacterUtilities.getOriginal(word.charAt(start++));
+         if (length > 2) {
+            c3 = CharacterUtilities.getOriginal(word.charAt(start));
+         }
+      }
+
+      return c1 <= 255 && c2 <= 255 && c3 <= 255 ? (this.getKey0(c1, c2, c3) & 2147418112) >> 16 : 0;
    }
 
    private void addTuples(String word, int start, int length) {
@@ -174,7 +269,30 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    private boolean allTuplesPresent(String[] words) {
-      throw new RuntimeException("cod2jar: string-special");
+      for (int i = words.length - 1; i >= 0; i--) {
+         String word = words[i];
+         int length = word.length();
+         if (length == 2) {
+            int tuple = this.getTuple(word, 0, 2);
+            if (tuple != 0 && !this._validPrefixTuples.isSet(tuple)) {
+               return false;
+            }
+         } else if (length >= 3) {
+            for (int start = length - 3; start > 0; start--) {
+               int tuple = this.getTuple(word, start, 3);
+               if (tuple != 0 && !this._validTuples.isSet(tuple)) {
+                  return false;
+               }
+            }
+
+            int tuple = this.getTuple(word, 0, 3);
+            if (tuple != 0 && !this._validPrefixTuples.isSet(tuple)) {
+               return false;
+            }
+         }
+      }
+
+      return true;
    }
 
    private void add(int key, byte wordIndex) {
@@ -273,7 +391,25 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public String[] getLongWords(String[] words) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (words == null) {
+         return null;
+      }
+
+      String[] longWords = new String[words.length];
+      int dest = 0;
+
+      for (int src = 0; src < words.length; src++) {
+         if (words[src].length() > 3) {
+            longWords[dest++] = words[src];
+         }
+      }
+
+      if (dest == 0) {
+         return null;
+      }
+
+      Array.resize(longWords, dest);
+      return longWords;
    }
 
    public boolean getMatch(char[] prefixes, int offset, int length, int[] resultData) {
@@ -342,11 +478,233 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public KeywordPrefixSearchResult search(String[] words, KeywordPrefixCache cache) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean allTuplesFound = this.allTuplesPresent(words);
+      if (!allTuplesFound && this._prefixesLong.size() == 0) {
+         BitSet emptySet = new BitSet();
+         return new KeywordPrefixSearchResult(emptySet, emptySet);
+      }
+
+      synchronized (this._prefixes) {
+         synchronized (this._prefixesLong) {
+            this._haltSearch = false;
+            if (!this._sorted || !this._sortedLong) {
+               this.sort();
+            }
+
+            if (this._haltSearch) {
+               return null;
+            }
+
+            byte targetCount = 0;
+            byte[] hitCount = null;
+            int wordCount = words.length;
+
+            for (int i = 0; i < wordCount; i++) {
+               for (int j = 0; j < wordCount; j++) {
+                  if (StringUtilities.startsWithIgnoreCase(words[i], words[j])) {
+                     targetCount++;
+                  }
+               }
+            }
+
+            if (targetCount > wordCount) {
+               hitCount = new byte[this._maxId + 1];
+               cache = null;
+            }
+
+            BitSet visibleSet = new BitSet(this._maxId + 1);
+            BitSet primarySet = new BitSet(this._maxId + 1);
+            BitSet theSet = visibleSet;
+
+            for (int word = 0; word < wordCount; word++) {
+               boolean longBased = StringUtilities.getCharacterSize(words[word]) == 2;
+               if (!longBased && allTuplesFound) {
+                  boolean cacheUsed = false;
+                  if (cache != null) {
+                     if (word == 0) {
+                        BitSet cacheEntry = cache.getPrimaryEntry(words[word]);
+                        if (cacheEntry != null) {
+                           primarySet.or(cacheEntry);
+                           cacheEntry = cache.getSecondaryEntry(words[word]);
+                           if (cacheEntry != null) {
+                              theSet.or(cacheEntry);
+                              cacheUsed = true;
+                           }
+                        }
+                     } else {
+                        BitSet cacheEntry = cache.getSecondaryEntry(words[word]);
+                        if (cacheEntry != null) {
+                           theSet.or(cacheEntry);
+                           cacheUsed = true;
+                        }
+                     }
+                  }
+
+                  if (!cacheUsed) {
+                     int key = this.getKey(words[word], 0, words[word].length());
+                     int low = this._prefixes.binarySearch(key);
+                     int high = this._prefixes.binarySearch(this.nextKey(key));
+                     if (low < 0) {
+                        low = -(low + 1);
+                     }
+
+                     if (high < 0) {
+                        high = -(high + 1);
+                     }
+
+                     if (high < low) {
+                        high = this._prefixes.size();
+                     }
+
+                     for (int var28 = low; !this._haltSearch && var28 < high; var28++) {
+                        int element = this._prefixes.elementAt(var28);
+                        int id = element & 32767;
+                        if (id <= this._maxId) {
+                           if (word == 0 && (element & 32768) != 0) {
+                              primarySet.fastSet(id);
+                           }
+
+                           theSet.fastSet(id);
+                           if (hitCount != null) {
+                              hitCount[id]++;
+                           }
+
+                           if (this._haltSearch) {
+                              return null;
+                           }
+                        } else {
+                           System.err.println("Object with id " + id + " maxId is " + this._maxId);
+                        }
+                     }
+
+                     if (cache != null) {
+                        if (word == 0) {
+                           cache.putPrimaryEntry(words[word], primarySet);
+                        }
+
+                        cache.putSecondaryEntry(words[word], theSet);
+                     }
+                  }
+               }
+
+               boolean longVarFound = false;
+               long key = this.getKeyLong(words[word], 0, words[word].length());
+               int low = this._prefixesLong.binarySearch(key);
+               int high = this._prefixesLong.binarySearch(this.nextKey(key));
+               if (low < 0) {
+                  low = -(low + 1);
+               }
+
+               if (high < 0) {
+                  high = -(high + 1);
+               }
+
+               if (high < low) {
+                  high = this._prefixesLong.size();
+               }
+
+               for (int var29 = low; !this._haltSearch && var29 < high; var29++) {
+                  int element = (int)this._prefixesLong.elementAt(var29);
+                  int id = element & 32767;
+                  if (id <= this._maxId) {
+                     if (word == 0 && (element & 32768) != 0) {
+                        primarySet.fastSet(id);
+                     }
+
+                     theSet.fastSet(id);
+                     if (hitCount != null) {
+                        hitCount[id]++;
+                     }
+
+                     longVarFound = true;
+                  } else {
+                     System.err.println("Object with id " + id + " maxId is " + this._maxId);
+                  }
+               }
+
+               if (this._haltSearch) {
+                  return null;
+               }
+
+               if (longBased && !longVarFound) {
+                  this.adjustWideCharacterSearch(words[word], 0, primarySet, theSet, word, hitCount);
+               }
+
+               if (word != 0) {
+                  visibleSet.and(theSet);
+                  if (word < wordCount - 1) {
+                     theSet.reset();
+                  }
+               } else if (wordCount > 1) {
+                  theSet = new BitSet(this._maxId + 1);
+               }
+
+               if (this._haltSearch) {
+                  return null;
+               }
+            }
+
+            if (hitCount != null) {
+               for (int var30 = visibleSet.getFirstSet(); var30 != -1; var30 = visibleSet.getNextSet(var30 + 1)) {
+                  if (hitCount[var30] < targetCount) {
+                     visibleSet.fastClear(var30);
+                  }
+               }
+            }
+
+            primarySet.and(visibleSet);
+            BitSet secondarySet = visibleSet;
+            secondarySet.xor(primarySet);
+            return new KeywordPrefixSearchResult(primarySet, secondarySet);
+         }
+      }
    }
 
    private void adjustWideCharacterSearch(String word, int offset, BitSet primarySet, BitSet theSet, int wordNumber, byte[] hitCount) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer sb = new StringBuffer();
+      int length = word.length() - offset;
+
+      for (int i = 0; i < 3 && length > 0; length--) {
+         char current = word.charAt(i + offset);
+         if ((current & '\uff00') != 0) {
+            return;
+         }
+
+         sb.append(current);
+         i++;
+      }
+
+      int key = this.getKey(sb.toString(), 0, sb.length());
+      int low = this._prefixes.binarySearch(key);
+      int high = this._prefixes.binarySearch(this.nextKey(key));
+      if (low < 0) {
+         low = -(low + 1);
+      }
+
+      if (high < 0) {
+         high = -(high + 1);
+      }
+
+      if (high < low) {
+         high = this._prefixes.size();
+      }
+
+      for (int i = low; !this._haltSearch && i < high; i++) {
+         int element = this._prefixes.elementAt(i);
+         int id = element & 32767;
+         if (id <= this._maxId) {
+            if (wordNumber == 0 && (element & 32768) != 0) {
+               primarySet.fastSet(id);
+            }
+
+            theSet.fastSet(id);
+            if (hitCount != null) {
+               hitCount[id]++;
+            }
+         } else {
+            System.err.println("Object with id " + id + " maxId is " + this._maxId);
+         }
+      }
    }
 
    public static char getPrefixChar(int prefixCode) {
@@ -354,6 +712,20 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public static boolean startsWithUsingMapping(String string, String prefix) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string.length() >= prefix.length()) {
+         if (StringUtilities.getCharacterSize(string) != 2 && StringUtilities.getCharacterSize(prefix) != 2) {
+            for (int index = 0; index < prefix.length(); index++) {
+               if (charUnifier[string.charAt(index)] != charUnifier[prefix.charAt(index)]) {
+                  return false;
+               }
+            }
+
+            return true;
+         } else {
+            return StringUtilities.startsWithIgnoreCaseAndAccents(string, prefix);
+         }
+      } else {
+         return false;
+      }
    }
 }

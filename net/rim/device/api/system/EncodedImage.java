@@ -6,6 +6,8 @@ import net.rim.device.api.math.Fixed32;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.ToIntHashtable;
 import net.rim.device.internal.media.metadata.MetadataHandlerFactory;
+import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
 import net.rim.vm.TraceBack;
 
 public class EncodedImage {
@@ -135,7 +137,21 @@ public class EncodedImage {
    }
 
    public static EncodedImage getEncodedImageResource(String module, String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      name.length();
+      Resource resource = null;
+      if (module == null) {
+         module = TraceBack.getCallingModuleName(2);
+      }
+
+      resource = Resource$Internal.getResourceClass(module);
+      if (resource != null) {
+         byte[] data = resource.getResource(name);
+         if (data != null) {
+            return createEncodedImage(data, 0, data.length);
+         }
+      }
+
+      return null;
    }
 
    public void setDecodeMode(int decodeMode) {

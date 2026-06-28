@@ -1,6 +1,8 @@
 package net.rim.device.api.io;
 
 import java.io.InputStream;
+import net.rim.device.api.util.CharacterUtilities;
+import net.rim.device.internal.util.StringUtilitiesInternal;
 import net.rim.vm.Array;
 
 public class IOUtilities {
@@ -8,7 +10,17 @@ public class IOUtilities {
    }
 
    public static String getBindName(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = name.length();
+      StringBuffer buffer = StringUtilitiesInternal.getScratchBuffer();
+      synchronized (buffer) {
+         for (int lv = 0; lv < length; lv++) {
+            buffer.append(CharacterUtilities.toLowerCase(CharacterUtilities.getOriginal(name.charAt(lv)), 1701707776));
+         }
+
+         String result = buffer.toString();
+         buffer.setLength(0);
+         return result;
+      }
    }
 
    public static byte[] streamToBytes(InputStream stream) {

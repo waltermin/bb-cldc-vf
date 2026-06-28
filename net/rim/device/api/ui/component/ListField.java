@@ -6,6 +6,7 @@ import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.TextMetrics;
 import net.rim.device.api.ui.Ui;
@@ -19,6 +20,7 @@ import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.tid.awt.im.InputContext;
+import net.rim.tid.im.layout.SLKeyLayout;
 
 public class ListField extends Field implements VariableRowHeightProvider {
    private int _size;
@@ -76,7 +78,18 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public int adjustRowHeight(Font font, int index, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!Graphics.isColor()) {
+         return 0;
+      }
+
+      font.measureText(text, 0, text.length(), null, this._metrics);
+      int baseline = font.getBaseline();
+      int above = Math.max(-this._metrics.iBoundsTlY, baseline);
+      int below = Math.max(this._metrics.iBoundsBrY, font.getDescent());
+      int adjustment = above - baseline;
+      int rowInfo = adjustment << 8 | Math.max(font.getHeight(), above + below);
+      this.setRowHeight(index, rowInfo);
+      return adjustment;
    }
 
    @Override
@@ -418,7 +431,20 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public int indexOfList(String prefix, int start) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = prefix.length();
+      int nEntries = this.getSize();
+      if (0 > start) {
+         start = 0;
+      }
+
+      for (int lv = start; lv < nEntries; lv++) {
+         Object item = this._callback.get(this, lv);
+         if (item != null && item.toString().regionMatches(true, 0, prefix, 0, length)) {
+            return lv;
+         }
+      }
+
+      return -1;
    }
 
    public void insert(int index) {
@@ -717,7 +743,36 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    private void searchEntryForMultipleChars(char key, int status) {
-      throw new RuntimeException("cod2jar: string-special");
+      SLKeyLayout l = Keypad.getLayout();
+      int modifier = SLKeyLayout.convertStatusToModifiers(status);
+      if ((modifier & 1) != 0) {
+         modifier &= -2;
+      }
+
+      StringBuffer keysBuffer = l.getComplementaryChars(key, modifier);
+      if (keysBuffer != null) {
+         String keys = keysBuffer.toString();
+         int length = keys.length();
+
+         int i;
+         for (i = 0; i < length; i++) {
+            this._prefix.setLength(0);
+            this._prefix.append(keys.charAt(i));
+            if (this.searchEntryFor(this._prefix.toString(), this._cursor + 1)) {
+               break;
+            }
+         }
+
+         if (i == length) {
+            for (int var9 = 0; var9 < length; var9++) {
+               this._prefix.setLength(0);
+               this._prefix.append(keys.charAt(var9));
+               if (this.searchEntryFor(this._prefix.toString(), 0)) {
+                  return;
+               }
+            }
+         }
+      }
    }
 
    public void setCallback(ListFieldCallback callback) {

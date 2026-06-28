@@ -380,7 +380,80 @@ public final class TimeService {
    }
 
    private final CustomTimeZoneImpl getCustomZone(String ID) {
-      throw new RuntimeException("cod2jar: string-special");
+      int hours = 0;
+      int minutes = 0;
+      boolean isValidID = false;
+      if (ID == null) {
+         return null;
+      }
+
+      if (!ID.startsWith(DateTimeUtilities.GMT)) {
+         return null;
+      }
+
+      ID = ID.substring(3);
+      char sign;
+      if (ID.startsWith("+")) {
+         sign = '+';
+         ID = ID.substring(1);
+      } else {
+         if (!ID.startsWith("-")) {
+            return null;
+         }
+
+         sign = '-';
+         ID = ID.substring(1);
+      }
+
+      int colonIndex = ID.indexOf(58);
+      if (colonIndex != -1) {
+         String minuteString = ID.substring(colonIndex + 1);
+         if (minuteString.length() != 2) {
+            return null;
+         }
+
+         try {
+            hours = Integer.parseInt(ID.substring(0, colonIndex));
+            minutes = Integer.parseInt(minuteString);
+            isValidID = true;
+         } catch (NumberFormatException nfe) {
+            return null;
+         }
+      } else {
+         int numDigits = ID.length();
+
+         try {
+            switch (numDigits) {
+               case 0:
+                  isValidID = false;
+                  break;
+               case 1:
+               case 2:
+               default:
+                  hours = Integer.parseInt(ID);
+                  minutes = 0;
+                  isValidID = true;
+                  break;
+               case 3:
+                  hours = Integer.parseInt(ID.substring(0, 1));
+                  minutes = Integer.parseInt(ID.substring(1));
+                  isValidID = true;
+                  break;
+               case 4:
+                  hours = Integer.parseInt(ID.substring(0, 2));
+                  minutes = Integer.parseInt(ID.substring(2));
+                  isValidID = true;
+            }
+         } catch (NumberFormatException nfe) {
+            return null;
+         }
+      }
+
+      if (!isValidID) {
+         return null;
+      } else {
+         return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59 ? new CustomTimeZoneImpl(sign, hours, minutes) : null;
+      }
    }
 
    public final synchronized void deleteTimeZone(int tzid) {

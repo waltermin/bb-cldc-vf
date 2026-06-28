@@ -24,6 +24,7 @@ import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.MediaIcon;
 import net.rim.tid.im.layout.SLKeyLayout;
 import net.rim.tid.itie.EventHandler;
+import net.rim.vm.Array;
 
 class SymbolScreen$SymbolField extends Field {
    private Tag TAG;
@@ -165,7 +166,38 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    private char getSymbol(char keyCode, int page) {
-      throw new RuntimeException("cod2jar: string-special");
+      SLKeyLayout keyLayout = Keypad.getLayout();
+      if (keyLayout != null && page >= 0) {
+         switch (page) {
+            case -1:
+               if (2 <= page && page < this._pagesStandard && this.this$0._additionalSymbolData instanceof String) {
+                  page -= 2;
+                  if (keyCode == 127) {
+                     return '⇆';
+                  }
+
+                  int position = this.keyOrdinalNumber(keyCode);
+                  if (position >= 0) {
+                     position += page * this.this$0._keysTotal;
+                  }
+
+                  if (position >= 0 && position < ((String)this.this$0._additionalSymbolData).length()) {
+                     return ((String)this.this$0._additionalSymbolData).charAt(position);
+                  }
+
+                  return '\u0000';
+               }
+
+               return '\u0000';
+            case 0:
+            default:
+               return keyLayout.getKeyChars(keyCode, 9, false).charAt(0);
+            case 1:
+               return keyLayout.getKeyChars(keyCode, 11, false).charAt(0);
+         }
+      } else {
+         return '\u0000';
+      }
    }
 
    private String getDisplayKey(SLKeyLayout layout, char keyCode) {
@@ -299,7 +331,24 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    protected int[] getPages() {
-      throw new RuntimeException("cod2jar: string-special");
+      int[] pages = new int[0];
+      this._pagesStandard = 2;
+      if (this.this$0._additionalSymbolData instanceof String) {
+         this._pagesStandard = 2 + (((String)this.this$0._additionalSymbolData).length() + this.this$0._keysTotal - 1) / this.this$0._keysTotal;
+      }
+
+      Array.resize(pages, Math.max(1, this._pagesStandard));
+      int nonEmptyPages = 0;
+
+      for (int page = 0; page < this._pagesStandard; page++) {
+         if (!this.isPageEmpty(this.this$0._targetEditField, page)) {
+            pages[nonEmptyPages] = page;
+            nonEmptyPages++;
+         }
+      }
+
+      Array.resize(pages, Math.max(1, nonEmptyPages));
+      return pages;
    }
 
    @Override

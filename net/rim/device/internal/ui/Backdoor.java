@@ -80,7 +80,12 @@ public class Backdoor implements Runnable {
    }
 
    private String formatClassName(Object obj) {
-      throw new RuntimeException("cod2jar: string-special");
+      String name = obj.getClass().getName();
+      if (name.length() > 22 && name.substring(0, 22).equals("net.rim.device.api.ui.")) {
+         name = name.substring(22);
+      }
+
+      return name;
    }
 
    private void dumpField(Field field, String indent, boolean focus) {

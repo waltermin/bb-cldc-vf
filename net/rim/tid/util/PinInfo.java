@@ -16,7 +16,11 @@ public class PinInfo {
    }
 
    public void getRecord(StringBuffer result) {
-      throw new RuntimeException("cod2jar: string-special");
+      for (int i = 0; i < this._length; i++) {
+         result.append(this._syllables[i]);
+         result.append((char)this._tones[i]);
+         result.append(this._word.charAt(i));
+      }
    }
 
    public int length() {
@@ -24,7 +28,8 @@ public class PinInfo {
    }
 
    public void setWord(String word) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._word = word;
+      this._length = word.length();
    }
 
    public String getWord() {

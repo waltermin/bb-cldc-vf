@@ -1,5 +1,8 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.UiApplication;
+
 public class Ticker {
    private String _str;
    private net.rim.device.api.ui.Font _font;
@@ -11,6 +14,9 @@ public class Ticker {
    static final int TICKER_IDLE;
 
    public Ticker(String str) {
+      str.length();
+      this._str = str;
+      this._width = net.rim.device.api.system.Display.getWidth();
    }
 
    final void setStuff(net.rim.device.api.ui.Font font) {
@@ -35,7 +41,20 @@ public class Ticker {
    }
 
    public void setString(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (Application.getEventLock()) {
+         if (this._font == null) {
+            str.length();
+            this._str = str;
+         } else {
+            this._pixelLength = this._font.getAdvance(str);
+            this._str = str;
+            this._pixelOffset = 0;
+            MIDPScreen active = (MIDPScreen)UiApplication.getUiApplication().getActiveScreen();
+            if (active != null && active.getTicker() == this) {
+               active.restartTickerTimer();
+            }
+         }
+      }
    }
 
    public String getString() {

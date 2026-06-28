@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.io.DataOutput;
+import java.io.UTFDataFormatException;
 import java.io.UnsupportedEncodingException;
 import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.internal.i18n.CollatorImpl;
@@ -245,23 +246,68 @@ public final class StringUtilities {
    }
 
    public static final boolean startsWithIgnoreCase(String string, String prefix) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string == prefix) {
+         return true;
+      }
+
+      int prefixLength = prefix.length();
+      return string.length() < prefixLength ? false : string.regionMatches(true, 0, prefix, 0, prefixLength);
    }
 
    public static final boolean startsWithIgnoreCase(String string, String prefix, int locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string == prefix) {
+         return true;
+      }
+
+      int prefixLength = prefix.length();
+      return string.length() < prefixLength ? false : regionMatches(string, true, 0, prefix, 0, prefixLength, locale);
    }
 
    public static final boolean endsWithIgnoreCase(String string, String suffix, int locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string == suffix) {
+         return true;
+      }
+
+      int suffixLength = suffix.length();
+      return string.length() < suffixLength ? false : regionMatches(string, true, string.length() - suffixLength, suffix, 0, suffixLength, locale);
    }
 
    public static final boolean startsWithIgnoreCaseAndAccents(String string, String prefix) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (_collator == null) {
+         _collator = new CollatorImpl();
+      }
+
+      return _collator.compare(string, prefix, prefix.length()) == 0;
    }
 
    public static final String removeLineBreaksInString(String string) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string.indexOf(10) < 0) {
+         return string;
+      }
+
+      int length = string.length();
+      StringBuffer result = new StringBuffer();
+      result.setLength(length);
+      int dest = 0;
+      boolean seenCR = true;
+
+      for (int src = 0; src < length; src++) {
+         char c = string.charAt(src);
+         if (c == '\n') {
+            if (!seenCR) {
+               result.setCharAt(dest, ' ');
+               dest++;
+               seenCR = true;
+            }
+         } else {
+            result.setCharAt(dest, c);
+            dest++;
+            seenCR = false;
+         }
+      }
+
+      result.setLength(dest);
+      return result.toString();
    }
 
    public static final String[] stringToWords(String string) {
@@ -297,15 +343,46 @@ public final class StringUtilities {
    }
 
    private static final int stringToWordsOrKeywords(String string, String[] wordArray, int index, boolean keywords) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (string == null) {
+         return 0;
+      }
+
+      int wordCount = 0;
+      int length = string.length();
+      int l = index + (length >> 1) + 1;
+      int[] startOffsets = new int[(length >> 1) + 1];
+      int[] endOffsets = new int[(length >> 1) + 1];
+      if (l > wordArray.length) {
+         Array.resize(wordArray, l);
+      }
+
+      try {
+         wordCount = stringToWordsOrKeywords(string, startOffsets, endOffsets, 0, keywords);
+      } catch (ArrayIndexOutOfBoundsException exc) {
+         System.err.println("Internal error!");
+      }
+
+      for (int i = 0; i < wordCount; i++) {
+         wordArray[index++] = string.substring(startOffsets[i], endOffsets[i]);
+      }
+
+      return wordCount;
    }
 
    public static final boolean strEqualIgnoreCase(String s1, String s2) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s1 == s2) {
+         return true;
+      } else {
+         return s1 == null || s2 == null || s1.length() != s2.length() ? false : compareToIgnoreCase(s1, s2) == 0;
+      }
    }
 
    public static final boolean strEqualIgnoreCase(String s1, String s2, int locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s1 == s2) {
+         return true;
+      } else {
+         return s1 == null || s2 == null || s1.length() != s2.length() ? false : compareToIgnoreCase(s1, s2, locale) == 0;
+      }
    }
 
    public static final boolean strEqual(String s1, String s2) {
@@ -369,7 +446,27 @@ public final class StringUtilities {
    public static final native int indexOf(String var0, int var1, int var2, int var3);
 
    public static final String removeChars(String src, String remove) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean changed = false;
+      String result = src;
+      int length = src.length();
+      StringBuffer buffer = WeakReferenceUtilities.getStringBuffer(_scratchWR);
+      synchronized (buffer) {
+         for (int lv = 0; lv < length; lv++) {
+            char character = src.charAt(lv);
+            if (remove.indexOf(character) == -1) {
+               buffer.append(character);
+            } else {
+               changed = true;
+            }
+         }
+
+         if (changed) {
+            result = buffer.toString();
+         }
+
+         buffer.setLength(0);
+         return result;
+      }
    }
 
    public static final long stringHashToLong(String key) {
@@ -386,11 +483,35 @@ public final class StringUtilities {
    }
 
    public static final int stringToInt(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      int result = 0;
+      int shift = 24;
+      int length = text.length();
+      if (length > 4) {
+         return -1;
+      }
+
+      for (int lv = 0; lv < length; lv++) {
+         char ch = text.charAt(lv);
+         if (ch > 255) {
+            return -1;
+         }
+
+         result |= text.charAt(lv) << shift;
+         shift -= 8;
+      }
+
+      return result;
    }
 
    public static final StringBuffer append(StringBuffer strBuf, String str, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (strBuf) {
+         if (offset >= 0 && length >= 0 && offset + length <= str.length()) {
+            doAppend(strBuf, str, offset, length);
+            return strBuf;
+         } else {
+            throw new StringIndexOutOfBoundsException();
+         }
+      }
    }
 
    private static final native void doAppend(StringBuffer var0, String var1, int var2, int var3);
@@ -433,7 +554,47 @@ public final class StringUtilities {
    private static final native int strConversionRequired(byte[] var0, int var1, int var2, char var3, char var4);
 
    public static final int writeUTF(String str, DataOutput out) {
-      throw new RuntimeException("cod2jar: string-special");
+      int strlen = str.length();
+      int utflen = 0;
+      char[] charr = new char[strlen];
+      int count = 0;
+      str.getChars(0, strlen, charr, 0);
+
+      for (int i = 0; i < strlen; i++) {
+         int c = charr[i];
+         if (c >= 1 && c <= 127) {
+            utflen++;
+         } else if (c > 2047) {
+            utflen += 3;
+         } else {
+            utflen += 2;
+         }
+      }
+
+      if (utflen > 65535) {
+         throw new UTFDataFormatException();
+      }
+
+      byte[] bytearr = new byte[utflen + 2];
+      bytearr[count++] = (byte)(utflen >>> 8 & 0xFF);
+      bytearr[count++] = (byte)(utflen >>> 0 & 0xFF);
+
+      for (int i = 0; i < strlen; i++) {
+         int c = charr[i];
+         if (c >= 1 && c <= 127) {
+            bytearr[count++] = (byte)c;
+         } else if (c > 2047) {
+            bytearr[count++] = (byte)(224 | c >> 12 & 15);
+            bytearr[count++] = (byte)(128 | c >> 6 & 63);
+            bytearr[count++] = (byte)(128 | c >> 0 & 63);
+         } else {
+            bytearr[count++] = (byte)(192 | c >> 6 & 31);
+            bytearr[count++] = (byte)(128 | c >> 0 & 63);
+         }
+      }
+
+      out.write(bytearr);
+      return utflen + 2;
    }
 
    public static final native boolean regionMatches(String var0, boolean var1, int var2, String var3, int var4, int var5, int var6);

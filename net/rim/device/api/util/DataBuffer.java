@@ -488,7 +488,20 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
 
    @Override
    public void writeChars(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = s.length();
+      this.ensureBuffer(this._position + len * 2);
+      int i = 0;
+
+      while (--len >= 0) {
+         char c = s.charAt(i++);
+         if (this._useBigEndianFlag) {
+            this.nextByte(c >>> '\b');
+            this.nextByte(c);
+         } else {
+            this.nextByte(c);
+            this.nextByte(c >>> '\b');
+         }
+      }
    }
 
    @Override

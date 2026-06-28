@@ -97,7 +97,24 @@ public final class Universal_Writer extends StreamWriter {
 
    @Override
    public final void write(String str, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (offset < 0 || length < 0 || offset + length > str.length()) {
+         throw new IndexOutOfBoundsException();
+      }
+
+      if (this._noConversionData) {
+         while (length-- > 0) {
+            this.writeISO(str.charAt(offset++));
+         }
+      } else {
+         length += offset;
+
+         while (offset < length) {
+            int len = Math.min(length - offset, this._cbuf.length);
+            str.getChars(offset, offset + len, this._cbuf, 0);
+            this.writeOut(this._cbuf, 0, len, this._buf, 0, this._buf.length, true);
+            offset += len;
+         }
+      }
    }
 
    @Override

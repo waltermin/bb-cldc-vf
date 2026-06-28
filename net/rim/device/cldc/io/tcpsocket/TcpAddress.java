@@ -32,9 +32,11 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public TcpAddress(byte[] ipAddress, int destPort, String apn) {
+      this(ipAddress, destPort, TCP_PORT_NONE, apn, 0, apn != null ? apn.length() : 0);
    }
 
    public TcpAddress(byte[] ipAddress, int destPort, int srcPort, String apn) {
+      this(ipAddress, destPort, srcPort, apn, 0, apn != null ? apn.length() : 0);
    }
 
    public TcpAddress(byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
@@ -45,6 +47,16 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public TcpAddress(String address, String apn) {
+      if (address.length() == 0) {
+         this._ipAddress = TCP_IP_ADDRESS_NONE;
+         this._port = TCP_PORT_NONE;
+         this._localPort = TCP_PORT_NONE;
+         this._apnName = null;
+         super._address = "";
+      } else {
+         this.processApnInfo(apn);
+         this.parseAddress(address);
+      }
    }
 
    private final void processApnInfo(String apn) {
@@ -78,7 +90,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    protected final void parseAddress(String address) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final void setLocalPort(int port) {
@@ -156,7 +168,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn) {
-      throw new RuntimeException("cod2jar: string-special");
+      return makeAddress(open, ipAddress, destPort, srcPort, apn, 0, apn != null ? apn.length() : 0);
    }
 
    public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {

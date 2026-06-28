@@ -1,6 +1,9 @@
 package net.rim.device.api.system;
 
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
+import net.rim.vm.TraceBack;
 
 public final class Bitmap {
    private int _type;
@@ -363,7 +366,21 @@ public final class Bitmap {
    }
 
    public static final Bitmap getBitmapResource(String module, String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      name.length();
+      Resource resource = null;
+      if (module == null) {
+         module = TraceBack.getCallingModuleName(2);
+      }
+
+      resource = Resource$Internal.getResourceClass(module);
+      if (resource != null) {
+         byte[] data = resource.getResource(name);
+         if (data != null) {
+            return createBitmapFromPNG(data, 0, -1);
+         }
+      }
+
+      return null;
    }
 
    public static final Bitmap getBitmapResource(String name) {

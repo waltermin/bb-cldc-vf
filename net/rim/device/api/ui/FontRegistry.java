@@ -1,5 +1,7 @@
 package net.rim.device.api.ui;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import net.rim.device.api.system.CodeModuleManager;
@@ -90,7 +92,7 @@ public final class FontRegistry {
    }
 
    private final synchronized int loadFont0(int codFile, byte[] data, String typefaceName, boolean isPublic) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private static final boolean probablyIdentical(byte[] data1, byte[] data2) {
@@ -146,7 +148,7 @@ public final class FontRegistry {
    }
 
    public static final int unloadFont(String typefaceName) {
-      throw new RuntimeException("cod2jar: string-special");
+      return typefaceName != null && typefaceName.length() != 0 ? getInstance().unloadFont0(typefaceName) : -1;
    }
 
    private final int unloadFont0(String typefaceName) {
@@ -219,11 +221,87 @@ public final class FontRegistry {
    }
 
    public final synchronized int getTypefaceType(String aTypeface) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (aTypeface != null && aTypeface.length() != 0) {
+         FontRegistry$FontInfo fi = this.getFontInfo(aTypeface, 1);
+         if (fi == null) {
+            return FontFamily.UNKNOWN_FONT;
+         }
+
+         byte[] data = (byte[])this._fontData[fi._index];
+         if (data.length < 4) {
+            return FontFamily.UNKNOWN_FONT;
+         }
+
+         int type = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
+         switch (type) {
+            case 65536:
+               return FontFamily.SCALABLE_FONT;
+            case 1667396710:
+               return FontFamily.MONO_BITMAP_FONT;
+            case 1936090676:
+               return FontFamily.SCALABLE_FONT;
+            default:
+               return FontFamily.UNKNOWN_FONT;
+         }
+      } else {
+         return FontFamily.UNKNOWN_FONT;
+      }
    }
 
    public final synchronized int[] getHeightsForTypeface(String aTypeface) {
-      throw new RuntimeException("cod2jar: string-special");
+      int[] rc = null;
+      if (aTypeface != null && aTypeface.length() != 0) {
+         int id = -1;
+         int size = 0;
+
+         FontRegistry$FontInfo fi;
+         for (int index = 1; (fi = this.getFontInfo(aTypeface, index)) != null; index++) {
+            if (size < this._fontData[fi._index].length) {
+               id = fi._index;
+               size = this._fontData[fi._index].length;
+            }
+         }
+
+         if (id < 0) {
+            return rc;
+         }
+
+         byte[] data = (byte[])this._fontData[id];
+
+         try {
+            DataInputStream stream = new DataInputStream(new ByteArrayInputStream(data));
+            if (stream.readInt() != 1667396710) {
+               return rc;
+            }
+
+            stream.skip(20);
+            int tableID = stream.readUnsignedShort();
+            if (tableID != 2) {
+               System.err.println("tableID != 2");
+            }
+
+            int tableOffset = stream.readInt();
+            stream.reset();
+            stream.skip(tableOffset);
+            int skiping = stream.readUnsignedShort();
+            int sizes = stream.readUnsignedByte();
+            rc = new int[sizes];
+
+            for (int j = 0; j < sizes; j++) {
+               rc[j] = stream.readUnsignedByte();
+               stream.skip(6);
+               rc[j] += stream.readUnsignedByte();
+               stream.skip(skiping - 8);
+            }
+
+            stream.close();
+            return rc;
+         } catch (Exception e) {
+            return null;
+         }
+      } else {
+         return rc;
+      }
    }
 
    public static final FontFamily get(String name) {
@@ -327,7 +405,14 @@ public final class FontRegistry {
    }
 
    public static final void setDefaultFont(String family, int style, int height, int units) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (getInstance()) {
+         if (family != null && family.length() != 0 && height > 0) {
+            getInstance();
+            FontFamily fontf = get(family);
+            Font font = fontf.getFont(style, height, units);
+            setDefaultFont(font);
+         }
+      }
    }
 
    private final synchronized void reload() {

@@ -171,11 +171,57 @@ public final class MIMETypeAssociations {
    }
 
    public static final String getMIMEType(String filename) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (filename == null) {
+         return null;
+      }
+
+      int endIndex = filename.length();
+      if (filename.endsWith(ENCRYPTED_MEDIA_EXTENSION)) {
+         endIndex -= 4;
+      }
+
+      int indexOfDot = filename.lastIndexOf(46, endIndex - 1);
+      if (indexOfDot != -1 && endIndex > indexOfDot + 1) {
+         String result = (String)_instance._extToMimeType.get(filename, indexOfDot + 1, endIndex);
+         if (result == null && filename.endsWith(DIGITAL_RIGHTS_EXTENSION)) {
+            endIndex -= 3;
+            indexOfDot = filename.lastIndexOf(46, endIndex - 1);
+            if (indexOfDot != -1 && endIndex > indexOfDot + 1) {
+               result = (String)_instance._extToMimeType.get(filename, indexOfDot + 1, endIndex);
+            }
+         }
+
+         return result;
+      } else {
+         return null;
+      }
    }
 
    public static final int getMediaType(String filename) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (filename == null) {
+         return 0;
+      }
+
+      int endIndex = filename.length();
+      if (filename.endsWith(ENCRYPTED_MEDIA_EXTENSION)) {
+         endIndex -= 4;
+      }
+
+      int indexOfDot = filename.lastIndexOf(46, endIndex - 1);
+      if (indexOfDot != -1 && endIndex > indexOfDot + 1) {
+         int result = _instance._extToMediaType.get(filename, indexOfDot + 1, endIndex);
+         if (result == -1 && filename.endsWith(DIGITAL_RIGHTS_EXTENSION)) {
+            endIndex -= 3;
+            indexOfDot = filename.lastIndexOf(46, endIndex - 1);
+            if (indexOfDot != -1 && endIndex > indexOfDot + 1) {
+               result = _instance._extToMediaType.get(filename, indexOfDot + 1, endIndex);
+            }
+         }
+
+         return result == -1 ? 0 : result;
+      } else {
+         return 0;
+      }
    }
 
    public static final int getMediaTypeFromMIMEType(String mimeType) {

@@ -1,12 +1,19 @@
 package net.rim.device.api.ui.component;
 
+import java.util.Calendar;
+import net.rim.device.api.i18n.DateFormat;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.MissingResourceException;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.ResourceBundleFamily;
+import net.rim.device.api.system.ApplicationDescriptor;
+import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.DirectConnect;
+import net.rim.device.api.system.Phone;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.autotext.AutoText;
+import net.rim.device.internal.deviceoptions.Owner;
 import net.rim.tid.awt.event.InputMethodEvent;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.tid.im.SLControlObject;
@@ -351,23 +358,222 @@ public class AutoTextEditField extends EditField {
    }
 
    private boolean handleAutoText(char character) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!this.isAutoTextOn()) {
+         return true;
+      }
+
+      if (this.isPreviousCharacterAtBookmark(0) && this._lastAutoTextAction == 2) {
+         return true;
+      }
+
+      int previousSeparatorOffset = this.previousIndexOf(CLAUSE_SEPARATORS, true) + 1;
+      if (previousSeparatorOffset == 0) {
+         previousSeparatorOffset = this.getLabelLength();
+      }
+
+      if (previousSeparatorOffset == this.getCaretPosition()) {
+         return true;
+      }
+
+      boolean insertTriggerCharacter = true;
+      String replaceString = this.getAttributedText().getText(previousSeparatorOffset, this.getCaretPosition());
+      Object autoTextEntry = _autoTextEngine.checkWord(replaceString);
+      if (autoTextEntry != null) {
+         String replacementString = this.replaceMacros(_autoTextEngine.getReplacementStringPattern(autoTextEntry));
+         if (replaceString.equals(replacementString) || replacementString.length() == 0) {
+            return insertTriggerCharacter;
+         }
+
+         int replaceStringStart = previousSeparatorOffset;
+         if (this._leadingBackspaceCount > 0) {
+            replaceStringStart -= this._leadingBackspaceCount;
+            if (replaceStringStart < this.getLabelLength()) {
+               replaceStringStart = this.getLabelLength();
+            }
+
+            replaceString = this.getAttributedText().getText(replaceStringStart, this.getCaretPosition());
+            this._leadingBackspaceCount = 0;
+         }
+
+         replacementString = this.adjustCase(replacementString, replaceString, _autoTextEngine.getReplacementCase(autoTextEntry));
+         int newLength = this.getTextLength() - replaceString.length() + replacementString.length();
+         if (newLength >= this.getMaxSize()) {
+            this.displayFieldFullMessage();
+            return false;
+         }
+
+         replacementString = this.replace(replaceString, replacementString);
+         if (this._deleteCount > 0) {
+            if (this._deletedText.length() == this._deleteCount) {
+               this._deletedText.setLength(this._deleteCount - 1);
+            }
+
+            while (this._deleteCount > 1) {
+               this.selectionDelete();
+               this._deleteCount--;
+            }
+
+            this._deletedText.insert(0, character);
+            this._deletedText.insert(0, replaceString);
+            replaceString = this._deletedText.toString();
+            this._deletedText.setLength(0);
+            this._deleteCount = 0;
+            insertTriggerCharacter = false;
+         }
+
+         this._replacedString = replaceString;
+         this._replacementString = replacementString;
+         this._bookmarks[0] = this.getCaretPosition() - 1;
+         this._lastAutoTextAction = 1;
+      }
+
+      return insertTriggerCharacter;
    }
 
    private String checkEntry(String original, int macroIndex) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (original.charAt(macroIndex - 1) == '\'' && original.charAt(macroIndex + 1) == 'b') {
+         StringBuffer temp = new StringBuffer(original);
+         temp.setCharAt(macroIndex + 1, 'B');
+         return temp.toString();
+      } else {
+         return original;
+      }
    }
 
    private String replaceMacros(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      int macroIndex = text.indexOf(37);
+      if (macroIndex == -1) {
+         return text;
+      }
+
+      if (macroIndex > 0 && text.length() > macroIndex + 1) {
+         text = this.checkEntry(text, macroIndex);
+      }
+
+      StringBuffer newText = new StringBuffer(text.substring(0, macroIndex));
+      this._leadingBackspaceCount = 0;
+      this._deleteCount = 0;
+      int textLength = text.length();
+
+      for (int i = macroIndex; i < textLength; i++) {
+         char c = text.charAt(i);
+         if (c == '%' && i < textLength - 1) {
+            switch (text.charAt(i + 1)) {
+               case '%':
+                  newText.append('%');
+                  i++;
+                  break;
+               case 'B':
+                  if (this.getCaretPosition() + this._deleteCount < this.getDisplayTextLength()) {
+                     this._deletedText.append(this.getAttributedText().charAt(this.getCaretPosition() + this._deleteCount));
+                  }
+
+                  this._deleteCount++;
+                  i++;
+                  break;
+               case 'D':
+                  DateFormat.getInstance(40).format(Calendar.getInstance(), newText, null);
+                  i++;
+                  break;
+               case 'O':
+                  newText.append(Owner.getOwnerInfo());
+                  i++;
+                  break;
+               case 'P':
+                  int pin = DeviceInfo.getDeviceId();
+                  newText.append(Integer.toHexString(pin));
+                  i++;
+                  break;
+               case 'T':
+                  DateFormat.getInstance(5).format(Calendar.getInstance(), newText, null);
+                  i++;
+                  break;
+               case 'U':
+                  if (DirectConnect.isSupported()) {
+                     newText.append(DirectConnect.getUFMI());
+                     i++;
+                  } else {
+                     newText.append(c);
+                  }
+                  break;
+               case 'V':
+                  String insertion = DeviceInfo.getDeviceName() + '/' + ApplicationDescriptor.currentApplicationDescriptor().getVersion();
+                  newText.append(insertion);
+                  i++;
+                  break;
+               case 'b':
+                  int newTextLength = newText.length();
+                  if (newTextLength > 0) {
+                     newText.deleteCharAt(newTextLength - 1);
+                  } else {
+                     this._leadingBackspaceCount++;
+                  }
+
+                  i++;
+                  break;
+               case 'd':
+                  DateFormat.getInstance(56).format(Calendar.getInstance(), newText, null);
+                  i++;
+                  break;
+               case 'o':
+                  newText.append(Owner.getOwnerName());
+                  i++;
+                  break;
+               case 'p':
+                  try {
+                     Phone phone = Phone.getInstance();
+                     int line = phone.getAlternateLine(-1);
+                     String phoneNumber = phone.getAlternateLineNumber(line);
+                     if (phoneNumber != null) {
+                        newText.append(phoneNumber);
+                     }
+                  } catch (Exception var11) {
+                  }
+
+                  i++;
+                  break;
+               case 't':
+                  DateFormat.getInstance(7).format(Calendar.getInstance(), newText, null);
+                  i++;
+                  break;
+               default:
+                  newText.append(c);
+            }
+         } else {
+            newText.append(c);
+         }
+      }
+
+      return newText.toString();
    }
 
    private static boolean isAllUpperCase(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = s.length();
+      if (len == 0 || Character.isLowerCase(s.charAt(0)) || Character.isDigit(s.charAt(0))) {
+         return false;
+      } else {
+         return Character.isLowerCase(s.charAt(len - 1)) ? false : s.equals(s.toUpperCase());
+      }
    }
 
    private String adjustCase(String replacement, String original, int caseType) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (replacement.length() == 0) {
+         return "";
+      }
+
+      String formattedReplacement = replacement;
+      switch (caseType) {
+         default:
+            if (!this.isPreviousCharacterAtBookmark(2) && isAllUpperCase(original)) {
+               formattedReplacement = replacement.toUpperCase();
+            } else if (Character.isUpperCase(original.charAt(0))) {
+               StringBuffer formatBuffer = new StringBuffer(replacement);
+               formatBuffer.setCharAt(0, Character.toUpperCase(replacement.charAt(0)));
+               formattedReplacement = formatBuffer.toString();
+            }
+         case 1:
+            return formattedReplacement;
+      }
    }
 
    private char handleLowerCaseCharacter(char character) {
@@ -389,7 +595,16 @@ public class AutoTextEditField extends EditField {
    }
 
    private String replace(String replaceString, String replacementString) {
-      throw new RuntimeException("cod2jar: string-special");
+      FieldChangeListener oldListener = this.getChangeListener();
+      this.setChangeListener(null);
+      this.backspace(replaceString.length(), 0);
+      int oldCursorPos = this.getCursorPosition();
+      this.insert(replacementString, 0);
+      int newCursorPos = this.getCursorPosition();
+      this.setChangeListener(oldListener);
+      return newCursorPos - oldCursorPos == replacementString.length()
+         ? replacementString
+         : this.getText(oldCursorPos + this.getLabelLength(), newCursorPos - oldCursorPos);
    }
 
    @Override
@@ -429,7 +644,21 @@ public class AutoTextEditField extends EditField {
    }
 
    private boolean undoAutoText() {
-      throw new RuntimeException("cod2jar: string-special");
+      int startOffset = this.getCaretPosition() - this._replacementString.length();
+      if (startOffset >= 0) {
+         String textToValidate = this.getAttributedText().getText(startOffset, startOffset + this._replacementString.length());
+         if (this._replacementString.equals(textToValidate)) {
+            this.replace(this._replacementString, this._replacedString);
+            this._bookmarks[0] = this.getCaretPosition() - 1;
+            this._lastAutoTextAction = 2;
+            this.fieldChangeNotify(0);
+            return true;
+         }
+
+         this.resetBookmark(0);
+      }
+
+      return false;
    }
 
    private static boolean getBooleanResource(int id) {
@@ -438,7 +667,18 @@ public class AutoTextEditField extends EditField {
    }
 
    private static boolean unfoldBooleanResource(String value) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (value != null && value.length() == 1) {
+         char ch = value.charAt(0);
+         if (ch == '0') {
+            return false;
+         }
+
+         if (ch == '1') {
+            return true;
+         }
+      }
+
+      throw new IllegalArgumentException("AutoText setting in resources in incorrect");
    }
 
    void checkLocale() {

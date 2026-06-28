@@ -16,7 +16,13 @@ public class RecordStore {
    }
 
    private static void validateRecordStoreName(String recordStoreName) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (recordStoreName == null) {
+         throw new NullPointerException();
+      }
+
+      if (recordStoreName.length() > 32) {
+         throw new RecordStoreException();
+      }
    }
 
    public static void deleteRecordStore(String recordStoreName) {
@@ -25,7 +31,7 @@ public class RecordStore {
    }
 
    public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary, int authmode, boolean writable) {
@@ -35,7 +41,7 @@ public class RecordStore {
    }
 
    public static RecordStore openRecordStore(String recordStoreName, String vendorName, String suiteName) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public void setMode(int authmode, boolean writable) {

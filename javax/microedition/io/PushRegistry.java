@@ -1,6 +1,9 @@
 package javax.microedition.io;
 
+import java.io.IOException;
+import java.util.Date;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.internal.firewall.Firewall;
 import net.rim.device.internal.io.PushRegistryHelper;
@@ -18,11 +21,11 @@ public class PushRegistry {
    }
 
    public static String getFilter(String connection) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static String getMIDlet(String connection) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static String[] listConnections(boolean available) {
@@ -30,7 +33,31 @@ public class PushRegistry {
    }
 
    public static long registerAlarm(String midlet, long time) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (midlet != null && midlet.length() != 0) {
+         PushRegistryHelper prh = PushRegistryHelper.getInstance();
+         Class.forName(midlet);
+         if (!isMidletInSuite(midlet)) {
+            throw new ClassNotFoundException("Midlet '" + midlet + "' is not in current suite");
+         }
+
+         checkAlarmPermission();
+         PushRegistry$MIDletAlarmExpiry mae = (PushRegistry$MIDletAlarmExpiry)prh._alarmMap.get(midlet);
+         long oldTimeRegistered = 0;
+         if (mae != null) {
+            oldTimeRegistered = mae.getExpiry();
+         }
+
+         mae = new PushRegistry$MIDletAlarmExpiry(midlet, new Date(time));
+         prh._alarmMap.put(midlet, mae);
+         long now = new Date().getTime();
+         long delay = Math.max(1, Math.min(time - now, 108000000));
+         MIDletApplication ma = (MIDletApplication)Application.getApplication();
+         ma.registerAlarm(mae);
+         ma.invokeLater(mae, delay, false);
+         return oldTimeRegistered;
+      } else {
+         throw new ClassNotFoundException("Midlet '" + midlet + "' is not in current suite");
+      }
    }
 
    private static void checkPermission(int moduleHandle, String permission, String url) {
@@ -105,11 +132,52 @@ public class PushRegistry {
    }
 
    public static void registerConnection(String connection, String midlet, String filter) {
-      throw new RuntimeException("cod2jar: string-special");
+      PushRegistryHelper prh = PushRegistryHelper.getInstance();
+      if (midlet != null && midlet.length() != 0) {
+         Class.forName(midlet);
+         if (connection == null || filter == null || connection.length() == 0 || filter.length() == 0 || -1 != filter.indexOf(58)) {
+            throw new IllegalArgumentException();
+         }
+
+         if (!PushRegistryHelper.isConnectionSupported(connection)) {
+            throw new ConnectionNotFoundException(connection + " does not support push");
+         }
+
+         if (!isMidletInSuite(midlet)) {
+            throw new ClassNotFoundException("Midlet '" + midlet + "' is not in current suite");
+         }
+
+         removeStaleConnection(connection);
+         removeStaleEntries();
+         if (prh._connectionMap.get(connection) != null) {
+            throw new IOException(connection + " is already registered");
+         }
+
+         checkPermission(getModuleHandleForMidletClass(midlet), PUSHREGISTRY_PERMISSION_TOKEN, connection);
+         String suiteName = PushRegistryHelper.getMidletProperty("MIDlet-Name");
+         String[] array = new String[]{suiteName, midlet};
+         prh._connectionMap.put(connection, array);
+         array = new String[]{suiteName, filter};
+         prh._filterMap.put(connection, array);
+         String callingprocess = PushRegistryHelper.getCallingMidletName();
+         String midletprocess = CodeModuleManager.getModuleName(getModuleHandleForMidletClass(midlet));
+         if (midletprocess.equals(callingprocess)) {
+            MIDletApplication ma = (MIDletApplication)Application.getApplication();
+            if (connection.startsWith("sms://")) {
+               checkPermission(getModuleHandleForMidletClass(midlet), SMS_PERMISSION_TOKEN, connection);
+            }
+
+            ma.addPushRegistry(midlet, connection);
+         } else {
+            launchMidlet(midlet, new String[]{PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_DYNAMIC_PUSH_REGISTRY_WORK, midlet, connection}, false);
+         }
+      } else {
+         throw new ClassNotFoundException("Midlet '" + midlet + "' is not a valid class");
+      }
    }
 
    public static boolean unregisterConnection(String connection) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private static boolean removeStaleConnection(String connection) {

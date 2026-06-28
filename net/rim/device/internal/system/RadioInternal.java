@@ -356,7 +356,7 @@ public final class RadioInternal {
    public static final native int sendPacket(RadioPacketHeader var0, byte[] var1, int var2, int var3);
 
    public static final int registerAccessPointNumber(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      return registerAccessPointNumber(name, 0, name == null ? 0 : name.length(), null);
    }
 
    public static final int registerAccessPointNumber(String data, int offset, int length) {

@@ -1,6 +1,7 @@
 package net.rim.device.internal.callcontrol;
 
 import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.util.NumberUtilities;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.Array;
@@ -355,6 +356,6 @@ public final class CallControlLogger {
    }
 
    private static final String obfuscate(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      return str != null && str.length() > 0 && PersistentContent.isEncryptionEnabled() ? "-----" : str;
    }
 }

@@ -2,6 +2,7 @@ package net.rim.device.cldc.util;
 
 import java.util.Calendar;
 import java.util.TimeZone;
+import net.rim.device.api.i18n.DateFormatSymbols;
 
 public final class GregorianCalendar extends Calendar implements CalendarExtensions {
    private int _eraVal;
@@ -611,7 +612,40 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    private final native void timeToRemainingFields(int var1);
 
    public static final String toString(Calendar calendar) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (calendar == null) {
+         return "Thu Jan 01 00:00:00 UTC 1970";
+      }
+
+      DateFormatSymbols dfs = DateFormatSymbols.getInstance();
+      String[] months = dfs.getShortMonths();
+      String[] days = dfs.getShortWeekdays();
+      int dow = calendar.get(7);
+      int month = calendar.get(2);
+      int day = calendar.get(5);
+      int hour_of_day = calendar.get(11);
+      int minute = calendar.get(12);
+      int seconds = calendar.get(13);
+      int year = calendar.get(1);
+      String yr = Integer.toString(year);
+      TimeZone zone = calendar.getTimeZone();
+      String zoneID = zone.getID();
+      if (zoneID == null) {
+         zoneID = "";
+      }
+
+      StringBuffer sb = new StringBuffer(25 + zoneID.length() + yr.length());
+      sb.append(days[dow - 1]).append(' ');
+      sb.append(months[month]).append(' ');
+      appendTwoDigits(sb, day).append(' ');
+      appendTwoDigits(sb, hour_of_day).append(':');
+      appendTwoDigits(sb, minute).append(':');
+      appendTwoDigits(sb, seconds).append(' ');
+      if (zoneID.length() > 0) {
+         sb.append(zoneID).append(' ');
+      }
+
+      appendFourDigits(sb, year);
+      return sb.toString();
    }
 
    private static final StringBuffer appendFourDigits(StringBuffer sb, int number) {

@@ -39,7 +39,14 @@ public class OutputStreamWriter extends Writer {
 
    @Override
    public void write(String str, int off, int len) {
-      throw new RuntimeException("cod2jar: string-special");
+      this.ensureOpen();
+      if (off < 0 || off > str.length() || len < 0 || off + len > str.length() || off + len < 0) {
+         throw new IndexOutOfBoundsException();
+      }
+
+      if (len != 0) {
+         this.out.write(str, off, len);
+      }
    }
 
    @Override

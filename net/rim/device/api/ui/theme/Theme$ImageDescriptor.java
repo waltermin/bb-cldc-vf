@@ -11,6 +11,14 @@ class Theme$ImageDescriptor {
    private EncodedImage _image;
 
    Theme$ImageDescriptor(String name, ResourceFetcher resourceFetcher, boolean isDefault) {
+      this._filename = name;
+      this._resourceFetcher = resourceFetcher;
+      this._isDefault = isDefault;
+      if (name.endsWith(ThemeConstants.EXT_GIF) || name.endsWith(ThemeConstants.EXT_PNG)) {
+         name = name.substring(0, name.length() - 4);
+      }
+
+      this._name = name;
    }
 
    EncodedImage getImage() {

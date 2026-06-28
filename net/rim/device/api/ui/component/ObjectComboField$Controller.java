@@ -9,7 +9,13 @@ public class ObjectComboField$Controller extends ComboFieldController {
 
    @Override
    protected void textChanged(String newText, int context) {
-      throw new RuntimeException("cod2jar: string-special");
+      this.this$0._listCallback.update(newText);
+      super._comboField.getList().setSize(this.this$0._listCallback.length());
+      if (newText.length() > 0) {
+         super._comboField.showDropList();
+      } else {
+         super._comboField.hideDropList();
+      }
    }
 
    @Override

@@ -323,7 +323,7 @@ public class ThemeManager {
    }
 
    static Tag createTag(String tagName) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    static Tag getTag(String tagName) {
@@ -412,7 +412,37 @@ public class ThemeManager {
    }
 
    public static boolean isActivatable(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name.indexOf(58) == -1) {
+         name = getPersistableIdForName(name);
+      }
+
+      synchronized (_instance) {
+         int index = getIndex(name);
+         if (index < 0) {
+            throw new IllegalArgumentException();
+         }
+
+         Theme$Factory factory = _instance._factories[index];
+         if (!factory.isActivatable()) {
+            return false;
+         }
+
+         while (factory != null) {
+            String parent = factory.getParent();
+            if (parent != null && parent.length() != 0) {
+               String id = getPersistableIdForName(parent);
+               if (id == null) {
+                  return false;
+               }
+
+               factory = getThemeFactory(id);
+            } else {
+               factory = null;
+            }
+         }
+
+         return true;
+      }
    }
 
    public static void onSystemFontChangeInternal() {

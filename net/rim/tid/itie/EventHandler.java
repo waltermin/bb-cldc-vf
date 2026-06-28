@@ -1,5 +1,6 @@
 package net.rim.tid.itie;
 
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.ui.Keypad;
@@ -32,7 +33,20 @@ public final class EventHandler {
    }
 
    private final void initCurrencySign() {
-      throw new RuntimeException("cod2jar: string-special");
+      ResourceBundle bundle = ResourceBundle.getBundle(-4248492586227566823L, "net.rim.device.internal.resource.Keypad");
+      String currencyChoices = bundle.getString(104);
+      String message = bundle.getString(103);
+      int choiceCount = currencyChoices.length();
+      String[] choices = new String[choiceCount];
+
+      for (int i = 0; i < choiceCount; i++) {
+         choices[i] = currencyChoices.substring(i, i + 1);
+      }
+
+      int ret = CurrencyKeyDialog.ask(message, choices, 0);
+      if (ret != -1) {
+         UiSettings.setCurrencyKey(currencyChoices.charAt(ret));
+      }
    }
 
    public final int processKeyEvent(int ID, int keyCode, char keyChar, int modifiers, int time, boolean input) {

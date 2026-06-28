@@ -197,13 +197,33 @@ public class Font {
    }
 
    public final int getAdvance(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text == null) {
+         return 0;
+      }
+
+      int tLength = text.length();
+      return tLength == 0 ? 0 : this.getAdvance(text, 0, tLength);
    }
 
    public native int getAdvance(char var1);
 
    public int getAdvance(String text, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null) {
+         int tLength = text.length();
+         if (length == Integer.MAX_VALUE) {
+            length = tLength - offset;
+         }
+
+         if (offset < 0 || length < 0 || offset + length > tLength) {
+            throw new IllegalArgumentException();
+         } else {
+            return tLength == 0 ? 0 : this._getAdvance(text, offset, length);
+         }
+      } else if ((offset != 0 || length != 0) && length != Integer.MAX_VALUE) {
+         throw new NullPointerException();
+      } else {
+         return 0;
+      }
    }
 
    private native int _getAdvance(String var1, int var2, int var3);
@@ -326,7 +346,12 @@ public class Font {
    }
 
    public synchronized int measureText(String text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         return offset + length <= tLength && tLength != 0 ? this._measureText(text, offset, length, param, metrics) : 0;
+      } else {
+         return 0;
+      }
    }
 
    private native int _measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
@@ -365,7 +390,12 @@ public class Font {
    private native int _measureText(char[] var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
    public int getBounds(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text == null) {
+         return 0;
+      }
+
+      int tLength = text.length();
+      return tLength == 0 ? 0 : this.getBounds(text, 0, tLength);
    }
 
    public int getBounds(StringBuffer text) {
@@ -421,7 +451,20 @@ public class Font {
    }
 
    public synchronized int getBounds(String text, int offset, int length) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null && offset >= 0 && length >= 0) {
+         int tLength = text.length();
+         if (offset + length <= tLength && tLength != 0) {
+            this._measureText(text, offset, length, null, this._textMetrics);
+            return Math.max(
+               this._textMetrics.iBoundsBrX - this._textMetrics.iBoundsTlX,
+               this._textMetrics.iAdvanceX >= this._textMetrics.iBoundsBrX ? this._textMetrics.iAdvanceX : this._textMetrics.iBoundsBrX
+            );
+         } else {
+            return 0;
+         }
+      } else {
+         return 0;
+      }
    }
 
    public synchronized int getBounds(char[] text, int offset, int length) {

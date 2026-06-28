@@ -34,7 +34,7 @@ public class RIMConnector {
    }
 
    private static Connection open(int moduleHandle, String name, int mode, boolean timeouts, FirewallContext context) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static void doFirewallCheck(int moduleHandle, String name, int[] additionalModules, ApplicationDescriptor requestingDescriptor) {

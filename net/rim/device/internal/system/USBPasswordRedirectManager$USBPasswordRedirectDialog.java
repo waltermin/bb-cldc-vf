@@ -4,6 +4,7 @@ import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.component.BackgroundDialog;
 import net.rim.device.internal.ui.component.SimplePasswordDialog;
@@ -26,9 +27,71 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
       this.setMessage();
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void close(int closeReason) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean var6 = false /* VF: Semaphore variable */;
+
+      label80: {
+         label79: {
+            label78: {
+               try {
+                  var6 = true;
+                  if (closeReason == 0) {
+                     if (this._lookingForKnownPassword) {
+                        if (StringUtilities.compareToIgnoreCase(USBPasswordRedirectManager._knownPassword, this.getText(), 1701707776) != 0) {
+                           this.setRevealPassword(true);
+                           var6 = false;
+                           break label80;
+                        }
+
+                        this.setMessage();
+                        var6 = false;
+                        break label79;
+                     }
+
+                     String password = this.getText();
+                     if (password == null || password.length() < 4 || !this.this$0._security.verifyStoredPasswordOnly(password)) {
+                        USBPasswordRedirectManager$MessageStatusDialog dialog = new USBPasswordRedirectManager$MessageStatusDialog(
+                           CommonResource.getString(10047)
+                        );
+                        BackgroundDialog.show(dialog);
+                        this.setMessage();
+                        var6 = false;
+                        break label78;
+                     }
+                  } else if (closeReason == -1) {
+                     USBPasswordRedirectManager.logEvent(1130458723);
+                     this.this$0.clearChannels(false);
+                     this.this$0.addToDisallowedChannels(this._usbPeripheralName);
+                  } else if (closeReason == 1) {
+                     USBPasswordRedirectManager.logEvent(1147761517);
+                  }
+
+                  this._app.removeGlobalEventListener(this);
+                  this._app.removeSystemListener(this);
+                  super.close(closeReason);
+                  var6 = false;
+               } finally {
+                  if (var6) {
+                     this.setText(null);
+                  }
+               }
+
+               this.setText(null);
+               return;
+            }
+
+            this.setText(null);
+            return;
+         }
+
+         this.setText(null);
+         return;
+      }
+
+      this.setText(null);
    }
 
    private void setMessage() {

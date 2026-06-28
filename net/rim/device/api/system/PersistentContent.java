@@ -627,7 +627,7 @@ public final class PersistentContent {
    }
 
    public static final Object encodeAndAppend(String string, int index, int length, boolean compress, boolean encrypt, Object content) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static final Object encode(byte[] data) {

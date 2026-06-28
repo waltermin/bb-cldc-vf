@@ -55,15 +55,56 @@ public class StringTokenizer implements Enumeration {
    }
 
    private int skipDelimiters(int startPos) {
-      throw new RuntimeException("cod2jar: string-special");
+      int position;
+      for (position = startPos; !this.retDelims && position < this.maxPosition; position++) {
+         char c = this.str.charAt(position);
+         if (c > this.maxDelimChar) {
+            break;
+         }
+
+         if (this.delimiters.indexOf(c) < 0) {
+            return position;
+         }
+      }
+
+      return position;
    }
 
    private int scanToken(int startPos) {
-      throw new RuntimeException("cod2jar: string-special");
+      int position;
+      for (position = startPos; position < this.maxPosition; position++) {
+         char c = this.str.charAt(position);
+         if (c <= this.maxDelimChar && this.delimiters.indexOf(c) >= 0) {
+            break;
+         }
+      }
+
+      if (this.retDelims && startPos == position) {
+         char c = this.str.charAt(position);
+         if (c <= this.maxDelimChar && this.delimiters.indexOf(c) >= 0) {
+            position++;
+         }
+      }
+
+      return position;
    }
 
    private void setMaxDelimChar() {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this.delimiters == null) {
+         this.maxDelimChar = 0;
+      } else {
+         char m = 0;
+         int delimitersLength = this.delimiters.length();
+
+         for (int i = 0; i < delimitersLength; i++) {
+            char c = this.delimiters.charAt(i);
+            if (m < c) {
+               m = c;
+            }
+         }
+
+         this.maxDelimChar = m;
+      }
    }
 
    public StringTokenizer(String str, String delim, boolean returnDelims) {
@@ -73,7 +114,17 @@ public class StringTokenizer implements Enumeration {
    }
 
    private void initializer(String aString, String delim, boolean returnDelims) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (aString != null && delim != null) {
+         this.currentPosition = 0;
+         this.newPosition = -1;
+         this.str = aString;
+         this.maxPosition = this.str.length();
+         this.delimiters = delim;
+         this.retDelims = returnDelims;
+         this.setMaxDelimChar();
+      } else {
+         throw new NullPointerException();
+      }
    }
 
    public StringTokenizer(String str) {

@@ -189,6 +189,76 @@ public final class NumberUtilities {
    }
 
    public static final int parseInt(String s, int fromIndex, int toIndex, int radix) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s == null) {
+         throw new NumberFormatException("null");
+      }
+
+      if (fromIndex >= 0 && toIndex >= fromIndex) {
+         if (radix >= 2 && radix <= 36) {
+            int result = 0;
+            boolean negative = false;
+            int i = fromIndex;
+            int max = Math.min(s.length(), toIndex);
+            if (max <= fromIndex) {
+               throw new NumberFormatException(s);
+            }
+
+            int limit;
+            if (s.charAt(i) == '-') {
+               negative = true;
+               limit = Integer.MIN_VALUE;
+               i++;
+            } else {
+               limit = -2147483647;
+            }
+
+            int multmin = limit / radix;
+            if (i < max) {
+               int digit = Character.digit(s.charAt(i++), radix);
+               if (digit < 0) {
+                  throw new NumberFormatException(s);
+               }
+
+               result = -digit;
+            }
+
+            while (i < max) {
+               int digit = Character.digit(s.charAt(i++), radix);
+               if (digit < 0) {
+                  throw new NumberFormatException(s);
+               }
+
+               if (result < multmin) {
+                  throw new NumberFormatException(s);
+               }
+
+               result *= radix;
+               if (result < limit + digit) {
+                  throw new NumberFormatException(s);
+               }
+
+               result -= digit;
+            }
+
+            if (!negative) {
+               return -result;
+            } else if (i > 1) {
+               return result;
+            } else {
+               throw new NumberFormatException(s);
+            }
+         } else {
+            StringBuffer msg = new StringBuffer("radix ").append(radix);
+            if (radix < 2) {
+               msg.append(" less than Character.MIN_RADIX");
+            } else {
+               msg.append(" greater than Character.MAX_RADIX");
+            }
+
+            throw new NumberFormatException(msg.toString());
+         }
+      } else {
+         throw new NumberFormatException("range");
+      }
    }
 }

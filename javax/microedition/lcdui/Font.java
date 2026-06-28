@@ -185,6 +185,18 @@ public final class Font {
    }
 
    public final int substringWidth(String str, int offset, int len) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (str == null) {
+         throw new NullPointerException();
+      }
+
+      if (offset >= 0 && offset <= str.length() && offset + len <= str.length() && len >= 0 && len <= str.length()) {
+         try {
+            return this._font.getAdvance(str, offset, len);
+         } catch (IllegalArgumentException iae) {
+            throw new StringIndexOutOfBoundsException();
+         }
+      } else {
+         throw new StringIndexOutOfBoundsException();
+      }
    }
 }

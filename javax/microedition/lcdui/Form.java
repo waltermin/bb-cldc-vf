@@ -42,7 +42,10 @@ public class Form extends Screen {
    }
 
    public int append(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      synchronized (Application.getEventLock()) {
+         str.length();
+         return this.append(new StringItem(null, str));
+      }
    }
 
    public int append(Image img) {

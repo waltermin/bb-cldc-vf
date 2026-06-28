@@ -108,7 +108,19 @@ public class CheckboxField extends Field implements FieldLabelProvider {
 
    @Override
    public int getPreferredWidth() {
-      throw new RuntimeException("cod2jar: string-special");
+      Font font = this.getFont();
+      int fontHeight = font.getHeight();
+      int width = 0;
+      if (this._image != null) {
+         width = 2 + this._image.getWidth();
+      }
+
+      if (this._label != null) {
+         width += 2 + font.getBounds(this._label, 0, this._label.length());
+      }
+
+      int iconWidth = SystemIcon.COLLECTION.getWidth(fontHeight, fontHeight);
+      return width + iconWidth;
    }
 
    @Override

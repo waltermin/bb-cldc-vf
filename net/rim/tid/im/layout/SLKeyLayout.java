@@ -506,11 +506,42 @@ public class SLKeyLayout {
    }
 
    private static boolean isExists(String mapName) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (mapName != null && mapName.length() != 0) {
+         for (int i = 0; i < _maps.length; i++) {
+            if (mapName.equals(_maps[i])) {
+               return true;
+            }
+         }
+
+         return false;
+      } else {
+         return false;
+      }
    }
 
    private static String getMapID(int aKeyboardId, String aKeyboardType, Locale anInputLocale, String mapLocation, boolean useDefault) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (mapLocation != null && mapLocation.length() != 0) {
+         if (anInputLocale.getVariant().equals("Multitap")) {
+            anInputLocale = Locale.get(anInputLocale.getLanguage());
+         }
+
+         if ((anInputLocale.getCode() & -65536) == 1701707776) {
+            useDefault = true;
+         }
+
+         if ((aKeyboardId & -65536) == 1364656128) {
+            aKeyboardId = 1364669234;
+         }
+
+         String mapID = Utils.composeResourceID(aKeyboardId, aKeyboardType, anInputLocale, useDefault);
+         if (!isExists(mapID)) {
+            mapID = null;
+         }
+
+         return mapID;
+      } else {
+         return null;
+      }
    }
 
    public static SLKeyLayout getLayout(

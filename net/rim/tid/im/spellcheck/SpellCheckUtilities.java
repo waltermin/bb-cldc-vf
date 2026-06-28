@@ -63,7 +63,44 @@ public class SpellCheckUtilities implements SpellCheckConstants {
    }
 
    public static Locale removeSpellCheckingLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      String prefix = null;
+      String suffix = null;
+      String variant = locale.getVariant();
+      if (variant == null) {
+         return locale;
+      }
+
+      int scIndex = variant.indexOf("SpellCheck");
+      if (scIndex == -1) {
+         return locale;
+      }
+
+      int scLen = 10;
+      int vlen = variant.length();
+      if (scIndex > 0) {
+         if (variant.charAt(scIndex - 1) == '_') {
+            prefix = variant.substring(0, scIndex - 1);
+         } else {
+            prefix = variant.substring(0, scIndex);
+         }
+      }
+
+      if (scLen != vlen) {
+         int uindex = variant.indexOf(95, scIndex + scLen);
+         if (uindex != -1 && uindex + 1 != vlen) {
+            suffix = variant.substring(uindex + 1);
+         }
+      }
+
+      if (suffix == null) {
+         variant = prefix;
+      } else if (prefix == null) {
+         variant = suffix;
+      } else {
+         variant = prefix + '_' + suffix;
+      }
+
+      return Locale.get(locale.getLanguage(), locale.getCountry(), variant);
    }
 
    public static int spellCheckActionPerformed(int action, Object param) {

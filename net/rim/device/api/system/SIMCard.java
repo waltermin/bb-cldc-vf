@@ -495,7 +495,32 @@ public final class SIMCard {
    }
 
    public static final byte[] encodeAlphaId(String alphaId) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (alphaId == null) {
+         return null;
+      }
+
+      byte[] bytes = null;
+      boolean ucs2 = false;
+      int length = alphaId.length();
+
+      for (int i = 0; i < length; i++) {
+         if (!SMSPacketHeader.validateForDefaultMessageCoding(alphaId.charAt(i))) {
+            ucs2 = true;
+            break;
+         }
+      }
+
+      try {
+         if (!ucs2) {
+            return alphaId.getBytes("SMS");
+         }
+
+         bytes = alphaId.getBytes("UnicodeBigUnmarked");
+         Arrays.insertAt(bytes, (byte)-128, 0);
+      } catch (UnsupportedEncodingException var5) {
+      }
+
+      return bytes;
    }
 
    public static final boolean is3DigitMNC() {

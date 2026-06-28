@@ -1,6 +1,7 @@
 package net.rim.device.api.io;
 
 import net.rim.device.api.system.SMSPacketHeader;
+import net.rim.vm.Array;
 
 public final class SmsAddress extends DatagramAddressBase {
    private SMSPacketHeader _header;
@@ -47,7 +48,52 @@ public final class SmsAddress extends DatagramAddressBase {
 
    @Override
    public final void setAddress(String address) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = address.length();
+      this._header.reset();
+      if (!address.startsWith("//")) {
+         throw new IllegalArgumentException(address);
+      }
+
+      super._address = address;
+      if (address.length() != 2) {
+         int delim = address.indexOf(58);
+         if (delim == -1) {
+            delim = address.indexOf(59);
+            if (delim == -1) {
+               this._header.setPeerAddress(address.substring(2));
+            } else {
+               this._header.setPeerAddress(address.substring(2, delim));
+               int offset = delim + 1;
+            }
+         } else {
+            this._header.setPeerAddress(address.substring(2, delim));
+            int offset = delim + 1;
+            if (offset < length) {
+               int portsEnd = address.indexOf(59, offset);
+               if (portsEnd == -1) {
+                  portsEnd = length;
+               }
+
+               int port = 0;
+
+               while (offset < portsEnd) {
+                  delim = address.indexOf(124, offset);
+                  if (delim == -1 || delim > portsEnd) {
+                     delim = portsEnd;
+                  }
+
+                  if (port == 0) {
+                     this._ports = new int[1];
+                  } else {
+                     Array.resize(this._ports, port + 1);
+                  }
+
+                  this._ports[port++] = DatagramAddressBase.parseInt(address, offset, delim, 10);
+                  offset = delim + 1;
+               }
+            }
+         }
+      }
    }
 
    @Override

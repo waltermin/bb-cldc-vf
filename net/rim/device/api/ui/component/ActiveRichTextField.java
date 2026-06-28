@@ -12,9 +12,13 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.util.AbstractString;
 import net.rim.device.api.util.AbstractStringWrapper;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.EmoticonStringPattern;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.api.util.StringPattern;
+import net.rim.device.api.util.StringPattern$Match;
 import net.rim.device.api.util.StringPatternContainer;
+import net.rim.device.api.util.StringPatternEnumerator;
 import net.rim.device.api.util.StringPatternRepository$Internal;
 import net.rim.device.internal.ui.FormatParams;
 import net.rim.tid.text.AttributedString;
@@ -170,7 +174,39 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    }
 
    private static ActiveRichTextField$RegionQueue scanForActiveRegions(String text, Font defaultFont, int labelLength, StringPatternContainer patterns) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null && text.length() != 0) {
+         StringPatternEnumerator patternEnum = new StringPatternEnumerator(text, patterns);
+         if (!patternEnum.hasMoreMatches()) {
+            return new ActiveRichTextField$RegionQueue(0, 0);
+         }
+
+         ActiveRichTextField$RegionQueue rq = new ActiveRichTextField$RegionQueue(0, 2);
+         byte attrNormal = rq.appendFont(null);
+         byte attrUnderlined = rq.appendFont(defaultFont.derive(defaultFont.getStyle() | 4 | 8));
+         StringPattern$Match match = new StringPattern$Match();
+         int lastBegin = -1;
+         int lastEnd = -1;
+
+         while (patternEnum.hasMoreMatches()) {
+            patternEnum.nextMatch(match);
+            int beginIndex = labelLength + match.beginIndex;
+            int endIndex = labelLength + match.endIndex;
+            if (lastBegin == beginIndex && lastEnd == endIndex) {
+               rq.appendCookieID(match.id);
+            } else {
+               rq.appendRegion(beginIndex, attrNormal, 0);
+               rq.appendRegion(endIndex, attrUnderlined, match.id);
+               lastBegin = beginIndex;
+               lastEnd = endIndex;
+            }
+         }
+
+         rq.appendRegion(text.length(), attrNormal, 0);
+         rq.trim();
+         return rq;
+      } else {
+         return new ActiveRichTextField$RegionQueue(0, 0);
+      }
    }
 
    private static ActiveRichTextField$RegionQueue scanForActiveRegions(
@@ -343,6 +379,50 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
    public ActiveRichTextField(
       String text, int[] offsets, byte[] attributes, Font[] fonts, int[] foregroundColors, int[] backgroundColors, long style, StringPatternContainer patterns
    ) {
+      super(text, offsets, attributes, fonts, style);
+      this.setAttributes(foregroundColors, backgroundColors);
+      this._smileySupport = new SmileySupport(this);
+      if (patterns != null) {
+         for (int index = 0; index < patterns.size(); index++) {
+            Object pattern = patterns.getAt(index);
+            if (pattern instanceof EmoticonStringPattern) {
+               this._smileySupport.setPattern((EmoticonStringPattern)pattern);
+               if (patterns.size() > 1) {
+                  StringPattern[] elements = new StringPattern[patterns.size() - 1];
+
+                  for (int index1 = 0; index1 < patterns.size(); index1++) {
+                     if (index1 != index) {
+                        elements[index1 < index ? index1 : index1 - 1] = (StringPattern)patterns.getAt(index1);
+                     }
+                  }
+
+                  this._patterns = new StringPatternContainer(elements);
+               }
+               break;
+            }
+         }
+      }
+
+      if (this._patterns == null) {
+         this._patterns = StringPatternRepository$Internal.getStringPatterns();
+      }
+
+      boolean doBackgroundScan = (_scanFlags & 1) != 0;
+      if (text == null || text.length() <= 32) {
+         doBackgroundScan = false;
+      }
+
+      if (offsets == null) {
+         if (doBackgroundScan) {
+            BackgroundScanThread.post(new ActiveRichTextField$StringPatternScanner(this, null));
+         } else {
+            this.setText(text);
+         }
+      } else if (doBackgroundScan) {
+         BackgroundScanThread.post(new ActiveRichTextField$StringPatternScanner(this, null));
+      } else {
+         this.setText(text, offsets, attributes, fonts, foregroundColors, backgroundColors);
+      }
    }
 
    @Override

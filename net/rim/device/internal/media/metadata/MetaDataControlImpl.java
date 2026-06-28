@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import javax.microedition.media.control.MetaDataControl;
 import net.rim.device.api.media.MetaDataObject;
 import net.rim.device.api.media.control.BinaryMetaDataControl;
+import net.rim.vm.Array;
 
 public class MetaDataControlImpl implements MetaDataControl, BinaryMetaDataControl {
    private Hashtable _metaData = new Hashtable();
@@ -19,7 +20,16 @@ public class MetaDataControlImpl implements MetaDataControl, BinaryMetaDataContr
    }
 
    public void addObject(MetaDataObject object) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (object != null) {
+         byte[] data = object.getData();
+         if (data != null && data.length > 0 || object.getURL() != null && object.getURL().length() > 0) {
+            synchronized (this._binaryObjects) {
+               Array.resize(this._binaryObjects, this._binaryObjects.length + 1);
+               this._binaryObjects[this._binaryObjects.length - 1] = object;
+               return;
+            }
+         }
+      }
    }
 
    public int size() {

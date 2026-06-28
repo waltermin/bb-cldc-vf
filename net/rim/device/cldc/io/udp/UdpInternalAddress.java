@@ -95,11 +95,11 @@ public final class UdpInternalAddress extends UdpAddress {
    }
 
    static final boolean noTunnelRequired(String address) {
-      throw new RuntimeException("cod2jar: string-special");
+      return address == null || address.length() == 0 || address.indexOf(NO_TUNNEL) >= 0;
    }
 
    static final boolean retriesOnNoContextRequested(String address) {
-      throw new RuntimeException("cod2jar: string-special");
+      return address == null || address.length() == 0 || address.indexOf(ALLOW_NO_CONTEXT_RETRY) >= 0;
    }
 
    static final boolean wifiRequested(String address) {

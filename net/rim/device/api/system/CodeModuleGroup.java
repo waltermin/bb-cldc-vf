@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -46,6 +47,32 @@ public final class CodeModuleGroup {
    }
 
    public CodeModuleGroup(String groupName) {
+      this(0);
+      if (!net.rim.vm.Memory.isStringAllBytes(groupName)) {
+         throw new IllegalArgumentException();
+      }
+
+      if (groupName.length() > 256) {
+         throw new IllegalArgumentException();
+      }
+
+      char[] chars = new char[groupName.length()];
+      groupName.getChars(0, chars.length, chars, 0);
+
+      for (int i = 0; i < chars.length; i++) {
+         if (chars[i] > 127) {
+            throw new IllegalArgumentException();
+         }
+      }
+
+      this._groupName = groupName;
+      CodeModuleGroupPropertiesCollection collection = CodeModuleGroupPropertiesCollection.getInstance();
+      int uid = CodeModuleGroupPropertiesCollection.getGroupUID(this._groupName);
+      this._properties = (CodeModuleGroupProperties)collection.getSyncObject(uid);
+      if (this._properties == null) {
+         this._properties = new CodeModuleGroupProperties(uid);
+         collection.addSyncObject(this._properties);
+      }
    }
 
    private final void assertPermission() {
@@ -426,7 +453,79 @@ public final class CodeModuleGroup {
    }
 
    final boolean loadFromData(byte[] data, boolean localized) {
-      throw new RuntimeException("cod2jar: string-special");
+      DataBuffer buf = new DataBuffer(data, 0, data.length, false);
+      if (localized) {
+         this._friendlyNameTable = new Hashtable();
+         this._descriptionTable = new Hashtable();
+         this._vendorTable = new Hashtable();
+         this._versionTable = new Hashtable();
+         this._copyrightTable = new Hashtable();
+      } else {
+         this._friendlyNameTable = null;
+         this._descriptionTable = null;
+         this._vendorTable = null;
+         this._versionTable = null;
+         this._copyrightTable = null;
+      }
+
+      this._moduleNames.removeAllElements();
+      this._dependencies.removeAllElements();
+
+      try {
+         buf.readInt();
+         buf.readInt();
+         this._flags = buf.readInt();
+         this._groupName = this.readString(data, buf);
+         CodeModuleGroupPropertiesCollection collection = CodeModuleGroupPropertiesCollection.getInstance();
+         int uid = CodeModuleGroupPropertiesCollection.getGroupUID(this._groupName);
+         this._properties = (CodeModuleGroupProperties)collection.getSyncObject(uid);
+         if (this._properties == null) {
+            this._properties = new CodeModuleGroupProperties(uid);
+            collection.addSyncObject(this._properties);
+         }
+
+         while (buf.available() >= 3) {
+            int type = buf.readShort();
+            switch (type) {
+               case -1:
+                  break;
+               case 0:
+               default:
+                  String sx = this.readString(data, buf);
+                  if (sx.length() != 0) {
+                     this._moduleNames.addElement(sx);
+                  }
+                  break;
+               case 1:
+                  String s = this.readString(data, buf);
+                  if (s.length() != 0) {
+                     this._dependencies.addElement(s);
+                  }
+                  break;
+               case 2:
+                  this.readProperty(data, buf);
+                  break;
+               case 3:
+                  this._friendlyName = this.readLocalizedString(data, buf, this._friendlyName, this._friendlyNameTable);
+                  break;
+               case 4:
+                  this._description = this.readLocalizedString(data, buf, this._description, this._descriptionTable);
+                  break;
+               case 5:
+                  this._version = this.readLocalizedString(data, buf, this._version, this._versionTable);
+                  break;
+               case 6:
+                  this._vendor = this.readLocalizedString(data, buf, this._vendor, this._vendorTable);
+                  break;
+               case 7:
+                  this._copyright = this.readLocalizedString(data, buf, this._copyright, this._copyrightTable);
+            }
+         }
+
+         return true;
+      } catch (IOException ex) {
+         return false;
+      }
    }
 
    public static final CodeModuleGroup loadUnpersisted(byte[] data) {

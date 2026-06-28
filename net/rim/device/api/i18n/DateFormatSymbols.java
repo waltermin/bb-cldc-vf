@@ -42,7 +42,20 @@ public final class DateFormatSymbols implements Persistable {
    }
 
    private final void init(ResourceBundle resources) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._ampm = resources.getStringArray(80);
+      this._ampm_short = resources.getStringArray(81);
+      if (this._ampm.length == 2 && this._ampm_short.length == 2) {
+         this._dateFormats = resources.getStringArray(20);
+         this._datetimeFormat = resources.getString(21);
+         this._months = resources.getStringArray(30);
+         this._months_short = resources.getStringArray(42);
+         this._timeFormats = resources.getStringArray(10);
+         this._weekdays = resources.getStringArray(66);
+         this._weekdays_short = resources.getStringArray(73);
+         this._undefinedSymbol = resources.getString(90).charAt(0);
+      } else {
+         throw new IllegalStateException("AM PM info bad");
+      }
    }
 
    public final String[] getAmPmStrings() {

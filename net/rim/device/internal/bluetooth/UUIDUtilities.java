@@ -1,5 +1,7 @@
 package net.rim.device.internal.bluetooth;
 
+import net.rim.device.api.util.NumberUtilities;
+
 public final class UUIDUtilities {
    private static final byte[] BASE_UUID;
 
@@ -7,11 +9,54 @@ public final class UUIDUtilities {
    }
 
    public static final String toString(byte[] uuidData) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBuffer sb = new StringBuffer();
+      int length = uuidData.length;
+
+      for (int i = 0; i < length; i++) {
+         String s = Integer.toHexString(uuidData[i] & 255);
+         if (s.length() == 1) {
+            sb.append('0');
+         }
+
+         sb.append(s);
+      }
+
+      return sb.toString();
    }
 
    public static final byte[] toBytes(String uuid) {
-      throw new RuntimeException("cod2jar: string-special");
+      int length = uuid.length();
+      if (length > 32) {
+         throw new IllegalArgumentException();
+      }
+
+      byte[] data;
+      if (length == 32) {
+         data = new byte[16];
+      } else {
+         if (length == 8 && uuid.startsWith("0000")) {
+            uuid = uuid.substring(4);
+            length -= 4;
+         }
+
+         if (length > 4) {
+            data = new byte[4];
+         } else {
+            data = new byte[2];
+         }
+      }
+
+      int i = data.length - 1;
+      if (length <= 2) {
+         data[i] = (byte)(NumberUtilities.parseInt(uuid, 0, length, 16) & 0xFF);
+         return data;
+      }
+
+      for (int stringIndex = length - 2; stringIndex >= 0; stringIndex -= 2) {
+         data[i--] = (byte)(NumberUtilities.parseInt(uuid, stringIndex, stringIndex + 2, 16) & 0xFF);
+      }
+
+      return data;
    }
 
    public static final byte[] promoteTo128Bits(String uuid) {

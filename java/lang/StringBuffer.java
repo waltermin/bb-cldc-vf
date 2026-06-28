@@ -15,6 +15,8 @@ public final class StringBuffer {
    }
 
    public StringBuffer(String str) {
+      this(str.length() + 16);
+      this.append(str);
    }
 
    public final int length() {
@@ -152,7 +154,7 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer insert(int offset, String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final synchronized StringBuffer insert(int offset, char[] str) {

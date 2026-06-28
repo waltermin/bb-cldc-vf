@@ -1,12 +1,16 @@
 package net.rim.device.internal.ui.component;
 
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.RichTextFieldUtilities;
 import net.rim.device.internal.ui.container.FrameLayout;
@@ -21,7 +25,39 @@ public class PasswordDialog extends PopupDialog implements FieldChangeListener {
    private boolean _mismatchIndicationDisplayed;
 
    protected boolean accept() {
-      throw new RuntimeException("cod2jar: string-special");
+      String passwordString = this._passwordField.getText();
+      int passwordStringLength = passwordString.length();
+      String confirmString = this._confirmField != null ? this._confirmField.getText() : null;
+      int confirmStringLength = confirmString != null ? confirmString.length() : 0;
+      if (passwordStringLength == 0 && confirmStringLength == 0) {
+         if (this._mismatchIndicationDisplayed) {
+            Manager manager = this.getDelegate();
+            manager.deleteRange(0, 2);
+            this._mismatchIndicationDisplayed = false;
+         }
+
+         this._passwordField.setFocus();
+         return false;
+      } else if (this._confirmField != null && !StringUtilities.strEqual(passwordString, confirmString)) {
+         synchronized (Application.getEventLock()) {
+            if (!this._mismatchIndicationDisplayed) {
+               RichTextField mismatchIndicationField = new RichTextField(CommonResource.getString(10013));
+               Manager manager = this.getDelegate();
+               manager.insert(mismatchIndicationField, 0);
+               manager.insert(new SeparatorField(), 1);
+               this._mismatchIndicationDisplayed = true;
+            }
+
+            this._passwordField.setText(null);
+            this._confirmField.setText(null);
+            this._passwordField.setFocus();
+            return false;
+         }
+      } else {
+         this._passwordBytes = passwordString.getBytes();
+         this.close(0);
+         return true;
+      }
    }
 
    public byte[] getPassword() {

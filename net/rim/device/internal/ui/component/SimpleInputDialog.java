@@ -81,7 +81,15 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text == null) {
+         text = "";
+      }
+
+      if (text.length() > this._maxLength) {
+         throw new IllegalArgumentException("The initial text is too long");
+      }
+
+      this._initialText = text;
    }
 
    public void show(String prompt) {
@@ -91,7 +99,11 @@ public class SimpleInputDialog extends PopupDialog {
 
    @Override
    protected void onUiEngineAttached(boolean attached) {
-      throw new RuntimeException("cod2jar: string-special");
+      super.onUiEngineAttached(attached);
+      if (attached) {
+         this._editField.setText(this._initialText);
+         this._editField.setCursorPosition(this._initialText.length());
+      }
    }
 
    protected boolean cancel() {
@@ -109,7 +121,12 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    protected boolean accept() {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._editField.getText().length() < this._minLength) {
+         return false;
+      }
+
+      this.close(0);
+      return true;
    }
 
    public void setMinLength(int minLength) {

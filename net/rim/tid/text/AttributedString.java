@@ -152,7 +152,12 @@ public class AttributedString {
    }
 
    public void set(String aText, long aAttrib, long aXAttrib, long aGlobalAttrib) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._text = new StringBufferGap(aText);
+      this._run = new AttributedString$Run(null, null, aText.length(), aAttrib, aXAttrib, null);
+      this._cursor_run = this._run;
+      this._cursor_run_start = 0;
+      this._length = this._run._length;
+      this._global_attrib = aGlobalAttrib;
    }
 
    public void set(AttributedString$Iterator aIter) {
@@ -286,7 +291,10 @@ public class AttributedString {
    }
 
    public void insert(String aString) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (aString.length() > 0) {
+         this._text.insert(aString);
+         this.insertAttribRun(aString.length(), this._new_attrib, -1, this._new_xattrib, -1, null);
+      }
    }
 
    public void insert(StringBuffer aString) {
@@ -329,7 +337,18 @@ public class AttributedString {
    }
 
    public void replace(int aStart, int aEnd, String aText) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this._length) {
+         this.seek(aEnd);
+         if (aStart < aEnd) {
+            this.delete(aEnd - aStart);
+         }
+
+         if (aText.length() > 0) {
+            this.insert(aText);
+         }
+      } else {
+         throw new IndexOutOfBoundsException();
+      }
    }
 
    public void replace(int aStart, int aEnd, StringBuffer aText) {

@@ -210,7 +210,7 @@ public final class Theme$Writer {
    }
 
    public final void put(ThemeAttributeSet$Writer attributesWriter, boolean force) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public final void putBorder(String name, Border border) {
@@ -220,7 +220,13 @@ public final class Theme$Writer {
    }
 
    public final void putPaletteEntry(String name, int color) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name.charAt(0) == '[' && name.charAt(name.length() - 1) == ']') {
+         if (!this.this$0._palette.containsKey(name)) {
+            this.this$0._palette.put(name, color);
+         }
+      } else {
+         throw new IllegalArgumentException("Bad palette entry name: " + name);
+      }
    }
 
    public final void setApplicationIconSize(int width, int height) {

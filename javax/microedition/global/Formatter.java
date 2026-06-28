@@ -39,7 +39,18 @@ public final class Formatter {
    }
 
    public final String formatCurrency(double number, String currencyCode) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (currencyCode == null) {
+         throw new NullPointerException();
+      } else if (currencyCode.length() != 3
+         || !Character.isUpperCase(currencyCode.charAt(0))
+         || !Character.isUpperCase(currencyCode.charAt(1))
+         || !Character.isUpperCase(currencyCode.charAt(2))) {
+         throw new IllegalArgumentException();
+      } else if (Double.isNaN(number) || Double.isInfinite(number)) {
+         return Double.toString(number);
+      } else {
+         return this._locale == null ? Double.toString(number) + " " + currencyCode : this.correctDecimals(Double.toString(number), 2) + " " + currencyCode;
+      }
    }
 
    public final String formatDateTime(Calendar dateTime, int style) {
@@ -113,7 +124,49 @@ public final class Formatter {
    }
 
    public static final String formatMessage(String template, String[] params) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (template != null && params != null) {
+         String result = EMPTY;
+         int nextPlaceholder = 0;
+         int pos = 0;
+
+         while (true) {
+            nextPlaceholder = template.indexOf(123, pos);
+            if (nextPlaceholder < 0) {
+               return result + template.substring(pos);
+            }
+
+            if (template.charAt(nextPlaceholder + 1) == '{') {
+               result = result + template.substring(pos, nextPlaceholder + 1);
+               pos = nextPlaceholder + 2;
+            } else {
+               if (!Character.isDigit(template.charAt(nextPlaceholder + 1))) {
+                  throw new IllegalArgumentException();
+               }
+
+               boolean twoDigits = false;
+               int index;
+               if (template.charAt(nextPlaceholder + 2) == '}') {
+                  index = Character.digit(template.charAt(nextPlaceholder + 1), 10);
+               } else {
+                  if (template.charAt(nextPlaceholder + 3) != '}') {
+                     throw new IllegalArgumentException();
+                  }
+
+                  index = Character.digit(template.charAt(nextPlaceholder + 1), 10) * 10 + Character.digit(template.charAt(nextPlaceholder + 2), 10);
+                  twoDigits = true;
+               }
+
+               if (index > params.length - 1) {
+                  throw new IllegalArgumentException();
+               }
+
+               result = result + template.substring(pos, nextPlaceholder) + params[index];
+               pos = nextPlaceholder + (twoDigits ? 4 : 3);
+            }
+         }
+      } else {
+         throw new NullPointerException();
+      }
    }
 
    public final String formatNumber(double number) {
@@ -155,11 +208,32 @@ public final class Formatter {
    }
 
    private final String standardNotation(String originalValue) {
-      throw new RuntimeException("cod2jar: string-special");
+      int decimalPos = originalValue.indexOf(46);
+      int ePos = originalValue.indexOf(69);
+      if (ePos == -1) {
+         return originalValue;
+      } else {
+         int exponent = Integer.parseInt(originalValue.substring(ePos + 1));
+         String temp = originalValue.substring(0, decimalPos) + originalValue.substring(decimalPos + 1, ePos);
+         if (exponent > 0) {
+            decimalPos += exponent;
+            return temp.length() < decimalPos
+               ? this.addZeroes(temp, decimalPos - temp.length()) + ".0"
+               : temp.substring(0, decimalPos) + '.' + temp.substring(decimalPos);
+         } else {
+            return originalValue.charAt(0) == '-' ? this.addZeroes("-0.", -exponent - 1) + temp.substring(1) : this.addZeroes("0.", -exponent - 1) + temp;
+         }
+      }
    }
 
    private final String correctDecimals(String originalValue, int decimals) {
-      throw new RuntimeException("cod2jar: string-special");
+      int decimalPos = originalValue.indexOf(46);
+      int numDecimals = originalValue.length() - decimalPos - 1;
+      if (numDecimals > decimals) {
+         return originalValue.substring(0, decimalPos + decimals + 1);
+      } else {
+         return decimals > numDecimals ? this.addZeroes(originalValue, decimals - numDecimals) : originalValue;
+      }
    }
 
    public final String formatPercentage(long value) {

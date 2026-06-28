@@ -197,19 +197,63 @@ public class PatriciaTree {
    }
 
    public static int getStringBit(String str, int offset, int length, int id, int bitNum) {
-      throw new RuntimeException("cod2jar: string-special");
+      int charNum = bitNum / 17;
+      if (charNum >= length) {
+         if (id == -1) {
+            return -1;
+         } else {
+            bitNum -= 17 * length;
+            if (bitNum != 0 && bitNum <= 32) {
+               bitNum = 32 - bitNum;
+               return id >> bitNum & 1;
+            } else {
+               return 0;
+            }
+         }
+      } else {
+         bitNum %= 17;
+         if (bitNum == 0) {
+            return 1;
+         }
+
+         bitNum = 16 - bitNum;
+         char ch = str.charAt(offset + charNum);
+         return ch >> bitNum & 1;
+      }
    }
 
    public static int getStringBit(String str, int id, int bitNum) {
-      throw new RuntimeException("cod2jar: string-special");
+      return getStringBit(str, 0, str.length(), id, bitNum);
    }
 
    public static int compareStringBits(String lookupStr, int lookupOffset, int lookupLength, int lookupId, String str, int offset, int length, int id) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (lookupId == id) {
+         return 0;
+      }
+
+      int bitNum;
+      for (bitNum = 1; lookupLength != 0; bitNum += 17) {
+         if (length == 0) {
+            return bitNum;
+         }
+
+         char lookupCh = lookupStr.charAt(lookupOffset);
+         char ch = str.charAt(offset);
+         if (lookupCh != ch) {
+            return bitDifference(bitNum, lookupCh, ch, 16);
+         }
+
+         lookupOffset++;
+         offset++;
+         lookupLength--;
+         length--;
+      }
+
+      return length == 0 ? bitDifference(bitNum, lookupId, id, 32) : -bitNum;
    }
 
    public static int compareStringBits(String lookupStr, int lookupId, String str, int id) {
-      throw new RuntimeException("cod2jar: string-special");
+      return compareStringBits(lookupStr, 0, lookupStr.length(), lookupId, str, 0, str.length(), id);
    }
 
    public static int bitDifference(int bitNum, int lookup, int value, int numBits) {

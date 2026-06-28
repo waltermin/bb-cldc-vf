@@ -83,7 +83,13 @@ public class DataOutputStream extends OutputStream implements DataOutput {
 
    @Override
    public final void writeChars(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = s.length();
+
+      for (int i = 0; i < len; i++) {
+         int v = s.charAt(i);
+         this.write(v >>> 8 & 0xFF);
+         this.write(v >>> 0 & 0xFF);
+      }
    }
 
    @Override

@@ -88,7 +88,29 @@ public final class BreakIterator {
    }
 
    public final int last() {
-      throw new RuntimeException("cod2jar: string-special");
+      if (this._dataType != -1 && this._iterType != -1) {
+         this._currentPos = Integer.MAX_VALUE;
+         switch (this._dataType) {
+            case -1:
+               break;
+            case 0:
+            default:
+               this._currentPos = this._str.length();
+               break;
+            case 1:
+               this._currentPos = this._strB.length();
+               break;
+            case 2:
+               this._currentPos = this._strBG.length();
+               break;
+            case 3:
+               this._currentPos = this._charArr.length;
+         }
+
+         return this._currentPos;
+      } else {
+         return Integer.MAX_VALUE;
+      }
    }
 
    public final int following(int aPos) {

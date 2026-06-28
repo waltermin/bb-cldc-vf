@@ -32,7 +32,28 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    public void setText(String text, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null) {
+         if (text.length() > 0 && offsets != null && attributes != null) {
+            if (offsets.length != attributes.length + 1) {
+               throw new IllegalArgumentException("attributes array must contain exactly one less entry than the offsets array");
+            }
+
+            if (fonts == null) {
+               throw new IllegalArgumentException("fonts array cannot be null");
+            }
+         } else if (text.length() > 0 && offsets != null && attributes == null) {
+            throw new IllegalArgumentException("attributes array cannot be null");
+         }
+
+         this.vetOffsets(text, offsets);
+         this.vetAttributes(attributes, fonts);
+      } else {
+         text = "";
+      }
+
+      this.findDefaultDirectionality(text);
+      AttributedString attribText = new AttributedString(text, this.getDefaultFontAttributes(), 0);
+      this.setText(attribText, offsets, attributes, fonts, cookies);
    }
 
    protected void setText(AttributedString attribText, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies) {
@@ -282,7 +303,21 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    private void vetOffsets(String text, int[] offsets) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (offsets != null) {
+         if (offsets[0] != 0) {
+            throw new IllegalArgumentException("offsets[0] != 0");
+         }
+
+         if (offsets[offsets.length - 1] != text.length()) {
+            throw new IllegalArgumentException("offsets[n-1] != text.length()");
+         }
+
+         for (int lv = offsets.length - 2; lv >= 0; lv--) {
+            if (offsets[lv] >= offsets[lv + 1]) {
+               throw new IllegalArgumentException("offsets must be monotonically increasing");
+            }
+         }
+      }
    }
 
    private void vetAttributes(byte[] attributes, Font[] fonts) {
@@ -463,7 +498,64 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    private void vetArguments(String text, int[] offsets, int[] lengths, byte[] attr) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (offsets != null && attr != null) {
+         int offsetsArrayLength = offsets.length;
+         int lengthsArrayLength = 0;
+         int attrArrayLength = attr.length;
+         if (attrArrayLength < 1) {
+            throw new IllegalArgumentException("The number of attributes must be greater than zero.");
+         }
+
+         if (lengths != null) {
+            lengthsArrayLength = lengths.length;
+            if (offsetsArrayLength != attrArrayLength) {
+               throw new IllegalArgumentException("If lengths are provided, offsets array's length must the same as attributes array's length.");
+            }
+         } else if (offsetsArrayLength != attrArrayLength + 1) {
+            throw new IllegalArgumentException("If lengths aren't provided, offsets array's length must be one greater than attributes array's length.");
+         }
+
+         if (offsets[0] < 0) {
+            throw new IllegalArgumentException("The first offset cannot be less than 0.");
+         }
+
+         if (lengths != null && lengthsArrayLength != attrArrayLength) {
+            throw new IllegalArgumentException("Lengths array's length must be identical to attributes array's length.");
+         }
+
+         this.vetAttributes(attr, this._fonts);
+
+         for (int i = 0; i < lengthsArrayLength; i++) {
+            if (lengths[i] < 1) {
+               throw new IllegalArgumentException("Lengths may not be less than 1.");
+            }
+         }
+
+         for (int i = 0; i < offsetsArrayLength - 1; i++) {
+            if (offsets[i] >= offsets[i + 1]) {
+               throw new IllegalArgumentException("Offsets should be monotonically increasing.");
+            }
+         }
+
+         int temp = 0;
+         if (lengths != null) {
+            for (int i = 0; i < lengthsArrayLength; i++) {
+               temp = offsets[i] + lengths[i];
+               if (i < lengthsArrayLength - 1 && temp > offsets[i + 1]) {
+                  throw new IllegalArgumentException("Substring " + i + " overlaps the next substring.");
+               }
+            }
+         } else {
+            temp = offsets[offsetsArrayLength - 1];
+         }
+
+         int textLength = text.length();
+         if (temp > textLength) {
+            throw new IllegalArgumentException("Substring oversteps end of text.");
+         }
+      } else {
+         throw new IllegalArgumentException("Offsets array and attributes array may not be null.");
+      }
    }
 
    public RichTextField(String text) {

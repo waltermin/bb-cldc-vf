@@ -33,7 +33,26 @@ public final class LocaleInternal {
    }
 
    private static final Locale getLocaleFromModuleName(String module, String separator) {
-      throw new RuntimeException("cod2jar: string-special");
+      String language = "";
+      String country = "";
+      String variant = "";
+      int languageMarker = module.indexOf(separator);
+      if (languageMarker != -1 && languageMarker + 2 < module.length()) {
+         languageMarker += separator.length();
+         language = module.substring(languageMarker, languageMarker + 2);
+         int countryMarker = module.indexOf(95, languageMarker);
+         if (countryMarker != -1) {
+            int variantMarker = module.indexOf(95, ++countryMarker);
+            if (variantMarker == -1) {
+               country = module.substring(countryMarker);
+            } else {
+               country = module.substring(countryMarker, variantMarker);
+               variant = module.substring(variantMarker + 1);
+            }
+         }
+      }
+
+      return Locale.get(language, country, variant);
    }
 
    public static final ResourceBundleFamily getBundle() {

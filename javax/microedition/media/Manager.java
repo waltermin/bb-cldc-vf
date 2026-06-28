@@ -138,11 +138,115 @@ public final class Manager {
    }
 
    public static final String[] getSupportedProtocols(String content_type) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean rtspSupported = InternalServices.isSoftwareCapable(13);
+      if (content_type == null) {
+         String[] protocols = new String[]{"device", "http", "file"};
+         if (InternalServices.isSoftwareCapable(12)) {
+            Arrays.add(protocols, "capture");
+         }
+
+         if (rtspSupported) {
+            Arrays.add(protocols, "rtsp");
+         }
+
+         return protocols;
+      } else {
+         if (content_type.equals("audio/x-tone-seq")) {
+            return new String[]{"device"};
+         }
+
+         if (content_type.equals("audio/midi")) {
+            return new String[]{"http", "file"};
+         }
+
+         if (content_type.equals("audio/mpeg")) {
+            if (Audio.isCodecSupported(3)) {
+               return new String[]{"http", "file"};
+            }
+         } else if (content_type.equals("audio/x-wav")) {
+            if (Audio.isCodecSupported(0)) {
+               return new String[]{"http", "file"};
+            }
+         } else {
+            if (content_type.equals("audio/amr")) {
+               String[] protocols = new String[0];
+               if (Audio.isCodecSupported(7)) {
+                  Arrays.add(protocols, "http");
+                  Arrays.add(protocols, "file");
+               }
+
+               if (Audio.isRecordingCodecSupported(7)) {
+                  Arrays.add(protocols, "capture");
+               }
+
+               if (rtspSupported) {
+                  Arrays.add(protocols, "rtsp");
+               }
+
+               return protocols;
+            }
+
+            if (content_type.equals("audio/basic")) {
+               String[] protocols = new String[0];
+               if (Audio.isCodecSupported(9)) {
+                  Arrays.add(protocols, "http");
+                  Arrays.add(protocols, "file");
+               }
+
+               if (Audio.isRecordingCodecSupported(9)) {
+                  Arrays.add(protocols, "capture");
+               }
+
+               return protocols;
+            }
+
+            if (content_type.equals("audio/x-gsm")) {
+               if (Audio.isCodecSupported(11)) {
+                  return new String[]{"http", "file"};
+               }
+            } else if (!content_type.equals("audio/mp4")
+               && !content_type.equals("audio/3gpp")
+               && !content_type.equals("audio/aac")
+               && (RadioInfo.getNetworkType() != 4 || !content_type.equals("audio/3gpp2"))) {
+               if (content_type.equals("audio/x-ms-wma")) {
+                  if (MediaNatives.isAudioDecoderCodecSupported(12)) {
+                     return new String[]{"http", "file"};
+                  }
+               } else if (content_type.equals("audio/qcelp")) {
+                  if (Audio.isCodecSupported(13)) {
+                     return new String[]{"http", "file"};
+                  }
+               } else if (!content_type.equals("video/mp4")
+                  && !content_type.equals("video/3gpp")
+                  && (!content_type.equals("video/x-msvideo") || RadioInfo.getNetworkType() == 4)
+                  && !content_type.equals("video/quicktime")
+                  && (RadioInfo.getNetworkType() != 4 || !content_type.equals("video/3gpp2"))) {
+                  if ((content_type.equals("video/x-ms-asf") || content_type.equals("video/x-ms-wm") || content_type.equals("video/x-ms-wmv"))
+                     && MediaNatives.isVideoDecoderCodecSupported(4)) {
+                     return new String[]{"http", "file"};
+                  }
+               } else if (InternalServices.isSoftwareCapable(7)) {
+                  if (rtspSupported) {
+                     return new String[]{"http", "file", "rtsp"};
+                  }
+
+                  return new String[]{"http", "file"};
+               }
+            } else if (Audio.isCodecSupported(10)) {
+               if (rtspSupported) {
+                  return new String[]{"http", "file", "rtsp"};
+               }
+
+               return new String[]{"http", "file"};
+            }
+         }
+
+         return new String[0];
+      }
    }
 
    public static final Player createPlayer(String locator) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static final Player createPlayer(DataSource source) {

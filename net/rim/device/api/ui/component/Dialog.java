@@ -7,15 +7,20 @@ import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.Image;
+import net.rim.device.internal.ui.UiInternal;
 import net.rim.device.internal.ui.component.ImageField;
+import net.rim.tid.awt.im.InputContext;
+import net.rim.tid.im.layout.SLKeyLayout;
 
 public class Dialog extends PopupScreen implements FieldChangeListener, HolsterListener {
    private RichTextField _label;
@@ -314,7 +319,56 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean handled = false;
+      if (this.getLeafFieldWithFocus() != this._list) {
+         handled = super.keyChar(key, status, time);
+      }
+
+      if (!handled) {
+         if (key == 27) {
+            if (this._escapeEnabled) {
+               this._returnValue = -1;
+               this.close();
+               handled = true;
+            }
+         } else if (key == '\n') {
+            if (this.isStyle(1)) {
+               this.select();
+               handled = true;
+            } else {
+               this._returnValue = this._defaultChoice;
+            }
+         } else {
+            key = UiInternal.map(Keypad.getLayout().getOriginalKeyCode(key, SLKeyLayout.convertStatusToModifiers(status)), status);
+            key = Character.toLowerCase(key);
+            if (this._choices != null) {
+               String chars = null;
+               if (InputContext.getInstance(false).isSureType()) {
+                  StringBuffer temp = Keypad.getLayout().getComplementaryChars(key, SLKeyLayout.convertStatusToModifiers(status));
+                  if (temp != null) {
+                     chars = temp.toString();
+                  }
+               }
+
+               for (int item = 0; item < this._choices.length; item++) {
+                  String choice = this._choices[item].toString();
+                  int hotposition = choice.indexOf(818);
+                  if (hotposition > 0) {
+                     char hotkey = Character.toLowerCase(CharacterUtilities.getOriginal(choice.charAt(hotposition - 1)));
+                     if (hotkey == key || chars != null && chars.indexOf(hotkey) != -1) {
+                        this.selectOrdinal(item);
+                        this.onHotkeySelected(key);
+                        break;
+                     }
+                  }
+               }
+
+               handled = true;
+            }
+         }
+      }
+
+      return handled;
    }
 
    public static int ask(int type, String message) {
@@ -393,7 +447,38 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    private void setChoices(Object[] choices, int[] values) {
-      throw new RuntimeException("cod2jar: string-special");
+      this._values = values;
+      this._choices = choices;
+      if (choices != null) {
+         if (this.isStyle(1)) {
+            ObjectListField list = new ObjectListField(this._drawStyle);
+            list.set(choices);
+            this._list = list;
+            this._dfm.addCustomField(this._list);
+
+            for (int i = 0; i < choices.length; i++) {
+               this._preferredWidth = Math.max(this._preferredWidth, this.getFont().getBounds(choices[i].toString(), 0, choices[i].toString().length()));
+            }
+         } else {
+            for (int i = 0; i < choices.length; i++) {
+               this.addChoice(choices[i].toString());
+            }
+         }
+      }
+
+      if (!this._escapeEnabled) {
+         if (values == null) {
+            this.setEscapeEnabled(true);
+            return;
+         }
+
+         for (int lv = 0; lv < this._values.length; lv++) {
+            if (this._values[lv] == -1) {
+               this.setEscapeEnabled(true);
+               return;
+            }
+         }
+      }
    }
 
    public Dialog(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap) {
@@ -450,6 +535,9 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    private void addChoice(String choice) {
-      throw new RuntimeException("cod2jar: string-special");
+      ButtonField button = new ButtonField(choice, 12884901888L);
+      button.setChangeListener(this);
+      this._dfm.addButtonField(button);
+      this._preferredWidth = Math.max(this._preferredWidth, this.getFont().getBounds(choice, 0, choice.length()));
    }
 }

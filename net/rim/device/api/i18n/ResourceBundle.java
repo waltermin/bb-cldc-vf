@@ -107,6 +107,13 @@ public class ResourceBundle {
    }
 
    private static void verifyHash(long bundle, String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name != null && name.length() != 0) {
+         long hash = StringUtilities.stringHashToLong(name);
+         if (hash != bundle) {
+            throw new IllegalArgumentException("Invalid bundle hash");
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid name");
+      }
    }
 }

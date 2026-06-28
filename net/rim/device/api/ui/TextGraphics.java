@@ -7,28 +7,28 @@ public class TextGraphics {
    private int _height;
    private String _name;
    private int _effects;
-   private int _antialiasMode;
-   private int _A;
+   private int _antialiasMode = 1;
+   private int _A = 65536;
    private int _B;
    private int _C;
-   private int _D;
+   private int _D = 65536;
    private int _Tx;
    private int _Ty;
-   private int _effectsStrokeColor;
-   private int _effectsFillColor;
-   private int[] _transform;
+   private int _effectsStrokeColor = 0;
+   private int _effectsFillColor = 16777215;
+   private int[] _transform = new int[6];
    private static FontMetrics _fontMetrics;
 
    public TextGraphics(String typefaceName, int height) {
+      if (typefaceName != null && typefaceName.length() != 0 && height > 0) {
+         this._name = typefaceName;
+         this._height = height;
+      } else {
+         throw new IllegalArgumentException("typeface name can't be empty and height should be more than 0");
+      }
    }
 
    public TextGraphics(Font font) {
-      this._antialiasMode = 1;
-      this._A = 65536;
-      this._D = 65536;
-      this._effectsStrokeColor = 0;
-      this._effectsFillColor = 16777215;
-      this._transform = new int[6];
       if (font == null) {
          throw new IllegalArgumentException("Font object should be non zero");
       }
@@ -165,11 +165,19 @@ public class TextGraphics {
    }
 
    public void setTypefaceName(String typefaceName) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (typefaceName != null && typefaceName.length() != 0) {
+         this._name = typefaceName;
+      } else {
+         throw new IllegalArgumentException("font name should not be empty");
+      }
    }
 
    public int measureText(String text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text != null && offset >= 0 && length >= 0 && text.length() >= offset + length && text.length() != 0 && param != null) {
+         return this._measureText(text, offset, length, param, metrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset and length should be properly defined");
+      }
    }
 
    private native int _measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
@@ -205,7 +213,11 @@ public class TextGraphics {
    private native void _getFontMetrics(FontMetrics var1);
 
    public int drawText(Graphics graphics, String aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (graphics != null && aText != null && aText.length() != 0 && aParam != null && offset >= 0 && length >= 0 && aText.length() >= offset + length) {
+         return this._drawText(graphics, aText, offset, length, x, y, aParam, aMetrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset, length and draw parameters should be properly defined");
+      }
    }
 
    private native int _drawText(Graphics var1, String var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);

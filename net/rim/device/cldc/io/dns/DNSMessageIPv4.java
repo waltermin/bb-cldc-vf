@@ -290,6 +290,31 @@ public final class DNSMessageIPv4 {
    }
 
    static final void writeDomainName(DataBuffer db, String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (name != null && name.length() > 0) {
+         byte[] strBytes = name.getBytes();
+         int curPos = 0;
+
+         while (curPos < name.length()) {
+            int nextPos = name.indexOf(46, curPos);
+            if (nextPos == -1) {
+               nextPos = name.length();
+            }
+
+            int length = nextPos - curPos;
+            if (length == 0) {
+               throw new IllegalArgumentException();
+            }
+
+            if (length > 63) {
+               throw new IllegalArgumentException();
+            }
+
+            db.writeByte(length);
+            db.write(strBytes, curPos, length);
+            curPos = nextPos + 1;
+         }
+      }
+
+      db.writeByte(0);
    }
 }

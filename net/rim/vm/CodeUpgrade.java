@@ -68,7 +68,15 @@ public class CodeUpgrade {
    public static native String[] getPatchNames(long var0);
 
    public static long getOSGUID(String str) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = str.length();
+      byte[] name = new byte[len + 1];
+
+      for (int i = len - 1; i >= 0; i--) {
+         name[i] = (byte)str.charAt(i);
+      }
+
+      name[len] = 0;
+      return getOSGUID(name);
    }
 
    private static native long getOSGUID(byte[] var0);
@@ -89,6 +97,6 @@ public class CodeUpgrade {
    }
 
    public static void setOTABitmap(int id, String text) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: array init");
    }
 }

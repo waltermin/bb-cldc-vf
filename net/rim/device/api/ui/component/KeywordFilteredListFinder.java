@@ -121,7 +121,28 @@ public class KeywordFilteredListFinder extends BasicEditField {
 
    @Override
    public int inputMethodTextChanged(InputMethodEvent event) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (!this._preventCall && event.getText().length() > 0 && !super.getLabel().equals(this._findString)) {
+         super.setLabel(this._findString);
+      }
+
+      int result = super.inputMethodTextChanged(event);
+      if (!this._preventCall) {
+         String sPattern = this.composeSearchPattern(event);
+         if (sPattern.length() != 0 || sPattern.length() == 0 && !this.isComposedTextExist()) {
+            SLControlObject controlObject = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+            if (this.getInputContext().getActiveInputMethodID() == 4096 && controlObject.getInputMode() != 2) {
+               this._searchPattern = sPattern;
+            } else {
+               this.performSearch(sPattern);
+            }
+         }
+
+         if (super.getTextLength() == 0 && this._baseText != null && !super.getLabel().equals(this._baseText)) {
+            super.setLabel(this._baseText);
+         }
+      }
+
+      return result;
    }
 
    @Override
@@ -131,7 +152,55 @@ public class KeywordFilteredListFinder extends BasicEditField {
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: string-special");
+      String newSearchPattern = this._searchPattern;
+      int newPatternLength = newSearchPattern != null ? newSearchPattern.length() : 0;
+      switch (key) {
+         case '\n':
+         case '\u001b':
+         case '\u007f':
+            return false;
+         case ' ':
+         case '　':
+            if (!this._allowSpacesInSearchText || newPatternLength == 0 || CharacterUtilities.isSpaceChar(newSearchPattern.charAt(newPatternLength - 1))) {
+               break;
+            }
+         case '\b':
+            if (super.getCommittedTextLength() == 0) {
+               this.resetSearch();
+               break;
+            }
+         default:
+            if (!this._preventCall && key != '\b' && !super.getLabel().equals(this._findString)) {
+               super.setLabel(this._findString);
+            }
+
+            if (this._displayUpperCaseCharsInSearchText) {
+               if (newPatternLength == 0 || newSearchPattern.charAt(newPatternLength - 1) == ' ') {
+                  key = Character.toUpperCase(key);
+               }
+            } else {
+               key = Character.toLowerCase(key);
+            }
+
+            if (key != '\b') {
+               this._listField.setElementWithFocus(null);
+            }
+
+            super.keyChar(key, status, time);
+      }
+
+      if (key != 17 && key != 19) {
+         String langAbjPattern = this.composeLanguageAdjustedPattern();
+         if (langAbjPattern != null) {
+            this.performSearch(langAbjPattern);
+            return true;
+         } else {
+            this.performSearch(super.getText(super.getLabelLength(), super.getCommittedTextLength()));
+            return true;
+         }
+      } else {
+         return false;
+      }
    }
 
    @Override
@@ -159,7 +228,13 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    private void performSearch(String newSearchPattern) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (newSearchPattern.length() == 0) {
+         newSearchPattern = null;
+      }
+
+      if (!StringUtilities.strEqual(this._searchPattern, newSearchPattern)) {
+         this.setSearchPattern(newSearchPattern, false);
+      }
    }
 
    public void redoSearch(boolean force) {
@@ -207,7 +282,23 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    private void setSearchPattern(String newPattern, boolean forceUpdate) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (newPattern != null && newPattern.trim().length() == 0) {
+         newPattern = null;
+      }
+
+      if (this._listField.getKeywordFilterList() != null) {
+         boolean oldInMoveFocus = this.isInMoveFocus();
+         this.inMoveFocus(true);
+         this._searchPattern = newPattern;
+         if (newPattern != null && !forceUpdate) {
+            this._drawFocusIndicator = true;
+         } else {
+            this.updateText();
+         }
+
+         this.inMoveFocus(oldInMoveFocus);
+         this.initiateSearch(this._searchPattern);
+      }
    }
 
    @Override

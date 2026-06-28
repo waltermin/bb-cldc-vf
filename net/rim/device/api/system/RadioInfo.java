@@ -223,7 +223,7 @@ public final class RadioInfo {
    public static final native String getAccessPointName(int var0);
 
    public static final int getAccessPointNumber(String name) {
-      throw new RuntimeException("cod2jar: string-special");
+      return getAccessPointNumber(name, 0, name.length());
    }
 
    public static final native int getAccessPointNumber(String var0, int var1, int var2);

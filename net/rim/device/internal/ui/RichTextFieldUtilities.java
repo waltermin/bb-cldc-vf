@@ -19,6 +19,57 @@ public final class RichTextFieldUtilities {
    }
 
    private static final RichTextField getRichTextField(String text, long style, Font[] fontFormats) {
-      throw new RuntimeException("cod2jar: string-special");
+      int textLength = text.length();
+      char[] chars = text.toCharArray();
+      int sections = 0;
+      int sectionLength = 0;
+
+      for (int i = 0; i < textLength; i++) {
+         if (chars[i] == '*') {
+            if (sectionLength > 0) {
+               sections++;
+            }
+
+            sectionLength = 0;
+         } else {
+            sectionLength++;
+         }
+      }
+
+      if (sectionLength > 0) {
+         sections++;
+      }
+
+      int[] formatOffsets = new int[sections + 1];
+      byte[] formatIndices = new byte[sections];
+      int readOffset = 0;
+      int writeOffset = 0;
+      int formatSection = 0;
+      boolean isModified = false;
+      formatOffsets[0] = 0;
+      sectionLength = 0;
+
+      while (readOffset < textLength) {
+         char data = chars[readOffset++];
+         if (data == '*') {
+            if (sectionLength > 0) {
+               formatIndices[formatSection] = (byte)(isModified ? 1 : 0);
+               formatOffsets[++formatSection] = writeOffset;
+            }
+
+            sectionLength = 0;
+            isModified = !isModified;
+         } else {
+            chars[writeOffset++] = data;
+            sectionLength++;
+         }
+      }
+
+      if (sectionLength > 0) {
+         formatIndices[formatSection] = (byte)(isModified ? 1 : 0);
+         formatOffsets[formatSection + 1] = writeOffset;
+      }
+
+      return new RichTextField(new String(chars, 0, writeOffset), formatOffsets, formatIndices, fontFormats, style);
    }
 }

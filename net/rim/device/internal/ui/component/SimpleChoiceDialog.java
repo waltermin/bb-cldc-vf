@@ -3,12 +3,16 @@ package net.rim.device.internal.ui.component;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.DialogFieldManager;
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.i18n.MessageFormatUtilities;
+import net.rim.tid.awt.im.InputContext;
+import net.rim.tid.im.layout.SLKeyLayout;
 
 public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListener {
    private DialogFieldManager _dfm = (DialogFieldManager)this.getDelegate();
@@ -54,7 +58,42 @@ public class SimpleChoiceDialog extends PopupDialog implements FieldChangeListen
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: string-special");
+      boolean handled = super.keyChar(key, status, time);
+      if (!handled) {
+         if (key == '\n') {
+            this.select();
+            return true;
+         }
+
+         if (key == 27 && this.isCancelAllowed()) {
+            this.close(-1);
+         } else {
+            key = Character.toLowerCase(key);
+            if (this._choices != null) {
+               String chars = null;
+               if (InputContext.getInstance(false).isSureType()) {
+                  StringBuffer temp = Keypad.getLayout().getComplementaryChars(key, SLKeyLayout.convertStatusToModifiers(status));
+                  if (temp != null) {
+                     chars = temp.toString();
+                  }
+               }
+
+               for (int item = 0; item < this._choices.length; item++) {
+                  String choice = this._choices[item].toString();
+                  int hotposition = choice.indexOf(818);
+                  if (hotposition > 0) {
+                     char hotkey = Character.toLowerCase(CharacterUtilities.getOriginal(choice.charAt(hotposition - 1)));
+                     if (hotkey == key || chars != null && chars.indexOf(hotkey) != -1) {
+                        this.select(item);
+                        break;
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      return handled;
    }
 
    public SimpleChoiceDialog(RichTextField message, Object[] choices, int defaultChoice, Bitmap bitmap, long style) {

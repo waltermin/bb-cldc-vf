@@ -67,11 +67,50 @@ class SmileySupport {
    }
 
    public int getDecodedStringLength(int start, int end) {
-      throw new RuntimeException("cod2jar: string-special");
+      int len = end - start;
+      if (this._smileyFacility != null) {
+         AttributedString$Iterator iter = this._field._text.getIterator(start, end);
+
+         do {
+            if (iter.runPicture() instanceof SmileySupport$SmileyPicture) {
+               len += this._smileyFacility.emoticonReplacementText(((SmileySupport$SmileyPicture)iter.runPicture()).getId()).length() - 1;
+            }
+         } while (iter.next());
+      }
+
+      return len;
    }
 
    private char[] getDecodedText(int start, int end) {
-      throw new RuntimeException("cod2jar: string-special");
+      StringBufferGap text = this._field.getAttributedText().getText();
+      AttributedString$Iterator iter = this._field._text.getIterator(start, end);
+      int len = end - start;
+
+      do {
+         if (iter.runPicture() instanceof SmileySupport$SmileyPicture) {
+            len += this._smileyFacility.emoticonReplacementText(((SmileySupport$SmileyPicture)iter.runPicture()).getId()).length() - 1;
+         }
+      } while (iter.next());
+
+      char[] result = new char[len];
+      int srcOffset = start;
+      int dstOffset = 0;
+      iter.set(start, end);
+
+      do {
+         if (iter.runPicture() instanceof SmileySupport$SmileyPicture) {
+            String smText = this._smileyFacility.emoticonReplacementText(((SmileySupport$SmileyPicture)iter.runPicture()).getId());
+            smText.getChars(0, smText.length(), result, dstOffset);
+            dstOffset += smText.length();
+         } else {
+            text.getChars(srcOffset, srcOffset + iter.runLength(), result, dstOffset);
+            dstOffset += iter.runLength();
+         }
+
+         srcOffset += iter.runLength();
+      } while (iter.next());
+
+      return result;
    }
 
    private int insertSmiley(StringPattern$Match match) {
@@ -86,7 +125,31 @@ class SmileySupport {
    }
 
    private boolean isHttpConflict(StringPattern$Match match) {
-      throw new RuntimeException("cod2jar: string-special");
+      String[] patterns = new String[]{"http:/", "https:/"};
+      int x = 0;
+
+      do {
+         boolean noMatch = false;
+         int prefixLength = patterns[x].length() - 2;
+         if (match.beginIndex - prefixLength >= 0) {
+            int i = match.beginIndex - prefixLength;
+
+            for (int j = 0; i < match.endIndex; j++) {
+               if (Character.toLowerCase(this._field._text.charAt(i)) != patterns[x].charAt(j)) {
+                  noMatch = true;
+                  break;
+               }
+
+               i++;
+            }
+
+            if (!noMatch) {
+               return true;
+            }
+         }
+      } while (++x < patterns.length);
+
+      return false;
    }
 
    private int smileyScan(int start, int end) {

@@ -86,7 +86,7 @@ public final class StringBufferGap implements AbstractString {
    }
 
    public final void insert(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final void insert(StringBuffer s) {

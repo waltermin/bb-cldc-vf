@@ -173,7 +173,30 @@ public final class RichText {
       int styleBreaksOffset,
       int styleBreaksLen
    ) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (text == null) {
+         throw new NullPointerException("NULL arguments passed");
+      }
+
+      if (offset >= 0
+         && length >= 0
+         && offset + length <= text.length()
+         && styleBreaksOffset >= 0
+         && styleBreaksLen >= 0
+         && (styleBreaks == null || styleBreaks.length >= styleBreaksOffset + styleBreaksLen)
+         && paragDirection >= 0
+         && paragDirection <= 3) {
+         int rc = getBidiOrder(_runs, text, offset, length, bidiState, paragDirection, paragStart, styleBreaks, styleBreaksOffset, styleBreaksLen);
+         if (rc != 0) {
+            _runs.ignore(true);
+            sendLog(rc);
+         } else {
+            _runs.ignore(false);
+         }
+
+         return _runs;
+      } else {
+         throw new IllegalArgumentException("offset arguments cannot be negative or exceed the text length");
+      }
    }
 
    private static final void sendLog(int rc) {
@@ -205,15 +228,35 @@ public final class RichText {
    );
 
    public static final void drawTextWithEllipses(Graphics graphics, String text, int x, int y, int width, int paragDirection, int flags) {
-      throw new RuntimeException("cod2jar: string-special");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public static final byte getLineDirection(String s) {
-      throw new RuntimeException("cod2jar: string-special");
+      return s != null && s.length() > 0 ? getLineDirection(s, 0, s.length()) : 0;
    }
 
    public static final byte getLineDirection(String s, int offset, int len) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s != null && s.length() > 0) {
+         int endIndex = offset + len;
+         if (offset >= 0 && len >= 0 && endIndex <= s.length()) {
+            for (int i = offset; i < endIndex; i++) {
+               char c = s.charAt(i);
+               if (isRTL(c)) {
+                  return 2;
+               }
+
+               if (!isNeutral(c)) {
+                  return 0;
+               }
+            }
+
+            return 0;
+         } else {
+            throw new IllegalArgumentException();
+         }
+      } else {
+         return 0;
+      }
    }
 
    public static final byte getLineDirection(StringBufferGap s) {
@@ -245,7 +288,24 @@ public final class RichText {
    }
 
    public static final int getRTLCount(String s, int offset, int len) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (s != null && s.length() > 0) {
+         int rtlCount = 0;
+         int endIndex = offset + len;
+         if (offset >= 0 && len >= 0 && endIndex <= s.length()) {
+            for (int i = offset; i < endIndex; i++) {
+               char c = s.charAt(i);
+               if (isRTL(c)) {
+                  rtlCount++;
+               }
+            }
+
+            return rtlCount;
+         } else {
+            throw new IllegalArgumentException();
+         }
+      } else {
+         return 0;
+      }
    }
 
    public static final int getRTLCount(StringBufferGap s, int offset, int len) {

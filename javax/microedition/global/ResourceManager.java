@@ -3,6 +3,7 @@ package javax.microedition.global;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.StringTokenizer;
 import net.rim.device.resources.Resource;
+import net.rim.vm.Array;
 
 public class ResourceManager {
    private String _baseName;
@@ -13,10 +14,33 @@ public class ResourceManager {
    private static String EMPTY;
 
    private String getResourceFilename(String baseName, String locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      return locale.length() == 0 ? "global/" + baseName + ".res" : "global/" + locale + "/" + baseName + ".res";
    }
 
    ResourceManager(String baseName, String locale) {
+      this._baseName = baseName;
+      this._locale = locale;
+      if (baseName == "") {
+         throw new ResourceException(3, EMPTY);
+      }
+
+      this._resourceFile = new ResourceFile[8];
+      this._resourceFile[0] = ResourceFile.getResourceFile(this.getResourceFilename(baseName, locale));
+      String nextLocale = locale;
+      int supportedLocales = 1;
+
+      do {
+         nextLocale = getParentLocale(nextLocale);
+         if (isSupportedLocale(nextLocale, baseName)) {
+            try {
+               this._resourceFile[supportedLocales] = ResourceFile.getResourceFile(this.getResourceFilename(baseName, nextLocale));
+               supportedLocales++;
+            } catch (ResourceException var6) {
+            }
+         }
+      } while (nextLocale.length() > 0);
+
+      Array.resize(this._resourceFile, supportedLocales);
    }
 
    public static final ResourceManager getManager(String baseName) {
@@ -157,7 +181,11 @@ public class ResourceManager {
    }
 
    private static String removeQuotes(String locale) {
-      throw new RuntimeException("cod2jar: string-special");
+      if (locale.charAt(0) != '"' || locale.charAt(locale.length() - 1) != '"') {
+         return locale;
+      } else {
+         return locale.length() > 2 ? locale.substring(1, locale.length() - 1) : EMPTY;
+      }
    }
 
    private static boolean isSupportedLocale(String locale, String baseName) {
