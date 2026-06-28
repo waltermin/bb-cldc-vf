@@ -1,5 +1,7 @@
 package net.rim.tid.itie;
 
+import net.rim.device.api.ui.component.Status;
+
 class IMContext$1 implements Runnable {
    private final IMContext this$0;
 
@@ -9,6 +11,6 @@ class IMContext$1 implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      Status.show("Input system error. The system is being restarted.");
    }
 }

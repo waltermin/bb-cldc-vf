@@ -2,8 +2,10 @@ package net.rim.device.cldc.io.sms;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.Vector;
 import javax.microedition.io.Connection;
 import javax.microedition.io.Datagram;
@@ -14,10 +16,14 @@ import javax.wireless.messaging.MessageListener;
 import net.rim.device.api.io.DatagramAddressBase;
 import net.rim.device.api.io.DatagramBase;
 import net.rim.device.api.io.SmsAddress;
+import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.SMSPacketHeader;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.cldc.io.nativebase.NativeConnectionBase;
+import net.rim.device.internal.firewall.Firewall;
+import net.rim.vm.TraceBack;
 
 public final class Protocol extends NativeConnectionBase implements MessageConnection, StreamConnection {
    private Protocol$MessageSegmentQueue _messageSegmentQueue;
@@ -42,62 +48,194 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    public final Message receiveInternal() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._isServerMode) {
+         throw new IOException("operation not permitted on a client connection");
+      }
+
+      synchronized (this._messagequeue) {
+         if (this._messagequeue.size() > 0) {
+            Message m = (Message)this._messagequeue.firstElement();
+            this._messagequeue.removeElement(m);
+            return m;
+         }
+      }
+
+      return this.doReceive();
    }
 
    @Override
    public final int numberOfSegments(Message msg) {
-      throw new RuntimeException("cod2jar: ldc");
+      MessageImpl mi = (MessageImpl)msg;
+      int udhPort = 0;
+      String address = mi.getAddress();
+      if (address != null) {
+         if (!address.startsWith("sms://")) {
+            return 0;
+         }
+
+         int colon = address.indexOf(":");
+         colon = address.indexOf(":", colon + 1);
+         if (colon != -1) {
+            udhPort = 6;
+         }
+      }
+
+      int messageCoding = mi.getEncoding();
+      int characters = mi.getBuffer().length / SMSPacketHeader.getBytesPerCharacter(messageCoding);
+      return SMSPacketHeader.getSegments(characters, messageCoding, udhPort);
    }
 
    @Override
    public final Message receive() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)
+         && !Firewall.getInstance().allowConnection("sms_receive", null, this.getProperties(null))) {
+         throw new SecurityException("Permission denied");
+      } else {
+         return this.receiveInternal();
+      }
    }
 
    @Override
    public final Message newMessage(String type, String address) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!type.equals("binary") && !type.equals("text")) {
+         throw new IllegalArgumentException("this message type is not supported");
+      }
+
+      Message m = null;
+      if (type.equals("binary")) {
+         return new BinaryMessageImpl(address);
+      }
+
+      if (type.equals("text")) {
+         m = new TextMessageImpl(address);
+      }
+
+      return m;
    }
 
    @Override
    public final void send(Message msg) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !Firewall.getInstance().allowConnection("sms_send", null, this.getProperties(null))) {
+         throw new SecurityException("Permission denied");
+      }
+
+      if (!super._isActive) {
+         throw new IOException("operation not permitted on a closed connection");
+      }
+
+      MessageImpl mi = (MessageImpl)msg;
+      String addr = mi.getAddress();
+      if (addr == null) {
+         throw new IllegalArgumentException("Message has no address");
+      }
+
+      if (addr.startsWith("sms:")) {
+         addr = addr.substring(4);
+      }
+
+      DatagramBase msgDatagram = (DatagramBase)super._transport.newDatagram(null, 0, 0, addr);
+      msgDatagram.setAddressBase(new SmsAddress(addr));
+      byte[] buffer = mi.getBuffer();
+      if (buffer != null) {
+         msgDatagram.setData(buffer, 0, buffer.length);
+      }
+
+      SmsAddress a = null;
+      a = (SmsAddress)msgDatagram.getAddressBase();
+      if (a == null) {
+         throw new IllegalArgumentException("Message has no address");
+      }
+
+      int destport = this._port;
+      int[] ports = a.getPorts();
+      if (ports != null && ports.length > 0) {
+         destport = ports[0];
+      }
+
+      for (int i = 0; i < RESERVED_PORTS.length; i++) {
+         if (RESERVED_PORTS[i] == destport) {
+            throw new SecurityException("Cannot open connection on a reserved port");
+         }
+      }
+
+      if (ports != null) {
+         byte[] portdata = new byte[]{(byte)(destport >> 8 & 0xFF), (byte)(destport & 0xFF), (byte)(this._port >> 8 & 0xFF), (byte)(this._port & 0xFF)};
+         if ((RadioInfo.getActiveWAFs() & 2) == 2) {
+            a.getHeader().setProtocolMeaning(255);
+            byte[] originaldata = Arrays.copy(msgDatagram.getData());
+            msgDatagram.setLength(0);
+            msgDatagram.write(portdata);
+            msgDatagram.write(originaldata);
+         } else {
+            SmsUtil.encode(msgDatagram, (byte)5, portdata);
+            msgDatagram.setProperty(PROPERTY_USER_DATA_HEADER_LENGTH, USER_DATA_HEADER_LENGTH_INTEGER);
+         }
+      }
+
+      SMSPacketHeader header = ((SmsAddress)msgDatagram.getAddressBase()).getHeader();
+      header.setMessageCoding(mi.getEncoding());
+      this.allocateDatagramId(msgDatagram);
+      ((Transport)super._transport).send(msgDatagram, a, null, null, msgDatagram.getDatagramId());
    }
 
    @Override
    public final void setMessageListener(MessageListener l) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !Firewall.getInstance().allowConnection("sms_receive", null, false)) {
+         throw new SecurityException("Permission denied");
+      }
+
+      if (!this._isServerMode) {
+         throw new IOException("operation not permitted on a client connection");
+      }
+
+      if (!super._isActive) {
+         throw new IOException("operation not permitted on a closed connection");
+      }
+
+      synchronized (this) {
+         if (this._wlt == null) {
+            this._wlt = new Protocol$WMAListeningThread(this, null);
+            this._wlt.start();
+            ((SmsAddress)super._receiveFilter).getHeader().setPeerAddress(null);
+         }
+
+         this._listener = l;
+         ((Transport)super._transport).addOutboundMessageListener(l);
+      }
    }
 
    @Override
    public final Message newMessage(String type) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override
    public final InputStream openInputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalArgumentException("Not supported");
    }
 
    @Override
    public final DataInputStream openDataInputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalArgumentException("Not supported");
    }
 
    @Override
    public final OutputStream openOutputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalArgumentException("Not supported");
    }
 
    @Override
    public final DataOutputStream openDataOutputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalArgumentException("Not supported");
    }
 
    @Override
    public final void send(Datagram datagram) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !Firewall.getInstance().allowConnection("sms_send", null, this.getProperties(null))) {
+         throw new SecurityException("Permission denied");
+      }
+
+      super.send(datagram);
    }
 
    @Override
@@ -215,7 +353,40 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
    }
 
    static final Message makeMessage(DatagramBase datagram) {
-      throw new RuntimeException("cod2jar: ldc");
+      SmsAddress a = (SmsAddress)datagram.getAddressBase();
+      SMSPacketHeader header = a.getHeader();
+      long date = header.getTimestamp();
+      int coding = header.getMessageCoding();
+      String address = datagram.getAddress();
+      int colon = address.indexOf(58);
+      int or = address.indexOf(124);
+      String newAddress = address.substring(0, colon + 1) + address.substring(or + 1);
+      if (newAddress.startsWith("//")) {
+         newAddress = "sms:" + newAddress;
+      }
+
+      MessageImpl msg = null;
+      switch (coding) {
+         case 0:
+            msg = new TextMessageImpl(newAddress);
+            msg.setBuffer(datagram.getData());
+            msg.setEncoding(0);
+            break;
+         case 1:
+         default:
+            msg = new BinaryMessageImpl(newAddress);
+            msg.setBuffer(datagram.getData());
+            msg.setEncoding(1);
+            break;
+         case 2:
+            msg = new TextMessageImpl(newAddress);
+            msg.setBuffer(datagram.getData());
+            msg.setEncoding(2);
+      }
+
+      msg.setSCAddress(header.getSCAddress());
+      msg._date = new Date(date);
+      return msg;
    }
 
    private final Message doReceive() {
@@ -253,7 +424,12 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
 
    @Override
    public final void receive(Datagram datagram) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(0), 51)
+         && !Firewall.getInstance().allowConnection("sms_receive", null, this.getProperties(null))) {
+         throw new SecurityException("Permission denied");
+      }
+
+      super.receive(datagram);
    }
 
    private final boolean validateString(String str) {
@@ -262,6 +438,6 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
 
    @Override
    public final Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

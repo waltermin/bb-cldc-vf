@@ -24,22 +24,31 @@ public final class LocaleInternal {
    }
 
    public static final Locale getLocaleFromModule() {
-      throw new RuntimeException("cod2jar: ldc");
+      String module = ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
+      return getLocaleFromModuleName(module, "__");
    }
 
    public static final Locale getLocaleFromModuleName(String module) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getLocaleFromModuleName(module, "£");
    }
 
    private static final Locale getLocaleFromModuleName(String module, String separator) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final ResourceBundleFamily getBundle() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_resourceFamily == null) {
+         _resourceFamily = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale");
+      }
+
+      return _resourceFamily;
    }
 
    public static final String getString(int id) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_resources == null) {
+         _resources = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale").getBundle(Locale.get(0));
+      }
+
+      return _resources.getString(id);
    }
 }

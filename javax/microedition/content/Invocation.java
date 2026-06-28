@@ -1,8 +1,12 @@
 package javax.microedition.content;
 
+import java.io.IOException;
 import javax.microedition.io.Connection;
+import javax.microedition.io.ConnectionNotFoundException;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.cldc.io.dns.DNSException;
+import net.rim.device.internal.io.RIMConnector;
 import net.rim.vm.TraceBack;
 
 public final class Invocation {
@@ -62,6 +66,25 @@ public final class Invocation {
    }
 
    Invocation(Invocation invocation) {
+      this._url = invocation.getURL();
+      this._type = invocation.getType();
+      this._ID = invocation.getID();
+      this._responseRequired = invocation.getResponseRequired();
+      this._action = invocation.getAction();
+      this._args = invocation.getArgs();
+      this._data = invocation.getData();
+      this._previous = invocation.getPrevious();
+      this._username = invocation.getUsername();
+      this._password = invocation.getPassword();
+      this._invokerDescriptor = invocation.getInvokerDescriptor();
+      this._invokerStack = invocation.getInvokerStack();
+      this._original = invocation;
+
+      for (int i = 0; i < this._args.length; i++) {
+         if (this._args[i] == null) {
+            throw new IllegalArgumentException("null parameter in invocation args");
+         }
+      }
    }
 
    public final void setArgs(String[] args) {
@@ -109,7 +132,11 @@ public final class Invocation {
    }
 
    public final void setResponseRequired(boolean responseRequired) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._status == 1) {
+         this._responseRequired = responseRequired;
+      } else {
+         throw new IllegalStateException("Invocation is not in INIT state");
+      }
    }
 
    public final int getStatus() {
@@ -159,7 +186,23 @@ public final class Invocation {
    }
 
    public final Connection open(boolean timeouts) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._url == null) {
+         throw new NullPointerException("URL is null");
+      }
+
+      String urlToOpen = ContentHandlerUtilities.checkURL(this._url);
+      int callingModule = TraceBack.getCallingModule(0);
+      this.populateStackAndDescriptor();
+
+      try {
+         this._connection = RIMConnector.open(callingModule, urlToOpen, 1, timeouts, this._invokerStack, this._invokerDescriptor);
+      } catch (DNSException dnse) {
+         throw new ConnectionNotFoundException(dnse.getMessage());
+      } catch (IOException ioe) {
+         throw new ConnectionNotFoundException(ioe.getMessage());
+      }
+
+      return this._connection;
    }
 
    public final void setCredentials(String username, char[] password) {

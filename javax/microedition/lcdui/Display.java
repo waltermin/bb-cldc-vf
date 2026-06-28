@@ -5,6 +5,7 @@ import java.util.Timer;
 import java.util.Vector;
 import javax.microedition.midlet.MIDlet;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Keypad;
@@ -12,6 +13,7 @@ import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.menu.MenuScreen;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.device.internal.ui.MIDletApplication;
 
 public class Display {
    private MIDlet _midlet;
@@ -99,7 +101,30 @@ public class Display {
    }
 
    public static Display getDisplay(MIDlet m) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (_midletMap) {
+         String prop = m.getAppProperty("MIDlet-Name");
+         String midletID;
+         if (prop != null) {
+            midletID = prop;
+         } else {
+            midletID = ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
+         }
+
+         prop = MIDletApplication.getAppProperty(midletID, "MIDlet-Vendor", true);
+         if (prop != null) {
+            midletID = midletID + ":" + prop;
+         }
+
+         Display display = (Display)_midletMap.get(midletID);
+         if (display == null) {
+            display = new Display(m);
+            _midletMap.put(midletID, display);
+         } else {
+            display._midlet = m;
+         }
+
+         return display;
+      }
    }
 
    public int getColor(int colorSpecifier) {

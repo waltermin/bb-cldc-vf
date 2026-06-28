@@ -86,7 +86,47 @@ class FloatingDecimal {
    }
 
    private static synchronized FDBigInt big5pow(int p) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (p < 0) {
+         throw new RuntimeException("Assertion botch: negative power of 5");
+      }
+
+      if (b5p == null) {
+         b5p = new FDBigInt[p + 1];
+      } else if (b5p.length <= p) {
+         FDBigInt[] t = new FDBigInt[p + 1];
+         System.arraycopy(b5p, 0, t, 0, b5p.length);
+         b5p = t;
+      }
+
+      if (b5p[p] != null) {
+         return b5p[p];
+      }
+
+      if (p < small5pow.length) {
+         return b5p[p] = new FDBigInt(small5pow[p]);
+      }
+
+      if (p < long5pow.length) {
+         return b5p[p] = new FDBigInt(long5pow[p]);
+      }
+
+      int q = p >> 1;
+      int r = p - q;
+      FDBigInt bigq = b5p[q];
+      if (bigq == null) {
+         bigq = big5pow(q);
+      }
+
+      if (r < small5pow.length) {
+         return b5p[p] = bigq.mult(small5pow[r]);
+      }
+
+      FDBigInt bigr = b5p[r];
+      if (bigr == null) {
+         bigr = big5pow(r);
+      }
+
+      return b5p[p] = bigq.mult(bigr);
    }
 
    private static FDBigInt multPow52(FDBigInt v, int p5, int p2) {
@@ -115,7 +155,7 @@ class FloatingDecimal {
    }
 
    private FDBigInt doubleToBigInt(double dval) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: unsupported opcode");
    }
 
    private static double ulp(double dval, boolean subtracting) {
@@ -153,7 +193,81 @@ class FloatingDecimal {
    }
 
    private void developLongDigits(int decExponent, long lvalue, long insignificant) {
-      throw new RuntimeException("cod2jar: ldc");
+      int i;
+      for (i = 0; insignificant >= 10; i++) {
+         insignificant /= 10;
+      }
+
+      if (i != 0) {
+         long pow10 = long5pow[i] << i;
+         long residue = lvalue % pow10;
+         lvalue /= pow10;
+         decExponent += i;
+         if (residue >= pow10 >> 1) {
+            lvalue += 1;
+         }
+      }
+
+      char[] digits;
+      int ndigits;
+      int digitno;
+      if (lvalue > Integer.MAX_VALUE) {
+         ndigits = 20;
+         digits = new char[20];
+         digitno = ndigits - 1;
+         int c = (int)(lvalue % 10);
+
+         for (lvalue /= 10; c == 0; lvalue /= 10) {
+            decExponent++;
+            c = (int)(lvalue % 10);
+         }
+
+         while (lvalue != 0) {
+            digits[digitno--] = (char)(c + 48);
+            decExponent++;
+            c = (int)(lvalue % 10);
+            lvalue /= 10;
+         }
+
+         digits[digitno] = (char)(c + 48);
+      } else {
+         if (lvalue <= 0) {
+            throw new RuntimeException("Assertion botch: value " + lvalue + " <= 0");
+         }
+
+         int ivalue = (int)lvalue;
+         ndigits = 10;
+         digits = new char[10];
+         digitno = ndigits - 1;
+         int c = ivalue % 10;
+
+         for (ivalue /= 10; c == 0; ivalue /= 10) {
+            decExponent++;
+            c = ivalue % 10;
+         }
+
+         while (ivalue != 0) {
+            digits[digitno--] = (char)(c + 48);
+            decExponent++;
+            c = ivalue % 10;
+            ivalue /= 10;
+         }
+
+         digits[digitno] = (char)(c + 48);
+      }
+
+      ndigits -= digitno;
+      char[] result;
+      if (digitno == 0) {
+         result = digits;
+      } else {
+         result = new char[ndigits];
+         System.arraycopy(digits, digitno, result, 0, ndigits);
+      }
+
+      this.digits = result;
+      this.decExponent = decExponent + 1;
+      this.nDigits = ndigits;
    }
 
    private void roundup() {
@@ -234,7 +348,21 @@ class FloatingDecimal {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer result = new StringBuffer(this.nDigits + 8);
+      if (this.isNegative) {
+         result.append('-');
+      }
+
+      if (this.isExceptional) {
+         result.append(this.digits, 0, this.nDigits);
+      } else {
+         result.append("0.");
+         result.append(this.digits, 0, this.nDigits);
+         result.append('e');
+         result.append(this.decExponent);
+      }
+
+      return new String(result);
    }
 
    public String toJavaFormatString() {

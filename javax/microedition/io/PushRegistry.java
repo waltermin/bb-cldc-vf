@@ -1,6 +1,9 @@
 package javax.microedition.io;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.internal.firewall.Firewall;
+import net.rim.device.internal.io.PushRegistryHelper;
 import net.rim.device.internal.system.MIDletSecurity;
 import net.rim.device.internal.ui.MIDletApplication;
 import net.rim.vm.Process;
@@ -23,7 +26,7 @@ public class PushRegistry {
    }
 
    public static String[] listConnections(boolean available) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public static long registerAlarm(String midlet, long time) {
@@ -67,11 +70,29 @@ public class PushRegistry {
    }
 
    private static void checkPermissionPrimitive(int moduleHandle, String permission, String url) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !Firewall.getInstance().allowConnection(permission, url, false)) {
+         throw new SecurityException("Permission denied");
+      }
    }
 
    private static boolean isMidletInSuite(String midlet) {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer sb = new StringBuffer("MIDlet-n");
+      int charindex = sb.length() - 1;
+      int i = 1;
+
+      while (true) {
+         sb.setCharAt(charindex, (char)(i + 48));
+         String s = PushRegistryHelper.getMidletProperty(sb.toString());
+         if (s == null) {
+            return false;
+         }
+
+         if (s.indexOf(midlet) != -1) {
+            return true;
+         }
+
+         i++;
+      }
    }
 
    private static void launchMidlet(String midletClassName, String[] args, boolean grabForeground) {

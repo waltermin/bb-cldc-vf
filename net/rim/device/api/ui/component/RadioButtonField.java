@@ -61,7 +61,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -143,7 +143,7 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override

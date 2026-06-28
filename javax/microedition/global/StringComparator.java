@@ -11,6 +11,7 @@ public final class StringComparator {
    public static final int LEVEL3;
 
    public StringComparator() {
+      this(System.getProperty("microedition.locale"), 1);
    }
 
    public StringComparator(String locale) {
@@ -18,6 +19,23 @@ public final class StringComparator {
    }
 
    public StringComparator(String locale, int level) {
+      if (level >= 1 && (level <= 3 || level == 15)) {
+         this._level = level;
+         if (locale != null && !locale.equals("")) {
+            this._locale = GlobalUtilities.convertUnderscoreToHyphens(locale);
+            if (!GlobalUtilities.isValidLocale(this._locale)) {
+               throw new IllegalArgumentException();
+            }
+
+            if (!this.isSupportedLocale(this._locale)) {
+               throw new UnsupportedLocaleException();
+            }
+         } else {
+            this._locale = null;
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public final int compare(String s1, String s2) {

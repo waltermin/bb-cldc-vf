@@ -5,6 +5,7 @@ import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldLabelProvider;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
@@ -94,7 +95,7 @@ public class GaugeField extends Field implements FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -264,7 +265,43 @@ public class GaugeField extends Field implements FieldLabelProvider {
    }
 
    private void $init0(String label, int min, int max, int start) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (min >= max) {
+         throw new IllegalArgumentException();
+      }
+
+      if (start >= min && start <= max) {
+         this._label = label;
+         this._min = min;
+         this._max = max;
+         this._current = start;
+         this._value.setLength(0);
+         if (this.isStyle(4)) {
+            if (this._current == this._max) {
+               this._value.append("100%");
+            } else {
+               this._value.append((this._current - this._min) * 100 / (this._max - this._min));
+               this._value.append('%');
+            }
+         } else if (this.isStyle(8)) {
+            this._value.append(this._current);
+            this._value.append(" / ");
+            this._value.append(this._max);
+         } else if (this.isStyle(65536)) {
+            if (this._label != null) {
+               this._value.append(this._label);
+            }
+         } else {
+            this._value.append(this._current);
+         }
+
+         Manager manager = this.getManager();
+         if (manager != null && manager.isValidLayout()) {
+            this.barLayout();
+            this.invalidate();
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public GaugeField() {

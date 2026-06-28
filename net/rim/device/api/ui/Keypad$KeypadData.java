@@ -2,6 +2,7 @@ package net.rim.device.api.ui;
 
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.vm.Persistable;
 
 final class Keypad$KeypadData implements Persistable {
@@ -23,7 +24,10 @@ final class Keypad$KeypadData implements Persistable {
    }
 
    public final void setLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundleFamily family = ResourceBundle.getBundle(-4248492586227566823L, "net.rim.device.internal.resource.Keypad");
+      ResourceBundle bundle = family.getBundle(locale);
+      this.setKeymap(locale, bundle);
+      this._localeCode = locale.getCode();
    }
 
    private final void setKeymap(Locale locale, ResourceBundle bundle) {

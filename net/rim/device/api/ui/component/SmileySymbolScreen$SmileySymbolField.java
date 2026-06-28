@@ -73,7 +73,18 @@ class SmileySymbolScreen$SmileySymbolField extends SymbolScreen$SymbolField {
 
    @Override
    protected void updateDescription() {
-      throw new RuntimeException("cod2jar: ldc");
+      String description = null;
+      char focusChar = this.getFocusChar();
+      if (focusChar == 8646) {
+         description = "next page";
+      } else if (super._pages[super._currentPage] >= super._pagesStandard) {
+         int replacement = super._map.get(focusChar);
+         if (replacement != -1) {
+            description = SmileySymbolScreen._smileyFacility.emoticonDescription(replacement);
+         }
+      }
+
+      this.setDescription(description);
    }
 
    @Override

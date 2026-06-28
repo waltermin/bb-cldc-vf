@@ -106,7 +106,11 @@ public class Graphics {
    }
 
    public synchronized void setColor(int red, int green, int blue) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255) {
+         this._peer.setColor(red << 16 | green << 8 | blue);
+      } else {
+         throw new IllegalArgumentException("color component must be in range 0-255");
+      }
    }
 
    public synchronized void setColor(int RGB) {
@@ -114,7 +118,11 @@ public class Graphics {
    }
 
    public void setGrayScale(int value) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (value >= 0 && value <= 255) {
+         this.setColor(value, value, value);
+      } else {
+         throw new IllegalArgumentException("value must be in range 0-255");
+      }
    }
 
    public Font getFont() {
@@ -122,7 +130,17 @@ public class Graphics {
    }
 
    public void setStrokeStyle(int style) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (style == 0) {
+         this._peer.setStipple(-1);
+      } else {
+         if (style != 1) {
+            throw new IllegalArgumentException("invalid stroke style");
+         }
+
+         this._peer.setStipple(-858993460);
+      }
+
+      this._strokeStyle = style;
    }
 
    public int getStrokeStyle() {

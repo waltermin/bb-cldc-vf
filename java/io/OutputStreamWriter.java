@@ -14,7 +14,9 @@ public class OutputStreamWriter extends Writer {
    }
 
    private void ensureOpen() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.out == null) {
+         throw new IOException("Stream closed");
+      }
    }
 
    @Override

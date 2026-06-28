@@ -1,12 +1,15 @@
 package net.rim.device.api.io;
 
 import com.sun.cldc.io.ConnectionBaseInterface;
+import java.io.IOException;
 import java.util.Hashtable;
 import javax.microedition.io.Connection;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
 import javax.microedition.io.UDPDatagramConnection;
 import net.rim.device.api.util.CyclicQueue;
+import net.rim.device.cldc.io.daemon.TransportRegistry;
+import net.rim.device.cldc.io.utility.MalformedURLException;
 import net.rim.device.cldc.io.utility.URL;
 import net.rim.device.internal.io.TrafficLogger;
 
@@ -58,7 +61,39 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
 
    @Override
    public Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: ldc");
+      if ((mode & 3) != mode) {
+         throw new IllegalArgumentException();
+      }
+
+      DatagramTransportBase transportBase = null;
+
+      try {
+         this._url = new URL(name);
+      } catch (MalformedURLException e) {
+         this._name = name;
+      }
+
+      String transportName = this.getClass().getName();
+      int index = transportName.lastIndexOf(46);
+      if (index == -1) {
+         throw new IOException("Unable to find underlying transport class (1)");
+      }
+
+      transportName = transportName.substring(0, index + 1) + "Transport";
+      transportBase = (DatagramTransportBase)TransportRegistry.get(transportName);
+      if (timeouts && !this._isTimeOutSet) {
+         this._timeout = DEFAULT_TIMEOUT;
+      }
+
+      this._transport = transportBase;
+      this._addressBase = this.newDatagramAddressBase(name, false);
+      this._receiveFilter = this.newDatagramAddressBase(name, true);
+      if (transportBase != null) {
+         transportBase.addConnection(this);
+      }
+
+      this._isActive = true;
+      return this;
    }
 
    @Override
@@ -67,7 +102,9 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    protected void checkForClosed() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._isActive) {
+         throw new IOException("Connection closed");
+      }
    }
 
    public void setTrafficLogger(TrafficLogger logger) {
@@ -75,7 +112,11 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    public void cancel(Datagram datagram) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._isActive) {
+         throw new IOException("Connection closed");
+      }
+
+      this._transport.superCancel(datagram);
    }
 
    protected boolean isAddressed(String address) {
@@ -243,7 +284,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
 
    @Override
    public void receive(Datagram datagram) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

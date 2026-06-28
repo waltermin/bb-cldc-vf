@@ -15,7 +15,7 @@ public class Registry {
    public ContentHandlerServer register(
       String classname, String[] types, String[] suffixes, String[] actions, ActionNameMap[] actionnames, String ID, String[] accessAllowed
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new SecurityException("Method should not be called");
    }
 
    public boolean unregister(String classname) {
@@ -55,7 +55,7 @@ public class Registry {
    }
 
    public ContentHandler[] findHandler(Invocation invocation) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new SecurityException("Method should not be called");
    }
 
    public boolean invoke(Invocation invocation, Invocation previous) {

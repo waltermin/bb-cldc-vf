@@ -8,12 +8,19 @@ import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.LongHashtable;
 import net.rim.device.api.util.ToIntHashtable;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.Image;
+import net.rim.device.internal.ui.ImageBitmap;
+import net.rim.device.internal.ui.ImageEncoded;
+import net.rim.device.internal.ui.ImageOverlay;
 import net.rim.device.internal.ui.NamedIconCollection;
+import net.rim.device.internal.ui.ScaleBitmap;
+import net.rim.device.internal.ui.UiInternal;
 import net.rim.device.internal.util.StringUtilitiesInternal;
+import net.rim.device.resources.Resource;
 import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
 
@@ -122,7 +129,12 @@ public class Theme {
    }
 
    protected void addFont(ResourceFetcher resourceFetcher, String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] data = resourceFetcher.fetchResource(name);
+      int dot = name.lastIndexOf(46);
+      String familyName = name.substring(0, dot);
+      if (this._fonts.get(familyName) == null && this._fonts.get(familyName + "$_sf1") == null) {
+         this._fonts.put(familyName, data);
+      }
    }
 
    protected void addImage(ResourceFetcher resourceFetcher, String name, boolean isDefault) {
@@ -189,7 +201,7 @@ public class Theme {
    }
 
    public synchronized void apply() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    synchronized String getRegisteredFontNameHack(String name) {
@@ -242,11 +254,51 @@ public class Theme {
    }
 
    private void applyOsIcons(int[] icons, boolean visible) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!visible) {
+         byte[] imageData = Resource.getResourceClass().getResource("empty.gif");
+         EncodedImage image = EncodedImage.createEncodedImage(imageData, 0, imageData.length);
+
+         for (int lv = icons.length - 1; lv >= 0; lv--) {
+            UiInternal.setThemeIcon(icons[lv], image);
+         }
+      } else {
+         for (int lv = icons.length - 1; lv >= 0; lv--) {
+            int iconIndex = icons[lv];
+            EncodedImage image = this._osIcons[iconIndex];
+            if (image != null) {
+               UiInternal.setThemeIcon(iconIndex, image);
+            } else {
+               UiInternal.setThemeIconToDefault(iconIndex);
+            }
+         }
+      }
    }
 
    private void applyOsIcon(String name, Theme$ImageDescriptor descriptor) {
-      throw new RuntimeException("cod2jar: ldc");
+      int id = -1;
+      if (name.startsWith("osicon_hourglass")) {
+         id = 0;
+      } else if (name.startsWith("osicon_txrach")) {
+         id = 7;
+      } else if (name.startsWith("osicon_txrx")) {
+         id = 3;
+      } else if (name.startsWith("osicon_tx")) {
+         id = 1;
+      } else if (name.startsWith("osicon_rx")) {
+         id = 2;
+      } else if (name.startsWith("osicon_num")) {
+         id = 4;
+      } else if (name.startsWith("osicon_alt")) {
+         id = 5;
+      } else if (name.startsWith("osicon_cap")) {
+         id = 6;
+      } else if (name.startsWith("osicon_multitap")) {
+         id = 8;
+      }
+
+      if (id != -1 && this._osIcons[id] == null) {
+         this._osIcons[id] = descriptor.getImage();
+      }
    }
 
    private void applyUiIcon(String name, Theme$ImageDescriptor descriptor) {
@@ -374,7 +426,131 @@ public class Theme {
    }
 
    public Image getApplicationIcon(String name, String appState, int state, int size, Image defaultValue, int method) {
-      throw new RuntimeException("cod2jar: ldc");
+      String nameWithAppState = this.getNameWithAppState(name, appState);
+      String nameWithState = nameWithAppState;
+      boolean cacheIcon = true;
+      if (this._appIconSize != size && size != 0 && (method & 8) == 0) {
+         this._appIconSize = size;
+         this._appIcons.clear();
+      }
+
+      int sizeForKey = (method & 24) != 0 ? size : 0;
+      if ((method & 16) != 0) {
+         sizeForKey = -sizeForKey;
+      }
+
+      Theme$AppIconKey key = new Theme$AppIconKey(nameWithState, state, sizeForKey);
+      Image cached = (Image)this._appIcons.get(key);
+      if (cached != null) {
+         return cached;
+      }
+
+      if (state != 0) {
+         nameWithState = this.getNameWithState(nameWithAppState, state);
+      }
+
+      EncodedImage image = this.getImage(nameWithState, true);
+      Image overlay = null;
+      if (image == null && appState != null) {
+         if (state != 0) {
+            nameWithState = this.getNameWithState(name, state);
+         } else {
+            nameWithState = name;
+         }
+
+         image = this.getImage(nameWithState, true);
+         if (image != null && appState.equals("new")) {
+            overlay = this.getApplicationIcon("new_overlay", 0, size, null, method | 2);
+         }
+      }
+
+      if (image == null) {
+         do {
+            int index = name.lastIndexOf(46);
+            if (index < 0) {
+               break;
+            }
+
+            name = name.substring(0, index);
+            nameWithAppState = this.getNameWithAppState(name, appState);
+            if (state != 0) {
+               nameWithState = this.getNameWithState(nameWithAppState, state);
+            } else {
+               nameWithState = nameWithAppState;
+            }
+
+            image = this.getImage(nameWithState, true);
+            if (image == null && appState != null) {
+               if (state != 0) {
+                  nameWithState = this.getNameWithState(name, state);
+               } else {
+                  nameWithState = name;
+               }
+
+               image = this.getImage(nameWithState, true);
+               if (image != null && appState.equals("new")) {
+                  overlay = this.getApplicationIcon("new_overlay", 0, size, null, method | 2);
+               }
+            }
+         } while (image == null);
+      }
+
+      Image result;
+      if (image == null) {
+         if (defaultValue == null && (method & 2) == 0) {
+            if ((method & 4) == 0) {
+               nameWithState = "default_application";
+            } else {
+               nameWithState = "default_folder";
+            }
+
+            if (state != 0) {
+               nameWithState = this.getNameWithState(nameWithState, state);
+            }
+
+            try {
+               result = ImageEncoded.create(this.getImage(nameWithState));
+            } catch (IllegalArgumentException e) {
+               result = defaultValue;
+            }
+         } else {
+            result = defaultValue;
+            cacheIcon = false;
+         }
+
+         if (result != null && (method & 16) != 0) {
+            Bitmap resultBmp = Bitmap.createGreyscaleBitmap(result, this._ribbonIconWidth, this._ribbonIconHeight);
+            result = ImageBitmap.create(resultBmp);
+         }
+      } else {
+         if ((method & 8) != 0) {
+            Bitmap bitmap = image.getBitmap();
+            bitmap = ScaleBitmap.scaleBitmap(0, bitmap, size, size * bitmap.getHeight() / bitmap.getWidth());
+            if ((method & 16) != 0) {
+               bitmap = Bitmap.createGreyscaleBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight());
+            }
+
+            result = ImageBitmap.create(bitmap);
+         } else if ((method & 16) != 0) {
+            Bitmap imageBmp = image.getBitmap();
+            Bitmap bitmap = Bitmap.createGreyscaleBitmap(imageBmp, imageBmp.getWidth(), imageBmp.getHeight());
+            result = ImageBitmap.create(bitmap);
+         } else if ((method & 1) != 0) {
+            result = ImageEncoded.create(image);
+         } else {
+            result = ImageBitmap.create(image.getBitmap());
+         }
+
+         if (overlay != null) {
+            result = ImageOverlay.create(result, overlay);
+         }
+      }
+
+      if (result != null && cacheIcon) {
+         this._appIcons.put(key, result);
+      }
+
+      return result;
    }
 
    public ThemeAttributeSet getAttributeSet(Tag tag) {
@@ -439,7 +615,12 @@ public class Theme {
    }
 
    public int getColor(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      int color = this._palette.get(name);
+      if (color == -1 && !this._palette.containsKey(name)) {
+         throw new IllegalArgumentException("Unknown color: " + name);
+      } else {
+         return color;
+      }
    }
 
    public String getIdleScreenName() {
@@ -461,7 +642,31 @@ public class Theme {
    }
 
    public EncodedImage getImage(String name, String moduleName, boolean allowNull) {
-      throw new RuntimeException("cod2jar: ldc");
+      Theme$ImageDescriptor descriptor = (Theme$ImageDescriptor)this._themeImageDescriptors.get(name);
+      if (descriptor == null) {
+         String alias = (String)this._aliasList.get(name);
+         if (alias != null) {
+            descriptor = (Theme$ImageDescriptor)this._themeImageDescriptors.get(alias);
+         }
+      }
+
+      if (descriptor == null) {
+         descriptor = (Theme$ImageDescriptor)this._defaultImageDescriptors.get(name);
+      }
+
+      if (descriptor == null) {
+         this.addDefaultResources(moduleName);
+         descriptor = (Theme$ImageDescriptor)this._defaultImageDescriptors.get(name);
+         if (descriptor == null) {
+            if (allowNull) {
+               return null;
+            }
+
+            throw new IllegalArgumentException("Cannot find image: " + name);
+         }
+      }
+
+      return descriptor.getImage();
    }
 
    private long getKey(int tag, String idname, int state) {
@@ -478,7 +683,20 @@ public class Theme {
    }
 
    public Manager getLayout(String name, Object context) {
-      throw new RuntimeException("cod2jar: ldc");
+      Manager manager = null;
+      if (name.equals("empty")) {
+         return new VerticalFieldManager();
+      }
+
+      if (this._layoutFactory != null) {
+         manager = this._layoutFactory.getLayout(name, context);
+      }
+
+      if (manager == null) {
+         manager = ThemeManager.getLayout(name, context);
+      }
+
+      return manager;
    }
 
    public int getRibbonIconHeight() {
@@ -522,7 +740,29 @@ public class Theme {
    }
 
    private String getNameForState(int state) {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (state) {
+         case -1:
+            throw new IllegalArgumentException("Illegal state");
+         case 0:
+         default:
+            return "";
+         case 1:
+            return "first-child";
+         case 2:
+            return "link";
+         case 3:
+            return "visited";
+         case 4:
+            return "active";
+         case 5:
+            return "hover";
+         case 6:
+            return "focus";
+         case 7:
+            return "disabled";
+         case 8:
+            return "disabled-focus";
+      }
    }
 
    public static Bitmap getThemeBitmap(int type) {
@@ -542,7 +782,15 @@ public class Theme {
    }
 
    void initializeIconCollection(NamedIconCollection collection, String moduleName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!collection.isDefaultSet()) {
+         DefaultResourceFetcher fetcher = new DefaultResourceFetcher(moduleName);
+         this.addResources(fetcher, true);
+         this.initializeIconCollectionHelper(collection, this._defaultImageDescriptors);
+         this.initializeIconCollectionHelper(collection, this._themeImageDescriptors);
+         if (!collection.isDefaultSet()) {
+            throw new IllegalStateException("Default icon collection must be provided in calling module.");
+         }
+      }
    }
 
    void initializeIconCollectionHelper(NamedIconCollection collection, Hashtable descriptors) {

@@ -39,7 +39,9 @@ public final class Owner {
    }
 
    public static final void resetToDefaults() {
-      throw new RuntimeException("cod2jar: ldc");
+      _ownerData._name = "";
+      _ownerData._info = "";
+      commit(true);
    }
 
    private static final void commit(boolean notifyOfChanges) {

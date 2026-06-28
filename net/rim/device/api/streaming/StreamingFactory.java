@@ -9,7 +9,11 @@ public final class StreamingFactory {
    }
 
    public static final void setStreamingSystem(Streaming streamingSystem) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      Object prevStreaming = applicationRegistry.replace(-7849240269607795087L, streamingSystem);
+      if (prevStreaming != null) {
+         throw new IllegalStateException("Streaming system already present");
+      }
    }
 
    public static final Streaming getStreamingSystem() {

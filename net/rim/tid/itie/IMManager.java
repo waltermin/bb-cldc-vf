@@ -8,12 +8,13 @@ import net.rim.tid.awt.im.spi.InputMethod;
 import net.rim.tid.awt.im.spi.InputMethodDescriptor;
 
 public final class IMManager {
-   private Vector _descriptors;
-   private Vector _imethods;
+   private Vector _descriptors = new Vector();
+   private Vector _imethods = new Vector();
    private long _availableIMs;
    private long _latestIMID;
 
    IMManager() {
+      this.addIMDescriptor("Minimal IM", "net.rim.tid.im.MinimalIMDescriptor");
    }
 
    public final InputMethod getInputMethod(Locale locale) {
@@ -49,7 +50,63 @@ public final class IMManager {
    }
 
    public final synchronized InputMethod getInputMethod(Locale locale, String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      InputMethodDescriptor descript = null;
+      int index = -1;
+      int size = this._descriptors.size();
+      if (name != null) {
+         for (int i = 0; i < size; i++) {
+            InputMethodDescriptor imd = (InputMethodDescriptor)this._descriptors.elementAt(i);
+            if (imd.getInputMethodDisplayName(locale, locale).equals(name)) {
+               InputMethod im = (InputMethod)this._imethods.elementAt(i);
+               if (im != null) {
+                  this._latestIMID = imd.getInputMethodID();
+                  return im;
+               }
+
+               descript = imd;
+               index = i;
+            }
+         }
+      } else {
+         for (int i = 0; i < size; i++) {
+            InputMethodDescriptor descriptor = (InputMethodDescriptor)this._descriptors.elementAt(i);
+
+            try {
+               Locale[] lc = descriptor.getAvailableLocales();
+               int len = lc.length;
+
+               for (int j = 0; j < len; j++) {
+                  if (lc[j].equals(locale)) {
+                     descript = descriptor;
+                     index = i;
+                     break;
+                  }
+               }
+
+               if (descript != null) {
+                  break;
+               }
+            } catch (Exception var12) {
+            }
+         }
+      }
+
+      if (descript != null) {
+         try {
+            InputMethod m = (InputMethod)this._imethods.elementAt(index);
+            if (m == null) {
+               m = descript.createInputMethod();
+               this._imethods.setElementAt(m, index);
+            }
+
+            this._latestIMID = descript.getInputMethodID();
+            return m;
+         } catch (Throwable ex) {
+            System.err.println("Loading of " + descript.getInputMethodDisplayName(locale, locale) + " has failed");
+         }
+      }
+
+      return null;
    }
 
    final void forceLocaleReRegister(Locale locale) {
@@ -70,7 +127,32 @@ public final class IMManager {
    }
 
    public final synchronized boolean addIMDescriptor(String imName, String className) {
-      throw new RuntimeException("cod2jar: ldc");
+      InputMethodDescriptor desc = null;
+
+      try {
+         desc = (InputMethodDescriptor)Class.forName(className).newInstance();
+         if ((desc.getInputMethodID() & this._availableIMs) != 0 && !desc.forTestOnly()) {
+            System.err.println("ERROR: duplicated input method identifier " + className);
+            return false;
+         }
+      } catch (Throwable ex) {
+         System.err.println("Loading of " + className + " descriptor has failed");
+         return false;
+      }
+
+      this._descriptors.insertElementAt(desc, 0);
+      this._imethods.insertElementAt(null, 0);
+      this._availableIMs = this._availableIMs | desc.getInputMethodID();
+      Locale[] inputLocales = desc.getDisplayLocales();
+      if (inputLocales != null) {
+         int len = inputLocales.length;
+
+         for (int i = 0; i < len; i++) {
+            Locale.addInputLocaleInternal(inputLocales[i]);
+         }
+      }
+
+      return true;
    }
 
    public final void dispose() {

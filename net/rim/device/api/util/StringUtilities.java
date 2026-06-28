@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.io.DataOutput;
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.internal.i18n.CollatorImpl;
 import net.rim.vm.Array;
@@ -50,7 +51,171 @@ public final class StringUtilities {
    }
 
    public static final String decodeBOM(byte[] data, int offset, int len, boolean stripNullLatin1) {
-      throw new RuntimeException("cod2jar: ldc");
+      String returnedString;
+      if (len >= 2 && data[offset] == -2 && data[offset + 1] == -1) {
+         try {
+            returnedString = new String(data, offset + 2, len - 2, "utf-16be");
+         } catch (UnsupportedEncodingException e) {
+            returnedString = null;
+         }
+      } else if (len >= 3 && data[offset] == -17 && data[offset + 1] == -69 && data[offset + 2] == -65) {
+         try {
+            returnedString = new String(data, offset + 3, len - 3, "utf-8");
+         } catch (UnsupportedEncodingException e) {
+            returnedString = null;
+         }
+      } else {
+         int end = offset + len;
+         int byteEncoded = strConversionRequired(data, offset, end, '\u0080', ' ');
+         if (stripNullLatin1 && len > 0 && data[offset + len - 1] == 0) {
+            len--;
+         }
+
+         switch (byteEncoded) {
+            case -1:
+               char[] inputChars = new char[len];
+               int out = 0;
+               end = offset + len;
+               char prevc = 0;
+               char thisc = '\u0000';
+
+               for (int lv = offset; lv < end; lv++) {
+                  char c = (char)(data[lv] & 0xFF);
+                  thisc = c;
+                  switch (c) {
+                     case '\n':
+                        if (prevc == '\r') {
+                           char var24 = false;
+                           continue;
+                        }
+                        break;
+                     case '\r':
+                        c = '\n';
+                        break;
+                     case '\u0080':
+                        c = 8364;
+                        break;
+                     case '\u0082':
+                        c = 8218;
+                        break;
+                     case '\u0083':
+                        c = 402;
+                        break;
+                     case '\u0084':
+                        c = 8222;
+                        break;
+                     case '\u0085':
+                        c = 8230;
+                        break;
+                     case '\u0086':
+                        c = 8224;
+                        break;
+                     case '\u0087':
+                        c = 8225;
+                        break;
+                     case '\u0088':
+                        c = 710;
+                        break;
+                     case '\u0089':
+                        c = 8240;
+                        break;
+                     case '\u008a':
+                        c = 352;
+                        break;
+                     case '\u008b':
+                        c = 8249;
+                        break;
+                     case '\u008c':
+                        c = 338;
+                        break;
+                     case '\u008e':
+                        c = 381;
+                        break;
+                     case '\u0091':
+                        c = 8216;
+                        break;
+                     case '\u0092':
+                        c = 8217;
+                        break;
+                     case '\u0093':
+                        c = 8220;
+                        break;
+                     case '\u0094':
+                        c = 8221;
+                        break;
+                     case '\u0095':
+                        c = 8226;
+                        break;
+                     case '\u0096':
+                        c = 8211;
+                        break;
+                     case '\u0097':
+                        c = 8212;
+                        break;
+                     case '\u0098':
+                        c = 732;
+                        break;
+                     case '\u0099':
+                        c = 8482;
+                        break;
+                     case '\u009a':
+                        c = 353;
+                        break;
+                     case '\u009b':
+                        c = 8250;
+                        break;
+                     case '\u009c':
+                        c = 339;
+                        break;
+                     case '\u009e':
+                        c = 382;
+                        break;
+                     case '\u009f':
+                        c = 376;
+                  }
+
+                  prevc = thisc;
+                  inputChars[out] = c;
+                  out++;
+               }
+
+               returnedString = new String(inputChars, 0, out);
+               break;
+            case 0:
+            default:
+               returnedString = new String(data, offset, len);
+               break;
+            case 1:
+               byte[] inputChars = new byte[len];
+               int out = 0;
+               end = offset + len;
+               byte prevc = 0;
+               byte thisc = 0;
+
+               for (int lv = offset; lv < end; lv++) {
+                  byte c = (byte)(data[lv] & 0xFF);
+                  thisc = c;
+                  switch (c) {
+                     case 10:
+                        if (prevc == 13) {
+                           byte var21 = false;
+                           continue;
+                        }
+                        break;
+                     case 13:
+                        c = 10;
+                  }
+
+                  prevc = thisc;
+                  inputChars[out] = c;
+                  out++;
+               }
+
+               returnedString = new String(inputChars, 0, out);
+         }
+      }
+
+      return returnedString;
    }
 
    public static final native int getCharacterSize(String var0);

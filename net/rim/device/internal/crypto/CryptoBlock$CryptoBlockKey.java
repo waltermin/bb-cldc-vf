@@ -9,10 +9,12 @@ import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.api.synchronization.SyncObject;
 import net.rim.device.api.synchronization.UIDGenerator;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.Persistable;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.vm.Memory;
 
 final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
@@ -43,11 +45,23 @@ final class CryptoBlock$CryptoBlockKey implements Persistable, SyncObject {
    }
 
    final void logAction(String action) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!InternalServices.isDeviceSecure() && !PersistentContent.isEncryptionEnabled()) {
+         String msg = "CB " + action + ':' + this.toString();
+         System.out.println(msg);
+         EventLogger.logEvent(-8415036407170758647L, msg.getBytes(), 0);
+      }
    }
 
    final byte[] getKey() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         byte[] key = Memory.allocRAMOnlyBytes(this._keyLength);
+         EncryptionUtilities.decrypt(getDeviceKey(), this._data, 0, this._data.length, key, 0);
+         PersistentContent.markAsPlaintext(key);
+         return key;
+      } catch (IllegalStateException e) {
+         System.out.println("CryptoBlock Content Protection IllegalStateException thrown");
+         throw e;
+      }
    }
 
    @Override

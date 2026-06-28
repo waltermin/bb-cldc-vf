@@ -4,7 +4,9 @@ import java.util.Stack;
 import java.util.Vector;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.accessibility.AccessibleEventListener;
@@ -12,8 +14,12 @@ import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.system.ApplicationManagerInternal;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.BackingStore;
+import net.rim.device.internal.ui.InputMethodSwitcher;
 import net.rim.device.internal.ui.UiInternalListener;
 import net.rim.vm.Array;
+import net.rim.vm.Monitor;
+import net.rim.vm.Process;
+import net.rim.vm.TraceBack;
 import net.rim.vm.WeakReference;
 
 final class GlobalScreenManager implements GlobalEventListener {
@@ -45,7 +51,9 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    static final void assertHaveLock() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!Monitor.monitorOwned(getLock())) {
+         throw new IllegalStateException("GlobalScreenManager accessed without holding the lock.");
+      }
    }
 
    static final void copyGlobalScreens(Screen[] screenArray, int index, Screen[] hiddenScreenArray) {
@@ -70,7 +78,9 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    static final boolean dismiss(Screen screen, UiEngineImpl engine, boolean oldNotification, int processId) {
-      throw new RuntimeException("cod2jar: ldc");
+      String trace = "GS-D " + Long.toString(4294967295L & screen.hashCode(), 16);
+      EventLogger.logEvent(-4685663286194863677L, trace.getBytes(), 0);
+      return _statusManager.dismissInternal(screen, engine, oldNotification, processId);
    }
 
    private final synchronized boolean dismissInternal(Screen screen, UiEngineImpl engine, boolean oldNotification, int processId) {
@@ -195,7 +205,39 @@ final class GlobalScreenManager implements GlobalEventListener {
 
    @Override
    public final void eventOccurred(long guid, int data0, int data1, Object object0, Object object1) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (guid == -1270659756336956134L) {
+         synchronized (this) {
+            XYRect killedExtents = null;
+
+            for (int index = this._statusQueue.size() - 1; index >= 0; index--) {
+               GlobalScreenManager$StatusData status = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(index);
+               if (!status.process.isAlive()) {
+                  Screen screen = status.screen;
+                  String trace = "GS-K " + Long.toString(4294967295L & screen.hashCode(), 16);
+                  EventLogger.logEvent(-4685663286194863677L, trace.getBytes(), 0);
+                  if (screen.isUiEngineAttached()) {
+                     screen.callOnUiEngineDettachedWithoutNotify();
+                  }
+
+                  screen.setUiEngine(null);
+                  screen.setGlobal(false);
+                  this._statusQueue.removeElementAt(index);
+                  XYRect extent = screen.getExtent();
+                  if (killedExtents == null) {
+                     killedExtents = new XYRect(extent);
+                  } else {
+                     killedExtents.unionNoEmpty(extent);
+                  }
+               }
+            }
+
+            this.redirectInput();
+            if (killedExtents != null) {
+               RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, killedExtents, null);
+               this.updatePaintControl(2, false, null);
+            }
+         }
+      }
    }
 
    static final void getExtent(XYRect rect) {
@@ -214,15 +256,25 @@ final class GlobalScreenManager implements GlobalEventListener {
    }
 
    static final void queue(Screen screen, int priority, boolean inputRequired, int processId, UiEngineImpl engine) {
-      throw new RuntimeException("cod2jar: ldc");
+      String trace = "GS+Q " + Long.toString(4294967295L & screen.hashCode(), 16) + ' ' + screen.getClass().getName();
+      EventLogger.logEvent(-4685663286194863677L, trace.getBytes(), 0);
+      _statusManager.queueInternal(screen, priority, inputRequired, true, processId, engine, false, true);
    }
 
    static final void push(Screen screen, int priority, boolean inputRequired, int processId, UiEngineImpl engine) {
-      throw new RuntimeException("cod2jar: ldc");
+      String trace = "GS+Qp " + Long.toString(4294967295L & screen.hashCode(), 16) + screen.getClass().getName();
+      EventLogger.logEvent(-4685663286194863677L, trace.getBytes(), 0);
+      _statusManager.queueInternal(screen, priority, inputRequired, true, processId, engine, true, true);
    }
 
    static final void push(Screen screen, int priority, int flags, int processId, UiEngineImpl engine) {
-      throw new RuntimeException("cod2jar: ldc");
+      boolean suppress = (flags & 4) == 0;
+      boolean insertBeforeSamePriority = (flags & 2) == 0;
+      boolean inputRequired = screen.acceptsInput();
+      String flagString = Integer.toString(flags, 16);
+      String trace = "GS+Q" + flagString + " " + Long.toString(4294967295L & screen.hashCode(), 16) + screen.getClass().getName();
+      EventLogger.logEvent(-4685663286194863677L, trace.getBytes(), 0);
+      _statusManager.queueInternal(screen, priority, inputRequired, suppress, processId, engine, insertBeforeSamePriority, false);
    }
 
    private final synchronized void queueInternal(
@@ -235,7 +287,69 @@ final class GlobalScreenManager implements GlobalEventListener {
       boolean insertBeforeSamePriority,
       boolean oldNotofication
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (screen.isGlobal()) {
+         throw new IllegalStateException("GlobalScreen already queued.");
+      }
+
+      screen.setGlobal(true);
+      screen.setUiEngine(engine);
+      if (inputRequired != screen.acceptsInput()) {
+         screen.setAcceptsInput(inputRequired);
+      }
+
+      if (priority <= -1073741824 && !ControlledAccess.verifyCodeModuleSignature(TraceBack.getCallingModule(2), 51)) {
+         throw new SecurityException();
+      }
+
+      GlobalScreenManager$StatusData newStatus = new GlobalScreenManager$StatusData(
+         screen, priority, inputRequired, suppress, Process.getProcess(processId), engine
+      );
+      int index = 0;
+      XYRect revokedExtents = null;
+      if (this._statusQueue.size() == 0) {
+         this._statusQueue.addElement(newStatus);
+      } else {
+         GlobalScreenManager$StatusData current = (GlobalScreenManager$StatusData)this._statusQueue.firstElement();
+         int numStatus = this._statusQueue.size();
+
+         for (index = 0; index < numStatus; index++) {
+            current = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(index);
+            if (current.priority > newStatus.priority || insertBeforeSamePriority && current.priority == newStatus.priority) {
+               break;
+            }
+         }
+
+         this._statusQueue.insertElementAt(newStatus, index);
+         if (newStatus.suppress) {
+            for (int i = index + 1; i < numStatus + 1; i++) {
+               current = (GlobalScreenManager$StatusData)this._statusQueue.elementAt(i);
+               XYRect extent = current.screen.getExtent();
+               if (revokedExtents == null) {
+                  revokedExtents = new XYRect(extent);
+               } else {
+                  revokedExtents.unionNoEmpty(extent);
+               }
+
+               if (current.suppress) {
+                  break;
+               }
+            }
+         }
+      }
+
+      if (index == 0) {
+         Graphics.resetOverlays();
+      }
+
+      this.updatePaintControl(1, oldNotofication, engine);
+      this.redirectInput();
+      if (oldNotofication) {
+         newStatus.engine.statusDisplayedEvent(newStatus.screen, newStatus.inputRequired, newStatus.redisplay, index == 0, revokedExtents);
+      } else {
+         RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 1, screen instanceof InputMethodSwitcher ? 1 : 0, revokedExtents, new Integer(processId));
+      }
+
+      newStatus.redisplay = true;
    }
 
    public static final void setScreenWithFocus(Screen screen) {

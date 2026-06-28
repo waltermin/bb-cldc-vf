@@ -1,5 +1,6 @@
 package net.rim.device.internal.system;
 
+import java.io.IOException;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.IOPort;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
@@ -23,7 +24,21 @@ public final class SmartCardPort extends IOPort {
    }
 
    public final void reset() {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (!this._opened) {
+         throw new IOException("Device not open");
+      }
+
+      this.resetDevice(true);
+
+      try {
+         synchronized (this) {
+            this.wait(200);
+         }
+      } catch (InterruptedException var4) {
+      }
+
+      this.resetDevice(false);
    }
 
    @Override
@@ -50,7 +65,17 @@ public final class SmartCardPort extends IOPort {
    }
 
    public final boolean open(int protocol) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (this._opened) {
+         throw new IOException("Device Already Open");
+      }
+
+      if (!this.openDevice(protocol)) {
+         return false;
+      }
+
+      this._opened = true;
+      return true;
    }
 
    public final boolean setProtocol(int protocol) {

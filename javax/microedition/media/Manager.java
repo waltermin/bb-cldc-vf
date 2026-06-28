@@ -1,9 +1,23 @@
 package javax.microedition.media;
 
 import java.io.InputStream;
+import javax.microedition.media.control.ToneControl;
+import javax.microedition.media.control.VolumeControl;
 import javax.microedition.media.protocol.DataSource;
+import net.rim.device.api.io.MIMETypeAssociations;
+import net.rim.device.api.system.Audio;
+import net.rim.device.api.system.RadioInfo;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.MathUtilities;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.media.DataSourceImpl;
+import net.rim.device.internal.media.MediaNatives;
+import net.rim.device.internal.media.PlayerRegistry;
+import net.rim.device.internal.media.RTSPDataSource;
+import net.rim.device.internal.media.StreamDataControl;
+import net.rim.device.internal.system.InternalServices;
 
 public final class Manager {
    public static final String TONE_DEVICE_LOCATOR;
@@ -19,7 +33,108 @@ public final class Manager {
    }
 
    public static final String[] getSupportedContentTypes(String protocol) {
-      throw new RuntimeException("cod2jar: ldc");
+      String[] contentTypes = new String[0];
+      if (protocol != null && !protocol.equals("http") && !protocol.equals("file")) {
+         if (protocol.equals("device")) {
+            Arrays.add(contentTypes, "audio/x-tone-seq");
+            return contentTypes;
+         }
+
+         if (protocol.equals("capture")) {
+            if (Audio.isRecordingCodecSupported(7)) {
+               Arrays.add(contentTypes, "audio/amr");
+            }
+
+            if (Audio.isRecordingCodecSupported(9)) {
+               Arrays.add(contentTypes, "audio/basic");
+               return contentTypes;
+            }
+         } else if (protocol.equals("rtsp") && InternalServices.isSoftwareCapable(13)) {
+            if (Audio.isCodecSupported(7)) {
+               Arrays.add(contentTypes, "audio/amr");
+            }
+
+            if (Audio.isCodecSupported(10)) {
+               Arrays.add(contentTypes, "audio/mp4");
+               Arrays.add(contentTypes, "audio/aac");
+            }
+
+            if (InternalServices.isSoftwareCapable(7)) {
+               Arrays.add(contentTypes, "video/mp4");
+               Arrays.add(contentTypes, "video/3gpp");
+               if (RadioInfo.getNetworkType() == 4) {
+                  Arrays.add(contentTypes, "video/3gpp2");
+               }
+
+               if (RadioInfo.getNetworkType() != 4) {
+                  Arrays.add(contentTypes, "video/x-msvideo");
+               }
+
+               Arrays.add(contentTypes, "video/quicktime");
+            }
+         }
+      } else {
+         if (protocol == null) {
+            Arrays.add(contentTypes, "audio/x-tone-seq");
+         }
+
+         Arrays.add(contentTypes, "audio/midi");
+         if (Audio.isCodecSupported(3)) {
+            Arrays.add(contentTypes, "audio/mpeg");
+         }
+
+         if (Audio.isCodecSupported(0)) {
+            Arrays.add(contentTypes, "audio/x-wav");
+         }
+
+         if (Audio.isCodecSupported(7)) {
+            Arrays.add(contentTypes, "audio/amr");
+         }
+
+         if (Audio.isCodecSupported(9)) {
+            Arrays.add(contentTypes, "audio/basic");
+         }
+
+         if (Audio.isCodecSupported(11)) {
+            Arrays.add(contentTypes, "audio/x-gsm");
+         }
+
+         if (Audio.isCodecSupported(10)) {
+            Arrays.add(contentTypes, "audio/mp4");
+            Arrays.add(contentTypes, "audio/aac");
+         }
+
+         if (MediaNatives.isAudioDecoderCodecSupported(12)) {
+            Arrays.add(contentTypes, "audio/x-ms-wma");
+         }
+
+         if (Audio.isCodecSupported(13)) {
+            Arrays.add(contentTypes, "audio/qcelp");
+         }
+
+         if (InternalServices.isSoftwareCapable(7)) {
+            Arrays.add(contentTypes, "video/mp4");
+            Arrays.add(contentTypes, "video/3gpp");
+            if (RadioInfo.getNetworkType() == 4) {
+               Arrays.add(contentTypes, "video/3gpp2");
+            }
+
+            if (RadioInfo.getNetworkType() != 4) {
+               Arrays.add(contentTypes, "video/x-msvideo");
+            }
+
+            Arrays.add(contentTypes, "video/quicktime");
+         }
+
+         if (MediaNatives.isVideoDecoderCodecSupported(4)) {
+            Arrays.add(contentTypes, "video/x-ms-asf");
+            Arrays.add(contentTypes, "video/x-ms-wm");
+            Arrays.add(contentTypes, "video/x-ms-wmv");
+            return contentTypes;
+         }
+      }
+
+      return contentTypes;
    }
 
    public static final String[] getSupportedProtocols(String content_type) {
@@ -27,7 +142,7 @@ public final class Manager {
    }
 
    public static final Player createPlayer(String locator) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final Player createPlayer(DataSource source) {
@@ -36,15 +151,85 @@ public final class Manager {
    }
 
    public static final Player createPlayer(InputStream stream, String type) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (stream == null) {
+         throw new IllegalArgumentException("stream: null");
+      }
+
+      if (type == null) {
+         throw new MediaException("type: null");
+      }
+
+      DataSourceImpl ds = new DataSourceImpl(null);
+      ds.setInputStream(stream);
+      ds.setContentType(type);
+      return createPlayerImpl(ds);
    }
 
    private static final Player createPlayerImpl(DataSource source) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (source == null) {
+         throw new IllegalArgumentException();
+      }
+
+      source.connect();
+      String type = StringUtilities.toLowerCase(source.getContentType(), 1701707776);
+      type = MIMETypeAssociations.getNormalizedType(type);
+      if (type.equals("application/rtsp") && !(source instanceof RTSPDataSource)) {
+         throw new MediaException("unsupported content type - " + type);
+      }
+
+      Player player = PlayerRegistry.createPlayer(type);
+      if (player instanceof StreamDataControl) {
+         source.start();
+
+         try {
+            StreamDataControl dataControl = (StreamDataControl)player;
+            dataControl.setKeyValue("datasource", source);
+            dataControl.setKeyValue("mimetype", type);
+         } catch (Exception e) {
+            throw new MediaException(e.getMessage());
+         }
+      }
+
+      if (player != null) {
+         return player;
+      } else {
+         throw new MediaException("unsupported content type - " + type);
+      }
    }
 
    public static final void playTone(int note, int duration, int volume) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (note >= 0 && note <= 127 && duration > 0) {
+         if (_playTonePlayer.getState() == 400) {
+            throw new MediaException("Could not play tone");
+         }
+
+         _playTonePlayer.deallocate();
+         _playTonePlayer.realize();
+         volume = MathUtilities.clamp(0, volume, 100);
+         VolumeControl vc = (VolumeControl)_playTonePlayer.getControl("VolumeControl");
+         if (vc != null) {
+            vc.setLevel(volume);
+         }
+
+         byte defaultTempo = 30;
+         byte defaultResolution = 64;
+         byte toneDuration = (byte)(duration * defaultResolution * (defaultTempo << 2) / 240000 & 127);
+         if (toneDuration == 0) {
+            toneDuration = 1;
+         }
+
+         byte[] toneData = new byte[]{-2, 1, -3, defaultTempo, -4, defaultResolution, (byte)note, toneDuration};
+         ToneControl tc = (ToneControl)_playTonePlayer.getControl("ToneControl");
+         if (tc != null) {
+            tc.setSequence(toneData);
+         }
+
+         _playTonePlayer.start();
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public static final TimeBase getSystemTimeBase() {

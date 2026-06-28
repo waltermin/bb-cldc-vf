@@ -7,6 +7,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.component.BitmapField;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.ui.Animation;
 import net.rim.device.internal.ui.AnimationListener;
 import net.rim.device.internal.ui.AnimationThread;
@@ -347,12 +348,26 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
 
    @Override
    public void addAnimationListener(AnimationListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this) {
+         int previous = this.findListener(listener, this._listeners);
+         if (previous != -1) {
+            throw new IllegalStateException("addAnimationListener():  already a listener");
+         }
+
+         Arrays.add(this._listeners, new WeakReference(listener));
+      }
    }
 
    @Override
    public void removeAnimationListener(AnimationListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this) {
+         int index = this.findListener(listener, this._listeners);
+         if (index != -1) {
+            Arrays.removeAt(this._listeners, index);
+         } else {
+            throw new IllegalStateException("removeAnimationListener():  listener not found");
+         }
+      }
    }
 
    private int findListener(Object search, WeakReference[] listenerList) {
@@ -367,6 +382,45 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
    }
 
    private void notify(int message) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (message >= 0 && message <= 3) {
+         synchronized (this) {
+            switch (message) {
+               case -1:
+                  break;
+               case 0:
+               default:
+                  int count = this._listeners.length;
+
+                  for (int i = 0; i < count; i++) {
+                     try {
+                        AnimationListener listener = (AnimationListener)this._listeners[i].get();
+                        if (listener != null) {
+                           listener.animationStarted(this);
+                        }
+                     } catch (Exception e) {
+                        System.err.println("Exception while notifying AnimationListener:  " + e);
+                        e.printStackTrace();
+                     }
+                  }
+                  break;
+               case 1:
+                  int count = this._listeners.length;
+
+                  for (int i = 0; i < count; i++) {
+                     try {
+                        AnimationListener listener = (AnimationListener)this._listeners[i].get();
+                        if (listener != null) {
+                           listener.animationStopped(this);
+                        }
+                     } catch (Exception e) {
+                        System.err.println("Exception while notifying AnimationListener:  " + e);
+                        e.printStackTrace();
+                     }
+                  }
+            }
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid message to be sent to AnimationListeners:  " + message);
+      }
    }
 }

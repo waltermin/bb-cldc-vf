@@ -3,6 +3,7 @@ package net.rim.tid.im.layout;
 import java.io.InputStream;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.GlobalEventListener;
+import net.rim.device.api.ui.Keypad;
 
 public class UILocaleKeyLayout implements GlobalEventListener {
    private String[] MAP_LOCATIONS;
@@ -15,7 +16,27 @@ public class UILocaleKeyLayout implements GlobalEventListener {
    }
 
    public synchronized void init() {
-      throw new RuntimeException("cod2jar: ldc");
+      Locale uiLocale = Locale.getDefault();
+      if (this._lastLocaleUsed == null || !this._lastLocaleUsed.equals(uiLocale)) {
+         Locale keyboardLocale = Locale.getDefaultForKeyboard();
+         String keyboardType = SLKeyLayout.getKeyboardType(keyboardLocale.getCode());
+         int keyboardID = Keypad.getHardwareLayout();
+         InputStream is = this.getLayoutData(keyboardID, keyboardType, uiLocale, false);
+         if (is == null) {
+            is = this.getLayoutData(keyboardID, keyboardType, Locale.get(uiLocale.getLanguage(), ""), false);
+         }
+
+         if (is == null) {
+            is = this.getLayoutData(keyboardID, keyboardType, Locale.get(uiLocale.getLanguage(), ""), true);
+         }
+
+         if (is == null) {
+            throw new RuntimeException("Can't find UI Key Layout for " + uiLocale.toString());
+         }
+
+         this._layout = new SLKeyLayout(uiLocale, false, (byte)0, is);
+         this._lastLocaleUsed = uiLocale;
+      }
    }
 
    @Override

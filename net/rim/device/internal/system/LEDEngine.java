@@ -2,17 +2,21 @@ package net.rim.device.internal.system;
 
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.Audio;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.ui.UiSettings;
 
 public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConstants, AudioInternalListener {
    private int _stateFlags;
    private int[] _polyPattern;
    private boolean _poweredOff;
-   private boolean _isPolychromatic;
+   private boolean _isPolychromatic = isPolychromatic();
    private boolean _isMicEnabled;
    protected LEDEventProcessor _ledEventProcessor;
    private static long LED_ENGINE_GUID;
@@ -245,13 +249,21 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    }
 
    public static boolean isSupported(int type) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (type != 0 && type != 1) {
+         throw new IllegalArgumentException("invalid type");
+      } else {
+         return type == 0 ? true : InternalServices.isDeviceCapable(23);
+      }
    }
 
    private static native void setStateNative(int var0, int var1);
 
    public static boolean isPolychromatic(int type) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (type != 0 && type != 1) {
+         throw new IllegalArgumentException("invalid type");
+      } else {
+         return InternalServices.isDeviceCapable(type == 1 ? 23 : 11);
+      }
    }
 
    private static native void setColorPatternNative(int var0, int[] var1, boolean var2);
@@ -280,4 +292,28 @@ public class LEDEngine implements SystemListener2, GlobalEventListener, LEDConst
    }
 
    private static native void setConfigurationNative(int var0, int var1, int var2, int var3);
+
+   public LEDEngine() {
+      this._poweredOff = false;
+      int initialBatteryStatus = 4;
+      if ((DeviceInfo.getBatteryStatus() & 268435456) != 0) {
+         initialBatteryStatus = 0;
+      }
+
+      this._stateFlags = 16 | initialBatteryStatus;
+      if (UiSettings.getLEDCoverageIndicatorStatus()) {
+         this._stateFlags |= 8;
+      }
+
+      Proxy proxy = Proxy.getInstance();
+      this._ledEventProcessor = new LEDEventProcessor(this);
+      proxy.startThread(this._ledEventProcessor);
+      if (isPolychromatic() && (Display.getProperties() & 16384) != 0) {
+         proxy.addSystemListener(this);
+         proxy.addGlobalEventListener(this);
+      }
+
+      Audio.addListener(proxy, this);
+      EventLogger.register(6390170866224596725L, "LED", 2);
+   }
 }

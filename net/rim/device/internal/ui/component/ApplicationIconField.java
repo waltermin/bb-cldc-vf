@@ -1,5 +1,6 @@
 package net.rim.device.internal.ui.component;
 
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.XYDimension;
@@ -7,7 +8,10 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.ui.Image;
+import net.rim.device.internal.ui.ImageBitmap;
+import net.rim.device.internal.ui.ImageOverlay;
 
 public class ApplicationIconField extends Field {
    private String _appName;
@@ -150,7 +154,85 @@ public class ApplicationIconField extends Field {
    }
 
    private void setBitmapInternal() {
-      throw new RuntimeException("cod2jar: ldc");
+      Image bitmap = this._iconCustom;
+      Image bitmapFocus = this._iconCustomFocus;
+      Image bitmapHidden = null;
+      Image bitmapFocusHidden = null;
+      String appstate = this._appState;
+      Theme theme = ThemeManager.getActiveTheme();
+      if (bitmap != null) {
+         if (appstate != null && appstate.equals("new")) {
+            Image overlay = theme.getApplicationIcon("new_overlay", 0, this._width, null, 2);
+            if (overlay != null) {
+               if (bitmap != null) {
+                  bitmap = ImageOverlay.create(bitmap, overlay);
+               }
+
+               if (bitmapFocus != null) {
+                  bitmapFocus = ImageOverlay.create(bitmapFocus, overlay);
+               }
+            }
+         }
+      } else {
+         String name = StringUtilities.removeChars(this._appName, " ̲");
+         Image rawIcon = theme.getApplicationIcon(name, appstate, 0, this._width, this._iconDefault, 0);
+         if (rawIcon != null) {
+            int iconWidth = rawIcon.getWidth(Graphics.getScreenWidth(), Graphics.getScreenHeight());
+            int iconHeight = rawIcon.getHeight(Graphics.getScreenWidth(), Graphics.getScreenHeight());
+            int methodScaleToFit = 0;
+            XYDimension scaledSize = this.getScaledDimensions(iconWidth, iconHeight);
+            int scaledWidth = scaledSize.width;
+            int scaledHeight = scaledSize.height;
+            if (scaledWidth != iconWidth || scaledHeight != iconHeight) {
+               methodScaleToFit = 8;
+            }
+
+            bitmap = theme.getApplicationIcon(name, appstate, 0, scaledWidth, this._iconDefault, methodScaleToFit);
+            bitmapHidden = theme.getApplicationIcon(name, appstate, 0, scaledWidth, this._iconDefault, 16 | methodScaleToFit);
+         }
+
+         if (bitmap != this._iconDefault) {
+            int method = 1;
+            rawIcon = theme.getApplicationIcon(name, appstate, 6, this._width, this._iconDefault, 0);
+            if (rawIcon != null) {
+               int iconWidth = rawIcon.getWidth(Graphics.getScreenWidth(), Graphics.getScreenHeight());
+               int iconHeight = rawIcon.getHeight(Graphics.getScreenWidth(), Graphics.getScreenHeight());
+               int methodScaleToFit = 0;
+               XYDimension scaledSize = this.getScaledDimensions(iconWidth, iconHeight);
+               int scaledWidth = scaledSize.width;
+               int scaledHeight = scaledSize.height;
+               if (scaledWidth != iconWidth || scaledHeight != iconHeight) {
+                  methodScaleToFit = 8;
+               }
+
+               bitmapFocus = theme.getApplicationIcon(name, appstate, 6, scaledWidth, null, method | methodScaleToFit);
+               bitmapFocusHidden = theme.getApplicationIcon(name, appstate, 6, scaledWidth, null, method | 16 | methodScaleToFit);
+            }
+         }
+      }
+
+      if (this._bitmap != bitmap) {
+         this._bitmap = bitmap;
+         this._bitmapFocus = bitmapFocus;
+         if (bitmapHidden == null && this._iconCustom != null) {
+            Bitmap bmpHidden = Bitmap.createGreyscaleBitmap(this._iconCustom, this._width, this._height);
+            if (bmpHidden != null) {
+               bitmapHidden = ImageBitmap.create(bmpHidden);
+            }
+         }
+
+         if (bitmapFocusHidden == null && this._iconCustomFocus != null) {
+            Bitmap bmpFocusHidden = Bitmap.createGreyscaleBitmap(this._iconCustomFocus, this._width, this._height);
+            if (bmpFocusHidden != null) {
+               bitmapFocusHidden = ImageBitmap.create(bmpFocusHidden);
+            }
+         }
+
+         this._bitmapHidden = bitmapHidden;
+         this._bitmapFocusHidden = bitmapFocusHidden;
+         this.layout(this.getWidth(), this.getHeight());
+         this.invalidate();
+      }
    }
 
    public void setIconCustom(Object iconCustom, Object iconCustomFocus) {

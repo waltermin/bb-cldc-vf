@@ -1,9 +1,14 @@
 package com.sun.cldc.i18n;
 
 import com.sun.cldc.i18n.j2me.TextProcessingRegistry;
+import com.sun.cldc.i18n.j2me.Universal_Reader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.vm.WeakReference;
@@ -64,7 +69,11 @@ public final class Helper {
    }
 
    public static final Reader getStreamReader(InputStream is) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         return getStreamReader(is, defaultEncoding);
+      } catch (UnsupportedEncodingException x) {
+         throw new RuntimeException("Missing default encoding " + defaultEncoding);
+      }
    }
 
    public static final Reader getStreamReader(InputStream is, String name) {
@@ -78,11 +87,35 @@ public final class Helper {
    }
 
    private static final StreamReader getStreamReaderPrim(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (name == null) {
+         throw new NullPointerException();
+      }
+
+      try {
+         if (!name.equals(_readerName)) {
+            String className = defaultMEPath + name + "_Reader";
+            _readerClass = Class.forName(className);
+            _readerName = name;
+         }
+
+         return (StreamReader)_readerClass.newInstance();
+      } catch (ClassNotFoundException x) {
+         throw new UnsupportedEncodingException("Encoding " + name + " not found");
+      } catch (InstantiationException x) {
+         throw new RuntimeException("InstantiationException " + x.getMessage());
+      } catch (IllegalAccessException x) {
+         throw new RuntimeException("IllegalAccessException " + x.getMessage());
+      } catch (ClassCastException x) {
+         throw new RuntimeException("ClassCastException " + x.getMessage());
+      }
    }
 
    public static final Writer getStreamWriter(OutputStream os) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         return getStreamWriter(os, defaultEncoding);
+      } catch (UnsupportedEncodingException x) {
+         throw new RuntimeException("Missing default encoding " + defaultEncoding);
+      }
    }
 
    public static final Writer getStreamWriter(OutputStream os, String name) {
@@ -96,19 +129,136 @@ public final class Helper {
    }
 
    private static final StreamWriter getStreamWriterPrim(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (name == null) {
+         throw new NullPointerException();
+      }
+
+      try {
+         if (!name.equals(_writerName)) {
+            String className = defaultMEPath + name + "_Writer";
+            _writerClass = Class.forName(className);
+            _writerName = name;
+         }
+
+         return (StreamWriter)_writerClass.newInstance();
+      } catch (ClassNotFoundException x) {
+         throw new UnsupportedEncodingException("Encoding " + name + " not found");
+      } catch (InstantiationException x) {
+         throw new RuntimeException("InstantiationException " + x.getMessage());
+      } catch (IllegalAccessException x) {
+         throw new RuntimeException("IllegalAccessException " + x.getMessage());
+      } catch (ClassCastException x) {
+         throw new RuntimeException("ClassCastException " + x.getMessage());
+      }
    }
 
    public static final byte[] charToByteArray(char[] buffer, int offset, int length) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         return charToByteArray(buffer, offset, length, defaultEncoding);
+      } catch (UnsupportedEncodingException x) {
+         throw new RuntimeException("Missing default encoding " + defaultEncoding);
+      }
    }
 
    public static final Object byteToCharArray(byte[] buffer, int offset, int length, String enc) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (enc == null) {
+         throw new NullPointerException();
+      }
+
+      if (offset < 0 || length < 0 || offset + length > buffer.length || offset + length < 0 || offset > buffer.length) {
+         throw new IllegalArgumentException();
+      }
+
+      if (length == 0) {
+         return new byte[0];
+      }
+
+      enc = resolveAlias(enc);
+      if (!StringUtilities.strEqualIgnoreCase(ISO8859_1, enc, 1701707776) && !StringUtilities.strEqualIgnoreCase(ASCII, enc, 1701707776)) {
+         synchronized (_lastReaderLock) {
+            int encId = isUniversal(enc);
+            if (encId != -1) {
+               Universal_Reader universalReader = (Universal_Reader)_universalReaderWR.get();
+               if (universalReader == null) {
+                  universalReader = new Universal_Reader();
+                  _universalReaderWR.set(universalReader);
+                  _strongReferences.storeUniversalReaderStrongReference(universalReader);
+               }
+
+               return universalReader.byteToCharArray(encId, buffer, offset, length, enc);
+            } else {
+               StreamReader lastReader = (StreamReader)_lastReaderWR.get();
+               if (lastReader == null || !StringUtilities.strEqualIgnoreCase(_lastReaderEncoding, enc, 1701707776)) {
+                  lastReader = getStreamReaderPrim(enc);
+                  _lastReaderWR.set(lastReader);
+                  _lastReaderEncoding = enc;
+                  _strongReferences.storeLastReaderStrongReference(lastReader);
+               }
+
+               lastReader.open(new ByteArrayInputStream(buffer, offset, length), _lastReaderEncoding);
+               char[] outbuf = null;
+
+               try {
+                  int size = lastReader.sizeOf(buffer, offset, length);
+                  if (size >= 0) {
+                     outbuf = new char[size];
+                     lastReader.read(outbuf, 0, size);
+                  }
+
+                  lastReader.close();
+               } catch (IOException x) {
+                  throw new UnsupportedEncodingException("IOException reading reader " + x.getMessage());
+               }
+
+               if (outbuf == null) {
+                  throw new UnsupportedEncodingException("Data does not match the expected encoding");
+               } else {
+                  return outbuf;
+               }
+            }
+         }
+      } else {
+         byte[] outbuf = new byte[length];
+         System.arraycopy(buffer, offset, outbuf, 0, length);
+         return outbuf;
+      }
    }
 
    public static final byte[] charToByteArray(char[] buffer, int offset, int length, String enc) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (enc == null) {
+         throw new NullPointerException();
+      }
+
+      if (offset >= 0 && length >= 0 && offset + length <= buffer.length && offset + length >= 0 && offset <= buffer.length) {
+         synchronized (_lastWriterLock) {
+            enc = resolveAlias(enc);
+            StreamWriter lastWriter = (StreamWriter)_lastWriterWR.get();
+            if (lastWriter == null || !StringUtilities.startsWithIgnoreCase(enc, _lastWriterEncoding, 1701707776)) {
+               lastWriter = getStreamWriterPrim(mapEncoding(enc));
+               _lastWriterWR.set(lastWriter);
+               _lastWriterEncoding = enc;
+               _strongReferences.storeLastWriterStrongReference(lastWriter);
+            }
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
+            lastWriter.open(os, _lastWriterEncoding);
+
+            try {
+               lastWriter.write(buffer, offset, length);
+               lastWriter.close();
+            } catch (IOException x) {
+               throw new UnsupportedEncodingException("IOException writing writer " + x.getMessage());
+            }
+
+            if (os.size() < 0) {
+               throw new UnsupportedEncodingException("Data does not match the expected encoding or stream is empty");
+            } else {
+               return os.toByteArray();
+            }
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    private static final String mapEncoding(String enc) {

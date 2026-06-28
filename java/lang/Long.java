@@ -19,7 +19,7 @@ public final class Long {
    }
 
    public static final long parseLong(String s, int radix) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final long parseLong(String s) {

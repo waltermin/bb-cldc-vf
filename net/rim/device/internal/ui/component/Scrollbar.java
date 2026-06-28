@@ -103,7 +103,7 @@ public final class Scrollbar extends Field implements ScrollChangeListener {
    }
 
    private final void setupBitmaps() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override

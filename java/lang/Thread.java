@@ -1,5 +1,7 @@
 package java.lang;
 
+import net.rim.vm.Memory;
+
 public class Thread implements Runnable {
    private int priority;
    private int flags;
@@ -35,7 +37,11 @@ public class Thread implements Runnable {
    }
 
    public final String getName() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.name == null) {
+         this.name = "Thread-" + Memory.objectToInt(this);
+      }
+
+      return this.name;
    }
 
    @Override
@@ -75,7 +81,7 @@ public class Thread implements Runnable {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Thread[" + this.getName() + ',' + this.getPriority() + ']';
    }
 
    private native void setPriority0(int var1);

@@ -3,6 +3,7 @@ package net.rim.device.api.ui.theme;
 import java.util.Enumeration;
 import net.rim.device.api.util.EmptyEnumeration;
 import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
 
 class DefaultResourceFetcher implements ResourceFetcher {
    private Resource _resources;
@@ -13,11 +14,23 @@ class DefaultResourceFetcher implements ResourceFetcher {
    }
 
    DefaultResourceFetcher(String moduleName) {
+      this._initialized = true;
+      this._resources = Resource$Internal.getResourceClass(moduleName);
+      if (this._resources == null) {
+         throw new IllegalArgumentException("Resources not found: " + moduleName);
+      }
+
+      this._moduleName = moduleName;
    }
 
    @Override
    public void setResourcesFromModule(String moduleName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._initialized) {
+         throw new IllegalStateException("ResourceFetcher already initialized.");
+      }
+
+      this._resources = Resource$Internal.getResourceClass(moduleName);
+      this._moduleName = moduleName;
    }
 
    @Override
@@ -40,10 +53,12 @@ class DefaultResourceFetcher implements ResourceFetcher {
 
    @Override
    public String getBaseURL() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "cod://" + this._moduleName + "/";
    }
 
    private void checkState() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._resources == null) {
+         throw new IllegalStateException("resources must be set before being used");
+      }
    }
 }

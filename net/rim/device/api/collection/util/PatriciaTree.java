@@ -237,7 +237,26 @@ public class PatriciaTree {
    }
 
    private void dump(int indent, int nodeIndex, int leafIndex, int numLeaves) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (numLeaves != 0) {
+         if (numLeaves == 1) {
+            for (int i = 0; i < indent; i++) {
+               System.out.print("  ");
+            }
+
+            this._data.dumpLeaf(this._data.getLeaf(leafIndex));
+         } else {
+            int leftNodes = this._data.getLeftNodes(nodeIndex);
+            int bitNum = this._data.getBitNumber(nodeIndex);
+
+            for (int i = 0; i < indent; i++) {
+               System.out.print("  ");
+            }
+
+            System.out.println("" + nodeIndex + "[" + bitNum + ":" + leftNodes + "]");
+            this.dump(indent + 1, nodeIndex + 1, leafIndex, leftNodes + 1);
+            this.dump(indent + 1, nodeIndex + leftNodes + 1, leafIndex + leftNodes + 1, numLeaves - leftNodes - 1);
+         }
+      }
    }
 
    public boolean validate() {
@@ -247,6 +266,33 @@ public class PatriciaTree {
    }
 
    private boolean validateNode(int nodeIndex, int numLeaves, int parentBitNum) {
-      throw new RuntimeException("cod2jar: ldc");
+      boolean valid = true;
+      if (nodeIndex >= this._data.size() - 1) {
+         System.out.println("Invalid tree: Node " + nodeIndex + " does not exist");
+         return false;
+      }
+
+      int leftNodes = this._data.getLeftNodes(nodeIndex);
+      int bitNum = this._data.getBitNumber(nodeIndex);
+      if (bitNum <= parentBitNum) {
+         System.out.println("Invalid tree: Node " + nodeIndex + " has bit number " + bitNum + " <= parent bit number " + parentBitNum);
+         valid = false;
+      }
+
+      if (leftNodes >= numLeaves) {
+         System.out.println("Invalid tree: Node " + nodeIndex + " has left node count " + leftNodes + " >= " + numLeaves);
+         return false;
+      }
+
+      if (leftNodes > 0 && !this.validateNode(nodeIndex + 1, leftNodes + 1, bitNum)) {
+         valid = false;
+      }
+
+      int rightNodes = numLeaves - 2 - leftNodes;
+      if (rightNodes > 0 && !this.validateNode(nodeIndex + leftNodes + 1, rightNodes + 1, bitNum)) {
+         valid = false;
+      }
+
+      return valid;
    }
 }

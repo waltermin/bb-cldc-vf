@@ -103,7 +103,14 @@ public final class GAN {
    }
 
    public static final void setGANSystem(GANSystem system) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+      if (appReg != null) {
+         if (appReg.replace(4566345875717469622L, system) != null) {
+            throw new IllegalStateException("GAN system already present");
+         }
+
+         _system = system;
+      }
    }
 
    public static final GANSystem getGANSystem() {

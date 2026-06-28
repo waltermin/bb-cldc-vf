@@ -10,8 +10,8 @@ import net.rim.vm.Array;
 
 public class RichTextField extends TextField implements ActiveRegionSupport$ActiveRegionFieldIf {
    ActiveRegionSupport _arSupport;
-   private boolean _legacyArraysUpdated;
-   private boolean _legacyAttributesUsed;
+   private boolean _legacyArraysUpdated = false;
+   private boolean _legacyAttributesUsed = false;
    private int[] _offsets;
    private int _offset_no;
    private byte[] _attributes;
@@ -233,7 +233,28 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    protected void setFont(int[] index, Font[] fonts) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index == null) {
+         throw new IllegalArgumentException("Index array is null");
+      }
+
+      if (fonts == null) {
+         throw new IllegalArgumentException("Font array is null");
+      }
+
+      int indexCount = index.length;
+      if (indexCount != fonts.length) {
+         throw new IllegalArgumentException("Font and index arrays of unequal length");
+      }
+
+      if (!this._legacyArraysUpdated) {
+         this.initLegacyArrays();
+      }
+
+      for (int i = 0; i < indexCount; i++) {
+         this._fonts[index[i]] = fonts[i];
+      }
+
+      this.convertOffsetsToAttribString(null, 0, this._offset_no - 1, this._offsets, this._attributes, this._fonts);
    }
 
    @Override
@@ -261,11 +282,20 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    private void vetOffsets(String text, int[] offsets) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private void vetAttributes(byte[] attributes, Font[] fonts) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (attributes != null) {
+         int maxAttribute = fonts.length;
+
+         for (int lv = attributes.length - 1; lv >= 0; lv--) {
+            int attribute = attributes[lv];
+            if (attribute < 0 || maxAttribute <= attribute) {
+               throw new IllegalArgumentException("attribute out of range");
+            }
+         }
+      }
    }
 
    @Override
@@ -380,9 +410,11 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    public RichTextField() {
+      this("", 0);
    }
 
    public RichTextField(long style) {
+      this("", style);
    }
 
    private synchronized int[] insertText(String text, int[] offsets, int[] lengths) {
@@ -431,7 +463,7 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    private void vetArguments(String text, int[] offsets, int[] lengths, byte[] attr) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public RichTextField(String text) {
@@ -440,8 +472,6 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
 
    public RichTextField(String text, int[] offsets, byte[] attributes, Font[] fonts, Object[] cookies, long style) {
       super(validateStyle(style));
-      this._legacyArraysUpdated = false;
-      this._legacyAttributesUsed = false;
       this.setText(text, offsets, attributes, fonts, cookies);
       this._arSupport = new ActiveRegionSupport(super._text.getIterator(), this);
    }
@@ -467,7 +497,38 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    private synchronized void convertOffsetsToAttribString(AttributedString str, int start, int end, int[] offsets, byte[] attributes, Font[] fonts) {
-      throw new RuntimeException("cod2jar: ldc");
+      boolean changeField = str == null;
+      if (changeField) {
+         this.startLayoutUpdate();
+      }
+
+      for (int i = start; i < end; i++) {
+         byte index = attributes[i];
+         long attrib = fonts[index] == null ? this.getDefaultFontAttributes() : Ui.getAttributesFromFont(fonts[index]);
+         long xAttrib = (long)(i + 1) << 5;
+         long xAttribMask = 16711680;
+         if (xAttrib > 65504) {
+            System.err.println("Warning: too much cookies! Cookie " + i + " ignored");
+         } else {
+            xAttribMask |= 65504;
+         }
+
+         xAttrib |= (long)index << 16;
+         if (changeField) {
+            this.setAttrib(offsets[i], offsets[i + 1], attrib, 675086335, xAttrib, xAttribMask);
+         } else {
+            str.setAttrib(offsets[i], offsets[i + 1], attrib, 675086335, xAttrib, xAttribMask);
+         }
+      }
+
+      if (changeField) {
+         this.endLayoutUpdate();
+         if (this._arSupport != null) {
+            this._arSupport.init();
+         }
+      }
+
+      this._legacyAttributesUsed = true;
    }
 
    @Override
@@ -484,6 +545,8 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
    }
 
    public RichTextField(String text, long style) {
+      super("", text, 1000000, validateStyle(style));
+      this._arSupport = new ActiveRegionSupport(super._text.getIterator(), this);
    }
 
    @Override

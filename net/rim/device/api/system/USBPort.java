@@ -65,11 +65,22 @@ public final class USBPort extends IOPort {
    }
 
    public static final int registerChannel(String name, int maxRxSize, int maxTxSize) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (name != null && name.startsWith("RIM")) {
+         ControlledAccess.assertRRISignatures(true);
+      }
+
+      return USBPortInternal.registerChannel(name, maxRxSize, maxTxSize);
    }
 
    public static final void deregisterChannel(int channel) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      String channelName = USBPort$Internal.getChannelName(channel);
+      if (channelName != null && channelName.startsWith("RIM")) {
+         ControlledAccess.assertRRISignatures(true);
+      }
+
+      USBPortInternal.deregisterChannel(channel);
    }
 
    public static final int getConnectionState() {

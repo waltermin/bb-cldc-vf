@@ -1,5 +1,7 @@
 package net.rim.device.api.ui.component;
 
+import net.rim.device.api.i18n.ResourceBundle;
+
 class SymbolScreen$Encoding extends LabelField {
    SymbolScreen$Header _parent;
    private int _encodingType;
@@ -7,6 +9,14 @@ class SymbolScreen$Encoding extends LabelField {
    private final SymbolScreen this$0;
 
    public SymbolScreen$Encoding(SymbolScreen _1, long style, int encoding, SymbolScreen$Header parent) {
+      super("", style);
+      this.this$0 = _1;
+      this._parent = parent;
+      ResourceBundle bundle = ResourceBundle.getBundle(8562590855522002223L, "net.rim.device.internal.resource.Input");
+      this._encodingStrings = new String[2];
+      this._encodingStrings[0] = bundle.getString(19);
+      this._encodingStrings[1] = bundle.getString(18);
+      this.setEncoding(encoding);
    }
 
    public void setEncoding(int encodingType) {

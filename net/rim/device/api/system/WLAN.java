@@ -135,7 +135,14 @@ public final class WLAN {
    }
 
    public static final void setWLANSystem(WLANSystem system) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+      if (appReg != null) {
+         if (appReg.replace(6850047726709752304L, system) != null) {
+            throw new IllegalStateException("WLAN system already present");
+         }
+
+         _system = system;
+      }
    }
 
    public static final WLANSystem getWLANSystem() {

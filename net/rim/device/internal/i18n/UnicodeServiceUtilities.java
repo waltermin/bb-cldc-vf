@@ -47,7 +47,7 @@ public final class UnicodeServiceUtilities implements UnicodeServiceConstants {
    }
 
    public static final String readString(byte[] dataBuffer, int readPosition, int lengthToRead, boolean encoded) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final int detectFutureData(byte[] dataBuffer, int readPosition, int lengthToRead) {

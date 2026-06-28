@@ -9,7 +9,11 @@ public class Timer {
    }
 
    public void schedule(TimerTask task, long delay) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (delay < 0) {
+         throw new IllegalArgumentException("Negative delay.");
+      }
+
+      this.sched(task, System.currentTimeMillis() + delay, 0);
    }
 
    public void schedule(TimerTask task, Date time) {
@@ -17,23 +21,75 @@ public class Timer {
    }
 
    public void schedule(TimerTask task, long delay, long period) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (delay < 0) {
+         throw new IllegalArgumentException("Negative delay.");
+      }
+
+      if (period <= 0) {
+         throw new IllegalArgumentException("Non-positive period.");
+      }
+
+      this.sched(task, System.currentTimeMillis() + delay, -period);
    }
 
    public void schedule(TimerTask task, Date firstTime, long period) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (period <= 0) {
+         throw new IllegalArgumentException("Non-positive period.");
+      }
+
+      this.sched(task, firstTime.getTime(), -period);
    }
 
    public void scheduleAtFixedRate(TimerTask task, long delay, long period) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (delay < 0) {
+         throw new IllegalArgumentException("Negative delay.");
+      }
+
+      if (period <= 0) {
+         throw new IllegalArgumentException("Non-positive period.");
+      }
+
+      this.sched(task, System.currentTimeMillis() + delay, period);
    }
 
    public void scheduleAtFixedRate(TimerTask task, Date firstTime, long period) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (period <= 0) {
+         throw new IllegalArgumentException("Non-positive period.");
+      }
+
+      this.sched(task, firstTime.getTime(), period);
    }
 
    private void sched(TimerTask task, long time, long period) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (time < 0) {
+         throw new IllegalArgumentException("Illegal execution time.");
+      }
+
+      synchronized (this.queue) {
+         if (!this.thread.newTasksMayBeScheduled) {
+            throw new IllegalStateException("Timer already cancelled.");
+         }
+
+         if (!this.thread.isAlive()) {
+            this.thread = new TimerThread(this.queue);
+            this.thread.start();
+         }
+
+         synchronized (task.lock) {
+            if (task.state != 0) {
+               throw new IllegalStateException("Task already scheduled or cancelled");
+            }
+
+            task.nextExecutionTime = time;
+            task.period = period;
+            task.state = 1;
+         }
+
+         this.queue.add(task);
+         if (this.queue.getMin() == task) {
+            this.queue.notify();
+         }
+      }
    }
 
    public void cancel() {

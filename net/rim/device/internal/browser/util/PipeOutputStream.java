@@ -1,5 +1,6 @@
 package net.rim.device.internal.browser.util;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 public class PipeOutputStream extends OutputStream {
@@ -12,7 +13,7 @@ public class PipeOutputStream extends OutputStream {
 
    @Override
    public void write(int x) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IOException("Pipe only supports writing entire packets");
    }
 
    @Override

@@ -1,5 +1,8 @@
 package net.rim.tid.im;
 
+import com.sun.cldc.i18n.j2me.TextProcessingRegistry;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
+
 public class AwnnInterface {
    private int _encoding;
    private byte[] _encodingData;
@@ -40,7 +43,25 @@ public class AwnnInterface {
    }
 
    public static AwnnInterface getInstance() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_instance != null) {
+         return _instance;
+      } else {
+         int[] conversionDataOffset = new int[1];
+         TextProcessingRegistry txtRg = TextProcessingRegistry.getInstance();
+         int encoding = txtRg.getTextProcessingDataID("Shift_JIS", 0);
+         if (encoding == -1) {
+            System.out.println("Encoding Shift_JIS is not suported!");
+            return null;
+         } else {
+            byte[][][] bData = (byte[][][])txtRg.getTextProcessingData(encoding, 0, conversionDataOffset);
+            if (bData != null && bData.length > 0) {
+               _instance = new AwnnInterface(encoding, (byte[])bData[0], conversionDataOffset[0]);
+               return _instance;
+            } else {
+               return null;
+            }
+         }
+      }
    }
 
    public static int init() {
@@ -260,7 +281,31 @@ public class AwnnInterface {
    }
 
    public static int handleAwnnDicError(int dicID) {
-      throw new RuntimeException("cod2jar: ldc");
+      int statusCode = checkUserDictionary(dicID);
+      if (statusCode >= 0) {
+         return 0;
+      }
+
+      int staticBufferVerificatioVar = getStaticBufferVerificationVar();
+      int dicResetResult = resetUserDictionary(dicID);
+      StringBuffer quincyMessage = new StringBuffer("Awnn Dict Error=");
+      quincyMessage.append("0x" + Integer.toString(statusCode, 16));
+      quincyMessage.append(" ");
+      quincyMessage.append("0x" + Integer.toString(staticBufferVerificatioVar, 16));
+      quincyMessage.append(" ");
+      quincyMessage.append("0x" + Integer.toString(dicResetResult, 16));
+      if (!_dicErrorReported) {
+         System.err.println(quincyMessage.toString());
+         long RADIO_LOGWORTHY_REPORT_REQUEST = -2816799803471967993L;
+         RIMGlobalMessagePoster.postGlobalEvent(RADIO_LOGWORTHY_REPORT_REQUEST, 0, 0, quincyMessage.toString(), null);
+         _dicErrorReported = true;
+      }
+
+      if (dicResetResult >= 0) {
+         _dicErrorReported = false;
+      }
+
+      return dicResetResult;
    }
 
    public static int deleteWord(String reading, String kanji, int dictionaryId) {

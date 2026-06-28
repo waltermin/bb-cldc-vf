@@ -4,6 +4,7 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RadioInfo;
@@ -28,7 +29,7 @@ public final class GPSRegistry {
    private GPSLocationExtended _extendedLocation;
    private boolean _pdeRequestSuccess;
    private long _lastLogEntryTime;
-   Object _locationLock;
+   Object _locationLock = new Object();
    private static final long REGISTRY_NAME;
    private static final long LAST_FIX_TIME;
    public static final long FIX_REQUESTED;
@@ -44,6 +45,15 @@ public final class GPSRegistry {
    private static long[] _lastFixTimes;
 
    private GPSRegistry() {
+      this._autoFixConsumers = new IntIntHashtable();
+      this._assistFixConsumers = new IntIntHashtable();
+      this._standardLocation = new GPSLocationStandard();
+      this._extendedLocation = new GPSLocationExtended();
+      EventLogger.register(2845560962249627645L, "Location API", 2);
+      this._gpsListener = new GPSRegistry$GPSListenerImpl(this);
+      GPS.addListener(Application.getApplication(), this._gpsListener);
+      this._pdeTable = new IntHashtable();
+      this._criteriaTable = new IntHashtable();
    }
 
    public static final void initialize() {
@@ -348,7 +358,11 @@ public final class GPSRegistry {
    }
 
    private final void logPDEFailure() {
-      throw new RuntimeException("cod2jar: ldc");
+      long currTime = System.currentTimeMillis();
+      if (currTime - this._lastLogEntryTime > 60000) {
+         EventLogger.logEvent(2845560962249627645L, "Application must set valid PDE IP and Port to get Location".getBytes(), 0);
+         this._lastLogEntryTime = currTime;
+      }
    }
 
    private final int gpsGetLocation(GPSLocationStandard info, int aidMode) {

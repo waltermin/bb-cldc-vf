@@ -4,6 +4,8 @@ import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
+import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.theme.Tag;
 
 class TitleStatusManager extends Manager {
@@ -77,15 +79,75 @@ class TitleStatusManager extends Manager {
    }
 
    public void setBanner(Field banner) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._bannerManager != null) {
+         Manager old = this._bannerManager;
+         this._bannerManager = null;
+         super.delete(old);
+         old.deleteAll();
+      }
+
+      if (banner != null) {
+         this._bannerManager = new VerticalFieldManager(1152921504606846976L);
+         this._bannerManager.setTag(BANNER_TAG);
+         this._bannerManager.setId(this._vfm.getId());
+         if (banner instanceof LabelField && (banner.getTag() == null || banner.getTag().toString().equals("object")) && banner.getId() == null) {
+            banner.setId("banner");
+         }
+
+         this._bannerManager.add(banner);
+         super.insert(this._bannerManager, 0);
+      }
    }
 
    public void setStatus(Field status) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._statusManager != null) {
+         Manager old = this._statusManager;
+         this._statusManager = null;
+         super.delete(old);
+         old.deleteAll();
+      }
+
+      if (status != null) {
+         this._statusManager = new VerticalFieldManager(1152921504606846976L);
+         this._statusManager.setTag(STATUS_TAG);
+         this._statusManager.setId(this._vfm.getId());
+         if (!this.isStyle(1073741824)) {
+            SeparatorField separator = new SeparatorField(8388608);
+            separator.setId("status");
+            this._statusManager.insert(separator, 0);
+         }
+
+         this._statusManager.add(status);
+         super.add(this._statusManager);
+      }
    }
 
    public void setTitle(Field title) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._titleManager != null) {
+         Manager old = this._titleManager;
+         this._titleManager = null;
+         super.delete(old);
+         old.deleteAll();
+      }
+
+      this._title = title;
+      if (title != null) {
+         this._titleManager = new VerticalFieldManager(1153484454560268288L);
+         this._titleManager.setTag(TITLE_TAG);
+         this._titleManager.setId(this._vfm.getId());
+         if (title instanceof LabelField && (title.getTag() == null || title.getTag().toString().equals("object")) && title.getId() == null) {
+            title.setId("title");
+         }
+
+         this._titleManager.add(title);
+         if (!this.isStyle(2147483648L)) {
+            SeparatorField separator = new SeparatorField(8388608);
+            separator.setId("title");
+            this._titleManager.insert(separator, 1);
+         }
+
+         super.insert(this._titleManager, this._bannerManager == null ? 0 : 1);
+      }
    }
 
    public void setTitle(String text) {

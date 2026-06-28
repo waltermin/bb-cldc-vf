@@ -1,6 +1,8 @@
 package javax.microedition.content;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringUtilities;
 
 class ContentHandlerImpl implements ContentHandler {
    protected String[] _types;
@@ -162,17 +164,41 @@ class ContentHandlerImpl implements ContentHandler {
 
    @Override
    public boolean hasAction(String action) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (action == null) {
+         throw new NullPointerException("action is null");
+      } else {
+         return Arrays.getIndex(this._actions, action) != -1;
+      }
    }
 
    @Override
    public boolean hasSuffix(String suffix) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (suffix == null) {
+         throw new NullPointerException("suffix is null");
+      }
+
+      for (int i = 0; i < this._suffixes.length; i++) {
+         if (StringUtilities.strEqualIgnoreCase(suffix, this._suffixes[i])) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    @Override
    public boolean hasType(String type) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (type == null) {
+         throw new NullPointerException("type is null");
+      }
+
+      for (int i = 0; i < this._types.length; i++) {
+         if (StringUtilities.strEqualIgnoreCase(type, this._types[i]) || this._types[i].equals("*")) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    ContentHandlerImpl(ContentHandlerImpl handler) {

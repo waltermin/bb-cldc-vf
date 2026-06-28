@@ -66,7 +66,7 @@ public class SeparatorField extends Field {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "--------------------";
    }
 
    @Override

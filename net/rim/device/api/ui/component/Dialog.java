@@ -3,6 +3,7 @@ package net.rim.device.api.ui.component;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
@@ -10,6 +11,7 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.Image;
@@ -301,7 +303,9 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public static void inform(String message) {
-      throw new RuntimeException("cod2jar: ldc");
+      Dialog d = new Dialog(0, message, 0, null, 0);
+      d.setIcon(ThemeManager.getThemeAwareImage("dialog_information"));
+      d.doModal();
    }
 
    public static int ask(int type) {
@@ -342,7 +346,9 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public static int ask(String message, Object[] choices, int[] values, int defaultChoice) {
-      throw new RuntimeException("cod2jar: ldc");
+      Dialog d = new Dialog(message, choices, values, defaultChoice, null, 0);
+      d.setIcon(ThemeManager.getThemeAwareImage("dialog_question"));
+      return d.doModal();
    }
 
    private void selectOrdinal(int selection) {
@@ -362,7 +368,28 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    public void close() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._app != null) {
+         this._app.removeHolsterListener(this);
+         this._app = null;
+      }
+
+      if (this.isGlobal() || this.isDisplayed()) {
+         if (this.getPushMethod() == 0) {
+            super.close();
+         } else {
+            String logData = "Unexpected dismissStatus required.";
+            EventLogger.logEvent(-7509200465648525729L, logData.getBytes(), 5);
+            Ui.getUiEngine().dismissStatus(this);
+         }
+      }
+
+      if (!this._isModal && this._closeListener != null) {
+         try {
+            this._closeListener.dialogClosed(this, this._returnValue);
+            return;
+         } catch (Throwable var2) {
+         }
+      }
    }
 
    private void setChoices(Object[] choices, int[] values) {
@@ -384,11 +411,15 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public static int ask(int type, String message, int defaultChoice) {
-      throw new RuntimeException("cod2jar: ldc");
+      Dialog d = new Dialog(type, message, defaultChoice, null, 0);
+      d.setIcon(ThemeManager.getThemeAwareImage("dialog_question"));
+      return d.doModal();
    }
 
    public static void alert(String message) {
-      throw new RuntimeException("cod2jar: ldc");
+      Dialog d = new Dialog(0, message, 0, null, 0);
+      d.setIcon(ThemeManager.getThemeAwareImage("dialog_exclamation"));
+      d.doModal();
    }
 
    @Override

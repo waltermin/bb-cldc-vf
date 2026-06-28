@@ -7,6 +7,8 @@ import net.rim.device.api.ui.component.ActiveRichTextField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.DialogClosedListener;
+import net.rim.device.api.ui.container.DialogFieldManager;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.util.OptionsRegistry$Listener;
 
@@ -15,8 +17,21 @@ final class MediaOptionsUtilities$VolumeBoostDialog extends Dialog implements Di
    private static final String[] _options;
    private static final int[] _values;
 
+   MediaOptionsUtilities$VolumeBoostDialog() {
+      super("", _options, _values, 1, null, 0);
+      this.setEscapeEnabled(true);
+      this.setDontAskAgainPrompt(true);
+      this.createDialog();
+      this.setDialogClosedListener(this);
+      MediaOptionsRegistry.getInstance().addOptionsRegistryChangeListener(this);
+   }
+
    private final void createDialog() {
-      throw new RuntimeException("cod2jar: ldc");
+      this.setIcon(ThemeManager.getThemeAwareImage("dialog_question"));
+      DialogFieldManager dialogManager = (DialogFieldManager)this.getDelegate();
+      String message = CommonResource.getString(10169);
+      ActiveRichTextField messageBody = new ActiveRichTextField(message, 18014398509481984L);
+      dialogManager.setMessage(messageBody);
    }
 
    @Override

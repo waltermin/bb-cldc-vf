@@ -284,7 +284,11 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void insert(int aPos, AttributedString$Iterator aIterator, long aIteratorAttrMask, long aIteratorXAttribMask) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isEditable()) {
+         throw new IllegalStateException("Attempt to modify a READ_ONLY field.");
+      }
+
+      this.replace(aPos, aPos, aIterator, aIteratorAttrMask, aIteratorXAttribMask, aIterator.length(), 0, true, 0);
    }
 
    protected void handleCursorPositionChanged() {
@@ -395,7 +399,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void clear(int context) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.setText("", context);
    }
 
    public void wipe() {
@@ -465,7 +469,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public synchronized int insert(String text, AttributedString$Picture picture, int context, boolean stripInvalid, boolean validateText) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    int getLayoutWidth(int width) {
@@ -511,7 +515,15 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void setFilter(TextFilter filter) {
-      throw new RuntimeException("cod2jar: ldc");
+      String oldText = this.getText();
+      this._filter = filter;
+      SLControlObject controlObject = (SLControlObject)this.getInputContext().getInputMethodControlObject();
+      if (controlObject != null) {
+         controlObject.setFilter(this._filter);
+      }
+
+      this.setText("");
+      this.insert(oldText);
    }
 
    public TextFilter getFilter() {
@@ -527,7 +539,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void setAttributedText(AttributedString text) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    protected boolean validate(char character) {
@@ -938,7 +950,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -1251,7 +1263,23 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public void select(boolean enable) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isFocusable() && enable) {
+         throw new IllegalStateException("Can't select a non focusable TextField.");
+      }
+
+      if (this._selecting != enable) {
+         this.focusRemove();
+         this._selecting = enable;
+         if (enable) {
+            this.setSelection(this._cursor, this._cursorLeadingEdge, this._cursor, false);
+            this.focusAdd(true);
+         } else {
+            this.setSelection(this._cursor, this._cursorLeadingEdge, this._cursor, false);
+            this._isAutoSelectModeOn = false;
+         }
+
+         this.invalidateFocusRect();
+      }
    }
 
    @Override
@@ -1397,15 +1425,34 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void resetLatestCommittedText() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._latestCommittedEnd - this._latestCommittedStart != 0) {
+         int dif = this._cursor - this._latestCommittedEnd;
+         if (dif != 0) {
+            int MAX_DEPTH = 5;
+            if (dif > 0 && dif <= MAX_DEPTH) {
+               StringBufferGap tmp = this._text.getText();
+               int start = this._latestCommittedEnd;
+               int end = start + dif;
+
+               for (int i = end - 1; i >= start && " \t\n".indexOf(tmp.charAt(i)) != -1; i--) {
+                  if (i == start) {
+                     return;
+                  }
+               }
+            }
+
+            this._latestCommittedEnd = -1;
+            this._latestCommittedStart = -1;
+         }
+      }
    }
 
    private int deleteSelectedText() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    private void setTextInternal(String text, int context, boolean validate) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
@@ -1611,7 +1658,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private String handleLabelOwnLine(String labelSet) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private final int getLineLength(ArticInterface$Line aLine) {
@@ -2051,7 +2098,40 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void fillInternalDebugInfo(StringBuffer result) {
-      throw new RuntimeException("cod2jar: ldc");
+      Object screen = this.getScreen();
+      if (screen != null) {
+         result.append("Scr=");
+         result.append(screen);
+         result.append('\n');
+      }
+
+      result.append("hFcs=");
+      result.append(this.isFocus());
+      result.append('\n');
+      result.append("lLn=");
+      result.append(this._labelLength);
+      result.append('\n');
+      result.append("tLn=");
+      result.append(this._text.length());
+      result.append('\n');
+      result.append("cStrt=");
+      result.append(this._composedStart);
+      result.append('\n');
+      result.append("cEnd=");
+      result.append(this._composedEnd);
+      result.append('\n');
+      result.append("lcStrt=");
+      result.append(this._latestCommittedStart);
+      result.append('\n');
+      result.append("lcEnd=");
+      result.append(this._latestCommittedEnd);
+      result.append('\n');
+      result.append("cOffst=");
+      result.append(this._cursor);
+      result.append('\n');
+      result.append("isSlct=");
+      result.append(this.isSelecting());
+      result.append('\n');
    }
 
    public TextField(long style) {

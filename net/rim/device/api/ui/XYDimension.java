@@ -29,6 +29,6 @@ public final class XYDimension {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "+(" + this.width + ',' + this.height + ')';
    }
 }

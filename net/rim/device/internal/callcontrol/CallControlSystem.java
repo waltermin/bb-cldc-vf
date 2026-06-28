@@ -40,6 +40,11 @@ public final class CallControlSystem {
    }
 
    private CallControlSystem() {
+      AbstractCallEventHandler.internalRegister(new CallEventDispatcher());
+      this._commandHandler = new CallCommandHandler(2100);
+      AbstractCallCommandHandler.internalRegister(this._commandHandler);
+      this._radioHandler = new RadioCommandHandler();
+      new CallControlLogger("CC", 2090);
    }
 
    public static final Phone getCommandHandler() {

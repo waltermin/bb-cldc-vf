@@ -30,7 +30,11 @@ public class PopupDialog extends PopupScreen {
    }
 
    public void setModal(boolean modal) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!modal || !this.isStyle(33554432) && !this.isStyle(134217728)) {
+         this._modal = modal;
+      } else {
+         throw new IllegalArgumentException("Global Screens cannot be modal.");
+      }
    }
 
    public boolean isModal() {

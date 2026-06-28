@@ -97,7 +97,7 @@ public final class ThemeAttributeSet$Writer {
    }
 
    public final void setFontSize(int relativeFontSize) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private final float powerHelper(int power, boolean negative) {
@@ -128,7 +128,11 @@ public final class ThemeAttributeSet$Writer {
    }
 
    public final void setLayout(String layout) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!layout.equals("empty") && layout.indexOf(58) == -1) {
+         layout = this._resourceFetcher.getBaseURL() + layout;
+      }
+
+      this.this$0._layout = layout;
    }
 
    public final void setLayoutParameters(String[] params) {

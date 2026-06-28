@@ -64,7 +64,7 @@ public final class FontRegistry {
    }
 
    private final synchronized int loadSplitFontInternal(String aFileName, int aFileCount, String aLocation, String aTypefaceName, boolean aIsPublic) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public static final int loadFont(byte[] data, String typefaceName, boolean isPublic) {

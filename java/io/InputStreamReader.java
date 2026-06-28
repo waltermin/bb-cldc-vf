@@ -14,7 +14,9 @@ public class InputStreamReader extends Reader {
    }
 
    private void ensureOpen() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.in == null) {
+         throw new IOException("Stream closed");
+      }
    }
 
    @Override

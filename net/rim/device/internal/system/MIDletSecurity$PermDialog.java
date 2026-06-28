@@ -1,10 +1,12 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.DialogFieldManager;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.component.PopupDialog;
 
@@ -38,7 +40,30 @@ class MIDletSecurity$PermDialog extends PopupDialog {
    }
 
    private String getMessage(int perm, ApplicationDescriptor descriptor, String target) {
-      throw new RuntimeException("cod2jar: ldc");
+      int group = MIDletSecurityConstants.MIDletPermissionGroups[perm];
+      int resid = MIDletSecurityConstants.MIDletGroupResourceIds[group];
+      String text = CommonResource.getString(resid);
+      String moduleName = descriptor.getName();
+      String formattedMsg = null;
+      if (resid == 10057) {
+         String displayTarget = target;
+         if (displayTarget == null || displayTarget.trim().equals("") || StringUtilities.strEqualIgnoreCase(displayTarget.substring(0, 2), "//", 1701707776)) {
+            displayTarget = CommonResource.getString(10178);
+         }
+
+         formattedMsg = MessageFormat.format(text, new String[]{moduleName, displayTarget});
+      } else if (resid == 10058) {
+         String displayTarget = target;
+         if (displayTarget == null || displayTarget.trim().equals("") || displayTarget.substring(0, 2).equals("//")) {
+            displayTarget = CommonResource.getString(10178);
+         }
+
+         formattedMsg = MessageFormat.format(text, new String[]{moduleName, displayTarget});
+      } else {
+         formattedMsg = MessageFormat.format(text, new String[]{moduleName});
+      }
+
+      return formattedMsg;
    }
 
    @Override

@@ -6,10 +6,12 @@ import net.rim.device.api.synchronization.SyncEventListener;
 import net.rim.device.api.synchronization.SyncManager;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.HolsterListener;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.system.RealtimeClockListener;
 import net.rim.device.api.system.SystemListener;
 import net.rim.device.api.util.Comparator;
@@ -330,6 +332,24 @@ public final class MemoryCleanerManager implements HolsterListener, RealtimeCloc
    }
 
    private MemoryCleanerManager() {
+      EventLogger.register(-3818033069674138067L, "net.rim.memclean", 2);
+      this._listeners = new EventListenerManager();
+      this._settingsHolder = RIMPersistentStore.getPersistentObject(-8102403034661658129L);
+      if (this._settingsHolder == null) {
+         throw new RuntimeException();
+      }
+
+      this._settings = (MemoryCleanerSettings)this._settingsHolder.getContents();
+      if (this._settings == null) {
+         this._settings = new MemoryCleanerSettings();
+         this._settingsHolder.setContents(this._settings, 51);
+         this.resetOptions();
+         this._settingsHolder.commit();
+      }
+
+      this._syncItem = new MemoryCleanerManager$MemoryCleanerSyncItem(this);
+      this._clipboardMemoryCleaner = new MemoryCleanerManager$ClipboardMemoryCleaner();
+      this.addListener(this._clipboardMemoryCleaner, false, false);
    }
 
    private final void notifyAllListeners(int event) {

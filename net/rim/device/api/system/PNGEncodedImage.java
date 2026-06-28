@@ -122,7 +122,7 @@ public final class PNGEncodedImage extends EncodedImage {
 
    @Override
    public final String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "image/png";
    }
 
    private static final native byte[] getPNGData(Bitmap var0, int var1, int var2, int var3, int var4);

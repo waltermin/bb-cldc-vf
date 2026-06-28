@@ -9,6 +9,14 @@ class ForcedResetManager$ResetRunnable$DelayedResetRunnable$1 extends Thread {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      System.out.println("Sleeping... " + this.this$1._message + '(' + this.this$1._variant + ')');
+
+      try {
+         Thread.sleep(2000);
+      } catch (InterruptedException var2) {
+      }
+
+      System.out.println("Resetting!");
+      InternalServices.initiateReset("FRM SCHb");
    }
 }

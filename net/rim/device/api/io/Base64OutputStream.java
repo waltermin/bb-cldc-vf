@@ -36,7 +36,7 @@ public class Base64OutputStream extends OutputStream {
 
    @Override
    public void write(int data) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
@@ -46,12 +46,12 @@ public class Base64OutputStream extends OutputStream {
 
    @Override
    public void write(byte[] data, int dataOffset, int dataLength) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: unsupported opcode");
    }
 
    @Override
    public void flush() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override

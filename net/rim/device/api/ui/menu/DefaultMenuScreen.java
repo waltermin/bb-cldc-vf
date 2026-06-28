@@ -11,6 +11,7 @@ import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.component.Menu;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.internal.ui.UiInternal;
 import net.rim.device.internal.ui.VerticalFieldManager3;
 import net.rim.tid.im.layout.SLKeyLayout;
@@ -168,7 +169,27 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
 
    @Override
    protected boolean openProductionBackdoor(int secretCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (secretCode) {
+         case 1096237401:
+            Ui.setMode(2);
+            break;
+         case 1212502597:
+            Ui.setMode(1);
+            break;
+         case 1414024516:
+            ThemeManager.setActiveTheme(ThemeManager.getNameOfDefaulTheme());
+            break;
+         case 1414024526:
+            ThemeManager.setActiveTheme("");
+            break;
+         case 1431323726:
+            Ui.setIncreaseDirection(1);
+            break;
+         case 1431328080:
+            Ui.setIncreaseDirection(-1);
+      }
+
+      return super.openProductionBackdoor(secretCode);
    }
 
    private void popMenu() {

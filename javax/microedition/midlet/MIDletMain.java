@@ -8,9 +8,11 @@ import javax.microedition.io.PushRegistry;
 import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.List;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.internal.content.ContentHandlerRegistrationHelper;
 import net.rim.device.internal.io.PushRegistryHelper;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.lcdui.MIDletInterface;
@@ -63,7 +65,45 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
    }
 
    public static void main(String[] args) {
-      throw new RuntimeException("cod2jar: ldc");
+      List.SELECT_COMMAND.getPriority();
+      if (args != null && args.length > 0) {
+         if (args[0].equals(PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_PUSH_REGISTRY_WORK)) {
+            initializePushRegistry(args[1]);
+            return;
+         }
+
+         if (args[0].equals(PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_DYNAMIC_PUSH_REGISTRY_WORK)) {
+            getInstance(args[1], true).addPushRegistry(args[1], args[2]);
+            return;
+         }
+
+         if (args[0].equals(PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_SHUTDOWN_PUSH_REGISTRY_WORK)) {
+            MIDletMain mm = getInstance(args[1], false);
+            if (mm != null) {
+               mm.removePushRegistry(args[1], args[2]);
+               return;
+            }
+
+            throw new RuntimeException("MIDlet could not be started");
+         }
+
+         if (args[0].equals("dostaticcontenthandlerregistration")) {
+            int moduleHandle = Integer.parseInt(args[1]);
+            ContentHandlerRegistrationHelper.getInstance().registerContentHandlers(moduleHandle);
+            return;
+         }
+
+         MIDletMain app = getInstance(args[0], false);
+         if (app == null) {
+            app = new MIDletMain(args[0]);
+         }
+
+         app._foregroundable = true;
+         ApplicationManager.getApplicationManager().requestForeground(app.getProcessId());
+         if (!app.isHandlingEvents()) {
+            app.enterEventDispatcher();
+         }
+      }
    }
 
    private MIDletMain(String moduleClassName) {

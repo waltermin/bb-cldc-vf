@@ -8,7 +8,9 @@ public class ByteArrayOutputStream extends OutputStream {
    private boolean isClosed;
 
    private void ensureOpen() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.isClosed) {
+         throw new RuntimeException("Stream closed");
+      }
    }
 
    public ByteArrayOutputStream() {

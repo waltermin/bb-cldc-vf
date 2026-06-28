@@ -1,6 +1,7 @@
 package net.rim.device.internal.crypto.fips;
 
 import net.rim.device.api.crypto.SelfTestModule;
+import net.rim.device.api.system.EventLogger;
 import net.rim.vm.Array;
 
 public final class SelfTests {
@@ -13,6 +14,19 @@ public final class SelfTests {
    private static final long LOGGER_GUID;
 
    public SelfTests(boolean startupRun) {
+      EventLogger.register(7146679653930594060L, "Security Self Tests", 2);
+      this._modules = new SelfTestModule[]{
+         this.getSelfTestModule("net.rim.device.api.crypto.OSSelfTestModule"),
+         this.getSelfTestModule("net.rim.device.internal.crypto.CryptoBlockSelfTestModule"),
+         this.getSelfTestModule("net.rim.device.api.crypto.Crypto1SelfTestModule"),
+         this.getSelfTestModule("net.rim.device.api.crypto.Crypto3SelfTestModule")
+      };
+      this._tests = new String[0];
+      this._startupRun = startupRun;
+
+      for (int i = 0; i < this._modules.length; i++) {
+         this.getTestStrings(this._modules[i]);
+      }
    }
 
    private final SelfTestModule getSelfTestModule(String module) {

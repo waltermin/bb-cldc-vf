@@ -14,6 +14,7 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.content.ContentHandlerRenderingManager;
 import net.rim.device.internal.system.ApplicationManagerInternal;
 import net.rim.vm.Array;
 import net.rim.vm.Message;
@@ -57,11 +58,46 @@ class RegistryImpl extends Registry {
    }
 
    public static Registry getRegistry(String classname) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+
+      int moduleHandle;
+      try {
+         moduleHandle = verifyClassname(classname);
+      } catch (ClassNotFoundException cnfe) {
+         throw new IllegalArgumentException("classname is not implemented");
+      }
+
+      verifyRegistered(moduleHandle, classname);
+      RegistryImpl ri = (RegistryImpl)_registryImpls.get(classname);
+      if (ri == null) {
+         ri = new RegistryImpl(classname);
+         _registryImpls.put(classname, ri);
+      }
+
+      int callingModule = TraceBack.getCallingModule(2);
+      ApplicationDescriptor callingApplication = ApplicationDescriptor.currentApplicationDescriptor();
+      ri.setAuthority(getAuthority(callingModule));
+      ri.setApplication(callingApplication);
+      return ri;
    }
 
    public static ContentHandlerServer getServer(String classname) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+
+      try {
+         verifyClassname(classname);
+      } catch (IllegalArgumentException iae) {
+         throw new ContentHandlerException(iae.getMessage(), 1);
+      } catch (ClassNotFoundException cnfe) {
+         throw new ContentHandlerException(cnfe.getMessage(), 1);
+      }
+
+      ContentHandlerServer server = (ContentHandlerServer)_registry.get(classname);
+      if (server == null) {
+         throw new ContentHandlerException("No registered handler for " + classname, 1);
+      } else {
+         return server;
+      }
    }
 
    @Override
@@ -106,7 +142,64 @@ class RegistryImpl extends Registry {
    }
 
    private static void registerHandler(String classname, ContentHandlerServer server) {
-      throw new RuntimeException("cod2jar: ldc");
+      _registry.put(classname, server);
+      int numTypes = server.getTypeCount();
+
+      for (int i = 0; i < numTypes; i++) {
+         String type = StringUtilities.toLowerCase(server.getType(i), 1701707776);
+         Vector handlers = null;
+         if (_handlersByType.containsKey(type)) {
+            handlers = (Vector)_handlersByType.get(type);
+         } else {
+            handlers = new Vector();
+            _handlersByType.put(type, handlers);
+         }
+
+         if (handlers != null) {
+            addOrReplaceHandler(handlers, server);
+         }
+
+         if (!server.getID().equals("net.rim.bb.mediacontenthandler")) {
+            ContentHandlerRenderingManager.getInstance().register(type);
+         }
+      }
+
+      int numActions = server.getActionCount();
+
+      for (int i = 0; i < numActions; i++) {
+         String action = server.getAction(i);
+         Vector handlers = null;
+         if (_handlersByAction.containsKey(action)) {
+            handlers = (Vector)_handlersByAction.get(action);
+         } else {
+            handlers = new Vector();
+            _handlersByAction.put(action, handlers);
+         }
+
+         if (handlers != null) {
+            addOrReplaceHandler(handlers, server);
+         }
+      }
+
+      int numSuffixes = server.getSuffixCount();
+
+      for (int i = 0; i < numSuffixes; i++) {
+         String suffix = StringUtilities.toLowerCase(server.getSuffix(i), 1701707776);
+         Vector handlers = null;
+         if (_handlersBySuffix.containsKey(suffix)) {
+            handlers = (Vector)_handlersBySuffix.get(suffix);
+         } else {
+            handlers = new Vector();
+            _handlersBySuffix.put(suffix, handlers);
+         }
+
+         if (handlers != null) {
+            addOrReplaceHandler(handlers, server);
+         }
+      }
+
+      String ID = server.getID();
+      _handlersByID.put(ID, server);
    }
 
    private static void addOrReplaceHandler(Vector handlers, ContentHandlerServer server) {
@@ -260,16 +353,49 @@ class RegistryImpl extends Registry {
 
    @Override
    public ContentHandler forID(String ID, boolean exact) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (ID == null) {
+         throw new NullPointerException("null ID");
+      }
+
+      if (exact) {
+         ContentHandlerServerImpl server = (ContentHandlerServerImpl)_handlersByID.get(ID);
+         return server != null && server.isAccessAllowed(this.getID()) ? new ContentHandlerImpl(server) : null;
+      }
+
+      Enumeration e = _handlersByID.keys();
+
+      while (e.hasMoreElements()) {
+         String key = (String)e.nextElement();
+         if (ID.startsWith(key)) {
+            ContentHandlerServerImpl server = (ContentHandlerServerImpl)_handlersByID.get(key);
+            if (server.isAccessAllowed(this.getID())) {
+               return new ContentHandlerImpl(server);
+            }
+         }
+      }
+
+      return null;
    }
 
    @Override
    public ContentHandler[] findHandler(Invocation invocation) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private ContentHandler[] filterByAction(ContentHandler[] candidateHandlers, String action) {
-      throw new RuntimeException("cod2jar: ldc");
+      ContentHandler[] handlers = new ContentHandler[0];
+
+      for (int i = 0; i < candidateHandlers.length; i++) {
+         if (candidateHandlers[i].hasAction(action)) {
+            Arrays.add(handlers, candidateHandlers[i]);
+         }
+      }
+
+      if (handlers.length == 0) {
+         throw new ContentHandlerException("No ContentHandlers found", 1);
+      } else {
+         return handlers;
+      }
    }
 
    @Override
@@ -279,12 +405,71 @@ class RegistryImpl extends Registry {
 
    @Override
    public boolean invoke(Invocation invocation, Invocation previous) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (previous != null) {
+         if (previous.getStatus() != 2) {
+            throw new IllegalStateException("previous must have state ACTIVE");
+         }
+
+         if (!previous.getResponseRequired()) {
+            throw new IllegalArgumentException("previous.getResponseRequired returned false");
+         }
+      }
+
+      if (invocation.getStatus() != 1) {
+         throw new IllegalStateException("invocation must have state INIT");
+      }
+
+      invocation.populateStackAndDescriptor();
+      ContentHandlerImpl handler = this.findAppropriateHandler(this.findHandler(invocation));
+      Invocation newInvocation = new Invocation(invocation);
+      newInvocation.setStatus(2);
+      newInvocation.setInvokerInfo(this._authority, this.getID(), this.getAppName());
+      invocation.setStatus(3);
+      if (previous != null) {
+         previous.setStatus(4);
+         invocation.setPrevious(previous);
+      }
+
+      if (previous == null) {
+         Arrays.add(_transactions, new Transaction(newInvocation, this));
+      } else {
+         for (int i = 0; i < _transactions.length; i++) {
+            if (_transactions[i].getActiveInvocation() == previous) {
+               _transactions[i].append(newInvocation, this);
+            }
+         }
+
+         InvocationCleanupManager.getInstance().removeActiveInvocation(Process.currentProcess().getProcessId(), previous);
+      }
+
+      ((ContentHandlerServerImpl)_handlersByID.get(handler.getID())).start(newInvocation);
+      return false;
    }
 
    @Override
    public boolean reinvoke(Invocation invocation) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      if (invocation.getStatus() != 2) {
+         throw new IllegalStateException("invocation must be ACTIVE");
+      }
+
+      invocation.populateStackAndDescriptor();
+      ContentHandlerImpl handler = this.findAppropriateHandler(this.findHandler(invocation));
+      Invocation newInvocation = new Invocation(invocation);
+      newInvocation.setStatus(2);
+      newInvocation.setInvokerInfo(this._authority, this.getID(), this.getAppName());
+      invocation.setStatus(5);
+      InvocationCleanupManager.getInstance().removeActiveInvocation(Process.currentProcess().getProcessId(), invocation);
+
+      for (int i = 0; i < _transactions.length; i++) {
+         if (_transactions[i].getActiveInvocation() == invocation) {
+            _transactions[i].replaceActive(newInvocation);
+         }
+      }
+
+      ((ContentHandlerServerImpl)_handlersByID.get(handler.getID())).start(newInvocation);
+      return false;
    }
 
    private ContentHandlerImpl findAppropriateHandler(ContentHandler[] handlers) {
@@ -477,11 +662,77 @@ class RegistryImpl extends Registry {
    }
 
    private static String getOrCreateID(int moduleHandle, String classname, boolean isContentHandler) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!isContentHandler) {
+         ContentHandlerServerImpl chs = (ContentHandlerServerImpl)_registry.get(classname);
+         if (chs != null) {
+            return chs.getID();
+         }
+      }
+
+      String ID = null;
+      boolean isMidlet = CodeModuleManager.isMidlet(moduleHandle);
+      if (!isMidlet && !isContentHandler) {
+         ID = CodeModuleManager.getModuleVendor(moduleHandle) + "-" + ApplicationDescriptor.currentApplicationDescriptor().getName() + "-" + classname;
+         return ID.replace(' ', '_');
+      }
+
+      String prefix = isContentHandler ? "MicroEdition-Handler-" : "MIDlet-";
+      int midletIndex = 1;
+
+      for (String propertyString = ContentHandlerUtilities.getStringValue(prefix + midletIndex, moduleHandle);
+         propertyString != null;
+         propertyString = ContentHandlerUtilities.getStringValue(prefix + ++midletIndex, moduleHandle)
+      ) {
+         String midletClassname = propertyString.substring(propertyString.lastIndexOf(44) + 1).trim();
+         if (classname.equals(midletClassname)) {
+            ID = ContentHandlerUtilities.getStringValue(prefix + midletIndex + "-ID", moduleHandle);
+            if (ID != null) {
+               break;
+            }
+         }
+      }
+
+      if (ID == null) {
+         try {
+            ID = ContentHandlerUtilities.getStringValue("MIDlet-Vendor", moduleHandle)
+               + "-"
+               + ContentHandlerUtilities.getStringValue("MIDlet-Name", moduleHandle)
+               + "-"
+               + classname;
+            return ID.replace(' ', '_');
+         } catch (NullPointerException npe) {
+            return null;
+         }
+      } else {
+         verifyCharacters(ID);
+         return ID;
+      }
    }
 
    private static String getAppName(int moduleHandle, String classname, ApplicationDescriptor application) {
-      throw new RuntimeException("cod2jar: ldc");
+      String appName = null;
+      if (CodeModuleManager.isMidlet(moduleHandle)) {
+         int midletIndex = 1;
+
+         for (String propertyString = ContentHandlerUtilities.getStringValue("MIDlet-" + midletIndex, moduleHandle);
+            propertyString != null;
+            propertyString = ContentHandlerUtilities.getStringValue("MIDlet-" + ++midletIndex, moduleHandle)
+         ) {
+            String midletClassname = propertyString.substring(propertyString.lastIndexOf(44) + 1).trim();
+            if (classname.equals(midletClassname)) {
+               appName = propertyString.substring(0, propertyString.indexOf(44)).trim();
+               break;
+            }
+         }
+
+         if (appName == null) {
+            return ContentHandlerUtilities.getStringValue("MIDlet-Name", moduleHandle);
+         }
+      } else {
+         appName = application.getName();
+      }
+
+      return appName;
    }
 
    private static String getAuthority(int moduleHandle) {
@@ -504,11 +755,19 @@ class RegistryImpl extends Registry {
    }
 
    private static int verifyClassname(String classname) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    static void verifyID(String ID, String classname, boolean upgrade) {
-      throw new RuntimeException("cod2jar: ldc");
+      Enumeration e = _registry.keys();
+
+      while (e.hasMoreElements()) {
+         String currClassname = (String)e.nextElement();
+         ContentHandler currHandler = (ContentHandler)_registry.get(currClassname);
+         if (!upgrade && !classname.equals(currClassname) && (ID.startsWith(currHandler.getID()) || currHandler.getID().startsWith(ID))) {
+            throw new ContentHandlerException("The ID " + ID + " conflicts with existing ID " + currHandler.getID(), 3);
+         }
+      }
    }
 
    static void verifyCharacters(String ID) {
@@ -516,7 +775,25 @@ class RegistryImpl extends Registry {
    }
 
    private static void verifyRegistered(int moduleHandle, String classname) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!_registry.containsKey(classname) && CodeModuleManager.isMidlet(moduleHandle)) {
+         boolean registered = false;
+         int midletIndex = 1;
+
+         for (String propertyString = ContentHandlerUtilities.getStringValue("MIDlet-" + midletIndex, moduleHandle);
+            propertyString != null;
+            propertyString = ContentHandlerUtilities.getStringValue("MIDlet-" + ++midletIndex, moduleHandle)
+         ) {
+            String midletClassname = propertyString.substring(propertyString.lastIndexOf(44) + 1).trim();
+            if (classname.equals(midletClassname)) {
+               registered = true;
+               break;
+            }
+         }
+
+         if (!registered) {
+            throw new IllegalArgumentException("classname not registered as application");
+         }
+      }
    }
 
    private static void assertPermission() {

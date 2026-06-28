@@ -177,12 +177,12 @@ public class CodeModuleGroupPropertiesCollection implements SyncCollection, Sync
 
    @Override
    public String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Code Module Group Properties";
    }
 
    @Override
    public String getSyncName(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Code Module Group Properties";
    }
 
    @Override

@@ -1,6 +1,8 @@
 package net.rim.tid.itie;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.system.Application;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.XYRect;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.InputMethodEvent;
@@ -250,7 +252,48 @@ public final class IMContext extends InputContext implements InputMethodContext 
    }
 
    private final void handleException(Throwable th) {
-      throw new RuntimeException("cod2jar: ldc");
+      th.printStackTrace();
+      Runnable _invoker = new IMContext$1(this);
+      Application app = Application.getApplication();
+      if (app != null) {
+         app.invokeLater(_invoker);
+      }
+
+      try {
+         String appName = null;
+         if (app != null) {
+            appName = app.toString() + " --> " + app.getClass().getName();
+         }
+
+         StringBuffer debugInfo = new StringBuffer();
+         if (super._inputMethod != null) {
+            System.err.println("WARNING: The instance of " + super._inputMethod.toString() + " has been removed. Application - " + appName);
+
+            try {
+               super._inputMethod.actionPerformed(this, 112, debugInfo);
+            } catch (Throwable e) {
+               e.printStackTrace();
+            }
+         }
+
+         super._inputMethod = null;
+         super._manager.dispose();
+         IComponent component = this.getInputComponent();
+         if (component != null) {
+            System.err.println(component.getClass().getName());
+            component.actionPerformed(112, debugInfo);
+            System.err.println(debugInfo);
+            InputMethodEvent event = this.getIMEvent(component, 1103, 0, new AttributedString(), 0, 0, 0, null, null, null, (byte)4);
+            component.inputMethodTextChanged(event);
+         }
+      } catch (Throwable thr) {
+         thr.printStackTrace();
+      }
+
+      Utils.reportException(th);
+      Locale l = this.getLocale();
+      this.selectInputMethod(l);
+      RIMGlobalMessagePoster.postGlobalEvent(-3705893009697257465L);
    }
 
    @Override

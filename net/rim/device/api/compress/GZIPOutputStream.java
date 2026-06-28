@@ -35,17 +35,43 @@ public class GZIPOutputStream extends OutputStream {
 
    @Override
    public synchronized void write(int data) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    @Override
    public synchronized void write(byte[] data, int dataOffset, int dataLength) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (data == null || dataOffset < 0 || dataLength < 0 || dataOffset + dataLength > data.length) {
+         throw new IllegalArgumentException();
+      }
+
+      if (this._outputStream == null) {
+         throw new IOException("Stream closed");
+      }
+
+      if (this._bufferOffset + dataLength < this._buffer.length) {
+         System.arraycopy(data, dataOffset, this._buffer, this._bufferOffset, dataLength);
+         this._bufferOffset += dataLength;
+      } else {
+         if (this._bufferOffset > 0) {
+            this._outputStream.write(this._deflater.compress(this._buffer, 0, this._bufferOffset, 2));
+            this._bufferOffset = 0;
+         }
+
+         if (dataLength > 0) {
+            this._outputStream.write(this._deflater.compress(data, dataOffset, dataLength, 2));
+         }
+      }
    }
 
    @Override
    public synchronized void flush() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._outputStream == null) {
+         throw new IOException("Stream closed");
+      }
+
+      this._outputStream.write(this._deflater.compress(this._buffer, 0, this._bufferOffset, 3));
+      this._bufferOffset = 0;
+      this._outputStream.flush();
    }
 
    @Override

@@ -8,8 +8,10 @@ import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.PersistentContentInternal;
+import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.Phone;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.system.UserAuthenticator;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.MathUtilities;
@@ -24,13 +26,13 @@ public final class Security {
    private boolean _pendingContentProtectionChange;
    private boolean _pendingContentProtectionEncryptionSetting;
    private int _pendingContentProtectionEncryptionStrength;
-   private boolean _lockOnIdle;
+   private boolean _lockOnIdle = true;
    private DevicePasswordListener _keyStoreListener;
    private DevicePasswordListener _fileSystemEncryptionListener;
-   private SecurityCallHandler _callHandler;
-   private boolean _isAutoOnRequired;
-   private int _unlockCounter;
-   private int _lockCounter;
+   private SecurityCallHandler _callHandler = null;
+   private boolean _isAutoOnRequired = false;
+   private int _unlockCounter = 0;
+   private int _lockCounter = 0;
    private static final long REGISTRY_NAME;
    private static final long PASSWORD_KEY;
    private static final int DAY_IN_MILLISECONDS;
@@ -69,6 +71,59 @@ public final class Security {
    private static final native boolean lockOnIdleTimeout();
 
    private Security() {
+      this._registeredUserAuthenticators = new Vector();
+      PersistentObject store = RIMPersistentStore.getPersistentObject(5031265368654170436L);
+      this._securityCache = (Security$SecurityCache)store.getContents();
+      if (this._securityCache == null) {
+         this._securityCache = new Security$SecurityCache(null);
+      }
+
+      byte[] userAuthenticatorClassNameBytes = NvStore.readData(15);
+      if (userAuthenticatorClassNameBytes != null) {
+         String userAuthenticatorClassName = new String(userAuthenticatorClassNameBytes);
+
+         try {
+            if (userAuthenticatorClassName.equals("net.rim.device.apps.internal.smartcard.gsacac.GSACACSmartCardUserAuthenticator")) {
+               userAuthenticatorClassName = "net.rim.device.api.smartcard.GenericSmartCardUserAuthenticator";
+            } else if (userAuthenticatorClassName.equals("net.rim.device.apps.internal.smartcard.datakey.DatakeySmartCardUserAuthenticator")) {
+               userAuthenticatorClassName = "net.rim.device.api.smartcard.GenericSmartCardUserAuthenticator";
+            }
+
+            this._userAuthenticator = (UserAuthenticator)Class.forName(userAuthenticatorClassName).newInstance();
+         } catch (ClassNotFoundException var5) {
+         } catch (InstantiationException var6) {
+         } catch (IllegalAccessException var7) {
+         } catch (ClassCastException var8) {
+         }
+
+         if (this._userAuthenticator == null) {
+            if (!this.isPasswordEnabled() && !FIPSPolicy.isDevicePasswordRequired()) {
+               this.uninitializeUserAuthenticator();
+            } else {
+               this._userAuthenticator = new Security$NoAccessUserAuthenticator();
+            }
+         }
+
+         if (this._userAuthenticator != null) {
+            byte[] data = NvStore.readData(16);
+            if (this._userAuthenticator.setStateData(data) && this._userAuthenticator.isInitialized()) {
+               if (!this.isPasswordEnabled()) {
+                  this.uninitializeUserAuthenticator();
+               }
+            } else if (!this.isPasswordEnabled() && !FIPSPolicy.isDevicePasswordRequired()) {
+               this.uninitializeUserAuthenticator();
+            } else {
+               this._userAuthenticator = new Security$NoAccessUserAuthenticator();
+            }
+         }
+      }
+
+      if (this.isPasswordEnabled() && ITPolicy.getInteger(24, 18, -1) != -1) {
+         this._pendingContentProtectionChange = true;
+         this._pendingContentProtectionEncryptionSetting = true;
+      }
+
+      this._lockOnIdle = lockOnIdleTimeout();
    }
 
    public final boolean setUserAuthenticatorPassword(UserAuthenticator userAuthenticator, String userAuthenticatorPassword) {

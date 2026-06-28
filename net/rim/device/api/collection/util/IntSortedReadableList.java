@@ -21,7 +21,16 @@ public class IntSortedReadableList implements ChainableCollection, LoadableColle
 
    @Override
    public void loadFrom(Object collection) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!(collection instanceof ReadableList) && !(collection instanceof ReadableSet)) {
+         throw new IllegalArgumentException("Expecting ReadableSet or ReadableList");
+      }
+
+      synchronized (this) {
+         this.reset();
+         this.mergeCollection(collection);
+      }
+
+      this._collectionNotifier.fireReset(this);
    }
 
    protected void reset() {

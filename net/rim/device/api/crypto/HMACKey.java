@@ -37,7 +37,7 @@ public final class HMACKey implements SymmetricKey, Persistable {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "HMAC";
    }
 
    private final void initialize(HMACCryptoToken cryptoToken, int length) {

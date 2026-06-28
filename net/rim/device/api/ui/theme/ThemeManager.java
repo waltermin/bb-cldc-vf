@@ -8,13 +8,18 @@ import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.FontRegistry;
+import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.Comparator;
 import net.rim.device.api.util.IntHashtable;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.ui.IconCollection;
@@ -95,7 +100,16 @@ public class ThemeManager {
    }
 
    private void addInternal(Theme$Factory factory) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this) {
+         if (_instance != null && getThemeFactory(factory.getName()) != null) {
+            throw new IllegalStateException("Theme already present");
+         }
+
+         Arrays.add(this._factories, factory);
+         Arrays.sort(this._factories, this._comparatorFactoryFactory);
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(9057101852544553212L);
    }
 
    public static void addLayoutFactory(Theme$LayoutFactory factory) {
@@ -121,7 +135,25 @@ public class ThemeManager {
    }
 
    public static void createThemeHelper(Theme$Factory factory, Theme theme) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (factory != null) {
+         String parent = factory.getParent();
+         Theme$Writer writer = theme.getWriterInternalDeprecated();
+         writer.setResourceFetcher(factory.getResourceFetcher());
+         factory.populate(writer);
+         writer.setThumbnailName(null);
+         theme.incrementThemeLoadingCount();
+         if (parent != null) {
+            String id = getPersistableIdForName(parent);
+            if (id == null) {
+               throw new IllegalStateException("Unable to find parent");
+            }
+
+            Theme$Factory parentFactory = getThemeFactory(id);
+            createThemeHelper(parentFactory, theme);
+         }
+
+         theme.decrementThemeLoadingCount();
+      }
    }
 
    static Enumeration enumerateIconCollections() {
@@ -156,7 +188,45 @@ public class ThemeManager {
    }
 
    private String getDefaultId() {
-      throw new RuntimeException("cod2jar: ldc");
+      int priority = Integer.MAX_VALUE;
+      Theme$Factory defaultTheme = this.getBrandingTheme();
+      if (defaultTheme != null) {
+         return getPersistableId(defaultTheme);
+      }
+
+      Theme$Factory specialCaseDefault = null;
+      int displayDepth = log2(Graphics.getNumColors());
+      int displayWidth = Display.getWidth();
+      int displayHeight = Display.getHeight();
+
+      for (int lv = _instance._factories.length - 1; lv >= 0; lv--) {
+         Theme$Factory factory = _instance._factories[lv];
+         if (factory.getName().equals("Blackberry_icon_240x260") && DeviceInfo.getDeviceName().equals("7100i")) {
+            specialCaseDefault = factory;
+         }
+
+         if (factory.getPriority() < priority) {
+            int colorDepth = factory.getTargetDisplayColorDepth();
+            if (colorDepth == 0 && displayDepth > 1 || colorDepth == displayDepth) {
+               int width = factory.getTargetDisplayWidth();
+               int height = factory.getTargetDisplayHeight();
+               if ((width == 0 || width == displayWidth) && (height == 0 || height == displayHeight)) {
+                  priority = factory.getPriority();
+                  defaultTheme = factory;
+               }
+            }
+         }
+      }
+
+      if (specialCaseDefault != null) {
+         defaultTheme = specialCaseDefault;
+      }
+
+      if (defaultTheme == null) {
+         throw new IllegalStateException("Null theme not found.");
+      } else {
+         return getPersistableId(defaultTheme);
+      }
    }
 
    private static int log2(int number) {
@@ -237,7 +307,9 @@ public class ThemeManager {
    }
 
    public static String getPersistableId(Theme$Factory factory) {
-      throw new RuntimeException("cod2jar: ldc");
+      String id = "java:/" + factory.getClass().getName();
+      String ext = factory.getIdExtension();
+      return ext == null ? id : id + "?ext=" + ext;
    }
 
    public static String getPersistableIdForName(String name) {
@@ -305,7 +377,14 @@ public class ThemeManager {
    }
 
    public static void resetDefaultFont() {
-      throw new RuntimeException("cod2jar: ldc");
+      Theme theme = getActiveTheme();
+      ThemeAttributeSet defaultFontAttributes = theme.getAttributeSet(Tag.create("default-font"));
+      if (defaultFontAttributes != null) {
+         Font font = defaultFontAttributes.getFont();
+         if (font != null) {
+            Font.setDefaultFontForSystem(font);
+         }
+      }
    }
 
    private void $initColors() {
@@ -316,7 +395,20 @@ public class ThemeManager {
    }
 
    public static Bitmap getPredefinedBitmap(int id) {
-      throw new RuntimeException("cod2jar: ldc");
+      Theme theme = _instance._activeTheme;
+      switch (id) {
+         case -1:
+            return theme.getBitmap("dialog_information");
+         case 0:
+         default:
+            return theme.getBitmap("dialog_information");
+         case 1:
+            return theme.getBitmap("dialog_question");
+         case 2:
+            return theme.getBitmap("dialog_exclamation");
+         case 3:
+            return theme.getBitmap("dialog_hourglass");
+      }
    }
 
    public static boolean isActivatable(String name) {
@@ -407,7 +499,23 @@ public class ThemeManager {
    }
 
    private static void setActiveTheme(String name, boolean restore) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (name == null) {
+         name = _instance.getDefaultId();
+      }
+
+      Theme$Factory factory = getThemeFactory(name);
+      if (factory != null) {
+         if (!factory.isActivatable()) {
+            throw new IllegalArgumentException("Theme not activatable: " + name);
+         }
+
+         String newThemeName = getPersistableId(factory);
+         if (!newThemeName.equals(_instance._activeThemeName)) {
+            _instance.internalSetActiveTheme(factory, restore);
+         }
+
+         _instance._activated = true;
+      }
    }
 
    public static void setActiveTheme(String name) {
@@ -415,6 +523,24 @@ public class ThemeManager {
    }
 
    private void verifyActiveTheme() {
-      throw new RuntimeException("cod2jar: ldc");
+      String active = UiOptionsRegistry.getInstance().getString(-7276267599751932452L);
+      String fixed = active;
+      if (active != null) {
+         if (active.startsWith("java:/")) {
+            try {
+               int ext = active.indexOf(63);
+               String clazz = ext == -1 ? active.substring(6) : active.substring(6, ext);
+               Class.forName(clazz);
+            } catch (Exception e) {
+               fixed = null;
+            }
+         } else {
+            fixed = null;
+         }
+      }
+
+      if (!StringUtilities.strEqual(fixed, active)) {
+         UiOptionsRegistry.getInstance().setString(-7276267599751932452L, fixed);
+      }
    }
 }

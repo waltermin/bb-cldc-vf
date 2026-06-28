@@ -1,5 +1,7 @@
 package net.rim.device.api.bluetooth;
 
+import net.rim.device.internal.bluetooth.BluetoothME;
+
 public class BluetoothSerialPortInfo {
    private byte[] _address;
    private int _pageScanInfo;
@@ -25,7 +27,14 @@ public class BluetoothSerialPortInfo {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer sb = new StringBuffer("btspp://");
+      if (this._address != null) {
+         sb.append(BluetoothME.deviceAddressToString(this._address, false));
+      }
+
+      sb.append(':');
+      sb.append(this._serverID);
+      return sb.toString();
    }
 
    public byte[] getDeviceAddress() {

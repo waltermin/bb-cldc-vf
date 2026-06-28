@@ -253,7 +253,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -655,7 +655,7 @@ public class ChoiceField extends Field implements FieldLabelProvider {
 
    @Override
    public String getAccessibleName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this._labelText != null ? this._labelText + " " + this.toString() : this.toString();
    }
 
    @Override

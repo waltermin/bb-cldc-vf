@@ -3,6 +3,7 @@ package net.rim.device.resources;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+import net.rim.device.api.system.ControlledAccess;
 import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
@@ -108,6 +109,19 @@ public class Resource {
    }
 
    public Object instantiateMIDlet(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+
+      Class c;
+      try {
+         c = Class.forName(name);
+      } catch (ClassNotFoundException cnfe) {
+         throw new IllegalArgumentException();
+      }
+
+      try {
+         return c.newInstance();
+      } catch (Exception e) {
+         throw new RuntimeException("Exception thrown in a midlet constructor.");
+      }
    }
 }

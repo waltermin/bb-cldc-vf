@@ -2,10 +2,15 @@ package net.rim.device.internal.media;
 
 import java.io.IOException;
 import javax.microedition.media.Control;
+import javax.microedition.media.MediaException;
 import javax.microedition.media.protocol.ContentDescriptor;
 import javax.microedition.media.protocol.DataSource;
 import javax.microedition.media.protocol.SourceStream;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.cldc.io.tunnel.Tunnel;
+import net.rim.device.cldc.io.tunnel.TunnelConfig;
+import net.rim.device.cldc.io.tunnel.TunnelFactory;
 import net.rim.device.cldc.io.tunnel.TunnelListener;
 
 public final class RTSPDataSource extends DataSource implements SourceStream, TunnelListener {
@@ -31,7 +36,44 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
 
    @Override
    public final void connect() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._connected) {
+         for (int retryCounter = 0; retryCounter < 3; retryCounter++) {
+            if (this._tunnel == null) {
+               this._tunnelStatus = 0;
+               TunnelConfig config = new TunnelConfig(this._apn, "rtsp", null, this._apnUsername, this._apnPassword, this);
+               config.setMaxAttempts(3);
+               this._tunnel = TunnelFactory.openTunnel(config);
+            } else {
+               synchronized (this._tunnelSyncObject) {
+                  if (this._tunnelStatus != 3) {
+                     this._tunnel.kick();
+                  }
+               }
+            }
+
+            synchronized (this._tunnelSyncObject) {
+               while (this._tunnelStatus != 3) {
+                  try {
+                     this._tunnelSyncObject.wait(165000);
+                  } catch (InterruptedException var6) {
+                  }
+
+                  if (this._tunnelStatus == 4) {
+                     throw new IOException("Cannot open tunnel");
+                  }
+               }
+            }
+
+            synchronized (this._tunnelSyncObject) {
+               if (this._tunnelStatus != 3) {
+                  this.disconnect();
+                  throw new IOException("Could not get active tunnel");
+               }
+            }
+         }
+
+         this._connected = true;
+      }
    }
 
    @Override
@@ -55,7 +97,13 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
 
    @Override
    public final void start() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._connected) {
+         if (!this._started) {
+            ;
+         }
+      } else {
+         throw new IllegalStateException("Not connected");
+      }
    }
 
    public final void close() {
@@ -67,7 +115,11 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
 
    @Override
    public final String getContentType() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._connected) {
+         return "application/rtsp";
+      } else {
+         throw new IllegalStateException("Not connected");
+      }
    }
 
    @Override
@@ -78,7 +130,19 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
    }
 
    public final int getAccessPointNumber() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._tunnel == null) {
+         throw new MediaException("no tunnel");
+      }
+
+      if (this._tunnelStatus != 3) {
+         throw new MediaException("tunnel not active");
+      }
+
+      try {
+         return RadioInfo.getAccessPointNumber(this._apn);
+      } catch (RadioException e) {
+         throw new MediaException(e.toString());
+      }
    }
 
    public final String getUserAgent() {
@@ -92,7 +156,7 @@ public final class RTSPDataSource extends DataSource implements SourceStream, Tu
 
    @Override
    public final ContentDescriptor getContentDescriptor() {
-      throw new RuntimeException("cod2jar: ldc");
+      return new ContentDescriptor("application/rtsp");
    }
 
    @Override

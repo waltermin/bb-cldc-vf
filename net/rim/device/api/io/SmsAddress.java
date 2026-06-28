@@ -108,6 +108,25 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    private static final void appendAddress(StringBuffer buf, boolean open, String peerAddress, int[] ports) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (open) {
+         buf.append("sms:");
+      }
+
+      buf.append("//");
+      if (peerAddress != null) {
+         buf.append(peerAddress);
+      }
+
+      if (ports != null) {
+         for (int i = 0; i < ports.length; i++) {
+            if (i == 0) {
+               buf.append(':');
+            } else {
+               buf.append('|');
+            }
+
+            buf.append(ports[i]);
+         }
+      }
    }
 }

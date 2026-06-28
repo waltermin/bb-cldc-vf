@@ -3,20 +3,23 @@ package net.rim.device.api.i18n;
 import net.rim.vm.Array;
 
 public class MessageFormat extends Format {
-   private Locale _locale;
-   private String pattern;
-   private Format[] _formats;
-   private int[] offsets;
-   private int[] argumentNumbers;
-   private int maxOffset;
+   private Locale _locale = Locale.getDefault();
+   private String pattern = "";
+   private Format[] _formats = new Format[0];
+   private int[] offsets = new int[15];
+   private int[] argumentNumbers = new int[15];
+   private int maxOffset = -1;
    private static final String[] typeList;
    private static final String[] dateModifierList;
    private static final int MAX_ARGUMENTS;
 
    public MessageFormat(String pattern) {
+      this.applyPattern(pattern);
    }
 
    private MessageFormat(String pattern, Locale locale) {
+      this._locale = locale;
+      this.applyPattern(pattern);
    }
 
    public void applyPattern(String newPattern) {
@@ -44,7 +47,7 @@ public class MessageFormat extends Format {
    }
 
    private StringBuffer format(Object[] arguments, StringBuffer result, FieldPosition status, int recursionProtection) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -71,7 +74,99 @@ public class MessageFormat extends Format {
    }
 
    private void makeFormat(int position, int offsetNumber, StringBuffer[] segments) {
-      throw new RuntimeException("cod2jar: ldc");
+      int oldMaxOffset = this.maxOffset;
+
+      try {
+         int argumentNumber = Integer.parseInt(segments[1].toString());
+         if (argumentNumber < 0 || argumentNumber >= 15) {
+            throw new NumberFormatException();
+         }
+
+         this.maxOffset = offsetNumber;
+         this.offsets[offsetNumber] = segments[0].length();
+         this.argumentNumbers[offsetNumber] = argumentNumber;
+      } catch (Exception e) {
+         throw new IllegalArgumentException("argument number too large at ");
+      }
+
+      Format newFormat;
+      newFormat = null;
+      label44:
+      switch (findKeyword(segments[2].toString(), typeList)) {
+         case -1:
+         case 1:
+            this.maxOffset = oldMaxOffset;
+            throw new IllegalArgumentException("Unknown format type");
+         case 0:
+            break;
+         case 2:
+         default:
+            switch (findKeyword(segments[3].toString(), dateModifierList)) {
+               case -1:
+                  newFormat = DateFormat.getInstance(48);
+
+                  try {
+                     ((SimpleDateFormat)newFormat).applyPattern(segments[3].toString());
+                     break label44;
+                  } catch (Exception e) {
+                     this.maxOffset = oldMaxOffset;
+                     throw new IllegalArgumentException("Invalid pattern");
+                  }
+               case 0:
+               default:
+                  newFormat = DateFormat.getInstance(48);
+                  break label44;
+               case 1:
+                  newFormat = DateFormat.getInstance(56);
+                  break label44;
+               case 2:
+                  newFormat = DateFormat.getInstance(48);
+                  break label44;
+               case 3:
+                  newFormat = DateFormat.getInstance(40);
+                  break label44;
+               case 4:
+                  newFormat = DateFormat.getInstance(32);
+                  break label44;
+            }
+         case 3:
+            switch (findKeyword(segments[3].toString(), dateModifierList)) {
+               case -1:
+                  newFormat = DateFormat.getInstance(6);
+
+                  try {
+                     ((SimpleDateFormat)newFormat).applyPattern(segments[3].toString());
+                     break;
+                  } catch (Exception e) {
+                     this.maxOffset = oldMaxOffset;
+                     throw new IllegalArgumentException("Invalid pattern");
+                  }
+               case 0:
+               default:
+                  newFormat = DateFormat.getInstance(6);
+                  break;
+               case 1:
+               case 2:
+                  newFormat = DateFormat.getInstance(7);
+                  break;
+               case 3:
+               case 4:
+                  newFormat = DateFormat.getInstance(6);
+                  break;
+               case 5:
+               case 6:
+                  newFormat = DateFormat.getInstance(5);
+                  break;
+               case 7:
+               case 8:
+                  newFormat = DateFormat.getInstance(4);
+            }
+      }
+
+      this.setFormat(offsetNumber, newFormat);
+      segments[1].setLength(0);
+      segments[2].setLength(0);
+      segments[3].setLength(0);
    }
 
    public void setFormats(Format[] formats) {

@@ -14,6 +14,10 @@ public final class Backlight {
       ApplicationControl.assertChangeDeviceSettingsPermitted(true, CommonResource.getBundle(), 10133);
    }
 
+   public Backlight() {
+      System.err.println("Warning: deprecated API new Backlight() called.");
+   }
+
    private static final native void enable0(boolean var0, int var1);
 
    public static final void enable(boolean enable) {

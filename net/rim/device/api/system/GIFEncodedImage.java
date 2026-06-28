@@ -145,7 +145,7 @@ public final class GIFEncodedImage extends EncodedImage {
 
    @Override
    public final String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "image/gif";
    }
 
    @Override

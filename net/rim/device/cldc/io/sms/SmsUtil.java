@@ -52,7 +52,23 @@ public final class SmsUtil {
    }
 
    public static final byte[] encodeUserDataHeader(byte informationElementid, byte[] fielddata) {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] header = new byte[0];
+      switch (informationElementid) {
+         case 5:
+            if (fielddata.length != 4) {
+               throw new IllegalArgumentException("SMSUtil:107");
+            } else {
+               Array.resize(header, 6);
+               header[0] = 5;
+               header[1] = 4;
+
+               for (int i = 0; i < 4; i++) {
+                  header[i + 2] = fielddata[i];
+               }
+            }
+         default:
+            return header;
+      }
    }
 
    public static final DatagramBase encode(DatagramBase d, byte informationElementid, byte[] fielddata) {

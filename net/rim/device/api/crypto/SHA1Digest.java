@@ -8,7 +8,7 @@ public final class SHA1Digest extends AbstractDigest implements Digest {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "SHA1";
    }
 
    @Override

@@ -163,7 +163,17 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
    }
 
    private final boolean getTaskSwitcherDisplayType(ThemeAttributeSet taskSwitcherTheme) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (taskSwitcherTheme != null) {
+         String[] lParms = taskSwitcherTheme.getLayoutParameters();
+         if (lParms != null && lParms.length > 0) {
+            String parmZero = lParms[0];
+            if (parmZero != null) {
+               return parmZero.equals("vertical");
+            }
+         }
+      }
+
+      return false;
    }
 
    public ApplicationSwitcher(Runnable onExit, int convenienceKey) {
@@ -196,7 +206,7 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
    }
 
    private final void doCloseAppSwitcher(boolean selected) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

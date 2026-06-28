@@ -40,7 +40,7 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final Connection openPrim(String name, int mode, boolean timeouts) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
@@ -83,7 +83,36 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
    }
 
    final int read(byte[] buffer, int offset, int length) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationControl.assertLocalConnectionAllowed(true);
+
+      while (true) {
+         synchronized (this._readSemaphore) {
+            if (this._exception != null) {
+               throw this._exception;
+            }
+
+            if (this._port != null && this._readSemaphore.ready) {
+               if (length < this._readSemaphore.length) {
+                  throw new IOException("read buffer too small");
+               }
+
+               length = this._readSemaphore.length;
+               this._readSemaphore.length = 0;
+               int ret = this._port.read(buffer, offset, length);
+               this._readSemaphore.ready = false;
+               if (ret > 0) {
+                  return ret;
+               }
+            }
+
+            EventThreadCheck.throwException();
+
+            try {
+               this._readSemaphore.wait();
+            } catch (InterruptedException var7) {
+            }
+         }
+      }
    }
 
    @Override
@@ -128,12 +157,43 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final void disconnected() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._exception = new IOException("Disconnected");
+      synchronized (this._readSemaphore) {
+         this._readSemaphore.ready = false;
+         this._readSemaphore.notify();
+      }
+
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.ready = false;
+         this._writeSemaphore.notify();
+      }
    }
 
    @Override
    public final void receiveError(int error) {
-      throw new RuntimeException("cod2jar: ldc");
+      String s = null;
+      switch (error) {
+         case 1:
+            break;
+         case 2:
+         default:
+            s = "Parity error";
+            break;
+         case 3:
+            s = "Framing error";
+            break;
+         case 4:
+            s = "Buffer overrun";
+      }
+
+      this._exception = new IOException(s);
+      synchronized (this._readSemaphore) {
+         this._readSemaphore.notify();
+      }
+
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.notify();
+      }
    }
 
    @Override
@@ -164,7 +224,11 @@ public final class Protocol implements StreamConnection, USBPortListener, Connec
 
    @Override
    public final void dataNotSent() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._exception = new IOException("Data not sent");
+      synchronized (this._writeSemaphore) {
+         this._writeSemaphore.ready = true;
+         this._writeSemaphore.notify();
+      }
    }
 
    @Override

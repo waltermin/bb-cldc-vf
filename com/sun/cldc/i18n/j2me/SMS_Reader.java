@@ -1,13 +1,51 @@
 package com.sun.cldc.i18n.j2me;
 
 import com.sun.cldc.i18n.StreamReader;
+import java.io.IOException;
 
 public final class SMS_Reader extends StreamReader {
    private static char[][][] TABLES;
 
    @Override
    public final int read() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int table = 0;
+         char ch = 0;
+
+         while (true) {
+            int index = super.in.read();
+            if (index == -1) {
+               break;
+            }
+
+            index &= 255;
+            if (index == 255) {
+               return -1;
+            }
+
+            if (index != 13) {
+               if (index == 27) {
+                  if (++table < TABLES.length) {
+                     continue;
+                  }
+
+                  table--;
+               }
+
+               ch = (char)TABLES[table][index];
+               if (ch == false) {
+                  ch = (char)TABLES[0][index];
+               }
+
+               int var5 = false;
+               break;
+            }
+         }
+
+         return ch;
+      } catch (ArrayIndexOutOfBoundsException e) {
+         throw new IOException("Bad data format");
+      }
    }
 
    @Override

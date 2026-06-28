@@ -2,6 +2,7 @@ package net.rim.device.internal.ui.component;
 
 import javax.microedition.media.Player;
 import javax.microedition.media.PlayerListener;
+import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Graphics;
@@ -157,6 +158,22 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
 
    @Override
    public void playerUpdate(Player player, String event, Object eventData) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (player == this._player) {
+         if (event.equals("endOfMedia") || event.equals("stopped") || event.equals("error")) {
+            this._bitmap = null;
+            this.invalidate();
+            return;
+         }
+
+         if (event.equals("com.rim.pauseBitmap")) {
+            if (eventData instanceof Bitmap) {
+               this._bitmap = (Bitmap)eventData;
+               this.invalidate();
+               return;
+            }
+         } else if (event.equals("com.rim.timeUpdate") && this._player != null && this._player.getState() == 400) {
+            Backlight.enable(true);
+         }
+      }
    }
 }

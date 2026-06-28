@@ -60,7 +60,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -286,7 +286,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override

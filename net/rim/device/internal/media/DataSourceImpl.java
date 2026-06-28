@@ -36,12 +36,22 @@ public class DataSourceImpl extends DataSource implements SourceStream {
 
    @Override
    public String getContentType() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._connected) {
+         return this._contentType;
+      } else {
+         throw new IllegalStateException("Not connected");
+      }
    }
 
    @Override
    public void connect() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._connected) {
+         if (this._is != null) {
+            this._connected = true;
+         } else {
+            throw new IOException("No InputStream provided. Use setInputStream()");
+         }
+      }
    }
 
    @Override
@@ -56,7 +66,21 @@ public class DataSourceImpl extends DataSource implements SourceStream {
 
    @Override
    public void start() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._connected) {
+         if (!this._started) {
+            if (this._is != null) {
+               if (this._seekType == 2) {
+                  this._is.mark(Integer.MAX_VALUE);
+               }
+
+               this._started = true;
+            } else {
+               throw new IOException("No InputStream set. Use setInputStream()");
+            }
+         }
+      } else {
+         throw new IllegalStateException("Not connected");
+      }
    }
 
    @Override

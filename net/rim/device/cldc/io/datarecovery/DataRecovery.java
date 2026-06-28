@@ -174,5 +174,16 @@ public class DataRecovery implements GlobalEventListener {
    }
 
    protected DataRecovery(int linkType, long guid) {
+      this._linkType = linkType;
+      this._guid = guid;
+      switch (this._linkType) {
+         case 2:
+            EventLogger.register(this._guid, "net.rim.recovery.wlan", 2);
+            break;
+         default:
+            EventLogger.register(this._guid, "net.rim.recovery", 2);
+      }
+
+      Proxy.getInstance().addGlobalEventListener(this);
    }
 }

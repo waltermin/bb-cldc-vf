@@ -1,5 +1,6 @@
 package net.rim.device.internal.rms;
 
+import javax.microedition.rms.InvalidRecordIDException;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.Persistable;
@@ -127,6 +128,6 @@ public class RecordStoreData implements Persistable {
    }
 
    void throwInvalidRecordIDException(int recordID) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new InvalidRecordIDException(this._name + " #" + recordID);
    }
 }

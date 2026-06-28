@@ -57,7 +57,13 @@ final class UnicodeServiceUtilities$DefaultUnicodeServiceProvider implements Uni
 
    @Override
    public final String getEncoding(byte encodingType) {
-      throw new RuntimeException("cod2jar: ldc");
+      for (int i = 0; i < _definedSerializationEncodingsBytes.length; i++) {
+         if (encodingType == _definedSerializationEncodingsBytes[i]) {
+            return _definedSerializationEncodingsNames[i];
+         }
+      }
+
+      return "";
    }
 
    @Override

@@ -11,7 +11,11 @@ public class IndexOutOfBoundsException extends RuntimeException {
 
    @Override
    public String getMessage() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.indexSet) {
+         return super.getMessage();
+      } else {
+         return !this.maxIndexSet ? "Index " + this.index + " out of bounds." : "Index " + this.index + " >= " + this.maxIndex;
+      }
    }
 
    public IndexOutOfBoundsException(String s) {

@@ -1,5 +1,6 @@
 package net.rim.vm;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -24,11 +25,21 @@ public class DebugSupport {
    public static native void addProfileCount(long var0);
 
    public static InputStream getInputStream(String filename) {
-      throw new RuntimeException("cod2jar: ldc");
+      int fileno = openFile(filename.getBytes(), false);
+      if (fileno == -1) {
+         throw new IOException("File not found");
+      } else {
+         return new DebugSupport$DebugSupportInputStream(fileno);
+      }
    }
 
    public static OutputStream getOutputStream(String filename) {
-      throw new RuntimeException("cod2jar: ldc");
+      int fileno = openFile(filename.getBytes(), true);
+      if (fileno == -1) {
+         throw new IOException("File not found");
+      } else {
+         return new DebugSupport$DebugSupportOutputStream(fileno);
+      }
    }
 
    public static native void logStackTraces();

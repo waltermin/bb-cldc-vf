@@ -1,8 +1,11 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.ui.component.BackgroundDialog;
 import net.rim.device.internal.ui.component.SimplePasswordDialog;
 
 public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends SimplePasswordDialog implements GlobalEventListener, SystemListener2 {
@@ -29,7 +32,47 @@ public class USBPasswordRedirectManager$USBPasswordRedirectDialog extends Simple
    }
 
    private void setMessage() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer message = new StringBuffer();
+      if (this._usbPeripheralName.equals("RIM Bypass")) {
+         message.append(CommonResource.getString(10184));
+      } else if (this._usbPeripheralName.equals("RIM Desktop")) {
+         message.append(CommonResource.getString(10102));
+      } else {
+         message.append(MessageFormat.format(CommonResource.getString(10046), new String[]{this._usbPeripheralName}));
+      }
+
+      int devicePasswordAttempt = this.this$0._security.getPasswordFailureCount() + 1;
+      int devicePasswordMaxAttempts = this.this$0._security.getMaxPasswordAttempts();
+      if (this._lookingForKnownPassword || devicePasswordAttempt != devicePasswordMaxAttempts / 2 + 1 && devicePasswordAttempt != devicePasswordMaxAttempts - 1
+         )
+       {
+         this._lookingForKnownPassword = false;
+         message.append(" " + CommonResource.getString(10048));
+         if (devicePasswordAttempt == devicePasswordMaxAttempts) {
+            USBPasswordRedirectManager$MessageStatusDialog dialog = new USBPasswordRedirectManager$MessageStatusDialog(CommonResource.getString(10049));
+            BackgroundDialog.show(dialog);
+         }
+
+         boolean revealDevicePassword = devicePasswordAttempt > this.this$0._security.getRevealPasswordAttempts(devicePasswordMaxAttempts);
+         this.setRevealPassword(revealDevicePassword);
+         if (devicePasswordAttempt > 1) {
+            message.append(' ');
+            message.append('(');
+            message.append(devicePasswordAttempt);
+            message.append('/');
+            message.append(devicePasswordMaxAttempts);
+            message.append(')');
+         }
+
+         message.append(':');
+         message.append(' ');
+         this.setPrompt(message.toString());
+      } else {
+         this._lookingForKnownPassword = true;
+         this.setRevealPassword(true);
+         message.append(MessageFormat.format(CommonResource.getString(10050), new Object[]{USBPasswordRedirectManager._knownPassword}));
+         this.setPrompt(message.toString());
+      }
    }
 
    @Override

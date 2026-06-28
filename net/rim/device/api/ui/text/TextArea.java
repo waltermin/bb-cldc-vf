@@ -269,7 +269,18 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    private synchronized void setTextInternal(Object text) {
-      throw new RuntimeException("cod2jar: ldc");
+      this._textObject = text;
+      if (text == null) {
+         text = "";
+      }
+
+      if (text instanceof StringBuffer) {
+         this._text.replace(0, this._text.length(), (StringBuffer)text);
+      } else {
+         this._text.replace(0, this._text.length(), text.toString());
+      }
+
+      this._layoutValid = false;
    }
 
    private void setAttributesFromFont() {

@@ -31,7 +31,7 @@ final class ContentHandlerUtilities {
    }
 
    static final void checkStringArrayValues(String[] strings, boolean throwExceptionIfNull) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    static final void checkStringArrayValues(String[] strings) {
@@ -39,7 +39,7 @@ final class ContentHandlerUtilities {
    }
 
    static final String getStringValue(String key, int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private static final String getStringValue(String key, Resource resource) {
@@ -48,7 +48,7 @@ final class ContentHandlerUtilities {
    }
 
    static final String checkURL(String url) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    static final ApplicationDescriptor findApplicationDescriptor(int moduleHandle, String classname) {

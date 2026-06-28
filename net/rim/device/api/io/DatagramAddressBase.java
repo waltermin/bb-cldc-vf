@@ -102,7 +102,19 @@ public class DatagramAddressBase {
    }
 
    public static int parseInt(byte[] buf, int start, int end, int radix) {
-      throw new RuntimeException("cod2jar: ldc");
+      int ret = 0;
+
+      for (int i = start; i < end; i++) {
+         int digit = Character.digit((char)buf[i], radix);
+         if (digit < 0) {
+            throw new IllegalArgumentException("Invalid digit");
+         }
+
+         ret *= radix;
+         ret += digit;
+      }
+
+      return ret;
    }
 
    public static long parseLong(String buf, int start, int end, int radix) {
@@ -135,7 +147,25 @@ public class DatagramAddressBase {
    }
 
    public static int parseIpAddressInt(String address, int offset) {
-      throw new RuntimeException("cod2jar: ldc");
+      int ipAddress = 0;
+
+      for (int i = 0; i < 4; i++) {
+         int delim = i < 3 ? address.indexOf(46, offset) : indexOfNextDelim(address, offset);
+         if (delim <= offset) {
+            throw new IllegalArgumentException("Bad IP_ADDRESS");
+         }
+
+         int ret = parseInt(address, offset, delim, 10);
+         if (ret < 0 || ret > 255) {
+            throw new IllegalArgumentException("Invalid IP_ADDRESS");
+         }
+
+         ipAddress <<= 8;
+         ipAddress |= ret;
+         offset = delim + 1;
+      }
+
+      return ipAddress;
    }
 
    protected static boolean isDomainName(String address, int startIndex, int endIndex) {

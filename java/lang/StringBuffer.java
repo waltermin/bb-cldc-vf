@@ -59,7 +59,7 @@ public final class StringBuffer {
    }
 
    public final synchronized void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private final native void promote();
@@ -193,7 +193,7 @@ public final class StringBuffer {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this.count == 0 ? "" : new String(this);
    }
 
    final Object getValue() {

@@ -9,6 +9,12 @@ public class ContentHandlerException extends IOException {
    public static final int AMBIGUOUS;
 
    public ContentHandlerException(String reason, int errcode) {
+      super(reason);
+      if (errcode >= 1 && errcode <= 3) {
+         this._errcode = errcode;
+      } else {
+         throw new IllegalArgumentException("Illegal value for errcode");
+      }
    }
 
    public int getErrorCode() {

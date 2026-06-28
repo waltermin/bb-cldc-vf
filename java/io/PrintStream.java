@@ -16,7 +16,9 @@ public class PrintStream extends OutputStream {
    }
 
    private void ensureOpen() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.charOut == null) {
+         throw new IOException("Stream closed");
+      }
    }
 
    @Override
@@ -119,7 +121,7 @@ public class PrintStream extends OutputStream {
    }
 
    public void print(boolean b) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.write(b ? "true" : "false");
    }
 
    public void print(char c) {
@@ -147,7 +149,11 @@ public class PrintStream extends OutputStream {
    }
 
    public void print(String s) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (s == null) {
+         s = "null";
+      }
+
+      this.write(s);
    }
 
    public void print(Object obj) {

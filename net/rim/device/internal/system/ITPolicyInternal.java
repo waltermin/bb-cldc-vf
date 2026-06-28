@@ -6,11 +6,18 @@ import net.rim.device.api.crypto.ITPolicyAuthentication;
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.itpolicy.WipeITPolicyDirectory;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DataBuffer;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.TLEUtilities;
+import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.crypto.WipeablePolicyCryptoBlock;
+import net.rim.device.internal.deviceoptions.Owner;
+import net.rim.device.internal.io.file.FileSystem;
+import net.rim.device.internal.provisioning.ActivationService;
 import net.rim.vm.Memory;
 
 public final class ITPolicyInternal {
@@ -212,7 +219,119 @@ public final class ITPolicyInternal {
    }
 
    private static final boolean updateStatusAndNotify(DataBuffer data) {
-      throw new RuntimeException("cod2jar: ldc");
+      Security security = Security.getInstance();
+      boolean lockHandheld = false;
+      boolean resetRequired = false;
+      synchronized (getUpdateMonitor()) {
+         int oldPasswordMinLength = FIPSPolicy.getMaxInteger(8, 4, 5);
+         int oldPasswordPatternCheck = ITPolicy.getInteger(13, 0);
+         int oldPeriodicChallengeTimeout = ITPolicy.getInteger(22, 8, 60);
+         boolean oldLockOnSmartCardRemoval = ITPolicy.getBoolean(24, 1, false);
+         boolean oldForceSmartCardAuthentication = ITPolicy.getBoolean(24, 2, false);
+         boolean oldForceSCAChallengeResponse = ITPolicy.getBoolean(24, 63, false);
+         boolean oldForceLockWhenHolstered = ITPolicy.getBoolean(24, 12, false);
+         boolean oldContentProtectMasterKeys = ITPolicy.getBoolean(24, 53, false);
+         String oldForbiddenPasswords = ITPolicy.getString(22, 9);
+         boolean oldIsAddressBookExcludedFromCP = security.isAddressBookExcludedFromContentProtection();
+         DataBuffer scrubbedITPolicy = new DataBuffer();
+         DataBuffer wipeableITPolicy = new DataBuffer();
+         scrubITPolicy(data, scrubbedITPolicy, wipeableITPolicy);
+         NvStore.writeData(4, scrubbedITPolicy.toArray());
+         writeWipeablePolicyData(wipeableITPolicy.getArray());
+         NvStore.writeInt(6, 1);
+         setProcessedItadminTimeStamp();
+         if (!security.isPasswordEnabled() && ITPolicy.getBoolean(6, false)) {
+            lockHandheld = true;
+         } else if (FIPSPolicy.getMaxInteger(8, 4, 5) > oldPasswordMinLength
+            || ITPolicy.getInteger(13, 0) > oldPasswordPatternCheck
+            || ITPolicy.getInteger(22, 8, 60) != oldPeriodicChallengeTimeout
+            || ITPolicy.getBoolean(24, 1, false) != oldLockOnSmartCardRemoval
+            || ITPolicy.getBoolean(24, 2, false) != oldForceSmartCardAuthentication
+            || ITPolicy.getBoolean(24, 63, false) != oldForceSCAChallengeResponse
+            || ITPolicy.getBoolean(24, 12, false) != oldForceLockWhenHolstered
+            || ITPolicy.getInteger(24, 18, -1) != -1 && !PersistentContent.isEncryptionEnabled()
+            || !StringUtilities.strEqualIgnoreCase(ITPolicy.getString(22, 9), oldForbiddenPasswords, 1701707776)) {
+            lockHandheld = true;
+         } else if (FileSystem.isFileSystemSupported(1)) {
+            int policyLevel = ITPolicy.getInteger(24, 60, 0);
+            switch (policyLevel) {
+               case 0:
+               case 3:
+               case 4:
+                  break;
+               case 1:
+               case 2:
+               case 5:
+               case 6:
+               default:
+                  lockHandheld = true;
+            }
+         }
+
+         security.setTimeoutIfRequired();
+         int currMaxPasswordAttemtps = security.getMaxPasswordAttempts();
+         int itPolicyMaxPasswordAttempts = ITPolicy.getInteger(22, 2, 10);
+         if (itPolicyMaxPasswordAttempts < currMaxPasswordAttemtps) {
+            security.setMaxPasswordAttempts(itPolicyMaxPasswordAttempts);
+         }
+
+         int flags = NvStore.readInt(1, 0);
+         if (FIPSPolicy.disallowThirdPartyAppDownload()) {
+            flags |= 2;
+         } else {
+            flags &= -3;
+         }
+
+         if (ITPolicy.getBoolean(24, 44, false)) {
+            flags |= 4;
+         } else {
+            flags &= -5;
+         }
+
+         NvStore.writeInt(1, flags);
+         if (oldContentProtectMasterKeys != ITPolicy.getBoolean(24, 53, false)
+            || oldIsAddressBookExcludedFromCP != security.isAddressBookExcludedFromContentProtection()) {
+            PersistentContent.requestReEncode();
+         }
+
+         resetRequired = ApplicationControl.reloadDefaultModulePermissions();
+         updateOSPolicy();
+      }
+
+      String ownerName = ITPolicy.getString(21, 6);
+      if (ownerName != null) {
+         Owner.setOwnerName(ownerName, true);
+      }
+
+      String ownerInfo = ITPolicy.getString(21, 5);
+      if (ownerInfo != null) {
+         Owner.setOwnerInfo(ownerInfo, true);
+      }
+
+      boolean activating = ActivationService.getInstance().isAnyTransactionInProgress();
+      if (resetRequired && activating) {
+         ApplicationControl.disableXmit();
+      }
+
+      if (lockHandheld) {
+         RIMGlobalMessagePoster.postGlobalEvent(-594020114676189989L);
+      } else {
+         RIMGlobalMessagePoster.postGlobalEvent(8508406279413621091L);
+      }
+
+      if (resetRequired) {
+         if (!activating) {
+            ApplicationControl.scheduleDeviceReset("ITP");
+         } else {
+            ApplicationControl.scheduleDeviceReset("ITP", 1, 0);
+         }
+      }
+
+      if (security.getPasswordFailureCount() >= security.getMaxPasswordAttempts()) {
+         security.deviceUnderAttack();
+      }
+
+      return lockHandheld;
    }
 
    public static final boolean verifyITAdminService(String serviceUID, boolean defaultValue) {
@@ -520,6 +639,10 @@ public final class ITPolicyInternal {
    }
 
    private static final void logMalformedPolicy(String msg) {
-      throw new RuntimeException("cod2jar: ldc");
+      long GUID = 7454418552721098111L;
+      EventLogger.register(GUID, "ITPolicyInternal", 2);
+      String error = "Invalid IT Policy received: " + msg;
+      EventLogger.logEvent(GUID, error.getBytes(), 2);
+      System.err.println(error);
    }
 }

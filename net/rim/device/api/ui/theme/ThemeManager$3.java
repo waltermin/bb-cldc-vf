@@ -1,5 +1,8 @@
 package net.rim.device.api.ui.theme;
 
+import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.ui.component.Status;
+
 class ThemeManager$3 implements Runnable {
    private final int val$message;
 
@@ -9,6 +12,6 @@ class ThemeManager$3 implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      Status.show(ResourceBundle.getBundle(3711053710409943671L, "net.rim.device.internal.resource.UI").getString(this.val$message));
    }
 }

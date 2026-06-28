@@ -4,14 +4,21 @@ import java.util.Vector;
 import net.rim.device.api.lowmemory.LowMemoryManager;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.ListenerUtilities;
+import net.rim.device.api.util.StringTokenizer;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.io.PushRegistryHelper;
 import net.rim.device.internal.system.ApplicationManagerInternal;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.device.internal.system.LockEventLogger;
 import net.rim.device.internal.system.SecurityManager;
+import net.rim.vm.Array;
+import net.rim.vm.DebugSupport;
 import net.rim.vm.Message;
+import net.rim.vm.MessageQueue;
 import net.rim.vm.Process;
+import net.rim.vm.TooManyProcessesError;
 import net.rim.vm.TraceBack;
 
 final class ApplicationManagerImpl extends ApplicationManager implements ApplicationManagerInternal {
@@ -78,7 +85,47 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    final boolean setForegroundProcess(ApplicationProcess newForegroundProcess, boolean bottomOfZOrder) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._processes) {
+         if (!newForegroundProcess.isAlive()) {
+            return false;
+         }
+
+         if (this._securityProcess != null
+            && newForegroundProcess != this._securityProcess
+            && newForegroundProcess.getProcessId() != this._securityLockSupercedingProcessId) {
+            if (this._foregroundProcess == this._securityProcess && this._processes.numberOfProcesses() > 2) {
+               this._processes.moveProcess(newForegroundProcess, 1);
+            }
+
+            return false;
+         } else {
+            int pid = newForegroundProcess.getProcessId();
+            System.out.println("Foreground " + newForegroundProcess.toString());
+            InternalServices.setVisibleProcess(pid);
+            if ((this._redirectInputProcess == null || this._inputProcess != this._redirectInputProcess) && !DeviceInfo.isInHolster()) {
+               this._inputProcess = newForegroundProcess;
+            }
+
+            if (this._foregroundProcess != newForegroundProcess) {
+               if (this._foregroundProcess != null) {
+                  this._foregroundProcess.postMessage(this._switchBackgroundMessage);
+                  if (bottomOfZOrder) {
+                     this._processes.moveProcessToRear(this._foregroundProcess);
+                  }
+               }
+
+               this._processes.moveProcess(newForegroundProcess, 0);
+               this._foregroundProcess = newForegroundProcess;
+               if (this._foregroundChangeListeners != null) {
+                  for (int i = this._foregroundChangeListeners.length - 1; i >= 0; i--) {
+                     ((Runnable)this._foregroundChangeListeners[i]).run();
+                  }
+               }
+            }
+
+            return true;
+         }
+      }
    }
 
    final void requestForeground(ApplicationProcess newForegroundProcess, boolean wantsBackground) {
@@ -371,12 +418,52 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final int runApplication(ApplicationDescriptor descriptor, boolean grabForeground, Thread testingThread, int callingModule) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
    public final boolean scheduleApplication(ApplicationDescriptor descriptor, long time, boolean absolute) {
-      throw new RuntimeException("cod2jar: ldc");
+      int callingModule = TraceBack.getCallingModule(0);
+      this.checkDescriptorSecurity(descriptor, callingModule);
+      if (time == Long.MAX_VALUE) {
+         return false;
+      }
+
+      synchronized (this._scheduledApps) {
+         int index = this._scheduledApps.indexOf(descriptor);
+         if (time < 0) {
+            if (index != -1) {
+               this.logSchedulingEvent("Un-scheduling " + descriptor.getModuleName());
+               this._scheduledApps.removeElementAt(index);
+               this.setNextAlarm(true, null);
+               return true;
+            } else {
+               return false;
+            }
+         } else {
+            if (absolute && time < System.currentTimeMillis()) {
+               return false;
+            }
+
+            if (!absolute) {
+               this.logSchedulingEvent("App " + descriptor.getModuleName() + " is trying to schedule relative time:" + time);
+            } else {
+               this.logSchedulingEvent("App " + descriptor.getModuleName() + " is trying to schedule for time: " + time);
+            }
+
+            boolean force;
+            if (index == -1) {
+               this._scheduledApps.addElement(descriptor);
+               force = false;
+            } else {
+               descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(index);
+               force = true;
+            }
+
+            descriptor.setScheduledTime(time, absolute);
+            return this.setNextAlarm(force, descriptor);
+         }
+      }
    }
 
    private final void checkDescriptorSecurity(ApplicationDescriptor descriptor, int callingModule) {
@@ -388,7 +475,24 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
 
    @Override
    public final void setCurrentPowerOnBehavior(int powerOnBehavior) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.assertChangeDeviceSettingsPermission();
+      synchronized (this._scheduledApps) {
+         int oldBehavior = this._currentPowerOnBehavior;
+         switch (powerOnBehavior) {
+            case 0:
+               this._currentPowerOnBehavior = 0;
+               break;
+            case 1:
+            case 2:
+            default:
+               this._currentPowerOnBehavior = powerOnBehavior;
+         }
+
+         if (oldBehavior != this._currentPowerOnBehavior) {
+            this.logSchedulingEvent("Power ON Behaviour Change: Rescheduling Alarms.");
+            this.setNextAlarm(true, null);
+         }
+      }
    }
 
    @Override
@@ -413,7 +517,74 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final boolean setNextAlarm(boolean reset, ApplicationDescriptor desiredApp) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationDescriptor descriptor = null;
+      int numApps = this._scheduledApps.size();
+      boolean result = true;
+      boolean scheduledSuccessfully = false;
+
+      while (!scheduledSuccessfully && numApps > 0) {
+         long nextAlarmTime = Long.MAX_VALUE;
+         int appIndex = -1;
+
+         for (int i = 0; i < numApps; i++) {
+            descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(i);
+            long appTime = descriptor.getNextScheduledTime();
+            if (this._usePowerOnBehaviourForScheduling) {
+               int behavior = descriptor.getPowerOnBehavior();
+               if ((behavior & this._currentPowerOnBehavior) == 0) {
+                  appTime = Long.MAX_VALUE;
+               }
+            }
+
+            if (appTime < nextAlarmTime && appTime != Long.MAX_VALUE) {
+               nextAlarmTime = appTime;
+               appIndex = i;
+            }
+         }
+
+         if ((nextAlarmTime <= this._alarmTime || reset) && nextAlarmTime != Long.MAX_VALUE) {
+            long adjustedNowTime = System.currentTimeMillis() + 15000;
+            if (appIndex >= 0 && nextAlarmTime < adjustedNowTime) {
+               descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(appIndex);
+               this.logSchedulingEvent(
+                  "Scheduling error for " + descriptor.getModuleName() + " for " + nextAlarmTime + " which is in the past or offers insufficient lag time"
+               );
+               nextAlarmTime = adjustedNowTime;
+               descriptor.setScheduledTime(nextAlarmTime, true);
+               this.logSchedulingEvent("Adjusting scheduling for " + descriptor.getModuleName() + " for " + nextAlarmTime);
+            }
+
+            if (InternalServices.setAlarm(nextAlarmTime)) {
+               descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(appIndex);
+               this.logSchedulingEvent("Scheduled " + descriptor.getModuleName() + " for " + nextAlarmTime);
+               scheduledSuccessfully = true;
+               this._alarmTime = nextAlarmTime;
+            } else {
+               descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(appIndex);
+               if (descriptor == desiredApp) {
+                  result = false;
+               }
+
+               this.logSchedulingEvent("Scheduling error for " + descriptor.getModuleName() + " for " + nextAlarmTime);
+               this._scheduledApps.removeElementAt(appIndex);
+               numApps = this._scheduledApps.size();
+            }
+         } else {
+            if (appIndex != -1 && appIndex < this._scheduledApps.size()) {
+               descriptor = (ApplicationDescriptor)this._scheduledApps.elementAt(appIndex);
+               this.logSchedulingEvent("SetNextAlarm: Earliest Alarm already set: " + descriptor.getModuleName() + "[" + nextAlarmTime + "]");
+            }
+
+            scheduledSuccessfully = true;
+         }
+      }
+
+      if (numApps == 0) {
+         InternalServices.killAlarm();
+         this._alarmTime = Long.MAX_VALUE;
+      }
+
+      return result;
    }
 
    private final ApplicationProcess findProcess(ApplicationDescriptor descriptor) {
@@ -488,7 +659,7 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void processExited(boolean inStartup) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -544,7 +715,68 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
 
    @Override
    public final void launch(String url) {
-      throw new RuntimeException("cod2jar: ldc");
+      String name = null;
+      int dot = url.indexOf(46);
+      int question = url.indexOf(63);
+      if (dot > question) {
+         dot = -1;
+      }
+
+      String module;
+      if (dot != -1) {
+         module = url.substring(0, dot);
+         if (question == -1) {
+            name = url.substring(dot + 1);
+         } else {
+            name = url.substring(dot + 1, question);
+         }
+      } else if (question == -1) {
+         module = url;
+      } else {
+         module = url.substring(0, question);
+      }
+
+      int handle = CodeModuleManager.getModuleHandle(module);
+      if (handle <= 0) {
+         throw new ApplicationManagerException("Module not found.");
+      }
+
+      ApplicationDescriptor[] descriptors = CodeModuleManager.getApplicationDescriptors(handle);
+      if (descriptors != null && descriptors.length != 0) {
+         ApplicationDescriptor descriptor = descriptors[0];
+         if (name == null) {
+            descriptor = descriptors[0];
+         } else {
+            int i;
+            for (i = descriptors.length - 1; i >= 0; i--) {
+               if (descriptors[i].getName().equals(name)) {
+                  descriptor = descriptors[i];
+                  break;
+               }
+            }
+
+            if (i < 0) {
+               throw new ApplicationManagerException("Entry point not found.");
+            }
+         }
+
+         String[] args = null;
+         if (question != -1) {
+            StringTokenizer tokenizer = new StringTokenizer(url.substring(question + 1), '&');
+            int count = tokenizer.countTokens();
+            args = new String[count];
+
+            for (int i = 0; i < count; i++) {
+               args[i] = tokenizer.nextToken();
+            }
+         }
+
+         descriptor = getNewDescriptor(descriptor, args);
+         int callingModule = TraceBack.getCallingModule(0);
+         this.runApplication(descriptor, true, null, callingModule);
+      } else {
+         throw new ApplicationManagerException("Module not an application.");
+      }
    }
 
    @Override
@@ -739,15 +971,164 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void processGlobalEvent(long guid) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (guid == 3596208183088439728L || guid == 8877632280522743328L) {
+         synchronized (this._scheduledApps) {
+            this.logSchedulingEvent("Device Time/TimeZone Change: Rescheduling Alarms.");
+            this.setNextAlarm(true, null);
+         }
+      }
    }
 
    private final void runOnStartup(int[] handles, boolean inStartup) {
-      throw new RuntimeException("cod2jar: ldc");
+      Vector[] tiers = new Vector[8];
+      Vector localizationTier = new Vector();
+      CodeSigningKey rri = CodeSigningKey.getBuiltInKey(51);
+      CodeSigningKey rrt = CodeSigningKey.getBuiltInKey(5526098);
+
+      for (int i = 0; i < handles.length; i++) {
+         int handle = handles[i];
+
+         try {
+            ApplicationDescriptor[] descriptors;
+            if ((descriptors = CodeModuleManager.getApplicationDescriptors(handle)) != null) {
+               for (int j = 0; j < descriptors.length; j++) {
+                  ApplicationDescriptor descriptor = descriptors[j];
+                  if ((descriptor.getFlags() & 1) != 0) {
+                     int tier = descriptor.getStartupTier();
+                     if (0 <= tier && tier < 8) {
+                        if (!ControlledAccess.verifyCodeModuleSignature(handle, rri)) {
+                           if (tier <= 5) {
+                              appError("module " + descriptor.getModuleName() + " missing RRI signature");
+                              continue;
+                           }
+
+                           if (!ControlledAccess.verifyCodeModuleSignature(handle, rrt)) {
+                              appError("module " + descriptor.getModuleName() + " missing RRT signature");
+                              continue;
+                           }
+                        }
+
+                        if (tier == 0) {
+                           byte[] localeData = CodeModuleManager.getModuleLanguageData(handle);
+                           if (localeData != null && localeData.length > 0) {
+                              String localeString = new String(localeData);
+                              if (!localeString.toLowerCase().startsWith("en")) {
+                                 localizationTier.addElement(descriptor);
+                                 continue;
+                              }
+                           }
+                        }
+
+                        if (tiers[tier] == null) {
+                           tiers[tier] = new Vector();
+                        }
+
+                        tiers[tier].addElement(descriptor);
+                     }
+                  }
+               }
+            }
+         } catch (IllegalArgumentException var20) {
+         }
+      }
+
+      long[] timeTiers = new long[10];
+
+      for (int i = 0; i < 8; i++) {
+         timeTiers[i] = InternalServices.getUptime();
+         Vector tier = tiers[i];
+         if (tier != null) {
+            System.out.println("Starting tier " + i);
+            this.startTier(tier, inStartup, rri);
+            this.waitForTier(inStartup, i == 7);
+            if (i == 0 && !localizationTier.isEmpty()) {
+               this.startTier(localizationTier, inStartup, rri);
+               this.waitForTier(inStartup, false);
+            }
+         }
+      }
+
+      timeTiers[8] = InternalServices.getUptime();
+      System.out.println("MIDlet PushRegistry startup");
+
+      for (int i = 0; i < handles.length; i++) {
+         int handle = handles[i];
+
+         try {
+            if (CodeModuleManager.isMidlet(handle)) {
+               ApplicationDescriptor[] array = CodeModuleManager.getApplicationDescriptors(handle);
+               if (array != null) {
+                  ApplicationDescriptor original = array[0];
+                  String[] args = original.getArgs();
+                  Array.resize(args, 2);
+                  args[1] = args[0];
+                  args[0] = PushRegistryHelper.APPLICATION_DESCRIPTOR_ARG_PUSH_REGISTRY_WORK;
+                  ApplicationDescriptor doPushRegistryWorkDescriptor = new ApplicationDescriptor(array[0], array[0].getName(), args);
+
+                  try {
+                     this.runApplication(doPushRegistryWorkDescriptor, false);
+                  } catch (ApplicationManagerException var18) {
+                  }
+               }
+            }
+         } catch (IllegalArgumentException e) {
+            EventLogger.logEvent(-7509200465648525729L, e.toString().getBytes(), 5);
+         }
+      }
+
+      System.out.println("MIDlet PushRegistry startup finished");
+      timeTiers[9] = InternalServices.getUptime();
+      if (inStartup) {
+         StringBuffer buffer = new StringBuffer();
+         buffer.append("Startup Time ");
+         long total = 0;
+
+         for (int index = 0; index < timeTiers.length - 1; index++) {
+            total += timeTiers[index + 1] - timeTiers[index];
+         }
+
+         buffer.append(total);
+         buffer.append("ms\n");
+
+         for (int index = 0; index < timeTiers.length - 1; index++) {
+            buffer.append(" tier ");
+            buffer.append(index);
+            buffer.append(" took ");
+            buffer.append(timeTiers[index + 1] - timeTiers[index]);
+            buffer.append("ms\n");
+         }
+
+         buffer.deleteCharAt(buffer.length() - 1);
+         String message = buffer.toString();
+         EventLogger.logEvent(-7509200465648525729L, message.getBytes(), 0);
+         System.out.println(message);
+      }
    }
 
    private final void startTier(Vector tier, boolean inStartup, CodeSigningKey rri) {
-      throw new RuntimeException("cod2jar: ldc");
+      for (int j = tier.size() - 1; j >= 0; j--) {
+         ApplicationDescriptor descriptor = (ApplicationDescriptor)tier.elementAt(j);
+
+         try {
+            this.runApplication(descriptor, false);
+         } catch (ApplicationManagerException var11) {
+         } catch (TooManyProcessesError tmpe) {
+            System.out.println("Too many processes; waiting...");
+            this.waitForTier(inStartup, true);
+
+            try {
+               this.runApplication(descriptor, false);
+            } catch (ApplicationManagerException var9) {
+            } catch (TooManyProcessesError tmpe1) {
+               int handle = descriptor.getModuleHandle();
+               if (ControlledAccess.verifyCodeModuleSignature(handle, rri)) {
+                  throw tmpe1;
+               }
+
+               appError("Unable to start " + descriptor.getModuleName() + "; too many processes");
+            }
+         }
+      }
    }
 
    private final void waitForTier(boolean inStartup, boolean allowTimeout) {
@@ -774,19 +1155,299 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._startupThread = new ApplicationManagerImpl$StartupGetMessageThread();
+      this._startupThread.start();
+      int[] handles = CodeModuleManager.getModuleHandles();
+      this.runOnStartup(handles, true);
+      int[] var6 = null;
+      this._applicationRegistry.kickAllWaitingThreads();
+      net.rim.vm.Memory.persistentGC();
+      net.rim.vm.Memory.RAMRecover();
+      startupDone();
+      if (this._consoleProcess == null) {
+         int handle = CodeModuleManager.getModuleHandle("net_rim_app_manager_console");
+         if (handle != 0) {
+            ApplicationDescriptor[] ads = CodeModuleManager.getApplicationDescriptors(handle);
+
+            try {
+               this.runApplication(ads[0], true);
+            } catch (ApplicationManagerException var5) {
+            }
+         }
+      } else {
+         this.requestForeground(this._consoleProcess, false);
+      }
+
+      MessageQueue startupMessages = this._startupThread.getMessages();
+      Message message = new Message();
+
+      while (startupMessages.dequeue(message, false)) {
+         this.processMessage(message);
+      }
+
+      MessageQueue var8 = null;
+      this._startupThread = null;
+      Thread.currentThread().setPriority(10);
+
+      while (true) {
+         message.get();
+         this.processMessage(message);
+      }
    }
 
    private final void checkForKeyboardLag(Message message) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!InternalServices.isDeviceSecure()) {
+         if (!DebugSupport.isDebuggerAttached()) {
+            if (!DeviceInfo.isSimulator()) {
+               long keyTime = message.getData1();
+               long lastHourglass = InternalServices.getLastHourglass();
+               long upTime = InternalServices.getUptime();
+               if (upTime >= 600000) {
+                  if (keyTime <= upTime && lastHourglass <= upTime) {
+                     if (lastHourglass <= keyTime) {
+                        int lag = (int)upTime - message.getData1();
+                        if (upTime - keyTime >= 3000) {
+                           if (this._lastQuincy == 0 || upTime - this._lastQuincy >= 3600000) {
+                              this._lastQuincy = upTime;
+                              long LOGWORTHY_REPORT_REQUEST = 2888237357036234703L;
+                              String lagString = "Lag(D):" + Integer.toString(lag);
+                              System.out.println(lagString);
+                              System.out.println(message);
+                              this.postInternalGlobalEvent(LOGWORTHY_REPORT_REQUEST, 0, 0, lagString, null);
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
    }
 
    private final void processMessage(Message message) {
-      throw new RuntimeException("cod2jar: ldc");
+      label140:
+      switch (message.getDevice()) {
+         case 0:
+            switch (message.getEvent()) {
+               case 0:
+               case 2:
+               case 12:
+               case 13:
+               case 14:
+               case 15:
+               case 16:
+               case 17:
+                  break label140;
+               case 1:
+               default:
+                  this.processExited(false);
+                  return;
+               case 3:
+                  this.repaintForeground();
+                  return;
+               case 4:
+                  this.postInternalGlobalEvent(-5179361672050507927L, 0, 0, null, null);
+                  return;
+               case 5:
+                  int handle = message.getSubMessage();
+                  int[] handles = new int[]{handle};
+                  this.runOnStartup(handles, false);
+                  this.postInternalGlobalEvent(256826950193107649L, handle, 0, null, null);
+                  return;
+               case 6:
+                  this.postInternalGlobalEvent(-4232371946002803201L, 0, 0, null, null);
+                  return;
+               case 7:
+                  if (this._securityProcess == null) {
+                     this.postInternalGlobalEvent(this._consoleProcess, 7563637690172082503L, message.getData0(), 0, null, null);
+                  }
+
+                  return;
+               case 8:
+                  if (this._securityProcess == null && this._engScreenDescriptor != null) {
+                     try {
+                        this.runApplication(this._engScreenDescriptor, true);
+                        return;
+                     } catch (ApplicationManagerException var10) {
+                     }
+                  }
+
+                  return;
+               case 9:
+                  this.postInternalGlobalEvent(945659952435832745L, 0, 0, null, null);
+                  return;
+               case 10:
+                  if (this._foregroundProcess != null) {
+                     this._foregroundProcess.postMessage(message);
+                  }
+
+                  return;
+               case 11:
+                  this.postInternalGlobalEvent(8877632280522743328L, 0, 0, null, null);
+                  return;
+               case 18:
+                  if (this._securityProcess == null) {
+                     this.postInternalGlobalEvent(this._consoleProcess, -8249535590121003989L, message.getData0(), 0, null, null);
+                  }
+
+                  return;
+               case 19:
+                  if (message.getSubMessage() == 0) {
+                     Radio.deactivateWAFs(message.getData0());
+                     return;
+                  }
+
+                  Radio.activateWAFs(message.getData0());
+                  return;
+            }
+         case 1:
+            switch (message.getEvent()) {
+               case 259:
+                  this._usePowerOnBehaviourForScheduling = true;
+                  synchronized (this._scheduledApps) {
+                     this.logSchedulingEvent("System Powering Off: Rescheduling Alarms.");
+                     this.setNextAlarm(true, null);
+                  }
+
+                  this.lockSystemInternal(false);
+                  break label140;
+               case 260:
+                  EventLogger.logEvent(-7509200465648525729L, "POWER_UP".getBytes(), 0);
+                  this._usePowerOnBehaviourForScheduling = false;
+                  this.logSchedulingEvent("System Powering On: Executing Alarms.");
+                  this.executeScheduledApplications();
+                  if (this._isFastReset && !this._fastResetHavePowerUp) {
+                     this._fastResetHavePowerUp = true;
+                  } else {
+                     this.holsterStateChange(DeviceInfo.isInHolster());
+                     this.lockSystemInternal(false);
+                  }
+                  break label140;
+               case 265:
+                  message.setSubMessage(DeviceInfo.getBatteryStatus());
+                  break label140;
+               case 511:
+                  this._usePowerOnBehaviourForScheduling = false;
+                  this._isFastReset = true;
+                  this._fastResetHavePowerUp = false;
+                  this.repaintForeground();
+                  synchronized (this._scheduledApps) {
+                     this.logSchedulingEvent("Fast VM Reset: Rescheduling Alarms.");
+                     this.setNextAlarm(true, null);
+                  }
+               default:
+                  break label140;
+            }
+         case 2:
+         case 26:
+         case 27:
+            try {
+               this.checkForKeyboardLag(message);
+               this._inputProcess.postMessage(message);
+               ApplicationProcess securityProcess = this._securityProcess;
+               if (securityProcess != null && message.getDevice() == 2) {
+                  message.setDevice(49);
+                  securityProcess.postMessage(message);
+                  return;
+               }
+            } catch (NullPointerException var7) {
+            }
+
+            return;
+         case 3:
+            switch (message.getEvent()) {
+               case 767:
+                  break label140;
+               case 768:
+               default:
+                  this.logSchedulingEvent("RTC Expired: Running Alarms.");
+                  this.executeScheduledApplications();
+                  return;
+               case 769:
+                  if (this._securityManager != null && this._securityManager.isLockRequired()) {
+                     if (!this.isSystemLocked()) {
+                        LockEventLogger.logLockEvent(1281977448);
+                     }
+
+                     this.lockSystemInternal(false);
+                  }
+                  break label140;
+            }
+         case 4:
+            int osTimerId = message.getEvent();
+            int processId = ApplicationProcess.getProcessIdFromOSTimerId(osTimerId);
+            if (processId == 0) {
+               return;
+            }
+
+            ApplicationProcess process = this.findProcess(processId);
+            if (process == null) {
+               InternalServices.killTimer(osTimerId);
+               return;
+            }
+
+            process.postMessage(message);
+            return;
+         case 7:
+            this.holsterStateChange(message.getEvent() == 1793);
+            break;
+         case 38:
+            if (message.getEvent() == 9729) {
+               int width = message.getSubMessage() & 65535;
+               int height = message.getSubMessage() >> 16 & 65535;
+               this.postInternalGlobalEvent(-2650018024822507413L, width, height, null, null);
+            }
+            break;
+         case 44:
+            if (message.getEvent() == 2306) {
+               this.lockSystemInternal(true);
+            }
+            break;
+         case 46:
+            int processId = message.getDataLength();
+            if (processId != 0) {
+               ApplicationProcess process = this.findProcess(processId);
+               if (process == null) {
+                  return;
+               }
+
+               process.postMessage(message);
+               return;
+            }
+            break;
+         case 57:
+            if (this._nativeSocketProcess != null) {
+               this._nativeSocketProcess.postMessage(message);
+            }
+
+            return;
+      }
+
+      this.postMessage(message);
    }
 
    private final void executeScheduledApplications() {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._scheduledApps) {
+         for (int i = this._scheduledApps.size() - 1; i >= 0; i--) {
+            ApplicationDescriptor app = (ApplicationDescriptor)this._scheduledApps.elementAt(i);
+            long appTime = app.getScheduledTime();
+            long curTime = System.currentTimeMillis();
+            this.logSchedulingEvent(
+               "Checking " + app.getModuleName() + " Scheduled For:" + appTime + " against alarm time:" + this._alarmTime + " current time:" + curTime
+            );
+            if (appTime <= curTime + 30000) {
+               try {
+                  this.runApplication(app, true);
+               } catch (ApplicationManagerException var10) {
+               }
+
+               this._scheduledApps.removeElementAt(i);
+            }
+         }
+
+         this.logSchedulingEvent("RTC Expired: Rescheduling Alarms.");
+         this.setNextAlarm(true, null);
+      }
    }
 
    private static final native void startupDone();

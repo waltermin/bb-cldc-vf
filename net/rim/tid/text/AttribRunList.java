@@ -158,7 +158,7 @@ public final class AttribRunList {
    }
 
    final void setAttrib(int aValsMask, int aVals, int aStart, int aEnd) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
    public final AttribRunList sublist(int start, int end) {

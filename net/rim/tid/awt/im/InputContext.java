@@ -7,6 +7,7 @@ import net.rim.device.api.ui.FontRegistry;
 import net.rim.device.api.ui.InvokableAction;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.TextField;
 import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.FocusEvent;
@@ -132,8 +133,56 @@ public class InputContext {
       }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static InputContext getInstance(boolean init) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (init && !_context._iInitialised) {
+         synchronized (_context) {
+            if (!_context._iInitialised) {
+               Thread currentThread = Thread.currentThread();
+               if (_context._initializingThread == currentThread) {
+                  throw new Error("Illegal recursive initialization request");
+               }
+
+               _context._initializingThread = Thread.currentThread();
+               boolean var10 = false /* VF: Semaphore variable */;
+
+               try {
+                  var10 = true;
+                  Locale initialLocale = Locale.getDefaultInputForSystem();
+                  if (_context.selectInputMethod(initialLocale)) {
+                     if (!initialLocale.equals(_context._inputMethod.getLocale())) {
+                        Locale.setDefaultInputForSystem(_context._inputMethod.getLocale(), false);
+                     }
+                  } else {
+                     int localeCode = initialLocale.getCode();
+                     Locale l = Locale.get(localeCode & -65536);
+                     if ((localeCode & 65535) == 0 || !_context.selectInputMethod(l)) {
+                        l = Locale.get(1701707776);
+                        if (!_context.selectInputMethod(l)) {
+                           throw new Error("no input support can be provided for " + initialLocale.toString() + " locale");
+                        }
+                     }
+
+                     System.err.println("WARNING: initial input locale " + initialLocale.toString() + " has changed to " + l.toString());
+                     _context._iInitialised = true;
+                     Locale.setDefaultInputForSystem(l, false);
+                  }
+
+                  _context._iInitialised = true;
+                  var10 = false;
+               } finally {
+                  if (var10) {
+                     _context._initializingThread = null;
+                  }
+               }
+
+               _context._initializingThread = null;
+            }
+         }
+      }
+
+      return _context;
    }
 
    public boolean isInitialised() {
@@ -334,7 +383,33 @@ public class InputContext {
    }
 
    private void switchLocaleIfNeeded(IComponent comp, Locale switchLocale) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (comp instanceof TextField) {
+         TextField field = (TextField)comp;
+         Locale currentLocale = switchLocale == null ? this.getLocale() : switchLocale;
+         Locale intendedLocale = switchLocale == null ? currentLocale : switchLocale;
+         if (!Locale.isLatinOneCharacterSetLocale(intendedLocale) && (!field.isUnicodeInputAllowed() || (field.getTextInputStyle() & 1073741824) != 0)) {
+            Locale alternativeLocale = null;
+            Locale l;
+            if ((this.getActiveInputMethodID() & 20480) != 0) {
+               l = Locale.get("en", "US", "Multitap");
+               alternativeLocale = Locale.get("en", "US");
+            } else {
+               l = Locale.get("en", "US");
+            }
+
+            if (this._cachedLocale == null) {
+               this._cachedLocale = currentLocale;
+            }
+
+            if (l != currentLocale && !this.selectInputMethod(l, null, 1) && alternativeLocale != null) {
+               this.selectInputMethod(alternativeLocale, null, 1);
+               return;
+            }
+         } else if (switchLocale != null) {
+            this.selectInputMethod(this._cachedLocale, null, 2);
+            this._cachedLocale = null;
+         }
+      }
    }
 
    private synchronized void focusGained(FocusEvent event) {
@@ -394,7 +469,7 @@ public class InputContext {
    }
 
    private int getHanMaskForLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private synchronized void focusLost(FocusEvent event) {

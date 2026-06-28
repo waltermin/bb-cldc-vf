@@ -102,7 +102,14 @@ public final class VPN {
    }
 
    public static final void setVPNSystem(VPNSystem system) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationRegistry appReg = ApplicationRegistry.getApplicationRegistry();
+      if (appReg != null) {
+         if (appReg.replace(4078127605297297308L, system) != null) {
+            throw new IllegalStateException("VPN system already present");
+         }
+
+         _system = system;
+      }
    }
 
    public static final VPNSystem getVPNSystem() {

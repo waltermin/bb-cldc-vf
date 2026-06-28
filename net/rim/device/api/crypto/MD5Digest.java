@@ -8,7 +8,7 @@ public final class MD5Digest extends AbstractDigest implements Digest {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "MD5";
    }
 
    @Override

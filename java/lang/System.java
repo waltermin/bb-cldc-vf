@@ -20,7 +20,7 @@ public final class System {
    public static final native int identityHashCode(Object var0);
 
    public static final String getProperty(String key) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final void exit(int status) {

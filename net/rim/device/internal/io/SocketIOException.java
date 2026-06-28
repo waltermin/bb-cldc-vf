@@ -12,6 +12,6 @@ public final class SocketIOException extends IOException {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "SocketIOException(" + this._exceptionCode + ')';
    }
 }

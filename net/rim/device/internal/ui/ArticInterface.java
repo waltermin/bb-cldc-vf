@@ -35,7 +35,44 @@ public class ArticInterface {
       boolean aTextUnchanged,
       int aFlags
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aText == null) {
+         throw new IllegalArgumentException("ArticInterface.Format: aText == null");
+      }
+
+      if (aLine == null) {
+         throw new IllegalArgumentException("ArticInterface.Format: aLine == null");
+      }
+
+      if (aTextStart < 0 || aTextStart > aText.length()) {
+         throw new IllegalArgumentException("ArticInterface.Format: aTextStart (" + aTextStart + ") out of range 0...aText.length() (" + aText.length() + ")");
+      }
+
+      if (aOldLength < 0) {
+         throw new IllegalArgumentException("ArticInterface.Format: aOldLength < 0");
+      }
+
+      if (aNewLength < 0) {
+         throw new IllegalArgumentException("ArticInterface.Format: aNewLength < 0");
+      }
+
+      Format(
+         _layout,
+         aWidth,
+         aTextStart,
+         aOldLength,
+         aNewLength,
+         aCursor,
+         aCursorLeadingEdge,
+         aAnchor,
+         aText,
+         aLine,
+         aLineStart,
+         aLineTop,
+         aMaxLines,
+         aTextUnchanged,
+         aFlags
+      );
+      return _layout;
    }
 
    private static native void Format(

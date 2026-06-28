@@ -1,5 +1,6 @@
 package net.rim.device.internal.media;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
@@ -26,7 +27,18 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
 
    @Override
    public void reset() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.markSupported()) {
+         throw new IOException("Mark not supported on this stream");
+      }
+
+      this.this$0._readOffset = this._markingPos;
+      synchronized (this.this$0._lock) {
+         if (this.this$0._writeOffset >= this.this$0._readOffset) {
+            this.this$0._dataLength = this.this$0._writeOffset - this.this$0._readOffset;
+         } else {
+            this.this$0._dataLength = this.this$0._writeOffset + (this.this$0._buffer.length - this.this$0._readOffset);
+         }
+      }
    }
 
    @Override
@@ -34,9 +46,45 @@ class HTTPBufferingManager$HTTPBufferedInputStream extends InputStream {
       return this.this$0._totalInputLength <= 1048576;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public long skip(long n) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this.this$0._lock) {
+         if (n > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Value to skip is too large");
+         }
+
+         int intN = (int)n;
+         int avail = this.available();
+         this._skipping = true;
+         boolean var12 = false /* VF: Semaphore variable */;
+
+         long var15;
+         label51: {
+            try {
+               var12 = true;
+               if (avail >= intN) {
+                  var15 = this.read(null, 0, intN);
+                  var12 = false;
+                  break label51;
+               }
+
+               var15 = this.read(null, 0, avail);
+               var12 = false;
+            } finally {
+               if (var12) {
+                  this._skipping = false;
+               }
+            }
+
+            this._skipping = false;
+            return var15;
+         }
+
+         this._skipping = false;
+         return var15;
+      }
    }
 
    @Override

@@ -11,16 +11,16 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.util.Arrays;
 
 public class ChartField extends Field {
-   private ResourceBundle _resources;
-   private Axis[] _axes;
-   private ChartRenderer[] _renderers;
+   private ResourceBundle _resources = ResourceBundle.getBundle(3711053710409943671L, "net.rim.device.internal.resource.UI");
+   private Axis[] _axes = new Axis[4];
+   private ChartRenderer[] _renderers = new ChartRenderer[0];
    private int _preferredWidth;
    private int _preferredHeight;
    private int[] _colors;
    private int _focusX;
    private int _focusY;
    private Font _previousFont;
-   private boolean _needsSpaceCalculations;
+   private boolean _needsSpaceCalculations = true;
    private static final int STATUS_MOVE_FOCUS_MASK;
    public static final int AXIS_TOP;
    public static final int AXIS_RIGHT;
@@ -32,6 +32,8 @@ public class ChartField extends Field {
    }
 
    public ChartField(long style) {
+      super(style);
+      this._colors = new int[0];
    }
 
    public void addRenderer(ChartRenderer renderer) {

@@ -80,7 +80,29 @@ public class ContentProtectedVector extends Vector implements Persistable, Persi
 
    @Override
    public synchronized int lastIndexOf(Object elem, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._protected) {
+         return super.lastIndexOf(elem, index);
+      }
+
+      if (index >= super.elementCount) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + super.elementCount);
+      }
+
+      if (elem == null) {
+         for (int i = index; i >= 0; i--) {
+            if (super.elementData[i] == null) {
+               return i;
+            }
+         }
+      } else {
+         for (int i = index; i >= 0; i--) {
+            if (elem.equals(PersistentContent.decode(super.elementData[i]))) {
+               return i;
+            }
+         }
+      }
+
+      return -1;
    }
 
    @Override

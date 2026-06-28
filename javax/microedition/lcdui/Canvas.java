@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.Trackball;
@@ -121,7 +122,61 @@ public class Canvas extends Displayable {
    }
 
    public String getKeyName(int keyCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      int id;
+      switch (keyCode) {
+         case -151:
+            id = 36;
+            break;
+         case -150:
+            id = 35;
+            break;
+         case -21:
+            id = 38;
+            break;
+         case -19:
+            id = 37;
+            break;
+         case -8:
+            id = 34;
+            break;
+         case 1:
+            id = 9;
+            break;
+         case 2:
+            id = 12;
+            break;
+         case 5:
+            id = 10;
+            break;
+         case 6:
+            id = 11;
+            break;
+         default:
+            switch ((char)keyCode) {
+               case '\u0000':
+                  throw new IllegalArgumentException();
+               case '\b':
+                  id = 3;
+                  break;
+               case '\n':
+                  id = 4;
+                  break;
+               case '\u001b':
+                  id = 6;
+                  break;
+               case ' ':
+                  id = 2;
+                  break;
+               case '\u007f':
+                  id = 5;
+                  break;
+               default:
+                  char[] str = new char[]{(char)keyCode};
+                  return new String(str);
+            }
+      }
+
+      return ResourceBundle.getBundle(3711053710409943671L, "net.rim.device.internal.resource.UI").getString(id);
    }
 
    public int getGameAction(int keyCode) {

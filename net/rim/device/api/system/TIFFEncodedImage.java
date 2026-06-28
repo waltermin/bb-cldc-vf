@@ -72,7 +72,7 @@ public final class TIFFEncodedImage extends EncodedImage {
 
    @Override
    public final String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "image/tiff";
    }
 
    static final native boolean isTIFFSupported();

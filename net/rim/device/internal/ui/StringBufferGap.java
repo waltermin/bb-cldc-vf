@@ -2,6 +2,7 @@ package net.rim.device.internal.ui;
 
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.util.AbstractString;
+import net.rim.vm.Array;
 
 public final class StringBufferGap implements AbstractString {
    private Object _text;
@@ -61,7 +62,7 @@ public final class StringBufferGap implements AbstractString {
    }
 
    public final StringBuffer getPrevWord() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final StringBuffer getPrevChars(int len) {
@@ -175,6 +176,16 @@ public final class StringBufferGap implements AbstractString {
    private static final native int stringToWords0(StringBufferGap var0, int var1, int var2, int[] var3, int[] var4);
 
    public static final int stringToWords(StringBufferGap SBG, int startIndex, int length, int[] offsets, int[] lengths) {
-      throw new RuntimeException("cod2jar: ldc");
+      int wordCount = 0;
+      Array.resize(offsets, (length >> 1) + 1);
+      Array.resize(lengths, (length >> 1) + 1);
+
+      try {
+         wordCount = stringToWords0(SBG, startIndex, length, offsets, lengths);
+      } catch (ArrayIndexOutOfBoundsException exc) {
+         System.err.println("Internal error!");
+      }
+
+      return wordCount;
    }
 }

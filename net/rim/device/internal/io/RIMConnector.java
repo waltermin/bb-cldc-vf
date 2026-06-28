@@ -34,11 +34,11 @@ public class RIMConnector {
    }
 
    private static Connection open(int moduleHandle, String name, int mode, boolean timeouts, FirewallContext context) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static void doFirewallCheck(int moduleHandle, String name, int[] additionalModules, ApplicationDescriptor requestingDescriptor) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.

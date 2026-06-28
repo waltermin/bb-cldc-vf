@@ -254,7 +254,30 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
    }
 
    private final boolean setRowHeight(int row, int rowHeight, int yAdjustment) {
-      throw new RuntimeException("cod2jar: ldc");
+      boolean changed = false;
+      if (rowHeight <= 0) {
+         throw new IllegalArgumentException("Invalid rowHeight");
+      }
+
+      if (this._rowHeightExceptions.containsKey(row)) {
+         int oldRowHeight = this._rowHeightExceptions.get(row);
+         if (oldRowHeight == (rowHeight | yAdjustment << 8)) {
+            return changed;
+         }
+
+         this._rowHeightExceptionsSum -= oldRowHeight & 0xFF;
+         this._rowHeightExceptions.remove(row);
+         changed = true;
+      }
+
+      int height = rowHeight;
+      if (height != this._rowHeight) {
+         this._rowHeightExceptions.put(row, rowHeight | yAdjustment << 8);
+         this._rowHeightExceptionsSum += height & 0xFF;
+         changed = true;
+      }
+
+      return changed;
    }
 
    private final void checkReduceHeight() {

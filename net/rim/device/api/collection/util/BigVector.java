@@ -48,7 +48,31 @@ public class BigVector implements Persistable {
    }
 
    private void cacheIndex(int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index < this._vectorSize && index >= 0) {
+         int low = 0;
+         int hi = this._firstElementIndex.length;
+
+         while (true) {
+            int mid = hi + low >> 1;
+            int firstElementIndex = this._firstElementIndex[mid];
+            if (firstElementIndex > index) {
+               hi = mid;
+            } else {
+               if (this._firstElementIndex[mid + 1] > index) {
+                  this._currChunkIndex = mid;
+                  this._currChunk = this._arrayChunks[this._currChunkIndex];
+                  this._currChunkStartIndex = this._chunkStartIndex[this._currChunkIndex];
+                  this._currChunkFirstElementIndex = this._firstElementIndex[this._currChunkIndex];
+                  this._currChunkLastElementIndexPlusOne = this._firstElementIndex[this._currChunkIndex + 1];
+                  return;
+               }
+
+               low = mid + 1;
+            }
+         }
+      } else {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this._vectorSize + "or < 0");
+      }
    }
 
    private void splitCurrentChunk(int splitPoint) {
@@ -171,7 +195,19 @@ public class BigVector implements Persistable {
    }
 
    public synchronized Object elementAt(int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this._vectorSize) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this._vectorSize);
+      }
+
+      if (this._contiguousArray != null) {
+         return this._contiguousArray[index];
+      }
+
+      if (index < this._currChunkFirstElementIndex || index >= this._currChunkLastElementIndexPlusOne) {
+         this.cacheIndex(index);
+      }
+
+      return this._currChunk[index - this._currChunkFirstElementIndex + this._currChunkStartIndex];
    }
 
    public synchronized int firstIndexOf(Object value) {
@@ -198,7 +234,19 @@ public class BigVector implements Persistable {
    }
 
    public synchronized void setElementAt(Object value, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this._vectorSize) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this._vectorSize);
+      }
+
+      if (this._contiguousArray != null) {
+         this._contiguousArray[index] = value;
+      } else {
+         if (index < this._currChunkFirstElementIndex || index >= this._currChunkLastElementIndexPlusOne) {
+            this.cacheIndex(index);
+         }
+
+         this._currChunk[index - this._currChunkFirstElementIndex + this._currChunkStartIndex] = value;
+      }
    }
 
    public synchronized void removeElementAt(int index) {

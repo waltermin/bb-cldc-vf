@@ -40,7 +40,7 @@ public class EmailAddressEditField extends EditField {
 
    @Override
    protected int insert(String text, int context) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override

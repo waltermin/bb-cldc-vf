@@ -18,6 +18,6 @@ public class RemoteException extends IOException {
 
    @Override
    public String getMessage() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this.detail == null ? super.getMessage() : super.getMessage() + "\n Nested Exception: " + this.detail.toString();
    }
 }

@@ -56,7 +56,8 @@ final class ConversionDataRegistryHelper {
    }
 
    final String getSuggestedEncoding(int localeCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      ConversionDataRegistryHelper$EncodingMappingData eData = this.runOverTheData(localeCode);
+      return eData != null ? eData._encoding : "ISO-8859-1";
    }
 
    final synchronized byte[][][] getConversionData(int id, int[] dataOffset) {

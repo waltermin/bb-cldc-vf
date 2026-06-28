@@ -14,6 +14,7 @@ import net.rim.device.api.synchronization.SyncCollectionStatisticsManager;
 import net.rim.device.api.synchronization.SyncConverter;
 import net.rim.device.api.synchronization.SyncManager;
 import net.rim.device.api.synchronization.SyncObject;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.util.DataBuffer;
 
 final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics, SyncConverter, OTASyncCapable, CollectionEventSource, Runnable {
@@ -50,7 +51,31 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    @Override
    public final boolean addSyncObject(SyncObject object) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (object instanceof UserSetting && this._userPermissions.getStorage() != null) {
+         UserSetting element = (UserSetting)object;
+         int index = this._userPermissions.getStorage().indexOf(element);
+         if (index != -1) {
+            this.updateSyncObject((SyncObject)this._userPermissions.getStorage().elementAt(index), element);
+            return true;
+         }
+
+         byte[] hash = element.getHash();
+         int handle = CodeModuleManager.getModuleHandle(hash);
+         if (handle != 0) {
+            this._userPermissions.putSetting(handle, element);
+            if (ApplicationControlImpl.setModulePermission(hash, handle, element.getPermissions())) {
+               ApplicationControlImpl.scheduleDeviceReset("USSa", 3600000);
+            }
+         } else {
+            this._userPermissions.getStorage().addElement(element);
+            this._userPermissions.commit();
+         }
+
+         this._collectionListenerManager.fireElementAdded(this, element);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    @Override
@@ -88,7 +113,44 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    @Override
    public final boolean updateSyncObject(SyncObject oldObject, SyncObject newObject) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (oldObject instanceof UserSetting && newObject instanceof UserSetting) {
+         boolean resetRequired = false;
+         if (this._userPermissions.getStorage() != null) {
+            UserSetting oldUS = (UserSetting)oldObject;
+            UserSetting newUS = (UserSetting)newObject;
+            int handle = CodeModuleManager.getModuleHandle(newUS.getHash());
+            int index = this._userPermissions.getStorage().indexOf(oldUS);
+            if (index != -1) {
+               if (handle != 0) {
+                  UserSetting target = this._userPermissions.getSetting(handle);
+                  this._userPermissions.setPermissions(target, newUS, false);
+                  resetRequired = ApplicationControlImpl.setModuleUserPermission(newUS.getHash(), handle, newUS.getPermissions());
+               } else if (newUS.hashEquals(ApplicationControlConstants.EMPTY_HASH)) {
+                  UserSetting defaults = this._userPermissions.getDefaultSetting();
+                  this._userPermissions.setPermissions(oldUS, defaults, newUS);
+                  resetRequired = ApplicationControl.reloadDefaultModulePermissions();
+               } else {
+                  this._userPermissions.getStorage().setElementAt(newUS, index);
+                  this._userPermissions.commit();
+               }
+            }
+
+            if (oldUS.getUID() != newUS.getUID()) {
+               this._collectionListenerManager.fireElementRemoved(this, oldUS);
+               this._collectionListenerManager.fireElementAdded(this, newUS);
+            } else {
+               this._collectionListenerManager.fireElementUpdated(this, newUS, oldUS);
+            }
+
+            if (resetRequired) {
+               ApplicationControlImpl.scheduleDeviceReset("USSu", 3600000);
+            }
+
+            return true;
+         }
+      }
+
+      return false;
    }
 
    @Override
@@ -116,7 +178,7 @@ final class UserSettingsSync implements SyncCollection, SyncCollectionStatistics
 
    @Override
    public final String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Application Permissions";
    }
 
    @Override

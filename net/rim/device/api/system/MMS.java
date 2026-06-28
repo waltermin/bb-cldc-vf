@@ -6,7 +6,12 @@ public final class MMS {
    public static final long BACKDOOR_INJECT_MMS_SERVICE_BOOK;
 
    public static final boolean isSupported() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         Class.forName("net.rim.device.apps.internal.mms.model.MMSMessageModelImpl");
+         return true;
+      } catch (ClassNotFoundException cnfe) {
+         return false;
+      }
    }
 
    public static final boolean isEnabled() {

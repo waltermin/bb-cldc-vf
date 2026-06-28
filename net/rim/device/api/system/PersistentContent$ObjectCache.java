@@ -44,6 +44,6 @@ final class PersistentContent$ObjectCache implements MemoryCleanerListener {
 
    @Override
    public final String getDescription() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Content Protection Cache";
    }
 }

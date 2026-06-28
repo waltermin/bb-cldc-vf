@@ -1,5 +1,7 @@
 package net.rim.device.cldc.io.utility;
 
+import net.rim.device.api.system.Application;
+
 public final class EventThreadCheck {
    private static boolean _isMidlet;
 
@@ -7,6 +9,8 @@ public final class EventThreadCheck {
    }
 
    public static final void throwException() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (Application.isEventDispatchThread() && !_isMidlet) {
+         throw new RuntimeException("blocking operation not permitted on event dispatch thread");
+      }
    }
 }

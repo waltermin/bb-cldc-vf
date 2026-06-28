@@ -54,7 +54,19 @@ final class AudioPathControlImpl implements AudioPathControl {
 
    @Override
    public final synchronized void setAudioPath(int newPath) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (newPath >= 0 && newPath < 6) {
+         if (this._audioRouter.getActiveSource() == this._source) {
+            if (!this._audioRouter.setSink(newPath)) {
+               throw new MediaException("Failed to change audio path");
+            }
+         } else if (!this._audioRouter.canEnableSink(this._source, newPath, true)) {
+            throw new MediaException("Failed to change audio path");
+         }
+
+         this._sink = newPath;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    @Override

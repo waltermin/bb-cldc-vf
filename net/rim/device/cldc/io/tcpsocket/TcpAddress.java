@@ -1,6 +1,9 @@
 package net.rim.device.cldc.io.tcpsocket;
 
+import java.io.IOException;
 import net.rim.device.api.io.DatagramAddressBase;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.internal.io.tunnel.TunnelCredentialsProvider;
 import net.rim.device.internal.system.TCPPacketHeader;
 
@@ -157,14 +160,36 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public static final void convertIpAddressBytesToStringBuffer(byte[] ipAddress, StringBuffer buf) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (ipAddress == null) {
+         buf.append("255.255.255.255");
+      } else {
+         buf.append(ipAddress[0] & 255);
+         buf.append('.');
+         buf.append(ipAddress[1] & 255);
+         buf.append('.');
+         buf.append(ipAddress[2] & 255);
+         buf.append('.');
+         buf.append(ipAddress[3] & 255);
+      }
    }
 
    public final String getLocalAddress() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._apnName == null) {
+         throw new IOException();
+      }
+
+      StringBuffer buf = new StringBuffer(20);
+
+      try {
+         convertIpAddressBytesToStringBuffer(RadioInfo.getIPAddress(RadioInfo.getAccessPointNumber(this._apnName)), buf);
+      } catch (RadioException e) {
+         throw new IOException("Can't get local ip address");
+      }
+
+      return buf.toString();
    }
 }

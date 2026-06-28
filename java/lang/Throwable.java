@@ -1,5 +1,7 @@
 package java.lang;
 
+import net.rim.vm.TraceBack;
+
 public class Throwable {
    private String detailMessage;
    private Object backtrace;
@@ -17,10 +19,16 @@ public class Throwable {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      String s = this.getClass().getName();
+      String message = this.getMessage();
+      return message != null ? s + ": " + message : s;
    }
 
    public void printStackTrace() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.backtrace != null) {
+         TraceBack.printStackTrace(System.err, this.backtrace);
+      } else {
+         System.err.println("No stack trace");
+      }
    }
 }

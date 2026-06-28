@@ -10,6 +10,9 @@ public final class TextMessageImpl extends MessageImpl implements TextMessage {
    public static final String UCS2_SMS_ENCODER;
 
    public TextMessageImpl(String address) {
+      super(address);
+      super._encoding = 0;
+      this._encoder = "SMS";
    }
 
    @Override
@@ -46,6 +49,13 @@ public final class TextMessageImpl extends MessageImpl implements TextMessage {
 
    @Override
    final void setEncoding(int coding) {
-      throw new RuntimeException("cod2jar: ldc");
+      super.setEncoding(coding);
+      if (coding == 0) {
+         this._encoder = "SMS";
+      } else {
+         if (coding == 2) {
+            this._encoder = "UnicodeBigUnmarked";
+         }
+      }
    }
 }

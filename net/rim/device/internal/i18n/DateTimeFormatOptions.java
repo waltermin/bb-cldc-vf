@@ -1,6 +1,7 @@
 package net.rim.device.internal.i18n;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.vm.PersistentInteger;
 
@@ -26,15 +27,25 @@ public class DateTimeFormatOptions {
    }
 
    public static String[] getTimeFormats() {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundle resourceBundle = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale");
+      return resourceBundle.getStringArray(9);
    }
 
    public static void onAppLocaleChange() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_instance.timeFormatUserSetting == -1 && Locale.getDefault() != Locale.getDefaultForSystem()) {
+         ResourceBundle bundle = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale");
+         String defaultTimeFormat = bundle.getString(12);
+         _timeFormatApplication = Integer.parseInt(defaultTimeFormat);
+      }
    }
 
    public static void onSystemLocaleChange() {
-      throw new RuntimeException("cod2jar: ldc");
+      int format = PersistentInteger.get(_timeFormatId);
+      if (format == -1) {
+         ResourceBundle bundle = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale");
+         String defaultTimeFormat = bundle.getString(12);
+         _instance.timeFormatSystem = Integer.parseInt(defaultTimeFormat);
+      }
    }
 
    public static void setTimeFormat(int timeFormat) {

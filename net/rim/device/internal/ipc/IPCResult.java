@@ -7,6 +7,7 @@ public class IPCResult {
    public static final IPCResult FAILED_RESULT;
 
    IPCResult(Object result, boolean wasSuccessful) {
+      this(result, wasSuccessful, "");
    }
 
    IPCResult(Object result, boolean wasSuccessful, String message) {

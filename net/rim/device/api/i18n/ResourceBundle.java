@@ -4,6 +4,7 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.CodeSigningKey;
 import net.rim.device.api.util.LongHashtable;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.vm.WeakReference;
 
 public class ResourceBundle {
    private ResourceBundleFamily _family;
@@ -29,7 +30,30 @@ public class ResourceBundle {
    }
 
    public static final ResourceBundleFamily getBundle(long bundle, String name, CodeSigningKey key) {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundleFamily result = null;
+      WeakReference ref = null;
+      synchronized (_table) {
+         ref = (WeakReference)_table.get(bundle);
+         if (ref == null) {
+            ref = new WeakReference(null);
+            _table.put(bundle, ref);
+         }
+      }
+
+      synchronized (ref) {
+         result = (ResourceBundleFamily)ref.get();
+         if (result == null) {
+            verifyHash(bundle, name);
+            result = new ResourceBundleFamily(bundle, name, key);
+            ref.set(result);
+         }
+      }
+
+      if (!result.verify(key)) {
+         throw new MissingResourceException("Invalid signature");
+      } else {
+         return result;
+      }
    }
 
    public final ResourceBundleFamily getFamily() {

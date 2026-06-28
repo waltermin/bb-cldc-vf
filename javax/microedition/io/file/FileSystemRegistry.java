@@ -1,6 +1,7 @@
 package javax.microedition.io.file;
 
 import java.util.Enumeration;
+import net.rim.device.api.system.Application;
 import net.rim.device.internal.io.file.FileSystem;
 
 public class FileSystemRegistry {
@@ -8,7 +9,14 @@ public class FileSystemRegistry {
    }
 
    public static boolean addFileSystemListener(FileSystemListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      Application app;
+      try {
+         app = Application.getApplication();
+      } catch (IllegalStateException e) {
+         throw new SecurityException("No application available for callback");
+      }
+
+      return FileSystem.addFileSystemListener(listener, app, false);
    }
 
    public static boolean removeFileSystemListener(FileSystemListener listener) {

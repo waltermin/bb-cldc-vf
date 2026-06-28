@@ -205,7 +205,15 @@ public class DNSRequest {
    }
 
    private static String makeInverseQueryHostname(byte[] ipAddr) {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer tmp = new StringBuffer(28);
+
+      for (int i = 3; i >= 0; i--) {
+         tmp.append(ipAddr[i] & 255);
+         tmp.append('.');
+      }
+
+      tmp.append("IN-ADDR.ARPA");
+      return tmp.toString();
    }
 
    public static byte[] getDefaultServerAddress(int apnId, int type) {

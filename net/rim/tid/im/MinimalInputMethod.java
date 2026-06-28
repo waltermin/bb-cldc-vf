@@ -40,7 +40,7 @@ public class MinimalInputMethod implements InputMethod {
    public static final char KEYPAD_TYPE_DELIMITER;
 
    protected String getKeyMapLibName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "net_rim_platform_im_resource";
    }
 
    public boolean setFilter(TextFilter filter) {
@@ -66,7 +66,37 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    public boolean setKeyLayoutLocale(Locale aLocale) {
-      throw new RuntimeException("cod2jar: ldc");
+      String libName = this.getKeyMapLibName();
+      Locale keyboardLocale = Locale.getDefaultForKeyboard();
+      String keyboardType = this.getKeyboardType(keyboardLocale.getCode());
+      int keyboardID = keyboardLocale.isKeyboardIDSet() ? keyboardLocale.getKeyboardID() : this._keyboardID;
+      SLKeyLayout lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, keyboardType, aLocale, libName, false);
+      if (lnkLayout == null) {
+         String language = aLocale.getLanguage();
+         Locale l = Locale.get(language);
+         lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, keyboardType, l, libName, false);
+         if (lnkLayout == null) {
+            if (language.equals("es")) {
+               lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, keyboardType, Locale.get("ca", ""), libName, false);
+            } else if (language.equals("he") && !keyboardType.equals("qwerty")) {
+               lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, "qwerty", aLocale, libName, false);
+               if (lnkLayout == null) {
+                  lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, "qwerty", l, libName, false);
+               }
+            }
+         }
+
+         if (lnkLayout == null) {
+            lnkLayout = SLKeyLayout.getLayout(aLocale, false, keyboardID, keyboardType, l, libName, true);
+         }
+      }
+
+      if (lnkLayout == null) {
+         return false;
+      }
+
+      this._lnkLayout = lnkLayout;
+      return true;
    }
 
    void setLayout(SLKeyLayout aLayout) {
@@ -316,6 +346,14 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    private String getKeyboardType(int aLocaleCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      String ret = "qwerty";
+      switch (aLocaleCode & -65536) {
+         case 1684340736:
+            ret = "qwertz";
+         default:
+            return ret;
+         case 1718747136:
+            return "azerty";
+      }
    }
 }

@@ -63,7 +63,9 @@ public final class UDPPacketHeader implements RadioPacketHeader {
    }
 
    private final void checkPortRange(int port) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (port < 0 || port > 65535) {
+         throw new IllegalArgumentException("port out range:" + port);
+      }
    }
 
    public static final byte[] IPv4IntToByteArray(int address) {
@@ -71,7 +73,15 @@ public final class UDPPacketHeader implements RadioPacketHeader {
    }
 
    public static final int IPv4ByteArrayToInt(byte[] address) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (address.length < 4) {
+         throw new IllegalArgumentException("invalid IP address: " + address);
+      }
+
+      int ch1 = address[0] & 255;
+      int ch2 = address[1] & 255;
+      int ch3 = address[2] & 255;
+      int ch4 = address[3] & 255;
+      return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
    }
 
    public static final int getMaxPacketSize() {

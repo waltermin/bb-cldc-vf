@@ -46,7 +46,7 @@ public final class WipeablePolicyCryptoBlock$WipeableCBCollection implements Syn
 
    @Override
    public final String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Encrypted Wipeable Policy Keys";
    }
 
    @Override

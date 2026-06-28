@@ -1,6 +1,7 @@
 package net.rim.device.api.bluetooth;
 
 import java.io.IOException;
+import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.IOPort;
@@ -14,13 +15,13 @@ import net.rim.vm.Message;
 import net.rim.vm.Process;
 
 public final class BluetoothSerialPort extends IOPort {
-   private int _portHandle;
+   private int _portHandle = -1;
    private boolean _isServer;
    private BluetoothSerialPortListener _listener;
    private Application _app;
    private Runnable _cleanupRunnable;
    private byte[] _remoteAddress;
-   private int _sdpRecordHandle;
+   private int _sdpRecordHandle = -1;
    public static final int BAUD_2400;
    public static final int BAUD_4800;
    public static final int BAUD_7200;
@@ -54,6 +55,15 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    private BluetoothSerialPort() {
+      if (ITPolicy.getBoolean(34, 5, false)) {
+         throw new IOException("Disabled by IT Policy");
+      }
+
+      if (!isSupported()) {
+         throw new UnsupportedOperationException();
+      }
+
+      this._app = Application.getApplication();
    }
 
    public BluetoothSerialPort(
@@ -110,7 +120,15 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    public final void addSDPRecord(int[] attributeIDs, byte[][][] attributeValues, int classOfDevice) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._sdpRecordHandle == -1) {
+         int securityLevel = 11;
+         this._sdpRecordHandle = BluetoothSDP.addRecord(
+            this._portHandle, false, attributeIDs, attributeValues, classOfDevice, 0, this.getRFCOMMChannel(), securityLevel
+         );
+         if (this._sdpRecordHandle == -1) {
+            throw new IOException("Unable to register SDP record");
+         }
+      }
    }
 
    public final byte[] getRemoteAddress() {
@@ -122,7 +140,7 @@ public final class BluetoothSerialPort extends IOPort {
    }
 
    private final void addDefaultSDPRecord(byte[] uuid, String serviceName) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    public static final boolean isSupported() {

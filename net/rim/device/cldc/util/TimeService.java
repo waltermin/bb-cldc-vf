@@ -380,7 +380,7 @@ public final class TimeService {
    }
 
    private final CustomTimeZoneImpl getCustomZone(String ID) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public final synchronized void deleteTimeZone(int tzid) {

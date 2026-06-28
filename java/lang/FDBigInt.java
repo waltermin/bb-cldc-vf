@@ -27,11 +27,84 @@ class FDBigInt {
    }
 
    public void lshiftMe(int c) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (c <= 0) {
+         if (c != 0) {
+            throw new IllegalArgumentException("negative shift count");
+         }
+      } else {
+         int wordcount = c >> 5;
+         int bitcount = c & 31;
+         int anticount = 32 - bitcount;
+         int[] t = this.data;
+         int[] s = this.data;
+         if (this.nWords + wordcount + 1 > t.length) {
+            t = new int[this.nWords + wordcount + 1];
+         }
+
+         int target = this.nWords + wordcount;
+         int src = this.nWords - 1;
+         if (bitcount == 0) {
+            System.arraycopy(s, 0, t, wordcount, this.nWords);
+            target = wordcount - 1;
+         } else {
+            t[target--] = s[src] >>> anticount;
+
+            while (src >= 1) {
+               t[target--] = s[src] << bitcount | s[--src] >>> anticount;
+            }
+
+            t[target--] = s[src] << bitcount;
+         }
+
+         while (target >= 0) {
+            t[target--] = 0;
+         }
+
+         this.data = t;
+         this.nWords += wordcount + 1;
+
+         while (this.nWords > 1 && this.data[this.nWords - 1] == 0) {
+            this.nWords--;
+         }
+      }
    }
 
    public int normalizeMe() {
-      throw new RuntimeException("cod2jar: ldc");
+      int wordcount = 0;
+      int bitcount = 0;
+      int v = 0;
+
+      int src;
+      for (src = this.nWords - 1; src >= 0 && (v = this.data[src]) == 0; src--) {
+         wordcount++;
+      }
+
+      if (src < 0) {
+         throw new IllegalArgumentException("zero value");
+      }
+
+      this.nWords -= wordcount;
+      if ((v & -268435456) != 0) {
+         for (bitcount = 32; (v & -268435456) != 0; bitcount--) {
+            v >>>= 1;
+         }
+      } else {
+         while (v <= 1048575) {
+            v <<= 8;
+            bitcount += 8;
+         }
+
+         while (v <= 134217727) {
+            v <<= 1;
+            bitcount++;
+         }
+      }
+
+      if (bitcount != 0) {
+         this.lshiftMe(bitcount);
+      }
+
+      return bitcount;
    }
 
    public FDBigInt mult(int iv) {
@@ -178,15 +251,91 @@ class FDBigInt {
    }
 
    public int quoRemIteration(FDBigInt S) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.nWords != S.nWords) {
+         throw new IllegalArgumentException("disparate values");
+      }
+
+      int n = this.nWords - 1;
+      long q = (this.data[n] & 4294967295L) / S.data[n];
+      long diff = 0;
+
+      for (int i = 0; i <= n; i++) {
+         diff += (this.data[i] & 4294967295L) - q * (S.data[i] & 4294967295L);
+         this.data[i] = (int)diff;
+         diff >>= 32;
+      }
+
+      if (diff != 0) {
+         for (long sum = 0; sum == 0; q -= 1) {
+            sum = 0;
+
+            for (int i = 0; i <= n; i++) {
+               sum += (this.data[i] & 4294967295L) + (S.data[i] & 4294967295L);
+               this.data[i] = (int)sum;
+               sum >>= 32;
+            }
+
+            if (sum != 0 && sum != 1) {
+               throw new RuntimeException("Assertion botch: " + sum + " carry out of division correction");
+            }
+         }
+      }
+
+      long p = 0;
+
+      for (int i = 0; i <= n; i++) {
+         p += 10 * (this.data[i] & 4294967295L);
+         this.data[i] = (int)p;
+         p >>= 32;
+      }
+
+      if (p != 0) {
+         throw new RuntimeException("Assertion botch: carry out of *10");
+      } else {
+         return (int)q;
+      }
    }
 
    public long longValue() {
-      throw new RuntimeException("cod2jar: ldc");
+      int i;
+      for (i = this.nWords - 1; i > 1; i--) {
+         if (this.data[i] != 0) {
+            throw new RuntimeException("Assertion botch: value too big");
+         }
+      }
+
+      switch (i) {
+         case -1:
+            throw new RuntimeException("Assertion botch: longValue confused");
+         case 0:
+            return this.data[0] & 4294967295L;
+         case 1:
+         default:
+            if (this.data[1] < 0) {
+               throw new RuntimeException("Assertion botch: value too big");
+            } else {
+               return (long)this.data[1] << 32 | this.data[0] & 4294967295L;
+            }
+      }
    }
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer r = new StringBuffer(30);
+      r.append('[');
+      int i = Math.min(this.nWords - 1, this.data.length - 1);
+      if (this.nWords > this.data.length) {
+         r.append(40 + this.data.length + 60 + this.nWords + "!)");
+      }
+
+      while (i > 0) {
+         r.append(Integer.toHexString(this.data[i]));
+         r.append(' ');
+         i--;
+      }
+
+      r.append(Integer.toHexString(this.data[0]));
+      r.append(']');
+      return new String(r);
    }
 }

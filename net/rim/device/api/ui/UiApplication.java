@@ -1,7 +1,11 @@
 package net.rim.device.api.ui;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.EventLogger;
 import net.rim.vm.Message;
+import net.rim.vm.TraceBack;
 
 public class UiApplication extends Application implements UiEngine {
    private UiEngineImpl _uiEngine;
@@ -15,7 +19,13 @@ public class UiApplication extends Application implements UiEngine {
    }
 
    public final void popScreen() {
-      throw new RuntimeException("cod2jar: ldc");
+      String warning = "Warning: Calling obsolete function UiApplication.popScreen()";
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      TraceBack.printStackTrace(new PrintStream(out));
+      warning = warning + out;
+      System.out.println(warning);
+      EventLogger.logEvent(-7509200465648525729L, warning.getBytes(), 0);
+      this.popScreen(this.getActiveScreen());
    }
 
    public void setStyle(int style) {

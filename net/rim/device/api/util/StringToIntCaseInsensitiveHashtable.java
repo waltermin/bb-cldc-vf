@@ -13,6 +13,19 @@ public class StringToIntCaseInsensitiveHashtable implements Persistable {
    private static final int _loadFactorRShift;
 
    public StringToIntCaseInsensitiveHashtable(int initialCapacity) {
+      if (initialCapacity < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (initialCapacity < 1) {
+         initialCapacity = 1;
+      }
+
+      this._key = new String[initialCapacity];
+      this._hash = new int[initialCapacity];
+      this._value = new int[initialCapacity];
+      this._empty = "";
+      this._threshold = initialCapacity * 3 >> 2;
    }
 
    public StringToIntCaseInsensitiveHashtable() {

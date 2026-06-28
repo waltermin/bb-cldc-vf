@@ -10,6 +10,13 @@ class NamedBackgroundBitmap extends BackgroundBitmap {
    private String _name;
 
    NamedBackgroundBitmap(ResourceFetcher resource, String name) {
+      super(null);
+      this._resource = resource;
+      this._name = name;
+      byte[] imageData = this._resource.fetchResource(this._name);
+      if (imageData == null) {
+         throw new IllegalArgumentException("Can't find background " + this._name);
+      }
    }
 
    @Override

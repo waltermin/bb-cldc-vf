@@ -2,16 +2,27 @@ package net.rim.device.cldc.io.dns;
 
 import java.util.Vector;
 import net.rim.device.api.lowmemory.LowMemoryListener;
+import net.rim.device.api.lowmemory.LowMemoryManager;
 import net.rim.device.api.util.SimpleSortingVector;
 
 public final class DNSCache implements LowMemoryListener {
-   private DNSCacheNode _treeHead;
-   private SimpleSortingVector _expiryOrder;
+   private DNSCacheNode _treeHead = new DNSCacheNode("");
+   private SimpleSortingVector _expiryOrder = new SimpleSortingVector();
    private int _maxSize;
    private int _curSize;
 
+   public DNSCache() {
+      this._expiryOrder.setSort(false);
+      this._expiryOrder.setSortComparator(new DNSCache$1(this));
+      this._maxSize = -1;
+      LowMemoryManager.addLowMemoryListener(this);
+   }
+
    public final void emptyCache() {
-      throw new RuntimeException("cod2jar: ldc");
+      LowMemoryManager.markAsRecoverable(this._treeHead);
+      this._treeHead = new DNSCacheNode("");
+      this._expiryOrder.removeAllElements();
+      this._curSize = 0;
    }
 
    public final void addToCache(DNSRequest req) {

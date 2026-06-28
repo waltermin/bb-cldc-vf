@@ -8,6 +8,7 @@ import net.rim.device.internal.crypto.vpn.VPNListener;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.io.NativeSocketListener;
 import net.rim.device.internal.io.file.FileSystem;
+import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.EngineeringDataListener;
 import net.rim.device.internal.system.EventDispatchManager;
 import net.rim.device.internal.system.InternalServices;
@@ -123,7 +124,11 @@ public class Application {
    }
 
    public void addKeyListener(KeyListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !CodeStore.isPartOfCurrentApp(TraceBack.getCallingModule(0))) {
+         throw new ControlledAccessException("Unauthorized attempt to monitor key presses");
+      }
+
+      this.addListener(2, listener);
    }
 
    public void removeKeyListener(KeyListener listener) {
@@ -303,7 +308,30 @@ public class Application {
    }
 
    public void enterEventDispatcher() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         synchronized (this._eventLock) {
+            if (this._currentEventThread != null) {
+               throw new IllegalStateException("Only one event dispatcher per process is allowed.");
+            }
+
+            Process.killProcessIfThisThreadDies(true);
+            this._currentEventThread = Thread.currentThread();
+            if (this.isForeground()) {
+               this.activate();
+               if (this._messageListener != null) {
+                  this._messageListener.processMessage(this._eventLock, this._refreshDisplay, false);
+               }
+            }
+         }
+
+         Message message = new Message();
+
+         while (true) {
+            this.processNextMessage(message);
+         }
+      } finally {
+         this._currentEventThread = null;
+      }
    }
 
    public final void setAcceptEvents(boolean on) {
@@ -364,7 +392,18 @@ public class Application {
    }
 
    public static final Application getApplication() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_application == null) {
+         _application = ((ApplicationProcess)Process.currentProcess()).getApplication();
+         if (_application == null) {
+            throw new IllegalStateException("no application instance");
+         }
+      }
+
+      if (!CodeStore.isPartOfCurrentApp(TraceBack.getCallingModule(3)) && !ApplicationControl.isIPCAllowed(true)) {
+         throw new ControlledAccessException("Unauthorized attempt to attach to this application");
+      } else {
+         return _application;
+      }
    }
 
    public final void invokeLater(Runnable runnable) {
@@ -398,11 +437,61 @@ public class Application {
    }
 
    public final void cancelInvokeLater(int id) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._timedRunnables) {
+         int slot = id & 31;
+         if (slot >= 0 && slot < this._invokeLaterIds.length) {
+            if (this._invokeLaterIds[slot] != id && this._invokeLaterIds[slot] != 0) {
+               StringBuffer logData = new StringBuffer();
+               logData.append("Trying to cancel invoke later for id: ");
+               logData.append(Integer.toHexString(id));
+               logData.append(" in slot: ");
+               logData.append(slot);
+               logData.append(" which has already run is now being used by another runnable.");
+               Object tb = TraceBack.getTraceBack();
+               StringBuffer stackTrace = new StringBuffer();
+               int i = 0;
+
+               while (true) {
+                  String msg = TraceBack.getMessage(tb, i);
+                  if (msg == null) {
+                     EventLogger.logEvent(-7509200465648525729L, stackTrace.toString().trim().getBytes(), 0);
+                     EventLogger.logEvent(-7509200465648525729L, logData.toString().getBytes(), 0);
+                     return;
+                  }
+
+                  stackTrace.append(msg);
+                  stackTrace.append("\n");
+                  i++;
+               }
+            } else {
+               this._invokeLaterIds[slot] = 0;
+               if (slot >= 0 && slot < this._timedRunnables.length) {
+                  if (this._timedRunnables[slot] != null) {
+                     InternalServices.killTimer(this._process.getOSTimerId(slot));
+                     this._cachedTimedRunnable = this._timedRunnables[slot];
+                     this._cachedTimedRunnable.clear();
+                     this._timedRunnables[slot] = null;
+                     this._lastTimedRunnableSlot = slot;
+                  }
+               } else {
+                  throw new IllegalArgumentException();
+               }
+            }
+         } else {
+            throw new IllegalArgumentException();
+         }
+      }
    }
 
    private void resetTimedRunnables() {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._timedRunnables) {
+         for (int i = 0; i < 20; i++) {
+            if (this._timedRunnables[i] != null
+               && !InternalServices.setTimer(this._process.getOSTimerId(i), this._timedRunnables[i].getTime(), this._timedRunnables[i].getRepeat())) {
+               throw new RuntimeException("resetTimedRunnables() failed");
+            }
+         }
+      }
    }
 
    public final void invokeAndWait(Runnable runnable) {
@@ -443,6 +532,20 @@ public class Application {
    }
 
    public final void startModalEventThread(ModalEventThread modalEventThread) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isEventThread()) {
+         throw new RuntimeException("startModalEventThread called by a non-event thread");
+      }
+
+      this._currentEventThread = modalEventThread;
+      modalEventThread.start();
+
+      do {
+         try {
+            this.getAppEventLock().wait();
+         } catch (InterruptedException var3) {
+         }
+      } while (!modalEventThread.isExiting());
+
+      this._currentEventThread = Thread.currentThread();
    }
 }

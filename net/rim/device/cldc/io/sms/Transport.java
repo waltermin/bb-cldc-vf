@@ -23,6 +23,11 @@ public final class Transport extends NativeTransport implements SMSPacketListene
    private StatusThread _statusThread;
    private OutboundMessageListener _outboundListener;
 
+   public Transport() {
+      super.GUID = 7142246996923999060L;
+      super.STR = "net.rim.sms";
+   }
+
    @Override
    public final void nativeInit() {
       super._networkServiceMask = 6;
@@ -207,7 +212,7 @@ public final class Transport extends NativeTransport implements SMSPacketListene
 
    @Override
    public final void send(Datagram datagram, DatagramAddressBase addressBase, IOProperties properties, DatagramStatusListener listener, int dgramId) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private final void notifyListener(Datagram d) {

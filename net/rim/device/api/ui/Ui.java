@@ -4,6 +4,7 @@ import java.util.EmptyStackException;
 import java.util.Stack;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.ui.accessibility.AccessibleEventListener;
+import net.rim.device.api.util.NumericOverflowException;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.UiInternalListener;
@@ -86,11 +87,52 @@ public final class Ui {
    }
 
    public static final int convertSize(int size, int inUnits, int outUnits) {
-      throw new RuntimeException("cod2jar: ldc");
+      long outScale = convertSizeGetScale(inUnits);
+      long inScale = convertSizeGetScale(outUnits);
+      if (inUnits == outUnits) {
+         return size;
+      }
+
+      if (((outScale | inScale) & 255) == 0) {
+         outScale >>= 8;
+         inScale >>= 8;
+      }
+
+      long round = (inScale >> 1) * (size >= 0 ? 1 : -1);
+      long convertedLong = (size * outScale + round) / inScale;
+      if (convertedLong <= Integer.MAX_VALUE && convertedLong >= Integer.MIN_VALUE) {
+         return (int)convertedLong;
+      } else {
+         throw new NumericOverflowException("Ui.convertSize(): Converted integer exceeded integer boundaries");
+      }
    }
 
    private static final long convertSizeGetScale(int units) {
-      throw new RuntimeException("cod2jar: ldc");
+      long scale = 0;
+      switch (units) {
+         case 0:
+            return _pxScale;
+         case 2:
+            return 352777778;
+         case 3:
+            return _ptdScale;
+         case 4:
+            return 1000000000000L;
+         case 262148:
+            return 1;
+         case 1048580:
+            return 1000000;
+         case 2097156:
+            return 1000000000;
+         case 4194306:
+            return 3527778;
+         case 4194307:
+            return _ptdScale / 100;
+         case 4194308:
+            return 10000000000L;
+         default:
+            throw new IllegalArgumentException("Unrecognized unit");
+      }
    }
 
    public static final long getAttributesFromFont(Font font) {

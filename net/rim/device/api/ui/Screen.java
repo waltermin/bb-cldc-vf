@@ -4,6 +4,7 @@ import java.io.IOException;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.BackdoorKeyProcessor;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.KeyListener;
@@ -19,6 +20,7 @@ import net.rim.device.api.util.ListenerUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.media.MediaPlayerState;
+import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.Events;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.Background;
@@ -93,7 +95,15 @@ public class Screen extends Manager {
    }
 
    public final synchronized void addKeyListener(KeyListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener instanceof Field) {
+         throw new IllegalArgumentException("A key listener cannot be a Field or a Screen.");
+      }
+
+      if (!ControlledAccess.verifyRRISignatures(true) && !CodeStore.isPartOfCurrentApp(TraceBack.getCallingModule(0))) {
+         throw new ControlledAccessException("Unauthorized attempt to monitor key presses");
+      }
+
+      this._keyListeners = ListenerUtilities.addListener(this._keyListeners, listener);
    }
 
    public void addPaintabilityListener(PaintabilityListener listener) {
@@ -105,19 +115,82 @@ public class Screen extends Manager {
    }
 
    public final synchronized void addStylusListener(StylusListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener instanceof Field) {
+         throw new IllegalArgumentException("A stylus listener cannot be a Field or a Screen.");
+      }
+
+      this._stylusListeners = ListenerUtilities.addListener(this._stylusListeners, listener);
    }
 
    public final synchronized void addTrackwheelListener(TrackwheelListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener instanceof Field) {
+         throw new IllegalArgumentException("A trackwheel listener cannot be a Field or a Screen.");
+      }
+
+      this._trackwheelListeners = ListenerUtilities.addListener(this._trackwheelListeners, listener);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    final void callOnUiEngineAttached(boolean attached) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (attached) {
+         if (this.isScreenState(1)) {
+            throw new IllegalStateException("onUiEngineAttached(true) of screen already attached");
+         }
+
+         this.setScreenState(1, true);
+         if (this.isScreenState(4)) {
+            throw new IllegalStateException("onUiEngineAttached(true) of an obscured screen");
+         }
+
+         this.onDisplay();
+      } else {
+         this.callOnUiEngineDettachedWithoutNotify();
+         this.onUndisplay();
+      }
+
+      this.beginSuperCalled(1);
+      boolean var7 = false /* VF: Semaphore variable */;
+
+      try {
+         var7 = true;
+         this.onUiEngineAttached(attached);
+         var7 = false;
+      } finally {
+         if (var7) {
+            this.assertSuperCalled(1);
+         }
+      }
+
+      this.assertSuperCalled(1);
+      Object[] listeners = this._screenUiEngineAttachedListeners;
+      if (listeners != null) {
+         for (int index = 0; index < listeners.length; index++) {
+            try {
+               ((ScreenUiEngineAttachedListener)listeners[index]).onScreenUiEngineAttached(this, attached);
+            } catch (Throwable var8) {
+            }
+         }
+      }
+
+      this._delegate.callOnDisplayOrUndisplay(attached);
    }
 
    final void callOnUiEngineDettachedWithoutNotify() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isScreenState(1)) {
+         throw new IllegalStateException("onUiEngineAttached(false) of screen not attached");
+      }
+
+      this.setScreenState(1, false);
+      this.setScreenState(4, false);
+      Graphics.releaseGraphics(this);
+      Screen$LocationFocusSelector.getSelector(null, 0, 0, 0, 0);
+      Screen$PagingFocusSelector.getSelector(null, 0);
+      Screen$NavigationMovementFocusSelector.getSelector(null, 0, 0, 0, 0);
+      Screen$TrackwheelRollFocusSelector.getSelector(null, 0, 0, 0);
+      Screen$FindNewFocusSelector.getSelector(null, false);
+      Screen$ViewFocusSelector.getSelector(null, 0, 0, 0);
+      Screen$SetFocusSelector.getSelector(null, null);
    }
 
    final void clearBackingStore() {
@@ -135,7 +208,16 @@ public class Screen extends Manager {
    }
 
    public void close() {
-      throw new RuntimeException("cod2jar: ldc");
+      UiEngineImpl uiEngine = this._uiEngine;
+      if (uiEngine == null) {
+         throw new IllegalStateException("close() called when not displayed.");
+      }
+
+      boolean global = this.isGlobal();
+      uiEngine.popScreen(this);
+      if (!global && uiEngine.getScreenCount() == 0 && (uiEngine.getUiApplicationStyle() & 1) == 0) {
+         System.exit(0);
+      }
    }
 
    public boolean dispatchKeyEvent(int event, char key, int status, int time) {
@@ -388,7 +470,13 @@ public class Screen extends Manager {
    }
 
    public Graphics getGraphics() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._inPaint != 0) {
+         throw new IllegalStateException("Screen.getGraphics called during a paint operation.");
+      }
+
+      Graphics graphics = this.getGraphics0(null, false);
+      graphics.pushRegion(0, 0, this.getContentWidth(), this.getContentHeight(), 0, 0);
+      return graphics;
    }
 
    Graphics getGraphics(XYRect clip, boolean forceAllowDrawing) {
@@ -1021,11 +1109,35 @@ public class Screen extends Manager {
    }
 
    public final boolean scroll(int direction) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isDisplayed()) {
+         throw new IllegalStateException("scroll called when screen is not on stack.");
+      }
+
+      Screen$PagingFocusSelector selector = Screen$PagingFocusSelector.getSelector(this, direction);
+      this.doFocusMove(true, true, selector);
+      return selector.getSuccess();
    }
 
    final void setUiEngine(UiEngineImpl uiEngine) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (uiEngine != null && this._uiEngine != null) {
+         throw new RuntimeException("Attempt to push Screen while already displayed!");
+      }
+
+      if (!this.isGlobal()) {
+         if (this._uiEngine != null) {
+            this._uiEngine.assertHaveEventLock();
+         } else if (uiEngine != null) {
+            uiEngine.assertHaveEventLock();
+         }
+      }
+
+      this._uiEngine = uiEngine;
+      if (this.isGlobal()) {
+         Graphics graphics = this._graphicsInUse;
+         if (graphics != null) {
+            graphics.nullify();
+         }
+      }
    }
 
    public final boolean setFocus(Field field, int x, int y, int status, int time) {
@@ -1163,7 +1275,13 @@ public class Screen extends Manager {
 
    @Override
    protected void onFocus(int direction) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._delegate.isFocusable()) {
+         throw new RuntimeException("Attempt to give focus to screen that doesn't accept focus.");
+      }
+
+      super.onFocus(direction);
+      this._delegate.onFocus(direction);
+      this._delegate.focusChangeNotify(1);
    }
 
    @Override
@@ -1222,7 +1340,11 @@ public class Screen extends Manager {
    }
 
    private void assertSuperCalled(int method) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (method != this._superCalled) {
+         throw new IllegalStateException("Missing call to super");
+      }
+
+      this._superCalled = 0;
    }
 
    @Override
@@ -1264,7 +1386,11 @@ public class Screen extends Manager {
    }
 
    private void beginSuperCalled(int method) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._superCalled != 0) {
+         throw new IllegalStateException("Call to super checker already in use.");
+      }
+
+      this._superCalled = method;
    }
 
    private void ensureRegionVisible(Field field, int x, int y, int width, int height, boolean immediate, boolean draw) {

@@ -8,7 +8,7 @@ public final class SHA512Digest extends AbstractDigest implements Digest {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "SHA512";
    }
 
    @Override

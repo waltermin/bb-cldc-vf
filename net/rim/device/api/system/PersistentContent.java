@@ -12,6 +12,7 @@ import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.api.crypto.SHA256Digest;
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.CRC32;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.Persistable;
@@ -19,6 +20,7 @@ import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.internal.compress.CompressUtilities;
 import net.rim.device.internal.crypto.EncryptionUtilities;
 import net.rim.device.internal.system.NvStore;
+import net.rim.device.internal.system.Security;
 import net.rim.vm.Array;
 import net.rim.vm.WeakReference;
 
@@ -144,11 +146,71 @@ public final class PersistentContent {
    }
 
    private final void saveContentCompressionSettings() {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] data = this.getNvStoreData();
+      if (data == null) {
+         data = new byte[]{9, 0};
+      }
+
+      if (this._pendingCompress) {
+         data[1] = (byte)(data[1] | 1);
+      } else {
+         data[1] = (byte)(data[1] & -2);
+      }
+
+      if (!NvStore.writeData(10, data)) {
+         throw new RuntimeException("Unable to store Persistent Content Settings");
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 0, 0);
    }
 
    private final void saveContentProtectionSettings(String password) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (password != null) {
+         net.rim.vm.Memory.setPlaintext(password);
+      }
+
+      if (!this._pendingEncrypt) {
+         password = null;
+      }
+
+      if (this._devicePrivateKeys != null) {
+         int plaintextLength = 32 + this._privateKeyLength0 + this._privateKeyLength1 + this._privateKeyLength2 + 4;
+         byte[] plaintext = net.rim.vm.Memory.allocRAMOnlyBytes(plaintextLength);
+         net.rim.vm.Memory.setPlaintext(plaintext);
+         int offset = 0;
+         System.arraycopy(this._deviceSymmetricKey, 0, plaintext, offset, 32);
+         offset += 32;
+         System.arraycopy(this._devicePrivateKeys[0], 0, plaintext, offset, this._privateKeyLength0);
+         offset += this._privateKeyLength0;
+         System.arraycopy(this._devicePrivateKeys[1], 0, plaintext, offset, this._privateKeyLength1);
+         offset += this._privateKeyLength1;
+         System.arraycopy(this._devicePrivateKeys[2], 0, plaintext, offset, this._privateKeyLength2);
+         int crc = CRC32.update(-1, plaintext, 0, plaintext.length - 4);
+         plaintext[plaintextLength - 4] = (byte)(crc >>> 24 & 0xFF);
+         plaintext[plaintextLength - 3] = (byte)(crc >>> 16 & 0xFF);
+         plaintext[plaintextLength - 2] = (byte)(crc >>> 8 & 0xFF);
+         plaintext[plaintextLength - 1] = (byte)(crc & 0xFF);
+         byte[] data = new byte[this._expectedNvStoreDataLength];
+         data[0] = 9;
+         data[1] = (byte)((this._pendingCompress ? 1 : 0) | (this._pendingEncrypt ? 2 : 0) | (this._encryptStrength & 3) << 2);
+         data[2] = 0;
+         RandomSource.getBytes(data, 3, 8);
+         int var11 = 11;
+         System.arraycopy(this._devicePublicKeys[0], 0, data, var11, this._publicKeyLength0);
+         var11 += this._publicKeyLength0;
+         System.arraycopy(this._devicePublicKeys[1], 0, data, var11, this._publicKeyLength1);
+         var11 += this._publicKeyLength1;
+         System.arraycopy(this._devicePublicKeys[2], 0, data, var11, this._publicKeyLength2);
+         var11 += this._publicKeyLength2;
+         byte[] storageKey = this.calculateStorageKey(password, data, 3, 8);
+         EncryptionUtilities.encrypt(storageKey, plaintext, 0, plaintextLength, data, var11);
+         if (!NvStore.writeData(10, data)) {
+            throw new RuntimeException("Unable to store Persistent Content Settings");
+         }
+
+         this.encryptPassword(password, true);
+         RIMGlobalMessagePoster.postGlobalEvent(9206737719270818227L, 0, 0);
+      }
    }
 
    final synchronized void registerPersistentContentIndicator(PersistentContentListener listener) {
@@ -189,7 +251,7 @@ public final class PersistentContent {
    }
 
    private final void checkSecureLoop() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    final void encryptPassword(String password, boolean force) {
@@ -344,11 +406,30 @@ public final class PersistentContent {
    }
 
    final synchronized void setContentProtection(String password, boolean encrypt, int strength) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    final synchronized void changePassword(String oldPassword, String newPassword) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (newPassword != null && !Security.getInstance().isPasswordEnabled()) {
+         throw new RuntimeException("Passwords out of sync");
+      }
+
+      if (this._encrypt && this._devicePrivateKeys == null && oldPassword == null) {
+         oldPassword = this.decryptPassword();
+         if (oldPassword == null) {
+            throw new IllegalStateException("Missing old password");
+         }
+      }
+
+      if (this._devicePrivateKeys == null) {
+         this.parseNvStoreData(oldPassword);
+      }
+
+      this.saveContentProtectionSettings(newPassword);
+      if (this._ticket == null) {
+         this._listeners.stateChanged(4, this._lockGeneration);
+         this.checkSecure();
+      }
    }
 
    final synchronized void setContentCompression(boolean compress) {

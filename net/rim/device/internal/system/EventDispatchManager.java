@@ -26,7 +26,11 @@ public final class EventDispatchManager {
    }
 
    public final void setDispatcher(int device, EventDispatcher dispatcher) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._dispatchers[device] != null) {
+         throw new RuntimeException("Dispatcher already registered for " + device);
+      }
+
+      this._dispatchers[device] = dispatcher;
    }
 
    public final void dispatch(int device, Message message, Object[] listeners) {

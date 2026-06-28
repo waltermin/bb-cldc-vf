@@ -1,20 +1,27 @@
 package net.rim.device.internal.ui.component;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import javax.microedition.media.Manager;
+import javax.microedition.media.MediaException;
+import javax.microedition.media.Player;
+import javax.microedition.media.control.VolumeControl;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.internal.system.InternalServices;
+import net.rim.device.resources.Resource;
 
 public class VolumeControlDialog extends PopupDialog {
    private Field _callback;
    private VolumeControlDialog$VolumeGraphicsField _volumeGraphics;
    private RichTextField _volumeText;
    private long _keyClickTime;
-   private VolumeControlDialog$DialogTimer _dismisser;
+   private VolumeControlDialog$DialogTimer _dismisser = new VolumeControlDialog$DialogTimer(this);
    private byte[] _feedbackSound;
-   private int _volume;
+   private int _volume = 0;
    private static Object _lock;
    private static VolumeControlDialog _vcd;
    private static final int TIMEOUT;
@@ -22,6 +29,14 @@ public class VolumeControlDialog extends PopupDialog {
    private static Tag TAG_TEXT;
 
    private VolumeControlDialog() {
+      super(new HorizontalFieldManager(), 134217728);
+      this.setTag(TAG);
+      this.setStatusPriority(-2147483647);
+      HorizontalFieldManager hfm = (HorizontalFieldManager)this.getDelegate();
+      this._volumeGraphics = new VolumeControlDialog$VolumeGraphicsField();
+      this._volumeGraphics.setPadding(0, 0, 0, 7);
+      hfm.add(this._volumeGraphics);
+      this._feedbackSound = Resource.getResourceClass().getResource("BBVolumeFeedback.mp3");
    }
 
    public static VolumeControlDialog getInstance() {
@@ -68,7 +83,17 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    private void makeAudibleFeedback() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         Player player = Manager.createPlayer(new ByteArrayInputStream(this._feedbackSound), "audio/mp3");
+         VolumeControl volumeControl = (VolumeControl)player.getControl("VolumeControl");
+         if (volumeControl != null) {
+            volumeControl.setLevel(this._volume);
+         }
+
+         player.start();
+      } catch (IOException var3) {
+      } catch (MediaException var4) {
+      }
    }
 
    @Override

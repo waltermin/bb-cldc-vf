@@ -28,10 +28,21 @@ public final class DateFormatSymbols implements Persistable {
    }
 
    private DateFormatSymbols(Locale locale) {
+      this._localecode = locale.getCode();
+      ResourceBundleFamily family = ResourceBundle.getBundle(8736789735327653723L, "net.rim.device.internal.resource.Locale");
+      ResourceBundle resources = family.getBundle(locale);
+
+      try {
+         this.init(resources);
+      } catch (MissingResourceException e) {
+         this.init(family);
+      }
+
+      ObjectGroup.createGroupIgnoreTooBig(this);
    }
 
    private final void init(ResourceBundle resources) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public final String[] getAmPmStrings() {

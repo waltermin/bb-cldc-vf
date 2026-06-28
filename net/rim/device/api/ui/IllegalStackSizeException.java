@@ -2,6 +2,7 @@ package net.rim.device.api.ui;
 
 public class IllegalStackSizeException extends RuntimeException {
    public IllegalStackSizeException() {
+      super("Unpaired push / pop of context stack.");
    }
 
    public IllegalStackSizeException(String message) {
@@ -12,6 +13,26 @@ public class IllegalStackSizeException extends RuntimeException {
    }
 
    private static String unpairedMessage(String type, Class clazz, Graphics graphics, int depthExpected) {
-      throw new RuntimeException("cod2jar: ldc");
+      XYRect clip = graphics.getClippingRect();
+      return "Unpaired Graphics."
+         + type
+         + " in class "
+         + clazz.getName()
+         + " actual "
+         + graphics.getContextStackSize()
+         + "!= expected "
+         + depthExpected
+         + " clip ("
+         + clip.x
+         + ','
+         + clip.y
+         + ")+("
+         + clip.width
+         + ','
+         + clip.height
+         + ") @("
+         + graphics.getTranslateX()
+         + ','
+         + graphics.getTranslateY();
    }
 }

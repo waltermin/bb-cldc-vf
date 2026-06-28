@@ -105,11 +105,41 @@ public class Process {
    }
 
    public synchronized Thread start(int moduleHandle, String moduleName, String[] args, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._state != 0) {
+         throw new IllegalArgumentException("Process.start() already called");
+      } else {
+         this._state = 1;
+         this._moduleHandle = moduleHandle;
+         this._moduleName = moduleName;
+         this._displayName = moduleName + '(' + this._pid + ')';
+         this._args = args;
+         Thread t = new Thread();
+         if (!createProcess(this, t)) {
+            return null;
+         } else {
+            String error = loadModule(this._pid, moduleHandle, moduleName.getBytes());
+            if (error != null) {
+               throw new ModuleNotFoundException(error);
+            } else if (!start(this._pid, t, args, index)) {
+               throw new IllegalArgumentException("Can't find entry point");
+            } else {
+               return t;
+            }
+         }
+      }
    }
 
    public synchronized void start(Thread thread) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._state != 0) {
+         throw new IllegalArgumentException("Process.start() already called");
+      }
+
+      this._state = 1;
+      if (thread.isAlive()) {
+         throw new IllegalArgumentException("Can't start process with running thread");
+      }
+
+      createProcess(this, thread);
    }
 
    public void destroy() {

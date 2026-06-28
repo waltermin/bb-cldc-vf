@@ -5,12 +5,16 @@ import net.rim.device.api.system.Branding;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.system.SIMCard;
+import net.rim.device.api.system.SIMCardException;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.i18n.DateTimeFormatOptions;
 import net.rim.device.internal.i18n.LocaleInternal;
+import net.rim.device.internal.i18n.ResourceBundleFetcher;
+import net.rim.device.internal.util.StringUtilitiesInternal;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.vm.Array;
 import net.rim.vm.TraceBack;
@@ -285,7 +289,8 @@ public final class Locale {
    }
 
    public static final int getDefaultNameOrder(int _localeCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      String str = get(_localeCode).getLanguage();
+      return !str.equals("zh") && !str.equals("ja") ? 0 : 1;
    }
 
    public final String getDisplayCountry() {
@@ -333,7 +338,25 @@ public final class Locale {
    }
 
    public static final String convertKeyboardIDToString(int aID) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aID != 0 && aID != -1) {
+         StringBuffer buffer = _locales.buffer;
+         synchronized (buffer) {
+            buffer.setLength(0);
+
+            for (int lv = 24; lv >= 0; lv -= 8) {
+               char ch = (char)(aID >> lv & 0xFF);
+               if (ch == 0) {
+                  break;
+               }
+
+               buffer.append(ch);
+            }
+
+            return buffer.toString();
+         }
+      } else {
+         return "";
+      }
    }
 
    public static final String getPersonalNamesSeparator() {
@@ -341,7 +364,7 @@ public final class Locale {
    }
 
    public static final String getPersonalNamesSeparator(int order) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final int convertStringToKeyboardID(String variant) {
@@ -437,7 +460,7 @@ public final class Locale {
    }
 
    private static final int pack(String language, String country) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final Locale parse(String id) {
@@ -495,7 +518,40 @@ public final class Locale {
    }
 
    public static final void setDefaultForSystem(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      synchronized (_locales.available) {
+         int index = Arrays.binarySearch(_locales.available, locale, _locales.comparator, 0, _locales.available.length);
+         if (index < 0 || locale.getCode() == 0) {
+            Locale searchLocale = get(locale.getCode() & -65536);
+            index = Arrays.binarySearch(_locales.available, searchLocale, _locales.comparator, 0, _locales.available.length);
+         }
+
+         if (index < 0 || locale.getCode() == 0) {
+            throw new IllegalArgumentException("Unsupported locale: " + locale.toString());
+         }
+      }
+
+      synchronized (_persist) {
+         _localePersist.code = locale.getCode();
+         _localePersist.variant = locale.getVariant();
+         _persist.commit();
+         _locales.current = locale;
+      }
+
+      RIMGlobalMessagePoster.postGlobalEvent(-7464003439710973532L);
+      RIMGlobalMessagePoster.postGlobalEvent(-8040378802380461050L);
+      RIMGlobalMessagePoster.postGlobalEvent(-1438311245835636745L);
+      DateTimeFormatOptions.onSystemLocaleChange();
+      RIMGlobalMessagePoster.postGlobalEvent(7207871974803693937L);
+      InputContext.getInstance().selectInputMethod(getDefaultInputForSystem());
+      locale.setDisplayLocale(locale.getCode());
+      if (SIMCard.isSupported()) {
+         try {
+            SIMCard.atSetLocale(locale.getCode());
+            return;
+         } catch (SIMCardException var7) {
+         }
+      }
    }
 
    private final native void setDisplayLocale(int var1);
@@ -606,7 +662,41 @@ public final class Locale {
    }
 
    private static final Locale verifySystemModulePresent(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      boolean giveUp = false;
+
+      while (true) {
+         try {
+            StringBuffer scratch = StringUtilitiesInternal.getScratchBuffer();
+            String name;
+            synchronized (scratch) {
+               scratch.append("net.rim.device.internal.resource.Locale");
+               scratch.append('£');
+               scratch.append(locale);
+               name = scratch.toString();
+               scratch.setLength(0);
+            }
+
+            boolean exists = ResourceBundleFetcher.verifyCompressedResourcePresent(name + ".crb");
+            if (exists) {
+               return locale;
+            }
+
+            Class.forName(name);
+            return locale;
+         } catch (ClassNotFoundException e) {
+            if (giveUp) {
+               throw new IllegalArgumentException();
+            }
+
+            int code = locale.getCode();
+            if ((code & 65535) != 0) {
+               locale = get(code & -65536);
+            } else {
+               locale = get(1701707776);
+               giveUp = true;
+            }
+         }
+      }
    }
 
    private static final native int getDefaultLanguageLocale();

@@ -611,7 +611,7 @@ public final class GregorianCalendar extends Calendar implements CalendarExtensi
    private final native void timeToRemainingFields(int var1);
 
    public static final String toString(Calendar calendar) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private static final StringBuffer appendFourDigits(StringBuffer sb, int number) {

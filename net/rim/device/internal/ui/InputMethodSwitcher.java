@@ -1,7 +1,9 @@
 package net.rim.device.internal.ui;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.ApplicationManager;
+import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.GlobalEventListener;
 import net.rim.device.api.ui.Field;
@@ -13,7 +15,9 @@ import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.tid.awt.im.InputContext;
+import net.rim.vm.Process;
 import net.rim.vm.TraceBack;
 
 public final class InputMethodSwitcher extends PopupScreen implements FocusChangeListener, ListFieldCallback, Runnable, GlobalEventListener {
@@ -73,7 +77,23 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundle bundle = ResourceBundle.getBundle(-6812884907508133143L, "net.rim.device.internal.resource.Common");
+      String[] choices = bundle.getStringArray(10113);
+      StringBuffer message = new StringBuffer(bundle.getString(10114));
+      message.append(StringUtilities.toUpperCase(this._selectedLocale.getDisplayName(), this._selectedLocale.getCode()));
+      message.append(bundle.getString(10115));
+      InputMethodSwitcher$IMSwitcherDialog d = new InputMethodSwitcher$IMSwitcherDialog(message.toString(), choices, 0);
+      switch (d.doModal()) {
+         case 0:
+         default:
+            IMSwitcherOption.getInstance().setState((byte)2);
+            Locale.setDefaultInputForSystem(this._selectedLocale);
+            return;
+         case 1:
+            IMSwitcherOption.getInstance().setState((byte)3);
+            Locale.setDefaultInputForSystem(this._selectedLocale);
+         case -1:
+      }
    }
 
    @Override
@@ -138,7 +158,34 @@ public final class InputMethodSwitcher extends PopupScreen implements FocusChang
    }
 
    private final void doCloseSwitcher(boolean selected) {
-      throw new RuntimeException("cod2jar: ldc");
+      System.out.println("switch_input_method");
+      if (selected && this._selectedIM != 0) {
+         this._selectedLocale = this._imLocales[this._selectedIM];
+      }
+
+      boolean changeLocale = true;
+      this._app.removeGlobalEventListener(this);
+      this._app.popScreen(this);
+      if (this._onExit != null) {
+         if (this._selectedLocale != null && IMSwitcherOption.getInstance().getState() == 1) {
+            int pid = ApplicationManager.getApplicationManager().getForegroundProcessId();
+            Process pr = Process.getProcess(pid);
+            if (pr instanceof ApplicationProcess) {
+               changeLocale = false;
+               ((ApplicationProcess)pr).getApplication().invokeLater(this);
+            }
+         }
+
+         this._app.invokeLater(this._onExit);
+      }
+
+      if (changeLocale) {
+         Locale.setDefaultInputForSystem(this._selectedLocale);
+      }
+
+      if (this._startedFromMenu) {
+         InputContext.getInstance().setIMSwitchEnabled(true);
+      }
    }
 
    @Override

@@ -37,11 +37,15 @@ public class RadioButtonGroup {
    }
 
    public void remove(RadioButtonField button) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public void setChangeListener(FieldChangeListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener != null && this._changeListener != null) {
+         throw new IllegalStateException("Multiple change listeners not allowed.");
+      }
+
+      this._changeListener = listener;
    }
 
    public final void setNotifyReselected(boolean notifyReselected) {

@@ -1,6 +1,9 @@
 package net.rim.device.cldc.io.utility;
 
+import com.sun.cldc.i18n.Helper;
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.util.NumberUtilities;
+import net.rim.device.api.util.StringUtilities;
 
 public final class URIEncoder {
    private static final String UTF_8;
@@ -23,7 +26,26 @@ public final class URIEncoder {
    }
 
    private static final void handleSpecialCharacter(StringBuffer outputStringBuffer, char character, String encoding) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (encoding != null && StringUtilities.strEqualIgnoreCase(encoding, "utf-8", 1701707776)) {
+         writeUTF8Char(outputStringBuffer, character);
+      } else if (encoding != null && !StringUtilities.strEqualIgnoreCase(encoding, "iso-8859-1", 1701707776)) {
+         char[] charArray = new char[]{character};
+         byte[] bytes = null;
+
+         try {
+            bytes = Helper.charToByteArray(charArray, 0, 1, encoding);
+         } catch (UnsupportedEncodingException e) {
+            handleSpecialCharacter(outputStringBuffer, character, null);
+         }
+
+         if (bytes != null) {
+            for (int i = 0; i < bytes.length; i++) {
+               writeByte(outputStringBuffer, bytes[i]);
+            }
+         }
+      } else {
+         writeByte(outputStringBuffer, unicodeToWin1252(character));
+      }
    }
 
    private static final int unicodeToWin1252(char character) {

@@ -17,7 +17,7 @@ public final class HMAC extends AbstractMAC implements MAC {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "HMAC/" + this._digest.getAlgorithm();
    }
 
    @Override

@@ -1,7 +1,9 @@
 package net.rim.device.internal.applicationcontrol;
 
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.applicationcontrol.ApplicationPermissions;
 import net.rim.device.api.i18n.MessageFormat;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleManager;
@@ -11,8 +13,11 @@ import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntVector;
 import net.rim.device.internal.i18n.CommonResource;
+import net.rim.device.internal.system.CodeStore;
+import net.rim.device.internal.system.ForcedResetManager;
 import net.rim.device.internal.ui.security.component.PermissionDialog;
 import net.rim.vm.Array;
+import net.rim.vm.EventLog;
 import net.rim.vm.Process;
 import net.rim.vm.ThreadSpecificData;
 import net.rim.vm.TraceBack;
@@ -46,19 +51,145 @@ final class ApplicationControlImpl {
    }
 
    static final boolean reloadModulePermissions() {
-      throw new RuntimeException("cod2jar: ldc");
+      long time = System.currentTimeMillis();
+      boolean resetRequired = false;
+      synchronized (_permissions) {
+         _permissions.init();
+         _userPermissions.load(_permissions.getDefaultPermissions());
+         resetRequired = applyDefaultPermissions();
+      }
+
+      time = System.currentTimeMillis() - time;
+      System.out.println("APP CONTROL DATABASE GENERATION TIME: " + time);
+      return resetRequired;
    }
 
    static final boolean reloadDefaultModulePermissions() {
-      throw new RuntimeException("cod2jar: ldc");
+      long time = System.currentTimeMillis();
+      boolean resetRequired = false;
+      synchronized (_permissions) {
+         _permissions.init();
+         resetRequired = applyDefaultPermissions();
+      }
+
+      time = System.currentTimeMillis() - time;
+      System.out.println("APP CONTROL RELOAD DEFAULTS TIME: " + time);
+      return resetRequired;
    }
 
    private static final boolean applyDefaultPermissions() {
-      throw new RuntimeException("cod2jar: ldc");
+      long time = System.currentTimeMillis();
+      boolean resetRequired = false;
+      synchronized (_permissions) {
+         UserSetting userDefaults = _userPermissions.getDefaultSetting();
+         UserSetting backedUpDefaults = _userPermissions.getBackedUpDefaultSetting();
+         long oldPermissions = userDefaults.getPermissions();
+         long combinedPermissions = combinePermissions(_permissions.getPermittedPermissions(), oldPermissions);
+         if (oldPermissions != combinedPermissions) {
+            _userPermissions.setPermissions(userDefaults, combinedPermissions);
+         }
+
+         if (isMoreRestrictive(oldPermissions, userDefaults.getPermissions())) {
+            if (backedUpDefaults == null) {
+               backedUpDefaults = new UserSetting(ApplicationControlConstants.FILLED_HASH, oldPermissions);
+               _userPermissions.putBackedUpDefaultSetting(backedUpDefaults);
+            }
+
+            System.out.println("AC-More-Restr: Default: " + oldPermissions + "|" + userDefaults.getPermissions());
+            String text = "AC-MRD: " + oldPermissions + "|" + userDefaults.getPermissions();
+            EventLog.logEvent(-4492041993596154793L, System.currentTimeMillis(), (byte)5, text.getBytes());
+            resetRequired = true;
+         } else if (backedUpDefaults != null) {
+            _userPermissions.setPermissions(userDefaults, combinePermissions(_permissions.getPermittedPermissions(), backedUpDefaults.getPermissions()));
+            if (isMoreRestrictive(oldPermissions, userDefaults.getPermissions())) {
+               System.out.println("AC-More-Restr: bak Default: " + oldPermissions + "|" + userDefaults.getPermissions());
+               String text = "AC-MRBD: " + oldPermissions + "|" + userDefaults.getPermissions();
+               EventLog.logEvent(-4492041993596154793L, System.currentTimeMillis(), (byte)5, text.getBytes());
+               resetRequired = true;
+            }
+         }
+
+         byte[] hash = new byte[20];
+
+         for (int i = _permissions.getHandles().length - 1; i >= 0; i--) {
+            int handle = _permissions.getHandles()[i];
+            if (!CodeModuleManager.getModuleHash(handle, hash)) {
+               throw new RuntimeException();
+            }
+
+            oldPermissions = doGetModulePermissions(handle);
+            boolean policySettingPresent = isModuleSettingPresent(hash);
+            long policyPermissions = getModulePolicyPermittedPermissions(handle, hash);
+            UserSetting us = _userPermissions.getSetting(handle);
+            long newPermissions;
+            if (us == null) {
+               newPermissions = policySettingPresent ? policyPermissions : combinePermissions(policyPermissions, userDefaults.getPermissions());
+            } else {
+               newPermissions = combinePermissions(policyPermissions, us.getPermissions(), us.getDontPrompt());
+            }
+
+            doSetModulePermissions(handle, newPermissions);
+            if (!resetRequired && oldPermissions != 0 && isMoreRestrictive(oldPermissions, newPermissions)) {
+               System.out
+                  .println(
+                     "AC-More-Restr: " + CodeModuleManager.getModuleName(handle) + ": " + Long.toString(oldPermissions) + "|" + Long.toString(newPermissions)
+                  );
+               String text = "AC-MRM: " + CodeModuleManager.getModuleName(handle) + "|" + oldPermissions + "|" + userDefaults.getPermissions();
+               EventLog.logEvent(-4492041993596154793L, System.currentTimeMillis(), (byte)5, text.getBytes());
+               resetRequired = true;
+            }
+         }
+      }
+
+      time = System.currentTimeMillis() - time;
+      System.out.println("APP CONTROL DEFAULTS APPLY TIME: " + time);
+      return resetRequired;
    }
 
    static final void checkInitialization() {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (_permissions) {
+         for (int crc = CodeStore.getModuleHandles(null); !_permissions.areValid(crc); crc = CodeStore.getModuleHandles(null)) {
+            System.out.println("AC: new CRC = " + crc);
+            int[] oldHandles = _permissions.loadHandles();
+            int[] newHandles = _permissions.getHandles();
+
+            for (int i = 0; i < oldHandles.length; i++) {
+               if (Arrays.getIndex(newHandles, oldHandles[i]) == -1) {
+                  removeModule(oldHandles[i]);
+               }
+            }
+
+            byte[] hash = new byte[20];
+            int newHandleIndex = 0;
+            int newHandle = 0;
+
+            while (newHandleIndex < newHandles.length) {
+               newHandle = newHandles[newHandleIndex];
+               if (Arrays.getIndex(oldHandles, newHandle) == -1) {
+                  if (!addModule(newHandle)) {
+                     Arrays.removeAt(newHandles, newHandleIndex);
+                  } else {
+                     newHandleIndex++;
+                  }
+               } else {
+                  UserSetting us = _userPermissions.getSetting(newHandle);
+                  if (us != null) {
+                     if (CodeModuleManager.getModuleHash(newHandle, hash)) {
+                        if (!us.hashEquals(hash)) {
+                           _userPermissions.removeSetting(newHandle);
+                           long policy = getModulePolicyPermittedPermissions(newHandle, hash);
+                           doSetModulePermissions(newHandle, combinePermissions(policy, _userPermissions.getDefaultSetting().getPermissions()));
+                        }
+                     } else {
+                        _userPermissions.removeSetting(newHandle);
+                     }
+                  }
+
+                  newHandleIndex++;
+               }
+            }
+         }
+      }
    }
 
    static final boolean addModule(int moduleHandle) {
@@ -1125,11 +1256,13 @@ final class ApplicationControlImpl {
    }
 
    static final void logDenial(int moduleHandle, int flag) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    private static final void logReset(String reason) {
-      throw new RuntimeException("cod2jar: ldc");
+      String text = "SCH RST: " + reason;
+      System.out.println("Schedule Device Reset: " + reason);
+      EventLog.logEvent(-4492041993596154793L, System.currentTimeMillis(), (byte)5, text.getBytes());
    }
 
    private static final boolean doSetModulePermissions(int moduleHandle, long permissions) {
@@ -1176,19 +1309,37 @@ final class ApplicationControlImpl {
    }
 
    static final String getConnectionDomains(byte[] hash, byte type) {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] domains = getAllowedDomainsUTF8(hash, type);
+      if (domains == null) {
+         return null;
+      }
+
+      try {
+         return new String(domains, "UTF8");
+      } catch (UnsupportedEncodingException e) {
+         return null;
+      }
    }
 
    static final void scheduleDeviceReset(String reason) {
-      throw new RuntimeException("cod2jar: ldc");
+      logReset(reason);
+      ResourceBundle rb = ResourceBundle.getBundle(3100685609005034344L, "net.rim.device.internal.resource.Firewall");
+      ForcedResetManager resetManager = ForcedResetManager.getInstance();
+      resetManager.scheduleDeviceReset(rb.getString(19), true);
    }
 
    static final void scheduleDeviceReset(String reason, long timeBetweenResetWarnings) {
-      throw new RuntimeException("cod2jar: ldc");
+      logReset(reason);
+      ResourceBundle rb = ResourceBundle.getBundle(3100685609005034344L, "net.rim.device.internal.resource.Firewall");
+      ForcedResetManager resetManager = ForcedResetManager.getInstance();
+      resetManager.scheduleDeviceReset(rb.getString(19), timeBetweenResetWarnings, true);
    }
 
    static final void scheduleDeviceReset(String reason, int numResetWarnings, long timeBetweenResetWarnings) {
-      throw new RuntimeException("cod2jar: ldc");
+      logReset(reason);
+      ResourceBundle rb = ResourceBundle.getBundle(3100685609005034344L, "net.rim.device.internal.resource.Firewall");
+      ForcedResetManager resetManager = ForcedResetManager.getInstance();
+      resetManager.scheduleDeviceReset(rb.getString(19), numResetWarnings, timeBetweenResetWarnings, !_permissions.isXmitDisabled());
    }
 
    static final void doPromptWork(int ternary, ResourceBundleFamily rb, int rbKey, int allowFlag, int promptFlag) {

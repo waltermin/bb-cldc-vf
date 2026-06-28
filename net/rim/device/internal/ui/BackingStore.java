@@ -2,6 +2,7 @@ package net.rim.device.internal.ui;
 
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 
 public class BackingStore {
@@ -36,11 +37,55 @@ public class BackingStore {
    }
 
    private static Bitmap createBitmap(int width, int height, boolean transparency) {
-      throw new RuntimeException("cod2jar: ldc");
+      Bitmap bitmap = null;
+
+      try {
+         bitmap = new Bitmap(width, height);
+         if (transparency) {
+            bitmap.createAlpha(2);
+         }
+
+         Graphics initGraphics = new Graphics(bitmap);
+         initGraphics.setGlobalAlpha(0);
+         initGraphics.setBackgroundColor(0);
+         initGraphics.clear();
+         return bitmap;
+      } catch (IllegalArgumentException e) {
+         System.out.println("BackingStore ERROR: " + e);
+         return null;
+      }
    }
 
    public synchronized Graphics getGraphics(XYRect dirty) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._backBuffer == null) {
+         this._backBuffer = createBitmap(this._width, this._height, this._transparency);
+         if (this._backBuffer == null) {
+            return null;
+         }
+      }
+
+      XYRect rect = Ui.getTmpXYRect();
+      rect.set(0, 0, this._width, this._height);
+      if (!rect.contains(dirty)) {
+         System.out.println("BackingStore warning: dirty rect out of bounds");
+      }
+
+      rect.intersect(dirty);
+      this._dirty.unionNoEmpty(rect);
+      Ui.returnTmpXYRect(rect);
+      Graphics graphics = new Graphics(this._backBuffer);
+      graphics.pushContext(dirty, 0, 0);
+      if (this._transparency) {
+         graphics.setGlobalAlpha(0);
+         graphics.setBackgroundColor(0);
+      } else {
+         graphics.setBackgroundColor(16777215);
+      }
+
+      graphics.clear();
+      graphics.popContext();
+      graphics.pushContext(dirty, 0, 0);
+      return graphics;
    }
 
    public synchronized void getTotalDirty(XYRect totalDirty) {

@@ -14,13 +14,14 @@ import net.rim.device.api.system.UDPPacketListener;
 import net.rim.device.api.util.DataBuffer;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.cldc.io.daemon.ProtocolDaemon;
 import net.rim.device.internal.io.PortAssigner;
 import net.rim.device.internal.system.RadioInternal;
 import net.rim.device.internal.system.SimulatorServices;
 
 public class DNSResolverIPv4 implements UDPPacketListener {
-   private IntHashtable _packetIDtoDNSData;
-   private IntHashtable _radioIDtoDNSData;
+   private IntHashtable _packetIDtoDNSData = new IntHashtable();
+   private IntHashtable _radioIDtoDNSData = new IntHashtable();
    private int _numQueries;
    private DNSResolverIPv4$DNSResolverIPv4Thread _thread;
    private DNSCache _cache;
@@ -40,11 +41,21 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    public int getAddressByHostname(String hostname, DNSListener listener, String apn) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int apnId = RadioInfo.getAccessPointNumber(apn);
+         return this.getAddressByHostname(hostname, listener, apnId);
+      } catch (RadioException re) {
+         throw new IllegalArgumentException("APN not registered");
+      }
    }
 
    public Vector getAddressByHostname(String hostname, String apn) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int apnId = RadioInfo.getAccessPointNumber(apn);
+         return this.getAddressByHostname(hostname, apnId);
+      } catch (RadioException re) {
+         throw new IllegalArgumentException("APN not registered");
+      }
    }
 
    public int getAddressByHostname(String hostname, DNSListener listener, int apnId) {
@@ -59,7 +70,14 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    public Vector getAddressByHostname(String hostname, int apnId) {
-      throw new RuntimeException("cod2jar: ldc");
+      DNSRequest req = new DNSRequest(hostname, null, apnId);
+      this.prepRequest(req, true);
+      Vector result = this.executeQuery(req);
+      if (req.getStatus() != 1) {
+         throw new DNSException("Bad DNS Address", req.getStatus());
+      } else {
+         return result;
+      }
    }
 
    public int getHostnameByAddress(byte[] ipAddr, DNSListener listener) {
@@ -71,11 +89,21 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    public int getHostnameByAddress(byte[] ipAddr, DNSListener listener, String apn) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int apnId = RadioInfo.getAccessPointNumber(apn);
+         return this.getHostnameByAddress(ipAddr, listener, apnId);
+      } catch (RadioException re) {
+         throw new IllegalArgumentException("APN not registered");
+      }
    }
 
    public Vector getHostnameByAddress(byte[] ipAddr, String apn) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int apnId = RadioInfo.getAccessPointNumber(apn);
+         return this.getHostnameByAddress(ipAddr, apnId);
+      } catch (RadioException re) {
+         throw new IllegalArgumentException("APN not registered");
+      }
    }
 
    public int getHostnameByAddress(byte[] ipAddr, DNSListener listener, int apnId) {
@@ -590,6 +618,13 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private DNSResolverIPv4() {
+      _packetID = 1;
+      this._numQueries = 0;
+      this.RECURSION_ENABLED = 256;
+      EventLogger.register(1197736374800106759L, "net.rim.dns", 2);
+      this._thread = new DNSResolverIPv4$DNSResolverIPv4Thread(this);
+      ProtocolDaemon.getInstance().startThread(this._thread);
+      this._cache = new DNSCache();
    }
 
    private DNSRequest setupReferredQuery(DNSRequest req) {

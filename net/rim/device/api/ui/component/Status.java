@@ -4,6 +4,8 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Keypad;
+import net.rim.device.api.ui.Ui;
+import net.rim.device.api.ui.UiEngine;
 import net.rim.device.api.ui.container.DialogFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.internal.ui.Image;
@@ -45,7 +47,21 @@ public final class Status extends PopupScreen {
    }
 
    private final void show0(int time) {
-      throw new RuntimeException("cod2jar: ldc");
+      this._popScreenRunnable.init();
+      this._id = Application.getApplication().invokeLater(this._popScreenRunnable, time, false);
+      if (this._id == -1) {
+         throw new RuntimeException("No timer available for status popup.");
+      }
+
+      this._shown = System.currentTimeMillis();
+      UiEngine uiEngine = Ui.getUiEngine();
+      if (this.isStyle(33554432)) {
+         uiEngine.pushGlobalScreen(this, this._priority, 2);
+      } else if (this._block) {
+         uiEngine.pushModalScreen(this);
+      } else {
+         uiEngine.pushScreen(this);
+      }
    }
 
    private final void dismiss() {

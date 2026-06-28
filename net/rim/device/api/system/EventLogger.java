@@ -13,9 +13,9 @@ import net.rim.vm.TraceBack;
 public final class EventLogger {
    private int _logLevelId;
    private int _logLevel;
-   private byte[] _intBuffer;
-   private byte[] _longBuffer;
-   private byte[] _byteBuffer;
+   private byte[] _intBuffer = new byte[4];
+   private byte[] _longBuffer = new byte[8];
+   private byte[] _byteBuffer = new byte[18];
    public static final long EVLV_GUID;
    public static final long SYSTEM_LOG_GUID;
    public static final int DEBUG_INFO;
@@ -33,6 +33,11 @@ public final class EventLogger {
    public static final long PERSISTENT_CONTENT_LISTENER_ID;
 
    EventLogger() {
+      this._logLevelId = PersistentInteger.getId(LOG_LEVEL, 3);
+      this._logLevel = PersistentInteger.get(this._logLevelId);
+      EventLog.registerApp(-7188635411275533160L, 3, "Java Exception");
+      EventLog.registerApp(-7509200465648525729L, 2, "System");
+      _theLogger = this;
    }
 
    private static final void assertPermission() {

@@ -238,7 +238,14 @@ public final class RadioInternal {
    }
 
    public static final void set3GPPRatConfig(int active3GPPRats, int ratPreference) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         if (active3GPPRats != 0) {
+            set3GPPRatConfiguration(active3GPPRats, ratPreference);
+            return;
+         }
+      } catch (Exception e) {
+         System.out.println("set3GPPRatConfiguration failed: " + Integer.toString(active3GPPRats) + ", " + Integer.toString(ratPreference));
+      }
    }
 
    public static final native boolean set3GPPRatConfiguration(int var0, int var1);

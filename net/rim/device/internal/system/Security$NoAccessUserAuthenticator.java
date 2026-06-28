@@ -6,7 +6,7 @@ import net.rim.device.api.system.UserAuthenticator;
 public final class Security$NoAccessUserAuthenticator extends UserAuthenticator {
    @Override
    public final String getName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "No Access Authenticator";
    }
 
    @Override

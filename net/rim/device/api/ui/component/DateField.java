@@ -258,7 +258,7 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -756,7 +756,16 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    private static DateFormat getDateFormatFromStyle(long style) {
-      throw new RuntimeException("cod2jar: ldc");
+      switch ((int)(style & 48)) {
+         case 16:
+            return DateFormat.getInstance(48);
+         case 32:
+            return DateFormat.getInstance(6);
+         case 48:
+            return DateFormat.getInstance(54);
+         default:
+            throw new IllegalArgumentException("style must include one of DATE, TIME, or DATE_TIME.");
+      }
    }
 
    private boolean usingAlphaMonth() {
@@ -785,6 +794,6 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    @Override
    public String getAccessibleName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this.getLabel() + " " + this.toString();
    }
 }

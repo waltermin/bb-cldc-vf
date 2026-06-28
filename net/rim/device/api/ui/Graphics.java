@@ -6,6 +6,7 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.StringBufferGap;
+import net.rim.device.internal.ui.UiInternal;
 import net.rim.vm.TraceBack;
 
 public final class Graphics implements DrawStyle {
@@ -14,7 +15,7 @@ public final class Graphics implements DrawStyle {
    private int _isIdentity;
    private Object _stack;
    private int _stackSize;
-   private XYRect _objectClippingRect;
+   private XYRect _objectClippingRect = new XYRect();
    private Screen _currentScreen;
    private XYRect[] _overlappedRectArray;
    private int _overlappedRectArrayStart;
@@ -112,7 +113,6 @@ public final class Graphics implements DrawStyle {
    public static final int SIGMOID_GAMMA;
 
    Graphics() {
-      this._objectClippingRect = new XYRect();
       this.createFrontbufferSurface();
       this.createStack(Display.getWidth(), Display.getHeight());
    }
@@ -120,6 +120,23 @@ public final class Graphics implements DrawStyle {
    private final native void createFrontbufferSurface();
 
    public Graphics(Bitmap bitmap) {
+      if (!bitmap.isWritable()) {
+         throw new IllegalArgumentException("Bitmap is readonly.");
+      }
+
+      int type = bitmap.getType();
+      if (type != Bitmap.DEFAULT_TYPE) {
+         UiInternal.promote(bitmap, new Graphics(new Bitmap(bitmap.getWidth(), bitmap.getHeight())));
+      }
+
+      if (!fitsInCache(bitmap)) {
+         throw new IllegalArgumentException("Bitmap is too large for graphics surface");
+      }
+
+      this.createBackbufferSurface(bitmap);
+      this._backBufferBitmap = bitmap;
+      this.createStack(bitmap.getWidth(), bitmap.getHeight());
+      this.init(bitmap.getWidth(), bitmap.getHeight());
    }
 
    private static final native boolean fitsInCache(Bitmap var0);

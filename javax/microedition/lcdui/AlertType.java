@@ -1,5 +1,7 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.internal.media.SimpleTonePlayer;
+
 public class AlertType {
    int[] _tune;
    public static final AlertType INFO;
@@ -18,7 +20,19 @@ public class AlertType {
    }
 
    void playSound() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         Class c = Class.forName("net.rim.device.internal.media.TonePlayer");
+         SimpleTonePlayer stp = (SimpleTonePlayer)c.newInstance();
+         stp.playSimpleMidiSequence(this._tune);
+      } catch (ArrayIndexOutOfBoundsException e) {
+         this.logit(e);
+      } catch (ClassNotFoundException e) {
+         this.logit(e);
+      } catch (IllegalAccessException e) {
+         this.logit(e);
+      } catch (InstantiationException e) {
+         this.logit(e);
+      }
    }
 
    private void logit(Exception e) {

@@ -1,5 +1,6 @@
 package net.rim.vm;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class FlashInputStream extends InputStream {
@@ -53,7 +54,9 @@ public class FlashInputStream extends InputStream {
    }
 
    public void purge() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._index != this._bytesInBuffer || !purge(this._stream, this._handleIndex + 1)) {
+         throw new IOException("not at flush point");
+      }
    }
 
    @Override

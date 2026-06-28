@@ -9,7 +9,11 @@ public class RTPRegistry {
    }
 
    public static void setRTPSystem(RTPSystem rtpSystem) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationRegistry applicationRegistry = ApplicationRegistry.getApplicationRegistry();
+      Object prevSystem = applicationRegistry.replace(6854459907021350219L, rtpSystem);
+      if (prevSystem != null) {
+         throw new IllegalStateException("RTP System already present");
+      }
    }
 
    public static RTPSystem getRTPSystem() {

@@ -111,7 +111,23 @@ public final class InputMethodEvent extends Event {
       boolean overrideCommittedTextAttributes,
       byte caretShape
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      super._source = aSource;
+      super._ID = aId;
+      if (text == null || committedCharacterCount >= 0 && committedCharacterCount <= text.length()) {
+         this._modifiers = modifiers;
+         this._text = text;
+         this._attribTextMask = attribTextMask;
+         this._committedCharacterCount = committedCharacterCount;
+         this._convertedCharacterCount = convertedCharacterCount;
+         this._caret = caret;
+         this._visiblePosition = visiblePosition;
+         super._consumed = false;
+         this._overrideCommittedTextAttributes = overrideCommittedTextAttributes;
+         this._supplementaryInputData = null;
+         this._caretShape = caretShape;
+      } else {
+         throw new IllegalArgumentException("committedCharacterCount outside of valid range " + committedCharacterCount + " " + text.length());
+      }
    }
 
    public InputMethodEvent(IComponent source, int id, TextHitInfo caret, TextHitInfo visiblePosition) {

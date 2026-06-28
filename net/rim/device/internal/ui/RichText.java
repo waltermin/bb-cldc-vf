@@ -1,6 +1,8 @@
 package net.rim.device.internal.ui;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.system.Application;
+import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 
@@ -19,17 +21,40 @@ public final class RichText {
    }
 
    public static final Edit$Helper calculateLengths(int width, String text, int[] offsets, byte[] attributes, Font[] fonts) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text == null || offsets == null || attributes == null || fonts == null) {
+         throw new NullPointerException("NULL arguments passed");
+      }
+
+      if (width < 0) {
+         throw new IllegalArgumentException("Width cannot be negative");
+      }
+
+      validateEntries(attributes, fonts);
+      calculateLengths(_helper, width, text, offsets, attributes, fonts);
+      return _helper;
    }
 
    public static final Edit$Helper calculateLengths(
       int width, int startOffset, int currentOffset, StringBufferGap text, int[] offsets, byte[] attributes, Font[] fonts, boolean measureAll
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text != null && offsets != null && fonts != null) {
+         if (width >= 0 && startOffset >= 0 && currentOffset >= 0 && currentOffset - startOffset <= text.length()) {
+            calculateLengths(_helper, width, startOffset, currentOffset, text, offsets, attributes, fonts, measureAll ? 1 : 0);
+            return _helper;
+         } else {
+            throw new IllegalArgumentException("Width/offsets arguments cannot be negative or exceed the text length");
+         }
+      } else {
+         throw new NullPointerException("NULL arguments passed");
+      }
    }
 
    private static final void validateEntries(byte[] attributes, Font[] fonts) {
-      throw new RuntimeException("cod2jar: ldc");
+      for (int i = 0; i < attributes.length; i++) {
+         if (attributes[i] < 0 || attributes[i] >= fonts.length) {
+            throw new IllegalArgumentException("(attribute < 0) || (fontCount <= attribute)");
+         }
+      }
    }
 
    public static final int getDefaultParagDirection() {
@@ -66,7 +91,30 @@ public final class RichText {
       int styleBreaksOffset,
       int styleBreaksLen
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text == null) {
+         throw new NullPointerException("NULL arguments passed");
+      }
+
+      if (offset >= 0
+         && length >= 0
+         && offset + length <= text.length()
+         && styleBreaksOffset >= 0
+         && styleBreaksLen >= 0
+         && (styleBreaks == null || styleBreaks.length >= styleBreaksOffset + styleBreaksLen)
+         && paragDirection >= 0
+         && paragDirection <= 3) {
+         int rc = getBidiOrder(_runs, text, offset, length, bidiState, paragDirection, paragStart, styleBreaks, styleBreaksOffset, styleBreaksLen);
+         if (rc != 0) {
+            _runs.ignore(true);
+            sendLog(rc);
+         } else {
+            _runs.ignore(false);
+         }
+
+         return _runs;
+      } else {
+         throw new IllegalArgumentException("offset arguments cannot be negative or exceed the text length");
+      }
    }
 
    public static final Edit$BidiLineRuns getBidiOrder(StringBuffer text, int offset, int length, byte[] bidiState, boolean paragStart, int[] styleBreaks) {
@@ -84,7 +132,30 @@ public final class RichText {
       int styleBreaksOffset,
       int styleBreaksLen
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text == null) {
+         throw new NullPointerException("NULL arguments passed");
+      }
+
+      if (offset >= 0
+         && length >= 0
+         && offset + length <= text.length()
+         && styleBreaksOffset >= 0
+         && styleBreaksLen >= 0
+         && (styleBreaks == null || styleBreaks.length >= styleBreaksOffset + styleBreaksLen)
+         && paragDirection >= 0
+         && paragDirection <= 3) {
+         int rc = getBidiOrder(_runs, text, offset, length, bidiState, paragDirection, paragStart, styleBreaks, styleBreaksOffset, styleBreaksLen);
+         if (rc != 0) {
+            _runs.ignore(true);
+            sendLog(rc);
+         } else {
+            _runs.ignore(false);
+         }
+
+         return _runs;
+      } else {
+         throw new IllegalArgumentException("offset arguments cannot be negative or exceed the text length");
+      }
    }
 
    public static final Edit$BidiLineRuns getBidiOrder(String text, int offset, int length, byte[] bidiState, boolean paragStart, int[] styleBreaks) {
@@ -102,11 +173,23 @@ public final class RichText {
       int styleBreaksOffset,
       int styleBreaksLen
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private static final void sendLog(int rc) {
-      throw new RuntimeException("cod2jar: ldc");
+      Application app = Application.getApplication();
+      StringBuffer debugInfo = new StringBuffer("BIDI ERROR: " + rc + "; ");
+
+      try {
+         if (app != null) {
+            debugInfo.append(app.toString() + " --> " + app.getClass().getName());
+         }
+      } catch (Throwable thr) {
+         thr.printStackTrace();
+      }
+
+      System.err.println(debugInfo.toString());
+      RIMGlobalMessagePoster.postGlobalEvent(RADIO_LOGWORTHY_REPORT_REQUEST, 0, 0, debugInfo, null);
    }
 
    private static final native int getBidiOrder(

@@ -1,10 +1,12 @@
 package net.rim.device.api.ui;
 
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.ui.StringBufferGap;
+import net.rim.device.internal.ui.UiInternal;
 import net.rim.vm.TraceBack;
 
 public class Font {
@@ -25,9 +27,9 @@ public class Font {
    private FontFamily _family;
    private int _effectsStrokeColor;
    private int _effectsFillColor;
-   private int[] _transform;
-   TextMetrics _textMetrics;
-   GlyphMetrics _glyphMetrics;
+   private int[] _transform = new int[6];
+   TextMetrics _textMetrics = new TextMetrics();
+   GlyphMetrics _glyphMetrics = new GlyphMetrics();
    public static final int PLAIN;
    public static final int BOLD;
    public static final int ITALIC;
@@ -99,6 +101,35 @@ public class Font {
       int effectsStrokeColor,
       int effectsFillColor
    ) {
+      this._style = style;
+      this._height = height;
+      this._family = family;
+      if (family == null) {
+         this._name = FontRegistry.DEFAULT_FAMILY;
+      } else {
+         this._name = family.getName();
+      }
+
+      this._antialiasMode = antialiasingMode;
+      this._effects = effects;
+      this._effectsStrokeColor = effectsStrokeColor;
+      this._effectsFillColor = effectsFillColor;
+      this._A = A;
+      this._B = B;
+      this._C = C;
+      this._D = D;
+      this._Tx = Tx;
+      this._Ty = Ty;
+      this._transform[0] = A;
+      this._transform[1] = B;
+      this._transform[2] = C;
+      this._transform[3] = D;
+      this._transform[4] = Tx;
+      this._transform[5] = Ty;
+      this.setMetrics();
+      if (this._height != this._ascent + this._descent + this._leading) {
+         throw new IllegalStateException("Font: height != ascent + descent + leading");
+      }
    }
 
    private native void setMetrics();
@@ -433,7 +464,12 @@ public class Font {
    }
 
    public static void setDefaultFontForSystem(Font defaultFont) {
-      throw new RuntimeException("cod2jar: ldc");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      if (defaultFont == null) {
+         throw new IllegalArgumentException("System font must not be null.");
+      }
+
+      FontRegistry.setDefaultFont(defaultFont);
    }
 
    public static void setDefaultFontForSystem(String family, int style, int size, int units) {
@@ -447,7 +483,26 @@ public class Font {
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundle bundle = UiInternal.BUNDLE;
+      StringBuffer s = new StringBuffer(128);
+      s.append(this.getFontFamily().getName() + ' ' + this.getHeight() + " px ");
+      if ((this.getStyle() & 1) != 0) {
+         s.append(bundle.getString(19));
+      }
+
+      if ((this.getStyle() & 2) != 0) {
+         s.append(bundle.getString(20));
+      }
+
+      if ((this.getStyle() & 8) != 0) {
+         s.append(bundle.getString(18));
+      }
+
+      if ((this.getStyle() & 4) != 0) {
+         s.append(bundle.getString(21));
+      }
+
+      return s.toString();
    }
 
    public String getCopyright() {

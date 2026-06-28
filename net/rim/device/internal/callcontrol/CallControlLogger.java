@@ -10,7 +10,7 @@ public final class CallControlLogger {
    private CallControlLogger$CallCommandLogger _myCommandLogger;
    private final String _name;
    private final long _eventGUID;
-   private byte[] _buf;
+   private byte[] _buf = new byte[0];
    private StringBuffer _strbuf;
    private int _strbufRootLen;
    private static final long LOGGER_GUID;
@@ -121,6 +121,15 @@ public final class CallControlLogger {
    private static final byte[] XFERUPDATED;
 
    public CallControlLogger(String name, int order) {
+      this._strbuf = new StringBuffer(name + ": ");
+      this._strbufRootLen = this._strbuf.length();
+      this._name = name;
+      this._eventGUID = -1833974700407082449L + order;
+      EventLogger.register(this._eventGUID, name, 2);
+      this._myCommandLogger = new CallControlLogger$CallCommandLogger(this, order);
+      this._myEventLogger = new CallControlLogger$CallEventLogger(this, order);
+      AbstractCallCommandHandler.internalRegister(this._myCommandLogger);
+      AbstractCallEventHandler.internalRegister(this._myEventLogger);
    }
 
    private final void log(int len) {

@@ -50,7 +50,7 @@ final class SystemPermissions implements Persistable {
    }
 
    final void init() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    final int[] loadHandles() {
@@ -72,7 +72,19 @@ final class SystemPermissions implements Persistable {
    }
 
    private final long permsIntoMask(byte[] perms) {
-      throw new RuntimeException("cod2jar: ldc");
+      long mask = 0;
+
+      for (int i = 0; i < perms.length; i++) {
+         mask <<= 8;
+         mask |= perms[i] & 0xFF;
+      }
+
+      if ((mask & Integer.MAX_VALUE) != 0) {
+         System.out.println("Invalid Permissions! " + Long.toString(mask, 16));
+         mask &= Integer.MIN_VALUE;
+      }
+
+      return mask;
    }
 
    private static final native byte[] getDefaultPermissionsImpl();

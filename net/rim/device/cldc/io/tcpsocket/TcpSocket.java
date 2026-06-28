@@ -201,7 +201,21 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
    @Override
    public final OutputStream openOutputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._outStream != null && this._nativeSocket != null) {
+         switch (this._outputStreamState) {
+            case 0:
+               this._outputStreamState = 1;
+               return this._outStream;
+            case 1:
+               throw new IOException("Stream already open");
+            case 2:
+            case 3:
+            default:
+               throw new IOException("Stream already closed");
+         }
+      } else {
+         throw new IOException();
+      }
    }
 
    @Override
@@ -211,7 +225,21 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
 
    @Override
    public final InputStream openInputStream() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._inStream != null && this._nativeSocket != null) {
+         switch (this._inputStreamState) {
+            case 0:
+               this._inputStreamState = 1;
+               return this._inStream;
+            case 1:
+               throw new IOException("Stream already open");
+            case 2:
+            case 3:
+            default:
+               throw new IOException("Stream already closed");
+         }
+      } else {
+         throw new IOException();
+      }
    }
 
    @Override

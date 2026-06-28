@@ -1,10 +1,10 @@
 package net.rim.tid.util;
 
 public class PinInfo {
-   private String _word;
-   private char[] _syllables;
-   private byte[] _tones;
-   private byte[] _indexes;
+   private String _word = "";
+   private char[] _syllables = new char[8];
+   private byte[] _tones = new byte[8];
+   private byte[] _indexes = new byte[8];
    private int _length;
    private static final int MAX_LENGTH;
 
@@ -12,6 +12,7 @@ public class PinInfo {
    }
 
    public PinInfo(PinInfo info) {
+      this.set(info);
    }
 
    public void getRecord(StringBuffer result) {

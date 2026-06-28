@@ -96,6 +96,6 @@ public final class Clipboard {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this._object != null && !this.isClipboardDisabled() && !this.isClipboardAccessRestricted(this._object) ? this._object.toString() : "";
    }
 }

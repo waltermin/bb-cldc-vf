@@ -9,6 +9,6 @@ public final class AddressUtilities {
    }
 
    public static final String removePrefixes(String address) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

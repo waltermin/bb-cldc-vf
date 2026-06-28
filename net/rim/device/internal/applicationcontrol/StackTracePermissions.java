@@ -2,6 +2,9 @@ package net.rim.device.internal.applicationcontrol;
 
 import java.util.Enumeration;
 import java.util.Vector;
+import net.rim.device.api.crypto.DigestFactory;
+import net.rim.device.api.crypto.NoSuchAlgorithmException;
+import net.rim.device.api.crypto.SHA1Digest;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.IntHashtable;
@@ -113,6 +116,16 @@ final class StackTracePermissions {
    }
 
    private final byte[] getHashOfStackTrace(int[] handles) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         SHA1Digest sha1 = (SHA1Digest)DigestFactory.getInstance("SHA1");
+
+         for (int i = 0; i < handles.length; i++) {
+            sha1.update(handles[i]);
+         }
+
+         return sha1.getDigest();
+      } catch (NoSuchAlgorithmException var4) {
+         return null;
+      }
    }
 }

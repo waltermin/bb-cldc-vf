@@ -182,7 +182,7 @@ public final class String {
    }
 
    public static final String valueOf(Object obj) {
-      throw new RuntimeException("cod2jar: ldc");
+      return obj == null ? "null" : obj.toString();
    }
 
    public static final String valueOf(char[] data) {
@@ -194,7 +194,7 @@ public final class String {
    }
 
    public static final String valueOf(boolean b) {
-      throw new RuntimeException("cod2jar: ldc");
+      return b ? "true" : "false";
    }
 
    public static final String valueOf(char c) {

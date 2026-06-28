@@ -5,6 +5,7 @@ import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ApplicationProcess;
 import net.rim.device.api.system.Backlight;
 import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.GlobalEventListener;
@@ -13,6 +14,8 @@ import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.ListenerUtilities;
+import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.MessageListener;
 import net.rim.device.internal.system.UnhandledGlobalKeyListener;
 import net.rim.device.internal.ui.BackingStore;
@@ -207,7 +210,9 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    final void assertHaveEventLock() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._app.isHandlingEvents() && !Monitor.monitorOwned(this._app.getAppEventLock())) {
+         throw new IllegalStateException("UI engine accessed without holding the event lock.");
+      }
    }
 
    final void notifyUserInputEventListener(int device) {
@@ -226,7 +231,13 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    final void statusDismissedEvent(Screen screen) {
-      throw new RuntimeException("cod2jar: ldc");
+      GlobalScreenManager.assertHaveLock();
+      if (screen.getPushMethod() == 0) {
+         throw new IllegalStateException("Cannot mix pushGlobalScreen-popScreen with queueStatus-dismissStatus.");
+      }
+
+      this._app.invokeLater(new UiEngineImpl$StatusDismissedHandler(this, screen));
+      RIMGlobalMessagePoster.postGlobalEvent(5961289116197897667L, 2, 0, screen.getExtent(), null);
    }
 
    final void statusDisplayedEvent(Screen screen, boolean inputRequired, boolean redisplay, boolean isTopmost, XYRect revokedInvalid) {
@@ -358,7 +369,7 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void pushGlobalScreen(Screen screen, int priority, int flags) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -370,7 +381,7 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void processMessage(Object eventLock, Message message, boolean consumed) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -497,7 +508,7 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void popScreen(Screen screen) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override
@@ -552,7 +563,18 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void pushModalScreen(Screen screen) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._app.isEventThread()) {
+         throw new RuntimeException("pushModalScreen called by a non-event thread");
+      }
+
+      if (!this.equals(GlobalScreenManager.getPaintControlEngine()) && this.getApplication().isForeground()) {
+         GlobalScreenManager.setForegroundEngine(this);
+      }
+
+      this.pushScreen(screen);
+      this.doPainting();
+      UiModalEventThread thread = new UiModalEventThread(screen);
+      this._app.startModalEventThread(thread);
    }
 
    @Override
@@ -585,7 +607,17 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
 
    @Override
    public final void suspendPainting(boolean suspend) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._screenList) {
+         if (suspend) {
+            this._suspendPainting++;
+         } else {
+            if (this._suspendPainting == 0) {
+               throw new IllegalStateException("suspendPainting: extra suspend");
+            }
+
+            this._suspendPainting--;
+         }
+      }
    }
 
    @Override
@@ -973,11 +1005,27 @@ final class UiEngineImpl implements GlobalEventListener, HolsterListener, Messag
    }
 
    static final UiEngineImpl getUiEngine() {
-      throw new RuntimeException("cod2jar: ldc");
+      assertIpcOrDependency();
+      if (_uiEngine == null) {
+         Application app = Application.getApplication();
+         if (app == null) {
+            throw new RuntimeException("No application instance");
+         }
+
+         synchronized (app.getAppEventLock()) {
+            if (_uiEngine == null) {
+               _uiEngine = new UiEngineImpl(app);
+            }
+         }
+      }
+
+      return _uiEngine;
    }
 
    public static final void assertIpcOrDependency() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!CodeStore.isPartOfCurrentApp(TraceBack.getCallingModule(3)) && !ApplicationControl.isIPCAllowed(true)) {
+         throw new ControlledAccessException("Unauthorized attempt to attach to this application");
+      }
    }
 
    private final void applyFont() {

@@ -88,10 +88,26 @@ public class SimpleSortingVector extends Vector {
    }
 
    public synchronized int find(Object key) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._sortComparator == null) {
+         throw new IllegalStateException("Comparator cannot be null");
+      }
+
+      if (!this._sorted) {
+         this.doBulkSort();
+      }
+
+      return Arrays.binarySearch(super.elementData, key, this._sortComparator, 0, super.elementCount);
    }
 
    private void doBulkSort() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._sortComparator == null) {
+         throw new IllegalStateException("Comparator cannot be null");
+      }
+
+      if (super.elementCount > 0) {
+         Arrays.sort(super.elementData, 0, super.elementCount, this._sortComparator);
+      }
+
+      this._sorted = true;
    }
 }

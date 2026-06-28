@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -435,7 +436,13 @@ public final class CodeModuleGroup {
    }
 
    private final String readString(byte[] data, DataBuffer buf) {
-      throw new RuntimeException("cod2jar: ldc");
+      int start = buf.getPosition();
+
+      while (buf.readByte() != 0) {
+      }
+
+      int end = buf.getPosition();
+      return new String(data, start, end - start - 1, "UTF8");
    }
 
    private final String readLocalizedString(byte[] data, DataBuffer buf, String previousValue, Hashtable localizedTable) {
@@ -510,15 +517,40 @@ public final class CodeModuleGroup {
    }
 
    private final void writeProperty(DataBuffer buf, String name, String value) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         byte[] nameData = name.getBytes("UTF8");
+         byte[] valueData = value.getBytes("UTF8");
+         buf.writeShort(2);
+         buf.write(nameData);
+         buf.write(0);
+         buf.write(valueData);
+         buf.write(0);
+      } catch (UnsupportedEncodingException var6) {
+      }
    }
 
    private final void writeString(DataBuffer buf, String s) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (s != null) {
+         try {
+            byte[] bytes = s.getBytes("UTF8");
+            buf.write(bytes);
+            buf.write(0);
+         } catch (UnsupportedEncodingException var4) {
+         }
+      }
    }
 
    private final void writeLocalizedString(DataBuffer buf, int type, int localeCode, String s) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (s != null) {
+         try {
+            byte[] bytes = s.getBytes("UTF8");
+            buf.writeShort(type);
+            buf.writeInt(localeCode);
+            buf.write(bytes);
+            buf.write(0);
+         } catch (UnsupportedEncodingException var6) {
+         }
+      }
    }
 
    private final void writeLocalizedHashtable(DataBuffer buf, int type, String s, Hashtable localizedTable) {

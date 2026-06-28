@@ -20,7 +20,7 @@ class MemoryCleanerManager$MemoryCleanerSyncItem extends OTASyncCapableSyncItem 
 
    @Override
    public String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Memory Cleaner Options";
    }
 
    @Override

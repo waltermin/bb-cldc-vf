@@ -108,7 +108,7 @@ public final class ConverterUtilities {
    }
 
    public static final String readStringEncoded(byte[] dataBuffer, int readPosition, int lengthToRead, boolean isBigEndian) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static final int detectFutureData(byte[] dataBuffer, int readPosition, int lengthToRead, boolean bigEndian) {
@@ -882,7 +882,25 @@ public final class ConverterUtilities {
    }
 
    public static final String getTagData(byte[] data, byte tag) {
-      throw new RuntimeException("cod2jar: ldc");
+      int index = getFieldIndex(data, tag, ((tag | 128) & 240) != 240);
+      if (index == -1) {
+         return null;
+      }
+
+      int len = getFieldLength(data, index);
+      byte type = data[index + 2];
+      String returnedString;
+      if ((type & 128) != 0 && (type & 240) != 240) {
+         if (len < 2) {
+            return "";
+         }
+
+         returnedString = readStringEncoded(data, index + 3, len, false);
+      } else {
+         returnedString = StringUtilities.decodeBOM(data, index + 3, len);
+      }
+
+      return returnedString;
    }
 
    public static final byte getTagByteData(byte[] data, byte tag) {

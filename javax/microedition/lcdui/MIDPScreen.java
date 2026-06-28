@@ -349,7 +349,17 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    private static final void scheduleTickerTimer(long delay) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (Application.getEventLock()) {
+         if (!_pendingTimer) {
+            if (delay == 0) {
+               Application.getApplication().invokeLater(_tickerRunnable);
+            } else if (Application.getApplication().invokeLater(_tickerRunnable, delay, false) == -1) {
+               throw new RuntimeException("Unable to allocate a ticker timer.");
+            }
+
+            _pendingTimer = true;
+         }
+      }
    }
 
    MIDPScreen() {

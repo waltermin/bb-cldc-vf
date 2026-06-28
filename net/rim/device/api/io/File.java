@@ -1,5 +1,6 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import net.rim.device.api.io.file.FileIOException;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
@@ -26,51 +27,178 @@ public final class File {
    }
 
    public static final void delete(int fs, String fileName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         int status = FileSystem.delete(fs, fileName);
+         if (!checkStatus(status)) {
+            status = dispatcher.waitForCompletion(6);
+            checkStatus(status);
+         }
+      }
    }
 
    public static final void rename(int fs, String oldFileName, String newFileName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         int status = FileSystem.rename(fs, oldFileName, newFileName);
+         if (!checkStatus(status)) {
+            status = dispatcher.waitForCompletion(5);
+            checkStatus(status);
+         }
+      }
    }
 
    public static final long getFileSystemTotalSpace(int fs) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileSystemInfo fsInfo = getFileSystemInfo(fs);
+      return fsInfo.getTotalSpace();
    }
 
    public static final long getFileSystemFreeSpace(int fs) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileSystemInfo fsInfo = getFileSystemInfo(fs);
+      return fsInfo.getFreeSpace();
    }
 
    public static final long getFileSize(int fs, String fileName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileInfo fileInfo = new FileInfo();
+      return findFirst(fs, fileName, fileInfo) ? fileInfo.getFileSize() : 0;
    }
 
    public static final String findFirst(int fs, String pattern) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileInfo fileInfo = new FileInfo();
+      return findFirst(fs, pattern, fileInfo) ? fileInfo.getFileName() : null;
    }
 
    public static final boolean findFirst(int fs, String pattern, FileInfo fileInfo) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         while (true) {
+            int status = (int)FileSystem.findFirst(fs, pattern, fileInfo);
+            if (checkStatus(status)) {
+               return fileInfo.getFileName() != null;
+            }
+
+            status = dispatcher.waitForCompletion(7);
+            checkStatus(status);
+         }
+      }
    }
 
    public static final String findNext(int fs) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileInfo fileInfo = new FileInfo();
+      return findNext(fs, fileInfo) ? fileInfo.getFileName() : null;
    }
 
    public static final boolean findNext(int fs, FileInfo fileInfo) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         while (true) {
+            int status = FileSystem.findNext(fs, 0, fileInfo);
+            if (checkStatus(status)) {
+               return fileInfo.getFileName() != null;
+            }
+
+            status = dispatcher.waitForCompletion(8);
+            checkStatus(status);
+         }
+      }
    }
 
    static final FileSystemInfo getFileSystemInfo(int fs) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         FileSystemInfo fsInfo = new FileSystemInfo();
+
+         while (true) {
+            int status = FileSystem.getFileSystemInfo(fs, fsInfo);
+            if (checkStatus(status)) {
+               return fsInfo;
+            }
+
+            status = dispatcher.waitForCompletion(0);
+            checkStatus(status);
+         }
+      }
    }
 
    static final int open(int fs, String fileName, int mode) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         while (true) {
+            long result = FileSystem.open(fs, fileName, mode);
+            int status = (int)result;
+            if (checkStatus(status)) {
+               return (int)(result >> 32);
+            }
+
+            status = dispatcher.waitForCompletion(1);
+            checkStatus(status);
+         }
+      }
    }
 
    static final void close(int handle) {
-      throw new RuntimeException("cod2jar: ldc");
+      assertPermission();
+      FileEventDispatcher dispatcher = getEventDispatcher();
+      synchronized (dispatcher) {
+         if (handle == -1) {
+            throw new IOException("File not open");
+         }
+
+         int status = FileSystem.close(handle);
+         if (!checkStatus(status)) {
+            status = dispatcher.waitForCompletion(2);
+            checkStatus(status);
+         }
+      }
    }
 
    static final boolean checkStatus(int status) {

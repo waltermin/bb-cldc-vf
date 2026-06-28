@@ -6,6 +6,7 @@ import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.Border3d;
+import net.rim.device.internal.ui.BorderBitmap;
 import net.rim.device.internal.ui.BorderRounded;
 import net.rim.device.internal.ui.BorderSimple;
 
@@ -105,7 +106,12 @@ public final class Theme$Writer {
    public final void createBorderBitmap(
       String name, int top, int right, int bottom, int left, int topCorners, int rightCorners, int bottomCorners, int leftCorners
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.getBorder(name) == null) {
+         EncodedImage image = this.this$0.getImage("border_" + name);
+         Bitmap bitmap = image.getBitmap();
+         Border border = new BorderBitmap(top, right, bottom, left, bitmap, topCorners, rightCorners, bottomCorners, leftCorners);
+         this.putBorder(name, border);
+      }
    }
 
    public final void createBorderRounded(String name, int top, int right, int bottom, int left) {
@@ -175,7 +181,28 @@ public final class Theme$Writer {
    }
 
    private final int getStateForName(String statename) {
-      throw new RuntimeException("cod2jar: ldc");
+      int state = 0;
+      if (statename == null || statename.equals("")) {
+         return 0;
+      } else if (statename.equals("first-child")) {
+         return 1;
+      } else if (statename.equals("link")) {
+         return 2;
+      } else if (statename.equals("visited")) {
+         return 3;
+      } else if (statename.equals("active")) {
+         return 4;
+      } else if (statename.equals("hover")) {
+         return 5;
+      } else if (statename.equals("focus")) {
+         return 6;
+      } else if (statename.equals("disabled")) {
+         return 7;
+      } else if (statename.equals("disabled-focus")) {
+         return 8;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public final void put(ThemeAttributeSet$Writer attributesWriter) {

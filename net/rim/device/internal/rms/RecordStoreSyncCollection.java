@@ -172,7 +172,7 @@ public class RecordStoreSyncCollection implements SyncCollection, SyncConverter,
 
    @Override
    public String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "RMS Databases";
    }
 
    @Override

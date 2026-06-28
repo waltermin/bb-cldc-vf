@@ -1,8 +1,10 @@
 package net.rim.device.api.system;
 
+import java.io.UnsupportedEncodingException;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.system.ForcedResetManager;
+import net.rim.device.internal.system.NvStore;
 import net.rim.vm.Array;
 import net.rim.vm.Process;
 
@@ -101,15 +103,15 @@ public final class CodeModuleManager {
    public static final native byte[] getModuleSignature(int var0, int var1);
 
    public static final String getModuleVendor(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getModuleString(moduleHandle, "_vÉ\u0019", 0);
    }
 
    public static final String getModuleDescription(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getModuleString(moduleHandle, "_\u0006scri\u0088", 0);
    }
 
    public static final String getModuleURL(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getModuleString(moduleHandle, "_®l", 0);
    }
 
    public static final long getModuleTimestamp(int moduleHandle) {
@@ -231,17 +233,28 @@ public final class CodeModuleManager {
    }
 
    public static final byte[] getModuleResourceData(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getModuleData(moduleHandle, "_\fso®\u0007\u0094t\u0013s\u001cs");
    }
 
    public static final byte[] getModuleLanguageData(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      return getModuleData(moduleHandle, "_áuå so®\u0007s");
    }
 
    static final native byte[] getModuleData(int var0, String var1);
 
    private static final int getAppCount(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (isLibrary(moduleHandle)) {
+         if (hasEntryPoint(moduleHandle, 1)) {
+            return 1;
+         }
+      } else {
+         byte[] data = getModuleData(moduleHandle, "_\u0018p¦¢t");
+         if (data != null) {
+            return data[0];
+         }
+      }
+
+      return 0;
    }
 
    public static final ApplicationDescriptor[] getApplicationDescriptors(int moduleHandle) {
@@ -288,13 +301,37 @@ public final class CodeModuleManager {
    }
 
    static final String getModuleString(int moduleHandle, String id, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] data = getModuleData(moduleHandle, id, index);
+      if (data == null) {
+         return null;
+      }
+
+      try {
+         return new String(data, "UTF8");
+      } catch (UnsupportedEncodingException ex) {
+         return null;
+      }
    }
 
    public static final native boolean verifySignature(int var0, int var1, byte[] var2);
 
    public static final CodeSigningKey getADCCodeSigningKey() {
-      throw new RuntimeException("cod2jar: ldc");
+      byte[] publicKey = NvStore.readData(13);
+      if (publicKey != null) {
+         int signerId = NvStore.readInt(12, 0);
+         byte[] b = NvStore.readData(14);
+         String description = null;
+         if (b != null) {
+            try {
+               description = new String(b, "UTF8");
+            } catch (UnsupportedEncodingException var5) {
+            }
+         }
+
+         return new CodeSigningKey(signerId, publicKey, description);
+      } else {
+         return null;
+      }
    }
 
    public static final boolean setADCCodeSigningKey(CodeSigningKey newKey) {
@@ -350,6 +387,18 @@ public final class CodeModuleManager {
    }
 
    public static final boolean deleteThirdPartyApplications() {
-      throw new RuntimeException("cod2jar: ldc");
+      ControlledAccess.assertRRISignatures(true);
+      int[] moduleHandles = getModuleHandles();
+
+      for (int i = moduleHandles.length - 1; i >= 0; i--) {
+         int moduleHandle = moduleHandles[i];
+         if (!ControlledAccess.verifyCodeModuleSignature(moduleHandle, 51) && !ControlledAccess.verifyCodeModuleSignature(moduleHandle, 4276818)) {
+            System.out.println("Deleting cod file " + getModuleName(moduleHandle));
+            deleteModuleExImpl(moduleHandle, true);
+            setResetRequired();
+         }
+      }
+
+      return isResetRequired();
    }
 }

@@ -50,11 +50,25 @@ public final class PersistentObject extends PersistentRootObject implements Pers
    }
 
    public final void setContents(Object contents, int signerId) {
-      throw new RuntimeException("cod2jar: ldc");
+      int caller = TraceBack.getCallingModule(0);
+      CodeSigningKey replaceKey = CodeSigningKey.get(caller, signerId);
+      if (replaceKey == null) {
+         throw new IllegalArgumentException("Key not found for signerId 0x" + Integer.toHexString(signerId) + " (\"" + CodeSigningKey.convert(signerId) + "\")");
+      }
+
+      CodeSigningKey readKey = replaceKey;
+      this.setContents(caller, new ControlledAccess(contents, readKey, replaceKey));
    }
 
    public final void setContents(Object contents, int signerId, boolean preventReadAccess) {
-      throw new RuntimeException("cod2jar: ldc");
+      int caller = TraceBack.getCallingModule(0);
+      CodeSigningKey replaceKey = CodeSigningKey.get(caller, signerId);
+      if (replaceKey == null) {
+         throw new IllegalArgumentException("Key not found for signerId 0x" + Integer.toHexString(signerId) + " (\"" + CodeSigningKey.convert(signerId) + "\")");
+      }
+
+      CodeSigningKey readKey = preventReadAccess ? replaceKey : null;
+      this.setContents(caller, new ControlledAccess(contents, readKey, replaceKey));
    }
 
    private final synchronized void setContents(int moduleHandle, Object contents) {

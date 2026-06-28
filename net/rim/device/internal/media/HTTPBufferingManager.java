@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.microedition.io.HttpConnection;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.vm.Array;
 
@@ -46,7 +47,18 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    private final long getInputLength(HttpConnection input) {
-      throw new RuntimeException("cod2jar: ldc");
+      long length = input.getLength();
+      if (length > -1) {
+         try {
+            String encoding = input.getHeaderField("Content-Encoding");
+            if (StringUtilities.strEqualIgnoreCase(encoding, "gzip", 1701707776) || StringUtilities.strEqualIgnoreCase(encoding, "deflate", 1701707776)) {
+               return -1;
+            }
+         } catch (IOException var5) {
+         }
+      }
+
+      return length;
    }
 
    @Override
@@ -147,7 +159,7 @@ public final class HTTPBufferingManager extends Thread {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "HTTPBufferingManager[" + this.hashCode() + "]";
    }
 
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.

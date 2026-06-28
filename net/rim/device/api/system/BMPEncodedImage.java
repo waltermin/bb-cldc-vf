@@ -67,7 +67,7 @@ public final class BMPEncodedImage extends EncodedImage {
 
    @Override
    public final String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "image/bmp";
    }
 
    private final native void populateBMPInfo();

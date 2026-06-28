@@ -2,6 +2,7 @@ package net.rim.device.api.system;
 
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
+import net.rim.device.internal.bluetooth.BluetoothME;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.system.ITPolicyInternal;
 import net.rim.device.internal.system.InternalServices;
@@ -61,7 +62,8 @@ public final class DeviceInfo {
    public static final native String getPlatformVersion();
 
    public static final String getSoftwareVersion() {
-      throw new RuntimeException("cod2jar: ldc");
+      int handle = CodeModuleManager.getModuleHandle("net_rim_os");
+      return handle == 0 ? "" : CodeModuleManager.getModuleVersion(handle);
    }
 
    public static final native boolean isInHolster();
@@ -71,11 +73,64 @@ public final class DeviceInfo {
    public static final native boolean isSimulator();
 
    public static final String getDeviceName() {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (InternalServices.getHardwareID()) {
+         case -2080372477:
+            return "7130";
+         case -2080372473:
+            return "7130u";
+         case -2080371965:
+            return "87" + getElectronHACID();
+         case -2080371961:
+            return "8707";
+         case -2080371453:
+            return "8100";
+         case -2080371197:
+            return "8800";
+         case -2080370941:
+            return "8320";
+         case -1929376509:
+            return "8120";
+         case -1929376253:
+            return "8820";
+         case -1929375997:
+            return "8310";
+         case -1895822077:
+            return "8110";
+         case -1778381053:
+            return "8300";
+         case -1761604857:
+            return "8807";
+         case 3080:
+            return "Smart Card Reader";
+         case 67111172:
+            return "7130e";
+         case 67111173:
+            return "7100i";
+         case 67111684:
+            return "8703e";
+         case 67112196:
+            return "8130";
+         case 67112452:
+            return "8830";
+         case 67112708:
+            return "8330";
+         case 469763332:
+            return "7250";
+         case 469763333:
+            return "7520";
+         case 469763334:
+            return "7270";
+         default:
+            return "Unknown";
+      }
    }
 
    private static final String getElectronHACID() {
-      throw new RuntimeException("cod2jar: ldc");
+      if ((Phone.getInstance().getNetworkFeatures() & 524288) != 0) {
+         return BluetoothME.isSupported() ? "05g" : "05";
+      } else {
+         return "00";
+      }
    }
 
    public static final native int getBatteryVoltage();

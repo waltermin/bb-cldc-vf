@@ -23,6 +23,17 @@ public class TextGraphics {
    }
 
    public TextGraphics(Font font) {
+      this._antialiasMode = 1;
+      this._A = 65536;
+      this._D = 65536;
+      this._effectsStrokeColor = 0;
+      this._effectsFillColor = 16777215;
+      this._transform = new int[6];
+      if (font == null) {
+         throw new IllegalArgumentException("Font object should be non zero");
+      }
+
+      this.setFontSpec(font);
    }
 
    public int getAntialiasMode() {
@@ -73,17 +84,34 @@ public class TextGraphics {
    }
 
    public void setHeight(int aHeight) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aHeight <= 0) {
+         throw new IllegalArgumentException("Height should be more than zero");
+      }
+
+      this._height = aHeight;
    }
 
    public void setHeightWithLeading(int aHeight) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aHeight <= 1) {
+         throw new IllegalArgumentException("Height should be more than " + aHeight);
+      }
+
+      this._height = this._convertToFontEngineSize(aHeight);
    }
 
    private native int _convertToFontEngineSize(int var1);
 
    public void setTransform(int[] transform) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (transform != null && transform.length == 6) {
+         this._A = this._transform[0];
+         this._B = this._transform[1];
+         this._C = this._transform[2];
+         this._D = this._transform[3];
+         this._Tx = this._transform[4];
+         this._Ty = this._transform[5];
+      } else {
+         throw new IllegalArgumentException("transfrorm is empty or not defined right");
+      }
    }
 
    public void setTransform(int a, int b, int c, int d, int tx, int ty) {
@@ -100,7 +128,11 @@ public class TextGraphics {
    }
 
    public void setAntialiasingMode(int aMode) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aMode != 1 && aMode != 2 && aMode != 3 && aMode != 4) {
+         throw new IllegalArgumentException(" antialiasing mode should be one of the values defined in the Font class");
+      }
+
+      this._antialiasMode = aMode;
    }
 
    public void setEffectsStrokeColor(int color) {
@@ -112,7 +144,24 @@ public class TextGraphics {
    }
 
    public void setFontSpec(Font font) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (font == null) {
+         throw new IllegalArgumentException(" Font object should be non null");
+      }
+
+      this._style = font.getStyle();
+      this._height = font.getHeight() - font.getLeading();
+      this._name = font.getFontFamily().getName();
+      this._antialiasMode = font.getAntialiasMode();
+      this._effects = font.getEffects();
+      this._effectsStrokeColor = font.getEffectsStrokeColor();
+      this._effectsFillColor = font.getEffectsFillColor();
+      int[] trans = font.getTransform();
+      this._A = trans[0];
+      this._B = trans[1];
+      this._C = trans[2];
+      this._D = trans[3];
+      this._Tx = trans[4];
+      this._Ty = trans[5];
    }
 
    public void setTypefaceName(String typefaceName) {
@@ -126,19 +175,31 @@ public class TextGraphics {
    private native int _measureText(String var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
    public int measureText(StringBufferGap text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text != null && offset >= 0 && length >= 0 && text.length() >= offset + length && text.length() != 0 && param != null) {
+         return this._measureText(text, offset, length, param, metrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset and length should be properly defined");
+      }
    }
 
    private native int _measureText(StringBufferGap var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
    public int measureText(StringBuffer text, int offset, int length, DrawTextParam param, TextMetrics metrics) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (text != null && offset >= 0 && length >= 0 && text.length() >= offset + length && text.length() != 0 && param != null) {
+         return this._measureText(text, offset, length, param, metrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset and length should be properly defined");
+      }
    }
 
    private native int _measureText(StringBuffer var1, int var2, int var3, DrawTextParam var4, TextMetrics var5);
 
    public void getFontMetrics(FontMetrics aFontMetrics) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (aFontMetrics == null) {
+         throw new IllegalArgumentException("argument can't be empty");
+      }
+
+      this._getFontMetrics(aFontMetrics);
    }
 
    private native void _getFontMetrics(FontMetrics var1);
@@ -150,13 +211,21 @@ public class TextGraphics {
    private native int _drawText(Graphics var1, String var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);
 
    public int drawText(Graphics graphics, StringBuffer aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (graphics != null && aText != null && aText.length() != 0 && aParam != null && offset >= 0 && length >= 0 && aText.length() >= offset + length) {
+         return this._drawText(graphics, aText, offset, length, x, y, aParam, aMetrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset and length should be properly defined");
+      }
    }
 
    private native int _drawText(Graphics var1, StringBuffer var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);
 
    public int drawText(Graphics graphics, StringBufferGap aText, int offset, int length, int x, int y, DrawTextParam aParam, TextMetrics aMetrics) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (graphics != null && aText != null && aText.length() != 0 && aParam != null && offset >= 0 && length >= 0 && aText.length() >= offset + length) {
+         return this._drawText(graphics, aText, offset, length, x, y, aParam, aMetrics);
+      } else {
+         throw new IllegalArgumentException("text should not be empty and the offset and length should be properly defined");
+      }
    }
 
    private native int _drawText(Graphics var1, StringBufferGap var2, int var3, int var4, int var5, int var6, DrawTextParam var7, TextMetrics var8);

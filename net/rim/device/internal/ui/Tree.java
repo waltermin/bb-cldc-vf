@@ -1,5 +1,7 @@
 package net.rim.device.internal.ui;
 
+import net.rim.vm.Array;
+
 public final class Tree {
    private int _nodeCount;
    private int _visibleCount;
@@ -381,6 +383,34 @@ public final class Tree {
    }
 
    private final short allocateNode() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._firstFreeNode == -1) {
+         int sectionSize = Array.getSectionSize(this._cookie);
+         int len = this._cookie.length;
+         if (len >= sectionSize) {
+            len += sectionSize;
+         } else {
+            len += len;
+            len = Math.min(len, sectionSize);
+         }
+
+         if (len > 32767) {
+            throw new RuntimeException("Tree too large: " + len);
+         }
+
+         Array.resize(this._parent, len);
+         Array.resize(this._firstChild, len);
+         Array.resize(this._nextSibling, len);
+         Array.resize(this._previousSibling, len);
+         Array.resize(this._cookie, len);
+         Array.resize(this._info, len);
+         this.initFreeListPointers(this._nodeCount);
+      }
+
+      short id = (short)this._firstFreeNode;
+      this._firstFreeNode = this._nextSibling[id];
+      this._nodeCount++;
+      this._firstChild[id] = -1;
+      this._info[id] = this._defaultInfo;
+      return id;
    }
 }

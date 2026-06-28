@@ -49,7 +49,7 @@ public final class TimeLogger {
    }
 
    public final void startLogging() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 
    public final synchronized void startTimer(int timerId, int uniqueId) {
@@ -72,14 +72,34 @@ public final class TimeLogger {
    }
 
    public final synchronized void stopTimer(int timerId, int uniqueId) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
    private final void appendSummary(StringBuffer sb, int timerId, String description) {
-      throw new RuntimeException("cod2jar: ldc");
+      sb.append(description);
+      sb.append(" = ");
+      sb.append(this._totalTime[timerId]);
+      sb.append(" ms\n");
    }
 
    public final String getText() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer sb = new StringBuffer("----Summary----\n");
+      this.appendSummary(sb, 0, "WTP Invoke waiting");
+      this.appendSummary(sb, 1, "WTP Segmented Response waiting");
+      this.appendSummary(sb, 13, "Pipe read waiting");
+      this.appendSummary(sb, 2, "Browser fetching page");
+      this.appendSummary(sb, 3, "Browser rendering page");
+      this.appendSummary(sb, 4, "Browser start wap stack");
+      this.appendSummary(sb, 5, "Browser enter browser");
+      this.appendSummary(sb, 6, "WSP Header Encode");
+      this.appendSummary(sb, 7, "JavaScript Run");
+      this.appendSummary(sb, 8, "JavaScript Deserialize");
+      this.appendSummary(sb, 9, "JavaScript Document Create");
+      this.appendSummary(sb, 11, "Style Sheet fetching");
+      this.appendSummary(sb, 12, "Style Sheet processing");
+      this.appendSummary(sb, 10, "Browser gzip");
+      sb.append("\n----Details----\n");
+      sb.append(this._tempSB);
+      return sb.toString();
    }
 }

@@ -1,5 +1,6 @@
 package net.rim.device.internal.bluetooth;
 
+import net.rim.device.api.system.EventLogger;
 import net.rim.device.api.util.NumberUtilities;
 
 public final class BluetoothEvents {
@@ -48,15 +49,17 @@ public final class BluetoothEvents {
    public static final int SWITCH_ROLES;
 
    public static final void init() {
-      throw new RuntimeException("cod2jar: ldc");
+      EventLogger.register(-7880699269633767460L, "net.rim.bluetooth", 2);
    }
 
    public static final void log(int id) {
-      throw new RuntimeException("cod2jar: ldc");
+      EventLogger.logEvent(-7880699269633767460L, id, 0);
+      System.out.println("net.rim.bluetooth: " + (char)(id >> 24 & 0xFF) + (char)(id >> 16 & 0xFF) + (char)(id >> 8 & 0xFF) + (char)(id & 0xFF));
    }
 
    public static final void log(String s) {
-      throw new RuntimeException("cod2jar: ldc");
+      EventLogger.logEvent(-7880699269633767460L, s.getBytes(), 0);
+      System.out.println("net.rim.bluetooth: " + s);
    }
 
    public static final void logResult(int event, int result) {

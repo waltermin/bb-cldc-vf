@@ -17,6 +17,8 @@ public final class DNSException extends IOException {
    }
 
    public DNSException(int errcode) {
+      super("DNS error");
+      this._errorCode = errcode;
    }
 
    public final int getErrorCode() {

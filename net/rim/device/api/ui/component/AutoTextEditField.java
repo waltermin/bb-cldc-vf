@@ -1,5 +1,8 @@
 package net.rim.device.api.ui.component;
 
+import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.i18n.MissingResourceException;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.Keypad;
@@ -306,7 +309,45 @@ public class AutoTextEditField extends EditField {
    }
 
    private boolean handleAutoQuote(char character) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.checkLocale();
+      if (!this.isAutoQuoteOn()) {
+         return true;
+      }
+
+      if (character != '"') {
+         return true;
+      }
+
+      boolean opening = false;
+      char prevChar = this.getCaretPosition() > 0 ? this.getAttributedText().charAt(this.getCaretPosition() - 1) : '\u0000';
+      switch (prevChar) {
+         case '\u0000':
+         case '\n':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case ' ':
+         case '\u200b':
+         case '\u200c':
+         case '\u200d':
+         case '\u2028':
+         case '\u2029':
+         case '　':
+            opening = true;
+         default:
+            String replacement = opening ? this._autoQuoteOpen : this._autoQuoteClosed;
+            this.replace("", replacement);
+            return false;
+      }
    }
 
    private boolean handleAutoText(char character) {
@@ -401,11 +442,58 @@ public class AutoTextEditField extends EditField {
    }
 
    void checkLocale() {
-      throw new RuntimeException("cod2jar: ldc");
+      int currentCode = Locale.getDefault().getCode();
+      if (this._cachedLocaleCode != currentCode) {
+         this._cachedLocaleCode = currentCode;
+         ResourceBundleFamily family = ResourceBundle.getBundle(8562590855522002223L, "net.rim.device.internal.resource.Input");
+         this._autoQuoteOpen = family.getString(23);
+         this._autoQuoteClosed = family.getString(24);
+      }
    }
 
    private static long validateStyle(long style) {
-      throw new RuntimeException("cod2jar: ldc");
+      if ((style & 196608) == 0) {
+         boolean value = getBooleanResource(14);
+         if (value) {
+            style |= 65536;
+         } else {
+            style |= 131072;
+         }
+      }
+
+      if ((style & 786432) == 0) {
+         boolean value = getBooleanResource(13);
+         if (value) {
+            style |= 262144;
+         } else {
+            style |= 524288;
+         }
+      }
+
+      if ((style & 1048576) == 0) {
+         ResourceBundle bundle = ResourceBundle.getBundle(8562590855522002223L, "net.rim.device.internal.resource.Input")
+            .getBundle(Locale.getDefaultInputForSystem());
+         boolean value = false;
+         if (bundle != null) {
+            try {
+               String textValue = bundle.getString(15);
+               value = unfoldBooleanResource(textValue);
+            } catch (MissingResourceException var5) {
+            }
+         }
+
+         if (value) {
+            style |= 1048576;
+         } else {
+            style |= 2097152;
+         }
+      }
+
+      if ((style & 12582912) == 0) {
+         style |= 8388608;
+      }
+
+      return style;
    }
 
    @Override

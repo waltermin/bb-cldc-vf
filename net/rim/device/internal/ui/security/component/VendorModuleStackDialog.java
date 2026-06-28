@@ -21,6 +21,6 @@ public class VendorModuleStackDialog extends PopupDialog {
    }
 
    protected static void populateVendorApplicationModulesStack(VerticalIndentFieldManager vifm, int[] stackHandles, int[] specialStackHandles) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array init");
    }
 }

@@ -85,7 +85,189 @@ public class SimpleDateFormat extends DateFormat {
 
    @Override
    public StringBuffer format(Calendar calendar, StringBuffer toAppendTo_o, FieldPosition pos_io) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.checkLocale();
+      int desiredField = -2;
+      if (pos_io != null) {
+         desiredField = pos_io.getField();
+      }
+
+      char[] compiledPattern = this._compiledPattern;
+      int compiledLength = this._compiledLength;
+      toAppendTo_o.ensureCapacity(compiledLength);
+      if (calendar == null) {
+         int index = 0;
+
+         while (index < compiledLength) {
+            int field = compiledPattern[index++];
+            int startindex = toAppendTo_o.length();
+            int length = compiledPattern[index++];
+            char undefined = this._symbols.getUndefinedSymbol();
+            switch (field) {
+               case 1:
+               case 2:
+               case 5:
+               case 7:
+               case 9:
+               case 10:
+               case 11:
+               case 12:
+               case 13:
+               case 14:
+               case 90:
+                  while (--length >= 0) {
+                     toAppendTo_o.append(undefined);
+                  }
+                  break;
+               case 65533:
+                  toAppendTo_o.append("NI");
+                  break;
+               case 65534:
+                  toAppendTo_o.append(compiledPattern[index - 1]);
+                  break;
+               case 65535:
+                  toAppendTo_o.append(compiledPattern, index, length);
+                  index += length;
+            }
+
+            if (field == desiredField && pos_io != null) {
+               pos_io.setBeginIndex(startindex);
+               pos_io.setEndIndex(toAppendTo_o.length());
+               desiredField = -2;
+            }
+         }
+      } else {
+         int index = 0;
+
+         while (index < compiledLength) {
+            int field = compiledPattern[index++];
+            int startindex = toAppendTo_o.length();
+            int length = compiledPattern[index++];
+            switch (field) {
+               case 1:
+                  if (length > 3) {
+                     toAppendTo_o.append(calendar.get(1));
+                  } else if (length == 2) {
+                     int shortYear = calendar.get(1) % 100;
+                     if (shortYear < 10) {
+                        toAppendTo_o.append('0');
+                     }
+
+                     toAppendTo_o.append(shortYear);
+                  } else {
+                     toAppendTo_o.append("NI");
+                  }
+                  break;
+               case 2:
+                  int value = calendar.get(2);
+                  if (length > 3) {
+                     toAppendTo_o.append(this._symbols.getMonths()[value]);
+                  } else if (length == 3) {
+                     toAppendTo_o.append(this._symbols.getShortMonths()[value]);
+                  } else {
+                     if (length == 2 && ++value < 10) {
+                        toAppendTo_o.append('0');
+                     }
+
+                     toAppendTo_o.append(value);
+                  }
+                  break;
+               case 5:
+                  int var26 = calendar.get(5);
+                  if (length >= 2 && var26 < 10) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  toAppendTo_o.append(var26);
+                  break;
+               case 7:
+                  int var25 = calendar.get(7);
+                  if (length > 3) {
+                     toAppendTo_o.append(this._symbols.getWeekdays()[var25 - 1]);
+                  } else {
+                     toAppendTo_o.append(this._symbols.getShortWeekdays()[var25 - 1]);
+                  }
+                  break;
+               case 9:
+                  int var24 = calendar.get(11) < 12 ? 0 : 1;
+                  if (length > 1) {
+                     toAppendTo_o.append(this._symbols.getAmPmStrings()[var24]);
+                  } else {
+                     toAppendTo_o.append(this._symbols.getShortAmPmStrings()[var24]);
+                  }
+                  break;
+               case 10:
+                  field = 10;
+                  int var23 = calendar.get(10);
+                  if (var23 == 0) {
+                     var23 = 12;
+                  }
+
+                  toAppendTo_o.append(var23);
+                  break;
+               case 11:
+                  int var22 = calendar.get(11);
+                  if (length >= 2 && var22 < 10) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  toAppendTo_o.append(var22);
+                  break;
+               case 12:
+                  int var21 = calendar.get(12);
+                  if (length >= 2 && var21 < 10) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  toAppendTo_o.append(var21);
+                  break;
+               case 13:
+                  int var20 = calendar.get(13);
+                  if (length >= 2 && var20 < 10) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  toAppendTo_o.append(var20);
+                  break;
+               case 14:
+                  int var19 = calendar.get(14);
+                  if (length >= 3 && var19 < 100) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  if (length >= 2 && var19 < 10) {
+                     toAppendTo_o.append('0');
+                  }
+
+                  toAppendTo_o.append(var19);
+                  break;
+               case 90:
+                  toAppendTo_o.append(calendar.getTimeZone().getID());
+                  break;
+               case 65533:
+                  toAppendTo_o.append("NI");
+                  break;
+               case 65534:
+                  toAppendTo_o.append(compiledPattern[index - 1]);
+                  break;
+               case 65535:
+                  toAppendTo_o.append(compiledPattern, index, length);
+                  index += length;
+            }
+
+            if (field == desiredField && pos_io != null) {
+               pos_io.setBeginIndex(startindex);
+               pos_io.setEndIndex(toAppendTo_o.length());
+               desiredField = -2;
+            }
+         }
+      }
+
+      if (desiredField != -2) {
+         pos_io.setBeginIndex(0);
+         pos_io.setEndIndex(0);
+      }
+
+      return toAppendTo_o;
    }
 
    @Override

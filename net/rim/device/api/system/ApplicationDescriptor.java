@@ -1,6 +1,7 @@
 package net.rim.device.api.system;
 
 import java.util.Calendar;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.cldc.util.CalendarExtensions;
@@ -93,7 +94,14 @@ public final class ApplicationDescriptor {
    }
 
    public final synchronized String getName() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._name == null) {
+         this._name = CodeModuleManager.getModuleString(this._moduleHandle, "_\u0018pN,es", this._index);
+         if (this._name == null) {
+            this._name = this.getModuleName();
+         }
+      }
+
+      return this._name;
    }
 
    public final int getIndex() {
@@ -101,11 +109,34 @@ public final class ApplicationDescriptor {
    }
 
    public final synchronized String getNameResourceBundle() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._overrideNameResourceBundle != null) {
+         return this._overrideNameResourceBundle;
+      }
+
+      if (this._nameResourceBundle == null) {
+         this._nameResourceBundle = CodeModuleManager.getModuleString(this._moduleHandle, "_\u0018pN,e so®\u0007B¢d~s", this._index);
+      }
+
+      return this._nameResourceBundle;
    }
 
    public final int getNameResourceId() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._overrideNameResourceId != -1) {
+         return this._overrideNameResourceId;
+      }
+
+      if (this._nameResourceId == -1) {
+         byte[] data = CodeModuleManager.getModuleData(this._moduleHandle, "_\u0018pN,e so®\u0007ñs");
+         int offset = this._index * 4;
+         if (data != null && data.length >= offset + 4) {
+            this._nameResourceId = (data[offset++] & 255) << 24;
+            this._nameResourceId = this._nameResourceId + ((data[offset++] & 255) << 16);
+            this._nameResourceId = this._nameResourceId + ((data[offset++] & 255) << 8);
+            this._nameResourceId = this._nameResourceId + (data[offset] & 255);
+         }
+      }
+
+      return this._nameResourceId;
    }
 
    public final void setOverrideNameResourceId(int id) {
@@ -117,7 +148,24 @@ public final class ApplicationDescriptor {
    }
 
    public final String getLocalizedName() {
-      throw new RuntimeException("cod2jar: ldc");
+      String name = null;
+      String bundle = this.getNameResourceBundle();
+      if (bundle != null) {
+         try {
+            ResourceBundle rb = ResourceBundle.getBundle(bundle);
+            if (rb != null) {
+               name = rb.getString(this.getNameResourceId());
+            }
+         } catch (Throwable e) {
+            System.err.println("WARNING: i18n bad or missing title resource for " + this.getModuleName() + '.' + this.getName());
+         }
+      }
+
+      if (name == null) {
+         name = this.getName();
+      }
+
+      return name;
    }
 
    public final synchronized String getVersion() {
@@ -129,11 +177,30 @@ public final class ApplicationDescriptor {
    }
 
    public final synchronized String[] getArgs() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._args == null) {
+         String arg = CodeModuleManager.getModuleString(this._moduleHandle, "_\u0018pArgs", this._index);
+         if (arg != null) {
+            this._args = new String[1];
+            this._args[0] = arg;
+         } else {
+            this._args = new String[0];
+         }
+      }
+
+      return this._args;
    }
 
    public final int getFlags() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._flags == -1) {
+         byte[] data = CodeModuleManager.getModuleData(this._moduleHandle, "_\u0018pF§gs");
+         if (data != null && data.length > this._index) {
+            this._flags = data[this._index] & 255;
+         } else {
+            this._flags = 0;
+         }
+      }
+
+      return this._flags & 31;
    }
 
    public final int getStartupTier() {
@@ -142,11 +209,24 @@ public final class ApplicationDescriptor {
    }
 
    public final synchronized Bitmap getIcon() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._icon == null) {
+         this._icon = this.getBitmap("_\u0018pIc\u0010s");
+      }
+
+      return this._icon;
    }
 
    public final synchronized int getPosition() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._position == -1) {
+         byte[] data = CodeModuleManager.getModuleData(this._moduleHandle, "_\u0018pPosý");
+         if (data != null && data.length > this._index) {
+            this._position = data[this._index] & 255;
+         } else {
+            this._position = 0;
+         }
+      }
+
+      return this._position;
    }
 
    private final Bitmap getBitmap(String id) {

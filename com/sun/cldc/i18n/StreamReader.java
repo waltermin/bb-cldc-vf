@@ -28,7 +28,11 @@ public class StreamReader extends Reader {
 
    @Override
    public void mark(int readAheadLimit) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this.in.markSupported()) {
+         this.in.mark(readAheadLimit);
+      } else {
+         throw new IOException("mark() not supported");
+      }
    }
 
    @Override

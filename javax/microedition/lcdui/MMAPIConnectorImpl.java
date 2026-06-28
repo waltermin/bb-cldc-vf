@@ -1,6 +1,7 @@
 package javax.microedition.lcdui;
 
 import javax.microedition.media.Player;
+import net.rim.device.api.media.control.VideoPositionControl;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
 import net.rim.device.internal.lcdui.MMAPIConnector;
@@ -32,11 +33,21 @@ class MMAPIConnectorImpl implements MMAPIConnector {
 
    @Override
    public void notifyPlayerPositionChange(Player player, XYRect rect) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (player != null && player.getState() >= 200) {
+         VideoPositionControl vpc = (VideoPositionControl)player.getControl("net.rim.device.api.media.control.VideoPositionControl");
+         if (vpc != null) {
+            vpc.setPosition(rect);
+         }
+      }
    }
 
    @Override
    public void notifyPlayerOffsetChange(Player player, XYRect rect) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (player != null && player.getState() >= 200) {
+         VideoPositionControl vpc = (VideoPositionControl)player.getControl("net.rim.device.api.media.control.VideoPositionControl");
+         if (vpc != null) {
+            vpc.offset(rect.x, rect.y);
+         }
+      }
    }
 }

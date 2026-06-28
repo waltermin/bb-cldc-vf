@@ -5,6 +5,7 @@ import java.io.InputStream;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.tid.util.Utils;
+import net.rim.vm.Array;
 
 public class SLKeyLayout {
    private short[][][] _ranges;
@@ -12,13 +13,13 @@ public class SLKeyLayout {
    private int _headerLength;
    private int _indexesLength;
    private byte[] _data;
-   private StringBuffer _defResult;
+   private StringBuffer _defResult = new StringBuffer("");
    private Locale _locale;
    private byte[] _cache;
-   private int _cacheSize;
+   private int _cacheSize = -1;
    private boolean _isReduced;
    private byte _mask;
-   private int _KeyCodeCache;
+   private int _KeyCodeCache = -1;
    private int[] _iAltedKeys;
    private StringBuffer _bytes2StringCache;
    private String _nameID;
@@ -30,9 +31,27 @@ public class SLKeyLayout {
    private static String[] _maps;
 
    public SLKeyLayout(Locale locale, boolean reduced, byte modifierMask, InputStream is) {
+      this._isReduced = reduced;
+      this._mask = modifierMask;
+      this._locale = locale;
+
+      try {
+         this.openMapFile(is);
+      } catch (Exception e) {
+         System.err.println("Error while opening map file: " + locale.getLanguage() + " | " + e);
+      }
    }
 
    public SLKeyLayout(Locale locale, boolean reduced, byte modifierMask, byte[] data) {
+      this._isReduced = reduced;
+      this._mask = modifierMask;
+      this._locale = locale;
+
+      try {
+         this.openMapFile(data);
+      } catch (Exception e) {
+         System.err.println("Error while opening map file: " + locale.getLanguage() + " | " + e);
+      }
    }
 
    private boolean openMapFile(InputStream is) {
@@ -218,7 +237,72 @@ public class SLKeyLayout {
    }
 
    private boolean getDataFor(int keyCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         int ptr = 0;
+         boolean found = false;
+         int skipInIndexes = 0;
+         int offsetStart = 0;
+
+         for (int i = 0; i < this._ranges.length; i++) {
+            int start = this._ranges[i][0] & '\uffff';
+            int finish = this._ranges[i][1] & '\uffff';
+            if (keyCode >= start && keyCode < finish) {
+               skipInIndexes += (keyCode - start) * 2;
+               found = true;
+               break;
+            }
+
+            skipInIndexes += (finish - start) * 2;
+         }
+
+         if (!found) {
+            for (int i = 0; i < this._special.length; i++) {
+               if (keyCode == this._special[i]) {
+                  skipInIndexes += 2 * i;
+                  found = true;
+                  break;
+               }
+            }
+         }
+
+         int toRead = 0;
+         if (!found) {
+            return false;
+         }
+
+         ptr = 2 + this._headerLength + skipInIndexes;
+         byte readedBytes = 2;
+         offsetStart = this.bytesToInt(this._data[ptr++], this._data[ptr++]);
+         if (skipInIndexes + 2 == this._indexesLength) {
+            toRead = -1;
+         } else {
+            readedBytes = 4;
+            toRead = this.bytesToInt(this._data[ptr++], this._data[ptr++]) - offsetStart;
+         }
+
+         if (toRead == 0) {
+            return false;
+         }
+
+         ptr += this._indexesLength - (skipInIndexes + readedBytes) + offsetStart;
+         if (toRead == -1) {
+            toRead = this._data.length - ptr;
+         }
+
+         if (this._cache == null) {
+            this._cache = new byte[toRead];
+         } else if (this._cache.length < toRead) {
+            Array.resize(this._cache, toRead);
+         }
+
+         System.arraycopy(this._data, ptr, this._cache, 0, toRead);
+         this._cacheSize = toRead;
+         return true;
+      } catch (Exception e) {
+         System.err.println("Error while requesting data from map file: " + this._locale.getLanguage());
+         e.printStackTrace();
+         return false;
+      }
    }
 
    public synchronized StringBuffer getComplementaryChars(char ch, int modifier) {
@@ -274,7 +358,54 @@ public class SLKeyLayout {
    }
 
    private synchronized StringBuffer getKeyChars0(byte[] data, int length, int modifier, boolean isCapsOn) {
-      throw new RuntimeException("cod2jar: ldc");
+      byte needCaps = (byte)(data[0] & 1);
+      byte byteStructure = (byte)((data[0] & 2) != 0 ? 1 : 2);
+      if (isCapsOn && needCaps == 1) {
+         switch (modifier) {
+            case -1:
+               break;
+            case 0:
+            default:
+               modifier = 1;
+               break;
+            case 1:
+               modifier = 0;
+         }
+      }
+
+      int mIndex = this.getModifierIndex(modifier);
+      int charsLength = (length - 1) / byteStructure;
+      if (charsLength <= _modifiers.length) {
+         return this.bytesToString(data, (mIndex < charsLength ? mIndex : charsLength - 1) * byteStructure + 1, 1, byteStructure);
+      }
+
+      int bIdx = 0;
+      int eIdx = byteStructure == 1 ? data[bIdx + 1] : this.bytesToInt(data[bIdx * 2 + 1], data[bIdx * 2 + 2]);
+
+      for (int i = 0; i < _modifiers.length; i++) {
+         if (bIdx > charsLength || eIdx > charsLength) {
+            System.err.println("Error in map file for key code ");
+            break;
+         }
+
+         try {
+            if (i == mIndex) {
+               return this.bytesToString(data, (bIdx + 1) * byteStructure + 1, eIdx - bIdx, byteStructure);
+            }
+         } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+         }
+
+         bIdx = eIdx + 1;
+         if (bIdx >= charsLength) {
+            break;
+         }
+
+         eIdx = bIdx + (byteStructure == 1 ? data[bIdx + 1] : this.bytesToInt(data[bIdx * 2 + 1], data[bIdx * 2 + 2]));
+      }
+
+      return this.getDefBuffer();
    }
 
    private StringBuffer bytesToString(byte[] data, int start, int len, byte byteStructure) {
@@ -363,7 +494,11 @@ public class SLKeyLayout {
    }
 
    private StringBuffer getDefBuffer() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._defResult.length() != 1) {
+         this._defResult = new StringBuffer("");
+      }
+
+      return this._defResult;
    }
 
    public Locale getLocale() {
@@ -406,6 +541,14 @@ public class SLKeyLayout {
    }
 
    public static String getKeyboardType(int aLocaleCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      String ret = "qwerty";
+      switch (aLocaleCode & -65536) {
+         case 1684340736:
+            ret = "qwertz";
+         default:
+            return ret;
+         case 1718747136:
+            return "azerty";
+      }
    }
 }

@@ -10,7 +10,9 @@ import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.i18n.CommonResource;
 
@@ -63,7 +65,12 @@ public class VariableHeightListField extends Field {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: ldc");
+      super.applyTheme();
+      this._upScrollArrow = ThemeAttributeSet.getScrollArrow(this, 0);
+      this._downScrollArrow = ThemeAttributeSet.getScrollArrow(this, 1);
+      Theme theme = ThemeManager.getActiveTheme();
+      this._tasRowEven = theme.getAttributeSet(Tag.create(this.getTag().toString() + "-row-even"));
+      this._tasRowOdd = theme.getAttributeSet(Tag.create(this.getTag().toString() + "-row-odd"));
    }
 
    private void calcFocusRect(boolean move) {
@@ -577,7 +584,7 @@ public class VariableHeightListField extends Field {
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    private void paintVerticalScrollbar(Graphics graphics) {

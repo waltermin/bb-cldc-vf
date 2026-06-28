@@ -8,7 +8,7 @@ public final class SHA256Digest extends AbstractDigest implements Digest {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "SHA256";
    }
 
    @Override

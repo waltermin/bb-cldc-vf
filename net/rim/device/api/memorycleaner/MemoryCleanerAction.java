@@ -29,7 +29,15 @@ public final class MemoryCleanerAction {
    }
 
    public final String getDescription() {
-      throw new RuntimeException("cod2jar: ldc");
+      MemoryCleanerListener listener = this.getListener();
+      if (listener != null) {
+         try {
+            return listener.getDescription();
+         } catch (Throwable var3) {
+         }
+      }
+
+      return "";
    }
 
    @Override

@@ -1,19 +1,52 @@
 package javax.microedition.content;
 
+import net.rim.device.api.util.Arrays;
+
 public final class ActionNameMap {
    private final String[] _actions;
    private final String[] _actionnames;
    private final String _locale;
 
    public ActionNameMap(String[] actions, String[] actionnames, String locale) {
+      ContentHandlerUtilities.checkStringArrayValues(actions);
+      ContentHandlerUtilities.checkStringArrayValues(actionnames);
+      if (locale == null) {
+         throw new NullPointerException("locale is null");
+      }
+
+      if (actions.length != actionnames.length) {
+         throw new IllegalArgumentException("Mismatched array sizes");
+      }
+
+      if (actions.length == 0) {
+         throw new IllegalArgumentException("Zero-length array");
+      }
+
+      if (ContentHandlerUtilities.containsDuplicates(actions)) {
+         throw new IllegalArgumentException("actions array contains duplicate actions");
+      }
+
+      this._actions = actions;
+      this._actionnames = actionnames;
+      this._locale = locale;
    }
 
    public final String getActionName(String action) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (action == null) {
+         throw new NullPointerException("action is null");
+      }
+
+      int index = Arrays.getIndex(this._actions, action);
+      return index < 0 ? null : this._actionnames[index];
    }
 
    public final String getAction(String actionname) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (actionname == null) {
+         throw new NullPointerException("actionname is null");
+      }
+
+      int index = Arrays.getIndex(this._actionnames, actionname);
+      return index < 0 ? null : this._actions[index];
    }
 
    public final String getLocale() {

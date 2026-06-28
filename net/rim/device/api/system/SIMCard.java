@@ -1,5 +1,6 @@
 package net.rim.device.api.system;
 
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CRC16;
 import net.rim.device.internal.system.EventDispatchManager;
@@ -420,11 +421,77 @@ public final class SIMCard {
    }
 
    private static final String decodeMixedCoding(byte[] alphaId, int offset, int length, int ucs2Base) {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer sb = new StringBuffer();
+
+      try {
+         int i = 0;
+
+         while (i < length) {
+            if ((alphaId[offset] & 128) == 0) {
+               sb.append(new String(alphaId, offset, 1, "SMS"));
+            } else {
+               sb.append((char)(ucs2Base + (alphaId[offset] & 127)));
+            }
+
+            i++;
+            offset++;
+         }
+      } catch (UnsupportedEncodingException var6) {
+      }
+
+      return sb.toString();
    }
 
    public static final String decodeAlphaId(byte[] alphaId, int offset, int length) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (alphaId == null) {
+         return null;
+      }
+
+      if (length != 0) {
+         switch (alphaId[offset]) {
+            case -129:
+               try {
+                  int stringLength = 0;
+
+                  while (stringLength < length && alphaId[offset + stringLength] != -1) {
+                     stringLength++;
+                  }
+
+                  return new String(alphaId, offset, stringLength, "SMS");
+               } catch (UnsupportedEncodingException var5) {
+                  break;
+               }
+            case -128:
+            default:
+               try {
+                  int end = ++offset;
+                  int max = offset + length - 1;
+
+                  while (end < max && (alphaId[end] != -1 || alphaId[end + 1] != -1)) {
+                     end += 2;
+                  }
+
+                  return new String(alphaId, offset, end - offset, "UnicodeBigUnmarked");
+               } catch (UnsupportedEncodingException var6) {
+                  break;
+               }
+            case -127:
+               if (length > 3) {
+                  int stringLength = alphaId[++offset] & 255;
+                  int ucs2Base = (alphaId[++offset] & 255) << 7;
+                  return decodeMixedCoding(alphaId, ++offset, stringLength, ucs2Base);
+               }
+               break;
+            case -126:
+               if (length > 4) {
+                  int stringLength = alphaId[++offset] & 255;
+                  int ucs2Base = (alphaId[++offset] & 255) << 8 | alphaId[++offset] & 255;
+                  return decodeMixedCoding(alphaId, ++offset, stringLength, ucs2Base);
+               }
+         }
+      }
+
+      return "";
    }
 
    public static final byte[] encodeAlphaId(String alphaId) {

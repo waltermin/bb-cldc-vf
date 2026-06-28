@@ -4,6 +4,8 @@ import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.system.GIFEncodedImage;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.theme.ThemeManager;
@@ -50,7 +52,53 @@ public final class UiInternal {
    private static final native void setThemeIcon(int var0, int var1, Bitmap[] var2);
 
    public static final void setThemeIcon(int type, EncodedImage image) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (image == null) {
+         throw new NullPointerException("No data in Icon");
+      }
+
+      int numFrames = image.getFrameCount();
+      if (numFrames < 1) {
+         throw new IllegalArgumentException("Icon contains no frames");
+      }
+
+      int transColour = 0;
+      Bitmap[] iconArray = new Bitmap[numFrames];
+      if (image.getImageType() != 1) {
+         iconArray[0] = image.getBitmap();
+         transColour = iconArray[0].getTransColor();
+      } else {
+         GIFEncodedImage icon = (GIFEncodedImage)image;
+
+         for (int i = 0; i < numFrames; i++) {
+            Bitmap b = icon.getBitmap(i);
+            iconArray[i] = new Bitmap(Bitmap.DEFAULT_TYPE, icon.getWidth(), icon.getHeight());
+            Graphics g = new Graphics(iconArray[i]);
+            if (i != 0 && icon.getFrameTransition(i) == 1) {
+               g.drawBitmap(
+                  icon.getFrameLeft(i - 1), icon.getFrameTop(i - 1), iconArray[i - 1].getWidth(), iconArray[i - 1].getHeight(), iconArray[i - 1], 0, 0
+               );
+            } else {
+               if (i == 0) {
+                  transColour = b.getTransColor();
+               }
+
+               g.setColor(transColour);
+               g.fillRect(0, 0, icon.getWidth(), icon.getHeight());
+            }
+
+            g.drawBitmap(icon.getFrameLeft(i), icon.getFrameTop(i), b.getWidth(), b.getHeight(), b, 0, 0);
+         }
+      }
+
+      try {
+         setThemeIcon(type, transColour, iconArray);
+      } catch (IllegalArgumentException e) {
+         String error = "OsIcon " + type + " IAE: Image may be too large.";
+         long GUID = 5522554029119272869L;
+         EventLogger.register(GUID, "UiInternal", 2);
+         EventLogger.logEvent(GUID, error.getBytes(), 2);
+         System.err.println(error);
+      }
    }
 
    public static final native void setThemeIconToDefault(int var0);

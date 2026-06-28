@@ -221,6 +221,22 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    private void updateText() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._preventCall = true;
+      if (this._searchPattern == null) {
+         if (this._baseText == null) {
+            super.setLabel(this._findString);
+         } else {
+            super.setLabel(this._baseText);
+         }
+
+         super.setText("");
+         this._drawFocusIndicator = this._showCaretOnEmptySearch;
+      } else {
+         super.setLabel(this._findString);
+         super.setText(this._searchPattern);
+         this._drawFocusIndicator = true;
+      }
+
+      this._preventCall = false;
    }
 }

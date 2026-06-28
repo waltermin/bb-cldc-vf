@@ -1,7 +1,9 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import java.io.InputStream;
 import net.rim.device.api.system.ApplicationProcess;
+import net.rim.device.internal.io.file.FileSystemInfo;
 import net.rim.vm.Process;
 
 public final class FileInputStream extends InputStream {
@@ -14,6 +16,18 @@ public final class FileInputStream extends InputStream {
    private Runnable _cleanupRunnable;
 
    public FileInputStream(int fs, String fileName) {
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      this._dispatcher = File.getEventDispatcher();
+      FileSystemInfo fsInfo = File.getFileSystemInfo(fs);
+      this._buffer = new byte[fsInfo.getMaxReadLength()];
+      this._offset = 0;
+      this._available = 0;
+      this._handle = File.open(fs, fileName, 1);
+      this._cleanupRunnable = new FileInputStream$FileInputStreamCleanupRunnable(this);
+      ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this._cleanupRunnable);
    }
 
    @Override
@@ -59,6 +73,29 @@ public final class FileInputStream extends InputStream {
    }
 
    private final void doRead() {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._dispatcher) {
+         if (this._handle == -1) {
+            throw new IOException("File not open");
+         }
+
+         if (!this._eof) {
+            while (true) {
+               long result = File.read(this._handle, this._buffer);
+               int status = (int)result;
+               if (File.checkStatus(status)) {
+                  this._offset = 0;
+                  this._available = (int)(result >> 32);
+                  if (this._available != this._buffer.length) {
+                     this._eof = true;
+                  }
+
+                  return;
+               }
+
+               status = this._dispatcher.waitForCompletion(4);
+               File.checkStatus(status);
+            }
+         }
+      }
    }
 }

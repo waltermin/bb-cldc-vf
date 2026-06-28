@@ -13,7 +13,7 @@ public class SimpleInputDialog extends PopupDialog {
    private int _minLength;
    private int _maxLength;
    private DialogFieldManager _dfm;
-   private byte _isUnicodeInputAllowed;
+   private byte _isUnicodeInputAllowed = 0;
    public static final int NORMAL_INPUT;
    public static final int LOWER_CASE_INPUT;
    public static final int UPPER_CASE_INPUT;
@@ -35,6 +35,14 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public SimpleInputDialog(int type, String prompt, int minLength, int maxLength, long style) {
+      super(new DialogFieldManager(), style);
+      this._minLength = minLength;
+      this._maxLength = maxLength;
+      this._promptField = new RichTextField(prompt, 36028797018963968L);
+      this._initialText = "";
+      this._dfm = (DialogFieldManager)this.getDelegate();
+      this._dfm.setMessage(this._promptField);
+      this.setType(type);
    }
 
    public void setIcon(Image image) {
@@ -73,7 +81,7 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public void show(String prompt) {
@@ -87,7 +95,17 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    protected boolean cancel() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isCancelAllowed()) {
+         return false;
+      }
+
+      this._editField.setText("");
+      if (this.isGlobal() && !this.getApplication().isForeground()) {
+         this.doPaint();
+      }
+
+      this.close(-1);
+      return true;
    }
 
    protected boolean accept() {

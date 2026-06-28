@@ -65,7 +65,56 @@ final class TimeZoneImpl extends TimeZone {
 
    @Override
    public final synchronized int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis) {
-      throw new RuntimeException("cod2jar: ldc");
+      int monthLength;
+      try {
+         monthLength = staticMonthLength[month];
+      } catch (ArrayIndexOutOfBoundsException e) {
+         throw new IllegalArgumentException("Illegal month");
+      }
+
+      if ((era == 0 || era == 1) && day >= 1 && day <= monthLength && dayOfWeek >= 1 && dayOfWeek <= 7 && millis >= 0 && millis < 86400000) {
+         int result = this.rawOffset;
+         if (this.useDaylight && year >= 0 && era == 1) {
+            if (year != this._c_year) {
+               this._c_ruleDayStart = -1;
+               this._c_ruleDayEnd = -1;
+               this._c_year = year;
+            }
+
+            boolean southern = this.startMonth > this.endMonth;
+            int startCompare = this.compareToRule(
+               month, monthLength, day, dayOfWeek, millis, this.startMode, this.startMonth, this.startDayOfWeek, this.startDay, this.startTime, !southern
+            );
+            int endCompare = 0;
+            if (southern != startCompare >= 0) {
+               millis += this.dstSavings;
+
+               while (millis >= 86400000) {
+                  millis -= 86400000;
+                  day++;
+                  dayOfWeek = 1 + dayOfWeek % 7;
+                  if (day > monthLength) {
+                     day = 1;
+                     month++;
+                  }
+               }
+
+               endCompare = this.compareToRule(
+                  month, monthLength, day, dayOfWeek, millis, this.endMode, this.endMonth, this.endDayOfWeek, this.endDay, this.endTime, southern
+               );
+            }
+
+            if (!southern && startCompare >= 0 && endCompare < 0 || southern && (startCompare >= 0 || endCompare < 0)) {
+               result += this.dstSavings;
+            }
+
+            return result;
+         } else {
+            return result;
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    private final int compareToRule(

@@ -2,9 +2,13 @@ package javax.microedition.rms;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.internal.rms.RecordStoreData;
 import net.rim.device.internal.rms.RecordStoreManagerProxy;
+import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
+import net.rim.vm.TraceBack;
 
 class RecordStoreManager implements RecordStoreManagerProxy {
    private static final long RECORD_STORE_ID;
@@ -115,7 +119,28 @@ class RecordStoreManager implements RecordStoreManagerProxy {
    }
 
    private static String generateMidletSuiteHashKey(boolean includeVendorName) {
-      throw new RuntimeException("cod2jar: ldc");
+      Resource resource = Resource$Internal.getResourceClass(TraceBack.getCallingModuleName(2));
+      if (resource != null) {
+         byte[] data = resource.getProperty("MIDlet-Name");
+         if (data != null) {
+            String midletSuiteName = new String(data, 2, data.length - 2);
+            if (!includeVendorName) {
+               return midletSuiteName;
+            } else {
+               data = resource.getProperty("MIDlet-Vendor");
+               if (data != null) {
+                  String midletSuiteVendor = new String(data, 2, data.length - 2);
+                  return midletSuiteName + midletSuiteVendor;
+               } else {
+                  return midletSuiteName;
+               }
+            }
+         } else {
+            return ApplicationDescriptor.currentApplicationDescriptor().getModuleName();
+         }
+      } else {
+         return null;
+      }
    }
 
    @Override

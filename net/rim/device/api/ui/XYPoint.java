@@ -29,7 +29,7 @@ public final class XYPoint {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "(" + this.x + ',' + this.y + ')';
    }
 
    public final void translate(int dx, int dy) {

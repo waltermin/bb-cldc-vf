@@ -3,6 +3,8 @@ package javax.microedition.midlet;
 import javax.wireless.messaging.Message;
 import javax.wireless.messaging.MessageConnection;
 import javax.wireless.messaging.MessageListener;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.internal.firewall.Firewall;
 
 final class MIDletMain$MessageConnection_PushRegistryConnectionWrapper implements MessageConnection {
    private MessageConnection _messageConnection;
@@ -29,7 +31,19 @@ final class MIDletMain$MessageConnection_PushRegistryConnectionWrapper implement
 
    @Override
    public final Message receive() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!ControlledAccess.verifyRRISignatures(true) && !Firewall.getInstance().allowConnection("sms_receive", null, false)) {
+         throw new SecurityException("Permission denied");
+      }
+
+      synchronized (this) {
+         if (this._message != null) {
+            Message m = this._message;
+            this._message = null;
+            return m;
+         }
+      }
+
+      return this._messageConnection.receive();
    }
 
    @Override

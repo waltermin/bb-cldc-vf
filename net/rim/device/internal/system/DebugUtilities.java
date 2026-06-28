@@ -1,12 +1,29 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.util.NumberUtilities;
+
 public class DebugUtilities {
    public static void printArrayContents(byte[] array) {
       printArrayContents(array, 0, array == null ? 0 : array.length);
    }
 
    public static void printArrayContents(byte[] array, int offset, int length) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (array != null && array.length >= offset + length) {
+         int k = 0;
+
+         for (int i = offset; i < offset + length; i++) {
+            if (k != 0 && k % 6 == 0) {
+               System.out.println();
+            }
+
+            System.out.print("0x" + NumberUtilities.intToHexDigit(array[i] >> 4) + NumberUtilities.intToHexDigit(array[i]) + ", ");
+            k++;
+         }
+
+         System.out.println();
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public static long logStart(String className, String m) {

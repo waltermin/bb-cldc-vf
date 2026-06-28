@@ -52,7 +52,23 @@ public class MediaPlayer implements MediaEventListener {
    }
 
    void pause() {
-      throw new RuntimeException("cod2jar: ldc");
+      int status = 0;
+      synchronized (this._myLock) {
+         if (this._mediaHandle == -1) {
+            return;
+         }
+
+         status = MediaNatives.pause0(this._mediaHandle, this._screenBitmap);
+         if ((this._streams & 2) != 0 && this._screenBitmap != null) {
+            try {
+               this._myLock.wait(2000);
+            } catch (Throwable t) {
+               System.out.println("Exception in pause wait");
+            }
+         }
+      }
+
+      this.checkStatus(status);
    }
 
    Bitmap getPauseBitmap() {
@@ -197,7 +213,13 @@ public class MediaPlayer implements MediaEventListener {
    }
 
    boolean isSinkSupported(int sink) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._mediaLoaded) {
+         throw new IllegalStateException("Media must be loaded first");
+      } else if (!this.isQualcommHardware()) {
+         return true;
+      } else {
+         return !MIME_TYPE_AMR.equals(this._mimeType) ? true : sink != 5;
+      }
    }
 
    @Override

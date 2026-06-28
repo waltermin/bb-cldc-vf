@@ -73,6 +73,15 @@ public class IPEditField extends EditField {
    }
 
    public static final void appendIpAddr(StringBuffer strBuf, byte[] ip) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (ip == null) {
+         strBuf.append("0.0.0.0");
+      } else {
+         for (int i = 0; i < 4; i++) {
+            strBuf.append(ip[i] & 255);
+            if (i != 3) {
+               strBuf.append('.');
+            }
+         }
+      }
    }
 }

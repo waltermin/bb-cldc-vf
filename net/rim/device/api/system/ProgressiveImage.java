@@ -75,7 +75,15 @@ public class ProgressiveImage extends EncodedImage {
 
    @Override
    public String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (super._info.imageType) {
+         case 6:
+            return "image/x-rim-progressive";
+         case 7:
+         default:
+            return "image/x-rwi";
+         case 8:
+            return "image/x-rgi";
+      }
    }
 
    @Override

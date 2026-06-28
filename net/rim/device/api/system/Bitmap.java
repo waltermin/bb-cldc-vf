@@ -136,7 +136,110 @@ public final class Bitmap {
    }
 
    public final synchronized void setARGB(int[] data, int offset, int scanLength, int left, int top, int width, int height) {
-      throw new RuntimeException("cod2jar: ldc");
+      int type = 0;
+      int data_bpp = 0;
+      int data_bppAlpha = 0;
+      int bpp = 0;
+      int bppAlpha = 0;
+      if (data == null) {
+         throw new NullPointerException("Data is empty.");
+      }
+
+      if (this.isWritable() && (!this.hasAlpha() || this._alpha.isWritable())) {
+         if (data.length < scanLength * height + offset
+            || left < 0
+            || top < 0
+            || offset < 0
+            || scanLength < 0
+            || scanLength < width
+            || offset > data.length
+            || width < 0
+            || height < 0
+            || left + width > this._width
+            || top + height > this._height) {
+            throw new IllegalArgumentException("Invalid ARGB coordinates.");
+         }
+
+         if (width != 0 && height != 0) {
+            bpp = this.getBitsPerPixel();
+            if (this.hasAlpha()) {
+               bppAlpha = this._alpha.getBitsPerPixel();
+            }
+
+            data_bpp = getBppFromARGB(data, false);
+            data_bppAlpha = getBppFromARGB(data, true);
+            if (data_bpp > bpp) {
+               short var13;
+               switch (data_bpp) {
+                  case 4:
+                  case 8:
+                     data_bpp = 2;
+                  case 2:
+                  case 16:
+                     if (Display.isColor()) {
+                        var13 = 197;
+                        data_bpp = 16;
+                        break;
+                     } else if (bpp != 2 && Display.getNumColors() >= 4) {
+                        var13 = 2;
+                        data_bpp = 2;
+                        break;
+                     }
+                  default:
+                     var13 = -1;
+               }
+
+               if (var13 != -1) {
+                  this.promote(new Bitmap(var13, this._width, this._height));
+                  bpp = data_bpp;
+               }
+            }
+
+            if (data_bppAlpha > bppAlpha) {
+               if (data_bppAlpha > 1 && !Display.isColor()) {
+                  if (!this.hasAlpha()) {
+                     data_bppAlpha = 1;
+                  } else {
+                     data_bppAlpha = 0;
+                  }
+               }
+
+               short var14;
+               switch (data_bppAlpha) {
+                  case 0:
+                  case 3:
+                     var14 = -1;
+                     break;
+                  case 1:
+                  default:
+                     if ((DEFAULT_TYPE & 128) == 128) {
+                        var14 = 129;
+                     } else {
+                        var14 = 1;
+                     }
+                     break;
+                  case 2:
+                     data_bppAlpha = 4;
+                  case 4:
+                     var14 = 131;
+               }
+
+               if (var14 != -1) {
+                  if (!this.hasAlpha()) {
+                     this._alpha = new Bitmap(var14, this._width, this._height, null, false, false, true);
+                  } else {
+                     this._alpha.promote(new Bitmap(var14, this._width, this._height, null, false, false));
+                  }
+
+                  bppAlpha = data_bppAlpha;
+               }
+            }
+
+            this.copyARGB(data, bpp, bppAlpha, offset, scanLength, left, top, width, height);
+         }
+      } else {
+         throw new IllegalArgumentException("Bitmap is read-only.");
+      }
    }
 
    private final native void promote(Bitmap var1);

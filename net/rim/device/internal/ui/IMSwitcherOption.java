@@ -35,7 +35,7 @@ public final class IMSwitcherOption extends OTASyncCapableSyncItem {
 
    @Override
    public final String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "Input Method Switcher Option";
    }
 
    @Override

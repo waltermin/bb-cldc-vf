@@ -147,7 +147,40 @@ public class EncodedImage {
    }
 
    private static ToIntHashtable getMIMETypes() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (_mimeTypes == null) {
+         _mimeTypes = new ToIntHashtable();
+         _mimeTypes.put("image/gif", 1);
+         if (isCFISupported()) {
+            _mimeTypes.put("image/x-rpi", 1);
+         }
+
+         _mimeTypes.put("image/png", 2);
+         _mimeTypes.put("image/vnd.rim.png", 2);
+         _mimeTypes.put("image/vnd.wap.wbmp", 4);
+         if (JPEGEncodedImage.isJPEGSupported()) {
+            _mimeTypes.put("image/jpeg", 3);
+            _mimeTypes.put("image/jpg", 3);
+            _mimeTypes.put("image/pjpeg", 3);
+            if (isCFISupported()) {
+               _mimeTypes.put("image/x-rdi", 3);
+            }
+         }
+
+         if (BMPEncodedImage.isBMPSupported()) {
+            _mimeTypes.put("image/bmp", 5);
+         }
+
+         if (TIFFEncodedImage.isTIFFSupported()) {
+            _mimeTypes.put("image/tiff", 6);
+         }
+
+         if (ProgressiveImage.isProgressiveSupported()) {
+            _mimeTypes.put("image/x-rwi", 7);
+            _mimeTypes.put("image/x-rgi", 8);
+         }
+      }
+
+      return _mimeTypes;
    }
 
    public static Enumeration getSupportedMIMETypes() {

@@ -1,6 +1,7 @@
 package net.rim.device.api.io;
 
 import java.io.InputStream;
+import net.rim.vm.Array;
 
 public class IOUtilities {
    private IOUtilities() {
@@ -15,6 +16,32 @@ public class IOUtilities {
    }
 
    public static byte[] streamToBytes(InputStream stream, int increment) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (increment <= 0) {
+         throw new IllegalArgumentException("Increment must be positive");
+      }
+
+      if (stream == null) {
+         return null;
+      }
+
+      int available = stream.available();
+      int offset = 0;
+      byte[] bytes = new byte[Math.max(available, 256)];
+
+      while (true) {
+         int length = bytes.length - offset;
+         if (length == 0) {
+            length = increment;
+            Array.resize(bytes, bytes.length + length);
+         }
+
+         int read = stream.read(bytes, offset, length);
+         if (read < 0) {
+            Array.resize(bytes, offset);
+            return bytes;
+         }
+
+         offset += read;
+      }
    }
 }

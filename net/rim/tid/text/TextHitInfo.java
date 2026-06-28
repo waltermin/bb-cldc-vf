@@ -52,6 +52,6 @@ public final class TextHitInfo {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this._leadingEdge ? "TextHitInfo: Index = " + this._index + ", leading." : "TextHitInfo: Index = " + this._index + ", trailing.";
    }
 }

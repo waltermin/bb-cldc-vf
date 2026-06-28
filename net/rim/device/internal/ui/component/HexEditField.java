@@ -46,12 +46,99 @@ public class HexEditField extends EditField {
 
    @Override
    protected boolean insert(char key, int status) {
-      throw new RuntimeException("cod2jar: ldc");
+      key = this.convert(key, status);
+      if (NumberUtilities.hexDigitToInt(key, -1) == -1) {
+         return false;
+      }
+
+      int cursor = this.getCaretPosition();
+      int cursorOffset = 0;
+      this._tempString.set("");
+      int startPos;
+      int endPos;
+      if (this._firstNibble) {
+         if (this._maxBytes <= this.getNumBytes()) {
+            return false;
+         }
+
+         int anchor = this.getAnchorPosition();
+         if (cursor < anchor) {
+            startPos = cursor;
+            endPos = anchor;
+         } else {
+            startPos = anchor;
+            endPos = cursor;
+         }
+
+         this._tempString.insert('0');
+         this._tempString.insert(key);
+         if (this.getCursorPosition() != super.getTextLength()) {
+            this._tempString.insert(' ');
+            cursorOffset = -1;
+         }
+
+         this._firstNibble = false;
+         this._firstNibbleChar = key;
+      } else {
+         startPos = cursor - 2;
+         endPos = cursor;
+         this._tempString.insert(this._firstNibbleChar);
+         this._tempString.insert(key);
+         this._tempString.insert(' ');
+         if (this.getCursorPosition() != this.getTextLength() && this.charAt(this.getCursorPosition()) == ' ') {
+            endPos++;
+         }
+
+         this._firstNibble = true;
+      }
+
+      int len = this._tempString.length();
+      this._iterator.set(0, len);
+      this.replace(startPos, endPos, this._iterator, 0, 0, len, cursorOffset, true, 0);
+      return true;
    }
 
    @Override
    public int moveFocus(int amount, int status, int time) {
-      throw new RuntimeException("cod2jar: ldc");
+      int pos = this.getCursorPosition();
+      if (!this._firstNibble) {
+         if (pos == super.getTextLength()) {
+            this._tempString.set(" ");
+            this._iterator.set(0, 1);
+            pos = this.getCaretPosition();
+            this.replace(pos, pos, this._iterator, 0, 0, 1, 0, true, 0);
+         } else {
+            pos = this.getCaretPosition();
+            this.setSelection(pos + 1, true, pos + 1);
+         }
+      }
+
+      boolean movingHorizontally = false;
+      if ((status & 536870912) != 0) {
+         movingHorizontally = (status & 65536) != 0;
+      } else {
+         movingHorizontally = (status & 1) != 0;
+      }
+
+      if (movingHorizontally) {
+         int curOff = this.getCursorPosition();
+         amount *= 3;
+         amount -= (amount + curOff) % 3;
+         this._firstNibble = true;
+         return super.moveFocus(amount, status, time);
+      }
+
+      amount = super.moveFocus(amount, status, time);
+      int offset = this.getCursorPosition();
+      int delta = offset % 3;
+      if (offset == this.getTextLength() - 1) {
+         this.scrollHorizontally(1);
+      } else if (delta != 0) {
+         this.scrollHorizontally(delta * -1);
+      }
+
+      this._firstNibble = true;
+      return amount;
    }
 
    @Override
@@ -252,6 +339,6 @@ public class HexEditField extends EditField {
 
    @Override
    public void setMaxSize(int maxSize) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 }

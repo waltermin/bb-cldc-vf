@@ -1,6 +1,8 @@
 package net.rim.device.api.ui;
 
 import net.rim.device.api.i18n.Locale;
+import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.i18n.ResourceBundleFamily;
 import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.EncodedImage;
@@ -8,6 +10,7 @@ import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.i18n.CommonResource;
@@ -101,11 +104,25 @@ public final class Keypad {
    }
 
    public static final Locale[] getAvailableLocales() {
-      throw new RuntimeException("cod2jar: ldc");
+      String[] keys = ResourceBundle.getBundle(-4248492586227566823L, "net.rim.device.internal.resource.Keypad").getStringArray(100);
+      Locale[] locales = new Locale[0];
+
+      for (int i = 0; i < keys.length; i++) {
+         addLocaleTo(locales, Locale.parse(keys[i]));
+      }
+
+      return locales;
    }
 
    private static final void addLocaleTo(Locale[] array, Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundleFamily family = ResourceBundle.getBundle(-4248492586227566823L, "net.rim.device.internal.resource.Keypad");
+      ResourceBundle bundle = family.getBundle(locale);
+      String[] iIDs = bundle.getStringArray(102);
+
+      for (int i = 0; i < iIDs.length; i++) {
+         Locale l = Locale.get(locale.getCode(), "", Locale.convertStringToKeyboardID(iIDs[i]));
+         Arrays.add(array, l);
+      }
    }
 
    public static final Locale getLocale() {

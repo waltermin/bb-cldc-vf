@@ -301,7 +301,10 @@ public class Formatter {
    }
 
    public static void printPerformanceStats(long aTotalTime) {
-      throw new RuntimeException("cod2jar: ldc");
+      long one_type = _formattingTime * 1000 / aTotalTime;
+      System.out.println("*In formatting: " + one_type / 10 + "." + one_type % 10 + "%");
+      one_type = _paintingTime * 1000 / aTotalTime;
+      System.out.println("*In painting: " + one_type / 10 + "." + one_type % 10 + "%");
    }
 
    private static ArticInterface$Line recoverArticFailure(
@@ -355,6 +358,6 @@ public class Formatter {
       ArticInterface$Line cursorLine,
       ArticInterface$Line lineList
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

@@ -8,6 +8,7 @@ import net.rim.device.api.ui.component.GaugeField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.resources.Resource;
 
 public class Gauge extends Item {
    private VerticalFieldManager _container = new VerticalFieldManager(1152921504606846976L);
@@ -27,7 +28,12 @@ public class Gauge extends Item {
    public static final int INCREMENTAL_UPDATING;
 
    private EncodedImage getAnimationImage() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._animationImage == null) {
+         byte[] imageData = Resource.getResourceClass().getResource("Hourglass.gif");
+         this._animationImage = EncodedImage.createEncodedImage(imageData, 0, imageData.length);
+      }
+
+      return this._animationImage;
    }
 
    private void updatePeer() {

@@ -18,6 +18,10 @@ public class PasswordEditField extends BasicEditField {
    }
 
    public PasswordEditField(String label, String initialValue, int maxNumChars, long style) {
+      super(label, "", maxNumChars, verifyStyle(style | 2147483648L | 1073741824));
+      this.setAttrib(0, 0, 268435456, 268435456, 0, 0);
+      this.setText(initialValue);
+      this.setAllowUnicodeInput(false);
    }
 
    @Override

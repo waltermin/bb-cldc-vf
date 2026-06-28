@@ -31,7 +31,29 @@ public class Reader {
    }
 
    public long skip(long n) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (n < 0) {
+         throw new IllegalArgumentException("skip value is negative");
+      }
+
+      int nn = (int)Math.min(n, 8192);
+      synchronized (this.lock) {
+         if (this.skipBuffer == null || this.skipBuffer.length < nn) {
+            this.skipBuffer = new char[nn];
+         }
+
+         long r = n;
+
+         while (r > 0) {
+            int nc = this.read(this.skipBuffer, 0, (int)Math.min(r, nn));
+            if (nc == -1) {
+               break;
+            }
+
+            r -= nc;
+         }
+
+         return n - r;
+      }
    }
 
    public boolean ready() {
@@ -43,11 +65,11 @@ public class Reader {
    }
 
    public void mark(int readAheadLimit) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IOException("mark() not supported");
    }
 
    public void reset() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IOException("reset() not supported");
    }
 
    public void close() {

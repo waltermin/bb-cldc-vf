@@ -9,6 +9,8 @@ import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
+import net.rim.device.internal.i18n.ResourceBundleFetcher;
+import net.rim.device.internal.util.StringUtilitiesInternal;
 import net.rim.vm.TraceBack;
 
 public class ResourceBundleFamily extends ResourceBundle {
@@ -39,7 +41,27 @@ public class ResourceBundleFamily extends ResourceBundle {
    }
 
    private void checkLocale() {
-      throw new RuntimeException("cod2jar: ldc");
+      Locale localeSystem = Locale.getDefaultForSystem();
+      if (this._localeSystem != localeSystem) {
+         this._bundleSystem = this.getBundle(localeSystem);
+         if (this._bundleSystem == null) {
+            throw new MissingResourceException("Missing resource " + this._name);
+         }
+
+         this._localeSystem = localeSystem;
+         this._cache.clear();
+      }
+
+      Locale localeApp = Locale.getDefault();
+      if (this._localeApp != localeApp) {
+         this._bundleApp = this.getBundle(localeApp);
+         if (this._bundleApp == null) {
+            throw new MissingResourceException("Missing resource " + this._name);
+         }
+
+         this._localeApp = localeApp;
+         this._cache.clear();
+      }
    }
 
    final void clearEntry(int key) {
@@ -111,7 +133,54 @@ public class ResourceBundleFamily extends ResourceBundle {
    }
 
    private synchronized ResourceBundle getInstance(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      ResourceBundle bundle = (ResourceBundle)this._table.get(locale);
+      if (bundle == null) {
+         StringBuffer scratch = StringUtilitiesInternal.getScratchBuffer();
+         String name;
+         synchronized (scratch) {
+            scratch.append(this._name);
+            scratch.append('£');
+            scratch.append(locale);
+            name = scratch.toString();
+            scratch.setLength(0);
+         }
+
+         bundle = ResourceBundleFetcher.fetch(name + ".crb");
+         if (bundle == null) {
+            bundle = ResourceBundleFetcher.fetch(name);
+            if (bundle != null && ((CompiledResourceBundle)bundle).getId() != this._id) {
+               throw new IllegalStateException();
+            }
+         }
+
+         if (bundle != null) {
+            Locale localeParent = locale.getParent();
+            if (localeParent != null) {
+               ResourceBundle parent = this.getInstance(localeParent);
+               bundle.setParent(parent);
+            }
+
+            if (this._key != null) {
+               int module = CodeModuleManager.getModuleHandleForObject(bundle);
+               if (!ControlledAccess.verifyCodeModuleSignature(module, this._key)) {
+                  throw new MissingResourceException("Invalid signature on Resource.");
+               }
+            }
+
+            this._table.put(locale, bundle);
+         }
+
+         if (bundle == null) {
+            bundle = new EmptyResourceBundle(locale);
+            this._table.put(locale, bundle);
+         }
+      }
+
+      if (bundle instanceof EmptyResourceBundle) {
+         bundle = null;
+      }
+
+      return bundle;
    }
 
    void onModuleLoad() {
@@ -158,7 +227,11 @@ public class ResourceBundleFamily extends ResourceBundle {
    }
 
    private synchronized void setModule(String module) {
-      throw new RuntimeException("cod2jar: ldc");
+      this._module = module;
+      int end = this._module.indexOf("__");
+      if (end != -1) {
+         this._module = this._module.substring(0, end);
+      }
    }
 
    public boolean verify(CodeSigningKey key) {

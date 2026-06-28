@@ -1,10 +1,14 @@
 package net.rim.device.internal.i18n;
 
 import java.util.Hashtable;
+import java.util.Vector;
 import net.rim.device.api.system.ApplicationRegistry;
+import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.RIMProcessLauncher;
+import net.rim.device.resources.Resource;
+import net.rim.device.resources.Resource$Internal;
 
 class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
    private Object _lockObject = new Object();
@@ -79,7 +83,24 @@ class ResourceBundleFetcher$CompressedResourceHashtable extends Hashtable {
    }
 
    private boolean addModule(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      String moduleName = CodeModuleManager.getModuleName(moduleHandle, 0);
+      String name = "";
+      if (moduleName != null) {
+         Resource resource = Resource$Internal.findResourceClass(moduleName, moduleHandle, ".crb\n", true);
+         if (resource != null) {
+            Vector matches = resource.listResourcesEndingWith(".crb");
+            if (matches.size() > 0) {
+               for (int j = 0; j < matches.size(); j++) {
+                  name = (String)matches.elementAt(j);
+                  this.put(name, new Integer(moduleHandle));
+               }
+            }
+
+            return true;
+         }
+      }
+
+      return false;
    }
 
    boolean isLoaded(String name) {

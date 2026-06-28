@@ -34,7 +34,7 @@ public final class FIPS186PseudoRandomSource extends AbstractPseudoRandomSource 
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "FIPS186";
    }
 
    @Override

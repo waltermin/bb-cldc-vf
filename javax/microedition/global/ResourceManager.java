@@ -1,6 +1,8 @@
 package javax.microedition.global;
 
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringTokenizer;
+import net.rim.device.resources.Resource;
 
 public class ResourceManager {
    private String _baseName;
@@ -18,7 +20,12 @@ public class ResourceManager {
    }
 
    public static final ResourceManager getManager(String baseName) {
-      throw new RuntimeException("cod2jar: ldc");
+      String defaultLocale = System.getProperty("microedition.locale");
+      if (defaultLocale == null) {
+         throw new ResourceException(4, EMPTY);
+      } else {
+         return getManager(baseName, defaultLocale);
+      }
    }
 
    public static final ResourceManager getManager(String baseName, String locale) {
@@ -126,7 +133,27 @@ public class ResourceManager {
    }
 
    public static String[] getSupportedLocales(String baseName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (baseName == null) {
+         throw new NullPointerException();
+      }
+
+      if (baseName.equals("")) {
+         return new String[0];
+      }
+
+      byte[] metafiledata = Resource.getResourceClass().getResource("global/_" + baseName);
+      if (metafiledata == null) {
+         throw new ResourceException(7, EMPTY);
+      }
+
+      StringTokenizer st = new StringTokenizer(new String(metafiledata));
+      String[] supportedLocales = new String[st.countTokens()];
+
+      for (int i = 0; st.hasMoreTokens(); i++) {
+         supportedLocales[i] = removeQuotes(st.nextToken());
+      }
+
+      return supportedLocales;
    }
 
    private static String removeQuotes(String locale) {

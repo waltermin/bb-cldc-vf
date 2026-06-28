@@ -1,8 +1,10 @@
 package net.rim.device.internal.ui.component;
 
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.component.BasicEditField;
+import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
@@ -80,7 +82,23 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
    }
 
    private void resetPasswordField(boolean focusOnPasswordField) {
-      throw new RuntimeException("cod2jar: ldc");
+      this._passwordHFM.deleteAll();
+      FrameLayout layout = this.createPasswordField();
+      Bitmap bitmap;
+      if (this._numericPassword) {
+         bitmap = Bitmap.getBitmapResource("net_rim_bb_framework_api", "numericinput.gif");
+      } else {
+         bitmap = Bitmap.getBitmapResource("net_rim_bb_framework_api", "alphanumericinput.gif");
+      }
+
+      BitmapField bitmapField = new BitmapField(bitmap, 51539607552L);
+      TicketDialog$WidthRestrictedHorizontalFieldManager wrHFM = new TicketDialog$WidthRestrictedHorizontalFieldManager(bitmapField.getPreferredWidth());
+      wrHFM.add(layout);
+      this._passwordHFM.add(wrHFM);
+      this._passwordHFM.add(bitmapField);
+      if (focusOnPasswordField) {
+         this._passwordField.setFocus();
+      }
    }
 
    @Override

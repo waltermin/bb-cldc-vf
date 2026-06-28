@@ -176,7 +176,7 @@ public class LabelField extends Field implements DrawStyle {
    }
 
    private void setTextInternal(Object text, int offset, int length) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

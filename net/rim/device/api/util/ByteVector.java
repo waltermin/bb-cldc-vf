@@ -9,6 +9,12 @@ public class ByteVector implements Persistable {
    protected int capacityIncrement;
 
    public ByteVector(int initialCapacity, int capacityIncrement) {
+      if (initialCapacity < 0) {
+         throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
+      }
+
+      this.elementData = new byte[initialCapacity];
+      this.capacityIncrement = capacityIncrement;
    }
 
    public ByteVector(int initialCapacity) {
@@ -102,11 +108,29 @@ public class ByteVector implements Persistable {
    }
 
    public int lastIndexOf(byte elem, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this.elementCount) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this.elementCount);
+      }
+
+      for (int i = index; i >= 0; i--) {
+         if (elem == this.elementData[i]) {
+            return i;
+         }
+      }
+
+      return -1;
    }
 
    public byte elementAt(int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this.elementCount) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this.elementCount);
+      }
+
+      try {
+         return this.elementData[index];
+      } catch (ArrayIndexOutOfBoundsException e) {
+         throw new ArrayIndexOutOfBoundsException(index + " < 0");
+      }
    }
 
    public byte firstElement() {
@@ -126,15 +150,43 @@ public class ByteVector implements Persistable {
    }
 
    public void setElementAt(byte obj, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this.elementCount) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this.elementCount);
+      }
+
+      this.elementData[index] = obj;
    }
 
    public void removeElementAt(int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index >= this.elementCount) {
+         throw new ArrayIndexOutOfBoundsException(index + " >= " + this.elementCount);
+      }
+
+      if (index < 0) {
+         throw new ArrayIndexOutOfBoundsException(index);
+      }
+
+      int j = this.elementCount - index - 1;
+      if (j > 0) {
+         System.arraycopy(this.elementData, index + 1, this.elementData, index, j);
+      }
+
+      this.elementCount--;
    }
 
    public void insertElementAt(byte obj, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      int newcount = this.elementCount + 1;
+      if (index >= newcount) {
+         throw new ArrayIndexOutOfBoundsException(index + " > " + this.elementCount);
+      }
+
+      if (newcount > this.elementData.length) {
+         this.ensureCapacityHelper(newcount);
+      }
+
+      System.arraycopy(this.elementData, index, this.elementData, index + 1, this.elementCount - index);
+      this.elementData[index] = obj;
+      this.elementCount++;
    }
 
    public void addElement(byte obj) {

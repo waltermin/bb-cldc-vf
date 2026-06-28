@@ -18,7 +18,18 @@ final class CustomTimeZoneImpl extends TimeZone {
 
    @Override
    public final int getOffset(int era, int year, int month, int day, int dayOfWeek, int millis) {
-      throw new RuntimeException("cod2jar: ldc");
+      int monthLength;
+      try {
+         monthLength = staticMonthLength[month];
+      } catch (ArrayIndexOutOfBoundsException e) {
+         throw new IllegalArgumentException("Illegal Month");
+      }
+
+      if ((era == 0 || era == 1) && day >= 1 && day <= monthLength && dayOfWeek >= 1 && dayOfWeek <= 7 && millis >= 0 && millis < 86400000) {
+         return this._rawOffset;
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    @Override

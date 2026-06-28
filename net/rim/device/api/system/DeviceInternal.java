@@ -7,7 +7,8 @@ public class DeviceInternal {
    private static native boolean requestPowerOff0(boolean var0);
 
    public static boolean requestPowerOff(boolean allowAutoOn) {
-      throw new RuntimeException("cod2jar: ldc");
+      EventLogger.logEvent(-7509200465648525729L, ("POWER_DOWN: " + allowAutoOn).getBytes(), 0);
+      return requestPowerOff0(allowAutoOn);
    }
 
    public static native boolean requestStorageMode();

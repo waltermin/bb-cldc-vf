@@ -1,5 +1,6 @@
 package net.rim.tid.itie;
 
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.component.TextInputDialog;
@@ -31,7 +32,7 @@ public final class EventHandler {
    }
 
    private final void initCurrencySign() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public final int processKeyEvent(int ID, int keyCode, char keyChar, int modifiers, int time, boolean input) {
@@ -207,18 +208,55 @@ public final class EventHandler {
    }
 
    private final void fillFocusHistory(int appId, IComponent src, boolean eventType) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._focusHistoryLogCount != 0) {
+         this.printFocusEvent(appId, src == null ? "NULL" : src.getClass().getName(), eventType);
+         if (appId != this._focusHistoryLastAppId) {
+            this._focusHistoryLogCount = 3;
+         } else {
+            this._focusHistoryLogCount--;
+         }
+      } else {
+         int count = this._focusHistoryIndex - this._focusHistoryStart;
+         if (count < 0) {
+            count += 3;
+         }
+
+         this._focusHistoryIndex = (this._focusHistoryIndex + 1) % 3;
+         if (this._focusHistoryIndex == this._focusHistoryStart || this._focusHistoryStart == -1) {
+            this._focusHistoryStart = (this._focusHistoryStart + 1) % 3;
+         }
+
+         this._focusHistoryAppId[this._focusHistoryIndex] = appId;
+         this._focusHistoryComponent[this._focusHistoryIndex] = src == null ? "NULL" : src.getClass().getName();
+         this._focusHistoryEvent[this._focusHistoryIndex] = eventType;
+         if (appId != this._focusHistoryLastAppId) {
+            this.printFocusHistory();
+         }
+      }
+
+      this._focusHistoryLastAppId = appId;
    }
 
    private final void printFocusEvent(int appId, String component, boolean eventType) {
-      throw new RuntimeException("cod2jar: ldc");
+      String eventTypeText = eventType ? "Focus gained" : "Focus lost";
+      String appName = this.findAppName(appId);
+      System.out.println("FocusHistory: " + eventTypeText + "; App " + appName + "; Component " + component);
    }
 
    private final void printFocusHistory() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    private final String findAppName(int appId) {
-      throw new RuntimeException("cod2jar: ldc");
+      ApplicationManager am = ApplicationManager.getApplicationManager();
+      ApplicationDescriptor[] apps = am.getVisibleApplications();
+
+      for (int i = 0; i < apps.length; i++) {
+         if (am.getProcessId(apps[i]) == appId) {
+            return apps[i].getName();
+         }
+      }
+
+      return "NoName";
    }
 }

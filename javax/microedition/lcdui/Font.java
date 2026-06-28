@@ -1,5 +1,8 @@
 package javax.microedition.lcdui;
 
+import net.rim.device.api.ui.FontFamily;
+import net.rim.device.api.ui.FontRegistry;
+
 public final class Font {
    private net.rim.device.api.ui.Font _font;
    private static Font _defaultFont;
@@ -47,7 +50,56 @@ public final class Font {
    }
 
    public static final Font getFont(int face, int style, int size) {
-      throw new RuntimeException("cod2jar: ldc");
+      FontFamily family = FontRegistry.getDefaultFont().getFontFamily();
+      if (family == null) {
+         family = FontRegistry.get(FontRegistry.DEFAULT_FAMILY);
+      }
+
+      switch (face) {
+         case 0:
+         case 32:
+         case 64:
+            if ((style & -8) != 0) {
+               throw new IllegalArgumentException();
+            } else {
+               int prefStyle = 0;
+               if ((style & 1) == 1) {
+                  prefStyle |= 1;
+               }
+
+               if ((style & 2) == 2) {
+                  prefStyle |= 2;
+               }
+
+               if ((style & 4) == 4) {
+                  prefStyle |= 4;
+               }
+
+               int prefSize;
+               switch (size) {
+                  case 0:
+                     prefSize = 10;
+                     break;
+                  case 8:
+                     prefSize = 8;
+                     break;
+                  case 16:
+                     prefSize = 12;
+                     break;
+                  default:
+                     throw new IllegalArgumentException();
+               }
+
+               net.rim.device.api.ui.Font font = family.getFont(prefStyle, prefSize, 3);
+               if (font == null) {
+                  throw new RuntimeException("Could not find font match.");
+               }
+
+               return new Font(font);
+            }
+         default:
+            throw new IllegalArgumentException();
+      }
    }
 
    public final int getStyle() {

@@ -12,7 +12,7 @@ class SimplePatternMatch {
    }
 
    public boolean match(String candidate) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private boolean matchRegion(StringBuffer region, int anchor) {

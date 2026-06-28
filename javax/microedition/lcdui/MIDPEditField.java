@@ -134,7 +134,12 @@ class MIDPEditField extends VerticalFieldManager {
    }
 
    public void setConstraints(int constraints) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (Application.getEventLock()) {
+         String label = this.getLabel();
+         if (!this.init(label, this._field.getText(), this._field.getMaxSize(), constraints)) {
+            this.init(label, "", this._field.getMaxSize(), constraints);
+         }
+      }
    }
 
    public String getLabel() {

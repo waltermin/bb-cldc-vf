@@ -40,7 +40,64 @@ public class IconCollection {
    }
 
    public synchronized void addImage(EncodedImage image, int width, int height, boolean isDefault) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (image.getWidth() % width == 0 && image.getHeight() % height == 0) {
+         int decodeMode = image.getDecodeMode();
+         image.setDecodeMode(decodeMode | 8);
+         if (isDefault) {
+            int columns = image.getWidth() / width;
+            int rows = image.getHeight() / height;
+            if ((columns != this._columns || rows != this._rows) && this._defaultImages.length <= 0) {
+               this._columns = columns;
+               this._rows = rows;
+            }
+
+            if (width * this._columns == image.getWidth() && height * this._rows != image.getHeight()) {
+            }
+
+            int index = Arrays.binarySearch(this._defaultHeights, height);
+            if (index < 0) {
+               index = -index - 1;
+               Arrays.insertAt(this._defaultWidths, width, index);
+               Arrays.insertAt(this._defaultHeights, height, index);
+               Arrays.insertAt(this._defaultImages, image, index);
+            }
+
+            if (this._hasThemedImages) {
+               return;
+            }
+         } else if (!this._hasThemedImages) {
+            this._hasThemedImages = true;
+            this._heights = new int[0];
+            this._widths = new int[0];
+            this._images = new EncodedImage[0];
+            this._cachedIndex = -1;
+         }
+
+         int index = Arrays.binarySearch(this._heights, height);
+         if (index >= 0) {
+            if (isDefault) {
+               return;
+            }
+         } else {
+            index = -index - 1;
+            Arrays.insertAt(this._widths, width, index);
+            Arrays.insertAt(this._heights, height, index);
+            Arrays.insertAt(this._images, image, index);
+            if (index <= this._cachedIndex) {
+               this._cachedIndex++;
+            }
+         }
+
+         this._widths[index] = width;
+         this._heights[index] = height;
+         this._images[index] = image;
+         if (index == this._cachedIndex) {
+            this._cachedIndex = -1;
+            this._cachedBitmap = null;
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid width or height");
+      }
    }
 
    void addImage(byte[] imageBytes, boolean isDefault) {
@@ -173,6 +230,8 @@ public class IconCollection {
    }
 
    public void verifyModule(String moduleName) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._moduleName.equals(moduleName)) {
+         throw new IllegalStateException("IconCollection accessed from wrong module.");
+      }
    }
 }

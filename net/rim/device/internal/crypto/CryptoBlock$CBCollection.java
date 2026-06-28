@@ -108,7 +108,7 @@ public final class CryptoBlock$CBCollection implements SyncCollection, SyncConve
 
    @Override
    public final String getSyncName() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    @Override

@@ -93,7 +93,7 @@ public final class PortAssigner {
    }
 
    public final PortAssigner$PortAssignedConnectionString checkPorts(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public final void registerConnection(int port, Object connection) {

@@ -7,6 +7,8 @@ import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.resources.Resource;
 import net.rim.device.resources.Resource$Internal;
+import net.rim.tid.awt.im.InputContext;
+import net.rim.tid.im.SLControlObject;
 import net.rim.vm.Array;
 
 public class Utils {
@@ -107,7 +109,15 @@ public class Utils {
    }
 
    public static void filterUnsupportedMultitapInputLocales(Locale[] locales) {
-      throw new RuntimeException("cod2jar: ldc");
+      for (int i = 0; i < locales.length; i++) {
+         if (locales[i].getVariant().equals("Multitap")) {
+            Locale check = Locale.get(locales[i].getLanguage(), locales[i].getCountry());
+            if (!Arrays.contains(locales, check)) {
+               Arrays.removeAt(locales, i);
+               i--;
+            }
+         }
+      }
    }
 
    public static void moveToIndex(Locale[] data, Locale src, int index) {
@@ -160,11 +170,75 @@ public class Utils {
    }
 
    public static String getDisplayStringFor(Locale aLocale) {
-      throw new RuntimeException("cod2jar: ldc");
+      if ((aLocale.getCode() & -65536) != 2053636096) {
+         return aLocale.getDisplayName();
+      }
+
+      String display = aLocale.getDisplayName();
+      StringBuffer res = new StringBuffer(display);
+      display = StringUtilities.toUpperCase(display, 1701707776);
+      int index = display.indexOf("HONG KONG");
+      if (index != -1) {
+         res.delete(index, index + 9);
+         res.insert(index, "Traditional");
+      } else {
+         index = display.indexOf("TAIWAN");
+         if (index != -1) {
+            res.delete(index, index + 6);
+            res.insert(index, "Traditional");
+         } else {
+            index = display.indexOf("CHINA");
+            if (index != -1) {
+               res.delete(index, index + 5);
+               res.insert(index, "Simplified");
+            }
+         }
+      }
+
+      return res.toString();
    }
 
    public static Locale[] getAvailableInputLocales(boolean reorder) {
-      throw new RuntimeException("cod2jar: ldc");
+      InputContext ic = InputContext.getInstance();
+      int inputMode = ((SLControlObject)ic.getInputMethodControlObject()).getInputMode();
+      Locale[] locales = Locale.getAvailableInputLocales();
+      Locale[] res = new Locale[locales.length];
+      int count = 0;
+      boolean isMultitapMode = inputMode == 2;
+      filterUnsupportedMultitapInputLocales(locales);
+
+      for (int i = 0; i < locales.length; i++) {
+         long inputMethodID = ic.getInputMethodIDForLocale(locales[i]);
+         if ((inputMethodID & 4096) == 0) {
+            res[count++] = locales[i];
+         } else if (locales[i].getVariant().equals("Multitap")) {
+            if (isMultitapMode) {
+               res[count++] = locales[i];
+            }
+         } else if (!isMultitapMode) {
+            res[count++] = locales[i];
+         }
+      }
+
+      Array.resize(res, count);
+      filterRootInputLocales(res);
+      if (reorder && res.length > 1) {
+         Locale loc = ic.getLocale();
+         int index = getIndexOf(res, loc);
+         if (index != -1 && index != 0) {
+            moveLocaleToIndex(res, index, 0);
+         }
+
+         Locale lastUsed = ic.getLastUsedLocale();
+         if (!localesEqual(loc, lastUsed)) {
+            index = getIndexOf(res, lastUsed);
+            if (index != -1 && index > 0) {
+               moveLocaleToIndex(res, index, 1);
+            }
+         }
+      }
+
+      return res;
    }
 
    private static boolean localesEqual(Locale first, Locale second) {

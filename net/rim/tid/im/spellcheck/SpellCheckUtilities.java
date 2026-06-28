@@ -63,7 +63,7 @@ public class SpellCheckUtilities implements SpellCheckConstants {
    }
 
    public static Locale removeSpellCheckingLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public static int spellCheckActionPerformed(int action, Object param) {
@@ -89,11 +89,16 @@ public class SpellCheckUtilities implements SpellCheckConstants {
    }
 
    public static boolean isSpellCheckVariant(Locale locale) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (locale == null) {
+         return false;
+      }
+
+      String variant = locale.getVariant();
+      return variant != null && variant.indexOf("SpellCheck") != -1;
    }
 
    public static String createSpellCheckingVariant(String oldVariant) {
-      throw new RuntimeException("cod2jar: ldc");
+      return "SpellCheck";
    }
 
    public static InputMethod getSpellCheckInputMethod() {

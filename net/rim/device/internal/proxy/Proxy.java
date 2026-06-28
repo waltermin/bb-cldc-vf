@@ -21,7 +21,16 @@ public final class Proxy extends Application {
 
    @Override
    public final void addListener(int device, Object listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (device) {
+         case 5:
+         case 14:
+         case 16:
+         case 34:
+         case 46:
+            throw new RuntimeException("Listener is not allowed on the Proxy.  Use ProtocolDaemon instead.");
+         default:
+            super.addListener(device, listener);
+      }
    }
 
    public static final Proxy getInstance() {

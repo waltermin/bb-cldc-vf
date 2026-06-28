@@ -80,7 +80,24 @@ public class Hashtable {
 
    @Override
    public synchronized String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer buf = new StringBuffer().append('{');
+      Object empty = this._empty;
+      boolean gotone = false;
+      int len = this._key.length;
+
+      for (int i = 0; i < len; i++) {
+         Object key = this._key[i];
+         if (key != null && key != empty) {
+            if (gotone) {
+               buf.append(", ");
+            }
+
+            buf.append(key.toString()).append('=').append(this._value[i].toString());
+            gotone = true;
+         }
+      }
+
+      return buf.append('}').toString();
    }
 
    public synchronized Object remove(Object key) {

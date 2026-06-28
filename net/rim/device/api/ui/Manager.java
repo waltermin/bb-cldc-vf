@@ -1,12 +1,16 @@
 package net.rim.device.api.ui;
 
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.component.Menu;
+import net.rim.device.api.ui.component.NullField;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
+import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.Cursor;
+import net.rim.device.internal.ui.RichText;
 import net.rim.device.internal.ui.component.Scrollbar;
 import net.rim.vm.Array;
 
@@ -186,7 +190,38 @@ public class Manager extends Field {
    }
 
    public void delete(Field field) {
-      throw new RuntimeException("cod2jar: ldc");
+      int index = field.getIndex();
+      if (field.getManager() != this) {
+         throw new IllegalArgumentException("Attempt to delete a field that doesn't belong to the manager.");
+      }
+
+      this.assertHaveEventLock();
+      this.notifyVisibilityChange(index, 1, false);
+      if (this.isValidLayout() && this._fieldWithFocus == field) {
+         this._fieldWithFocus.onUnfocus();
+         Field dummy = new NullField();
+         this._fieldWithFocus = dummy;
+         this._fields[index] = dummy;
+         dummy.setManager(this, index);
+         field.setManager(null, -1);
+         this.getScreen().findNewFocus(true);
+         this.removeField(index, dummy);
+      } else {
+         if (this._fieldWithFocus == field) {
+            field.onUnfocus();
+            Field dummy = new NullField();
+            this._fieldWithFocus = dummy;
+            this._fields[index] = dummy;
+            dummy.setManager(this, index);
+            field.setManager(null, -1);
+            field = dummy;
+            this.getScreen().findNewFocus(true);
+         }
+
+         this.removeFieldHelper(index, field);
+      }
+
+      this.runLayoutUpdate(index, 0, 1);
    }
 
    public void deleteAll() {
@@ -194,7 +229,54 @@ public class Manager extends Field {
    }
 
    public void deleteRange(int start, int count) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.assertHaveEventLock();
+      Field dummy = null;
+      int originalStart = start;
+      int originalCount = count;
+      if (count != 0) {
+         if (start >= 0 && count >= 0 && start + count <= this._fieldsCount) {
+            this.notifyVisibilityChange(start, count, false);
+            if (this._fieldWithFocusIndex >= start && this._fieldWithFocusIndex < start + count) {
+               this._fieldWithFocus.onUnfocus();
+               dummy = new NullField();
+               dummy.setManager(this, start);
+               this._fields[start].setManager(null, -1);
+               this._fieldWithFocus = dummy;
+               this._fieldWithFocusIndex = start;
+               this._fields[start] = dummy;
+               start++;
+               count--;
+            }
+
+            for (int i = start; i < start + count; i++) {
+               this._fields[i].setManager(null, -1);
+            }
+
+            for (int i = start + count; i < this._fieldsCount; i++) {
+               this._fields[i].setIndex(i - count);
+            }
+
+            System.arraycopy(this._fields, start + count, this._fields, start, this._fieldsCount - start - count);
+
+            for (int i = this._fieldsCount - count; i < this._fieldsCount; i++) {
+               this._fields[i] = null;
+            }
+
+            if (this._fieldWithFocusIndex > start) {
+               this._fieldWithFocusIndex -= count;
+            }
+
+            this._fieldsCount -= count;
+            if (dummy != null) {
+               this.getScreen().findNewFocus(true);
+               this.removeField(start - 1, dummy);
+            }
+
+            this.runLayoutUpdate(originalStart, 0, originalCount);
+         } else {
+            throw new IndexOutOfBoundsException("Invalid start and count.");
+         }
+      }
    }
 
    @Override
@@ -460,7 +542,35 @@ public class Manager extends Field {
    }
 
    private void insertInternal(Field field, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (index < 0 || index > this._fieldsCount) {
+         throw new IndexOutOfBoundsException("Manager.insert called with an invalid index.");
+      }
+
+      if (this == field) {
+         throw new IllegalArgumentException();
+      }
+
+      field.setManager(this, index);
+      this.ensureFieldCapacity();
+
+      for (int i = index; i < this._fieldsCount; i++) {
+         this._fields[i].setIndex(i + 1);
+      }
+
+      System.arraycopy(this._fields, index, this._fields, index + 1, this._fieldsCount - index);
+      this._fields[index] = field;
+      this._fieldsCount++;
+      if (index <= this._fieldWithFocusIndex) {
+         this._fieldWithFocusIndex++;
+      }
+
+      if (this.isValidLayout() && this.getScreen() != null) {
+         field.applyTheme();
+         field.applyFont();
+      }
+
+      this.runLayoutUpdate(index, 1, 0);
+      this.notifyVisibilityChange(index, 1, true);
    }
 
    @Override
@@ -690,7 +800,17 @@ public class Manager extends Field {
    }
 
    protected final void layoutChild(Field field, int width, int height) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (field.getManager() != this) {
+         throw new IllegalArgumentException("Field is not a child of this manager.");
+      }
+
+      width -= field.getBorderLeft() + field.getBorderRight() + field.getPaddingLeft() + field.getPaddingRight();
+      height -= field.getBorderTop() + field.getBorderBottom() + field.getPaddingTop() + field.getPaddingBottom();
+      if (height >= 0) {
+         field.layout(width, height);
+      } else {
+         System.out.println("WARNING: Cannot layout field, insufficient height");
+      }
    }
 
    @Override
@@ -838,11 +958,142 @@ public class Manager extends Field {
    }
 
    private void paintScrollbars(Graphics graphics) {
-      throw new RuntimeException("cod2jar: ldc");
+      this._indicatorHeight = 0;
+      int overlayOffset = this._nonfocusableArrowOverride ? 2 : 0;
+      if (!(!this.isStyle(17592186044416L) & !this.isStyle(70368744177664L))) {
+         XYRect content = this.getContentRect();
+         boolean rightScrollArrows = RichText.getDefaultParagDirection() == 0;
+         long style = this.getStyle();
+         if ((style & 549755813888L) == 549755813888L) {
+            rightScrollArrows = true;
+         } else if ((style & 274877906944L) == 274877906944L) {
+            rightScrollArrows = false;
+         }
+
+         if (!(this._verticalScrollbar != null | this._horizontalScrollbar != null)) {
+            if (!this.isStyle(8796093022208L)) {
+               Bitmap up = ThemeAttributeSet.getScrollArrow(this, 0);
+               if (this.isUpArrowShown() && up != null) {
+                  int x;
+                  if (rightScrollArrows) {
+                     x = this.getXForScrollArrowRight(up.getWidth());
+                  } else {
+                     x = this.getXForScrollArrowLeft();
+                  }
+
+                  graphics.setOverlay(overlayOffset + 0, up, x, this.getVerticalScroll());
+               } else {
+                  graphics.setOverlay(overlayOffset + 0, null, 0, 0);
+               }
+
+               Bitmap down = ThemeAttributeSet.getScrollArrow(this, 1);
+               if (this.isDownArrowShown() && down != null) {
+                  int x;
+                  if (rightScrollArrows) {
+                     x = this.getXForScrollArrowRight(down.getWidth());
+                  } else {
+                     x = this.getXForScrollArrowLeft();
+                  }
+
+                  graphics.setOverlay(overlayOffset + 1, down, x, this.getVisibleHeight() + this.getVerticalScroll() - down.getHeight());
+                  return;
+               }
+
+               graphics.setOverlay(overlayOffset + 1, null, 0, 0);
+               return;
+            }
+
+            if (this._virtualHeight <= content.height) {
+               return;
+            }
+
+            this._indicatorWidth = INDICATOR_WIDTH;
+            this._indicatorHeight = Math.max(content.height * content.height / this._virtualHeight, 6);
+            this._indicatorY = this.getVerticalScroll() * content.height / this._virtualHeight;
+            this._scrollBarWidth = SCROLLBAR_WIDTH;
+            this._scrollBarHeight = content.height;
+            this._scrollBarX = content.X2() + this.getHorizontalScroll() - this._scrollBarWidth;
+            this._scrollBarY = this.getVerticalScroll();
+            if (haveStylus) {
+               graphics.drawRoundRect(
+                  this._scrollBarX, this._scrollBarY, this._scrollBarWidth, this._scrollBarHeight, this._scrollBarWidth, this._scrollBarWidth
+               );
+            } else {
+               Bitmap bitmap = Theme.getThemeBitmap(2);
+               graphics.tileRop(-99, this._scrollBarX, this._scrollBarY, this._scrollBarWidth, this._scrollBarHeight, bitmap, 0, 0);
+            }
+
+            this._indicatorX = this._scrollBarX + (this._scrollBarWidth - this._indicatorWidth >> 1);
+            this._indicatorY = this._indicatorY + this._scrollBarY;
+            if (haveStylus) {
+               int y = this._indicatorY + this._scrollBarWidth;
+               int height = this._indicatorHeight - 2 * this._scrollBarWidth;
+               if (height <= 6) {
+                  y = this._indicatorY;
+                  height = this._indicatorHeight;
+               }
+
+               Bitmap bitmap = Theme.getThemeBitmap(3);
+               graphics.tileRop(-99, this._indicatorX, y, this._indicatorWidth, height, bitmap, 0, 0);
+               return;
+            }
+
+            graphics.fillRect(this._indicatorX, this._indicatorY, this._indicatorWidth, this._indicatorHeight);
+         } else {
+            int cornerWidthAdjust = 0;
+            int cornerHeightAdjust = 0;
+            if (this._verticalScrollbar != null && this._horizontalScrollbar != null) {
+               cornerHeightAdjust = SCROLLBAR_TOTAL_HEIGHT;
+               cornerWidthAdjust = SCROLLBAR_TOTAL_WIDTH;
+               Theme theme = ThemeManager.getActiveTheme();
+               Bitmap bitmap = theme.getImage("themed-scrollbar-corner", true).getBitmap();
+               graphics.drawBitmap(this.getVirtualWidth(), this.getVirtualHeight(), cornerWidthAdjust, cornerHeightAdjust, bitmap, 0, 0);
+            }
+
+            if (this._verticalScrollbar != null) {
+               this._verticalScrollbar.setExtent(SCROLLBAR_TOTAL_WIDTH, this.getVisibleHeight() - cornerHeightAdjust);
+               this._verticalScrollbar.setPosition(this.getVirtualWidth(), this._verticalScroll);
+               this._verticalScrollbar.paintSelf(graphics, true, 0, 0);
+            }
+
+            if (this._horizontalScrollbar != null) {
+               this._horizontalScrollbar.setExtent(this.getVisibleWidth() - cornerWidthAdjust, SCROLLBAR_TOTAL_HEIGHT);
+               this._horizontalScrollbar.setPosition(this._horizontalScroll, this.getVirtualHeight());
+               this._horizontalScrollbar.paintSelf(graphics, true, 0, 0);
+               return;
+            }
+         }
+      }
    }
 
    public void replace(Field oldField, Field newField) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (oldField == null) {
+         throw new IllegalArgumentException("Manager.replace: oldField is null");
+      }
+
+      if (newField == null) {
+         throw new IllegalArgumentException("Manager.replace: newField is null");
+      }
+
+      if (oldField.getManager() != this) {
+         throw new IllegalArgumentException("Manager.replace: oldField is not a child");
+      }
+
+      if (newField.getManager() != null) {
+         throw new IllegalArgumentException("Manager.replace: newField already has a manager");
+      }
+
+      int index = oldField.getIndex();
+      if (index == -1) {
+         throw new IllegalStateException("Manager.replace: oldField's index is -1");
+      }
+
+      boolean hadFocus = oldField.isFocus();
+      this.delete(oldField);
+      this.insert(newField, index);
+      if (hadFocus && newField.isFocusable()) {
+         newField.setFocus();
+      }
    }
 
    protected final void removeBlankSpace() {
@@ -868,7 +1119,11 @@ public class Manager extends Field {
    }
 
    private void removeField(int index, Field field) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (field == this._fieldWithFocus) {
+         throw new IllegalStateException("tried to remove FieldWithFocus");
+      }
+
+      this.removeFieldHelper(index, field);
    }
 
    private void removeFieldHelper(int index, Field field) {
@@ -1098,15 +1353,38 @@ public class Manager extends Field {
    }
 
    public void setHorizontalScroll(int position) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isStyle(1125899906842624L)) {
+         throw new IllegalStateException("Attempting to scroll a non scollable manager.");
+      }
+
+      if (position < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (this.isValidLayout()) {
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(position, this.getVerticalScroll(), this.getContentWidth(), 0);
+         this.makeRegionVisible(this.getScreen().isValid(), rect, true);
+         Ui.returnTmpXYRect(rect);
+      } else {
+         this._horizontalScroll = position;
+      }
    }
 
    protected final void setPositionChild(Field field, int x, int y) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (field.getManager() != this) {
+         throw new IllegalArgumentException("Field is not a child of this manager.");
+      }
+
+      field.setPosition(x, y);
    }
 
    public void setScrollListener(ScrollChangeListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener != null && this._scrollListener != null) {
+         throw new IllegalStateException("Multiple scroll listeners not allowed.");
+      }
+
+      this._scrollListener = listener;
    }
 
    public void setVerticalQuantization(int verticalQuanta) {
@@ -1118,7 +1396,38 @@ public class Manager extends Field {
    }
 
    public void setVerticalScroll(int position) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isStyle(281474976710656L)) {
+         throw new IllegalStateException("Attempting to scroll a non scrollable manager.");
+      }
+
+      if (position < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      int verticalQuantaPixels = this._verticalQuanta;
+      if (verticalQuantaPixels < 0) {
+         verticalQuantaPixels = -verticalQuantaPixels * this.getFont().getHeight();
+      }
+
+      if (verticalQuantaPixels > 1) {
+         int numQuanta = position / verticalQuantaPixels;
+         int floor = numQuanta * verticalQuantaPixels;
+         int remainder = position - floor;
+         if (remainder * 2 <= verticalQuantaPixels) {
+            position = floor;
+         } else {
+            position = floor + verticalQuantaPixels;
+         }
+      }
+
+      if (this.isValidLayout()) {
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(this.getHorizontalScroll(), position, 0, this.getContentHeight());
+         this.makeRegionVisible(this.getScreen().isValid(), rect, true);
+         Ui.returnTmpXYRect(rect);
+      } else {
+         this._verticalScroll = position;
+      }
    }
 
    protected final void setVirtualExtent(int virtualWidth, int virtualHeight) {

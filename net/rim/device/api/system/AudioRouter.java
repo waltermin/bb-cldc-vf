@@ -88,7 +88,76 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    public final synchronized boolean setSink(int sink) {
-      throw new RuntimeException("cod2jar: ldc");
+      int activeSource = this.getActiveSource();
+      int newMode = this.getAudioMode(activeSource, sink, true);
+      if (newMode == -1) {
+         return false;
+      }
+
+      String name = null;
+      this._masterVolumeChangeSupported = true;
+      if (sink == 2) {
+         this._masterVolumeChangeSupported = this._bluetoothSCORemoteVolumeControl;
+         name = this._bluetoothSCODeviceName;
+      } else if (sink == 5) {
+         name = this._bluetoothA2DPDeviceName;
+      }
+
+      byte[] data = null;
+      if (isAudioModeParamSupported(newMode, 0) && name != null) {
+         byte[] nameBytes = name.getBytes();
+         int length = nameBytes.length;
+         if (length > 127) {
+            length = 127;
+         }
+
+         data = new byte[length + 2];
+         data[0] = 0;
+         data[1] = (byte)length;
+         System.arraycopy(nameBytes, 0, data, 2, length);
+      }
+
+      if (isAudioModeParamSupported(newMode, 3) && this._volumeBoostData != null) {
+         if (data == null) {
+            int length = this._volumeBoostData.length;
+            data = new byte[length];
+            System.arraycopy(this._volumeBoostData, 0, data, 0, length);
+         } else {
+            Arrays.append(data, this._volumeBoostData);
+         }
+      }
+
+      if (isAudioModeParamSupported(newMode, 1) && this._eqPresetData != null) {
+         if (data == null) {
+            int length = this._eqPresetData.length;
+            data = new byte[length];
+            System.arraycopy(this._eqPresetData, 0, data, 0, length);
+         } else {
+            Arrays.append(data, this._eqPresetData);
+         }
+      }
+
+      System.out.println("AR: setAudioMode " + newMode);
+      setAudioMode(newMode, data);
+      if (this._callback != null) {
+         try {
+            this._callback.updateMediaSourceVolume(sink);
+         } catch (Throwable var8) {
+         }
+      }
+
+      if (this._audioSink != sink) {
+         this._audioSink = sink;
+         if (activeSource < 11) {
+            this._audioControlsForSource[activeSource].sinkChanged(sink);
+         }
+
+         this.postEvent(2);
+      }
+
+      this.updateMasterVolume(false);
+      this.postEvent(1);
+      return true;
    }
 
    public final boolean canEnableSink(int sink) {
@@ -230,11 +299,11 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    public final synchronized void addSource(int source) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
    public final synchronized void removeSource(int source) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: array load: unknown element");
    }
 
    public final synchronized int getActiveSource() {
@@ -249,7 +318,11 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    public final synchronized boolean isSourceAdded(int source) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (source < 0 || source >= 11) {
+         throw new IllegalArgumentException("invalid source");
+      } else {
+         return this._numAudioSources[source] != 0;
+      }
    }
 
    public final int getDefaultSink(int source) {
@@ -379,7 +452,11 @@ public final class AudioRouter implements AudioHeadsetListener {
    }
 
    public final AudioPathControl getAudioPathControl(int source) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (source >= 0 && source < 11) {
+         return this._audioControlsForSource[source];
+      } else {
+         throw new IllegalArgumentException("invalid source");
+      }
    }
 
    public final synchronized void fastReset() {

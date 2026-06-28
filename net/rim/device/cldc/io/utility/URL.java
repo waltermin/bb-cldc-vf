@@ -17,6 +17,18 @@ public class URL {
    }
 
    public URL(String scheme, String restOfUrl) {
+      if (scheme != null && restOfUrl != null) {
+         StringBuffer temp = new StringBuffer();
+         temp.append(scheme).append(':');
+         if (!restOfUrl.startsWith("//")) {
+            temp.append("//");
+         }
+
+         temp.append(restOfUrl);
+         this.initialize(temp.toString());
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    private void initialize(String url) {
@@ -69,7 +81,7 @@ public class URL {
    }
 
    private void parseUrlString(String url) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private boolean validateScheme() {
@@ -77,7 +89,7 @@ public class URL {
    }
 
    private void parseSchemeSpecificPart(String url) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public void setRIMParameters(URLParameters params) {

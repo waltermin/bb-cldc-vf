@@ -15,6 +15,7 @@ import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.StringProvider;
+import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.BorderRounded;
 import net.rim.device.internal.ui.BorderTransparent;
@@ -79,7 +80,7 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override
@@ -651,7 +652,7 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    public String getAccessibleName() {
-      throw new RuntimeException("cod2jar: ldc");
+      return StringUtilities.removeChars(this.getLabel(), "̲");
    }
 
    public ButtonField() {

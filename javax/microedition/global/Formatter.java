@@ -16,6 +16,7 @@ public final class Formatter {
    private static String EN_LOCALE;
 
    public Formatter() {
+      this(System.getProperty("microedition.locale"));
    }
 
    public Formatter(String locale) {
@@ -34,7 +35,7 @@ public final class Formatter {
    }
 
    public final String formatCurrency(double number) {
-      throw new RuntimeException("cod2jar: ldc");
+      return this._locale == null ? Double.toString(number) : "$" + this.correctDecimals(Double.toString(number), 2);
    }
 
    public final String formatCurrency(double number, String currencyCode) {
@@ -108,7 +109,7 @@ public final class Formatter {
    }
 
    private final String forceTwoDigits(int value) {
-      throw new RuntimeException("cod2jar: ldc");
+      return value >= 10 ? Integer.toString(value) : "0" + Integer.toString(value);
    }
 
    public static final String formatMessage(String template, String[] params) {
@@ -162,7 +163,7 @@ public final class Formatter {
    }
 
    public final String formatPercentage(long value) {
-      throw new RuntimeException("cod2jar: ldc");
+      return this._locale == null ? Long.toString(value) + "%" : Long.toString(value) + "%";
    }
 
    public final String getLocale() {

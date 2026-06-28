@@ -1,5 +1,7 @@
 package net.rim.device.api.ui.component;
 
+import com.sun.cldc.i18n.Helper;
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
@@ -44,7 +46,7 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    public void setType(int type) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: field: unknown receiver");
    }
 
    public boolean setCode(int code) {
@@ -278,7 +280,28 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    public int unicodeToSJIS(char unicode) {
-      throw new RuntimeException("cod2jar: ldc");
+      int sjis = 0;
+      byte[] result = null;
+      this._oneChar[0] = unicode;
+
+      try {
+         result = Helper.charToByteArray(this._oneChar, 0, 1, "Shift_JIS");
+      } catch (UnsupportedEncodingException e) {
+         Dialog.alert("Encoding Shift_JIS is not supported");
+      }
+
+      int len;
+      if (result != null && (len = result.length) > 0) {
+         if (len == 1) {
+            return result[0] & 0xFF;
+         }
+
+         if (len == 2) {
+            sjis = ((result[0] & 255) << 8) + (result[1] & 255);
+         }
+      }
+
+      return sjis;
    }
 
    private int convertDecToInt(StringBuffer buf, int begin, int length) {

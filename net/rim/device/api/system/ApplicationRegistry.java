@@ -1,11 +1,14 @@
 package net.rim.device.api.system;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 import net.rim.device.api.util.IntHashtable;
 import net.rim.device.api.util.IntVector;
 import net.rim.device.api.util.LongHashtable;
+import net.rim.device.api.util.NumberUtilities;
 import net.rim.device.internal.system.ApplicationRegistryHashtable;
+import net.rim.vm.DebugSupport;
 import net.rim.vm.Process;
 
 public final class ApplicationRegistry {
@@ -29,7 +32,35 @@ public final class ApplicationRegistry {
    }
 
    public final Object getOrWaitFor(long id) {
-      throw new RuntimeException("cod2jar: ldc");
+      Monitor monitor;
+      synchronized (this._registry) {
+         Object obj = this.get(0, id, true, null, null);
+         if (obj != null) {
+            return obj;
+         }
+
+         monitor = (Monitor)this._monitors.get(id);
+         if (monitor == null) {
+            monitor = new Monitor(id, Thread.currentThread());
+            this._monitors.put(id, monitor);
+            return null;
+         }
+
+         Thread owner = monitor.getOwner();
+         if (owner == null) {
+            throw new RuntimeException("ApplicationRegistry.getOrWaitFor(0x" + NumberUtilities.toString(id, 16) + ") missing owner");
+         }
+
+         if (!owner.isAlive()) {
+            synchronized (monitor) {
+               monitor.wakeyWakey();
+            }
+
+            throw new RuntimeException("ApplicationRegistry.getOrWaitFor(0x" + NumberUtilities.toString(id, 16) + ") owner died " + owner);
+         }
+      }
+
+      return this.waitForObjectToBeRegistered(monitor, 0, id, true, null, null, false);
    }
 
    final Object get(int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey) {
@@ -50,7 +81,20 @@ public final class ApplicationRegistry {
    }
 
    final void kickAllWaitingThreads() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._startupComplete = true;
+      synchronized (this._monitors) {
+         Enumeration e = this._monitors.elements();
+
+         while (e.hasMoreElements()) {
+            Monitor monitor = (Monitor)e.nextElement();
+            System.out.println("AR: kick 0x" + NumberUtilities.toString(monitor.getGUID(), 16));
+            synchronized (monitor) {
+               monitor.wakeyWakey();
+            }
+         }
+
+         this._monitors.clear();
+      }
    }
 
    final ControlledAccess getControlledAccess(long id) {
@@ -70,7 +114,7 @@ public final class ApplicationRegistry {
    }
 
    final Object put(int moduleHandle, long id, boolean protect, Object value, boolean allowReplace) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    public final Object waitFor(long id) {
@@ -106,7 +150,22 @@ public final class ApplicationRegistry {
    private final Object waitForObjectToBeRegistered(
       Monitor monitor, int moduleHandle, long id, boolean protect, CodeSigningKey readKey, CodeSigningKey replaceKey, boolean allowNull
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (monitor) {
+         if (!monitor.hasBeenNotified()) {
+            try {
+               monitor.wait(120000);
+            } catch (InterruptedException var12) {
+            }
+         }
+
+         Object obj = this.get(moduleHandle, id, protect, readKey, replaceKey);
+         if (obj == null && !allowNull) {
+            DebugSupport.logStackTraces();
+            throw new RuntimeException("ApplicationRegistry.waitFor(0x" + NumberUtilities.toString(id, 16) + ") timeout");
+         } else {
+            return obj;
+         }
+      }
    }
 
    public final Vector getVector(long id) {

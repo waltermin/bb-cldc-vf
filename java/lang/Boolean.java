@@ -15,7 +15,7 @@ public final class Boolean {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return this.value ? "true" : "false";
    }
 
    @Override

@@ -141,7 +141,23 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    public void setCurrentNode(int node) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._data.getVisible(node)) {
+         throw new IllegalArgumentException("invisible node cannot be made current");
+      }
+
+      if (this._haveFocus) {
+         this.focusRemove();
+      }
+
+      this._focusNode = node;
+      Manager mgr = this.getManager();
+      if (mgr != null && mgr.isValidLayout()) {
+         this.calcFocusRect();
+      }
+
+      if (this._haveFocus) {
+         this.focusAdd(true);
+      }
    }
 
    public void deleteAll() {
@@ -235,11 +251,25 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    public void setRowHeight(int rowHeight) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (rowHeight <= 0) {
+         throw new IllegalArgumentException("Invalid rowHeight");
+      }
+
+      this._rowHeightSet = rowHeight;
+      this._rowHeight = this._rowHeightSet;
+      this._rowHeightAdjuster.setRowHeight(this._rowHeight);
+      this.updateLayout();
    }
 
    public void setRowHeightInLines(int rowHeight) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (rowHeight <= 0) {
+         throw new IllegalArgumentException("Invalid rowHeight");
+      }
+
+      this._rowHeightSet = rowHeight * -1;
+      this._rowHeight = this.getFont().getHeight() * -this._rowHeightSet;
+      this._rowHeightAdjuster.setRowHeight(this._rowHeight);
+      this.updateLayout();
    }
 
    public int getIndentForNode(int node) {
@@ -278,7 +308,7 @@ public class TreeField extends Field implements VariableRowHeightProvider {
    }
 
    private void calcFocusRect() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    @Override

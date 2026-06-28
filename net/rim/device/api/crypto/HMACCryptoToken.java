@@ -8,7 +8,7 @@ public class HMACCryptoToken implements SymmetricCryptoToken, Persistable {
 
    @Override
    public final String getAlgorithm() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "HMAC";
    }
 
    @Override

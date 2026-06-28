@@ -133,6 +133,6 @@ public final class Message {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "device: " + this._device + "; event: " + this._event + "; submsg: " + this._subMessage;
    }
 }

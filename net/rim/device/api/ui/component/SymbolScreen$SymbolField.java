@@ -64,7 +64,7 @@ class SymbolScreen$SymbolField extends Field {
 
    @Override
    protected void applyFont() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    private void $initLayoutKeyCodes() {
@@ -136,7 +136,27 @@ class SymbolScreen$SymbolField extends Field {
 
    @Override
    public AccessibleContext getAccessibleChildAt(int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      char childAtIndex = 0;
+      int i = 0;
+      if (index >= this._keyCodes[i].length) {
+         i = 0;
+
+         while (i < this._keyCodes.length - 1 && (this._keyCodes[i].length >= index || index >= this._keyCodes[i + 1].length)) {
+            i++;
+         }
+
+         try {
+            index -= this._keyCodes[i].length;
+            childAtIndex = (char)this._keyCodes[i + 1][index];
+         } catch (Exception e) {
+            System.out.println("Array Index Out Of Bound Exception");
+         }
+      } else {
+         childAtIndex = (char)this._keyCodes[i][index];
+      }
+
+      char symbol = (char)this._map.get(Character.toUpperCase(childAtIndex));
+      return new AccessibleContextFactory(String.valueOf(symbol), String.valueOf(childAtIndex), 22, 1, this, new TextField());
    }
 
    @Override
@@ -149,7 +169,7 @@ class SymbolScreen$SymbolField extends Field {
    }
 
    private String getDisplayKey(SLKeyLayout layout, char keyCode) {
-      throw new RuntimeException("cod2jar: ldc");
+      return layout.getKeyChars(keyCode, 0).charAt(0) == 128 ? "SYM" : layout.getKeyChars(keyCode, 2).toString();
    }
 
    public char getFocusChar() {

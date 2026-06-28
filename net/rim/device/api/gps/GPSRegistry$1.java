@@ -11,6 +11,11 @@ class GPSRegistry$1 implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      this.this$0._pdeTable.remove(this.val$processId);
+      if (GPSRegistry.isVerizon()) {
+         GPS$AppCredential cred = new GPS$AppCredential(0, "");
+         GPS$GPSPDEInfo pdeInfo = new GPS$GPSPDEInfo(0, 0, cred);
+         GPS.setPDEInfo(pdeInfo);
+      }
    }
 }

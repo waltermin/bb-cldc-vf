@@ -32,7 +32,11 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
    }
 
    protected void define(long key, OptionsRegistry$ParameterDefinition def) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this._parameterDefinitions.contains(def)) {
+         throw new IllegalArgumentException("duplicate definition");
+      }
+
+      this._parameterDefinitions.put(key, def);
    }
 
    public char getChar(long key) {

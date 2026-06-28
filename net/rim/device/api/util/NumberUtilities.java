@@ -189,6 +189,6 @@ public final class NumberUtilities {
    }
 
    public static final int parseInt(String s, int fromIndex, int toIndex, int radix) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

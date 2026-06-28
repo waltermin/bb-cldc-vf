@@ -17,7 +17,7 @@ public class PropertyField extends Field implements FieldLabelProvider {
    private static final int PADDING;
 
    public void setValue(Object value) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    public String getName() {
@@ -36,7 +36,7 @@ public class PropertyField extends Field implements FieldLabelProvider {
 
    @Override
    public void setLabelStringProvider(StringProvider label) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IllegalStateException("Unsupported API");
    }
 
    @Override

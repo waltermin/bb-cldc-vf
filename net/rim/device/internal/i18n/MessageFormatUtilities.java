@@ -29,6 +29,6 @@ public final class MessageFormatUtilities {
    }
 
    private static final String getParametersForField(String pattern, String[] arguments, int[] offsets, byte[] attributes) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

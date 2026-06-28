@@ -65,7 +65,7 @@ public final class WBMPEncodedImage extends EncodedImage {
 
    @Override
    public final String getMIMEType() {
-      throw new RuntimeException("cod2jar: ldc");
+      return "image/vnd.wap.wbmp";
    }
 
    private final native void populateWBMPInfo();

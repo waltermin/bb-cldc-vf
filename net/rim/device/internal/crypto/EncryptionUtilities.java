@@ -31,7 +31,21 @@ public final class EncryptionUtilities {
    }
 
    private static final String getCurveName(int curve) {
-      throw new RuntimeException("cod2jar: ldc");
+      switch (curve) {
+         case -1:
+            throw new IllegalArgumentException();
+         case 0:
+         default:
+            return "EC160R1";
+         case 1:
+            return "EC256R1";
+         case 2:
+            return "EC521R1";
+         case 3:
+            return "EC283K1";
+         case 4:
+            return "EC571K1";
+      }
    }
 
    public static final boolean isSupported(int curve) {

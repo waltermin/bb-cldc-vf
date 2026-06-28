@@ -2,7 +2,10 @@ package net.rim.device.api.ui;
 
 import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.Clipboard;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.accessibility.AccessibleText;
 import net.rim.device.api.ui.accessibility.AccessibleValue;
@@ -25,6 +28,7 @@ import net.rim.tid.awt.im.InputContext;
 import net.rim.tid.awt.im.InputMethodRequests;
 import net.rim.tid.itie.EventHandler;
 import net.rim.tid.itie.IComponent;
+import net.rim.vm.TraceBack;
 
 public class Field implements IComponent, AccessibleContext {
    private Manager _manager;
@@ -127,7 +131,16 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    void assertLayoutComplete() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this.isState(384)) {
+         int moduleName = ApplicationDescriptor.currentApplicationDescriptor().getName().hashCode();
+         switch (moduleName) {
+            case 325008992:
+            case 1416671651:
+               return;
+            default:
+               throw new IllegalStateException("Field must call setExtent and setPosition during layout.");
+         }
+      }
    }
 
    protected void removeAccessibleState(int state) {
@@ -292,7 +305,156 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected final void drawHighlightRegion(Graphics graphics, int style, boolean on, int x, int y, int width, int height) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (!this._inDrawHighlightRegion) {
+         this._inDrawHighlightRegion = true;
+         label122:
+         switch (ThemeAttributeSet.getFocusStyle(this)) {
+            case -1:
+               break;
+            case 0:
+            default:
+               switch (style) {
+                  case -1:
+                     break label122;
+                  case 0:
+                     throw new IllegalArgumentException();
+                  case 1:
+                  case 2:
+                  case 3:
+                  default:
+                     graphics.invert(x, y, width, height);
+                     break label122;
+               }
+            case 1:
+               switch (style) {
+                  case -1:
+                     break label122;
+                  case 0:
+                     throw new IllegalArgumentException();
+                  case 2:
+                     graphics.invert(x, y, width, height);
+                     break label122;
+                  case 3:
+                  default:
+                     graphics.invert(x, y, width, height);
+                  case 1:
+                     int mid = y + (height >> 1);
+                     graphics.invert(x, mid, width, 1);
+                     break label122;
+               }
+            case 2:
+               if (on) {
+                  switch (style) {
+                     case -1:
+                        break label122;
+                     case 0:
+                        throw new IllegalArgumentException();
+                     case 1:
+                        graphics.drawRect(x, y, width, height);
+                        break label122;
+                     case 3:
+                     default:
+                        graphics.drawRect(x, y, width, height);
+                     case 2:
+                        graphics.invert(x, y, width, height);
+                  }
+               } else {
+                  boolean notEmpty = graphics.pushContext(x, y, width, height, 0, 0);
+                  if (notEmpty) {
+                     if (on) {
+                        graphics.setDrawingStyle(8, (style & 1) != 0);
+                        graphics.setDrawingStyle(16, (style & 2) != 0);
+                     }
+
+                     graphics.clear();
+                     int depth = graphics.getContextStackSize();
+                     this.paint(graphics);
+                     if (graphics.getContextStackSize() > depth) {
+                        throw new IllegalStackSizeException("push(dh1_ib)", this.getClass(), graphics, depth);
+                     }
+
+                     if (graphics.getContextStackSize() < depth) {
+                        throw new IllegalStackSizeException("pop(dhl_ib)", this.getClass(), graphics, depth);
+                     }
+                  }
+
+                  graphics.popContext();
+               }
+               break;
+            case 3:
+               boolean notEmpty = graphics.pushContext(x, y, width, height, 0, 0);
+               if (notEmpty) {
+                  if (!on) {
+                     if (!this.isFocusDrawn()) {
+                        graphics.clear();
+                     }
+                  } else {
+                     graphics.setDrawingStyle(8, (style & 1) != 0);
+                     graphics.setDrawingStyle(16, (style & 2) != 0);
+                     switch (style) {
+                        case -1:
+                           break;
+                        case 0:
+                           throw new IllegalArgumentException();
+                        case 1:
+                        case 3:
+                        default:
+                           graphics.setColor(ThemeAttributeSet.getColor(this, 3));
+                           graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 2));
+                           break;
+                        case 2:
+                           graphics.setColor(ThemeAttributeSet.getColor(this, 5));
+                           graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 4));
+                     }
+
+                     graphics.setBackgroundImage(null, 0, 0);
+                     graphics.clear();
+                  }
+
+                  int depth = graphics.getContextStackSize();
+                  this.paint(graphics);
+                  if (graphics.getContextStackSize() > depth) {
+                     throw new IllegalStackSizeException("push(dhl_d)", this.getClass(), graphics, depth);
+                  }
+
+                  if (graphics.getContextStackSize() < depth) {
+                     throw new IllegalStackSizeException("pop(dhl_d)", this.getClass(), graphics, depth);
+                  }
+               }
+
+               graphics.popContext();
+               break;
+            case 4:
+               boolean notEmpty = graphics.pushContext(x, y, width, height, 0, 0);
+               if (notEmpty) {
+                  if (on) {
+                     graphics.setDrawingStyle(8, (style & 1) != 0);
+                     graphics.setDrawingStyle(16, (style & 2) != 0);
+                  }
+
+                  Background background;
+                  if ((background = ThemeAttributeSet.getBackground(this)) != null) {
+                     background.draw(graphics, this._content);
+                  } else {
+                     graphics.clear();
+                  }
+
+                  int depth = graphics.getContextStackSize();
+                  this.paint(graphics);
+                  if (graphics.getContextStackSize() > depth) {
+                     throw new IllegalStackSizeException("push(dhl_c)", this.getClass(), graphics, depth);
+                  }
+
+                  if (graphics.getContextStackSize() < depth) {
+                     throw new IllegalStackSizeException("pop(dhl_c)", this.getClass(), graphics, depth);
+                  }
+               }
+
+               graphics.popContext();
+         }
+
+         this._inDrawHighlightRegion = false;
+      }
    }
 
    protected void fieldChangeNotify(int context) {
@@ -312,7 +474,14 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void focusAdd(boolean draw) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this instanceof Manager) {
+         throw new IllegalArgumentException("Field.focusAdd called on non-leaf field.");
+      }
+
+      Screen screen = this.getScreen();
+      if (screen != null) {
+         screen.doAddFocus(draw);
+      }
    }
 
    public void focusChangeNotify(int action) {
@@ -339,7 +508,14 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void focusRemove() {
-      throw new RuntimeException("cod2jar: ldc");
+      if (this instanceof Manager) {
+         throw new IllegalArgumentException("Field.focusRemove called on non-leaf field.");
+      }
+
+      Screen screen = this.getScreen();
+      if (screen != null) {
+         screen.doRemoveFocus();
+      }
    }
 
    public final Border getBorder() {
@@ -984,7 +1160,21 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected final void updateLayoutNowOrLater() {
-      throw new RuntimeException("cod2jar: ldc");
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      Class[] stack = TraceBack.getCallingClasses();
+      if (!stack[1].getName().startsWith("net.rim.device.api.ui")) {
+         throw new ControlledAccessException();
+      }
+
+      if (!this.isEventLockRequired()) {
+         this.updateLayoutHelper();
+      } else {
+         if (this._layoutRunnable == null) {
+            this._layoutRunnable = new Field$UpdateLayoutRunnable(this);
+         }
+
+         this._layoutRunnable.invokeLater();
+      }
    }
 
    public void select(boolean enable) {
@@ -1035,7 +1225,11 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public void setChangeListener(FieldChangeListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener != null && this._changeListener != null) {
+         throw new IllegalStateException("Multiple change listeners not allowed.");
+      }
+
+      this._changeListener = listener;
    }
 
    public final void setCookie(Object cookie) {
@@ -1069,11 +1263,22 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public void setFocus() {
-      throw new RuntimeException("cod2jar: ldc");
+      Screen scr = this.getScreen();
+      if (scr == null) {
+         throw new IllegalStateException("setFocus called on a field that is not attached to a screen.");
+      }
+
+      if (this.isFocusable()) {
+         scr.setFocus(this);
+      }
    }
 
    public void setFocusListener(FocusChangeListener listener) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (listener != null && this._focusListener != null) {
+         throw new IllegalStateException("Multiple focus listeners not allowed.");
+      }
+
+      this._focusListener = listener;
    }
 
    public void setId(String idName) {
@@ -1085,7 +1290,23 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    void setManager(Manager manager, int index) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (manager == null) {
+         if (this._manager == null) {
+            throw new IllegalStateException("Field removed from a manager but it isn't parented.");
+         }
+
+         this._index = -1;
+         this.invalidateLayout0();
+         this._extent.set(0, 0, 0, 0);
+      } else {
+         if (this._manager != null) {
+            throw new IllegalStateException("Field added to a manager while it is already parented.");
+         }
+
+         this._index = index;
+      }
+
+      this._manager = manager;
    }
 
    public void setMargin(int top, int right, int bottom, int left) {
@@ -1485,7 +1706,21 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    private final void updateLayoutHelper() {
-      throw new RuntimeException("cod2jar: ldc");
+      this.assertHaveEventLock();
+      Screen screen = this.getScreen();
+      if (screen != null && screen.isInLayout()) {
+         throw new IllegalStateException("Layout requested during layout");
+      }
+
+      if (this._manager != null && this._manager.isValidLayout()) {
+         this._manager.runLayoutUpdate(this.getIndex(), 1, 1);
+      } else if (this == screen && screen.isValidLayout()) {
+         screen.runLayoutUpdate0(0, 1, 1);
+      }
+
+      if (this._layoutRunnable != null) {
+         this._layoutRunnable._layoutPending = false;
+      }
    }
 
    private final void updateExtent() {

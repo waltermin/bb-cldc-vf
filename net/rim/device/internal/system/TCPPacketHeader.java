@@ -77,7 +77,9 @@ public final class TCPPacketHeader implements RadioPacketHeader {
    }
 
    private final void checkPortRange(int port) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (port < 0 || port > 65535) {
+         throw new IllegalArgumentException("port out range:" + port);
+      }
    }
 
    public static final byte[] IPv4IntToByteArray(int address) {
@@ -85,7 +87,11 @@ public final class TCPPacketHeader implements RadioPacketHeader {
    }
 
    public static final int IPv4ByteArrayToInt(byte[] address) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (address.length < 4) {
+         throw new IllegalArgumentException("invalid IP address: " + address);
+      } else {
+         return (address[0] & 0xFF) << 24 | (address[1] & 0xFF) << 16 | (address[2] & 0xFF) << 8 | address[3] & 0xFF;
+      }
    }
 
    public static final int getMaxPacketSize() {

@@ -12,7 +12,9 @@ import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.i18n.CommonResource;
@@ -89,7 +91,10 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: ldc");
+      super.applyTheme();
+      Theme theme = ThemeManager.getActiveTheme();
+      this._tasRowEven = theme.getAttributeSet(Tag.create(this.getTag().toString() + "-row-even"));
+      this._tasRowOdd = theme.getAttributeSet(Tag.create(this.getTag().toString() + "-row-odd"));
    }
 
    private void calcFocusRect(boolean move) {
@@ -695,7 +700,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
 
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
    }
 
    private boolean searchEntryFor(String prefix, int start) {
@@ -745,7 +750,22 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public void setRowHeight(int rowHeight) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (rowHeight != 0 && rowHeight >= -100) {
+         this._rowHeightSet = rowHeight;
+         if (this._rowHeightSet < 0) {
+            this._rowHeight = this.getFont().getHeight() * -this._rowHeightSet;
+         } else {
+            this._rowHeight = this._rowHeightSet;
+         }
+
+         this._rowHeightAdjuster.setRowHeight(this._rowHeight);
+         if (this.getScreen() != null) {
+            this.applyFont();
+            this.triggerUpdateLayout();
+         }
+      } else {
+         throw new IllegalArgumentException("Invalid rowHeight");
+      }
    }
 
    public void setRowHeight(int row, int rowHeight) {

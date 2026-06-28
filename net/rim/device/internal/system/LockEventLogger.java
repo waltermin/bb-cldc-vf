@@ -1,5 +1,8 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.DeviceInfo;
+import net.rim.device.api.system.EventLogger;
+
 public final class LockEventLogger {
    private static final long GUID;
    private static final String NAME;
@@ -26,7 +29,23 @@ public final class LockEventLogger {
    }
 
    public static final void logLockEvent(int code, int level) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (code == 1281977448) {
+         Security security = Security.getInstance();
+         if (DeviceInfo.isInHolster() || !security.isPasswordEnabled()) {
+            return;
+         }
+
+         if (security.activateLongTermTimeOut()) {
+            code = 1282176116;
+         } else {
+            code = 1281975412;
+         }
+      }
+
+      if (!EventLogger.logEvent(-785375246662306450L, code, level)) {
+         EventLogger.register(-785375246662306450L, "Device Lock Command", 2);
+         EventLogger.logEvent(-785375246662306450L, code, level);
+      }
    }
 
    private LockEventLogger() {

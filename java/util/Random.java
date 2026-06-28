@@ -35,7 +35,22 @@ public class Random {
    }
 
    public int nextInt(int n) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (n <= 0) {
+         throw new IllegalArgumentException("n must be positive");
+      }
+
+      if ((n & -n) == n) {
+         return (int)((long)n * this.next(31) >> 31);
+      }
+
+      int bits;
+      int val;
+      do {
+         bits = this.next(31);
+         val = bits % n;
+      } while (bits - val + (n - 1) < 0);
+
+      return val;
    }
 
    public float nextFloat() {

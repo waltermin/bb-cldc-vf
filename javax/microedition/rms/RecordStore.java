@@ -35,7 +35,7 @@ public class RecordStore {
    }
 
    public static RecordStore openRecordStore(String recordStoreName, String vendorName, String suiteName) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    public void setMode(int authmode, boolean writable) {

@@ -3,6 +3,7 @@ package javax.microedition.midlet;
 import java.io.IOException;
 import javax.microedition.io.Connection;
 import javax.microedition.io.PushRegistry;
+import net.rim.device.api.system.EventLogger;
 
 final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
    private String _connectionString;
@@ -17,6 +18,10 @@ final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
    private static final String LOGGER_NAME;
 
    public MIDletMain$MIDletPushRegistryWorkerThread(MIDletMain _1, String connection) {
+      this.this$0 = _1;
+      this._askUser = true;
+      this._connectionString = connection;
+      EventLogger.register(3284866745973826674L, "MIDletPushRegistryWorkerThread", 2);
    }
 
    public final void shutdown() {
@@ -45,7 +50,7 @@ final class MIDletMain$MIDletPushRegistryWorkerThread extends Thread {
 
    @Override
    public final void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private final synchronized void waitForResume() {

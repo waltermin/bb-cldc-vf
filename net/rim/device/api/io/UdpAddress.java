@@ -203,7 +203,69 @@ public class UdpAddress extends DatagramAddressBase {
    private static void appendAddress(
       StringBuffer buf, boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int type, String apnUsername, String apnPassword
    ) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (open) {
+         buf.append("udp:");
+         buf.append('/');
+         buf.append('/');
+      }
+
+      if (ipAddress != null && DatagramAddressBase.readInt(ipAddress, 0) != -1) {
+         if (!open) {
+            buf.append('/');
+            buf.append('/');
+         }
+
+         buf.append(ipAddress[0] & 255);
+         buf.append('.');
+         buf.append(ipAddress[1] & 255);
+         buf.append('.');
+         buf.append(ipAddress[2] & 255);
+         buf.append('.');
+         buf.append(ipAddress[3] & 255);
+      }
+
+      if (destPort != -1) {
+         buf.append(':');
+         buf.append(destPort);
+      }
+
+      if (srcPort != -1) {
+         buf.append(';');
+         buf.append(srcPort);
+      }
+
+      if (apn != null) {
+         buf.append('/');
+         buf.append(apn);
+      }
+
+      if (type != -1) {
+         if ((type & 1) != 0) {
+            buf.append("|UDP");
+         }
+
+         if ((type & 2) != 0) {
+            buf.append("|GPAK");
+         }
+
+         if ((type & 4) != 0) {
+            buf.append("|GCMP");
+         }
+      }
+
+      if (apnUsername != null) {
+         buf.append(';');
+         buf.append(USERNAME);
+         buf.append('=');
+         buf.append(apnUsername);
+      }
+
+      if (apnPassword != null) {
+         buf.append(';');
+         buf.append(PASSWORD);
+         buf.append('=');
+         buf.append(apnPassword);
+      }
    }
 
    public static byte[] parseIpAddress(String address, int offset) {

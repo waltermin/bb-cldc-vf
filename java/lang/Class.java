@@ -14,7 +14,14 @@ public final class Class {
 
    @Override
    public final String toString() {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer prefix;
+      if (this.isInterface()) {
+         prefix = new StringBuffer("interface");
+      } else {
+         prefix = new StringBuffer("class");
+      }
+
+      return prefix.append(' ').append(this.getName()).toString();
    }
 
    public static final Class forName(String className) {
@@ -28,7 +35,15 @@ public final class Class {
    private final native Object newInstance0();
 
    public final Object newInstance() {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         return this.newInstance0();
+      } catch (IllegalAccessException iae) {
+         throw new IllegalAccessException("newInstance (" + this.getName() + ')');
+      } catch (InstantiationException ie) {
+         throw new InstantiationException("newInstance (" + this.getName() + ')');
+      } catch (OutOfMemoryError oome) {
+         throw new OutOfMemoryError("newInstance (" + this.getName() + ')');
+      }
    }
 
    public final native boolean isInstance(Object var1);
@@ -58,6 +73,6 @@ public final class Class {
    }
 
    private final String fixResourceName(String name) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 }

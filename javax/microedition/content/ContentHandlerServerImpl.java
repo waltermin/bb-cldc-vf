@@ -113,12 +113,40 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
 
    @Override
    public boolean isAccessAllowed(String ID) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (ID == null) {
+         throw new NullPointerException("ID is null");
+      }
+
+      if (this._accessAllowed != null && this._accessAllowed.length != 0) {
+         for (int i = 0; i < this._accessAllowed.length; i++) {
+            if (ID.startsWith(this._accessAllowed[i])) {
+               return true;
+            }
+         }
+
+         return false;
+      } else {
+         return true;
+      }
    }
 
    @Override
    public boolean finish(Invocation invocation, int status) {
-      throw new RuntimeException("cod2jar: ldc");
+      this.assertPermission();
+      if (status != 5 && status != 6 && status != 8) {
+         throw new IllegalArgumentException("Invalid status");
+      }
+
+      if (invocation.getStatus() != 2 && invocation.getStatus() != 4) {
+         throw new IllegalStateException("Invocation has invalid status");
+      }
+
+      InvocationCleanupManager.getInstance().removeActiveInvocation(Process.currentProcess().getProcessId(), invocation);
+      if (invocation.getResponseRequired()) {
+         RegistryImpl.invocationFinished(invocation, status);
+      }
+
+      return false;
    }
 
    @Override
@@ -157,7 +185,25 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    }
 
    private void checkActionNameMapArrayValues(ActionNameMap[] actionnames) {
-      throw new RuntimeException("cod2jar: ldc");
+      String[] locales = new String[actionnames.length];
+
+      for (int i = 0; i < actionnames.length; i++) {
+         if (actionnames[i].size() != super._actions.length) {
+            throw new IllegalArgumentException("Sequence of actions does not match the sequence in all ActionNameMaps");
+         }
+
+         for (int j = 0; j < super._actions.length; j++) {
+            if (!super._actions[j].equals(actionnames[i].getAction(j))) {
+               throw new IllegalArgumentException("Sequence of actions does not match the sequence in all ActionNameMaps");
+            }
+         }
+
+         locales[i] = actionnames[i].getLocale();
+      }
+
+      if (ContentHandlerUtilities.containsDuplicates(locales)) {
+         throw new IllegalArgumentException("ActionNameMap locales are not unique");
+      }
    }
 
    private void checkID(String ID) {

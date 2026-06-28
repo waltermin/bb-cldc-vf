@@ -67,7 +67,7 @@ public class InputStream {
    }
 
    public synchronized void reset() {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new IOException("mark/reset not supported");
    }
 
    public boolean markSupported() {

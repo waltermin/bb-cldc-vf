@@ -98,6 +98,14 @@ public final class ICMPPacketHeader implements RadioPacketHeader {
    }
 
    public static final int IPv4ByteArrayToInt(byte[] address) {
-      throw new RuntimeException("cod2jar: ldc");
+      if (address.length < 4) {
+         throw new IllegalArgumentException("invalid IP address: " + address);
+      }
+
+      int ch1 = address[0] & 255;
+      int ch2 = address[1] & 255;
+      int ch3 = address[2] & 255;
+      int ch4 = address[3] & 255;
+      return (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
    }
 }

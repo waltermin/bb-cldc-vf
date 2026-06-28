@@ -2,9 +2,13 @@ package net.rim.device.internal.system;
 
 import net.rim.device.api.crypto.Digest;
 import net.rim.device.api.crypto.MIDletSecurityCrypto;
+import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.ui.component.BackgroundDialog;
 import net.rim.vm.Array;
+import net.rim.vm.DebugSupport;
 
 public final class MIDletSecurity {
    public static final long MIDLET_UNTRUSTED_POLICY_GUID;
@@ -28,7 +32,13 @@ public final class MIDletSecurity {
    }
 
    private static final void setAllConnectors(byte[] policy, byte setting) {
-      throw new RuntimeException("cod2jar: ldc");
+      String connectorPrefix = "javax.microedition.io.Connector.";
+
+      for (int i = 0; i < 40; i++) {
+         if (MIDletSecurityConstants.MIDletPermissions[i].startsWith(connectorPrefix)) {
+            policy[i] = setting;
+         }
+      }
    }
 
    public static final byte[] ensureDefaultUntrustedPolicyInstalled() {
@@ -119,7 +129,26 @@ public final class MIDletSecurity {
    }
 
    private static final int askUser(int perm, int setting, String target) {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (_userLock) {
+         String parm = DebugSupport.getenv("MIDP20SecurityOverride");
+         if (parm != null) {
+            return StringUtilities.strEqualIgnoreCase(parm, "No", 1701707776) ? 0 : 6;
+         }
+
+         int var10000;
+         try {
+            int finalperm = perm;
+            int finalsetting = setting;
+            ApplicationDescriptor finaldescriptor = ApplicationDescriptor.currentApplicationDescriptor();
+            MIDletSecurity$PermDialog pd = new MIDletSecurity$PermDialog(finalperm, finalsetting, finaldescriptor, target);
+            BackgroundDialog.showOnProxy(pd);
+            var10000 = pd._setting;
+         } catch (Throwable var10) {
+            return 0;
+         }
+
+         return var10000;
+      }
    }
 
    private static final void updateForGroup(byte[] settings, int perm, int groupSetting) {
@@ -288,7 +317,12 @@ public final class MIDletSecurity {
    }
 
    public static final String getMIDletCertificateTag(int n, int m) {
-      throw new RuntimeException("cod2jar: ldc");
+      StringBuffer buff = new StringBuffer(48);
+      buff.append("MIDlet-Certificate-");
+      buff.append(n);
+      buff.append('-');
+      buff.append(m);
+      return buff.toString();
    }
 
    public static final int checkJADCertChain(String[] certs) {
@@ -431,7 +465,35 @@ public final class MIDletSecurity {
    }
 
    public static final void installRootDomain(byte[] sha1, byte[] policy) {
-      throw new RuntimeException("cod2jar: ldc");
+      policy = cleansePolicy(policy);
+      int policyLen = policy.length;
+      int sha1Len = sha1.length;
+
+      for (int field = 26; field <= 30; field++) {
+         byte[] probe = NvStore.readData(field);
+         if (probe != null && Arrays.equals(probe, 0, sha1, 0, sha1Len)) {
+            if (probe[sha1Len] == policyLen && Arrays.equals(probe, sha1Len + 1, policy, 0, policyLen)) {
+               return;
+            }
+
+            probe = null;
+         }
+
+         if (probe == null) {
+            int len = sha1Len + 1 + policyLen;
+            byte[] data = new byte[len];
+            System.arraycopy(sha1, 0, data, 0, sha1Len);
+            data[sha1Len] = (byte)policyLen;
+            System.arraycopy(policy, 0, data, sha1Len + 1, policyLen);
+            if (!NvStore.writeData(field, data)) {
+               throw new RuntimeException("IRDE");
+            }
+
+            return;
+         }
+      }
+
+      throw new RuntimeException("TMRD");
    }
 
    public static final boolean prepareForRootDomainInstallation() {

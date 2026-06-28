@@ -51,7 +51,7 @@ class SmileySupport {
    }
 
    String getDecodedString(int start, int end) {
-      throw new RuntimeException("cod2jar: ldc");
+      return start == end ? "" : new String(this.getDecodedText(start, end));
    }
 
    StringBufferGap getDecodedTextAbstractString(int start, int end) {
@@ -86,7 +86,7 @@ class SmileySupport {
    }
 
    private boolean isHttpConflict(StringPattern$Match match) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    private int smileyScan(int start, int end) {

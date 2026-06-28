@@ -1,7 +1,9 @@
 package net.rim.device.api.io;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import net.rim.device.api.system.ApplicationProcess;
+import net.rim.device.internal.io.file.FileSystemInfo;
 import net.rim.vm.Process;
 
 public final class FileOutputStream extends OutputStream {
@@ -13,6 +15,18 @@ public final class FileOutputStream extends OutputStream {
    private Runnable _cleanupRunnable;
 
    public FileOutputStream(int fs, String fileName) {
+      if (fs != 0) {
+         throw new IllegalArgumentException("Wrong API, use javax.microedition.io.file");
+      }
+
+      this._dispatcher = File.getEventDispatcher();
+      FileSystemInfo fsInfo = File.getFileSystemInfo(fs);
+      this._buffer = new byte[fsInfo.getMaxWriteLength()];
+      this._offset = 0;
+      this._available = this._buffer.length;
+      this._handle = File.open(fs, fileName, 6);
+      this._cleanupRunnable = new FileOutputStream$FileOutputStreamCleanupRunnable(this);
+      ((ApplicationProcess)Process.currentProcess()).addCleanupRunnable(this._cleanupRunnable);
    }
 
    @Override
@@ -43,7 +57,23 @@ public final class FileOutputStream extends OutputStream {
 
    @Override
    public final synchronized void flush() {
-      throw new RuntimeException("cod2jar: ldc");
+      synchronized (this._dispatcher) {
+         if (this._handle == -1) {
+            throw new IOException("File not open");
+         }
+
+         int bytesToWrite = this._buffer.length - this._available;
+         if (bytesToWrite != 0) {
+            int status = File.write(this._handle, this._buffer, bytesToWrite);
+            if (!File.checkStatus(status)) {
+               status = this._dispatcher.waitForCompletion(3);
+               File.checkStatus(status);
+            }
+
+            this._offset = 0;
+            this._available = this._buffer.length;
+         }
+      }
    }
 
    @Override

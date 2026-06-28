@@ -6,10 +6,14 @@ import net.rim.device.internal.ui.IconCollection;
 
 class VolumeControlDialog$VolumeGraphicsField extends Field {
    private int _index;
-   private IconCollection _icons;
+   private IconCollection _icons = IconCollection.get("net_rim_Volume", 11);
    private static final int NUM_ICONS;
    private static final int DEFAULT_WIDTH;
    private static final int DEFAULT_HEIGHT;
+
+   VolumeControlDialog$VolumeGraphicsField() {
+      this._index = 0;
+   }
 
    public void changeIndex(int index) {
       if (this._index != index) {

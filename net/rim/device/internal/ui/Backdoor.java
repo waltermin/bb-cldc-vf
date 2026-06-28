@@ -3,6 +3,8 @@ package net.rim.device.internal.ui;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.Screen;
+import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.Menu;
 
 public class Backdoor implements Runnable {
@@ -19,15 +21,62 @@ public class Backdoor implements Runnable {
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      this._menu = new Menu();
+      this._menu.add(new Backdoor$MyMenuItem(this, "Dump Screen", 1));
+      this._menu.add(new Backdoor$MyMenuItem(this, "Time Keystrokes", 2));
+      this._menu.add(new Backdoor$MyMenuItem(this, "Repaint Screen", 3));
+      this._menu.add(new Backdoor$MyMenuItem(this, "Time Repaint", 4));
+      this._menu.add(new Backdoor$MyMenuItem(this, "Dump Cache Stats", 5));
+      this._menu.add(new Backdoor$MyMenuItem(this, "Clear Cache Stats", 6));
+      this._menu.show();
    }
 
    private void timeRepaint() {
-      throw new RuntimeException("cod2jar: ldc");
+      Screen scr = UiApplication.getUiApplication().getActiveScreen();
+      if (scr != null) {
+         long start = System.currentTimeMillis();
+
+         for (int i = 0; i < 100; i++) {
+            UiApplication.getUiApplication().repaint();
+         }
+
+         long end = System.currentTimeMillis();
+         long elapsed = end - start;
+         Dialog.inform("100 iterations in " + sayTime(elapsed) + "s. " + ' ' + sayTime(elapsed * 1000 / 100) + "ms per iteration.");
+      }
    }
 
    private String styleToString(long style) {
-      throw new RuntimeException("cod2jar: ldc");
+      String str = "";
+      if ((style & 1152921504606846976L) > 0) {
+         str = str + "AW ";
+      }
+
+      if ((style & 2305843009213693952L) > 0) {
+         str = str + "AH ";
+      }
+
+      if ((style & 18014398509481984L) > 0) {
+         str = str + "FOCUS ";
+      }
+
+      if ((style & 281474976710656L) > 0) {
+         str = str + "VS ";
+      }
+
+      if ((style & 17592186044416L) > 0) {
+         str = str + "VSB ";
+      }
+
+      if ((style & 1125899906842624L) > 0) {
+         str = str + "HS ";
+      }
+
+      if ((style & 70368744177664L) > 0) {
+         str = str + "HSB ";
+      }
+
+      return str.trim();
    }
 
    private String formatClassName(Object obj) {
@@ -35,22 +84,47 @@ public class Backdoor implements Runnable {
    }
 
    private void dumpField(Field field, String indent, boolean focus) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private void validateManager(Manager manager, String indent, boolean focusState) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: type check");
    }
 
    private void validate(Screen screen) {
-      throw new RuntimeException("cod2jar: ldc");
+      System.out.println("Dumping screen: " + this.formatClassName(screen));
+      this.validateManager(screen.getDelegate(), "", true);
    }
 
    static String sayTime(long time) {
-      throw new RuntimeException("cod2jar: ldc");
+      int secs = (int)(time / 1000);
+      int millis = (int)(time - secs * 1000);
+      String suffix;
+      if (millis < 10) {
+         suffix = ".00" + millis;
+      } else if (millis < 100) {
+         suffix = ".0" + millis;
+      } else {
+         suffix = "." + millis;
+      }
+
+      return "" + secs + suffix;
    }
 
    private void dumpCacheStats() {
-      throw new RuntimeException("cod2jar: ldc");
+      int[] stats = UiInternal.getCacheStatistics();
+      StringBuffer strBuf = new StringBuffer(128);
+      strBuf.append("BM Cache Stats\n");
+      if (stats != null) {
+         for (int i = 0; i < CACHE_STAT_NAMES.length; i++) {
+            strBuf.append(CACHE_STAT_NAMES[i]);
+            strBuf.append(stats[i]);
+            strBuf.append('\n');
+         }
+      } else {
+         strBuf.append("Unable to retrieve");
+      }
+
+      Dialog.inform(strBuf.toString());
    }
 }

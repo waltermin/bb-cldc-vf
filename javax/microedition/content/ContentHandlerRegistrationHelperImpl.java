@@ -21,12 +21,12 @@ class ContentHandlerRegistrationHelperImpl extends ContentHandlerRegistrationHel
 
    @Override
    public int verifyJadAttributes(Hashtable jadAttributes, boolean upgrade) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override
    public void registerContentHandlers(int moduleHandle) {
-      throw new RuntimeException("cod2jar: ldc");
+      throw new RuntimeException("cod2jar: string-special");
    }
 
    @Override

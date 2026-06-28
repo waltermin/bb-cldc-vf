@@ -9,6 +9,7 @@ import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.component.RichTextField;
+import net.rim.device.api.ui.component.SeparatorField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.api.ui.container.PopupScreen;
 import net.rim.device.api.ui.container.VerticalFieldManager;
@@ -22,9 +23,28 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
    private ButtonField _okButton;
    private VerticalFieldManager _vfmScroll;
    private boolean _startupRun;
-   private final ResourceBundle _rb;
+   private final ResourceBundle _rb = ResourceBundle.getBundle(-1504593620783806182L, "net.rim.device.internal.resource.SelfTests");
 
    SelfTestsDialog(SelfTests selfTests, String[] tests, boolean startupRun, boolean[] testResults) {
+      super(new VerticalFieldManager());
+      this._startupRun = startupRun;
+      this._selfTests = selfTests;
+      this._tests = tests;
+      if (testResults == null) {
+         this._testResults = new boolean[tests.length];
+      } else {
+         this._testResults = testResults;
+      }
+
+      this._vfmScroll = new VerticalFieldManager(299067162755072L);
+      this.add(new RichTextField(this._rb.getString(5), 36028797018963968L));
+      this.add(new SeparatorField());
+      this._listField = new ListField(tests.length);
+      this._listField.setCallback(this);
+      this._vfmScroll.add(this._listField);
+      this._vfmScroll.add(new SeparatorField(1152921504606846976L));
+      this.add(this._vfmScroll);
+      this._listField.setFocus();
    }
 
    final void display() {

@@ -1,6 +1,8 @@
 package net.rim.device.internal.system;
 
+import java.io.UnsupportedEncodingException;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.system.RadioInfo;
 
 public final class PhoneFirmwareImpl {
    public static final long GUID_CDMA_FLASH;
@@ -59,7 +61,12 @@ public final class PhoneFirmwareImpl {
    public static final native String getCallPhoneNumber(int var0, boolean var1);
 
    public static final String getCallName(int callId, boolean original) {
-      throw new RuntimeException("cod2jar: ldc");
+      try {
+         byte[] data = getCallName0(callId, original);
+         return (RadioInfo.getActiveWAFs() & 1) != 0 ? new String(data, "SMS") : new String(data);
+      } catch (UnsupportedEncodingException ex) {
+         return null;
+      }
    }
 
    private static final native byte[] getCallName0(int var0, boolean var1);

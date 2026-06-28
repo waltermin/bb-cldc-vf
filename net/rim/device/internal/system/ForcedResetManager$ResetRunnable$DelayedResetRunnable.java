@@ -1,5 +1,9 @@
 package net.rim.device.internal.system;
 
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.ui.component.Status;
+import net.rim.device.internal.i18n.CommonResource;
+
 class ForcedResetManager$ResetRunnable$DelayedResetRunnable implements Runnable {
    String _message;
    int _variant;
@@ -13,6 +17,8 @@ class ForcedResetManager$ResetRunnable$DelayedResetRunnable implements Runnable 
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: ldc");
+      new ForcedResetManager$ResetRunnable$DelayedResetRunnable$1(this).start();
+      System.out.println("Showing status...");
+      Status.show(CommonResource.getString(10101), Bitmap.getPredefinedBitmap(3), 2000, 33554432, false, true, -2147483647);
    }
 }
