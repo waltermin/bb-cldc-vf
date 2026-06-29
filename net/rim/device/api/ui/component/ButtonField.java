@@ -63,7 +63,7 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
    }
 
    public void setImage(Image image) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._image = image;
    }
 
    public void setImageSize(int width, int height) {
@@ -152,7 +152,20 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    protected void drawFocus(Graphics graphics, boolean on) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      graphics.setDrawingStyle(8, false);
+      if (on && this._active && this._attrActive != null) {
+         this.setThemeAttributesSpecial(this._attrActive, graphics);
+      } else {
+         this.setThemeAttributesSpecial(on ? this._attrFocus : this._attrNormal, graphics);
+      }
+
+      Font font = this.getFontIfSet();
+      if (font != null) {
+         graphics.setFont(font);
+      }
+
+      this.paint(graphics);
+      this.setThemeAttributesSpecial(null, null);
    }
 
    private void calculateFocusDifference() {
@@ -499,7 +512,29 @@ public class ButtonField extends Field implements DrawStyle, FieldLabelProvider 
 
    @Override
    public void setBorder(int state, Border border) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.setBorder(state, null);
+      switch (state) {
+         case 0:
+            this._borderAll = border;
+            this._borderAllSet = border != null;
+         default:
+            return;
+         case 4:
+            this._borderActive = border;
+            this._borderActiveSet = border != null;
+            return;
+         case 6:
+            this._borderFocus = border;
+            this._borderFocusSet = border != null;
+            return;
+         case 7:
+            this._borderDisabled = border;
+            this._borderDisabledSet = border != null;
+            return;
+         case 8:
+            this._borderDisabledFocus = border;
+            this._borderDisabledFocusSet = border != null;
+      }
    }
 
    @Override

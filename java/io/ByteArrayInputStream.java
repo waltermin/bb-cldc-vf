@@ -21,7 +21,7 @@ public class ByteArrayInputStream extends InputStream {
 
    @Override
    public synchronized int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return this.pos < this.count ? this.buf[this.pos++] & 0xFF : -1;
    }
 
    @Override

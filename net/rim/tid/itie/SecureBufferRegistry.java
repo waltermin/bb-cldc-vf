@@ -2,6 +2,8 @@ package net.rim.tid.itie;
 
 import net.rim.device.api.memorycleaner.MemoryCleanerListener;
 import net.rim.device.api.memorycleaner.MemoryCleanerManager;
+import net.rim.vm.Array;
+import net.rim.vm.Memory;
 import net.rim.vm.WeakReference;
 
 class SecureBufferRegistry implements MemoryCleanerListener {
@@ -18,7 +20,29 @@ class SecureBufferRegistry implements MemoryCleanerListener {
    }
 
    synchronized void registerBuffer(ISecureInputMethodBuffer buffer) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._firstNullCell < this._buffer.length) {
+         this._buffer[this._firstNullCell++] = new WeakReference(buffer);
+      } else {
+         if (this._lastEmptyIndex > 250) {
+            Memory.fullGC();
+            this._lastEmptyIndex = -1;
+         }
+
+         for (int i = this._lastEmptyIndex + 1; i < this._firstNullCell; i++) {
+            Object obj = this._buffer[i].get();
+            if (obj == null) {
+               this._buffer[i].set(buffer);
+               this._lastEmptyIndex = i;
+               return;
+            }
+         }
+
+         if (this._buffer.length + 20 <= 400) {
+            Array.resize(this._buffer, this._buffer.length + 20);
+            this._lastEmptyIndex = this._firstNullCell;
+            this._buffer[this._firstNullCell++] = new WeakReference(buffer);
+         }
+      }
    }
 
    @Override

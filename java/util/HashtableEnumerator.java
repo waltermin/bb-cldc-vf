@@ -33,6 +33,10 @@ class HashtableEnumerator implements Enumeration {
 
    @Override
    public Object nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getNextElement()) {
+         return this._table[this._index++];
+      } else {
+         throw new NoSuchElementException();
+      }
    }
 }

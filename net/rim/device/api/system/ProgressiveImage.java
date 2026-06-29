@@ -1,5 +1,7 @@
 package net.rim.device.api.system;
 
+import net.rim.device.api.math.Fixed32;
+
 public class ProgressiveImage extends EncodedImage {
    private boolean _appMode;
    private int _nextMissingChunk;
@@ -52,7 +54,28 @@ public class ProgressiveImage extends EncodedImage {
    }
 
    public boolean appendDataChunks(byte[] progressiveFile, int offset, int length) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._appMode) {
+         throw new UnsupportedOperationException();
+      }
+
+      if (this._outOfOrderChunks == null) {
+         return false;
+      }
+
+      parseProgressiveChunks(progressiveFile, offset, length, this._outOfOrderChunks, this._nextMissingChunk);
+      int numChunks = ((ProgressiveImage$ProgressiveImageInfo)super._info)._numChunks;
+
+      boolean updated;
+      for (updated = false; this._nextMissingChunk < numChunks && this._outOfOrderChunks[this._nextMissingChunk]._data != null; updated = true) {
+         super._length = appendChunk(super._data, super._offset, super._length, this._outOfOrderChunks[this._nextMissingChunk]);
+         this._outOfOrderChunks[this._nextMissingChunk++] = null;
+      }
+
+      if (this._nextMissingChunk == numChunks) {
+         this._outOfOrderChunks = null;
+      }
+
+      return updated;
    }
 
    public int updateLength(int newLength) {
@@ -147,7 +170,35 @@ public class ProgressiveImage extends EncodedImage {
    }
 
    public boolean isReplacementImageNecessary(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!this._isReplacementNecessaryDetermined) {
+         int imageType = this.getImageType();
+         if (imageType == 8) {
+            this._isReplacementNecessary = this.getWidth() * this.getHeight() > 76800;
+         } else {
+            if (imageType != 7) {
+               throw new IllegalArgumentException();
+            }
+
+            int version = getRWIVersion(super._data, super._offset, super._length);
+            if (version == 1) {
+               this._isReplacementNecessary = true;
+            } else {
+               if (version != 2) {
+                  throw new IllegalArgumentException();
+               }
+
+               int viewableWidth = Fixed32.toInt(Fixed32.mul(Fixed32.toFP(width), this.getScaleX32()));
+               viewableWidth = Math.min(viewableWidth, this.getWidth());
+               int viewableHeight = Fixed32.toInt(Fixed32.mul(Fixed32.toFP(height), this.getScaleY32()));
+               viewableHeight = Math.min(viewableHeight, this.getHeight());
+               this._isReplacementNecessary = viewableWidth * viewableHeight > 76800;
+            }
+         }
+
+         this._isReplacementNecessaryDetermined = true;
+      }
+
+      return this._isReplacementNecessary;
    }
 
    public static native boolean isProgressiveSupported();

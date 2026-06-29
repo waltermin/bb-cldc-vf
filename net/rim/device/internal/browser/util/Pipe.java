@@ -70,7 +70,77 @@ public final class Pipe implements Persistable {
    }
 
    public final synchronized int read(PipeContext position) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!position._readClosed && position._availableBytes > 0) {
+         try {
+            byte[] curPacket = (byte[])this._window[position._currentPacket];
+            if (position._currentReadPos < curPacket.length) {
+               position._numRead++;
+               if (position._availableBytes != Integer.MAX_VALUE) {
+                  position._availableBytes--;
+               }
+
+               return curPacket[position._currentReadPos++] & 0xFF;
+            } else {
+               if (this._writeClosed) {
+                  return this.fastRead(position);
+               }
+
+               while (true) {
+                  int nextPos = position._currentPacket + 1;
+                  if (this._window.length > nextPos && this._window[nextPos] != null && this._window[nextPos].length > 0) {
+                     position._currentReadPos = 1;
+                     position._currentPacket = nextPos;
+                     position._numRead++;
+                     if (position._availableBytes != Integer.MAX_VALUE) {
+                        position._availableBytes--;
+                     }
+
+                     return this._window[position._currentPacket][0] & 0xFF;
+                  }
+
+                  try {
+                     long timeBefore = System.currentTimeMillis();
+                     if (TimeLogger._loggingEnabled) {
+                        TimeLogger.getInstance().startTimer(13, (int)timeBefore);
+                     }
+
+                     EventLogger.logEvent(1907089860548946979L, 1114666867, 5);
+                     this.wait(this._timeout);
+                     EventLogger.logEvent(1907089860548946979L, 1114666854, 5);
+                     if (TimeLogger._loggingEnabled) {
+                        TimeLogger.getInstance().stopTimer(13, (int)timeBefore);
+                     }
+
+                     if (this._readKicked) {
+                        this._readKicked = false;
+                     } else {
+                        if (System.currentTimeMillis() > timeBefore + this._timeout || position._readClosed) {
+                           return -1;
+                        }
+
+                        if (this._writeClosed) {
+                           return this.fastRead(position);
+                        }
+
+                        if (position._currentReadPos < this._window[position._currentPacket].length) {
+                           position._numRead++;
+                           if (position._availableBytes != Integer.MAX_VALUE) {
+                              position._availableBytes--;
+                           }
+
+                           return this._window[position._currentPacket][position._currentReadPos++] & 0xFF;
+                        }
+                     }
+                  } catch (InterruptedException var6) {
+                  }
+               }
+            }
+         } catch (Exception var7) {
+            return -1;
+         }
+      } else {
+         return -1;
+      }
    }
 
    public final synchronized int removeSections(int[] offsets, int[] lengths) {
@@ -149,16 +219,376 @@ public final class Pipe implements Persistable {
       }
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public final synchronized int read(byte[] bytes, int offset, int length, PipeContext position) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (position._readClosed || position._availableBytes <= 0) {
+         return -1;
+      }
+
+      if (length <= 0) {
+         return 0;
+      }
+
+      if (length > position._availableBytes) {
+         length = position._availableBytes;
+      }
+
+      int bytesRead = 0;
+      boolean var16 = false /* VF: Semaphore variable */;
+
+      int nextPos;
+      label258: {
+         int var21;
+         label259: {
+            label246: {
+               label245: {
+                  label260: {
+                     int var11;
+                     try {
+                        var16 = true;
+                        byte[] curPacket = this._window[position._currentPacket];
+                        if (position._currentReadPos + length < curPacket.length) {
+                           System.arraycopy(curPacket, position._currentReadPos, bytes, offset, length);
+                           position._currentReadPos += length;
+                           bytesRead = length;
+                           nextPos = length;
+                           var16 = false;
+                           break label258;
+                        }
+
+                        nextPos = position._currentPacket + 1;
+
+                        while (true) {
+                           if (length <= 0) {
+                              var16 = false;
+                              break label245;
+                           }
+
+                           int bytesRemaining = curPacket.length - position._currentReadPos;
+                           if (bytesRemaining >= length) {
+                              System.arraycopy(curPacket, position._currentReadPos, bytes, offset, length);
+                              position._currentReadPos += length;
+                              bytesRead += length;
+                              var21 = bytesRead;
+                              var16 = false;
+                              break label259;
+                           }
+
+                           if (bytesRemaining > 0) {
+                              System.arraycopy(curPacket, position._currentReadPos, bytes, offset, bytesRemaining);
+                              position._currentReadPos += bytesRemaining;
+                              offset += bytesRemaining;
+                              length -= bytesRemaining;
+                              bytesRead += bytesRemaining;
+                           } else if (this._window.length > nextPos && this._window[nextPos] != null && this._window[nextPos].length > 0) {
+                              position._currentReadPos = 0;
+                              position._currentPacket = nextPos;
+                              curPacket = this._window[position._currentPacket];
+                              nextPos = position._currentPacket + 1;
+                           } else {
+                              if (this._writeClosed) {
+                                 var16 = false;
+                                 break label245;
+                              }
+
+                              try {
+                                 long timeBefore = System.currentTimeMillis();
+                                 if (TimeLogger._loggingEnabled) {
+                                    TimeLogger.getInstance().startTimer(13, (int)timeBefore);
+                                 }
+
+                                 EventLogger.logEvent(1907089860548946979L, 1114666867, 5);
+                                 this.wait(this._timeout);
+                                 EventLogger.logEvent(1907089860548946979L, 1114666854, 5);
+                                 if (TimeLogger._loggingEnabled) {
+                                    TimeLogger.getInstance().stopTimer(13, (int)timeBefore);
+                                 }
+
+                                 if (this._readKicked) {
+                                    this._readKicked = false;
+                                 } else {
+                                    if (System.currentTimeMillis() > timeBefore + this._timeout || position._readClosed) {
+                                       var11 = bytesRead > 0 ? bytesRead : -1;
+                                       var16 = false;
+                                       break;
+                                    }
+
+                                    curPacket = this._window[position._currentPacket];
+                                 }
+                              } catch (InterruptedException var17) {
+                              }
+                           }
+                        }
+                     } catch (Exception var18) {
+                        var16 = false;
+                        break label260;
+                     } finally {
+                        if (var16) {
+                           if (bytesRead > 0) {
+                              if (position._availableBytes != Integer.MAX_VALUE) {
+                                 position._availableBytes -= bytesRead;
+                              }
+
+                              position._numRead += bytesRead;
+                           }
+                        }
+                     }
+
+                     if (bytesRead > 0) {
+                        if (position._availableBytes != Integer.MAX_VALUE) {
+                           position._availableBytes -= bytesRead;
+                        }
+
+                        position._numRead += bytesRead;
+                     }
+
+                     return var11;
+                  }
+
+                  if (bytesRead > 0) {
+                     if (position._availableBytes != Integer.MAX_VALUE) {
+                        position._availableBytes -= bytesRead;
+                     }
+
+                     position._numRead += bytesRead;
+                  }
+                  break label246;
+               }
+
+               if (bytesRead > 0) {
+                  if (position._availableBytes != Integer.MAX_VALUE) {
+                     position._availableBytes -= bytesRead;
+                  }
+
+                  position._numRead += bytesRead;
+               }
+            }
+
+            if (bytesRead > 0) {
+               return bytesRead;
+            }
+
+            return -1;
+         }
+
+         if (bytesRead > 0) {
+            if (position._availableBytes != Integer.MAX_VALUE) {
+               position._availableBytes -= bytesRead;
+            }
+
+            position._numRead += bytesRead;
+         }
+
+         return var21;
+      }
+
+      if (bytesRead > 0) {
+         if (position._availableBytes != Integer.MAX_VALUE) {
+            position._availableBytes -= bytesRead;
+         }
+
+         position._numRead += bytesRead;
+      }
+
+      return nextPos;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public final synchronized long skip(PipeContext position, long length) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (length > 0 && !position._readClosed && position._availableBytes > 0) {
+         if (length > position._availableBytes) {
+            length = position._availableBytes;
+         }
+
+         long bytesRead = 0;
+         boolean var17 = false /* VF: Semaphore variable */;
+
+         long var21;
+         label255: {
+            long timeBefore;
+            label256: {
+               label243: {
+                  label242: {
+                     label257: {
+                        long var11;
+                        try {
+                           var17 = true;
+                           byte[] curPacket = this._window[position._currentPacket];
+                           if (position._currentReadPos + length < curPacket.length) {
+                              position._currentReadPos = (int)(position._currentReadPos + length);
+                              bytesRead += length;
+                              var21 = length;
+                              var17 = false;
+                              break label255;
+                           }
+
+                           int nextPos = position._currentPacket + 1;
+
+                           while (true) {
+                              if (length <= 0) {
+                                 var17 = false;
+                                 break label242;
+                              }
+
+                              int bytesRemaining = curPacket.length - position._currentReadPos;
+                              if (bytesRemaining >= length) {
+                                 position._currentReadPos = (int)(position._currentReadPos + length);
+                                 bytesRead += length;
+                                 timeBefore = bytesRead;
+                                 var17 = false;
+                                 break label256;
+                              }
+
+                              if (bytesRemaining > 0) {
+                                 position._currentReadPos += bytesRemaining;
+                                 length -= bytesRemaining;
+                                 bytesRead += bytesRemaining;
+                              } else if (this._window.length > nextPos && this._window[nextPos] != null && this._window[nextPos].length > 0) {
+                                 position._currentReadPos = 0;
+                                 position._currentPacket = nextPos;
+                                 curPacket = this._window[position._currentPacket];
+                                 nextPos = position._currentPacket + 1;
+                              } else {
+                                 if (this._writeClosed) {
+                                    var17 = false;
+                                    break label242;
+                                 }
+
+                                 try {
+                                    timeBefore = System.currentTimeMillis();
+                                    if (TimeLogger._loggingEnabled) {
+                                       TimeLogger.getInstance().startTimer(13, (int)timeBefore);
+                                    }
+
+                                    EventLogger.logEvent(1907089860548946979L, 1114666867, 5);
+                                    this.wait(this._timeout);
+                                    EventLogger.logEvent(1907089860548946979L, 1114666854, 5);
+                                    if (TimeLogger._loggingEnabled) {
+                                       TimeLogger.getInstance().stopTimer(13, (int)timeBefore);
+                                    }
+
+                                    if (this._readKicked) {
+                                       this._readKicked = false;
+                                    } else {
+                                       if (System.currentTimeMillis() > timeBefore + this._timeout || position._readClosed) {
+                                          var11 = bytesRead > 0 ? bytesRead : -1;
+                                          var17 = false;
+                                          break;
+                                       }
+
+                                       curPacket = this._window[position._currentPacket];
+                                    }
+                                 } catch (InterruptedException var18) {
+                                 }
+                              }
+                           }
+                        } catch (Exception var19) {
+                           var17 = false;
+                           break label257;
+                        } finally {
+                           if (var17) {
+                              if (bytesRead > 0) {
+                                 if (position._availableBytes != Integer.MAX_VALUE) {
+                                    position._availableBytes = (int)(position._availableBytes - bytesRead);
+                                 }
+
+                                 position._numRead = (int)(position._numRead + bytesRead);
+                              }
+                           }
+                        }
+
+                        if (bytesRead > 0) {
+                           if (position._availableBytes != Integer.MAX_VALUE) {
+                              position._availableBytes = (int)(position._availableBytes - bytesRead);
+                           }
+
+                           position._numRead = (int)(position._numRead + bytesRead);
+                        }
+
+                        return var11;
+                     }
+
+                     if (bytesRead > 0) {
+                        if (position._availableBytes != Integer.MAX_VALUE) {
+                           position._availableBytes = (int)(position._availableBytes - bytesRead);
+                        }
+
+                        position._numRead = (int)(position._numRead + bytesRead);
+                     }
+                     break label243;
+                  }
+
+                  if (bytesRead > 0) {
+                     if (position._availableBytes != Integer.MAX_VALUE) {
+                        position._availableBytes = (int)(position._availableBytes - bytesRead);
+                     }
+
+                     position._numRead = (int)(position._numRead + bytesRead);
+                  }
+               }
+
+               if (bytesRead > 0) {
+                  return bytesRead;
+               }
+
+               return -1;
+            }
+
+            if (bytesRead > 0) {
+               if (position._availableBytes != Integer.MAX_VALUE) {
+                  position._availableBytes = (int)(position._availableBytes - bytesRead);
+               }
+
+               position._numRead = (int)(position._numRead + bytesRead);
+            }
+
+            return timeBefore;
+         }
+
+         if (bytesRead > 0) {
+            if (position._availableBytes != Integer.MAX_VALUE) {
+               position._availableBytes = (int)(position._availableBytes - bytesRead);
+            }
+
+            position._numRead = (int)(position._numRead + bytesRead);
+         }
+
+         return var21;
+      } else {
+         return 0;
+      }
    }
 
    public final int fastRead(PipeContext position) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!position._readClosed && position._availableBytes > 0) {
+         try {
+            int result;
+            try {
+               result = (int)this._window[position._currentPacket][position._currentReadPos++];
+            } catch (ArrayIndexOutOfBoundsException aiob) {
+               if (position._currentPacket >= this._window.length) {
+                  return -1;
+               }
+
+               position._currentReadPos = 1;
+               position._currentPacket++;
+               result = (int)this._window[position._currentPacket][0];
+            }
+
+            position._numRead++;
+            if (position._availableBytes != Integer.MAX_VALUE) {
+               position._availableBytes--;
+            }
+
+            return result & 0xFF;
+         } catch (Exception var5) {
+            return -1;
+         }
+      } else {
+         return -1;
+      }
    }
 
    public final synchronized int readCompressedInt(PipeContext position) {
@@ -386,11 +816,45 @@ public final class Pipe implements Persistable {
    }
 
    public final void setEstimatedSize(int size) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._estimatedSize = size;
    }
 
    public final synchronized int readByteArray(PipePtr ptr, int length, PipeContext position) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (position._readClosed || length < 0 || position._availableBytes <= 0) {
+         ptr.setLength(-1);
+         return -1;
+      }
+
+      if (length <= 0) {
+         ptr.setLength(0);
+         return 0;
+      }
+
+      if (length > position._availableBytes) {
+         length = position._availableBytes;
+      }
+
+      byte[] curPacket = (byte[])this._window[position._currentPacket];
+      if (position._currentReadPos + length < curPacket.length) {
+         ptr.setData(curPacket, position._currentReadPos, length, true);
+         position._currentReadPos += length;
+         position._numRead += length;
+         if (position._availableBytes != Integer.MAX_VALUE) {
+            position._availableBytes -= length;
+         }
+
+         return length;
+      } else {
+         byte[] data = new byte[length];
+         length = this.read(data, 0, length, position);
+         if (length > 0) {
+            ptr.setData(data, 0, length, false);
+            return length;
+         } else {
+            ptr.setLength(-1);
+            return -1;
+         }
+      }
    }
 
    public final synchronized PipeInputStream getInputStream() {
@@ -406,7 +870,7 @@ public final class Pipe implements Persistable {
    }
 
    public final void setTimeout(int timeout) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._timeout = timeout;
    }
 
    public final synchronized void kickReadTimer() {

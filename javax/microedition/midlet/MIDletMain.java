@@ -156,7 +156,7 @@ class MIDletMain extends MIDletApplication implements MIDletInterface, CommonRes
 
    @Override
    public void setForegroundable(boolean foregroundable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._foregroundable = foregroundable;
    }
 
    @Override

@@ -333,12 +333,76 @@ public class OptionsRegistry implements OptionsProvider, OptionsProviderChangeSo
 
    @Override
    public void setOptionsProviderChangeListener(OptionsProviderChangeListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._syncListener = listener;
    }
 
    @Override
    public void setOptionsData(DataBuffer buffer) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this._persistentData.clear();
+      if (buffer == null) {
+         this._persistent.commit();
+      } else {
+         for (DataBuffer temp = new DataBuffer(); buffer.available() > 0; temp.reset()) {
+            try {
+               byte[] bytes = ConverterUtilities.readByteArray(buffer);
+               temp.setData(bytes, 0, bytes.length);
+               long key = temp.readLong();
+               OptionsRegistry$ParameterDefinition pd = (OptionsRegistry$ParameterDefinition)this._parameterDefinitions.get(key);
+               int type = temp.readInt();
+               switch (type) {
+                  case -1:
+                  case 1:
+                     break;
+                  case 0:
+                  default:
+                     String valuexxxxxx = temp.readUTF();
+                     if (pd instanceof OptionsRegistry$StringParameterDefinition) {
+                        this.setString(key, valuexxxxxx);
+                     }
+                     break;
+                  case 2:
+                     int valuexxxxx = temp.readInt();
+                     if (pd instanceof OptionsRegistry$IntParameterDefinition) {
+                        this.setInt(key, valuexxxxx);
+                     } else if (pd instanceof OptionsRegistry$BooleanParameterDefinition) {
+                        this.setBoolean(key, valuexxxxx != 0);
+                     }
+                     break;
+                  case 3:
+                     long valuexxxx = temp.readLong();
+                     if (pd instanceof OptionsRegistry$LongParameterDefinition) {
+                        this.setLong(key, valuexxxx);
+                     }
+                     break;
+                  case 4:
+                     byte[] valuexx = temp.readByteArray();
+                     if (pd instanceof OptionsRegistry$ByteArrayParameterDefinition) {
+                        this.setByteArray(key, valuexx);
+                     }
+                     break;
+                  case 5:
+                     double valuexxx = temp.readDouble();
+                     if (pd instanceof OptionsRegistry$DoubleParameterDefinition) {
+                        this.setDouble(key, valuexxx);
+                     }
+                     break;
+                  case 6:
+                     boolean valuex = temp.readBoolean();
+                     if (pd instanceof OptionsRegistry$BooleanParameterDefinition) {
+                        this.setBoolean(key, valuex);
+                     }
+                     break;
+                  case 7:
+                     char value = temp.readChar();
+                     if (pd instanceof OptionsRegistry$CharParameterDefinition) {
+                        this.setChar(key, value);
+                     }
+               }
+            } catch (IllegalArgumentException var10) {
+            } catch (IOException var11) {
+            }
+         }
+      }
    }
 
    @Override

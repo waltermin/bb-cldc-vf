@@ -7,7 +7,7 @@ public class ComboFieldController {
    public static final int SELECT_ENTER;
 
    protected void setComboField(ComboField comboField) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._comboField = comboField;
    }
 
    protected void textChanged(String newText, int context) {

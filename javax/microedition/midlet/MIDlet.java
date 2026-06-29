@@ -146,7 +146,7 @@ public class MIDlet {
    }
 
    void setMain(MIDletMain main) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._main = main;
    }
 
    private String getRequestDomain(String URL) {

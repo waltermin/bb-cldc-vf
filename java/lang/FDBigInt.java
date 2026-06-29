@@ -11,6 +11,10 @@ class FDBigInt {
    }
 
    public FDBigInt(long v) {
+      this.data = new int[2];
+      this.data[0] = (int)v;
+      this.data[1] = (int)(v >>> 32);
+      this.nWords = this.data[1] == 0 ? 1 : 2;
    }
 
    public FDBigInt(FDBigInt other) {
@@ -24,6 +28,40 @@ class FDBigInt {
    }
 
    public FDBigInt(long seed, char[] digit, int nd0, int nd) {
+      int n = (nd + 8) / 9;
+      if (n < 2) {
+         n = 2;
+      }
+
+      this.data = new int[n];
+      this.data[0] = (int)seed;
+      this.data[1] = (int)(seed >>> 32);
+      this.nWords = this.data[1] == 0 ? 1 : 2;
+      int i = nd0;
+      int limit = nd - 5;
+
+      while (i < limit) {
+         int ilim = i + 5;
+         int v = digit[i++] - '0';
+
+         while (i < ilim) {
+            v = 10 * v + digit[i++] - 48;
+         }
+
+         this.multaddMe(100000, v);
+      }
+
+      int factor = 1;
+      int v = 0;
+
+      while (i < nd) {
+         v = 10 * v + digit[i++] - 48;
+         factor *= 10;
+      }
+
+      if (factor != 1) {
+         this.multaddMe(factor, v);
+      }
    }
 
    public void lshiftMe(int c) {

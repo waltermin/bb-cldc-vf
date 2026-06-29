@@ -40,7 +40,15 @@ public class IntMultiMap implements Persistable {
    }
 
    public void add(int key, Object value) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._num == this._ints.length - 1) {
+         int size = this._ints.length * 2;
+         Array.resize(this._ints, size);
+         Array.resize(this._objects, size);
+      }
+
+      this._ints[this._num] = key;
+      this._objects[this._num++] = value;
+      this._sortRequired = true;
    }
 
    protected void verifySorted() {
@@ -118,7 +126,20 @@ public class IntMultiMap implements Persistable {
    }
 
    public boolean removeValue(Object value) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int num = this._num;
+
+      for (int i = this._num - 1; i >= 0; i--) {
+         if (this._objects[i].equals(value)) {
+            int iPlus1 = i + 1;
+            int copy = this._num - iPlus1 + 1;
+            System.arraycopy(this._ints, iPlus1, this._ints, i, copy);
+            System.arraycopy(this._objects, iPlus1, this._objects, i, copy);
+            this._num--;
+         }
+      }
+
+      this._sortRequired = this._sortRequired & this._num > 1;
+      return this._num != num;
    }
 
    public boolean containsKey(int key) {

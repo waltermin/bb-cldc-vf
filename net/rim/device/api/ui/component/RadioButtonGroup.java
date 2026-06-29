@@ -2,6 +2,7 @@ package net.rim.device.api.ui.component;
 
 import java.util.Vector;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.Manager;
 
 public class RadioButtonGroup {
    private boolean _notifyReselected;
@@ -37,7 +38,33 @@ public class RadioButtonGroup {
    }
 
    public void remove(RadioButtonField button) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int index = button._index;
+      if (button._group != this) {
+         throw new IllegalArgumentException();
+      }
+
+      Manager mgr = button.getManager();
+      if (mgr != null && mgr.isValidLayout()) {
+         throw new IllegalStateException("RadioButton must be removed from its manager before being removed from its group.");
+      }
+
+      if (this._selected == index) {
+         this._selected = -1;
+      }
+
+      if (this._selected > index) {
+         this._selected--;
+      }
+
+      this._buttons.removeElementAt(index);
+
+      while (index < this._buttons.size()) {
+         ((RadioButtonField)this._buttons.elementAt(index))._index--;
+         index++;
+      }
+
+      button._group = null;
+      button._index = -1;
    }
 
    public void setChangeListener(FieldChangeListener listener) {
@@ -49,7 +76,7 @@ public class RadioButtonGroup {
    }
 
    public final void setNotifyReselected(boolean notifyReselected) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._notifyReselected = notifyReselected;
    }
 
    public void setSelectedIndex(int selected) {

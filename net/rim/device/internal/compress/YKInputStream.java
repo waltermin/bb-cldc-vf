@@ -27,7 +27,19 @@ public final class YKInputStream extends InputStream {
 
    @Override
    public final synchronized int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._isClosed) {
+         throw new IOCancelledException();
+      }
+
+      if (this._currentChunk == null || this._currentOffset >= this._currentChunk.length) {
+         do {
+            if (!this.readNextChunk()) {
+               return -1;
+            }
+         } while (this._currentChunk == null || this._currentChunk.length <= 0);
+      }
+
+      return this._currentChunk[this._currentOffset++] & 0xFF;
    }
 
    @Override

@@ -22,7 +22,7 @@ final class TextField$ConvertedString implements AbstractString {
    }
 
    final void appendFilteredChar(char ch) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._insertedFilteredChars[this._filteredCharsCount++] = ch;
    }
 
    final String getConvertedInsertionString() {

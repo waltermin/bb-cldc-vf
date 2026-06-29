@@ -6,6 +6,7 @@ import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.tid.awt.event.InputMethodEvent;
 import net.rim.tid.im.SLControlObject;
 import net.rim.tid.im.conv.jp.util.KanaConversionUtils;
@@ -13,9 +14,9 @@ import net.rim.tid.text.AttributedString;
 import net.rim.vm.TraceBack;
 
 public class KeywordFilteredListFinder extends BasicEditField {
-   private boolean _displayUpperCaseCharsInSearchText;
-   private boolean _allowSpacesInSearchText;
-   private boolean _acceptYomiSearch;
+   private boolean _displayUpperCaseCharsInSearchText = true;
+   private boolean _allowSpacesInSearchText = true;
+   private boolean _acceptYomiSearch = false;
    private String _findString;
    private String _baseText;
    protected boolean _preventCall;
@@ -26,16 +27,10 @@ public class KeywordFilteredListFinder extends BasicEditField {
    private boolean _showCaretOnEmptySearch;
 
    public KeywordFilteredListFinder() {
-      this._displayUpperCaseCharsInSearchText = true;
-      this._allowSpacesInSearchText = true;
-      this._acceptYomiSearch = false;
    }
 
    public KeywordFilteredListFinder(long style) {
       super(style);
-      this._displayUpperCaseCharsInSearchText = true;
-      this._allowSpacesInSearchText = true;
-      this._acceptYomiSearch = false;
    }
 
    public KeywordFilteredListFinder(String text) {
@@ -54,6 +49,20 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    public KeywordFilteredListFinder(String text, String findLabel, boolean showCaretOnEmptySearch, long complementarySearchFieldStyle) {
+      super(1188950302162698240L | complementarySearchFieldStyle);
+      ControlledAccess.assertRRISignature(TraceBack.getCallingModule(0));
+      if (findLabel != null) {
+         this._findString = findLabel;
+      } else {
+         this._findString = CommonResource.getString(10171);
+      }
+
+      this._preventCall = false;
+      this._baseText = text == null ? this._findString : text;
+      this._focusRect = new XYRect();
+      this._showCaretOnEmptySearch = StringUtilities.strEqual(this._baseText, this._findString) ? true : showCaretOnEmptySearch;
+      this._drawFocusIndicator = showCaretOnEmptySearch;
+      super.setLabel(this._baseText);
    }
 
    private String composeLanguageAdjustedPattern() {
@@ -270,7 +279,7 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    public void acceptYomiSearch(boolean acceptYomiSearch) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._acceptYomiSearch = acceptYomiSearch;
    }
 
    public void setBaseText(String baseText) {
@@ -289,7 +298,7 @@ public class KeywordFilteredListFinder extends BasicEditField {
    }
 
    public void setFocusIndicatorEnabled(boolean enabled) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._drawFocusIndicator = enabled;
    }
 
    public void setSearchPattern(String newPattern) {

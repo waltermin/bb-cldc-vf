@@ -185,7 +185,12 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
    }
 
    public final void start(int row, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._initialized = true;
+      int rowInfo = this.getRowInfo(row);
+      this._currentHeight = rowInfo & 0xFF;
+      this._currentAdjustment = rowInfo >> 8;
+      this._currentY = y + this._currentAdjustment;
+      this._maxHeight = this._maxAdjustment = 0;
    }
 
    public final boolean finish(int row) {
@@ -197,12 +202,40 @@ final class RowHeightAdjuster implements VariableRowHeightProvider {
 
    @Override
    public final int getAdjustedY(Font font, StringBuffer text, int offset, int len, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!this._initialized) {
+         this._initialized = true;
+         this._currentHeight = 0;
+         this._currentAdjustment = 0;
+         this._currentY = y;
+         this._maxHeight = this._maxAdjustment = 0;
+      }
+
+      if (len != 0) {
+         font.measureText(text, offset, len, null, this._metrics);
+      } else {
+         this._metrics.reset();
+      }
+
+      return this.calculateYValue(font, y);
    }
 
    @Override
    public final int getAdjustedY(Font font, String text, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!this._initialized) {
+         this._initialized = true;
+         this._currentHeight = 0;
+         this._currentAdjustment = 0;
+         this._currentY = y;
+         this._maxHeight = this._maxAdjustment = 0;
+      }
+
+      if (text != null && text.length() != 0) {
+         font.measureText(text, 0, text.length(), null, this._metrics);
+      } else {
+         this._metrics.reset();
+      }
+
+      return this.calculateYValue(font, y);
    }
 
    @Override

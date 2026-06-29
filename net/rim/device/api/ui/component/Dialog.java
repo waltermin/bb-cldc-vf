@@ -62,7 +62,10 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public int doModal() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._isModal = true;
+      this._returnValue = this._escapeEnabled ? -1 : this._defaultChoice;
+      Ui.getUiEngine().pushModalScreen(this);
+      return this._returnValue;
    }
 
    public boolean getDontAskAgainValue() {
@@ -91,7 +94,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public void setDialogClosedListener(DialogClosedListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._closeListener = listener;
    }
 
    public ListField getListField() {
@@ -135,7 +138,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public final void setDefault(int defaultChoice) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._defaultChoice = defaultChoice;
    }
 
    public void setDontAskAgainPrompt(boolean prompt) {
@@ -152,7 +155,7 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    public final void setEscapeEnabled(boolean escapeEnabled) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._escapeEnabled = escapeEnabled;
    }
 
    @Override
@@ -262,7 +265,43 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
 
    @Override
    protected void onUiEngineAttached(boolean attached) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!attached) {
+         if (this._app != null) {
+            this._app.removeHolsterListener(this);
+            this._app = null;
+         }
+
+         this.removeFocus();
+      } else {
+         this._app = Application.getApplication();
+         this._app.addHolsterListener(this);
+         this._returnValue = this._escapeEnabled ? -1 : this._defaultChoice;
+         boolean focusSet = this.getFieldWithFocusIndex() > 0 && this._focusField != null;
+         if (this._dfm.hasCustomFields() && !focusSet) {
+            for (int index = 0; index < this._dfm.getCustomManager().getFieldCount(); index++) {
+               if (this._dfm.getCustomField(index).isFocusable()) {
+                  this._dfm.getCustomField(index).setFocus();
+                  focusSet = true;
+                  break;
+               }
+            }
+         }
+
+         if (!focusSet && this._defaultChoice != Integer.MIN_VALUE) {
+            int ordinal = Math.max(0, this.ordinalOfValue(this._defaultChoice));
+            if (this.isStyle(1)) {
+               if (this._list != null) {
+                  this._list.setFocus();
+                  this._list.setSelectedIndex(ordinal);
+               }
+            } else if (this._dfm.hasButtons()) {
+               this._dfm.getButtonField(ordinal).setFocus();
+            }
+         }
+      }
+
+      this._focusField = this.getLeafFieldWithFocus();
+      super.onUiEngineAttached(attached);
    }
 
    @Override
@@ -289,7 +328,18 @@ public class Dialog extends PopupScreen implements FieldChangeListener, HolsterL
    }
 
    private void setup(String message, Object[] choices, int[] values, int defaultChoice, Bitmap bitmap) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._dfm = (DialogFieldManager)this.getDelegate();
+      this._label = new RichTextField(message, 36028797086072832L);
+      this._dfm.setMessage(this._label);
+      if (bitmap != null) {
+         this._dfm.setIcon(new BitmapField(bitmap, 65568));
+      }
+
+      this._returnValue = this._defaultChoice = defaultChoice;
+      this.setChoices(choices, values);
+      if (this.isStyle(1) && this._list != null) {
+         this._list.setSelectedIndex(this._defaultChoice);
+      }
    }
 
    @Override

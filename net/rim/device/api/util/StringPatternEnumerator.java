@@ -189,6 +189,6 @@ public final class StringPatternEnumerator {
    }
 
    private final void resetScanRange(int beginIndex, int endIndex) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      throw new RuntimeException("cod2jar: stack imbalance");
    }
 }

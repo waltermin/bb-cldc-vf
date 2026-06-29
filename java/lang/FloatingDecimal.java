@@ -411,7 +411,214 @@ class FloatingDecimal {
    }
 
    private void dtoa(int binExp, long fractBits, int nSignificantBits) {
-      throw new RuntimeException("cod2jar: field: unresolved slot");
+      int nFractBits = countBits(fractBits);
+      int nTinyBits = Math.max(0, nFractBits - binExp - 1);
+      if (binExp <= 62 && binExp >= -21 && nTinyBits < long5pow.length && nFractBits + n5bits[nTinyBits] < 64 && nTinyBits == 0) {
+         long halfULP;
+         if (binExp > nSignificantBits) {
+            halfULP = (long)1 << binExp - nSignificantBits - 1;
+         } else {
+            halfULP = 0;
+         }
+
+         if (binExp >= 52) {
+            fractBits <<= binExp - 52;
+         } else {
+            fractBits >>>= 52 - binExp;
+         }
+
+         this.developLongDigits(0, fractBits, halfULP);
+      } else {
+         double d2 = Double.longBitsToDouble(4607182418800017408L | fractBits & -4503599627370497L);
+         int decExp = (int)Math.floor((d2 - 4609434218613702656L) * 4598887322485374355L + 4595512376517860236L + binExp * 4599094494223104507L);
+         int B5 = Math.max(0, -decExp);
+         int B2 = B5 + nTinyBits + binExp;
+         int S5 = Math.max(0, decExp);
+         int S2 = S5 + nTinyBits;
+         int M5 = B5;
+         int M2 = B2 - nSignificantBits;
+         fractBits >>>= 53 - nFractBits;
+         B2 -= nFractBits - 1;
+         int common2factor = Math.min(B2, S2);
+         B2 -= common2factor;
+         S2 -= common2factor;
+         M2 -= common2factor;
+         if (nFractBits == 1) {
+            M2--;
+         }
+
+         if (M2 < 0) {
+            B2 -= M2;
+            S2 -= M2;
+            M2 = 0;
+         }
+
+         char[] digits = this.digits = new char[18];
+         int ndigit = 0;
+         int Bbits = nFractBits + B2 + (B5 < n5bits.length ? n5bits[B5] : B5 * 3);
+         int tenSbits = S2 + 1 + (S5 + 1 < n5bits.length ? n5bits[S5 + 1] : (S5 + 1) * 3);
+         boolean low;
+         boolean high;
+         long lowDigitDifference;
+         if (Bbits >= 64 || tenSbits >= 64) {
+            FDBigInt Bval = multPow52(new FDBigInt(fractBits), B5, B2);
+            FDBigInt Sval = constructPow52(S5, S2);
+            FDBigInt Mval = constructPow52(M5, M2);
+            int shiftBias;
+            Bval.lshiftMe(shiftBias = Sval.normalizeMe());
+            Mval.lshiftMe(shiftBias);
+            FDBigInt tenSval = Sval.mult(10);
+            ndigit = 0;
+            int q = Bval.quoRemIteration(Sval);
+            Mval = Mval.mult(10);
+            low = Bval.cmp(Mval) < 0;
+            high = Bval.add(Mval).cmp(tenSval) > 0;
+            if (q >= 10) {
+               throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+            }
+
+            if (q == 0 && !high) {
+               decExp--;
+            } else {
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            if (decExp <= -3 || decExp >= 8) {
+               low = false;
+               high = false;
+            }
+
+            while (!low && !high) {
+               q = Bval.quoRemIteration(Sval);
+               Mval = Mval.mult(10);
+               if (q >= 10) {
+                  throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+               }
+
+               low = Bval.cmp(Mval) < 0;
+               high = Bval.add(Mval).cmp(tenSval) > 0;
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            if (high && low) {
+               Bval.lshiftMe(1);
+               lowDigitDifference = Bval.cmp(tenSval);
+            } else {
+               lowDigitDifference = 0;
+            }
+         } else if (Bbits < 32 && tenSbits < 32) {
+            int b = (int)fractBits * small5pow[B5] << B2;
+            int s = small5pow[S5] << S2;
+            int m = small5pow[M5] << M2;
+            int tens = s * 10;
+            ndigit = 0;
+            int q = b / s;
+            b = 10 * (b % s);
+            m *= 10;
+            low = b < m;
+            high = b + m > tens;
+            if (q >= 10) {
+               throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+            }
+
+            if (q == 0 && !high) {
+               decExp--;
+            } else {
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            if (decExp <= -3 || decExp >= 8) {
+               low = false;
+               high = false;
+            }
+
+            while (!low && !high) {
+               q = b / s;
+               b = 10 * (b % s);
+               m *= 10;
+               if (q >= 10) {
+                  throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+               }
+
+               if (m > 0) {
+                  low = b < m;
+                  high = b + m > tens;
+               } else {
+                  low = true;
+                  high = true;
+               }
+
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            lowDigitDifference = (b << 1) - tens;
+         } else {
+            long b = fractBits * long5pow[B5] << B2;
+            long s = long5pow[S5] << S2;
+            long m = long5pow[M5] << M2;
+            long tens = s * 10;
+            ndigit = 0;
+            int q = (int)(b / s);
+            b = 10 * (b % s);
+            m *= 10;
+            low = b < m;
+            high = b + m > tens;
+            if (q >= 10) {
+               throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+            }
+
+            if (q == 0 && !high) {
+               decExp--;
+            } else {
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            if (decExp <= -3 || decExp >= 8) {
+               low = false;
+               high = false;
+            }
+
+            while (!low && !high) {
+               q = (int)(b / s);
+               b = 10 * (b % s);
+               m *= 10;
+               if (q >= 10) {
+                  throw new RuntimeException("Assertion botch: excessivly large digit " + q);
+               }
+
+               if (m > 0) {
+                  low = b < m;
+                  high = b + m > tens;
+               } else {
+                  low = true;
+                  high = true;
+               }
+
+               digits[ndigit++] = (char)(48 + q);
+            }
+
+            lowDigitDifference = (b << 1) - tens;
+         }
+
+         this.decExponent = decExp + 1;
+         this.digits = digits;
+         this.nDigits = ndigit;
+         if (high) {
+            if (low) {
+               if (lowDigitDifference == 0) {
+                  if ((digits[this.nDigits - 1] & 1) != 0) {
+                     this.roundup();
+                     return;
+                  }
+               } else if (lowDigitDifference > 0) {
+                  this.roundup();
+                  return;
+               }
+            } else {
+               this.roundup();
+            }
+         }
+      }
    }
 
    @Override
@@ -666,7 +873,243 @@ class FloatingDecimal {
    }
 
    public double doubleValue() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int kDigits = Math.min(this.nDigits, 16);
+      this.roundDir = 0;
+      int iValue = this.digits[0] - '0';
+      int iDigits = Math.min(kDigits, 9);
+
+      for (int i = 1; i < iDigits; i++) {
+         iValue = iValue * 10 + this.digits[i] - 48;
+      }
+
+      long lValue = iValue;
+
+      for (int i = iDigits; i < kDigits; i++) {
+         lValue = lValue * 10 + (this.digits[i] - '0');
+      }
+
+      double dValue = lValue;
+      int exp = this.decExponent - kDigits;
+      if (this.nDigits <= 15) {
+         if (exp == 0 || dValue == 0L) {
+            return this.isNegative ? -dValue : dValue;
+         }
+
+         if (exp < 0) {
+            if (exp >= -maxSmallTen) {
+               double rValue = dValue / small10pow[-exp];
+               double tValue = rValue * small10pow[-exp];
+               if (this.mustSetRoundDir) {
+                  this.roundDir = tValue == dValue ? 0 : (tValue < dValue ? 1 : -1);
+               }
+
+               if (this.isNegative) {
+                  return -rValue;
+               }
+
+               return rValue;
+            }
+         } else {
+            if (exp <= maxSmallTen) {
+               double rValue = dValue * small10pow[exp];
+               if (this.mustSetRoundDir) {
+                  double tValue = rValue / small10pow[exp];
+                  this.roundDir = tValue == dValue ? 0 : (tValue < dValue ? 1 : -1);
+               }
+
+               if (this.isNegative) {
+                  return -rValue;
+               }
+
+               return rValue;
+            }
+
+            int slop = 15 - kDigits;
+            if (exp <= maxSmallTen + slop) {
+               dValue *= small10pow[slop];
+               double rValue = dValue * small10pow[exp - slop];
+               if (this.mustSetRoundDir) {
+                  double tValue = rValue / small10pow[exp - slop];
+                  this.roundDir = tValue == dValue ? 0 : (tValue < dValue ? 1 : -1);
+               }
+
+               if (this.isNegative) {
+                  return -rValue;
+               }
+
+               return rValue;
+            }
+         }
+      }
+
+      if (exp <= 0) {
+         if (exp < 0) {
+            exp = -exp;
+            if (this.decExponent < -325) {
+               if (this.isNegative) {
+                  return (double)Long.MIN_VALUE;
+               }
+
+               return (double)0L;
+            }
+
+            if ((exp & 15) != 0) {
+               dValue /= small10pow[exp & 15];
+            }
+
+            if ((exp = exp >> 4) != 0) {
+               int j = 0;
+
+               while (exp > 1) {
+                  if ((exp & 1) != 0) {
+                     dValue *= tiny10pow[j];
+                  }
+
+                  j++;
+                  exp >>= 1;
+               }
+
+               double t = dValue * tiny10pow[j];
+               if (t == 0L) {
+                  t = dValue * 4611686018427387904L;
+                  t *= tiny10pow[j];
+                  if (t == 0L) {
+                     if (this.isNegative) {
+                        return (double)Long.MIN_VALUE;
+                     }
+
+                     return (double)0L;
+                  }
+
+                  t = Double.MIN_VALUE;
+               }
+
+               dValue = t;
+            }
+         }
+      } else {
+         if (this.decExponent > 309) {
+            if (this.isNegative) {
+               return (double)-4503599627370496L;
+            }
+
+            return (double)9218868437227405312L;
+         }
+
+         if ((exp & 15) != 0) {
+            dValue *= small10pow[exp & 15];
+         }
+
+         if ((exp = exp >> 4) != 0) {
+            int j = 0;
+
+            while (exp > 1) {
+               if ((exp & 1) != 0) {
+                  dValue *= big10pow[j];
+               }
+
+               j++;
+               exp >>= 1;
+            }
+
+            double t = dValue * big10pow[j];
+            if (Double.isInfinite(t)) {
+               t = dValue / 4611686018427387904L;
+               t *= big10pow[j];
+               if (Double.isInfinite(t)) {
+                  if (this.isNegative) {
+                     return (double)-4503599627370496L;
+                  }
+
+                  return (double)9218868437227405312L;
+               }
+
+               t = (double)9218868437227405311L;
+            }
+
+            dValue = t;
+         }
+      }
+
+      FDBigInt bigD0 = new FDBigInt(lValue, this.digits, kDigits, this.nDigits);
+      exp = this.decExponent - this.nDigits;
+
+      do {
+         FDBigInt bigB = this.doubleToBigInt(dValue);
+         int B2;
+         int B5;
+         int D2;
+         int D5;
+         if (exp >= 0) {
+            B5 = 0;
+            B2 = 0;
+            D5 = exp;
+            D2 = exp;
+         } else {
+            B2 = B5 = -exp;
+            D5 = 0;
+            D2 = 0;
+         }
+
+         if (this.bigIntExp >= 0) {
+            B2 += this.bigIntExp;
+         } else {
+            D2 -= this.bigIntExp;
+         }
+
+         int Ulp2 = B2;
+         int hulpbias;
+         if (this.bigIntExp + this.bigIntNBits <= -1022) {
+            hulpbias = this.bigIntExp + 1023 + 52;
+         } else {
+            hulpbias = 54 - this.bigIntNBits;
+         }
+
+         B2 += hulpbias;
+         D2 += hulpbias;
+         int common2 = Math.min(B2, Math.min(D2, Ulp2));
+         B2 -= common2;
+         D2 -= common2;
+         Ulp2 -= common2;
+         bigB = multPow52(bigB, B5, B2);
+         FDBigInt bigD = multPow52(new FDBigInt(bigD0), D5, D2);
+         FDBigInt diff;
+         int cmpResult;
+         boolean overvalue;
+         if ((cmpResult = bigB.cmp(bigD)) > 0) {
+            overvalue = true;
+            diff = bigB.sub(bigD);
+            if (this.bigIntNBits == 1 && this.bigIntExp > -1023) {
+               if (--Ulp2 < 0) {
+                  Ulp2 = 0;
+                  diff.lshiftMe(1);
+               }
+            }
+         } else {
+            if (cmpResult >= 0) {
+               break;
+            }
+
+            overvalue = false;
+            diff = bigD.sub(bigB);
+         }
+
+         FDBigInt halfUlp = constructPow52(B5, Ulp2);
+         if ((cmpResult = diff.cmp(halfUlp)) < 0) {
+            this.roundDir = overvalue ? -1 : 1;
+            break;
+         }
+
+         if (cmpResult == 0) {
+            dValue += 4602678819172646912L * ulp(dValue, overvalue);
+            this.roundDir = overvalue ? -1 : 1;
+            break;
+         }
+
+         dValue += ulp(dValue, overvalue);
+      } while (dValue != 0L && dValue != 9218868437227405312L);
+
+      return this.isNegative ? -dValue : dValue;
    }
 
    public float floatValue() {

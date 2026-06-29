@@ -328,7 +328,18 @@ public class BigVector implements Persistable {
    }
 
    public synchronized void addElement(Object obj) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int index = this._vectorSize++;
+      if (index >= this._firstElementIndex[this._numArrayChunks]) {
+         this.uncacheIndex();
+         this.appendChunk();
+         this.cacheIndex(index);
+      }
+
+      if (index < this._currChunkFirstElementIndex || index >= this._currChunkLastElementIndexPlusOne) {
+         this.cacheIndex(index);
+      }
+
+      this._currChunk[index - this._currChunkFirstElementIndex + this._currChunkStartIndex] = obj;
    }
 
    public synchronized void addElements(Object[] array) {

@@ -13,21 +13,21 @@ import net.rim.vm.Process;
 public final class ApplicationDescriptor {
    private int _moduleHandle;
    private String _moduleName;
-   private int _index;
+   private int _index = -1;
    private String _name;
    private String _version;
    private String[] _args;
-   private int _flags;
+   private int _flags = -1;
    private Bitmap _icon;
-   private int _position;
+   private int _position = -1;
    private String _nameResourceBundle;
    private String _overrideNameResourceBundle;
-   private int _nameResourceId;
-   private int _overrideNameResourceId;
-   private long _scheduledTime;
-   private long _absoluteTime;
+   private int _nameResourceId = -1;
+   private int _overrideNameResourceId = -1;
+   private long _scheduledTime = Long.MAX_VALUE;
+   private long _absoluteTime = Long.MAX_VALUE;
    private boolean _absolute;
-   private int _powerOnBehavior;
+   private int _powerOnBehavior = 0;
    public static final int DO_NOT_POWER_ON;
    public static final int POWER_ON;
    public static final int POWER_ON_FOR_AUTO_ON;
@@ -39,43 +39,47 @@ public final class ApplicationDescriptor {
    static final int TIERS_SHIFT;
 
    private ApplicationDescriptor() {
-      this._index = -1;
-      this._flags = -1;
-      this._position = -1;
-      this._nameResourceId = -1;
-      this._overrideNameResourceId = -1;
-      this._scheduledTime = Long.MAX_VALUE;
-      this._absoluteTime = Long.MAX_VALUE;
-      this._powerOnBehavior = 0;
    }
 
    ApplicationDescriptor(int moduleHandle, int index) {
-      this._index = -1;
-      this._flags = -1;
-      this._position = -1;
-      this._nameResourceId = -1;
-      this._overrideNameResourceId = -1;
-      this._scheduledTime = Long.MAX_VALUE;
-      this._absoluteTime = Long.MAX_VALUE;
-      this._powerOnBehavior = 0;
       this._moduleHandle = moduleHandle;
       this._index = index;
    }
 
    public ApplicationDescriptor(ApplicationDescriptor original, String[] args) {
+      this.copy(original);
+      this._args = args == null ? new String[0] : args;
    }
 
    public ApplicationDescriptor(ApplicationDescriptor original, String name, String[] args) {
+      this.copy(original);
+      this._name = name == null ? this.getModuleName() : name;
+      this._args = args == null ? new String[0] : args;
    }
 
    public ApplicationDescriptor(
       ApplicationDescriptor original, String name, String[] args, Bitmap icon, int position, String nameResourceBundle, int nameResourceId
    ) {
+      this.copy(original);
+      this._name = name == null ? this.getModuleName() : name;
+      this._args = args == null ? new String[0] : args;
+      this._icon = icon;
+      this._position = position;
+      this._nameResourceBundle = nameResourceBundle;
+      this._nameResourceId = nameResourceId;
    }
 
    public ApplicationDescriptor(
       ApplicationDescriptor original, String name, String[] args, Bitmap icon, int position, String nameResourceBundle, int nameResourceId, int flags
    ) {
+      this.copy(original);
+      this._name = name == null ? this.getModuleName() : name;
+      this._args = args == null ? new String[0] : args;
+      this._icon = icon;
+      this._position = position;
+      this._nameResourceBundle = nameResourceBundle;
+      this._nameResourceId = nameResourceId;
+      this._flags = flags;
    }
 
    private final void assertPermission() {
@@ -141,11 +145,11 @@ public final class ApplicationDescriptor {
    }
 
    public final void setOverrideNameResourceId(int id) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._overrideNameResourceId = id;
    }
 
    public final void setOverrideNameResourceBundle(String bundleName) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._overrideNameResourceBundle = bundleName;
    }
 
    public final String getLocalizedName() {

@@ -1,18 +1,19 @@
 package net.rim.tid.text;
 
+import com.sun.cldc.i18n.j2me.TextProcessingRegistry;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.internal.ui.StringBufferGap;
 
 public final class BreakIterator {
-   private byte[][][] _wordlistData;
+   private byte[][][] _wordlistData = (byte[][][])((byte[][])null);
    private Locale _locale;
    private String _str;
    private StringBuffer _strB;
    private StringBufferGap _strBG;
    private char[] _charArr;
-   private int _dataType;
-   private int _iterType;
-   private int _currentPos;
+   private int _dataType = -1;
+   private int _iterType = -1;
+   private int _currentPos = 0;
    private static final int UNDEFINED;
    private static final int STR;
    private static final int STRB;
@@ -32,6 +33,27 @@ public final class BreakIterator {
    }
 
    private BreakIterator(int aType, Locale aLocale) {
+      this._iterType = aType;
+      TextProcessingRegistry tpr = TextProcessingRegistry.getInstance();
+      this._locale = aLocale != null ? aLocale : Locale.getDefault();
+      int localeCode = this._locale.getCode();
+      int breakingDataType = 2;
+      switch (this._iterType) {
+         case -1:
+            break;
+         case 0:
+         default:
+            breakingDataType = 4;
+            break;
+         case 1:
+            breakingDataType = 5;
+            break;
+         case 2:
+            breakingDataType = 2;
+      }
+
+      int dataID = tpr.getTextProcessingDataID(localeCode, breakingDataType);
+      this._wordlistData = (byte[][][])tpr.getTextProcessingData(dataID, breakingDataType, null);
    }
 
    public final void setText(String strToBreak) {

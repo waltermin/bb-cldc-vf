@@ -11,10 +11,10 @@ public class NumericChoiceField extends ChoiceField {
    private int _end;
    private int _intendedEnd;
    private int _increment;
-   private boolean _inEditMode;
+   private boolean _inEditMode = false;
    private int _intendedValue;
-   private StringBuffer _buffer;
-   private boolean _isKeyRepeat;
+   private StringBuffer _buffer = new StringBuffer();
+   private boolean _isKeyRepeat = false;
 
    public NumericChoiceField() {
       this(null, 0, 0, 1);
@@ -29,6 +29,11 @@ public class NumericChoiceField extends ChoiceField {
    }
 
    public NumericChoiceField(String label, int begin, int end, int increment, int initialIndex, long style) {
+      super(label, (end - begin + increment * (increment != 1 && (end - begin) % increment != 0 ? 2 : 1)) / increment, initialIndex, style | 134217728);
+      this._begin = begin;
+      this._intendedEnd = end;
+      this._end = increment == 1 ? end : (this.getSize() - 1) * increment + begin;
+      this._increment = increment;
    }
 
    @Override
@@ -115,7 +120,132 @@ public class NumericChoiceField extends ChoiceField {
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      boolean result = false;
+      if (this.isEditable()) {
+         char altedkey = Keypad.getAltedChar(key);
+         if (!this.validate(key) && altedkey != 0) {
+            key = altedkey;
+         }
+
+         altedkey = Keypad.getAltedChar(key);
+         if (this._inEditMode && key == ' ' && Character.isDigit(altedkey)) {
+            key = altedkey;
+         }
+
+         boolean isKeyRepeat = this._isKeyRepeat;
+         this._isKeyRepeat = false;
+         if (key == '\n') {
+            if (this._inEditMode) {
+               this.terminateEditMode();
+               return this.internalChangeOptionDialog();
+            }
+
+            return false;
+         }
+
+         if (Character.isDigit(key)) {
+            if (isKeyRepeat) {
+               this._intendedValue = 0;
+               return true;
+            }
+
+            int num = Character.digit(key, 10);
+            if (!this.isMuddy()) {
+               this._inEditMode = false;
+            }
+
+            if (!this._inEditMode) {
+               this._intendedValue = 0;
+               this._inEditMode = true;
+            }
+
+            this._intendedValue = 10 * this._intendedValue + num;
+            if (this._intendedValue > this._intendedEnd) {
+               this._intendedValue = num;
+               if (num < this._begin) {
+                  this._inEditMode = false;
+               }
+            } else if (num >= this._begin) {
+               this._inEditMode = true;
+            }
+
+            result = true;
+         } else if (key == '\b') {
+            this._intendedValue = this.getSelectedValue();
+            this._inEditMode = true;
+            this._intendedValue /= 10;
+            result = true;
+         } else if (key == 127) {
+            this._inEditMode = true;
+            this._intendedValue = 0;
+            result = true;
+         } else if (key == ' ') {
+            this.terminateEditMode();
+            this._intendedValue = this.indexToValue(this.roundValueToNearestIndex(this.getSelectedValue()));
+            this._intendedValue = this._intendedValue + ((status & 2) != 0 ? -this._increment : this._increment);
+            this._intendedValue = MathUtilities.wrap(this._begin, this._intendedValue, this._end);
+            this.setSelectedValue(this._intendedValue);
+            result = true;
+         } else if (key == 27) {
+            this.terminateEditMode();
+         }
+
+         if (this._intendedValue <= 0) {
+            while (this._intendedValue < this._begin) {
+               if (-this._intendedValue > 1000000) {
+                  this._intendedValue %= 1000000;
+               } else if (-this._intendedValue > 100000) {
+                  this._intendedValue %= 100000;
+               } else if (-this._intendedValue > 10000) {
+                  this._intendedValue %= 10000;
+               } else if (-this._intendedValue > 1000) {
+                  this._intendedValue %= 1000;
+               } else if (-this._intendedValue > 100) {
+                  this._intendedValue %= 100;
+               } else if (-this._intendedValue > 10) {
+                  this._intendedValue %= 10;
+               } else if (-this._intendedValue > 1) {
+                  this._intendedValue %= 1;
+               } else {
+                  this._intendedValue = this._begin;
+               }
+            }
+         } else {
+            while (this._intendedValue > this._end) {
+               if (this._intendedValue > 1000000) {
+                  this._intendedValue %= 1000000;
+               } else if (this._intendedValue > 100000) {
+                  this._intendedValue %= 100000;
+               } else if (this._intendedValue > 10000) {
+                  this._intendedValue %= 10000;
+               } else if (this._intendedValue > 1000) {
+                  this._intendedValue %= 1000;
+               } else if (this._intendedValue > 100) {
+                  this._intendedValue %= 100;
+               } else if (this._intendedValue > 10) {
+                  this._intendedValue %= 10;
+               } else if (this._intendedValue > 1) {
+                  this._intendedValue %= 1;
+               } else {
+                  this._intendedValue = this._end;
+               }
+            }
+         }
+
+         if (this._inEditMode) {
+            this.setSelectedValue(this._intendedValue, 0);
+         }
+
+         if (result) {
+            this.setMuddy(true);
+         }
+      }
+
+      if (!result) {
+         result = super.keyChar(key, status, time);
+      }
+
+      return result;
    }
 
    @Override

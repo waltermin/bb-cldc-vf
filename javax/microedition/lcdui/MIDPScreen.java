@@ -36,7 +36,7 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    final void setDisplayable(Displayable displayable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._displayable = displayable;
    }
 
    final void setDisplay(Display display) {
@@ -179,7 +179,7 @@ class MIDPScreen extends net.rim.device.api.ui.Screen implements Comparator {
    }
 
    public void setCommandListener(CommandListener l) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._commandListener = l;
    }
 
    @Override

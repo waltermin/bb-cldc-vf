@@ -79,7 +79,7 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
    }
 
    public final void setUserDataHeaderPresent(boolean userDataHeaderPresent) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._userDataHeaderPresent = userDataHeaderPresent;
    }
 
    @Override
@@ -107,7 +107,7 @@ public final class SMSPacketHeader extends SMSParameters implements RadioPacketH
    }
 
    public final void setStatusReportRequest(boolean statusReportRequest) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._statusReportRequest = statusReportRequest;
    }
 
    public final boolean isMessageWaitingGroup() {

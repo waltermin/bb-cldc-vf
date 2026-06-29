@@ -18,7 +18,7 @@ public class DatagramAddressBase {
    }
 
    public void setAddress(String address) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._address = address;
    }
 
    public String getAddress() {

@@ -1,13 +1,16 @@
 package net.rim.device.api.ui.container;
 
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.accessibility.AccessibleContext;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.theme.Tag;
+import net.rim.device.api.ui.theme.Theme;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.component.ImageField;
 
@@ -59,19 +62,29 @@ public class DialogFieldManager extends Manager {
    }
 
    public void addButtonField(ButtonField field) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._buttonManager.add(field);
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
    }
 
    public void addCustomField(Field f) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Manager manager = this.getCustomManager();
+      manager.add(f);
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
    }
 
    public void deleteCustomField(Field field) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Manager manager = this.getCustomManager();
+      if (manager.getFieldWithFocus() == field) {
+      }
+
+      manager.delete(field);
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
    }
 
    public void deleteCustomFields() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Manager manager = this.getCustomManager();
+      manager.deleteAll();
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
    }
 
    @Override
@@ -159,7 +172,9 @@ public class DialogFieldManager extends Manager {
    }
 
    public void insertCustomField(Field f, int index) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Manager manager = this.getCustomManager();
+      manager.insert(f, index);
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
    }
 
    @Override
@@ -228,6 +243,89 @@ public class DialogFieldManager extends Manager {
 
    @Override
    protected void sublayout(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int screenHeight = height;
+      int labelX = 4;
+      int availLabelWidth = width - 8;
+      if (this.isStyle(281474976710656L)) {
+         height = 1073741823;
+      }
+
+      if (this._icon != null) {
+         labelX += this._icon.getPreferredWidth() + 4;
+         availLabelWidth -= this._icon.getPreferredWidth() + 4;
+      }
+
+      int iconWidth = this._icon != null ? this._icon.getPreferredWidth() : 0;
+      int iconHeight = this._icon != null ? this._icon.getPreferredHeight() : 0;
+      int iconAndLabelHeight = iconHeight;
+      int labelWidth = 0;
+      int minButtonHeight = 0;
+      if (this._buttonManager.getFieldCount() != 0) {
+         minButtonHeight = this.getPreferredHeightOfChild(this._buttonManager.getField(0));
+      } else if (this._middleManager.getFieldCount() != 0) {
+         Field first = this._middleManager.getField(0);
+         if (!(first instanceof ListField)) {
+            minButtonHeight = this.getPreferredHeightOfChild(first);
+         } else {
+            minButtonHeight = ((ListField)first).getRowHeight();
+         }
+      }
+
+      if (minButtonHeight <= 0) {
+         minButtonHeight = Math.max(minButtonHeight, (height - 12) / 3);
+      }
+
+      Bitmap up = null;
+      Bitmap down = null;
+      if (this._label != null) {
+         this._vfmLabel.setPadding(0, 0, 0, 0);
+         this.layoutChild(this._vfmLabel, availLabelWidth, height - minButtonHeight - 12);
+         int virtHeight = this._vfmLabel.getVirtualHeight();
+         iconAndLabelHeight = Math.max(iconAndLabelHeight, this._vfmLabel.getHeight());
+         labelWidth = this._vfmLabel.getWidth();
+         this.setPositionChild(this._vfmLabel, labelX, (iconAndLabelHeight - this._vfmLabel.getHeight() >> 1) + 4);
+      }
+
+      this.setPositionChild(this._focusNullField, 0, (iconAndLabelHeight - this._vfmLabel.getHeight() >> 1) + 4 + 1);
+      int vfmHeight = 0;
+      int quanta = 1;
+      if (this._middleManager.getFieldCount() == 0 && this._buttonManager.getFieldCount() != 0 && this._bottomManager.getFieldCount() == 0) {
+         quanta = this._buttonManager.getPreferredButtonHeight();
+      }
+
+      this._fm.setVerticalQuantization(quanta);
+      this.layoutChild(this._fm, width - 8, Math.max(height - iconAndLabelHeight - 12, 0));
+      int childWidthDelta = width - 8 - this._fm.getWidth();
+      if (this._fm.getContentHeight() < this._fm.getVirtualHeight() && 0 < childWidthDelta) {
+         if (up == null) {
+            up = Theme.getThemeBitmap(0);
+         }
+
+         if (down == null) {
+            down = Theme.getThemeBitmap(1);
+         }
+
+         if (null != up && null != down) {
+            int childPadding = Math.min(childWidthDelta >> 1, up.getWidth());
+            this._fm.setPadding(0, childPadding, 0, childPadding);
+            this.layoutChild(this._fm, width - 8, Math.max(height - iconAndLabelHeight - 12, 0));
+         }
+      } else {
+         this._fm.setPadding(0, 0, 0, 0);
+      }
+
+      vfmHeight = this._fm.getHeight();
+      this._focusNullField._canFocus = this._middleManager.getFieldCount() + this._buttonManager.getFieldCount() + this._bottomManager.getFieldCount() == 0;
+      width = Math.max(labelWidth + iconWidth, this._fm.getWidth()) + 8 + (iconWidth != 0 ? 4 : 0);
+      height = iconAndLabelHeight + vfmHeight + 8 + (vfmHeight != 0 ? 4 : 0);
+      if (this._icon != null) {
+         int iconY = iconAndLabelHeight - iconHeight >> 1;
+         this.setPositionChild(this._icon, 4, 4 + iconY);
+         this.layoutChild(this._icon, this._icon.getPreferredWidth(), iconHeight);
+      }
+
+      this.setPositionChild(this._fm, (width - 8 - this._fm.getWidth() >> 1) + 4, 8 + iconAndLabelHeight);
+      this.setVirtualExtent(width, height);
+      this.setExtent(width, Math.min(screenHeight, height));
    }
 }

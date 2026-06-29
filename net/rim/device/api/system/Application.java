@@ -11,9 +11,12 @@ import net.rim.device.internal.io.file.FileSystem;
 import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.EngineeringDataListener;
 import net.rim.device.internal.system.EventDispatchManager;
+import net.rim.device.internal.system.Events;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.system.MessageListener;
 import net.rim.device.internal.system.RadioStatusListenerFilter;
+import net.rim.device.internal.system.UnhandledGlobalKeyListener;
+import net.rim.tid.awt.im.InputContext;
 import net.rim.vm.Message;
 import net.rim.vm.MessageQueue;
 import net.rim.vm.Process;
@@ -48,7 +51,7 @@ public class Application {
    }
 
    public final void setMessageListener(MessageListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._messageListener = listener;
    }
 
    protected boolean acceptsForeground() {
@@ -403,7 +406,574 @@ public class Application {
    }
 
    final void processNextMessage(Message message) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      boolean handled = false;
+      this._process.getMessage(message);
+      synchronized (this._eventLock) {
+         int device = message.getDevice();
+         label564:
+         switch (device) {
+            case 0:
+               switch (message.getEvent()) {
+                  case 2:
+                     this.dispatchInvokeLater((Runnable)message.getObject0(), message.getObject1(), message.getData0());
+                     break label564;
+                  case 12:
+                     if (!this.isForeground()
+                        && this.acceptLaunchRequest()
+                        && this._appManager.setForegroundProcess(this._process, message.getSubMessage() == 1)) {
+                        InternalServices.enableKeyUpMessages(this._enableKeyUpMessages);
+                        this._ignoreKeyEvents = true;
+                        this.activate();
+                        if (this._messageListener != null) {
+                           this._messageListener.processMessage(this._eventLock, message, false);
+                           this._messageListener.processMessage(this._eventLock, this._refreshDisplay, false);
+                        }
+                     }
+
+                     this._foregroundRequestInProgress = false;
+                     return;
+                  case 13:
+                     InputContext.getInstance().notifyAppSwitch(false, this._processId);
+                     this.deactivate();
+                     if (this._messageListener != null) {
+                        this._messageListener.processMessage(this._eventLock, message, false);
+                     }
+
+                     return;
+                  default:
+                     break label564;
+               }
+            case 1:
+               Object[] var64 = this._listeners[1];
+               int event = message.getEvent();
+               if (event == 511) {
+                  this.resetTimedRunnables();
+               }
+
+               if (var64 == null) {
+                  break;
+               }
+
+               int subMessage = message.getSubMessage();
+               Object object0 = message.getObject0();
+               int dataLength = message.getDataLength();
+
+               for (int i = var64.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchSystemEvent(event, subMessage, dataLength, object0, (SystemListener)var64[i]);
+                  } catch (Throwable var34) {
+                  }
+               }
+               break;
+            case 2:
+            case 56:
+               int event = message.getEvent();
+               if (this._ignoreKeyEvents) {
+                  switch (event) {
+                     case 512:
+                        break;
+                     case 513:
+                     default:
+                        this._ignoreKeyEvents = false;
+                        break;
+                     case 514:
+                     case 515:
+                        int keycode = message.getData0();
+                        if (!this.allowKeyEventFromPreviousApp(event, keycode)) {
+                           return;
+                        }
+                  }
+               }
+
+               Object[] listeners = this._listeners[2];
+               if (listeners == null) {
+                  break;
+               }
+
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+               switch (event) {
+                  case 515:
+                  case 518:
+                     boolean isUnhandledGlobalKey = device == 56;
+                     if (!isUnhandledGlobalKey && (data0 & 128) != 0 || listeners == null) {
+                        break label564;
+                     }
+
+                     int i = listeners.length - 1;
+
+                     for (; i >= 0; i--) {
+                        Object o = listeners[i];
+                        if (o instanceof KeyListener) {
+                           KeyListener listener = (KeyListener)o;
+                           if (!(listener instanceof UnhandledGlobalKeyListener) || isUnhandledGlobalKey) {
+                              try {
+                                 if (Events.dispatchKeyEvent(event, (char)subMessage, data0, data1, listener)) {
+                                    handled = true;
+                                    break label564;
+                                 }
+                              } catch (Throwable var39) {
+                              }
+                           }
+                        }
+                     }
+                     break label564;
+                  case 516:
+                  case 517:
+                  case 519:
+                  default:
+                     if ((data0 & 128) != 0 && !DeviceInfo.isInHolster()) {
+                        break label564;
+                     }
+
+                     listeners = this._listeners[2];
+                     if (listeners == null) {
+                        break label564;
+                     }
+
+                     int i = listeners.length - 1;
+
+                     while (true) {
+                        if (i < 0) {
+                           break label564;
+                        }
+
+                        Object o = listeners[i];
+                        if (o instanceof TrackwheelListener) {
+                           try {
+                              TrackwheelListener listener = (TrackwheelListener)o;
+                              if (Events.dispatchTrackwheelEvent(event, subMessage, data0, data1, listener)) {
+                                 handled = true;
+                                 break label564;
+                              }
+                           } catch (Throwable var40) {
+                           }
+                        }
+
+                        i--;
+                     }
+               }
+            case 3:
+               Object[] var61 = this._listeners[3];
+               if (var61 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+
+               for (int i = var61.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchRealtimeClockEvent(event, (RealtimeClockListener)var61[i]);
+                  } catch (Throwable var35) {
+                  }
+               }
+               break;
+            case 4:
+               Runnable runnable = null;
+               int id = ApplicationProcess.getProcessTimerId(message.getEvent());
+               synchronized (this._timedRunnables) {
+                  TimedRunnable tr = this._timedRunnables[id];
+                  if (tr == null) {
+                     break;
+                  }
+
+                  runnable = tr.getRunnable();
+                  if (!tr.getRepeat()) {
+                     this._cachedTimedRunnable = tr;
+                     this._cachedTimedRunnable.clear();
+                     this._timedRunnables[id] = null;
+                     this._lastTimedRunnableSlot = id;
+                  }
+               }
+
+               runnable.run();
+               break;
+            case 7:
+               Object[] var60 = this._listeners[7];
+               if (var60 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+
+               for (int i = var60.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchHolsterEvent(event, (HolsterListener)var60[i]);
+                  } catch (Throwable var33) {
+                  }
+               }
+               break;
+            case 10:
+               Object[] var59 = this._listeners[10];
+               if (var59 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+
+               for (int i = var59.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchAlertEvent(event, subMessage, (AlertListener)var59[i]);
+                  } catch (Throwable var19) {
+                  }
+               }
+               break;
+            case 14:
+               Object[] var58 = this._listeners[14];
+               if (var58 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int dataLength = message.getDataLength();
+
+               for (int i = var58.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchUSBPortEvent(event, subMessage, dataLength, (USBPortListener)var58[i]);
+                  } catch (Throwable var21) {
+                  }
+               }
+               break;
+            case 18:
+               Object[] var57 = this._listeners[18];
+               if (var57 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+
+               for (int i = var57.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchWLANEvent(event, subMessage, data0, data1, (WLANListenerInternal)var57[i]);
+                  } catch (Throwable var24) {
+                  }
+               }
+               break;
+            case 26:
+               Object[] var56 = this._listeners[26];
+               if (var56 == null) {
+                  break;
+               }
+
+               int subMessage = message.getSubMessage();
+               int x = subMessage & 65535;
+               int y = subMessage >> 16 & 65535;
+               int status = message.getData0();
+               int time = message.getData1();
+               int event = message.getEvent();
+
+               for (int i = var56.length - 1; i >= 0; i--) {
+                  Events.dispatchStylusEvent(event, x, y, status, time, (StylusListener)var56[i]);
+               }
+               break;
+            case 27:
+               int status = message.getData0();
+               if ((status & 128) != 0) {
+                  break;
+               }
+
+               Object[] var55 = this._listeners[2];
+               if (var55 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int dy = -(subMessage >> 16);
+               short var99;
+               switch (event) {
+                  case 6912:
+                     var99 = 0;
+                     break;
+                  case 6913:
+                     var99 = (short)(dy != 0 ? 519 : 0);
+                     break;
+                  case 6914:
+                  default:
+                     var99 = 516;
+                     break;
+                  case 6915:
+                     var99 = 517;
+               }
+
+               if (var99 == 0) {
+                  break;
+               }
+
+               int time = message.getData1();
+
+               for (int i = var55.length - 1; i >= 0; i--) {
+                  Object o = var55[i];
+                  if (o instanceof TrackwheelListener) {
+                     try {
+                        TrackwheelListener listener = (TrackwheelListener)o;
+                        if (Events.dispatchTrackwheelEvent(var99, dy, status, time, listener)) {
+                           break label564;
+                        }
+                     } catch (Throwable var38) {
+                     }
+                  }
+               }
+               break;
+            case 32:
+               Object[] var54 = this._listeners[32];
+               if (var54 == null) {
+                  break;
+               }
+
+               long guid = ApplicationManagerImpl.getGlobalEventGUID(message);
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+               Object object0 = message.getObject0();
+               Object object1 = message.getObject1();
+
+               for (int i = var54.length - 1; i >= 0; i--) {
+                  try {
+                     ((GlobalEventListener)var54[i]).eventOccurred(guid, data0, data1, object0, object1);
+                  } catch (Throwable var20) {
+                  }
+               }
+               break;
+            case 33:
+               Object[] var53 = this._listeners[33];
+               if (var53 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+               if (data1 == 0) {
+                  data1 = -1;
+               }
+
+               for (int i = var53.length - 1; i >= 0; i--) {
+                  try {
+                     ((RadioStatusListenerFilter)var53[i]).dispatchEvent(event, subMessage, data0, data1);
+                  } catch (Throwable var31) {
+                  }
+               }
+               break;
+            case 34:
+               Object[] var52 = this._listeners[34];
+               if (var52 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+               Object object0 = message.getObject0();
+               Object object1 = message.getObject1();
+
+               for (int i = var52.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchRadioPacketEvent(event, subMessage, data0, data1, object0, object1, (RadioPacketListener)var52[i]);
+                  } catch (Throwable var32) {
+                  }
+               }
+               break;
+            case 36:
+               Object[] var51 = this._listeners[36];
+               if (var51 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               Object object0 = message.getObject0();
+
+               for (int i = var51.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchRadioEngineeringEvent(event, subMessage, data0, object0, (EngineeringDataListener)var51[i]);
+                  } catch (Throwable var27) {
+                  }
+               }
+               break;
+            case 37:
+               Object[] var50 = this._listeners[37];
+               if (var50 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+
+               for (int i = var50.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchRadioDirectConnectEvent(event, subMessage, data0, data1, (DirectConnectListener)var50[i]);
+                  } catch (Throwable var25) {
+                  }
+               }
+               break;
+            case 48:
+               Object[] var49 = this._listeners[48];
+               if (var49 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+
+               for (int i = var49.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchRadioModemEvent(event, subMessage, (ModemListener)var49[i]);
+                  } catch (Throwable var26) {
+                  }
+               }
+               break;
+            case 49:
+               Object[] var48 = this._listeners[49];
+               if (var48 == null) {
+                  break;
+               }
+
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+
+               for (int i = var48.length - 1; i >= 0; i--) {
+                  Object o = var48[i];
+                  if (o instanceof KeyListener) {
+                     KeyListener listener = (KeyListener)o;
+                     int event = message.getEvent();
+
+                     try {
+                        if (Events.dispatchKeyEvent(event, (char)subMessage, data0, data1, listener)) {
+                           handled = true;
+                           break label564;
+                        }
+                     } catch (Throwable var37) {
+                     }
+                  }
+               }
+               break;
+            case 51:
+               Object[] var47 = this._listeners[51];
+               if (var47 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int dataLength = message.getDataLength();
+               int data0 = message.getData0();
+
+               for (int i = var47.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchVPNEvent(event, dataLength, subMessage, data0, (VPNListener)var47[i]);
+                  } catch (Throwable var23) {
+                  }
+               }
+               break;
+            case 52:
+               Object[] var46 = this._listeners[52];
+               if (var46 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+
+               for (int i = var46.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchPhoneCallEvent(event, subMessage, data0, (PhoneCallListener)var46[i]);
+                  } catch (Throwable var30) {
+                  }
+               }
+               break;
+            case 53:
+               Object[] var45 = this._listeners[53];
+               if (var45 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+
+               for (int i = var45.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchPhoneTimerEvent(event, subMessage, data0, (PhoneTimerListener)var45[i]);
+                  } catch (Throwable var29) {
+                  }
+               }
+               break;
+            case 54:
+               Object[] var44 = this._listeners[54];
+               if (var44 == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+               Object object0 = message.getObject0();
+
+               for (int i = var44.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchPhoneControlEvent(event, subMessage, data0, data1, object0, (PhoneControlListener)var44[i]);
+                  } catch (Throwable var28) {
+                  }
+               }
+               break;
+            case 57:
+               Object[] var43 = this._listeners[57];
+               if (var43 != null) {
+                  for (int i = var43.length - 1; i >= 0; i--) {
+                     try {
+                        Events.dispatchNativeSocketEvent(message, (NativeSocketListener)var43[i]);
+                     } catch (Throwable var18) {
+                     }
+                  }
+               }
+               break;
+            case 58:
+               Object[] listeners = this._listeners[58];
+               if (listeners == null) {
+                  break;
+               }
+
+               int event = message.getEvent();
+               int subMessage = message.getSubMessage();
+               int data0 = message.getData0();
+               int data1 = message.getData1();
+
+               for (int i = listeners.length - 1; i >= 0; i--) {
+                  try {
+                     Events.dispatchGANEvent(event, subMessage, data0, data1, (GANStatusListener)listeners[i]);
+                  } catch (Throwable var22) {
+                  }
+               }
+               break;
+            default:
+               try {
+                  this._eventDispatchManager.dispatch(device, message, this._listeners[device]);
+               } catch (Throwable var17) {
+               }
+         }
+      }
+
+      if (this._messageListener != null) {
+         try {
+            this._messageListener.processMessage(this._eventLock, message, handled);
+            return;
+         } catch (Throwable var36) {
+         }
+      }
    }
 
    protected boolean allowKeyEventFromPreviousApp(int event, int keycode) {
@@ -476,7 +1046,42 @@ public class Application {
    }
 
    private int invokeLater(Runnable runnable, long time, boolean repeat, int poolSize) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (runnable == null) {
+         throw new NullPointerException();
+      }
+
+      synchronized (this._timedRunnables) {
+         int i = 0;
+
+         for (int j = this._lastTimedRunnableSlot + 1; i < poolSize; j++) {
+            if (j >= poolSize) {
+               j = 0;
+            }
+
+            if (this._timedRunnables[j] == null) {
+               if (InternalServices.setTimer(this._process.getOSTimerId(j), time, repeat)) {
+                  if (this._cachedTimedRunnable == null) {
+                     this._timedRunnables[j] = new TimedRunnable(runnable, time, repeat);
+                  } else {
+                     this._cachedTimedRunnable.reset(runnable, time, repeat);
+                     this._timedRunnables[j] = this._cachedTimedRunnable;
+                     this._cachedTimedRunnable = null;
+                  }
+
+                  this._uniqueInvokeLaterCounter = this._uniqueInvokeLaterCounter == Integer.MAX_VALUE ? 0 : this._uniqueInvokeLaterCounter + 1;
+                  int slotId = (this._uniqueInvokeLaterCounter & 268435455) << 5 | j;
+                  this._invokeLaterIds[j] = slotId;
+                  return slotId;
+               }
+
+               return -1;
+            }
+
+            i++;
+         }
+
+         return -1;
+      }
    }
 
    public final void cancelInvokeLater(int id) {

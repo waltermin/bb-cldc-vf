@@ -106,12 +106,53 @@ public final class Transport extends NativeTransport implements UDPPacketListene
 
    @Override
    public final void nativeSendSetupHeader(Datagram datagram, IOProperties properties) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      UdpAddress addressBase = (UdpAddress)super._txAddressBase;
+      UDPPacketHeader header = (UDPPacketHeader)super._txHeader;
+      header.reset();
+      DatagramAddressBase.writeInt(this._txAddress, 0, addressBase.getIpAddressInt());
+      header.setDestinationAddress(this._txAddress);
+      int srcPort = addressBase.getSrcPort();
+      int destPort = addressBase.getDestPort();
+      if (srcPort != -1) {
+         header.setSourcePort(srcPort);
+      } else {
+         header.setSourcePort(destPort);
+      }
+
+      header.setDestinationPort(destPort);
+      this._txRetryOnNoContext = properties == null ? false : properties.isFlagSet(1024);
+      if (!this._txRetryOnNoContext && !this._connectionAvailable && this._isBlackBerryTrafficInvalid) {
+         throw new IOException();
+      }
    }
 
    @Override
    public final void nativeSendSetupData(Datagram datagram) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int type = ((UdpAddress)super._txAddressBase).getType();
+      int gpakHostAddress = 0;
+      switch (type) {
+         case 2:
+            if (super._txAddressBase instanceof UdpInternalAddress) {
+               gpakHostAddress = ((UdpInternalAddress)super._txAddressBase).getGpakHostAddress();
+            }
+         case 4:
+            try {
+               super._txLength = GpakUtil.encode(
+                  (byte)(type == 4 ? 16 : 8), this._txEncode, datagram.getData(), datagram.getOffset(), datagram.getLength(), gpakHostAddress
+               );
+               super._txData = this._txEncode;
+               super._txOffset = 0;
+               return;
+            } catch (IndexOutOfBoundsException e) {
+               EventLogger.logEvent(super.GUID, 1413834351, 2);
+               this.xmitDgslEvent(super._txListener, super._txDgramId, 12674, null);
+               throw new IOFormatException();
+            }
+         default:
+            super._txData = datagram.getData();
+            super._txOffset = datagram.getOffset();
+            super._txLength = datagram.getLength();
+      }
    }
 
    @Override

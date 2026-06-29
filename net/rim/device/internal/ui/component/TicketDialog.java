@@ -6,6 +6,7 @@ import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.component.BasicEditField;
 import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.ButtonField;
+import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.HorizontalFieldManager;
 import net.rim.device.internal.i18n.CommonResource;
@@ -78,7 +79,15 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
    }
 
    private FrameLayout createPasswordField() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._revealPassword) {
+         this._passwordField = new BasicEditField((this._numericPassword ? 16777216 : 1073741824) | 2147483648L);
+      } else {
+         this._passwordField = new PasswordEditField(null, "", 1000000, this._numericPassword ? 16777216 : 0);
+      }
+
+      FrameLayout layout = new FrameLayout(1);
+      layout.add(this._passwordField);
+      return layout;
    }
 
    private void resetPasswordField(boolean focusOnPasswordField) {
@@ -121,7 +130,14 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
    }
 
    private synchronized boolean accept() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!this._isClosed) {
+         this._isClosed = true;
+         this._passwordBytes = this._passwordField == null ? null : this._passwordField.getText().getBytes();
+         this.close(0);
+         return true;
+      } else {
+         return true;
+      }
    }
 
    private synchronized boolean cancel() {
@@ -142,6 +158,31 @@ public class TicketDialog extends VendorModuleStackDialog implements FieldChange
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (key == 27) {
+         if (this._cancel != null) {
+            this.cancel();
+         }
+
+         return true;
+      } else {
+         if (key == '\n') {
+            Field field = this.getLeafFieldWithFocus();
+            if (field == this._cancel) {
+               return this.cancel();
+            }
+
+            if (this._passwordHFM != null && field == this._passwordField && this._passwordField.getTextLength() == 0) {
+               this._numericPassword = !this._numericPassword;
+               this.resetPasswordField(true);
+               return true;
+            }
+
+            if (this._ok != null) {
+               return this.accept();
+            }
+         }
+
+         return super.keyChar(key, status, time);
+      }
    }
 }

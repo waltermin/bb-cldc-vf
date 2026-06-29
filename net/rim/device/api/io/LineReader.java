@@ -1,6 +1,8 @@
 package net.rim.device.api.io;
 
+import java.io.EOFException;
 import java.io.InputStream;
+import net.rim.device.api.util.Arrays;
 import net.rim.vm.Array;
 
 public class LineReader {
@@ -40,11 +42,11 @@ public class LineReader {
    }
 
    public void setBufferOffset(int bufferOffset) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._bufferOffset = bufferOffset;
    }
 
    public void setBufferLength(int bufferLength) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._bufferLength = bufferLength;
    }
 
    public int lengthUnreadData() {
@@ -52,7 +54,76 @@ public class LineReader {
    }
 
    public byte[] readLine() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._bufferOffset == this._bufferLength) {
+         this._bufferOffset = 0;
+         this._bufferLength = this._stream.read(this._buffer, 0, 1024);
+         if (this._bufferLength <= 0) {
+            this._bufferLength = 0;
+            throw new EOFException();
+         }
+      }
+
+      int lineStart = this._bufferOffset;
+      int lineLength = 0;
+      byte[] line = new byte[0];
+      boolean crRead = false;
+
+      do {
+         do {
+            byte b = this._buffer[this._bufferOffset++];
+            if (b == 13) {
+               if (this._bufferOffset != this._bufferLength) {
+                  if (this._buffer[this._bufferOffset] == 10) {
+                     this._bufferOffset++;
+                     if (lineLength == 0) {
+                        return Arrays.copy(this._buffer, lineStart, this._bufferOffset - 2 - lineStart);
+                     }
+
+                     return this.concatenate(line, this._buffer, lineStart, this._bufferOffset - 2 - lineStart);
+                  }
+
+                  if (lineLength == 0) {
+                     return Arrays.copy(this._buffer, lineStart, this._bufferOffset - 1 - lineStart);
+                  }
+
+                  return this.concatenate(line, this._buffer, lineStart, this._bufferOffset - 1 - lineStart);
+               }
+
+               crRead = true;
+               break;
+            }
+
+            if (b == 10) {
+               if (lineLength == 0) {
+                  return Arrays.copy(this._buffer, lineStart, this._bufferOffset - 1 - lineStart);
+               }
+
+               return this.concatenate(line, this._buffer, lineStart, this._bufferOffset - 1 - lineStart);
+            }
+         } while (this._bufferOffset < this._bufferLength);
+
+         int oldLineLength = line.length;
+         lineLength = line.length + (this._bufferOffset - lineStart);
+         Array.resize(line, lineLength);
+         System.arraycopy(this._buffer, lineStart, line, oldLineLength, this._bufferOffset - lineStart);
+         lineStart = 0;
+         this._bufferOffset = 0;
+         this._bufferLength = this._stream.read(this._buffer, 0, 1024);
+         if (this._bufferLength < 0) {
+            this._bufferLength = 0;
+            if (crRead) {
+               return Arrays.copy(line, 0, line.length - 1);
+            }
+
+            return line;
+         }
+      } while (!crRead);
+
+      if (this._buffer[this._bufferOffset] == 10) {
+         this._bufferOffset++;
+      }
+
+      return Arrays.copy(line, 0, line.length - 1);
    }
 
    private byte[] concatenate(byte[] original, byte[] newData, int offset, int length) {

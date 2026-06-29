@@ -159,7 +159,7 @@ public class ApplicationIconField extends Field {
    }
 
    public void setAppState(String appState) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._appState = appState;
    }
 
    public void setBitmap() {
@@ -270,7 +270,7 @@ public class ApplicationIconField extends Field {
    }
 
    public void setIconDefault(Image iconDefault) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._iconDefault = iconDefault;
    }
 
    public void setSize(int width, int height) {

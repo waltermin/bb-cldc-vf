@@ -12,6 +12,7 @@ import net.rim.device.api.system.PersistentContent;
 import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.BitSet;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.vm.Array;
 import net.rim.vm.Memory;
 import net.rim.vm.WeakReference;
@@ -41,7 +42,16 @@ public class PrefixKeywordFilterList extends AbstractKeywordFilterList implement
    }
 
    protected int addToIndex(int index, Object element) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      int id = this._objectList.addAndGetIndex(element);
+      String[] keywords = WeakReferenceUtilities.getStringArray(this._keywordsWR, 10);
+      int count = this._keywordHelper.getKeywords(element, keywords);
+
+      for (int i = 0; i < count; i++) {
+         this._prefixList.addWords(id, keywords[i], i == 0);
+      }
+
+      this._orderList.insertElementAt(id, index);
+      return id;
    }
 
    protected void commit(boolean afterReload) {

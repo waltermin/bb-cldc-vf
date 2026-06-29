@@ -16,11 +16,22 @@ class ContentHandlerServerImpl extends ContentHandlerImpl implements ContentHand
    private int _numStaleInvocations;
 
    void init(String[] types, String[] suffixes, String[] actions, ActionNameMap[] actionnames, String ID, String[] accessAllowed) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super._types = types == null ? new String[0] : types;
+      super._suffixes = suffixes == null ? new String[0] : suffixes;
+      super._actions = actions == null ? new String[0] : actions;
+      super._actionnames = actionnames == null ? new ActionNameMap[0] : actionnames;
+      super._ID = ID;
+      this.checkID(super._ID);
+      this._accessAllowed = accessAllowed;
+      ContentHandlerUtilities.checkStringArrayValues(super._types);
+      ContentHandlerUtilities.checkStringArrayValues(super._suffixes);
+      ContentHandlerUtilities.checkStringArrayValues(super._actions);
+      ContentHandlerUtilities.checkStringArrayValues(this._accessAllowed, false);
+      this.checkActionNameMapArrayValues(super._actionnames);
    }
 
    void setApplicationDescriptor(ApplicationDescriptor application) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._application = application;
    }
 
    int getQueueSize() {

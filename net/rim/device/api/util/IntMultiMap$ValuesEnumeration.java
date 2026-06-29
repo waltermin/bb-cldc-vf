@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 final class IntMultiMap$ValuesEnumeration implements Enumeration {
    private IntMultiMap _map;
@@ -18,6 +19,10 @@ final class IntMultiMap$ValuesEnumeration implements Enumeration {
 
    @Override
    public final Object nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._i >= this._map._num) {
+         throw new NoSuchElementException();
+      } else {
+         return this._map._objects[this._i++];
+      }
    }
 }

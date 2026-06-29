@@ -28,7 +28,7 @@ public class Event {
    }
 
    public void setSource(IComponent aSource) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._source = aSource;
    }
 
    public int getEventMask() {

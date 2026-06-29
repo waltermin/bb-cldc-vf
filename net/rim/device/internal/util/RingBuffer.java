@@ -5,29 +5,27 @@ import java.io.OutputStream;
 import net.rim.vm.Array;
 
 public class RingBuffer {
-   private int _startIndex;
-   private int _endIndex;
+   private int _startIndex = 0;
+   private int _endIndex = 0;
    private byte[] _buffer;
-   private int _dataLength;
-   private boolean _isOpen;
-   private int _maxBytesToReadEntirely;
+   private int _dataLength = 0;
+   private boolean _isOpen = true;
+   private int _maxBytesToReadEntirely = Integer.MAX_VALUE;
    private static final int BUFFER_SECTION_SIZE;
 
    public RingBuffer(int size) {
-      this._startIndex = 0;
-      this._endIndex = 0;
-      this._dataLength = 0;
-      this._isOpen = true;
-      this._maxBytesToReadEntirely = Integer.MAX_VALUE;
       this._buffer = new byte[size];
       Array.setSectionSize(this._buffer, 2048);
    }
 
    public RingBuffer(byte[] buffer) {
+      this._buffer = buffer;
+      this._endIndex = this._dataLength = this._buffer.length;
    }
 
    public synchronized void clear() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._startIndex = this._endIndex = this._dataLength = 0;
+      this._isOpen = true;
    }
 
    public synchronized void close() {

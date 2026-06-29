@@ -4,6 +4,7 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.util.Arrays;
+import net.rim.device.internal.ui.ArticInterface$Line;
 import net.rim.device.internal.ui.FormatParams;
 import net.rim.tid.text.AttributedString;
 import net.rim.vm.Array;
@@ -580,7 +581,23 @@ public class RichTextField extends TextField implements ActiveRegionSupport$Acti
 
    @Override
    void handleLinesAfterFormat(FormatParams params) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.handleLinesAfterFormat(params);
+      this._layoutWidth = params._layoutWidth;
+      if (this.isStyle(67108864) && (this.isStyle(262144) || this.isStyle(524288))) {
+         int offset = Integer.MAX_VALUE;
+
+         for (ArticInterface$Line line = params._lineList; line != null; line = line._next) {
+            offset = Math.min(offset, line._originX);
+         }
+
+         for (ArticInterface$Line line = params._lineList; line != null; line = line._next) {
+            line._boundsLeft += offset;
+            line._boundsRight += offset;
+            line._originX -= offset;
+         }
+
+         this._layoutWidth -= offset;
+      }
    }
 
    @Override

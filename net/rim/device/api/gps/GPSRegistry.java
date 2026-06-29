@@ -79,7 +79,7 @@ public final class GPSRegistry {
    }
 
    public final void setSimulateGPSPuck(boolean b) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._simulateGPSPuck = b;
    }
 
    public final Object getLocationLock() {

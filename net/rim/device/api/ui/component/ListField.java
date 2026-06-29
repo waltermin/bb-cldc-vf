@@ -745,9 +745,77 @@ public class ListField extends Field implements VariableRowHeightProvider {
       this.calcFocusRect(false);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (this._size == 0) {
+         int availableWidth = Math.min(this.getContentWidth(), this.getManager().getVisibleWidth()) - 1;
+         graphics.drawText(this.getEmptyString(), 0, 0, this._emptyStyle, availableWidth);
+      } else if (this._callback != null) {
+         XYRect redrawRect = graphics.getClippingRect();
+         if (redrawRect.y < 0) {
+            throw new IllegalStateException("Clipping rectangle is wrong.");
+         }
+
+         int startLine = this.getRowForY(redrawRect.y);
+         int endLine = this.getRowForY(redrawRect.y + redrawRect.height - 1);
+         endLine = Math.min(endLine, this._size - 1);
+         int selectionStart = Math.min(this._cursor, this._cursor + this._selectionRange);
+         int selectionEnd = Math.max(this._cursor, this._cursor + this._selectionRange);
+         boolean updateLayoutRequired = false;
+         int y = this.getYForRow(startLine);
+         int width = this.getContentWidth();
+         this.setThemeAttributesSpecial(null, null);
+
+         for (int line = startLine; line <= endLine; line++) {
+            int rowHeight = this.getRowHeight(line);
+            boolean var16 = false /* VF: Semaphore variable */;
+
+            try {
+               var16 = true;
+               graphics.pushContext(0, y, width, rowHeight, 0, 0);
+               if (!graphics.isDrawingStyleSet(8)) {
+                  this.setThemeAttributesSpecial((line & 1) == 0 ? this._tasRowEven : this._tasRowOdd, graphics);
+               }
+
+               boolean select = selectionStart <= line && line <= selectionEnd && line != this._cursor;
+               if (select) {
+                  graphics.setDrawingStyle(16, true);
+                  graphics.setColor(ThemeAttributeSet.getColor(this, 5));
+                  graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 4));
+               } else {
+                  graphics.setDrawingStyle(16, false);
+               }
+
+               if (select || this.getThemeAttributeSetSpecial() != null) {
+                  int fg = graphics.getColor();
+                  graphics.setColor(graphics.getBackgroundColor());
+                  graphics.fillRect(0, y, width, rowHeight);
+                  graphics.setColor(fg);
+               }
+
+               this._rowHeightAdjuster.start(line, y);
+               this._callback.drawListRow(this, graphics, line, y, width);
+               updateLayoutRequired |= this._rowHeightAdjuster.finish(line);
+               var16 = false;
+            } finally {
+               if (var16) {
+                  this.setThemeAttributesSpecial(null, null);
+                  graphics.popContext();
+                  y += rowHeight;
+               }
+            }
+
+            this.setThemeAttributesSpecial(null, null);
+            graphics.popContext();
+            y += rowHeight;
+         }
+
+         if (updateLayoutRequired) {
+            this.updateLayout();
+         }
+      }
    }
 
    private boolean searchEntryFor(String prefix, int start) {
@@ -797,7 +865,7 @@ public class ListField extends Field implements VariableRowHeightProvider {
    }
 
    public void setCallback(ListFieldCallback callback) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callback = callback;
    }
 
    public void setEmptyString(ResourceBundleFamily family, int id, int style) {

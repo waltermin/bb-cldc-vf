@@ -66,7 +66,123 @@ public final class FontRegistry {
    }
 
    private final synchronized int loadSplitFontInternal(String aFileName, int aFileCount, String aLocation, String aTypefaceName, boolean aIsPublic) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (aFileCount > 0 && aFileCount <= 999) {
+         int start_index = this._index;
+         int i = 0;
+         if (125 - start_index < aFileCount) {
+            start_index = 0;
+            boolean found = false;
+
+            while (start_index + aFileCount <= 125) {
+               for (i = 0; i < aFileCount; i++) {
+                  if (this._fontData[start_index + i] != null) {
+                     start_index = start_index + i + 1;
+                     break;
+                  }
+               }
+
+               if (i == aFileCount) {
+                  found = true;
+                  break;
+               }
+            }
+
+            if (!found) {
+               long LOGWORTHY_REPORT_REQUEST = 2888237357036234703L;
+               RIMGlobalMessagePoster.postGlobalEvent(LOGWORTHY_REPORT_REQUEST, 0, 0, aTypefaceName + " exceeds number of allowed fonts in the system.", null);
+               return -3;
+            }
+         }
+
+         Resource resource_class = Resource$Internal.getResourceClass(aLocation);
+         if (resource_class == null) {
+            return -1;
+         }
+
+         int cod_file_handle = CodeModuleManager.getModuleHandle(aLocation);
+         byte[] first_block = resource_class.getResource(aFileName + ".001");
+
+         for (int var16 = 0; var16 < 125; var16++) {
+            if (probablyIdentical((byte[])this._fontData[var16], first_block)) {
+               Enumeration e = this._fontInfo.elements();
+               IntEnumeration ien = this._fontInfo.keys();
+               FontRegistry$FontInfo fi = null;
+
+               while (e.hasMoreElements()) {
+                  fi = (FontRegistry$FontInfo)e.nextElement();
+                  int fi_index = ien.nextElement();
+                  if (fi._index == var16) {
+                     if (aTypefaceName.equals(fi._typefaceName)) {
+                        this._fontInfo.put(this._handle, fi);
+                        return this._handle++;
+                     }
+
+                     return -131072 | fi_index;
+                  }
+               }
+            }
+         }
+
+         for (int var17 = 0; var17 < aFileCount; var17++) {
+            int index = var17 + 1;
+            String file_name = aFileName;
+            if (index < 10) {
+               file_name = file_name + ".00" + index;
+            } else if (index < 100) {
+               file_name = file_name + ".0" + index;
+            } else {
+               file_name = file_name + "." + index;
+            }
+
+            this._fontData[start_index + var17] = (byte[][])resource_class.getResource(file_name);
+            if (this._fontData[start_index + var17] == null) {
+               for (int j = 0; j < var17; j++) {
+                  this._fontData[start_index + j] = null;
+               }
+
+               return -1;
+            }
+         }
+
+         if (this._index == start_index) {
+            this._index += aFileCount;
+         }
+
+         int return_value = 0;
+         int re_handle = loadSplitFontResource(this._fontData, aTypefaceName, aIsPublic, start_index, aFileCount);
+         if (re_handle != 0) {
+            this._fontInfo.put(this._handle, new FontRegistry$FontInfo(start_index, aFileCount, aIsPublic, cod_file_handle, re_handle, aTypefaceName));
+            return_value = this._handle++;
+            if (aIsPublic) {
+               int k = 0;
+               k = 0;
+
+               while (k < this._typefaceCount && !aTypefaceName.equals(this._typefaceNameTable[k])) {
+                  k++;
+               }
+
+               if (k == this._typefaceCount) {
+                  this._typefaceNameTable[this._typefaceCount++] = aTypefaceName;
+               }
+            }
+
+            this.reload();
+         } else {
+            return_value = -6;
+
+            for (int var18 = 0; var18 < aFileCount; var18++) {
+               this._fontData[start_index + var18] = null;
+            }
+
+            while (this._index > 0 && this._fontData[this._index - 1] == null) {
+               this._index--;
+            }
+         }
+
+         return return_value;
+      } else {
+         return -5;
+      }
    }
 
    public static final int loadFont(byte[] data, String typefaceName, boolean isPublic) {
@@ -92,7 +208,86 @@ public final class FontRegistry {
    }
 
    private final synchronized int loadFont0(int codFile, byte[] data, String typefaceName, boolean isPublic) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int rc = -1;
+      if (typefaceName == null || typefaceName.length() == 0) {
+         return -4;
+      }
+
+      if (data != null && data.length != 0) {
+         if (this._index == 125) {
+            this.isShufle = true;
+         }
+
+         int i = 0;
+         boolean emptySpotFound = false;
+
+         while (i < 125 && !probablyIdentical((byte[])this._fontData[i], data)) {
+            if (this.isShufle && this._fontData[i] == null) {
+               this._index = i;
+               emptySpotFound = true;
+            }
+
+            i++;
+         }
+
+         if (i == 125 && this.isShufle && !emptySpotFound) {
+            long LOGWORTHY_REPORT_REQUEST = 2888237357036234703L;
+            RIMGlobalMessagePoster.postGlobalEvent(LOGWORTHY_REPORT_REQUEST, 0, 0, typefaceName + " exceeds number of allowed fonts in the system.", null);
+            return -3;
+         }
+
+         if (i < 125) {
+            Enumeration e = this._fontInfo.elements();
+            IntEnumeration ien = this._fontInfo.keys();
+            int fiIndex = 0;
+            FontRegistry$FontInfo fi = null;
+
+            while (e.hasMoreElements()) {
+               fi = (FontRegistry$FontInfo)e.nextElement();
+               fiIndex = ien.nextElement();
+               if (fi._index == i) {
+                  if (typefaceName.equals(fi._typefaceName)) {
+                     this._fontInfo.put(this._handle, fi);
+                     rc = this._handle++;
+                  } else {
+                     rc = -131072 | fiIndex;
+                  }
+                  break;
+               }
+            }
+         } else {
+            this._fontData[this._index] = (byte[][])data;
+            int hd;
+            if ((hd = loadFontResource(data, typefaceName, isPublic, this._index)) == 0) {
+               this._fontData[this._index] = null;
+            } else {
+               rc = this._handle;
+               this._fontInfo.put(this._handle, new FontRegistry$FontInfo(this._index, 1, isPublic, codFile, hd, typefaceName));
+               this._index++;
+               this._handle++;
+               if (isPublic) {
+                  boolean loaded = false;
+
+                  for (int k = 0; k < this._typefaceCount; k++) {
+                     if (typefaceName.equals(this._typefaceNameTable[k])) {
+                        loaded = true;
+                        break;
+                     }
+                  }
+
+                  if (!loaded) {
+                     this._typefaceNameTable[this._typefaceCount++] = typefaceName;
+                  }
+               }
+            }
+
+            this.reload();
+         }
+
+         return rc;
+      } else {
+         return rc;
+      }
    }
 
    private static final boolean probablyIdentical(byte[] data1, byte[] data2) {
@@ -323,7 +518,14 @@ public final class FontRegistry {
    }
 
    public final int getTypefaceNameIndex(String typeface) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      for (int i = 0; i < this._typefaceCount; i++) {
+         if (this._typefaceNameTable[i].equals(typeface)) {
+            return i;
+         }
+      }
+
+      this._typefaceNameTable[this._typefaceCount++] = typeface;
+      return this._typefaceCount - 1;
    }
 
    static final Font _getDefaultFont() {

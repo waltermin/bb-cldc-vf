@@ -6,6 +6,7 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.text.TextFilter;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CharacterUtilities;
+import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.ui.StringBufferGap;
 import net.rim.tid.awt.Event;
 import net.rim.tid.awt.event.KeyEvent;
@@ -57,7 +58,86 @@ public class MinimalInputMethod implements InputMethod {
    }
 
    protected synchronized void processRollEvent(KeyEvent evt) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int status = evt.getKeyChar();
+      int amount = evt.getKeyCode();
+      if ((status & 8) != 0 && (status & 2) == 0) {
+         StringBuffer choices = this._lnkLayout.getKeyChars(this.lastKeyPressed, 3, false);
+         if (choices != null && choices.length() > 0 && choices.charAt(0) != 0) {
+            int startIndex = this._iContext.getComposedTextStart();
+            if (this._rollerCharacterIndex != -1) {
+               this._rollerCharacterIndex += amount;
+            } else {
+               boolean hasUpperCase = true;
+               if (startIndex > 0) {
+                  AttributedString res = this._iContext.getAttributedText();
+                  if (res == null || res.length() == 0) {
+                     return;
+                  }
+
+                  char lastKey = res.getText().charAt(startIndex - 1);
+                  char uc;
+                  if (CharacterUtilities.isLowerCase(lastKey)) {
+                     uc = CharacterUtilities.toUpperCase(lastKey);
+                  } else {
+                     uc = lastKey;
+                     hasUpperCase = CharacterUtilities.isUpperCase(lastKey);
+                  }
+
+                  for (int lv = choices.length() - 1; lv >= 0; lv--) {
+                     if (choices.charAt(lv) == uc) {
+                        this._rollerCharacterIndex = lv;
+                        break;
+                     }
+                  }
+               }
+
+               if (amount > 0) {
+                  this._rollerCharacterIndex++;
+               } else {
+                  this._rollerCharacterIndex -= hasUpperCase ? 2 : 1;
+               }
+            }
+
+            this._rollerCharacterIndex = this._rollerCharacterIndex % choices.length();
+            if (this._rollerCharacterIndex < 0) {
+               this._rollerCharacterIndex = this._rollerCharacterIndex + choices.length();
+            }
+
+            int loopCounter = 0;
+            int sign = MathUtilities.clamp(-1, amount, 1);
+            if (this._filter != null) {
+               while (!this._filter.validate(choices.charAt(this._rollerCharacterIndex), null, startIndex - 1)) {
+                  this._rollerCharacterIndex += sign;
+                  if (this._rollerCharacterIndex < 0) {
+                     this._rollerCharacterIndex = this._rollerCharacterIndex + choices.length();
+                  }
+
+                  this._rollerCharacterIndex = this._rollerCharacterIndex % choices.length();
+                  if (loopCounter++ > choices.length()) {
+                     evt.consume();
+                     return;
+                  }
+               }
+            }
+
+            if (startIndex > 0) {
+               AttributedString res = this._iContext.getAttributedText();
+               if (res == null || res.length() == 0) {
+                  return;
+               }
+
+               if (this._iContext.getComposedTextStart() == this._priorInserPosition + 1) {
+                  this._iContext.setComposedText(startIndex - 1, startIndex);
+               }
+            }
+
+            this._buffer.delete(this._buffer.length());
+            this._buffer.insert(choices.charAt(this._rollerCharacterIndex));
+            this.sendComposedText(this._buffer);
+            evt.consume();
+            return;
+         }
+      }
    }
 
    protected void sendComposedText(StringBuffer text) {
@@ -186,7 +266,69 @@ public class MinimalInputMethod implements InputMethod {
 
    @Override
    public void dispatchEvent(Event event) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (event instanceof KeyEvent && this._lnkLayout != null) {
+         KeyEvent evt = (KeyEvent)event;
+         int eventID = evt.getID();
+         int keyCode = evt.getKeyCode();
+         if (evt.isInputEvent()) {
+            switch (eventID) {
+               case 514:
+                  this.processKeyRepeate(evt);
+                  return;
+               case 516:
+                  return;
+               case 519:
+                  this.processRollEvent(evt);
+                  return;
+            }
+         }
+
+         if ((eventID == 513 || eventID == 514) && !this.isKeyUpProcessOnly(evt) || this.isKeyUpProcessOnly(evt) && eventID == 515) {
+            int modif = evt.getModifiers();
+            if (this.isKeyUpProcessOnly(evt) && (modif & 8) != 0 && (modif & 2) == 0) {
+               modif &= -9;
+               modif |= 1;
+            }
+
+            StringBuffer keyChars = this._lnkLayout.getKeyChars(keyCode, modif, false);
+            this._priorInserPosition = this._iContext.getCaretPosition() == this._iContext.getAnchorPosition()
+               ? Math.min(this._iContext.getCaretPosition(), this._iContext.getAnchorPosition())
+               : this._iContext.getComposedTextStart();
+            this.iKeyRepeateProcessed = false;
+            this.lastKeyPressed = keyCode;
+            this._rollerCharacterIndex = -1;
+            if (modif != 32768) {
+               evt.setKeyChar(keyChars.charAt(0));
+               this.iNotFromKeypad = false;
+            } else {
+               this.iNotFromKeypad = true;
+            }
+
+            char ch = this.iNotFromKeypad ? evt.getKeyChar() : keyChars.charAt(0);
+            if (this.isKeyUpProcessOnly(evt) && (!this.isControl(ch) || ch == 137 || ch == ' ' || ch == '\b' || ch == 127)) {
+               evt.consume();
+               this._buffer.delete(0, this._buffer.length());
+               this._buffer.insert(0, ch);
+               this.sendComposedText(this._buffer);
+            }
+         }
+
+         if (this.isKeyUpProcessOnly(evt) && eventID == 513) {
+            char ch = this._lnkLayout.getKeyChars(keyCode, evt.getModifiers(), false).charAt(0);
+            evt.setKeyChar(ch);
+            switch (ch) {
+               case '\u0000':
+               case '\b':
+               case '\n':
+               case '\u001b':
+               case ' ':
+               case '\u007f':
+                  break;
+               default:
+                  event.consume();
+            }
+         }
+      }
    }
 
    @Override
@@ -196,7 +338,8 @@ public class MinimalInputMethod implements InputMethod {
 
    @Override
    public int setTextInputStyle(int style) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._keyUpProcessOnly = (style & 8192) != 0;
+      return -1;
    }
 
    @Override
@@ -236,7 +379,7 @@ public class MinimalInputMethod implements InputMethod {
 
    @Override
    public void setInputMethodContext(InputMethodContext context) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._iContext = context;
    }
 
    @Override

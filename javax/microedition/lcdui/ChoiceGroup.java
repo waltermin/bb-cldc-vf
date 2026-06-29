@@ -47,7 +47,31 @@ public class ChoiceGroup extends Item implements Choice {
    }
 
    private void init(String label, int choiceType, String[] stringElements, Image[] imageElements, boolean validateElements) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this._container.setCookie(this);
+      if (validateElements) {
+         int dummy = stringElements.length;
+         if (imageElements != null && imageElements.length != stringElements.length) {
+            throw new IllegalArgumentException();
+         }
+      }
+
+      this.setLabel(label);
+      if (choiceType == 1 || choiceType == 2 || choiceType == 3) {
+         this._choiceImpl = new ListChoice(this, choiceType);
+         this._container.add(this._choiceImpl._container);
+      }
+
+      if (choiceType == 4) {
+         this._choiceImpl = new PopupChoice();
+         this._container.add(this._choiceImpl._container);
+         ((PopupChoice)this._choiceImpl).setCookie(this);
+      }
+
+      if (stringElements != null) {
+         for (int i = 0; i < stringElements.length; i++) {
+            this.insert(i, stringElements[i], imageElements != null ? imageElements[i] : null);
+         }
+      }
    }
 
    @Override

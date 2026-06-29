@@ -28,6 +28,6 @@ public class InputEvent extends ComponentEvent {
    }
 
    public void setModifiers(int aModif) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._modifiers = aModif;
    }
 }

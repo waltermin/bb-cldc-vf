@@ -28,7 +28,7 @@ public final class DNSMessageIPv4Question {
    }
 
    public final void setQtype(int qtype) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._qtype = qtype;
    }
 
    public final int getQtype() {
@@ -36,7 +36,7 @@ public final class DNSMessageIPv4Question {
    }
 
    public final void setQclass(int qclass) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._qclass = qclass;
    }
 
    public final int getQclass() {

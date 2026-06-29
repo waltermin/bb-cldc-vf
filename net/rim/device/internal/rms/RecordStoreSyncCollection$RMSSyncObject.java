@@ -10,7 +10,7 @@ class RecordStoreSyncCollection$RMSSyncObject implements SyncObject {
    boolean _dirty;
 
    public void setDirty(boolean dirty) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dirty = dirty;
    }
 
    public Hashtable getData() {

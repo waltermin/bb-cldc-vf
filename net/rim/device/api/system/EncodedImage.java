@@ -24,7 +24,7 @@ public class EncodedImage {
    int _cacheDecodeMode;
    int _cacheScaleX;
    int _cacheScaleY;
-   int _decodeSteps;
+   int _decodeSteps = Integer.MAX_VALUE;
    private static ToIntHashtable _mimeTypes;
    public static final int DECODE_ALPHA;
    public static final int DECODE_NATIVE;
@@ -41,6 +41,8 @@ public class EncodedImage {
    public static final int IMAGE_TYPE_RGI;
 
    EncodedImage() {
+      this._decodeMode = 1;
+      this._scaleY = this._scaleX = Fixed32.toFP(1);
    }
 
    public static EncodedImage createEncodedImage(byte[] data, int offset, int length) {
@@ -155,7 +157,7 @@ public class EncodedImage {
    }
 
    public void setDecodeMode(int decodeMode) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._decodeMode = decodeMode;
    }
 
    public int getDecodeMode() {
@@ -204,7 +206,11 @@ public class EncodedImage {
    }
 
    public void setScale(int scale) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (scale < 1) {
+         throw new IllegalArgumentException();
+      }
+
+      this._scaleY = this._scaleX = Fixed32.toFP(scale);
    }
 
    public int getScale() {

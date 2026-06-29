@@ -29,7 +29,7 @@ public class TimeZoneDataObject implements Persistable, SyncObject {
    private static TimeZoneDataObject$TimeZoneDataObjectComparator _comparator;
 
    void setBuiltInIndex(int builtInIndex) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._builtInIndex = builtInIndex;
    }
 
    public String getDefaultLongDescription() {

@@ -295,6 +295,6 @@ public class URL {
    }
 
    public void setRIMParameters(URLParameters params) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._rimParameters = params;
    }
 }

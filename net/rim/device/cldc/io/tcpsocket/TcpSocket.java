@@ -165,7 +165,34 @@ final class TcpSocket implements SocketConnection, BoundNativeSocketListener {
    }
 
    final int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (this._readLock) {
+         if (this._inputStreamState == 3) {
+            throw new IOException();
+         }
+
+         if (this._readBufferOffset < this._readBufferLength) {
+            return this._readBuffer[this._readBufferOffset++];
+         }
+
+         do {
+            this._readBufferLength = this._nativeSocket.receive(this._readBuffer, 0, this._readBuffer.length, 0);
+            this._readBufferOffset = 0;
+            if (this._readBufferLength != 0) {
+               return this._readBuffer[this._readBufferOffset++];
+            }
+
+            if (this._inputStreamState == 2) {
+               return -1;
+            }
+
+            try {
+               this._readLock.wait();
+            } catch (InterruptedException var4) {
+            }
+         } while (this._inputStreamState != 3);
+
+         throw new IOException();
+      }
    }
 
    final void inputClosed() {

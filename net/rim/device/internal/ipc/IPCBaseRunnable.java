@@ -12,7 +12,7 @@ public class IPCBaseRunnable implements Runnable {
    }
 
    public void setListener(Object listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._listener = listener;
    }
 
    @Override

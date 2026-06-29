@@ -11,7 +11,7 @@ class VerticalFetcher implements Fetcher {
    }
 
    void set(int x) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._x = x;
    }
 
    @Override

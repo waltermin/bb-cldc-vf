@@ -31,7 +31,12 @@ public final class FileOutputStream extends OutputStream {
 
    @Override
    public final synchronized void write(int b) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._available == 0) {
+         this.flush();
+      }
+
+      this._available--;
+      this._buffer[this._offset++] = (byte)b;
    }
 
    @Override

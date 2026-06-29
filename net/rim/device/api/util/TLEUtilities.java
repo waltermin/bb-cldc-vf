@@ -2,6 +2,7 @@ package net.rim.device.api.util;
 
 import java.io.EOFException;
 import java.io.UnsupportedEncodingException;
+import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.internal.i18n.UnicodeServiceUtilities;
 
 public final class TLEUtilities {
@@ -131,7 +132,17 @@ public final class TLEUtilities {
    }
 
    public static final void writeDataField(DataBuffer buf, int type, String value, int start, int len, boolean addNull) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      buf.writeByte(type);
+      buf.writeCompressedInt(len + (addNull ? 1 : 0));
+      len += start;
+
+      for (int i = start; i < len; i++) {
+         buf.writeByte(value.charAt(i));
+      }
+
+      if (addNull) {
+         buf.writeByte(0);
+      }
    }
 
    public static final void writeField(DataBuffer db, int type, TLEFieldController con) {
@@ -181,11 +192,93 @@ public final class TLEUtilities {
    }
 
    public static final void writeStringField(DataBuffer buf, int type, String value, int offset, int len, boolean addNull) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      buf.ensureCapacity(2 * len + 2 + 5 + 1);
+      buf.writeByte(type);
+      byte[] bufferBytes = buf.getArray();
+      int arrayPosition = buf.getArrayPosition() + 5;
+      int length = StringUtilities.codeBOM(value, offset, offset + len, bufferBytes, arrayPosition);
+      boolean isUTF16 = length > 2 && bufferBytes[offset] == 239 && bufferBytes[offset + 1] == 255;
+      buf.writeCompressedInt(length + (addNull ? (isUTF16 ? 2 : 1) : 0));
+      if (arrayPosition != buf.getArrayPosition()) {
+         System.arraycopy(bufferBytes, arrayPosition, bufferBytes, buf.getArrayPosition(), length);
+      }
+
+      buf.skipBytes(length);
+      if (addNull) {
+         buf.writeByte(0);
+         if (isUTF16) {
+            buf.writeByte(0);
+         }
+      }
+
+      buf.trim(false);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static final void writeStringFieldEncoded(DataBuffer buf, int type, String value, String encodingName) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (value != null && encodingName != null) {
+         int length = value.length();
+         int compressedFieldSize = getLengthStructureSize(length + 2);
+         boolean encoded = true;
+         byte encoding = 0;
+         byte[] bytes = null;
+         buf.ensureCapacity(length + compressedFieldSize + 2);
+         byte[] bufferBytes = buf.getArray();
+         int arrayPosition = buf.getArrayPosition();
+         if (StringUtilities.getCharacterSize(value) == 1) {
+            buf.setPosition(arrayPosition + compressedFieldSize + 1);
+            encoded = !ConverterUtilities.writeStringDefault(buf, value);
+         }
+
+         if ((encoding = UnicodeServiceUtilities.getEncoding(encodingName)) == -1) {
+            encodingName = "";
+         }
+
+         if (encoded) {
+            type |= 128;
+            encoded = true;
+            boolean var13 = false /* VF: Semaphore variable */;
+
+            try {
+               var13 = true;
+               bytes = value.getBytes(encodingName);
+               if (bytes != null) {
+                  length = bytes.length;
+                  compressedFieldSize = getLengthStructureSize(length + (encoded ? 1 : 0) + compressedFieldSize + 1);
+                  buf.ensureCapacity(length + (encoded ? 1 : 0) + compressedFieldSize + 1);
+                  var13 = false;
+               } else {
+                  var13 = false;
+               }
+            } finally {
+               if (var13) {
+                  buf.setPosition(arrayPosition);
+               }
+            }
+
+            buf.setPosition(arrayPosition);
+         }
+
+         buf.setPosition(arrayPosition);
+         buf.writeByte(type);
+         buf.writeCompressedInt(length + 1);
+         if (encoded) {
+            buf.writeByte(encoding);
+         }
+
+         if (bytes != null) {
+            arrayPosition = buf.getArrayPosition();
+            System.arraycopy(bytes, 0, bufferBytes, arrayPosition, length);
+         }
+
+         buf.skipBytes(length);
+         if (!encoded) {
+            buf.writeByte(0);
+         }
+
+         buf.trim(false);
+      }
    }
 
    public static final boolean findType(DataBuffer buffer, int type) {

@@ -323,7 +323,28 @@ public class ThemeManager {
    }
 
    static Tag createTag(String tagName) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (tagName == null) {
+         return ATTRIBUTE_INHERIT;
+      }
+
+      for (int lv = tagName.length() - 1; lv >= 0; lv--) {
+         char ch = tagName.charAt(lv);
+         if (('a' > ch || ch > 'z') && ch != '-' && ch != '_' && ('0' > ch || ch > '9')) {
+            throw new IllegalArgumentException();
+         }
+      }
+
+      synchronized (_instance) {
+         Tag tag = (Tag)_instance._nameToTag.get(tagName);
+         if (tag == null) {
+            int id = _instance._nextTagId++;
+            tag = new Tag(tagName, id);
+            _instance._nameToTag.put(tagName, tag);
+            _instance._intToTag.put(id, tag);
+         }
+
+         return tag;
+      }
    }
 
    static Tag getTag(String tagName) {

@@ -56,7 +56,7 @@ class SharedOutputStreamPart extends OutputStream {
    }
 
    public void setStream(NoCopyByteArrayOutputStream stream) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._stream = stream;
    }
 
    public boolean isWritable() {
@@ -64,6 +64,6 @@ class SharedOutputStreamPart extends OutputStream {
    }
 
    public void setIsWritable(boolean writable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._writable = writable;
    }
 }

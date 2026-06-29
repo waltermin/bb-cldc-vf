@@ -37,11 +37,30 @@ class SymbolScreen$Encoding extends LabelField {
 
    @Override
    protected boolean trackwheelClick(int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.setEncoding(++this._encodingType);
+      this._parent.update();
+      return true;
    }
 
    @Override
    public int processKeyEvent(int event, char key, int keycode, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (event != 513) {
+         return 0;
+      }
+
+      char ch = (char)(keycode >>> 16);
+      switch (ch) {
+         case '\n':
+            this.setEncoding(++this._encodingType);
+            this._parent.update();
+            return 0;
+         case '\u001b':
+         case ' ':
+            this.this$0.close();
+            return 0;
+         default:
+            this.this$0._symbols.keyDown(keycode, time);
+            return 0;
+      }
    }
 }

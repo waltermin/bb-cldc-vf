@@ -16,6 +16,12 @@ final class VectorEnumerator implements Enumeration {
 
    @Override
    public final Object nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (this.vector) {
+         if (this.count < this.vector.elementCount) {
+            return this.vector.elementData[this.count++];
+         }
+      }
+
+      throw new NoSuchElementException("VectorEnumerator");
    }
 }

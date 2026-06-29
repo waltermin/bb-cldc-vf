@@ -17,7 +17,10 @@ public class PropertyField extends Field implements FieldLabelProvider {
    private static final int PADDING;
 
    public void setValue(Object value) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this._value = value;
+      this._text.setText(value != null ? value.toString() : "(null)");
+      this.fieldChangeNotify(Integer.MIN_VALUE);
+      this.updateLayout();
    }
 
    public String getName() {

@@ -66,7 +66,7 @@ public class IPCInvoker {
    }
 
    public void setRunnable(IPCRunnable runnable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._runnable = runnable;
    }
 
    public Object getListener() {

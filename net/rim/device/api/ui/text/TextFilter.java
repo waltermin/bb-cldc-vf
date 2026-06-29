@@ -198,7 +198,7 @@ public class TextFilter {
    }
 
    protected void setMaxLength(int maxLength) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._maxLength = maxLength;
    }
 
    public boolean validate(char _1) {

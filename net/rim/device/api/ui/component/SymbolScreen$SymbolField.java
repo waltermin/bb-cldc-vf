@@ -2,8 +2,10 @@ package net.rim.device.api.ui.component;
 
 import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
+import net.rim.device.api.ui.FontFamily;
 import net.rim.device.api.ui.GlyphMetrics;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
@@ -22,6 +24,7 @@ import net.rim.device.api.util.IntIntHashtable;
 import net.rim.device.api.util.MathUtilities;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.MediaIcon;
+import net.rim.device.internal.ui.UiInternal;
 import net.rim.tid.im.layout.SLKeyLayout;
 import net.rim.tid.itie.EventHandler;
 import net.rim.vm.Array;
@@ -61,11 +64,57 @@ class SymbolScreen$SymbolField extends Field {
    private static final int NUMBER_OF_MAPPED_PAGES;
 
    protected SymbolScreen$SymbolField(SymbolScreen _1) {
+      super(18014398509481984L);
+      this.this$0 = _1;
+      this.TAG = Tag.create("symbolfield");
+      this.TAG_NEXT = Tag.create("symbolfield-next");
+      this.HORIZONTAL_SPACE = InternalServices.isReducedFormFactor() ? 5 : 1;
+      this._map = new IntIntHashtable();
+      this._glyphMetrics = new GlyphMetrics();
+      this._currentPage = -1;
+      this._pageFormatter = new MessageFormat(UiInternal.BUNDLE.getString(31));
+      this._pageBuffer = new StringBuffer();
+      this._pagesStandard = 2;
+      this.setTag(this.TAG);
+      this.$initLayoutKeyCodes();
+      this.$initDisplayKeys();
+      this.reset();
+      this.nextPage(true, true);
    }
 
    @Override
    protected void applyFont() {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      try {
+         FontFamily keyFamily = Graphics.isColor() ? FontFamily.forName("BBMillbank") : FontFamily.forName(FontFamily.FAMILY_SYSTEM);
+         int size = 8;
+         this._keyFont = keyFamily.getFont(0, size, 2);
+      } catch (Exception var8) {
+      }
+
+      Font font = Font.getDefault();
+      int hanMask = font.getStyle() & 7168;
+      int fontSize = 14;
+      int keyFontHeight = this._keyFont.getHeight();
+      boolean fontSizeChanged = false;
+      int maxKeyWidth = this.getMaxKeyWidth();
+      int minKeyWidth = Math.min(maxKeyWidth == -1 ? keyFontHeight + 2 : maxKeyWidth, SymbolScreen.DISPLAY_WIDTH_ALLOWED / this._maxKeysInRow);
+      this._symbolFont = font.derive((Graphics.isColor() ? 1 : 0) | hanMask, fontSize, 2);
+
+      do {
+         fontSizeChanged = false;
+         if (this.getMaxSymbolWidth() + 2 >= minKeyWidth) {
+            this._symbolFont = font.derive(1 | hanMask, --fontSize, 2);
+            fontSizeChanged = true;
+         }
+      } while (fontSizeChanged && fontSize > 8);
+
+      if (this.this$0._inputMethodID == 512) {
+         this._symbolFont = font.derive(1 | hanMask, fontSize, 2, 4, 0);
+      } else {
+         this._symbolFont = font.derive((Graphics.isColor() ? 1 : 0) | hanMask, fontSize, 2);
+      }
+
+      super.applyFont();
    }
 
    private void $initLayoutKeyCodes() {
@@ -537,7 +586,31 @@ class SymbolScreen$SymbolField extends Field {
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      switch (Display.getWidth() << 16 | Display.getHeight()) {
+         case 15728800:
+         case 15728880:
+            this._keyWidth = 20;
+            this._keyHeight = 13;
+            this._replHeight = 20;
+            break;
+         case 21234016:
+            this._keyWidth = 35;
+            this._keyHeight = 23;
+            this._replHeight = 34;
+            break;
+         default:
+            int keyFontHeight = this._keyFont.getHeight();
+            int maxKeyWidth = this.getMaxKeyWidth();
+            this._keyWidth = Math.max(maxKeyWidth == -1 ? keyFontHeight + 2 : maxKeyWidth, this.getMaxSymbolWidth() + 2);
+            this._keyWidth = Math.min(this._keyWidth, SymbolScreen.DISPLAY_WIDTH_ALLOWED / this._maxKeysInRow);
+            this._keyHeight = Math.max(this._keyFont.getHeight(), 10);
+            this._replHeight = this.getMaxSymbolHeight();
+      }
+
+      this._yStep = this._keyHeight + this._replHeight + 4;
+      width = this._maxKeysInRow * (this._keyWidth + this.HORIZONTAL_SPACE) + 10;
+      height = 3 * this._yStep + 2 * this._keyFont.getHeight();
+      this.setExtent(width, height);
    }
 
    private boolean mapContains(int c) {

@@ -116,7 +116,7 @@ public class DataSourceImpl extends DataSource implements SourceStream {
    }
 
    public void setContentType(String ct) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._contentType = ct;
    }
 
    @Override

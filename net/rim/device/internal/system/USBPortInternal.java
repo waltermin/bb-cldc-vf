@@ -46,7 +46,7 @@ public final class USBPortInternal extends IOPort {
 
    @Override
    public final int read(byte[] data) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      return this.read(data, 0, data == null ? 0 : data.length);
    }
 
    @Override

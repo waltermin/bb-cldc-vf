@@ -47,7 +47,7 @@ public class KeywordFilterCollectionListField extends CollectionListField implem
    }
 
    void setInputProcessor(KeywordFilteredListFinder processor) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._inputProcessor = processor;
    }
 
    @Override

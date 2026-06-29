@@ -2,6 +2,7 @@ package net.rim.device.api.ui;
 
 import java.io.IOException;
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.AudioRouter;
 import net.rim.device.api.system.BackdoorKeyProcessor;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.ControlledAccessException;
@@ -25,6 +26,7 @@ import net.rim.device.internal.system.Events;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.Background;
 import net.rim.device.internal.ui.BackingStore;
+import net.rim.device.internal.ui.Border;
 import net.rim.device.internal.ui.UiOptionsRegistry;
 import net.rim.tid.awt.im.InputContext;
 import net.rim.vm.TraceBack;
@@ -204,7 +206,7 @@ public class Screen extends Manager {
    }
 
    final void setClearBackingStore(boolean val) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._clearBackingStore = val;
    }
 
    public void close() {
@@ -320,7 +322,124 @@ public class Screen extends Manager {
    }
 
    boolean dispatchNavigationEvent(int event, int dx, int dy, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.blockInputEvents(event, 0)) {
+         return false;
+      }
+
+      int statusToggle = 0;
+      if (this.isScreenState(128)) {
+         this.setScreenState(128, false);
+         statusToggle = Integer.MIN_VALUE;
+      } else {
+         this.setScreenState(128, true);
+      }
+
+      if (this.processNavigationEvent(event, dx, dy, status, time)) {
+         this._clickHandled = event == 516 || event == 6914;
+         return true;
+      }
+
+      boolean clickHandled = this._clickHandled;
+      boolean result = false;
+      switch (event) {
+         case 516:
+            result = this.trackwheelClick(status, time);
+            if (!result) {
+               result = this.navigationClick(status | statusToggle, time);
+            }
+
+            clickHandled = result;
+            this._clickHandled = result;
+            break;
+         case 517:
+            result = this.trackwheelUnclick(status, time);
+            if (!result) {
+               result = this.navigationUnclick(status | statusToggle, time);
+            }
+
+            this._clickHandled = false;
+            break;
+         case 519:
+            if ((dx | dy) == 0) {
+               return true;
+            }
+
+            result = this.trackwheelRoll(dy, status & -1610612737, time);
+            if (!result) {
+               result = this.navigationMovement(dx, dy, status | statusToggle, time);
+            }
+            break;
+         case 6913:
+            if ((dx | dy) == 0) {
+               return true;
+            }
+
+            result = this.navigationMovement(dx, dy, status | statusToggle, time);
+            if (!result) {
+               result = this.trackwheelRoll(dy, status & -1610612737, time);
+            }
+            break;
+         case 6914:
+            result = this.navigationClick(status | statusToggle, time);
+            if (!result) {
+               result = this.trackwheelClick(status, time);
+            }
+
+            clickHandled = result;
+            this._clickHandled = result;
+            break;
+         case 6915:
+            result = this.navigationUnclick(status | statusToggle, time);
+            if (!result) {
+               result = this.trackwheelUnclick(status, time);
+            }
+
+            this._clickHandled = false;
+      }
+
+      Object[] listeners = this._trackwheelListeners;
+      if (!result && listeners != null) {
+         int wheelEvent = 0;
+         switch (event) {
+            case 516:
+            case 517:
+            case 519:
+               wheelEvent = event;
+               break;
+            case 6913:
+               if (dy != 0) {
+                  wheelEvent = 519;
+               }
+               break;
+            case 6914:
+               wheelEvent = 516;
+               break;
+            case 6915:
+               wheelEvent = 517;
+         }
+
+         if (wheelEvent != 0) {
+            for (int i = listeners.length - 1; i >= 0; i--) {
+               try {
+                  if (Events.dispatchTrackwheelEvent(wheelEvent, dy, status & -1610612737, time, (TrackwheelListener)listeners[i])) {
+                     this._clickHandled = clickHandled = wheelEvent == 516;
+                     return true;
+                  }
+               } catch (Throwable var13) {
+               }
+            }
+         }
+      }
+
+      if (!result && !clickHandled) {
+         if (event == 6915) {
+            result = this.navigationUnclickUnhandled(status | statusToggle, time);
+         } else if (event == 516) {
+            result = this.trackwheelClickUnhandled(status, time);
+         }
+      }
+
+      return result;
    }
 
    public boolean dispatchTrackwheelEvent(int event, int magnitude, int status, int time) {
@@ -414,11 +533,97 @@ public class Screen extends Manager {
    }
 
    final void setBackingStoreUpdated(boolean val) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._backingStoreUpdated = val;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    final void doPaint0(boolean forceAllowDrawing, boolean paintToBackingStore) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      UiEngineImpl engine = this._uiEngine;
+      if (engine != null) {
+         if (this.isScreenState(16) || forceAllowDrawing) {
+            engine.assertHaveEventLock();
+            XYRect extent = this.getExtent();
+            if (paintToBackingStore && this._backingStore == null) {
+               if (extent.width != Display.getWidth() || extent.height != Display.getHeight()) {
+                  this._backingStore = new BackingStore(extent.width, extent.height, this.isTransparent() || this.isTransparentBorder());
+               } else if (!this.isTransparent() && !this.isTransparentBorder()) {
+                  this._backingStore = GlobalScreenManager.getBackingStore();
+               } else {
+                  this._backingStore = GlobalScreenManager.getTransparentBackingStore();
+               }
+            }
+
+            this._inPaint++;
+            boolean var12 = false /* VF: Semaphore variable */;
+
+            label131: {
+               try {
+                  var12 = true;
+                  Graphics graphics = null;
+                  synchronized (this._invalid) {
+                     if (!this._invalid.isEmpty()) {
+                        if (paintToBackingStore) {
+                           XYRect invalid = Ui.getTmpXYRect();
+                           invalid.set(this._invalid);
+                           invalid.translate(-extent.x, -extent.y);
+                           if (this._backingStore != null) {
+                              graphics = this._backingStore.getGraphics(invalid);
+                           }
+
+                           Ui.returnTmpXYRect(invalid);
+                        } else {
+                           graphics = this.getGraphics(this._invalid, forceAllowDrawing);
+                        }
+
+                        if (this._saveLastInvalid) {
+                           this._lastInvalid = Ui.getTmpXYRect();
+                           this._lastInvalid.set(this._invalid);
+                        }
+
+                        this._invalid.set(0, 0, 0, 0);
+                     }
+                  }
+
+                  this._graphicsInUse = graphics;
+                  if (graphics == null) {
+                     var12 = false;
+                     break label131;
+                  }
+
+                  if (this._uiEngine == null) {
+                     var12 = false;
+                     break label131;
+                  }
+
+                  this.paintSelf(graphics, false, 0, 0);
+                  if (paintToBackingStore) {
+                     if (this._backingStore != null) {
+                        this._backingStore.updateBuffers();
+                        this._backingStoreUpdated = true;
+                        var12 = false;
+                     } else {
+                        var12 = false;
+                     }
+                  } else {
+                     var12 = false;
+                  }
+               } finally {
+                  if (var12) {
+                     this._graphicsInUse = null;
+                     this._inPaint--;
+                  }
+               }
+
+               this._graphicsInUse = null;
+               this._inPaint--;
+               return;
+            }
+
+            this._graphicsInUse = null;
+            this._inPaint--;
+         }
+      }
    }
 
    public boolean doSaveInternal() {
@@ -619,7 +824,7 @@ public class Screen extends Manager {
    }
 
    void setSaveLastInvalid(boolean val) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._saveLastInvalid = val;
    }
 
    boolean isScreenFocus() {
@@ -986,7 +1191,7 @@ public class Screen extends Manager {
    }
 
    protected void setBackdoorAltStatus(boolean altStatus) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._backdoorAltStatus = altStatus ? 1 : 0;
    }
 
    public void setCatchPaintExceptions(boolean catchPaintExceptions) {
@@ -1003,7 +1208,7 @@ public class Screen extends Manager {
    }
 
    public void setScrollBehaviourView(boolean scrollBehaviourView) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._scrollBehaviourView = scrollBehaviourView && UiOptionsRegistry.getInstance().getBoolean(9099188860628284837L);
    }
 
    public void setScrollBehaviourSelect(boolean scrollBehaviourSelect) {
@@ -1156,11 +1361,11 @@ public class Screen extends Manager {
    }
 
    final void setGlobal(boolean on) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._globalScreen = on;
    }
 
    void setPaintController(boolean on) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._paintController = on;
    }
 
    protected final void setPositionDelegate(int x, int y) {
@@ -1226,7 +1431,7 @@ public class Screen extends Manager {
    }
 
    void setPushMethod(int method) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._pushMethod = method;
    }
 
    protected int getPushMethod() {
@@ -1234,7 +1439,7 @@ public class Screen extends Manager {
    }
 
    void setDismissing(boolean val) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dismissing = val;
    }
 
    public final boolean isDisplayed() {
@@ -1354,7 +1559,25 @@ public class Screen extends Manager {
 
    @Override
    void paintBorder(Graphics graphics) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Border border = this.getBorder();
+      if (border != null) {
+         int fgPrevious = graphics.getColor();
+         int bgPrevious = graphics.getBackgroundColor();
+         if (!Graphics.isColor()) {
+            graphics.setColor(graphics.getBackgroundColor());
+            graphics.fillRect(0, 0, this.getWidth(), this.getHeight());
+         }
+
+         graphics.setColor(ThemeAttributeSet.getColor(this, 1));
+         graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 0));
+         XYRect rect = Ui.getTmpXYRect();
+         rect.set(this.getExtent());
+         rect.x = rect.y = 0;
+         border.paint(graphics, rect);
+         Ui.returnTmpXYRect(rect);
+         graphics.setColor(fgPrevious);
+         graphics.setBackgroundColor(bgPrevious);
+      }
    }
 
    @Override
@@ -1567,7 +1790,36 @@ public class Screen extends Manager {
 
    @Override
    protected boolean navigationMovement(int dx, int dy, int status, int time) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      boolean result = false;
+      boolean delegateNavMovement = this._delegate.navigationMovement(dx, dy, status, time);
+      if (this._delegate.getFieldWithFocus() == null) {
+         return false;
+      }
+
+      if (delegateNavMovement) {
+         return true;
+      }
+
+      if (this.isScrollBehaviourViewInternal()) {
+         int amount = dy;
+         Screen$ViewFocusSelector selector = Screen$ViewFocusSelector.getSelector(this, amount, status, time);
+         this.doFocusMove(true, true, selector);
+         result = selector.getSuccess();
+      } else {
+         Screen$NavigationMovementFocusSelector selector = Screen$NavigationMovementFocusSelector.getSelector(this, dx, dy, status, time);
+         this.doFocusMove(true, true, selector);
+         result = selector.getSuccess();
+      }
+
+      if (!result && (status & 1) != 0 && (status & 536870912) != 0 && dy != 0) {
+         result = this.scroll(dy > 0 ? 512 : 256);
+      }
+
+      if (!result) {
+         result = super.navigationMovement(dx, dy, status, time);
+      }
+
+      return result;
    }
 
    @Override
@@ -1804,7 +2056,24 @@ public class Screen extends Manager {
 
    @Override
    protected boolean keyControl(char c, int status, int time) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      boolean volumeKey = false;
+      if (c == 150 || c == 151) {
+         AudioRouter audioRouter = AudioRouter.getInstance();
+         if (audioRouter.canChangeMasterVolume()) {
+            audioRouter.incrementMasterVolume(c == 150 ? 10 : -10);
+            return true;
+         }
+
+         volumeKey = true;
+      }
+
+      if (this._delegate.keyControl(c, status, time)) {
+         return true;
+      } else if (super.keyControl(c, status, time)) {
+         return true;
+      } else {
+         return volumeKey ? this.adjustVolume(c == 150 ? 1 : -1) >= 0 : false;
+      }
    }
 
    @Override
@@ -1863,7 +2132,17 @@ public class Screen extends Manager {
 
    @Override
    Graphics getGraphics0(XYRect clip, boolean drawBackground) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Graphics graphics = this.getGraphics(clip, false);
+      XYRect rect = Ui.getTmpXYRect();
+      this.getContentRect(rect);
+      rect.x = rect.x - this.getLeft();
+      rect.y = rect.y - this.getTop();
+      graphics.pushRegion(rect);
+      Ui.returnTmpXYRect(rect);
+      graphics.translate(-this.getPaddingLeft(), -this.getPaddingTop());
+      this.applyTheme(graphics, drawBackground);
+      graphics.translate(this.getPaddingLeft(), this.getPaddingTop());
+      return graphics;
    }
 
    @Override
@@ -1982,7 +2261,16 @@ public class Screen extends Manager {
 
    @Override
    protected void applyTheme() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.applyTheme();
+      if (this.getThemeAttributeSet() == null) {
+         this.setThemeAttributeSet(ThemeManager.getActiveTheme().getAttributeSet(TAG_ROOT));
+      }
+
+      Border border = this.getBorder();
+      this._transparentBorder = border != null ? border.isTransparent() : false;
+      Background background = ThemeAttributeSet.getBackground(this);
+      this._transparentBackground = background == null || background.isTransparent();
+      this._delegate.applyTheme();
    }
 
    @Override

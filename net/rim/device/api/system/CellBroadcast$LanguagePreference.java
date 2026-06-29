@@ -19,7 +19,7 @@ public final class CellBroadcast$LanguagePreference extends CellBroadcast$Info i
    }
 
    public final void setPriority(int priority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._priority = priority;
    }
 
    public final CellBroadcast$LanguagePreference clone() {

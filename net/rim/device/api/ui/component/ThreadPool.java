@@ -84,7 +84,7 @@ class ThreadPool {
    }
 
    static int access$110(ThreadPool x0) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return x0._threadCount--;
    }
 
    static ThreadPool access$202(ThreadPool x0) {

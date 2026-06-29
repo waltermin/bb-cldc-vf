@@ -32,7 +32,16 @@ public final class FileInputStream extends InputStream {
 
    @Override
    public final synchronized int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._available == 0) {
+         this.doRead();
+      }
+
+      if (this._available == 0) {
+         return -1;
+      }
+
+      this._available--;
+      return this._buffer[this._offset++] & 0xFF;
    }
 
    @Override

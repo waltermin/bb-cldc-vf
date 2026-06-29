@@ -74,7 +74,8 @@ class DefaultMenuListField extends Field implements MenuList {
 
    @Override
    protected void drawFocus(Graphics graphics, boolean on) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._focusOn = on && ThemeAttributeSet.getFocusStyle(this) == 3;
+      super.drawFocus(graphics, on);
    }
 
    @Override
@@ -300,6 +301,6 @@ class DefaultMenuListField extends Field implements MenuList {
 
    @Override
    public void setMenuItems(MenuItem[] items) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._items = items;
    }
 }

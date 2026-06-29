@@ -59,7 +59,7 @@ public final class UDPPacketHeader implements RadioPacketHeader {
    }
 
    public final void setAccessPointNumber(int accessPointNumber) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._accessPointNumber = accessPointNumber;
    }
 
    private final void checkPortRange(int port) {

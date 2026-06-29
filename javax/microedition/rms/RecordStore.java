@@ -31,7 +31,15 @@ public class RecordStore {
    }
 
    public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (recordStoreName.length() <= 32 && recordStoreName.length() != 0) {
+         RecordStore recordStore = RecordStoreManager.getRecordStore(recordStoreName, createIfNecessary);
+         synchronized (recordStore) {
+            recordStore._openCount++;
+            return recordStore;
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary, int authmode, boolean writable) {
@@ -41,7 +49,23 @@ public class RecordStore {
    }
 
    public static RecordStore openRecordStore(String recordStoreName, String vendorName, String suiteName) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (vendorName != null && suiteName != null) {
+         if (recordStoreName.length() <= 32 && recordStoreName.length() != 0) {
+            RecordStore recordStore = RecordStoreManager.getRecordStore(recordStoreName, vendorName, suiteName);
+            synchronized (recordStore) {
+               if (!RecordStoreManager.checkOwner(recordStore) && recordStore._recordStoreData.getAuthMode() == 0) {
+                  throw new SecurityException();
+               }
+
+               recordStore._openCount++;
+               return recordStore;
+            }
+         } else {
+            throw new IllegalArgumentException();
+         }
+      } else {
+         throw new IllegalArgumentException("vendorName and suiteName must be non null");
+      }
    }
 
    public void setMode(int authmode, boolean writable) {

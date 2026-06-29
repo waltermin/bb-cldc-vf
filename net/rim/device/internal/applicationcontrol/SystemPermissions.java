@@ -1,5 +1,6 @@
 package net.rim.device.internal.applicationcontrol;
 
+import net.rim.device.api.itpolicy.ITPolicy;
 import net.rim.device.api.util.Persistable;
 import net.rim.device.internal.system.CodeStore;
 import net.rim.device.internal.system.ITPolicyInternal;
@@ -50,7 +51,22 @@ final class SystemPermissions implements Persistable {
    }
 
    final void init() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._handles == null) {
+         this._handles = new int[0];
+      }
+
+      this._crc = CodeStore.getModuleHandles(this._handles);
+      this._check++;
+      this._defaultPermissions = this.getDefaults();
+      System.out.println("DEFAULT POLICY PERMISSIONS: " + Long.toString(this._defaultPermissions, 16));
+      this._permittedPermissions = this._defaultPermissions;
+      this._AppControlPolicyDataPresent = ITPolicy.getByteArray(24, 25) != null;
+      if (!this._AppControlPolicyDataPresent) {
+         byte[] defaults = getConsumerDefaults();
+         this._permittedPermissions = this.permsIntoMask(defaults);
+      }
+
+      System.out.println("PERMITTED POLICY PERMISSIONS: " + Long.toString(this._permittedPermissions, 16));
    }
 
    final int[] loadHandles() {

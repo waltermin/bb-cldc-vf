@@ -89,35 +89,35 @@ public final class Message {
    }
 
    public final void setDevice(int device) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._device = device;
    }
 
    public final void setEvent(int event) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._event = event;
    }
 
    public final void setSubMessage(int subMessage) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._subMessage = subMessage;
    }
 
    public final void setDataLength(int dataLength) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dataLength = dataLength;
    }
 
    public final void setData0(int data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._data0 = data;
    }
 
    public final void setData1(int data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._data1 = data;
    }
 
    public final void setObject0(Object data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._object0 = data;
    }
 
    public final void setObject1(Object data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._object1 = data;
    }
 
    public final void copy(Message message) {

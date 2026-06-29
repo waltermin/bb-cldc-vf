@@ -505,7 +505,7 @@ public final class Graphics implements DrawStyle {
    }
 
    public final void setStrokeWidth(int width) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._strokeWidth = width;
    }
 
    public final void setStrokeStyle(int style) {
@@ -525,7 +525,7 @@ public final class Graphics implements DrawStyle {
    }
 
    public final void setStipple(int mask) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._stipple = mask;
    }
 
    public final void setBackgroundColor(int RGB) {
@@ -548,7 +548,7 @@ public final class Graphics implements DrawStyle {
    }
 
    private final void setCurrentScreen(Screen screen) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._currentScreen = screen;
    }
 
    public static final native void flush();

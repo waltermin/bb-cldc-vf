@@ -6,6 +6,12 @@ import net.rim.vm.Message;
 final class FledgeEventDispatcher extends EventDispatcher {
    @Override
    public final void dispatch(Message message, Object listener) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      int event = message.getEvent();
+      int subMessage = message.getSubMessage();
+      switch (event) {
+         case 5635:
+            GPSRegistry gpsRegistry = (GPSRegistry)listener;
+            gpsRegistry.setSimulateGPSPuck(subMessage != 0);
+      }
    }
 }

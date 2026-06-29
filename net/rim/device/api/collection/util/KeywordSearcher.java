@@ -23,8 +23,62 @@ public class KeywordSearcher implements IDataSearchRepository {
       this._list.haltSearch();
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected synchronized BitSet search(String[] words) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      AbstractKeywordFilterList list = this.getList();
+      boolean var10 = false /* VF: Semaphore variable */;
+
+      Object var12;
+      label107: {
+         BitSet var7;
+         try {
+            var10 = true;
+            this._interrupted = false;
+            boolean wordsAreValid = words != null && words.length != 0;
+            String suffix = list.getSuffix();
+            if (this._listener != null) {
+               this._listener.filterStarted();
+            }
+
+            if (!wordsAreValid && suffix == null) {
+               list.setFilterResult(null, null);
+               if (this._listener != null) {
+                  this._listener.filterDone(false);
+               }
+
+               var12 = null;
+               var10 = false;
+               break label107;
+            }
+
+            KeywordPrefixSearchResult result = new KeywordPrefixSearchResult(null, null);
+            BitSet returnResult = this.search(words, result, suffix);
+            if (!this._interrupted && (result != null || words == null)) {
+               list.setFilterResult(wordsAreValid ? words : null, result);
+               if (this._listener != null) {
+                  this._listener.filterDone(false);
+               }
+            } else if (this._listener != null) {
+               this._listener.filterDone(true);
+            }
+
+            this._listener = null;
+            this.notify();
+            var7 = returnResult;
+            var10 = false;
+         } finally {
+            if (var10) {
+               list.filteringComplete();
+            }
+         }
+
+         list.filteringComplete();
+         return var7;
+      }
+
+      list.filteringComplete();
+      return (BitSet)var12;
    }
 
    // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
@@ -168,7 +222,7 @@ public class KeywordSearcher implements IDataSearchRepository {
    }
 
    public void setFilterStatusListener(FilterStatusListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._listener = listener;
    }
 
    public synchronized void waitForComplete() {

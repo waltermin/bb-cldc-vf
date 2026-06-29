@@ -1,5 +1,7 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
+
 final class HashtableIntEnumerator implements IntEnumeration {
    private int[] _table;
    private Object[] _occupied;
@@ -38,6 +40,10 @@ final class HashtableIntEnumerator implements IntEnumeration {
 
    @Override
    public final int nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getNextElement()) {
+         return this._table[this._index++];
+      } else {
+         throw new NoSuchElementException();
+      }
    }
 }

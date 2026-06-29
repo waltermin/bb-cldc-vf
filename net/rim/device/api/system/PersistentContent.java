@@ -21,6 +21,7 @@ import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.internal.compress.CompressUtilities;
 import net.rim.device.internal.crypto.EncryptionUtilities;
+import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.system.NvStore;
 import net.rim.device.internal.system.Security;
 import net.rim.vm.Array;
@@ -135,7 +136,7 @@ public final class PersistentContent {
    }
 
    private final void parseNvStoreData(String password) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      throw new RuntimeException("cod2jar: array creation");
    }
 
    private final void loadSettings(String password) {
@@ -221,7 +222,22 @@ public final class PersistentContent {
    }
 
    final synchronized void lock() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._numRecodes > 0 || this._numPKRecodes > 2053 || this._secureGCNeeded) {
+         this._listeners.modeChanged(++this._modeGeneration);
+      }
+
+      this._lockGeneration++;
+      if (this._pendingEncrypt) {
+         if (this._checkSecureThread == null) {
+            Proxy.getInstance().invokeLater(new PersistentContent$CheckSecureThreadLauncher(null));
+         }
+
+         if (this._ticket != null) {
+            this._listeners.stateChanged(2, this._lockGeneration);
+         }
+      }
+
+      this._listeners.lockChanged(this._lockGeneration);
    }
 
    final synchronized void lock2(int generation) {
@@ -532,7 +548,25 @@ public final class PersistentContent {
    }
 
    final void unlock(String password) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      MemoryCleanerManager memoryCleanerManager = MemoryCleanerManager.getInstance();
+
+      while (!memoryCleanerManager.isUpdateComplete()) {
+         try {
+            Thread.sleep(100);
+         } catch (InterruptedException var6) {
+         }
+      }
+
+      synchronized (this) {
+         this.loadSettings(password);
+         if (this._secureGCNeeded) {
+            this._modeGeneration++;
+         }
+
+         this._secure = false;
+         this._listeners.stateChanged(1, ++this._lockGeneration);
+         this.notifyAll();
+      }
    }
 
    public static final boolean isContentProtectionSupported() {
@@ -576,7 +610,11 @@ public final class PersistentContent {
    }
 
    private final synchronized void setMode(int modeGeneration) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (modeGeneration == this._modeGeneration) {
+         this._secureGCNeeded = this._secureGCNeeded | (!this._encrypt && this._pendingEncrypt);
+         this._compress = this._pendingCompress;
+         this._encrypt = this._pendingEncrypt;
+      }
    }
 
    private final synchronized void setModeComplete(int modeGeneration) {
@@ -681,7 +719,10 @@ public final class PersistentContent {
    }
 
    public static final void requestReEncode() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (_instance) {
+         _instance._numRecodes++;
+         _instance._secureGCNeeded = _instance._secureGCNeeded | (_instance._encrypt || _instance._pendingEncrypt);
+      }
    }
 
    public static final void markAsPlaintext(Object object) {

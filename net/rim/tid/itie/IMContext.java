@@ -11,6 +11,7 @@ import net.rim.tid.awt.im.InputMethodRequests;
 import net.rim.tid.awt.im.spi.InputMethod;
 import net.rim.tid.awt.im.spi.InputMethodContext;
 import net.rim.tid.im.ISupplementaryInputData;
+import net.rim.tid.im.SLControlObject;
 import net.rim.tid.text.AttributedString;
 import net.rim.tid.text.AttributedTextIterator;
 import net.rim.tid.text.TextHitInfo;
@@ -308,7 +309,9 @@ public final class IMContext extends InputContext implements InputMethodContext 
 
    @Override
    public final void enableLookup(boolean enable) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (super._inputMethod != null) {
+         ((SLControlObject)super._inputMethod.getControlObject()).actionPerformed(enable ? 36 : 37, null);
+      }
    }
 
    private final void loadLingData(Locale locale) {

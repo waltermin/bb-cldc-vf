@@ -206,7 +206,7 @@ public class DefaultMenuScreen extends PopupScreen implements MenuScreen {
 
    @Override
    public void setMenu(Menu menu) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._menu = menu;
    }
 
    @Override

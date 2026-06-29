@@ -15,7 +15,9 @@ public class XYDataset {
    }
 
    public void add(XYPoint point) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Arrays.add(this._x, point.x);
+      Arrays.add(this._y, point.y);
+      this._xBounds = this._yBounds = null;
    }
 
    private void calcBounds() {
@@ -75,11 +77,15 @@ public class XYDataset {
    }
 
    protected void insert(int index, int x, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Arrays.insertAt(this._x, x, index);
+      Arrays.insertAt(this._y, y, index);
+      this._xBounds = this._yBounds = null;
    }
 
    protected void insert(int index, XYPoint point) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Arrays.insertAt(this._x, point.x, index);
+      Arrays.insertAt(this._y, point.y, index);
+      this._xBounds = this._yBounds = null;
    }
 
    public boolean isEmpty() {
@@ -87,10 +93,14 @@ public class XYDataset {
    }
 
    public void setPoint(int index, int x, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._x[index] = x;
+      this._y[index] = y;
+      this._xBounds = this._yBounds = null;
    }
 
    public void setPoint(int index, XYPoint point) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._x[index] = point.x;
+      this._y[index] = point.y;
+      this._xBounds = this._yBounds = null;
    }
 }

@@ -28,11 +28,27 @@ public class ZLibOutputStream extends OutputStream {
    }
 
    public ZLibOutputStream(OutputStream outputStream, boolean noWrap, int maxLog2WindowLength, int compressionValue) {
+      if (outputStream != null && maxLog2WindowLength >= 8 && maxLog2WindowLength <= 15 && compressionValue >= 0 && compressionValue <= 9) {
+         this._outputStream = outputStream;
+         this._buffer = new byte[1024];
+         this._deflater = new Deflater(compressionValue, 0, noWrap ? -maxLog2WindowLength : maxLog2WindowLength);
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    @Override
    public synchronized void write(int data) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._outputStream == null) {
+         throw new IOException("Stream closed");
+      }
+
+      if (this._bufferOffset == 1024) {
+         this._outputStream.write(this._deflater.compress(this._buffer, 0, this._bufferOffset, 2));
+         this._bufferOffset = 0;
+      }
+
+      this._buffer[this._bufferOffset++] = (byte)data;
    }
 
    @Override

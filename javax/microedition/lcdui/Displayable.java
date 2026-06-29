@@ -16,7 +16,7 @@ public class Displayable {
    }
 
    final void setPeer(MIDPScreen peer) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._peer = peer;
    }
 
    public String getTitle() {

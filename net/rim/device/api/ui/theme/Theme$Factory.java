@@ -34,7 +34,7 @@ public class Theme$Factory {
    }
 
    public void setAllowUserWallpaper(boolean allow) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._allowUserWallpaper = allow;
    }
 
    public boolean allowUserWallpaper() {
@@ -42,7 +42,7 @@ public class Theme$Factory {
    }
 
    public void setVendorID(String vendor) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._vendorID = vendor;
    }
 
    public boolean isVendorIDValid(int vendor) {
@@ -124,15 +124,15 @@ public class Theme$Factory {
    }
 
    protected final void setActivatable(boolean isActivatable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._isActivatable = isActivatable;
    }
 
    protected final void setRemovable(boolean isRemovable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._isRemovable = isRemovable;
    }
 
    public void setResourceFetcher(ResourceFetcher resourceFetcher) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._resourceFetcher = resourceFetcher;
    }
 
    protected final void setTargetDisplay(int width, int height, int colorDepth) {
@@ -142,7 +142,7 @@ public class Theme$Factory {
    }
 
    public void setSuppressMissedCallDialog(boolean suppress) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._suppressMissedCallDialog = suppress;
    }
 
    public boolean getSuppressMissedCallDialog() {

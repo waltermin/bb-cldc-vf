@@ -103,7 +103,19 @@ public final class Universal_Reader extends StreamReader {
 
    @Override
    public final void reset() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (super.in == null) {
+         throw new IOException("Stream closed");
+      }
+
+      super.in.reset();
+      if (super.in.skip(this._markPos) < this._markPos) {
+         throw new IOException();
+      }
+
+      this._bytesUsed[0] = 1048574;
+      this._pos = this._size = 0;
+      this._streamPos = this._markPos;
+      this._tryToReadMore = false;
    }
 
    @Override
@@ -127,14 +139,196 @@ public final class Universal_Reader extends StreamReader {
 
    @Override
    public final int sizeOf(byte[] cbuf, int offset, int length) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (offset < 0 || length < 0 || offset + length > cbuf.length) {
+         throw new IndexOutOfBoundsException();
+      }
+
+      if (this._noConversionData) {
+         return length;
+      }
+
+      int ret = TranscodingGateway.sizeOf(this._enc, length, Integer.MAX_VALUE, true);
+      if (ret < 0) {
+         int pos = this._pos;
+         int size = this._size;
+         boolean tryToReadMore = this._tryToReadMore;
+         int read = this._bytesUsed[0];
+         this._bytesUsed[0] = 1048574;
+         long streamPos = this._streamPos;
+
+         try {
+            ret = this.read(cbuf, offset, length, null, 0, Integer.MAX_VALUE);
+         } catch (IOException ioe) {
+            return -1;
+         }
+
+         this._pos = pos;
+         this._size = size;
+         this._tryToReadMore = tryToReadMore;
+         this._bytesUsed[0] = read;
+         this._streamPos = streamPos;
+
+         try {
+            if (super.in != null && this._streamPos > 0) {
+               super.in.reset();
+               this._streamPos = super.in.skip(this._streamPos);
+               this._bytesUsed[0] = 1048574;
+               this._pos = this._size = 0;
+               this._tryToReadMore = false;
+            }
+         } catch (IOException var12) {
+         }
+      }
+
+      return ret;
    }
 
    private final int read(Object in, int inOffset, int inLength, Object cbuf, int offset, int length) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int count = 0;
+      int converted = 0;
+      length += offset;
+      boolean isIO = in instanceof InputStream;
+      if (this._bytesUsed[0] == 1048574) {
+         this._pos = 0;
+         this._tryToReadMore = false;
+         if (isIO) {
+            this._size = ((InputStream)in).read(this._buf);
+         } else {
+            this._size = Math.min(this._buf.length, inLength);
+            inLength -= this._size;
+            System.arraycopy(in, inOffset, this._buf, this._pos, this._size);
+            inOffset += this._size;
+         }
+      }
+
+      while (offset < length) {
+         if (this._pos < this._size && !this._tryToReadMore) {
+            int skipChar = 0;
+
+            try {
+               skipChar = this._size == this._buf.length && inLength > 0 && this._buf[this._size - 1] == 13 ? 1 : 0;
+            } catch (Exception e) {
+               skipChar = 0;
+            }
+
+            converted = TranscodingGateway.L2U(
+               this._enc,
+               this._buf,
+               this._pos,
+               this._size - skipChar - this._pos,
+               cbuf,
+               offset,
+               length - offset,
+               this._bytesUsed,
+               this._conversionData,
+               this._conversionDataOffset[0]
+            );
+            if (converted > 0) {
+               this._pos = this._pos + this._bytesUsed[0];
+               this._streamPos = this._streamPos + this._bytesUsed[0];
+               offset += converted;
+               count += converted;
+            } else {
+               this._tryToReadMore = true;
+            }
+         } else {
+            int delta = this._size - this._pos;
+            if (delta < 0) {
+               delta = 0;
+            }
+
+            for (int i = 0; i < delta; i++) {
+               this._buf[i] = this._buf[this._pos++];
+            }
+
+            this._size = delta;
+            this._pos = 0;
+            int rc = 0;
+            if (isIO) {
+               rc = ((InputStream)in).read(this._buf, delta, 1024 - delta);
+            } else if (inLength > 0) {
+               rc = Math.min(1024 - delta, inLength);
+               inLength -= rc;
+               System.arraycopy(in, inOffset, this._buf, delta, rc);
+               inOffset += rc;
+            }
+
+            if (rc <= 0) {
+               if (converted <= 0 && this._size - this._pos > 0) {
+                  this._pos = this._size;
+               }
+               break;
+            }
+
+            this._tryToReadMore = false;
+            this._size += rc;
+         }
+      }
+
+      if (count == 0) {
+         count = -1;
+      }
+
+      return count;
    }
 
    public final Object byteToCharArray(int encId, byte[] buffer, int offset, int length, String enc) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (encId != 0
+         && encId != 1
+         && (
+            encId != -1
+               || !StringUtilities.strEqualIgnoreCase(enc, TranscodingGateway.ISO8859_1, 1701707776)
+                  && !StringUtilities.strEqualIgnoreCase(enc, TranscodingGateway.ASCII, 1701707776)
+         )) {
+         TextProcessingRegistry txtRg = TextProcessingRegistry.getInstance();
+         if (encId == -1) {
+            encId = txtRg.getTextProcessingDataID(enc, 0);
+            if (encId == -1) {
+               throw new UnsupportedEncodingException("Encoding " + enc + " is not suported!");
+            }
+         }
+
+         this._size = this._pos = 0;
+         this._tryToReadMore = false;
+         this._bytesUsed[0] = 1048574;
+         this._bytesUsed[1] = 0;
+         if (this._buf == null) {
+            this._buf = new byte[1024];
+         }
+
+         if (encId != this._enc) {
+            this._enc = encId;
+            byte[][][] bData = (byte[][][])txtRg.getTextProcessingData(this._enc, 0, this._conversionDataOffset);
+            if (bData != null && bData.length > 0) {
+               this._conversionData = (byte[])bData[0];
+            } else {
+               this._conversionData = null;
+               this._conversionDataOffset[0] = 0;
+            }
+         }
+
+         try {
+            Object outbuf = null;
+            int outputSize = this.sizeOf(buffer, offset, length);
+            if (outputSize >= 0) {
+               if (this._bytesUsed[1] == 1) {
+                  outbuf = new char[outputSize];
+               } else {
+                  outbuf = new byte[outputSize];
+               }
+
+               this.read(buffer, offset, length, outbuf, 0, outputSize);
+               return outbuf;
+            } else {
+               throw new UnsupportedEncodingException("Data does not match the expected encoding");
+            }
+         } catch (Exception e) {
+            throw new UnsupportedEncodingException("IOException in UniversalReader#byteToCharArray()! " + e.getMessage());
+         }
+      } else {
+         byte[] outbuf = new byte[length];
+         System.arraycopy(buffer, offset, outbuf, 0, length);
+         return outbuf;
+      }
    }
 }

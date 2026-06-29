@@ -9,7 +9,7 @@ public class GPSLocationAiding {
    int _altUncertainty;
 
    public void setStatus(int status) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._status = status;
    }
 
    public void setLatitude(float latitude) {

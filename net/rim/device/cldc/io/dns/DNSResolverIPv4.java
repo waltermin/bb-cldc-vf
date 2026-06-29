@@ -633,11 +633,15 @@ public class DNSResolverIPv4 implements UDPPacketListener {
    }
 
    private synchronized void incrementQueryCount() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (++this._numQueries == 1) {
+         ProtocolDaemon.getInstance().addRadioListener(this);
+      }
    }
 
    private synchronized void decrementQueryCount() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (--this._numQueries == 0) {
+         ProtocolDaemon.getInstance().removeRadioListener(this);
+      }
    }
 
    private UDPPacketHeader makeUDPPacketHeader(byte[] destAddr, int srcPort, int apn) {

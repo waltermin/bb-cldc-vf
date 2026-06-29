@@ -22,14 +22,14 @@ public class FieldPosition {
    }
 
    public void setField(int field) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._field = field;
    }
 
    public void setBeginIndex(int beginindex) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._beginindex = beginindex;
    }
 
    public void setEndIndex(int endindex) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._endindex = endindex;
    }
 }

@@ -69,6 +69,6 @@ public class Background {
    }
 
    public void setRepeat(int repeat) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._repeat = repeat;
    }
 }

@@ -80,14 +80,14 @@ public class BarRenderer extends ChartRenderer {
    }
 
    public void setDisplayBarValues(boolean displayBarValues) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._displayBarValues = displayBarValues;
    }
 
    public void setFillColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._fillColor = color;
    }
 
    public void setStrokeColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._strokeColor = color;
    }
 }

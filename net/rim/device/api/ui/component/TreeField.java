@@ -439,7 +439,10 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
    @Override
    protected void makeMenu(Menu menu, int instance) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      super.makeMenu(menu, instance);
+      if (this._focusNode != -1 && this._data.getFirstChild(this._focusNode) != -1) {
+         menu.add(this.getExpanded(this._focusNode) ? _collapseItem : _expandItem);
+      }
    }
 
    @Override
@@ -691,6 +694,15 @@ public class TreeField extends Field implements VariableRowHeightProvider {
 
    @Override
    public void getFocusRectPhantom(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.calcFocusRect();
+      rect.set(this._focusRectX, this._focusRectY, this._focusRectWidth, this._focusRectHeight);
+      int left = this._iconWidth + this._iconGap;
+      if (rect.x >= left) {
+         rect.x -= left;
+         rect.width += left;
+      } else {
+         rect.width = rect.width + rect.x;
+         rect.x = 0;
+      }
    }
 }

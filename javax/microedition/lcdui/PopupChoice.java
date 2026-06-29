@@ -50,7 +50,21 @@ final class PopupChoice extends BasicChoice {
 
    @Override
    public final void setLayout(int layout) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.setLayout(layout);
+      this._popupContainer.delete(this._popup);
+      Object cookie = this._popup.getCookie();
+      if (this._popupStrings != null && this._popupStrings.length > 0) {
+         this._popup = new ObjectChoiceField(
+            null, this._popupStrings, super._currentlySelectedIndex != -1 ? super._currentlySelectedIndex : 0, Item.getFieldLayoutStyle(this.getLayout(), 0)
+         );
+      } else {
+         this._popup = new ObjectChoiceField(null, null, 0, Item.getFieldLayoutStyle(this.getLayout(), 0));
+      }
+
+      this._popup.setChangeListener(new PopupChoice$PopupChangeListener(this));
+      this._popup.setCookie(cookie);
+      this._popupContainer.add(this._popup);
+      super._container.invalidate();
    }
 
    @Override

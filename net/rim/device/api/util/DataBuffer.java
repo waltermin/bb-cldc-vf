@@ -140,7 +140,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    }
 
    public void setBigEndian(boolean flag) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._useBigEndianFlag = flag;
    }
 
    public byte[] toArray() {
@@ -272,7 +272,20 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    }
 
    public void write(DataInput input, int length) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int count = 0;
+      int oldLength = this._length;
+      this.ensureCapacity(length);
+
+      try {
+         while (count < length) {
+            this._buffer[this._position++] = input.readByte();
+            count++;
+         }
+      } catch (EOFException e) {
+         this._position--;
+         this._length = oldLength + count;
+         throw e;
+      }
    }
 
    public void write(InputStream input, int length) {
@@ -615,7 +628,11 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
 
    @Override
    public byte readByte() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._position >= this._length) {
+         throw new EOFException();
+      } else {
+         return this._buffer[this._position++];
+      }
    }
 
    @Override
@@ -634,7 +651,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    }
 
    private final void nextByte(int i) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._buffer[this._position++] = (byte)i;
    }
 
    public DataBuffer(byte[] contents, int offset, int numBytes, boolean bigEndianFlag) {
@@ -646,7 +663,7 @@ public class DataBuffer implements DataInput, DataOutput, Persistable {
    }
 
    private final int nextByte() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return this._buffer[this._position++] & 0xFF;
    }
 
    public static int getCompressedIntSize(int i) {

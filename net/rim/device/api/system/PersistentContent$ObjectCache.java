@@ -26,7 +26,23 @@ final class PersistentContent$ObjectCache implements MemoryCleanerListener {
    }
 
    final void put(char[] encoding, boolean firstChunkOnly, Object object) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int hash = net.rim.vm.Memory.objectToInt(encoding);
+      PersistentContent$ObjectCacheElement element = (PersistentContent$ObjectCacheElement)this._hashtable.get(hash);
+      if (element == null) {
+         if (++this._victim == 131) {
+            this._victim = 0;
+         }
+
+         element = (PersistentContent$ObjectCacheElement)this._hashtable.remove(this._hashes[this._victim]);
+         if (element == null) {
+            element = new PersistentContent$ObjectCacheElement();
+         }
+
+         this._hashtable.put(hash, element);
+         this._hashes[this._victim] = hash;
+      }
+
+      element.put(encoding, firstChunkOnly, object);
    }
 
    @Override

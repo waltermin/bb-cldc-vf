@@ -18,7 +18,7 @@ public final class CellBroadcast$ChannelInfo extends CellBroadcast$Info implemen
    }
 
    public final void setNickname(String nn) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._nickname = nn;
    }
 
    public final CellBroadcast$ChannelInfo clone() {

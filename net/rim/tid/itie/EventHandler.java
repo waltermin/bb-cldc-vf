@@ -258,7 +258,23 @@ public final class EventHandler {
    }
 
    private final void printFocusHistory() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._focusHistoryStart == -1) {
+         System.out.println("FocusHistory: No focus history.");
+      } else {
+         int i = this._focusHistoryStart;
+
+         while (true) {
+            this.printFocusEvent(this._focusHistoryAppId[i], this._focusHistoryComponent[i], this._focusHistoryEvent[i]);
+            this._focusHistoryComponent[i] = null;
+            if (i == this._focusHistoryIndex) {
+               this._focusHistoryLogCount = 3;
+               this._focusHistoryStart = this._focusHistoryIndex = -1;
+               return;
+            }
+
+            i = (i + 1) % 3;
+         }
+      }
    }
 
    private final String findAppName(int appId) {

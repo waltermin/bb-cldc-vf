@@ -21,6 +21,7 @@ import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.CharacterUtilities;
+import net.rim.device.api.util.MathUtilities;
 import net.rim.device.api.util.StringProvider;
 import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.ui.Edit$Helper;
@@ -173,7 +174,25 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    }
 
    void moveChoiceFocus(int amount) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int oldSelectedIndex = this._selectedIndex;
+      this._selectedIndex = this._selectedIndex + (this.isStyle(134217728) ? Ui.getIncreaseDirection() : 1) * amount;
+      this._selectedIndex = MathUtilities.clamp(0, this._selectedIndex, this._numChoices - 1);
+      this._cachedChoice = null;
+      this._cachedChoiceString = null;
+      if (this._selectedIndex != oldSelectedIndex) {
+         this._selectedWidth = 0;
+         this.fieldChangeNotify(0);
+         int width = this.getWidth();
+         if (this.shouldUpdateLayout(width)) {
+            this.updateLayout();
+         } else {
+            this.updateLengths(width);
+         }
+
+         if (Ui.isTTSEnabled()) {
+            super.accessibleEventOccurred(1, new Integer(1), new Integer(2), this);
+         }
+      }
    }
 
    protected void drawChoice(int index, Graphics graphics, int x, int y, int flags, int width) {
@@ -248,11 +267,17 @@ public class ChoiceField extends Field implements FieldLabelProvider {
    }
 
    public void setOptionsMenuText(String optionsMenuText) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._optionsMenuText = optionsMenuText;
    }
 
    protected void setSize(int size) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (size < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      this._numChoices = size;
+      this.setSelectedIndex(size > 0 ? 0 : -1);
+      this.updateLayout();
    }
 
    @Override

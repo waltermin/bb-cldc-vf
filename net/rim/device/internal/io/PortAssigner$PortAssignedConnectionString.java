@@ -24,7 +24,7 @@ public class PortAssigner$PortAssignedConnectionString {
    }
 
    public void setPortAssigned(boolean portAssigned) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._portWasAssigned = portAssigned;
    }
 
    public String getConnectionString() {
@@ -32,7 +32,7 @@ public class PortAssigner$PortAssignedConnectionString {
    }
 
    public void setConnectionString(String cs) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._connectionString = cs;
    }
 
    public int getPort() {
@@ -40,7 +40,7 @@ public class PortAssigner$PortAssignedConnectionString {
    }
 
    public void setPort(int port) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._port = port;
    }
 
    public int getLocalPort() {

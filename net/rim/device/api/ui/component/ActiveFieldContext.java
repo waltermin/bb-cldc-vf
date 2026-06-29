@@ -13,7 +13,7 @@ public final class ActiveFieldContext {
    }
 
    public final void setData(String data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._data = data;
    }
 
    public final long getID() {

@@ -67,15 +67,15 @@ public final class KeyEvent extends InputEvent {
    }
 
    public final void setKeyChar(char keyChar) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._keyChar = keyChar;
    }
 
    public final void setKeyCode(int keyCode) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._keyCode = keyCode;
    }
 
    public final void setComponentDispatchEnabled(boolean enable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._componentDispatch = enable;
    }
 
    @Override

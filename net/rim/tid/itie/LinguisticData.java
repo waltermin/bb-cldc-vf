@@ -69,7 +69,7 @@ public class LinguisticData {
    }
 
    void setID(int aID) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._id = aID;
    }
 
    public int getID() {

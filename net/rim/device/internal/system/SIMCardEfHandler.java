@@ -37,7 +37,7 @@ public class SIMCardEfHandler implements Runnable, SIMCardEFListener {
          throw new IllegalStateException();
       }
 
-      Application app = super._enableKeyUpMessages = (boolean)Application.getApplication();
+      Application app = this._application = Application.getApplication();
       if (app == null) {
          throw new NullPointerException();
       }

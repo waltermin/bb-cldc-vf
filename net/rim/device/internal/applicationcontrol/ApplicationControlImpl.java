@@ -269,7 +269,21 @@ final class ApplicationControlImpl {
    }
 
    static final void removeUserSettings(boolean removeDefaults) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      UserSetting defaultSetting = _userPermissions.getDefaultSetting();
+      int[] handles = _userPermissions.getLoadedHandles();
+
+      for (int i = 0; i < handles.length; i++) {
+         int currHandle = handles[i];
+         byte[] hash = _userPermissions.getSetting(currHandle).getHash();
+         if (isModuleSettingPresent(hash)) {
+            long policyPermissions = getModulePermissions(currHandle, hash);
+            doSetModulePermissions(currHandle, policyPermissions);
+         } else {
+            doSetModulePermissions(currHandle, removeDefaults ? _permissions.getDefaultPermissions() : defaultSetting.getPermissions());
+         }
+      }
+
+      _userPermissions.clear(removeDefaults ? _permissions.getDefaultPermissions() : defaultSetting.getPermissions());
    }
 
    static final int getPolicyPermission(int flag, boolean checkProcess) {
@@ -1256,7 +1270,8 @@ final class ApplicationControlImpl {
    }
 
    static final void logDenial(int moduleHandle, int flag) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      String text = "d " + (moduleHandle == 0 ? "0?" : CodeModuleManager.getModuleName(moduleHandle)) + ":" + flag;
+      EventLog.logEvent(-4492041993596154793L, System.currentTimeMillis(), (byte)5, text.getBytes());
    }
 
    private static final void logReset(String reason) {

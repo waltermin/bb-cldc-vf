@@ -12,7 +12,7 @@ final class GPSRegistry$PDEInfoStatus {
    }
 
    public final void setCredStatus(boolean status) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._credentialStatus = status;
    }
 
    public final boolean getCredStatus() {

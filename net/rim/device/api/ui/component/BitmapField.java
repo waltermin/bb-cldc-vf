@@ -219,7 +219,7 @@ public class BitmapField extends Field implements DrawStyle {
    }
 
    public void setReplacementForCorruptImage(EncodedImage image) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._replacementForCorruptEncodedImage = image;
    }
 
    public void setSpace(int hSpace, int vSpace) {

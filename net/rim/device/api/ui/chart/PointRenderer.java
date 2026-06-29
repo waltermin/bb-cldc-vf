@@ -87,7 +87,7 @@ public class PointRenderer extends ChartRenderer {
    }
 
    public void setLineColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._lineColor = color;
    }
 
    public void setLinesDisplayed(boolean showLines) {
@@ -97,7 +97,7 @@ public class PointRenderer extends ChartRenderer {
    }
 
    public void setMarkerColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._markerColor = color;
    }
 
    public void setPointSize(int pointSize) {

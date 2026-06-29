@@ -2,6 +2,7 @@ package net.rim.device.internal.firewall;
 
 import net.rim.device.api.i18n.MessageFormat;
 import net.rim.device.api.i18n.ResourceBundle;
+import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.component.ButtonField;
 import net.rim.device.api.ui.component.CheckboxField;
 import net.rim.device.api.ui.component.LabelField;
@@ -95,6 +96,23 @@ public final class FirewallDialog extends PopupDialog {
    }
 
    private final boolean doAction() {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      Field field = this._dfm.getLeafFieldWithFocus();
+      if (!(field instanceof CheckboxField)) {
+         if (field == this._allowButton) {
+            this._returnValue = 2;
+            this.close(0);
+            return true;
+         } else if (field == this._denyButton) {
+            this._returnValue = 6;
+            this.close(0);
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         CheckboxField checkBoxField = (CheckboxField)field;
+         checkBoxField.setChecked(!checkBoxField.getChecked());
+         return true;
+      }
    }
 }

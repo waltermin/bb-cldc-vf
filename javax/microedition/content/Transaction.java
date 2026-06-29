@@ -20,7 +20,9 @@ class Transaction extends Hashtable {
    }
 
    synchronized void remove(Invocation key) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.remove(key);
+      Invocation original = key.getOriginal();
+      this._curr = original == null ? null : original.getPrevious();
    }
 
    synchronized void replaceActive(Invocation newInvocation) {

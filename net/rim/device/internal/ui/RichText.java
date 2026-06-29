@@ -3,8 +3,10 @@ package net.rim.device.internal.ui;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
+import net.rim.device.api.ui.DrawTextParam;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.Ui;
 
 public final class RichText {
    private static Edit$Helper _helper;
@@ -228,7 +230,85 @@ public final class RichText {
    );
 
    public static final void drawTextWithEllipses(Graphics graphics, String text, int x, int y, int width, int paragDirection, int flags) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (graphics != null && text != null) {
+         DrawTextParam param = Ui.getTmpDrawTextParam();
+         param.iMaxAdvance = width;
+         param.iDrawNonPrintableCharacters = false;
+         param.iReverse = 0;
+         Edit$BidiLineRuns bidiRuns = getBidiOrder(text, 0, text.length(), null, true, paragDirection, null, 0, 0);
+         int bidiRunsCount = bidiRuns._runs.length;
+         if (!bidiRuns.isIgnored() && bidiRunsCount > 3) {
+            boolean fitsOrIsLTR = true;
+            boolean lineIsRTL = paragDirection == 1 || paragDirection == 3;
+            Font f = graphics.getFont();
+            if (lineIsRTL) {
+               int widthRequired = f.getBounds(text);
+               if (widthRequired > width || (flags & 5) != 0) {
+                  fitsOrIsLTR = false;
+               }
+            }
+
+            if (fitsOrIsLTR) {
+               int rightmostX = x + width;
+
+               for (int i = 0; i < bidiRunsCount; i++) {
+                  int runStart = bidiRuns._runs[i++];
+                  int runLength = bidiRuns._runs[i++];
+                  param.iReverse = bidiRuns._runs[i];
+                  if (param.iReverse == 1) {
+                     param.iTruncateWithEllipsis = 1;
+                  } else {
+                     param.iTruncateWithEllipsis = 2;
+                  }
+
+                  int xAdjust = graphics.drawText(text, runStart, runLength, x, y, param, null);
+                  param.iMaxAdvance -= xAdjust;
+                  x += xAdjust;
+                  if (x > rightmostX) {
+                     break;
+                  }
+               }
+            } else {
+               int originalX = x;
+               x += width;
+
+               for (int i = bidiRunsCount - 1; i >= 0; i--) {
+                  param.iReverse = bidiRuns._runs[i--];
+                  int runLength = bidiRuns._runs[i--];
+                  int runStart = bidiRuns._runs[i];
+                  if (param.iReverse == 1) {
+                     param.iTruncateWithEllipsis = 2;
+                  } else {
+                     param.iTruncateWithEllipsis = 1;
+                  }
+
+                  int pieceWidth = f.measureText(text, runStart, runLength, param, null);
+                  boolean breakFromLoop = false;
+                  if (x - pieceWidth < originalX) {
+                     breakFromLoop = true;
+                     pieceWidth = x - originalX;
+                  }
+
+                  int xAdjust = graphics.drawText(text, runStart, runLength, x - pieceWidth, y, param, null);
+                  param.iMaxAdvance -= xAdjust;
+                  x -= xAdjust;
+                  if (breakFromLoop) {
+                     break;
+                  }
+               }
+            }
+         } else {
+            if (bidiRunsCount == 3) {
+               param.iReverse = bidiRuns._runs[2];
+            }
+
+            param.iTruncateWithEllipsis = 2;
+            param.iAlignment = flags & ALIGNMENT_BITS;
+            graphics.drawText(text, 0, text.length(), x, y, param, null);
+         }
+
+         Ui.returnTmpDrawTextParam(param);
+      }
    }
 
    public static final byte getLineDirection(String s) {

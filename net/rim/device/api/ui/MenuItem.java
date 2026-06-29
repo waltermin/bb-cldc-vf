@@ -110,19 +110,19 @@ public class MenuItem implements Runnable, AccessibleContext {
    }
 
    public void setIcon(Image icon) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._icon = icon;
    }
 
    public void setOrdinal(int ordinal) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._ordinal = ordinal;
    }
 
    public void setPriority(int priority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._priority = priority;
    }
 
    public void setText(String text) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._text = text;
    }
 
    @Override

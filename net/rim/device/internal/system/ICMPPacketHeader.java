@@ -74,7 +74,7 @@ public final class ICMPPacketHeader implements RadioPacketHeader {
    }
 
    public final void setAccessPointNumber(int accessPointNumber) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._accessPointNumber = accessPointNumber;
    }
 
    public final void setType(int type) {
@@ -90,7 +90,7 @@ public final class ICMPPacketHeader implements RadioPacketHeader {
    }
 
    public final void setTTL(byte ttl) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._ttl = ttl;
    }
 
    public static final byte[] IPv4IntToByteArray(int address) {

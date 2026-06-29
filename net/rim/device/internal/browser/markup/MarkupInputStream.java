@@ -1,9 +1,12 @@
 package net.rim.device.internal.browser.markup;
 
 import com.sun.cldc.i18n.Helper;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import net.rim.device.api.system.EventLogger;
+import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.internal.browser.util.Pipe;
 
@@ -204,7 +207,194 @@ public class MarkupInputStream extends InputStream {
    }
 
    private boolean readNextChunk() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      while (true) {
+         byte[] currentChunk = new byte[0];
+         int numToRead = 1024;
+         int bytesOffset = 0;
+         Object bytes;
+         int originalNumRead;
+         if (this._reader != null) {
+            bytes = new char[1024];
+            if (this._unconsumedData != null) {
+               System.arraycopy((char[])this._unconsumedData, 0, (char[])bytes, 0, ((char[])this._unconsumedData).length);
+               numToRead -= ((char[])this._unconsumedData).length;
+               bytesOffset += ((char[])this._unconsumedData).length;
+            }
+
+            originalNumRead = this._reader.read((char[])bytes, bytesOffset, numToRead);
+         } else {
+            bytes = new byte[1024];
+            if (this._unconsumedData != null) {
+               System.arraycopy((byte[])this._unconsumedData, 0, (byte[])bytes, 0, ((byte[])this._unconsumedData).length);
+               numToRead -= ((byte[])this._unconsumedData).length;
+               bytesOffset += ((byte[])this._unconsumedData).length;
+            }
+
+            originalNumRead = this._primaryInput.read((byte[])bytes, bytesOffset, numToRead);
+         }
+
+         this._unconsumedData = null;
+         this._context._currentEndReadPosition = 0;
+         if (originalNumRead == -1) {
+            this._pipe.closeWrite();
+            return false;
+         }
+
+         if (this._primaryInput.markSupported()
+            && this._context._firstBlock
+            && this._context._guessEncoding
+            && bytes instanceof byte[]
+            && ((byte[])bytes).length > 6) {
+            byte[] encodingTypeFound = null;
+            byte[] data = (byte[])bytes;
+            if (data[0] == 60 && data[1] == 63 && data[2] == 120 && data[3] == 109 && data[4] == 108 && data[5] == 32) {
+               int size = data.length;
+               int state = 1;
+
+               for (int i = 5; i < size; i++) {
+                  switch (data[i]) {
+                     case 32:
+                        if (state != 9 && state != 10) {
+                           state = 1;
+                        }
+                        break;
+                     case 34:
+                     case 39:
+                        if (state == 10) {
+                           byte searchChar = data[i];
+                           int beginIndex = ++i;
+
+                           while (i < size) {
+                              if (data[i] == searchChar) {
+                                 encodingTypeFound = Arrays.copy(data, beginIndex, i - beginIndex);
+                                 i = size;
+                              }
+
+                              i++;
+                           }
+                           break;
+                        }
+
+                        state = 0;
+                        break;
+                     case 61:
+                        if (state == 9) {
+                           state = 10;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 99:
+                        if (state == 3) {
+                           state = 4;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 100:
+                        if (state == 5) {
+                           state = 6;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 101:
+                        if (state == 1) {
+                           state = 2;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 103:
+                        if (state == 8) {
+                           state = 9;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 105:
+                        if (state == 6) {
+                           state = 7;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 110:
+                        if (state == 2) {
+                           state = 3;
+                        } else if (state == 7) {
+                           state = 8;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     case 111:
+                        if (state == 4) {
+                           state = 5;
+                        } else {
+                           state = 0;
+                        }
+                        break;
+                     default:
+                        state = 0;
+                  }
+               }
+            }
+
+            if (encodingTypeFound != null) {
+               this.setNewEncoding(encodingTypeFound);
+               continue;
+            }
+         }
+
+         originalNumRead += bytesOffset;
+         if (originalNumRead < 1024) {
+            this._context._lastBlock = true;
+         }
+
+         EventLogger.logEvent(1907089860548946979L, 1114465378, 5);
+
+         int numRead;
+         try {
+            numRead = markupDataChunk(this._type, bytes, originalNumRead, currentChunk, this._context);
+         } catch (IllegalArgumentException e) {
+            if (this._type == 3) {
+               throw new MarkupWrongMIMEType("text/html");
+            }
+
+            throw e;
+         }
+
+         EventLogger.logEvent(1907089860548946979L, 1114465377, 5);
+         if (this._primaryInput.markSupported() && this._setReader && this._context._newEncodingType != null) {
+            this.setNewEncoding(this._context._newEncodingType);
+         } else {
+            this._context._firstBlock = false;
+            if (this._context._currentEndReadPosition < originalNumRead) {
+               if (originalNumRead - this._context._currentEndReadPosition > 4) {
+                  throw new IOException();
+               }
+
+               if (this._reader != null) {
+                  this._unconsumedData = new char[originalNumRead - this._context._currentEndReadPosition];
+                  System.arraycopy((char[])bytes, this._context._currentEndReadPosition, (char[])this._unconsumedData, 0, ((char[])this._unconsumedData).length);
+               } else {
+                  this._unconsumedData = new byte[originalNumRead - this._context._currentEndReadPosition];
+                  System.arraycopy((byte[])bytes, this._context._currentEndReadPosition, (byte[])this._unconsumedData, 0, ((byte[])this._unconsumedData).length);
+               }
+            }
+
+            if (numRead == -1) {
+               this._pipe.closeWrite();
+               return false;
+            }
+
+            if (numRead > 0) {
+               this._pipe.write(currentChunk, 0, currentChunk.length, this._currentPacketNo++);
+               return true;
+            }
+         }
+      }
    }
 
    private void setNewEncoding(byte[] encoding) {

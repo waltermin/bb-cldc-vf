@@ -27,7 +27,7 @@ public final class SIMCardPhoneBookEntry {
    }
 
    public final void setSlot(int slot) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._slot = slot;
    }
 
    public final int getNameId() {
@@ -35,7 +35,7 @@ public final class SIMCardPhoneBookEntry {
    }
 
    public final void setNameId(int nameId) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._nameId = nameId;
    }
 
    public final String getName() {
@@ -43,7 +43,7 @@ public final class SIMCardPhoneBookEntry {
    }
 
    public final void setName(String name) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._name = name;
    }
 
    public final int getPhoneNumberType() {

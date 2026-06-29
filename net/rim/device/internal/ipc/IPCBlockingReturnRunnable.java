@@ -58,7 +58,7 @@ public class IPCBlockingReturnRunnable extends IPCBaseRunnable {
    }
 
    protected void setMessage(String message) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._message = message;
    }
 
    IPCResult getIPCResult() {

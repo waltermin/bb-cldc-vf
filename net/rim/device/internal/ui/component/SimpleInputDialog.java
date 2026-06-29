@@ -1,9 +1,14 @@
 package net.rim.device.internal.ui.component;
 
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.component.AutoTextEditField;
 import net.rim.device.api.ui.component.BasicEditField;
+import net.rim.device.api.ui.component.EditField;
+import net.rim.device.api.ui.component.EmailAddressEditField;
+import net.rim.device.api.ui.component.PasswordEditField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.DialogFieldManager;
+import net.rim.device.api.ui.text.TextFilter;
 import net.rim.device.internal.ui.Image;
 
 public class SimpleInputDialog extends PopupDialog {
@@ -60,7 +65,10 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setEditField(BasicEditField field) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this._editField = field;
+      if (this._editField != null && this._isUnicodeInputAllowed != 0) {
+         this._editField.setAllowUnicodeInput(this._isUnicodeInputAllowed == 1);
+      }
    }
 
    public void setPrompt(String prompt) {
@@ -68,7 +76,55 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setType(int type) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (this._editField != null) {
+         this._dfm.deleteCustomField(this._editField);
+      }
+
+      switch (type) {
+         case 0:
+            this._editField = new EditField(null, null, this._maxLength, 4503601774854144L);
+            break;
+         case 1:
+         default:
+            this._editField = new EditField(null, null, this._maxLength, 2197815296L);
+            break;
+         case 2:
+            this._editField = new EditField(null, null, this._maxLength, 2181038080L);
+            break;
+         case 3:
+            this._editField = new EditField(null, null, this._maxLength, 2164260864L);
+            break;
+         case 4:
+            this._editField = new EditField(null, null, this._maxLength, 2214592512L);
+            break;
+         case 5:
+            this._editField = new PasswordEditField(null, null, this._maxLength, 0);
+            break;
+         case 6:
+            this._editField = new PasswordEditField(null, null, this._maxLength, 0);
+            this._editField.setFilter(TextFilter.get(1));
+            break;
+         case 7:
+            this._editField = new EditField(null, null, this._maxLength, 100663296);
+            break;
+         case 8:
+            this._editField = new EmailAddressEditField(null, null, this._maxLength);
+            break;
+         case 9:
+            this._editField = new EditField(null, null, this._maxLength, 117440512);
+            break;
+         case 10:
+            this._editField = new EditField(null, null, this._maxLength, 4503602848595968L);
+            break;
+         case 11:
+            this._editField = new AutoTextEditField(null, null, this._maxLength, 4503601774854144L);
+      }
+
+      if (this._isUnicodeInputAllowed != 0) {
+         this._editField.setAllowUnicodeInput(this._isUnicodeInputAllowed == 1);
+      }
+
+      this._dfm.addCustomField(this._editField);
    }
 
    @Override
@@ -130,7 +186,7 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setMinLength(int minLength) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._minLength = minLength;
    }
 
    public int getMinLength() {
@@ -161,7 +217,10 @@ public class SimpleInputDialog extends PopupDialog {
    }
 
    public void setAllowUnicodeInput(boolean allow) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._isUnicodeInputAllowed = (byte)(allow ? 1 : 2);
+      if (this._editField != null) {
+         this._editField.setAllowUnicodeInput(allow);
+      }
    }
 
    public boolean isUnicodeInputAllowed() {

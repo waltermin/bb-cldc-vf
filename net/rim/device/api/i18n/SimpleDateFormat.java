@@ -57,7 +57,12 @@ public class SimpleDateFormat extends DateFormat {
    }
 
    public void applyPattern(String pattern) {
-      throw new RuntimeException("cod2jar: field: unresolved slot");
+      if (pattern == null) {
+         throw new NullPointerException();
+      }
+
+      this._patternResult = this._pattern = pattern;
+      this.compilePattern(pattern);
    }
 
    private void checkLocale() {

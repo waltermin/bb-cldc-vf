@@ -7,7 +7,7 @@ public class FirewallContext {
    private int[] _additionalModules;
 
    public void setRequestingDescriptor(ApplicationDescriptor requestingDescriptor) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._requestingDescriptor = requestingDescriptor;
    }
 
    public ApplicationDescriptor getRequestingDescriptor() {
@@ -15,7 +15,7 @@ public class FirewallContext {
    }
 
    public void setAdditionalModules(int[] additionalModules) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._additionalModules = additionalModules;
    }
 
    public int[] getAdditionalModules() {

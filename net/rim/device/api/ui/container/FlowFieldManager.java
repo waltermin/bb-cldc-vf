@@ -177,7 +177,7 @@ public class FlowFieldManager extends Manager {
 
    @Override
    public int nextFocus(int direction, boolean alt) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      return this.nextFocus(direction, alt ? 2 : 0);
    }
 
    @Override

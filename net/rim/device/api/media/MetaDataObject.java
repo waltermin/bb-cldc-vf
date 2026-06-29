@@ -35,7 +35,7 @@ public class MetaDataObject {
    }
 
    public void setMIMEType(String mimeType) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._mimeType = mimeType;
    }
 
    public String getFilename() {
@@ -43,7 +43,7 @@ public class MetaDataObject {
    }
 
    public void setFilename(String filename) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._filename = filename;
    }
 
    public String getURL() {
@@ -51,7 +51,7 @@ public class MetaDataObject {
    }
 
    public void setURL(String url) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._url = url;
    }
 
    public int getPictureType() {
@@ -59,7 +59,7 @@ public class MetaDataObject {
    }
 
    public void setPictureType(int pictureType) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._pictureType = pictureType;
    }
 
    public String getDescription() {
@@ -67,7 +67,7 @@ public class MetaDataObject {
    }
 
    public void setDescription(String description) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._description = description;
    }
 
    public byte[] getData() {
@@ -75,6 +75,6 @@ public class MetaDataObject {
    }
 
    public void setData(byte[] data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._data = data;
    }
 }

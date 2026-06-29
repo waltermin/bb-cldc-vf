@@ -11,7 +11,7 @@ final class TextField$TogglingMenuItem extends MenuItem {
    }
 
    final void setInputMode(int inputMode) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._inputMode = inputMode;
    }
 
    @Override

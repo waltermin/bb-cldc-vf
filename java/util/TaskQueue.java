@@ -5,7 +5,14 @@ class TaskQueue {
    private int size;
 
    void add(TimerTask task) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (++this.size == this.queue.length) {
+         TimerTask[] newQueue = new TimerTask[2 * this.queue.length];
+         System.arraycopy(this.queue, 0, newQueue, 0, this.size);
+         this.queue = newQueue;
+      }
+
+      this.queue[this.size] = task;
+      this.fixUp(this.size);
    }
 
    TimerTask getMin() {
@@ -13,7 +20,9 @@ class TaskQueue {
    }
 
    void removeMin() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.queue[1] = this.queue[this.size];
+      this.queue[this.size--] = null;
+      this.fixDown(1);
    }
 
    void rescheduleMin(long newTime) {

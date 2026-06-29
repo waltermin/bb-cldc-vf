@@ -57,6 +57,6 @@ public class Border {
    }
 
    protected final void setTransparent(boolean transparent) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._transparent = transparent;
    }
 }

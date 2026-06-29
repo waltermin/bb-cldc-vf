@@ -12,7 +12,7 @@ public final class SyncCollectionSchema {
    }
 
    public final void setRecordTypeTag(int recordTypeTag) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._recordTypeTag = recordTypeTag;
    }
 
    public final int getDefaultRecordType() {

@@ -51,7 +51,7 @@ public class AbstractKeywordFilterList
    }
 
    protected void setSearcher(KeywordSearcher searcher) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._searcher = searcher;
    }
 
    protected synchronized void filteringComplete() {

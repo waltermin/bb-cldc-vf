@@ -1,5 +1,7 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
+
 final class HashtableLongEnumerator implements LongEnumeration {
    private long[] _table;
    private Object[] _occupied;
@@ -37,6 +39,10 @@ final class HashtableLongEnumerator implements LongEnumeration {
 
    @Override
    public final long nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getNextElement()) {
+         return this._table[this._index++];
+      } else {
+         throw new NoSuchElementException();
+      }
    }
 }

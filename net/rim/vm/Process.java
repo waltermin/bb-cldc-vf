@@ -54,7 +54,10 @@ public class Process {
    public static native void currentThreadSuicide();
 
    public void haltDeviceIfThisProcessDies(boolean on) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._haltOnProcessDeath = on ? 1 : 0;
+      if (on) {
+         this._messageQueue.setSystemProcess();
+      }
    }
 
    private static native void setHeapQuota(int var0, int var1);

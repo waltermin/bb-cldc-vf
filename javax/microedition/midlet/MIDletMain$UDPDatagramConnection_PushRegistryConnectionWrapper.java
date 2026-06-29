@@ -13,7 +13,7 @@ final class MIDletMain$UDPDatagramConnection_PushRegistryConnectionWrapper imple
    }
 
    final void pushBack(Datagram d) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._datagram = d;
    }
 
    @Override

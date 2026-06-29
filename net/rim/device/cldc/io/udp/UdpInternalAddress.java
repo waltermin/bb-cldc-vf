@@ -117,7 +117,7 @@ public final class UdpInternalAddress extends UdpAddress {
    }
 
    public final void setGpakHostAddress(int address) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._gpakHostAddress = address;
    }
 
    public final int getGpakHostAddress() {

@@ -71,6 +71,12 @@ final class UserSetting implements Persistable, SyncObject {
    }
 
    UserSetting(byte[] moduleHash, long perms) {
+      this._hash = new byte[moduleHash.length];
+      System.arraycopy(moduleHash, 0, this._hash, 0, moduleHash.length);
+      this._permissions = perms;
+      this._dontPrompt = 0;
+      this._isSet = 0;
+      this._uid = Arrays.equals(this._hash, ApplicationControlConstants.EMPTY_HASH) ? 1 : UIDGenerator.getUID();
    }
 
    UserSetting(UserSetting us) {

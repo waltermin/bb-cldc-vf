@@ -27,10 +27,39 @@ public final class AttribRunList {
    }
 
    private AttribRunList(AttribRunList aList, int start, int end) {
+      if (end - start == 0) {
+         this.iOffsets = new int[2];
+         this.iAttributes = new int[2];
+      } else {
+         this.iOffsets = new int[10];
+         this.iAttributes = new int[10];
+         int[] offsets = aList.iOffsets;
+         int[] attributes = aList.iAttributes;
+         int len = aList.iOffsetNo;
+         int firstIndex = 0;
+
+         while (firstIndex < len && start >= offsets[firstIndex]) {
+            firstIndex++;
+         }
+
+         this.iAttributes[this.iOffsetNo++] = attributes[firstIndex - 1];
+
+         for (int lastIndex = firstIndex; offsets[lastIndex] < end; lastIndex++) {
+            this.insureSize(this.iOffsetNo + 1);
+            this.iAttributes[this.iOffsetNo] = attributes[lastIndex];
+            this.iOffsets[this.iOffsetNo] = offsets[lastIndex] - start;
+            this.iOffsetNo++;
+         }
+
+         this.insureSize(this.iOffsetNo + 1);
+         this.iOffsets[this.iOffsetNo++] = end - start;
+      }
    }
 
    public final void init(int aSet, int aLength) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.iOffsets[1] = aLength;
+      this.iOffsetNo = aLength == 0 ? 0 : 2;
+      this.iAttributes[0] = aSet;
    }
 
    public final int getSize() {

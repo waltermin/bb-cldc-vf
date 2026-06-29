@@ -281,7 +281,58 @@ public class ActiveRichTextField extends RichTextField implements CookieProvider
       int labelLength,
       StringPatternContainer patterns
    ) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (offsets == null) {
+         return scanForActiveRegions(text, defaultFont, labelLength, patterns);
+      }
+
+      ActiveRichTextField$RegionQueue rq = new ActiveRichTextField$RegionQueue(0, fonts.length);
+
+      for (int i = 0; i < fonts.length; i++) {
+         rq.appendFont(fonts[i], foregroundColors != null ? foregroundColors[i] : -1, backgroundColors != null ? backgroundColors[i] : -1);
+      }
+
+      StringPatternEnumerator patternEnum = new StringPatternEnumerator(text, patterns);
+      StringPattern$Match patternMatch = new StringPattern$Match();
+      byte[] underlinedAttributes = null;
+
+      for (int i = 0; i < offsets.length - 1; i++) {
+         int startOffset = offsets[i];
+         int endOffset = offsets[i + 1];
+         patternEnum.reset(text, startOffset, endOffset);
+         int lastBegin = -1;
+         int lastEnd = -1;
+
+         while (patternEnum.hasMoreMatches()) {
+            patternEnum.nextMatch(patternMatch);
+            if (lastBegin == patternMatch.beginIndex && lastEnd == patternMatch.endIndex) {
+               rq.appendCookieID(patternMatch.id);
+            } else {
+               rq.appendRegion(patternMatch.beginIndex, attributes[i], 0);
+               if (underlinedAttributes == null) {
+                  underlinedAttributes = new byte[attributes.length];
+               }
+
+               if (underlinedAttributes[i] == 0) {
+                  Font currentFont = fonts[attributes[i]] != null ? fonts[attributes[i]] : defaultFont;
+                  Font underlinedFont = currentFont.derive(currentFont.getStyle() | 4 | 8);
+                  underlinedAttributes[i] = rq.appendFont(
+                     underlinedFont,
+                     foregroundColors != null ? foregroundColors[attributes[i]] : -1,
+                     backgroundColors != null ? backgroundColors[attributes[i]] : -1
+                  );
+               }
+
+               rq.appendRegion(patternMatch.endIndex, underlinedAttributes[i], patternMatch.id);
+               lastBegin = patternMatch.beginIndex;
+               lastEnd = patternMatch.endIndex;
+            }
+         }
+
+         rq.appendRegion(endOffset, attributes[i], 0);
+      }
+
+      rq.trim();
+      return rq;
    }
 
    @Override

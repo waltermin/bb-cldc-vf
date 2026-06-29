@@ -255,7 +255,21 @@ public class AttributedString {
    }
 
    private void deleteRun(AttributedString$Run aRun) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (aRun._prev != null || aRun._next != null) {
+         if (aRun._prev != null) {
+            aRun._prev._next = aRun._next;
+         }
+
+         if (aRun._next != null) {
+            aRun._next._prev = aRun._prev;
+         }
+
+         if (aRun == this._run) {
+            this._run = aRun._next;
+         }
+
+         aRun._next = aRun._prev = null;
+      }
    }
 
    private void insertRun(AttributedString$Run aPrevRun, int aLength, long aAttrib, long aXAttrib, AttributedString$PictureInfo aPictureInfo) {
@@ -273,11 +287,99 @@ public class AttributedString {
    }
 
    private void insertAttribRun(int aLength, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask, AttributedString$PictureInfo aPictureInfo) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      long attrib = this._new_attrib & (aAttribMask ^ -1) | aAttrib & aAttribMask;
+      long x_attrib = this._new_xattrib & (aXAttribMask ^ -1) | aXAttrib & aXAttribMask;
+      boolean no_pictures = aPictureInfo == null && this._cursor_run._pictureInfo == null;
+      boolean isEmptyRun = this._cursor_run._length == 0;
+      if (!isEmptyRun && (!no_pictures || (attrib != this._cursor_run._attrib || x_attrib != this._cursor_run._xAttrib) && this._cursor_run._length != 0)) {
+         if (this._cursor > this._cursor_run_start && this._cursor < this._cursor_run_start + this._cursor_run._length) {
+            this.insertRun(this._cursor_run._prev, this._cursor - this._cursor_run_start, this._cursor_run._attrib, this._cursor_run._xAttrib, null);
+            this._cursor_run._length = this._cursor_run._length - this._cursor_run._prev._length;
+            this._cursor_run_start = this._cursor;
+         }
+
+         if (this._cursor == this._cursor_run_start) {
+            if (this._cursor_run._prev != null && attrib == this._cursor_run._prev._attrib && x_attrib == this._cursor_run._prev._xAttrib && no_pictures) {
+               this._cursor_run = this._cursor_run._prev;
+               this._cursor_run_start = this._cursor_run_start - this._cursor_run._length;
+               this._cursor_run._length += aLength;
+            } else {
+               this.insertRun(this._cursor_run._prev, aLength, attrib, x_attrib, aPictureInfo);
+               this._cursor_run_start += aLength;
+            }
+         } else {
+            if (this._cursor_run._next != null && attrib == this._cursor_run._next._attrib && x_attrib == this._cursor_run._next._xAttrib && no_pictures) {
+               this._cursor_run._next._length += aLength;
+            } else {
+               this.insertRun(this._cursor_run, aLength, attrib, x_attrib, aPictureInfo);
+            }
+
+            this._cursor_run_start = this._cursor_run_start + this._cursor_run._length;
+            this._cursor_run = this._cursor_run._next;
+         }
+      } else {
+         this._cursor_run._length += aLength;
+         this._cursor_run._attrib = attrib;
+         this._cursor_run._xAttrib = x_attrib;
+         this._cursor_run._pictureInfo = aPictureInfo;
+      }
+
+      this._cursor += aLength;
+      this._length += aLength;
    }
 
    public void delete(int aCount) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (aCount < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (aCount > this._cursor) {
+         throw new IndexOutOfBoundsException();
+      }
+
+      if (aCount != 0) {
+         this._text.delete(aCount);
+         this._length -= aCount;
+
+         while (aCount > 0) {
+            int n = aCount;
+            if (n > this._cursor - this._cursor_run_start) {
+               n = this._cursor - this._cursor_run_start;
+               if (n == 0) {
+                  this._cursor_run = this._cursor_run._prev;
+                  this._cursor_run_start = this._cursor_run_start - this._cursor_run._length;
+                  continue;
+               }
+            }
+
+            this._cursor_run._length -= n;
+            this._cursor -= n;
+            aCount -= n;
+            if (this._cursor_run._length == 0) {
+               AttributedString$Run prev = this._cursor_run._prev;
+               this.deleteRun(this._cursor_run);
+               if (prev == null) {
+                  this._cursor_run = this._run;
+               } else {
+                  this._cursor_run = prev;
+                  this._cursor_run_start = this._cursor_run_start - prev._length;
+                  if (this._cursor_run._next != null
+                     && this._cursor_run._attrib == this._cursor_run._next._attrib
+                     && this._cursor_run._xAttrib == this._cursor_run._next._xAttrib
+                     && this._cursor_run._pictureInfo == null
+                     && this._cursor_run._next._pictureInfo == null) {
+                     this._cursor_run._length = this._cursor_run._length + this._cursor_run._next._length;
+                     this.deleteRun(this._cursor_run._next);
+                  } else if (this._cursor == this._cursor_run_start + this._cursor_run._length && this._cursor_run._next != null) {
+                     this._cursor_run_start = this._cursor_run_start + this._cursor_run._length;
+                     this._cursor_run = this._cursor_run._next;
+                  }
+               }
+            }
+         }
+
+         this.seekRun(this._cursor);
+      }
    }
 
    public void insert(char aChar) {
@@ -420,7 +522,81 @@ public class AttributedString {
    }
 
    public void setAttrib(int aCount, long aAttrib, long aAttribMask, long aXAttrib, long aXAttribMask) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      AttributedString$Run r = this._cursor_run;
+      int pos = this._cursor - this._cursor_run_start;
+
+      while (aCount != 0 || this._cursor >= this._length) {
+         int n = aCount;
+         if (n > r._length - pos) {
+            n = r._length - pos;
+         }
+
+         long attrib = r._attrib & (aAttribMask ^ -1) | aAttrib & aAttribMask;
+         long x_attrib = r._xAttrib & (aXAttribMask ^ -1) | aXAttrib & aXAttribMask;
+         if (attrib != r._attrib || x_attrib != r._xAttrib) {
+            if (n == r._length) {
+               r._attrib = attrib;
+               r._xAttrib = x_attrib;
+            } else {
+               if (pos > 0) {
+                  this.insertRun(r._prev, pos, r._attrib, r._xAttrib, null);
+                  r._length -= pos;
+                  if (r == this._cursor_run) {
+                     this._cursor_run_start += pos;
+                  }
+               }
+
+               if (n == r._length) {
+                  r._attrib = attrib;
+                  r._xAttrib = x_attrib;
+               } else {
+                  this.insertRun(r._prev, n, attrib, x_attrib, null);
+                  r._length -= n;
+                  if (r == this._cursor_run) {
+                     if (this._cursor >= this._cursor_run_start + n) {
+                        this._cursor_run_start += n;
+                     } else {
+                        this._cursor_run = r._prev;
+                     }
+                  }
+               }
+            }
+         }
+
+         if (r._prev != null && r._prev._attrib == r._attrib && r._prev._xAttrib == r._xAttrib && r._prev._pictureInfo == null && r._pictureInfo == null) {
+            r._length = r._length + r._prev._length;
+            if (this._cursor_run == r) {
+               this._cursor_run_start = this._cursor_run_start - r._prev._length;
+            } else if (this._cursor_run == r._prev) {
+               this._cursor_run = r;
+            }
+
+            this.deleteRun(r._prev);
+         }
+
+         aCount -= n;
+         pos = 0;
+         r = r._next;
+         if (aCount == 0) {
+            break;
+         }
+      }
+
+      if (r != null
+         && r._prev != null
+         && r._prev._attrib == r._attrib
+         && r._prev._xAttrib == r._xAttrib
+         && r._prev._pictureInfo == null
+         && r._pictureInfo == null) {
+         r._length = r._length + r._prev._length;
+         if (this._cursor_run == r) {
+            this._cursor_run_start = this._cursor_run_start - r._prev._length;
+         } else if (this._cursor_run == r._prev) {
+            this._cursor_run = r;
+         }
+
+         this.deleteRun(r._prev);
+      }
    }
 
    public void setAttrib(int aStart, int aEnd, long aAttrib, long aAttribMask) {

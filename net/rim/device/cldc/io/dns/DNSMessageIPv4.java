@@ -69,7 +69,7 @@ public final class DNSMessageIPv4 {
    }
 
    public final void setID(int id) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._id = id;
    }
 
    public final int getQR() {
@@ -157,7 +157,7 @@ public final class DNSMessageIPv4 {
    }
 
    final void setFlags(int flags) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._flags = flags;
    }
 
    final int getFlags() {

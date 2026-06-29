@@ -4,10 +4,12 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FieldChangeListener;
+import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.GaugeField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.util.MathUtilities;
+import net.rim.device.internal.ui.component.AnimatedBitmapField;
 import net.rim.device.resources.Resource;
 
 public class Gauge extends Item {
@@ -37,7 +39,59 @@ public class Gauge extends Item {
    }
 
    private void updatePeer() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Field newPeer;
+      if (this._maxValue != -1) {
+         if (this._peer != null && this._peer instanceof GaugeField) {
+            ((GaugeField)this._peer).reset(this._label, 0, this._maxValue, this._value);
+            return;
+         }
+
+         newPeer = new GaugeField(this._label, 0, this._maxValue, this._value, 18014398509481984L);
+         newPeer.setEditable(this._interactive);
+      } else {
+         if (this._label != null) {
+            if (this._labelField == null) {
+               this._labelField = new RichTextField();
+               this._container.insert(this._labelField, 0);
+            }
+
+            this._labelField.setText(this._label);
+         } else if (this._labelField != null) {
+            this._container.delete(this._labelField);
+            this._labelField = null;
+         }
+
+         switch (this._value) {
+            case -1:
+               throw new IllegalArgumentException();
+            case 0:
+            case 1:
+            case 2:
+            default:
+               newPeer = new AnimatedBitmapField(this.getAnimationImage(), 1000, 0);
+               break;
+            case 3:
+               if (this._currentIncrementalUpdatingAnimationIndex == this.getAnimationImage().getFrameCount()) {
+                  this._currentIncrementalUpdatingAnimationIndex = 0;
+               }
+
+               if (this._peer != null && this._peer instanceof BitmapField) {
+                  ((BitmapField)this._peer).setBitmap(this.getAnimationImage().getBitmap(this._currentIncrementalUpdatingAnimationIndex++));
+                  return;
+               }
+
+               newPeer = new BitmapField(this.getAnimationImage().getBitmap(this._currentIncrementalUpdatingAnimationIndex++));
+         }
+      }
+
+      if (this._peer != null) {
+         this._container.delete(this._peer);
+      }
+
+      this._peer = newPeer;
+      this._container.add(this._peer);
+      this._peer.setChangeListener(this._changeListener);
+      this._peer.setCookie(this);
    }
 
    private boolean validateMaxValue(int maxValue) {

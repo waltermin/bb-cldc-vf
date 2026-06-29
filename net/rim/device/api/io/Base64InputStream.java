@@ -40,12 +40,38 @@ public class Base64InputStream extends InputStream {
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      label33: {
+         if (this._outputBufferLength != 0) {
+            this._outputBufferLength--;
+            return this._outputBuffer[this._outputBufferOffset++] & 0xFF;
+         }
+
+         if (this._lastException != null) {
+            throw this._lastException;
+         }
+
+         try {
+            if (this._inputStream == null) {
+               throw new IOException("Stream closed");
+            }
+
+            this._outputBufferLength = this.decode(this._outputBuffer, 0);
+            if (this._outputBufferLength == 0) {
+               return -1;
+            }
+
+            this._outputBufferOffset = 0;
+            break label33;
+         } catch (IOException e) {
+            this._lastException = e;
+            throw e;
+         }
+      }
    }
 
    @Override
    public int read(byte[] buffer) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      return this.read(buffer, 0, buffer == null ? 0 : buffer.length);
    }
 
    @Override

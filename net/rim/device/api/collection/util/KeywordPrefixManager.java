@@ -141,7 +141,9 @@ public class KeywordPrefixManager implements Persistable {
    }
 
    public void addWords(int id, String[] words) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      for (int i = 0; i < words.length; i++) {
+         this.addWord(id, words[i], i == 0, (byte)i);
+      }
    }
 
    public void addWords(int id, String words, boolean firstFlag) {

@@ -1,6 +1,7 @@
 package net.rim.device.cldc.util;
 
 import java.util.TimeZone;
+import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.RIMGlobalMessagePoster;
@@ -8,6 +9,7 @@ import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.api.util.IntHashtable;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.vm.Array;
 
@@ -372,7 +374,34 @@ public final class TimeService {
    }
 
    private final synchronized String getTimeZoneDescription(TimeZoneDataObject tzdo, int descriptionType) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      String result = null;
+      if (this._localizer != null) {
+         Locale locale = Locale.getDefault();
+         result = this._localizer.getResourceString(tzdo.getTimeZoneID(), descriptionType, locale);
+      }
+
+      if (result == null) {
+         if (descriptionType == 2) {
+            return tzdo.getTimeZoneStringID();
+         }
+
+         String[] tzNames = CommonResource.getBundle().getStringArray(descriptionType == 0 ? 10117 : 10116);
+         if (tzdo.isBuiltInData()) {
+            return tzNames[tzdo.getBuiltInIndex()];
+         }
+
+         if (descriptionType == 0) {
+            result = tzdo.getDefaultShortDescription();
+         } else {
+            result = tzdo.getDefaultLongDescription();
+         }
+
+         if (result == null) {
+            result = tzdo.getTimeZoneStringID();
+         }
+      }
+
+      return result;
    }
 
    private final synchronized String getTimeZoneDescriptionByIndex(int index, int descriptionType) {

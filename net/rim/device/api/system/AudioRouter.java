@@ -64,7 +64,7 @@ public final class AudioRouter implements AudioHeadsetListener {
    private static final int[] _validSourceSinks;
 
    public final void setAudioSinkCallback(AudioSinkCallback callback) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callback = callback;
    }
 
    public final void updateMasterVolume() {

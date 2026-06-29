@@ -32,11 +32,28 @@ public final class CyclicQueue {
    }
 
    public final Object dequeue() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._head != this._tail) {
+         Object object = this._queue[this._tail];
+         this._queue[this._tail] = null;
+         this._tail = this._tail + 1 & this._modulus;
+         if (this._head == this._tail && this._capacity > this._initialCapacity) {
+            Array.resize(this._queue, this._initialCapacity);
+            this._capacity = this._initialCapacity;
+            this._modulus = this._initialCapacity - 1;
+            this._head = this._tail = 0;
+         }
+
+         return object;
+      } else {
+         return null;
+      }
    }
 
    public final void flush() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._queue = new Object[this._initialCapacity];
+      this._capacity = this._initialCapacity;
+      this._modulus = this._initialCapacity - 1;
+      this._head = this._tail = 0;
    }
 
    public final boolean isEmpty() {

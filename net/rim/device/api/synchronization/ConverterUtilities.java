@@ -14,6 +14,7 @@ import net.rim.device.api.util.DateTimeUtilities;
 import net.rim.device.api.util.StringUtilities;
 import net.rim.device.api.util.WeakReferenceUtilities;
 import net.rim.device.cldc.util.CalendarExtensions;
+import net.rim.device.internal.i18n.UnicodeServiceRegistry;
 import net.rim.device.internal.i18n.UnicodeServiceUtilities;
 import net.rim.vm.Array;
 import net.rim.vm.TraceBack;
@@ -207,11 +208,90 @@ public final class ConverterUtilities {
    }
 
    public static final void writeString(DataBuffer buffer, int type, String text) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      int len = text.length();
+      buffer.ensureCapacity(2 * len + 5);
+      byte[] bufferBytes = buffer.getArray();
+      int arrayPosition = buffer.getArrayPosition();
+      int length = StringUtilities.codeBOM(text, 0, len, bufferBytes, arrayPosition + 3);
+      boolean addNull = length == len && len != 0 && text.charAt(len - 1) == 0;
+      buffer.writeShort(length + (addNull ? 1 : 0));
+      buffer.writeByte(type);
+      buffer.skipBytes(length);
+      if (addNull) {
+         buffer.writeByte(0);
+      }
+
+      buffer.trim(false);
    }
 
    public static final boolean writeStringEncoded(DataBuffer buffer, int type, String text) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (text == null) {
+         return false;
+      }
+
+      int length = text.length();
+      boolean encoded = true;
+      boolean addNull = false;
+      byte encoding = 0;
+      byte[] bytes = null;
+      String encodingName = null;
+      buffer.ensureCapacity(length + 4);
+      byte[] bufferBytes = buffer.getArray();
+      int arrayPosition = buffer.getArrayPosition();
+      if (StringUtilities.getCharacterSize(text) == 1) {
+         encoded = !convertForDesktop(text, 0, length, bufferBytes, arrayPosition + 3, 2);
+      }
+
+      if (!encoded) {
+         addNull = true;
+      } else {
+         type |= 128;
+         encoded = true;
+         encoding = _currentSerializationEncodingByte;
+         encodingName = _currentSerializationEncodingName;
+      }
+
+      if (encoded) {
+         try {
+            bytes = text.getBytes(encodingName);
+            if (bytes != null) {
+               length = bytes.length;
+               buffer.ensureCapacity(length + (encoded ? 1 : 0) + 3);
+            }
+         } catch (UnsupportedEncodingException e) {
+            bytes = text.getBytes();
+            encoded = false;
+            type &= -129;
+            addNull = true;
+            if (bytes != null) {
+               length = bytes.length;
+               buffer.ensureCapacity(length + 4);
+            }
+         }
+      }
+
+      buffer.writeShort(length + (addNull ? 1 : 0) + (encoded ? 1 : 0));
+      buffer.writeByte(type);
+      if (encoded) {
+         buffer.writeByte(encoding);
+         UnicodeServiceRegistry ur = UnicodeServiceRegistry.getInstance();
+         if (ur != null) {
+            ur.setFlags(ur.getFlags() | 1);
+         }
+      }
+
+      if (bytes != null) {
+         arrayPosition = buffer.getArrayPosition();
+         System.arraycopy(bytes, 0, bufferBytes, arrayPosition, length);
+      }
+
+      buffer.skipBytes(length);
+      if (addNull) {
+         buffer.writeByte(0);
+      }
+
+      buffer.trim(false);
+      return encoded;
    }
 
    public static final void writeStringIntellisync(DataBuffer buffer, int type, String string) {

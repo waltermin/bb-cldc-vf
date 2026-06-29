@@ -16,7 +16,7 @@ final class MIDletMain$MessageConnection_PushRegistryConnectionWrapper implement
    }
 
    final void pushBack(Message m) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._message = m;
    }
 
    @Override

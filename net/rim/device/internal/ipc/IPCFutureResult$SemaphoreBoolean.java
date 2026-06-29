@@ -12,6 +12,6 @@ public class IPCFutureResult$SemaphoreBoolean {
    }
 
    public void setValue(boolean value) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._bool = value;
    }
 }

@@ -119,7 +119,7 @@ public final class TextFlowNative {
    }
 
    public final void setEndLine(int endLine) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._endLine = endLine;
    }
 
    public final int getEndLine() {
@@ -127,7 +127,7 @@ public final class TextFlowNative {
    }
 
    public final void setMaxXOffset(int xPos) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._maxXOffset = xPos;
    }
 
    public final int getMaxXOffset() {

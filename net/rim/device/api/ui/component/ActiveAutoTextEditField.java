@@ -201,7 +201,15 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    public void selectionDelete() {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (!this.isSelecting() && this.regionHasCookie() && this._invertCookieRegion) {
+         int start = this._arSupport.getRunStart();
+         int end = this._arSupport.getRunEnd();
+         int length = end - start;
+         this.setCursorPosition(end - this.getLabelLength(), this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
+         this.backspace(length, 0);
+      } else {
+         super.selectionDelete();
+      }
    }
 
    @Override
@@ -361,7 +369,10 @@ public class ActiveAutoTextEditField extends AutoTextEditField implements Cookie
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._scanForSmileys = key == ' ';
+      boolean ret = super.keyChar(key, status, time);
+      this._scanForSmileys = true;
+      return ret;
    }
 
    private synchronized int initialize() {

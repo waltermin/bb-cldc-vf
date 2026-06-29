@@ -213,7 +213,57 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void applyThemeOnStateChange() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.assertHaveEventLock();
+      ThemeAttributeSet tas = null;
+      if (this.getState() == 6 && this._themeAttributesFocus != null) {
+         tas = this._themeAttributesFocus;
+      } else {
+         tas = this._themeAttributesAll;
+      }
+
+      if (tas != this._themeAttributes) {
+         this._themeAttributes = tas;
+         if (!this._paddingSet) {
+            XYEdges edges = ThemeAttributeSet.getEdges(this, 0);
+            if (edges != null) {
+               this._paddingTop = edges.top;
+               this._paddingRight = edges.right;
+               this._paddingBottom = edges.bottom;
+               this._paddingLeft = edges.left;
+            } else {
+               this._paddingTop = this._paddingRight = this._paddingBottom = this._paddingLeft = 0;
+            }
+         }
+
+         if (!this._borderSet) {
+            XYEdges edges = ThemeAttributeSet.getEdges(this, 1);
+            if (edges != null) {
+               this._borderTop = edges.top;
+               this._borderRight = edges.right;
+               this._borderBottom = edges.bottom;
+               this._borderLeft = edges.left;
+               this._border = ThemeAttributeSet.getBorder(this);
+            } else {
+               this._borderTop = this._borderRight = this._borderBottom = this._borderLeft = 0;
+               this._border = null;
+            }
+         }
+
+         if (!this._marginSet) {
+            XYEdges edges = ThemeAttributeSet.getEdges(this, 2);
+            if (edges != null) {
+               this._marginTop = edges.top;
+               this._marginRight = edges.right;
+               this._marginBottom = edges.bottom;
+               this._marginLeft = edges.left;
+            } else {
+               this._marginTop = this._marginRight = this._marginBottom = this._marginLeft = 0;
+            }
+         }
+
+         this.applyFont();
+         this.invalidate();
+      }
    }
 
    protected void applyTheme(Graphics graphics, boolean drawBackground) {
@@ -1162,7 +1212,26 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void paintBackground(Graphics graphics) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Background background = this.getBackground();
+      if (background != null) {
+         XYRect rect = Ui.getTmpXYRect();
+         rect.x = 0;
+         rect.y = 0;
+         if (!(this instanceof Manager)) {
+            rect.width = this.getContentWidth();
+            rect.height = this.getContentHeight();
+         } else {
+            Manager manager = (Manager)this;
+            rect.width = Math.max(manager.getVirtualWidth(), this.getContentWidth() + this.getPaddingLeft() + this.getPaddingRight());
+            rect.height = Math.max(manager.getVirtualHeight(), this.getContentHeight() + this.getPaddingTop() + this.getPaddingBottom());
+            rect.height = rect.height + manager.getVerticalScroll();
+         }
+
+         rect.width = rect.width + this.getPaddingLeft() + this.getPaddingRight();
+         rect.height = rect.height + this.getPaddingTop() + this.getPaddingBottom();
+         background.draw(graphics, rect);
+         Ui.returnTmpXYRect(rect);
+      }
    }
 
    void paintBorder(Graphics graphics) {
@@ -1409,7 +1478,17 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public void setBorderWithoutLayout(Border border) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._border = border;
+      if (border != null) {
+         this._borderSet = true;
+         this._borderTop = border.getTop();
+         this._borderRight = border.getRight();
+         this._borderBottom = border.getBottom();
+         this._borderLeft = border.getLeft();
+      } else {
+         this._borderSet = false;
+         this._borderTop = this._borderRight = this._borderBottom = this._borderLeft = 0;
+      }
    }
 
    public void setBorder(int state, Border border) {
@@ -1431,11 +1510,11 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    protected void setCookieInternal(Object cookie) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._cookie = cookie;
    }
 
    public void setDirty(boolean dirty) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._state = dirty ? this._state | 1 : this._state & -4;
    }
 
    public void setEditable(boolean editable) {
@@ -1489,7 +1568,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    final void setIndex(int index) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._index = index;
    }
 
    void setManager(Manager manager, int index) {
@@ -1547,7 +1626,7 @@ public class Field implements IComponent, AccessibleContext {
    }
 
    public void setMuddy(boolean muddy) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._state = muddy ? this._state | 2 | 1 : this._state & -3;
    }
 
    public void setNonSpellCheckable(boolean nonSpellCheckable) {

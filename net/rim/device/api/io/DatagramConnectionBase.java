@@ -115,7 +115,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    public void setTrafficLogger(TrafficLogger logger) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._tLogger = logger;
    }
 
    public void cancel(Datagram datagram) {
@@ -139,7 +139,11 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    public void copyFlagsInto(DatagramBase dg) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      for (int mask = 1; mask != 0; mask <<= 1) {
+         if ((this._validFlags & mask) != 0 && dg.getFlag(mask) == -1) {
+            dg.setFlag(mask, (this._flags & mask) != 0);
+         }
+      }
    }
 
    public Datagram newDatagram() {
@@ -173,7 +177,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    public void setConnectionListener(ConnectionListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._connectionListener = listener;
    }
 
    public Datagram newDatagram(byte[] buffer, int offset, int length) {
@@ -214,7 +218,7 @@ public class DatagramConnectionBase implements DatagramConnection, IOProperties,
    }
 
    public void setDatagramStatusListener(DatagramStatusListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._listener = listener;
    }
 
    public byte[] setup(int callType, Object context) {

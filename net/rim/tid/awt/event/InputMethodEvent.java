@@ -167,7 +167,7 @@ public final class InputMethodEvent extends Event {
    }
 
    public final void setCommittedTextAttributesOverride(boolean override) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._overrideCommittedTextAttributes = override;
    }
 
    public final StringBuffer getOriginatingKeys() {
@@ -191,7 +191,7 @@ public final class InputMethodEvent extends Event {
    }
 
    public final void setSupplementaryInputData(ISupplementaryInputData supplementaryInputData) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._supplementaryInputData = supplementaryInputData;
    }
 
    public final StringBuffer getOriginalReading() {
@@ -207,6 +207,6 @@ public final class InputMethodEvent extends Event {
    }
 
    public final void setCaretShape(byte caretShape) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._caretShape = caretShape;
    }
 }

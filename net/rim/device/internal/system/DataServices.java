@@ -6,6 +6,7 @@ import net.rim.device.api.system.RIMGlobalMessagePoster;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.RadioStatusListener;
 import net.rim.device.api.system.SystemListener2;
+import net.rim.device.internal.proxy.Proxy;
 import net.rim.vm.PersistentInteger;
 
 public final class DataServices implements RadioStatusListener, SystemListener2 {
@@ -48,6 +49,18 @@ public final class DataServices implements RadioStatusListener, SystemListener2 
    }
 
    private DataServices() {
+      EventLogger.register(-3556743465989743742L, "net.rim.DataServices", 2);
+      this._mode = PersistentInteger.get(PERSIST_ID_MODE_RF);
+      RadioInternal.setDataServiceMode(this._mode);
+      this._roaming = (RadioInfo.getNetworkService() & 24) != 0;
+      EventLogger.logEvent(-3556743465989743742L, 1229864240 + this._mode);
+      this._modeWiFiRouter = PersistentInteger.get(PERSIST_ID_MODE_WIFI_ROUTER);
+      EventLogger.logEvent(-3556743465989743742L, 1229864240 + this._modeWiFiRouter);
+      this._modeWiFiRelay = PersistentInteger.get(PERSIST_ID_MODE_WIFI_RELAY);
+      EventLogger.logEvent(-3556743465989743742L, 1229864240 + this._modeWiFiRelay);
+      Proxy proxy = Proxy.getInstance();
+      proxy.addRadioListener(this);
+      proxy.addSystemListener(this);
    }
 
    public final boolean isDataServicesEnabled() {

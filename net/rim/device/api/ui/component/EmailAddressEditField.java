@@ -31,12 +31,25 @@ public class EmailAddressEditField extends EditField {
 
    @Override
    protected boolean backspace() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int cursorPosition = this.getCursorPosition();
+      if (cursorPosition > 0) {
+         char c = this.getTextAbstractString().charAt(cursorPosition - 1);
+         this._convertSpace = c != '@' && c != '.';
+      }
+
+      this._inBackspace = true;
+      boolean ret = super.backspace();
+      this._inBackspace = false;
+      return ret;
    }
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (key == ' ' && this._convertSpace) {
+         this._convertSpace = (status & 4) != 0 || (status & 2) == 0;
+      }
+
+      return super.keyChar(key, status, time);
    }
 
    @Override

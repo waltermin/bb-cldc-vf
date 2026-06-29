@@ -7,7 +7,7 @@ class StringBufferGap$SBGAbstractString implements AbstractString {
    private final StringBufferGap this$0;
 
    public void setLabelLength(int length) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._labelLength = length;
    }
 
    @Override

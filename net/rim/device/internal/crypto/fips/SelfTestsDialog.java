@@ -110,7 +110,13 @@ final class SelfTestsDialog extends PopupScreen implements ListFieldCallback {
 
    @Override
    public final void drawListRow(ListField listField, Graphics graphics, int index, int y, int width) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (listField == this._listField && index >= 0 && index < this._tests.length) {
+         StringBuffer buff = new StringBuffer();
+         buff.append((char)(this._testResults[index] ? '☑' : '☐'));
+         buff.append(' ');
+         buff.append(this._tests[index]);
+         graphics.drawText(buff.toString(), 0, y, 0, width);
+      }
    }
 
    @Override

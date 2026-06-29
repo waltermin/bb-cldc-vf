@@ -18,7 +18,7 @@ class ContentHandlerImpl implements ContentHandler {
    protected boolean _dynamic;
 
    void setVersion(String version) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._version = version;
    }
 
    String[] getTypes() {
@@ -38,7 +38,7 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    void setDynamic(boolean dynamic) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dynamic = dynamic;
    }
 
    String getClassname() {
@@ -50,11 +50,11 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    void setAppName(String appName) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._appName = appName;
    }
 
    void setModuleHandle(int handle) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._moduleHandle = handle;
    }
 
    int getModuleHandle() {
@@ -62,11 +62,11 @@ class ContentHandlerImpl implements ContentHandler {
    }
 
    void setClassname(String classname) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._classname = classname;
    }
 
    void setAuthority(String authority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._authority = authority;
    }
 
    @Override

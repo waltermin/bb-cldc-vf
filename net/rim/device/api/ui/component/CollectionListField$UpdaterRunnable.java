@@ -8,7 +8,7 @@ final class CollectionListField$UpdaterRunnable implements Runnable {
    private final CollectionListField this$0;
 
    final void requeue(Application application) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._application = application;
    }
 
    @Override

@@ -1,5 +1,7 @@
 package java.lang;
 
+import net.rim.device.api.crypto.MIDletSecurityCrypto;
+import net.rim.vm.DebugSupport;
 import net.rim.vm.Memory;
 
 public class Thread implements Runnable {
@@ -29,7 +31,22 @@ public class Thread implements Runnable {
    public final native boolean isAlive();
 
    public final void setPriority(int newPriority) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (newPriority <= 10 && newPriority >= 1) {
+         if (newPriority > 5 && !DebugSupport.isDesktopVM()) {
+            int status = MIDletSecurityCrypto.verifyMIDletTrailer(null);
+            switch (status) {
+               case 0:
+               case 3:
+                  break;
+               default:
+                  newPriority = 5;
+            }
+         }
+
+         this.setPriority0(this.priority = newPriority);
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public final int getPriority() {
@@ -60,7 +77,15 @@ public class Thread implements Runnable {
    public static native void sleep(long var0);
 
    private void init(Runnable target, String name, boolean explicit) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (explicit && name == null) {
+         throw new NullPointerException();
+      }
+
+      this.name = name;
+      this.target = target;
+      Thread parent = currentThread();
+      this.priority = parent != null ? parent.getPriority() : 5;
+      this.setPriority0(this.priority);
    }
 
    public Thread() {

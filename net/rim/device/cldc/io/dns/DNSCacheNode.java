@@ -42,7 +42,13 @@ public final class DNSCacheNode {
    }
 
    public final void addToResources(DNSCachedRR resource) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._resources == null) {
+         this._resources = new Vector();
+         this._nameError = false;
+      }
+
+      this._resources.addElement(resource);
+      this._expiryTime = this._expiryTime < 0 ? resource.getExpiryTime() : Math.min(this._expiryTime, resource.getExpiryTime());
    }
 
    public final void addToResources(DNSCachedRR[] resources) {
@@ -91,7 +97,24 @@ public final class DNSCacheNode {
    }
 
    public final int removeResources(int type) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._resources == null) {
+         return 0;
+      }
+
+      int removed = 0;
+      this._expiryTime = -1;
+
+      for (int i = this._resources.size() - 1; i >= 0; i--) {
+         DNSCachedRR current = (DNSCachedRR)this._resources.elementAt(i);
+         if (current.getType() == type) {
+            this._resources.removeElementAt(i);
+            removed++;
+         } else {
+            this._expiryTime = this._expiryTime < 0 ? current.getExpiryTime() : Math.min(this._expiryTime, current.getExpiryTime());
+         }
+      }
+
+      return removed;
    }
 
    public final int removeResourceWithData(Object data) {

@@ -17,7 +17,17 @@ public class EventListenerManager {
    private int _proxyProcessID = this._proxy.getProcessId();
 
    public synchronized void add(Object listener, boolean weakListener) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this.remove(listener);
+
+      WeakReference applicationWR;
+      try {
+         applicationWR = new WeakReference(Application.getApplication());
+      } catch (IllegalStateException e) {
+         applicationWR = this._proxyWR;
+      }
+
+      this._listeners.addElement(weakListener ? new WeakReference(listener) : listener);
+      this._applications.addElement(applicationWR);
    }
 
    public synchronized boolean isListener(Object listener) {

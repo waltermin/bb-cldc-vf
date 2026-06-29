@@ -394,7 +394,7 @@ public class Menu {
    }
 
    public void setInstance(int instance) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._instance = instance;
    }
 
    public void setItemHighlight(int position, boolean highlight) {

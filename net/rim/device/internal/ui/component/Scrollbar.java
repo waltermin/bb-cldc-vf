@@ -9,6 +9,8 @@ import net.rim.device.api.ui.ScrollChangeListener;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.Theme;
+import net.rim.device.api.ui.theme.ThemeAttributeSet;
+import net.rim.device.api.ui.theme.ThemeManager;
 import net.rim.device.api.util.MathUtilities;
 
 public final class Scrollbar extends Field implements ScrollChangeListener {
@@ -94,7 +96,36 @@ public final class Scrollbar extends Field implements ScrollChangeListener {
 
    @Override
    protected final void applyTheme() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      super.applyTheme();
+      Theme theme = ThemeManager.getActiveTheme();
+      ThemeAttributeSet tas = theme.getAttributeSet(this);
+      if (tas != null) {
+         String scrollbarName = tas.getScrollbarName();
+         if (scrollbarName != null) {
+            Bitmap[] bitmaps = theme.getScrollbar(scrollbarName);
+            if (bitmaps != null) {
+               if (this._horizontalScroll) {
+                  this._trackBitmap = bitmaps[3];
+                  this._topOrLeftArrowBitmap = bitmaps[6];
+                  this._bottomOrRightArrowBitmap = bitmaps[7];
+                  this._sliderBitmap = bitmaps[1];
+               } else {
+                  this._trackBitmap = bitmaps[2];
+                  this._topOrLeftArrowBitmap = bitmaps[4];
+                  this._bottomOrRightArrowBitmap = bitmaps[5];
+                  this._sliderBitmap = bitmaps[0];
+               }
+
+               if (this._trackBitmap != null && this._topOrLeftArrowBitmap != null && this._bottomOrRightArrowBitmap != null && this._sliderBitmap != null) {
+                  return;
+               }
+
+               this._trackBitmap = this._topOrLeftArrowBitmap = this._bottomOrRightArrowBitmap = this._sliderBitmap = null;
+            }
+         }
+      }
+
+      this.setupBitmaps();
    }
 
    private static final Bitmap getBitmap(Theme theme, String imgStr) {
@@ -103,7 +134,22 @@ public final class Scrollbar extends Field implements ScrollChangeListener {
    }
 
    private final void setupBitmaps() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Theme theme = ThemeManager.getActiveTheme();
+      if (this._horizontalScroll) {
+         this._trackBitmap = getBitmap(theme, "browser-scrollbar~track-horz");
+         this._topOrLeftArrowBitmap = getBitmap(theme, "browser-scrollbar~left-arrow");
+         this._bottomOrRightArrowBitmap = getBitmap(theme, "browser-scrollbar~right-arrow");
+         this._sliderBitmap = getBitmap(theme, "browser-scrollbar~slider-horz");
+      } else {
+         this._trackBitmap = getBitmap(theme, "browser-scrollbar~track-vert");
+         this._topOrLeftArrowBitmap = getBitmap(theme, "browser-scrollbar~top-arrow");
+         this._bottomOrRightArrowBitmap = getBitmap(theme, "browser-scrollbar~bottom-arrow");
+         this._sliderBitmap = getBitmap(theme, "browser-scrollbar~slider-vert");
+      }
+
+      if (this._trackBitmap == null || this._topOrLeftArrowBitmap == null || this._bottomOrRightArrowBitmap == null || this._sliderBitmap == null) {
+         this._trackBitmap = this._topOrLeftArrowBitmap = this._bottomOrRightArrowBitmap = this._sliderBitmap = null;
+      }
    }
 
    @Override

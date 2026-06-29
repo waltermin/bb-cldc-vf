@@ -12,6 +12,7 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Manager;
 import net.rim.device.api.ui.text.TextRect;
+import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.util.StringUtilities;
 
 public class LabelField extends Field implements DrawStyle {
@@ -113,7 +114,45 @@ public class LabelField extends Field implements DrawStyle {
 
    @Override
    protected void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._inLayout = true;
+      this.checkLocale();
+      Font font = this.getFont();
+      int imageWidth = 0;
+      if (this._image != null) {
+         imageWidth += this._image.getWidth();
+         imageWidth += font.getHeight() >> 2;
+      }
+
+      this._labelText.setPosition(this._position + imageWidth, 0);
+      this._labelText.layout(Math.max(width - this._position - imageWidth, 0), height);
+      int preferredWidth = this.getPreferredWidth();
+      if (!this.isStyle(64) && preferredWidth > width) {
+         this._isSingleLine = false;
+         if (!this.isStyle(1152921504606846976L)) {
+            width = Math.min(this._position + imageWidth + this._labelText.getWidth(), width);
+         }
+      } else {
+         this._isSingleLine = true;
+         if (!this.isStyle(1152921504606846976L)) {
+            width = Math.min(preferredWidth, width);
+         }
+      }
+
+      height = Math.max(this._labelText.getHeight(), this._image != null ? this._image.getHeight() : 0);
+      int numLines = 0;
+      ThemeAttributeSet tas = this.getThemeAttributeSet();
+      if (tas != null) {
+         numLines = tas.getMaximumLineWrapping();
+      }
+
+      if (numLines > 0) {
+         int lines = Math.min(numLines, this._labelText.getLineCount());
+         height = Math.max(lines * font.getHeight(), height);
+         this._isSingleLine = lines == 1;
+      }
+
+      this.setExtent(width, height);
+      this._inLayout = false;
    }
 
    @Override
@@ -150,7 +189,7 @@ public class LabelField extends Field implements DrawStyle {
    }
 
    public void setImage(Bitmap image) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._image = image;
    }
 
    public void setPosition(int position) {

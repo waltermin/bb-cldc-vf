@@ -40,7 +40,11 @@ public class FlashOutputStream extends OutputStream {
 
    @Override
    public void write(int b) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._index >= this._bufferSize) {
+         this.internalFlush(false);
+      }
+
+      this._buffer[this._index++] = (byte)b;
    }
 
    @Override

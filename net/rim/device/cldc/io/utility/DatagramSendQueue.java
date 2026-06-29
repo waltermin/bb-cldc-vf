@@ -28,11 +28,40 @@ public final class DatagramSendQueue extends Thread {
    }
 
    private final void enqueue(Datagram datagram) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._sendQueue[this._nextEnqueue++] = datagram;
+      if (this._nextDequeue == -1) {
+         this._nextDequeue = this._nextEnqueue - 1;
+      }
+
+      if (this._nextEnqueue == this._sendQueue.length) {
+         this._nextEnqueue = 0;
+      }
+
+      if (this._nextEnqueue == this._nextDequeue) {
+         this.grow();
+      }
+
+      this._size++;
+      this.notify();
    }
 
    private final Datagram dequeue() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._nextDequeue == -1) {
+         return null;
+      }
+
+      Datagram datagram = this._sendQueue[this._nextDequeue];
+      this._sendQueue[this._nextDequeue++] = null;
+      if (this._nextDequeue == this._sendQueue.length) {
+         this._nextDequeue = 0;
+      }
+
+      if (this._nextDequeue == this._nextEnqueue) {
+         this._nextDequeue = -1;
+      }
+
+      this._size--;
+      return datagram;
    }
 
    private final void dequeueAll() {

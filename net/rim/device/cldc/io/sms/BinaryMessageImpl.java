@@ -15,6 +15,6 @@ public final class BinaryMessageImpl extends MessageImpl implements BinaryMessag
 
    @Override
    public final void setPayloadData(byte[] data) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      super._buffer = data;
    }
 }

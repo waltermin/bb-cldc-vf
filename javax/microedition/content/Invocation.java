@@ -91,7 +91,7 @@ public final class Invocation {
    }
 
    public final void setArgs(String[] args) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._args = args == null ? new String[0] : args;
    }
 
    public final String[] getArgs() {
@@ -99,7 +99,7 @@ public final class Invocation {
    }
 
    public final void setData(byte[] data) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._data = data == null ? new byte[0] : data;
    }
 
    public final byte[] getData() {
@@ -111,7 +111,7 @@ public final class Invocation {
    }
 
    public final void setURL(String url) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._url = url;
    }
 
    public final String getType() {
@@ -119,7 +119,7 @@ public final class Invocation {
    }
 
    public final void setType(String type) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._type = type;
    }
 
    public final String getAction() {
@@ -127,7 +127,7 @@ public final class Invocation {
    }
 
    public final void setAction(String action) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._action = action;
    }
 
    public final boolean getResponseRequired() {
@@ -147,7 +147,7 @@ public final class Invocation {
    }
 
    final void setStatus(int status) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._status = status;
    }
 
    public final String getID() {
@@ -155,7 +155,7 @@ public final class Invocation {
    }
 
    public final void setID(String ID) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._ID = ID;
    }
 
    public final Invocation getPrevious() {
@@ -266,7 +266,7 @@ public final class Invocation {
    }
 
    final void setPrevious(Invocation invocation) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._previous = invocation;
    }
 
    final void setInvokerStack(int[] stack) {

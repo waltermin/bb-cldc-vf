@@ -63,7 +63,12 @@ public final class SmsAddress extends DatagramAddressBase {
    }
 
    private final void init(SMSPacketHeader header, int[] ports) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._header = header != null ? header : new SMSPacketHeader();
+      this._statusReportSpecified = true;
+      this._userHeaderSpecified = true;
+      if (ports != null) {
+         this._ports = Arrays.copy(ports);
+      }
    }
 
    public final SMSPacketHeader getHeader() {

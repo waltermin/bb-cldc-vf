@@ -9,6 +9,7 @@ import net.rim.device.api.ui.AccessibleEventDispatcher;
 import net.rim.device.api.ui.ContextMenu;
 import net.rim.device.api.ui.DrawTextParam;
 import net.rim.device.api.ui.Field;
+import net.rim.device.api.ui.FieldChangeListener;
 import net.rim.device.api.ui.FieldLabelProvider;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
@@ -158,7 +159,34 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    protected void findDefaultDirectionality(String text) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._isDefaultR2L = false;
+      boolean isSet = false;
+
+      for (int i = 0; i < text.length(); i++) {
+         int type = CharacterUtilities.getBidiType(text.charAt(i)) & 127;
+         if (type != 0) {
+            switch (type) {
+               case 0:
+               case 3:
+                  this._isDefaultR2L = true;
+                  break;
+               case 1:
+               case 2:
+               case 4:
+               default:
+                  this._isDefaultR2L = false;
+            }
+
+            isSet = true;
+            break;
+         }
+      }
+
+      if (!isSet) {
+         Locale l = this.isEditable() ? Locale.getDefaultInput() : Locale.getDefault();
+         String lang = l.getLanguage();
+         this._isDefaultR2L = lang.equals("ar") || lang.equals("he");
+      }
    }
 
    TextFilter getFilterFromStyle(long style) {
@@ -279,7 +307,81 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       boolean aMoveCursor,
       int aContext
    ) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._selecting = this._isAutoSelectModeOn = false;
+      int old_length = this.getLabelLength() + this.getDecodedTextLength();
+      if (aStart < 0) {
+         aStart = 0;
+      } else if (aStart > old_length) {
+         aStart = old_length;
+      }
+
+      if (aEnd < aStart) {
+         int temp = aEnd;
+         aEnd = aStart;
+         aStart = temp;
+      } else if (aEnd > old_length) {
+         aEnd = old_length;
+      }
+
+      int inserted_len = aIterator.length();
+      int removed_len = aEnd - aStart;
+      boolean fieldFull = false;
+      int new_length = old_length + inserted_len - removed_len;
+      if (new_length - this._labelLength > this._maxNumChars) {
+         if (inserted_len != aCommittedLen) {
+            if (this.isComposedTextExist()) {
+               this._text.setAttribToZero(this._composedStart, this._composedEnd, 786432);
+               this._text.setAttribToZero(this._composedStart, this._composedEnd, 67108864);
+               this._latestCommittedStart = this._composedStart;
+               this._latestCommittedEnd = this._composedEnd;
+               this._composedStart = this._composedEnd;
+               this.setCursorPosition(this._composedStart - this._labelLength);
+            }
+
+            this.update(this._cursor, 0, 0, 0, true, true);
+            this.displayFieldFullMessage();
+            return 1;
+         }
+
+         inserted_len = this._maxNumChars + this._labelLength - old_length + removed_len;
+         aCommittedLen = inserted_len;
+         int start = aIterator.pos();
+         aIterator.set(start, start + inserted_len);
+         fieldFull = true;
+      }
+
+      String textBefore = this._text.getText(aStart, aEnd);
+      this._text.replace(aStart, aEnd, aIterator, aIteratorMask, aIteratorXMask);
+      int old_composed_start = this._composedStart;
+      this._composedStart += aCommittedLen;
+      this._composedEnd = old_composed_start + inserted_len;
+      this.update(aStart, removed_len, inserted_len, aCommittedLen + aPosInsideComposedText, aMoveCursor, true);
+      if (Ui.isTTSEnabled()) {
+         String textAfter = this._text.getText(aStart, aEnd + inserted_len - removed_len);
+         this.accessibleEventOccurred(2, textBefore, textAfter, this);
+      }
+
+      FieldChangeListener listener = this.getChangeListener();
+      if (this._isPreLayout) {
+         this.setChangeListener(null);
+      }
+
+      this.fieldChangeNotify(aContext);
+      if (this._isPreLayout) {
+         this.setChangeListener(listener);
+      }
+
+      if (aCommittedLen != 0) {
+         this._latestCommittedStart = old_composed_start;
+         this._latestCommittedEnd = old_composed_start + aCommittedLen;
+      }
+
+      if (fieldFull) {
+         this.displayFieldFullMessage();
+         return 1;
+      } else {
+         return 0;
+      }
    }
 
    public int replace(int aStart, int aEnd, AttributedString$Iterator aIterator, long aIteratorMask, long aIteratorXMask) {
@@ -542,11 +644,11 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void inMoveFocus(boolean enable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._inMoveFocus = enable;
    }
 
    protected void setCursorPositionSet(boolean set) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._cursorPositionSet = set;
    }
 
    public boolean isFieldFull() {
@@ -560,11 +662,25 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public synchronized void setMaxSize(int maxSize) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (maxSize < 0) {
+         throw new IllegalArgumentException();
+      }
+
+      if (maxSize < this.getDecodedTextLength()) {
+         int pos = this.getCursorPosition();
+         this.setText(this.getText().substring(0, maxSize));
+         if (pos > maxSize) {
+            pos = maxSize;
+         }
+
+         this.setCursorPosition(pos, this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
+      }
+
+      this._maxNumChars = maxSize;
    }
 
    public void setCursorPosition(int offset) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this.setCursorPosition(offset, this.isEditable() ? 0 : Integer.MIN_VALUE);
    }
 
    public int getCursorPosition() {
@@ -596,7 +712,26 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void setAttributedText(AttributedString text) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (this.isStyle(2147483648L)) {
+         this.removeNewlines(text);
+      }
+
+      String strText = text.getText(0, text.length());
+      if (!this.validate(strText)) {
+         throw new IllegalArgumentException("invalid text");
+      }
+
+      this.select(false);
+      this.resetComposedText();
+      if (text.length() > this._maxNumChars) {
+         text.delete(this._maxNumChars, text.length());
+      }
+
+      AttributedString$Iterator iter = text.getIterator();
+      int oldLen = this._text.length();
+      int newLen = iter.length();
+      this.replace(this._labelLength, oldLen, iter, -1, -1, newLen, 0, this.isEditable() || this._cursor > this._labelLength, Integer.MIN_VALUE);
+      this.wipe();
    }
 
    protected boolean validate(char character) {
@@ -915,7 +1050,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    public void setPasteable(boolean pasteable) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._pasteable = pasteable;
    }
 
    protected boolean insert(char key, int status) {
@@ -1141,7 +1276,51 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public void getTextLocation(TextHitInfo offset, XYRect aResult) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (aResult != null) {
+         if (this._composedStart < this._composedEnd) {
+            int index = offset._index;
+            if (index < 0) {
+               throw new IllegalArgumentException();
+            }
+
+            index += this._composedStart;
+            if (index > this._composedEnd) {
+               throw new IllegalArgumentException();
+            }
+
+            this.hitTest(index, aResult);
+         } else if (this.isSelecting()) {
+            int start = this.getAnchorPosition();
+            int end = this.getCaretPosition();
+            if (start > end) {
+               start = end;
+               end = this.getAnchorPosition();
+            }
+
+            this.hitTest(start, aResult);
+            XYRect endRct = new XYRect();
+            this.hitTest(end, endRct);
+            if (endRct.y > aResult.y) {
+               aResult.y = endRct.y;
+               aResult.x = 0;
+            }
+         } else {
+            this.hitTest(this.getCursorPosition(), aResult);
+         }
+
+         int top = this.getContentTop();
+         int left = this.getContentLeft();
+
+         for (Manager m = this.getManager(); m != null; m = m.getManager()) {
+            top -= m.getVerticalScroll();
+            top += m.getContentTop();
+            left -= m.getHorizontalScroll();
+            left += m.getContentLeft();
+         }
+
+         aResult.x += left;
+         aResult.y += top;
+      }
    }
 
    @Override
@@ -1366,7 +1545,29 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    protected void onFocus(int direction) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      super.onFocus(direction);
+      if (!this.isCursorPositionSet()) {
+         if (direction > 0) {
+            this._inMoveFocus = true;
+            this.setCursorPosition(0, this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
+            this._inMoveFocus = false;
+            this.setPreferredXToLineStartOrEnd(this._cursorLine, true);
+            return;
+         }
+
+         if (direction < 0) {
+            this._inMoveFocus = true;
+            synchronized (this) {
+               this.setCursorPosition(this.getTextLength(), this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
+            }
+
+            this._inMoveFocus = false;
+            this.setPreferredXToLineStartOrEnd(this._cursorLine, false);
+            return;
+         }
+      } else {
+         this.setCursorPositionSet(false);
+      }
    }
 
    @Override
@@ -1422,12 +1623,56 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public synchronized void getFocusRect(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._focusOffset != this._cursor) {
+         this._focusOffset = this._cursor;
+         this.getCaretRect(this._cursor, this._cursorLeadingEdge, this._tempRect);
+         this._focus_y = this._tempRect.y;
+         this._focus_height = this._tempRect.height;
+         if (this._tempRect.width < 0) {
+            this._focus_x = this._tempRect.x + this._tempRect.width;
+            this._focus_width = -this._tempRect.width;
+            if (this._focus_x < 0) {
+               this._focus_width = -this._focus_x >= this._focus_width ? 1 : this._focus_width + this._focus_x;
+               this._focus_x = 0;
+            }
+         } else {
+            this._focus_x = this._tempRect.x;
+            this._focus_width = this._tempRect.width;
+            int rightMargin = this.getRightMargin();
+            if (this._focus_x + this._focus_width > rightMargin) {
+               if (this._focus_x >= rightMargin) {
+                  this._focus_x = rightMargin - 1;
+               }
+
+               this._focus_width = rightMargin - this._focus_x;
+            }
+         }
+      }
+
+      rect.set(this._focus_x, this._focus_y, this._focus_width, this._focus_height);
    }
 
    @Override
    public void getFocusRectPhantom(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.getFocusRect(rect);
+      if (this.getManager().getWidth() < this.getWidth()) {
+         ArticInterface$Line cursorLine = this.getCursorLine()._line;
+         if ((this._cursorLine._flags & 16) != 0) {
+            int fakex = Math.min(this.getRightMargin(), rect.x + rect.width + 15);
+            rect.width = rect.width + (fakex - rect.x - rect.width);
+            int fakex2 = Math.max(0, rect.x - 15);
+            rect.width = rect.width + (rect.x - fakex2);
+            rect.x = fakex2;
+            return;
+         }
+
+         int fakex = Math.max(0, rect.x - 15);
+         rect.width = rect.width + (rect.x - fakex);
+         rect.x = fakex;
+         int linewidth = cursorLine._boundsRight - cursorLine._boundsLeft + (cursorLine._next == null ? this.getLastSpaceWidth() : 0);
+         int fakex2 = Math.min(this.getRightMargin(), Math.min(linewidth, rect.x + rect.width + 15));
+         rect.width = fakex2 - rect.x;
+      }
    }
 
    @Override
@@ -1464,7 +1709,31 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void handleIMReset() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int text_len = this._text.length();
+      if (this._cursor < 0 || this._cursor > text_len) {
+         this._cursor = text_len;
+      }
+
+      if (this._composedEnd > this._composedStart && this._composedStart >= this._labelLength && this._composedEnd <= text_len) {
+         this._text.setAttribToZero(this._composedStart, this._composedEnd, 786432);
+         this._text.setAttribToZero(this._composedStart, this._composedEnd, 67108864);
+         this._composedStart = this._composedEnd;
+         this.setCaretPosition(this._composedStart);
+      } else {
+         if (text_len > 0) {
+            this._text.setAttribToZero(0, text_len, 786432);
+            this._text.setAttribToZero(0, text_len, 67108864);
+         }
+
+         if (this._cursor >= this._labelLength && this._cursor <= text_len) {
+            this._composedStart = this._composedEnd = this._cursor;
+         } else {
+            this.setCaretPosition(text_len);
+         }
+      }
+
+      this._latestCommittedStart = this._latestCommittedEnd = -1;
+      this.update(this._cursor, 0, 0, 0, true, true);
    }
 
    @Override
@@ -1510,7 +1779,11 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void setPreferredXToLineStartOrEnd(ArticInterface$Line line, boolean isLineStart) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if ((line._flags & 16) != 0) {
+         this._preferredXCoord = isLineStart ? this.getRightMargin() : 0;
+      } else {
+         this._preferredXCoord = isLineStart ? 0 : this.getRightMargin();
+      }
    }
 
    private void setFontInsertionAttributes(long attribs) {
@@ -1625,11 +1898,53 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private int deleteSelectedText() {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (!this.isEditable()) {
+         throw new IllegalStateException("Attempt to modify a READ_ONLY field.");
+      }
+
+      int start = this.getAnchorPosition();
+      int end = this.getCaretPosition();
+      if (start > end) {
+         int temp = start;
+         start = end;
+         end = temp;
+      }
+
+      int length = end - start;
+      this.select(false);
+      this.setCursorPosition(end - this._labelLength, this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
+      return this.backspace(length, 0);
    }
 
    private void setTextInternal(String text, int context, boolean validate) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (text == null) {
+         text = "";
+      }
+
+      if (this.isStyle(2147483648L)) {
+         text = this.removeNewlines(text);
+      }
+
+      if (validate && !this.validate(text)) {
+         throw new IllegalArgumentException("invalid text");
+      }
+
+      this.select(false);
+      this.resetComposedText();
+      if (text.length() > this._maxNumChars) {
+         text = text.substring(0, this._maxNumChars);
+      }
+
+      this.findDefaultDirectionality(text);
+      AttributedString attribStr = new AttributedString(text, this.getDefaultFontAttributes(), 0);
+      AttributedString$Iterator iter = attribStr.getIterator();
+      synchronized (this) {
+         int oldLen = this._text.length();
+         int newLen = iter.length();
+         this.replace(this._labelLength, oldLen, iter, -1, -1, newLen, 0, this.isEditable() || this._cursor > this._labelLength, context);
+      }
+
+      this.wipe();
    }
 
    @Override
@@ -1659,7 +1974,21 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void setCursorPosition(int aDocPos, boolean aLeadingEdge, int aContext) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      boolean noUpdate = this.getManager() == null || !this.getManager().isValidLayout();
+      if (!noUpdate && !this._inMoveFocus) {
+         this.focusRemove();
+      }
+
+      this._cursorPositionSet = (aContext & -2147483648) == 0;
+      if (noUpdate) {
+         this._cursor = this._anchor = aDocPos;
+         this._cursorLeadingEdge = aLeadingEdge;
+      } else {
+         this.setSelection(aDocPos, aLeadingEdge, this.isSelecting() ? this._anchor : aDocPos, true);
+         if (!this._inMoveFocus) {
+            this.focusAdd(true);
+         }
+      }
    }
 
    @Override
@@ -1778,7 +2107,54 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private synchronized void update(int aStart, int aLength, int aNewLength, int aCursorOffset, boolean aMoveCursor, boolean aIsInsertionOrDeletion) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (!this._notifyingTextChanged) {
+         this.fireTextChangeEvent(0);
+         this._formatParams.init(aStart, aLength, aNewLength, aCursorOffset, aMoveCursor, this._lineList);
+         if (!this._isPreLayout) {
+            this._notifyingTextChanged = true;
+            this.notifyTextChanged(this._formatParams, aIsInsertionOrDeletion);
+            this._notifyingTextChanged = false;
+            this.invalidateFocusRect();
+         }
+
+         this.adjustCursorAfterTextChange(this._formatParams);
+         if (!this._isPreLayout) {
+            if (aIsInsertionOrDeletion && !this._inLayout) {
+               this.update(this._formatParams.getDelta());
+            }
+
+            if (!this._formatParams._isFormatComplete && this._formatThreadId != -1) {
+               Application.getApplication().cancelInvokeLater(this._formatThreadId);
+            }
+
+            this._formatParams.computeParamsAfterTextChanged(!this._inLayout, this.getMaxLinesToFormat());
+            this._formatParams.initCursorLine(this._cursorLine, this._cursorLineStart, this._cursorLineTop);
+            this._lineList = Formatter.incrementalFormat(
+               this._formatParams, this, this._width, this._text, this._cursor, this._cursorLeadingEdge, this._anchor, !this._inLayout
+            );
+            this._lastFormatLength = this._lastFormatLength + (this._formatParams._newLength - this._formatParams._oldLength);
+            this.handleLinesAfterFormat(this._formatParams);
+            if (this._cursor >= this._formatParams._changedTextStart) {
+               this.updateCursorAfterFormat(this._formatParams);
+            }
+
+            this.invalidate(
+               this._formatParams._invalidRect.x,
+               this._formatParams._invalidRect.y,
+               this._formatParams._invalidRect.width,
+               this._formatParams._invalidRect.height
+            );
+            if (!this._inLayout) {
+               if (this._formatParams._invalidRect.height == Integer.MAX_VALUE) {
+                  this.updateLayout();
+               }
+
+               this.focusAdd(false);
+            }
+
+            this.spawnDelayedFormatting();
+         }
+      }
    }
 
    private void spawnDelayedFormatting() {
@@ -1829,7 +2205,14 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void initCursor() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._cursor = this.isEditable() ? this._text.length() : this._labelLength;
+      this._anchor = this._cursor;
+      this._cursorLine = this._lineList;
+      this._cursorLineStart = 0;
+      this._cursorLineTop = 0;
+      this._cursorLineTop = this._cursorLine._boundsTop;
+      this._cursorLeadingEdge = true;
+      this._cursorIsAtBidiBorder = false;
    }
 
    private int getCaretX(int docPos, boolean leadingEdge) {
@@ -1961,7 +2344,44 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
    }
 
    private void adjustCursorAfterTextChange(FormatParams params) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      boolean cursorChanged = false;
+      if (!params._moveCursor) {
+         if (this._cursor > this._text.length()) {
+            this._cursor = this._anchor = this._text.length();
+            cursorChanged = true;
+         }
+      } else {
+         if (params._changedTextStart < 0 || params._oldLength < 0 || params._newLength < 0) {
+            throw new IllegalArgumentException();
+         }
+
+         int end = params._changedTextStart + params._oldLength;
+         int length_change = params._newLength - params._oldLength;
+         params._isBackspace = params._newLength == 0;
+         if (this._cursor >= params._changedTextStart) {
+            if (this._cursor > end) {
+               this._cursor += length_change;
+            } else {
+               int oldCursor = this._cursor;
+               this._cursor = params._changedTextStart + params._cursorOffset;
+               params._isBackspace = params._isBackspace && this._cursor != oldCursor;
+            }
+         }
+
+         if (this._anchor >= params._changedTextStart) {
+            if (this._anchor > end) {
+               this._anchor += length_change;
+            } else {
+               this._anchor = params._changedTextStart + params._cursorOffset;
+            }
+         }
+
+         cursorChanged = true;
+      }
+
+      if (cursorChanged && !this._isPreLayout) {
+         this.handleCursorPositionChanged();
+      }
    }
 
    private synchronized void setSelection(int aNewCursor, boolean aNewCursorLeadingEdge, int aNewAnchor, boolean setPrefferredX) {
@@ -2111,7 +2531,53 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.isStyle(2147483648L) && key == '\n') {
+         return false;
+      }
+
+      if (key == 27 && this._isAutoSelectModeOn) {
+         this._selecting = this._isAutoSelectModeOn = false;
+      }
+
+      if (super.keyChar(key, status, time)) {
+         return true;
+      }
+
+      if (!this.isEditable()) {
+         if (this.isSelecting() && key == '\n') {
+            return true;
+         } else {
+            return key == 27 ? false : this.isStyle(1024);
+         }
+      } else {
+         switch (key) {
+            case '\b':
+               if (0 != (status & 1)) {
+                  this.selectionDelete();
+                  return true;
+               } else {
+                  if (this._cursor == this._labelLength) {
+                     this.selectionDelete();
+                     return true;
+                  }
+
+                  this.backspace();
+                  return true;
+               }
+            case '\u001b':
+               return false;
+            case '\u007f':
+               if (this._cursor == this.getDisplayTextLength()) {
+                  this.backspace();
+                  return true;
+               }
+
+               this.selectionDelete();
+               return true;
+            default:
+               return this.insert(key, status) || this.isFieldFull();
+         }
+      }
    }
 
    @Override
@@ -2147,7 +2613,7 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
 
    @Override
    public void setIMCookieCache(Object cookie) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._imCookie = cookie;
    }
 
    private void updateCursorAfterFormat(FormatParams param) {
@@ -2202,9 +2668,90 @@ public class TextField extends Field implements InputMethodRequests, FieldLabelP
       return insertionAttrib;
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public synchronized int inputMethodTextChanged(InputMethodEvent event) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (!this.isEditable() && !this.isComposedTextExist()) {
+         return 1;
+      }
+
+      if (event.getID() == 1103) {
+         this.handleIMReset();
+         return 0;
+      }
+
+      this._caretShape = event.getCaretShape();
+      AttributedString eventText = event.getText();
+      this._composedTextAttributeMask = event.getTextMask();
+      int inserted_len = eventText.length();
+      int committed_count = event.getCommittedCharacterCount();
+      this._composed_highlighted = false;
+      if (inserted_len > committed_count) {
+         AttributedString$Iterator iter = eventText.getIterator();
+
+         do {
+            if ((iter.runAttrib() & 67108864) != 0) {
+               this._composed_highlighted = true;
+               break;
+            }
+         } while (iter.next());
+      }
+
+      if (committed_count > 0 && event.isOverrideCommittedTextAttributes()) {
+         eventText.setAttrib(0, committed_count, this._insertionAttrib, this._composedTextAttributeMask);
+      }
+
+      this._convertedCharactersCount = Math.min(event.getConvertedCharacterCount(), inserted_len - committed_count);
+      if (inserted_len == 0 && committed_count == 0 && !this.isComposedTextExist()) {
+         return 0;
+      }
+
+      if (this._composedStart == this._composedEnd) {
+         this._composedStart = this._composedEnd = Math.min(this._cursor, this._anchor);
+      }
+
+      if (committed_count == 1 && inserted_len == 1 && this._composedEnd - this._composedStart < 2) {
+         char toInsert = eventText.charAt(0);
+         if (this._composedEnd - this._composedStart <= 0) {
+            if (toInsert != ' ') {
+               this._latestCommittedStart = this._cursor;
+               this._latestCommittedEnd = this._cursor + 1;
+            }
+
+            this.keyChar(toInsert, SLKeyLayout.convertModifiersToStatus(event.getModifiers()), 0);
+            return 0;
+         }
+
+         eventText.replace(0, 1, this.convert(toInsert, SLKeyLayout.convertModifiersToStatus(event.getModifiers())));
+      }
+
+      int end;
+      int start;
+      if (this._composedEnd > this._composedStart) {
+         start = this._composedStart;
+         end = this._composedEnd;
+      } else {
+         start = this._anchor;
+         end = this._cursor;
+      }
+
+      int posInComposedText = committed_count + event.getCaret()._index <= inserted_len ? event.getCaret()._index : 0;
+      boolean var11 = false /* VF: Semaphore variable */;
+
+      int var8;
+      try {
+         var11 = true;
+         var8 = this.replace(start, end, eventText.getIterator(), this._composedTextAttributeMask, 0, committed_count, posInComposedText, true, 0);
+         var11 = false;
+      } finally {
+         if (var11) {
+            this.fireInputMethodTextChanged(event);
+         }
+      }
+
+      this.fireInputMethodTextChanged(event);
+      return var8;
    }
 
    @Override

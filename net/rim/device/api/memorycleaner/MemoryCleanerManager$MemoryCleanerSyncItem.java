@@ -1,5 +1,6 @@
 package net.rim.device.api.memorycleaner;
 
+import java.io.EOFException;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.synchronization.ConverterUtilities;
 import net.rim.device.api.synchronization.OTASyncCapableSyncItem;
@@ -45,7 +46,42 @@ class MemoryCleanerManager$MemoryCleanerSyncItem extends OTASyncCapableSyncItem 
 
    @Override
    public boolean setSyncData(DataBuffer buffer, int version) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (this) {
+         try {
+            int type = 0;
+
+            while (!buffer.eof()) {
+               type = ConverterUtilities.getType(buffer);
+               switch (type) {
+                  case 0:
+                     ConverterUtilities.skipField(buffer);
+                     break;
+                  case 1:
+                     this.this$0._settings._cleanWhenHolstered = ConverterUtilities.readInt(buffer) == 1;
+                     break;
+                  case 2:
+                     this.this$0._settings._cleanWhenIdle = ConverterUtilities.readInt(buffer) == 1;
+                     break;
+                  case 3:
+                     this.this$0._settings._showAppOnRibbon = ConverterUtilities.readInt(buffer) == 1;
+                     break;
+                  case 4:
+                     this.this$0._settings._idleTimeoutSeconds = ConverterUtilities.readLong(buffer);
+                     break;
+                  case 5:
+                  default:
+                     this.this$0._settings._userCleanEnabled = ConverterUtilities.readInt(buffer) == 1;
+               }
+            }
+         } catch (EOFException var6) {
+         }
+
+         this.this$0._settingsHolder.commit();
+      }
+
+      this.this$0._syncItem.fireSyncItemUpdated();
+      RIMGlobalMessagePoster.postGlobalEvent(5924166216341050021L);
+      return true;
    }
 
    @Override

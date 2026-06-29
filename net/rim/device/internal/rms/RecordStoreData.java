@@ -88,7 +88,21 @@ public class RecordStoreData implements Persistable {
    }
 
    public synchronized int addRecord(byte[] data, int offset, int numBytes) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (8 + numBytes > this.getSizeAvailable()) {
+         throw new RecordStoreFullException();
+      }
+
+      byte[] newData = new byte[numBytes];
+      if (numBytes != 0) {
+         System.arraycopy(data, offset, newData, 0, numBytes);
+         this._memoryUsed += numBytes;
+      }
+
+      int id = this._availableId++;
+      this._records.put(id, newData);
+      this._numRecords++;
+      this.setLastModified();
+      return id;
    }
 
    public synchronized void deleteRecord(int recordId) {

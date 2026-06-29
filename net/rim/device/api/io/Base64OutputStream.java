@@ -36,12 +36,29 @@ public class Base64OutputStream extends OutputStream {
 
    @Override
    public void write(int data) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._lastException != null) {
+         throw this._lastException;
+      }
+
+      try {
+         if (this._outputStream == null) {
+            throw new IOException("Stream closed");
+         }
+
+         this._inputBuffer[this._inputBufferLength++] = (byte)data;
+         if (this._inputBufferLength == 1539) {
+            this.encode(this._inputBuffer, 0, 1539);
+            this._inputBufferLength = 0;
+         }
+      } catch (IOException e) {
+         this._lastException = e;
+         throw e;
+      }
    }
 
    @Override
    public void write(byte[] data) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this.write(data, 0, data == null ? 0 : data.length);
    }
 
    @Override
@@ -86,7 +103,32 @@ public class Base64OutputStream extends OutputStream {
 
    @Override
    public void flush() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._lastException != null) {
+         throw this._lastException;
+      }
+
+      try {
+         if (this._outputStream == null) {
+            throw new IOException("Stream closed");
+         }
+
+         if (this._inputBufferLength >= 57) {
+            int inputBufferSlack = this._inputBufferLength % 57;
+            this._inputBufferLength -= inputBufferSlack;
+            this.encode(this._inputBuffer, 0, this._inputBufferLength);
+
+            for (int i = 0; i < inputBufferSlack; i++) {
+               this._inputBuffer[i] = this._inputBuffer[this._inputBufferLength++];
+            }
+
+            this._inputBufferLength = inputBufferSlack;
+         }
+
+         this._outputStream.flush();
+      } catch (IOException e) {
+         this._lastException = e;
+         throw e;
+      }
    }
 
    @Override

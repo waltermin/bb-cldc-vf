@@ -50,7 +50,7 @@ public class VolumeControlDialog extends PopupDialog {
    }
 
    public void setCallback(Field callback) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callback = callback;
    }
 
    public void setVolume(int volume) {

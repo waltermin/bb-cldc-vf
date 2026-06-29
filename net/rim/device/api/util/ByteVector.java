@@ -190,7 +190,12 @@ public class ByteVector implements Persistable {
    }
 
    public void addElement(byte obj) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int newcount = this.elementCount + 1;
+      if (newcount > this.elementData.length) {
+         this.ensureCapacityHelper(newcount);
+      }
+
+      this.elementData[this.elementCount++] = obj;
    }
 
    public boolean removeElement(byte obj) {

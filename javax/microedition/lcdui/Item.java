@@ -216,7 +216,20 @@ public class Item {
    }
 
    public void setPreferredSize(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (width >= -1 && height >= -1) {
+         synchronized (Application.getEventLock()) {
+            if (this._owner != null && this._owner instanceof Alert) {
+               throw new IllegalStateException();
+            }
+
+            int minWidth = this.getMinimumWidth();
+            int minHeight = this.getMinimumHeight();
+            this._preferredWidth = width != -1 && width < minWidth ? minWidth : width;
+            this._preferredHeight = height != -1 && height < minHeight ? minHeight : height;
+         }
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    public int getMinimumWidth() {

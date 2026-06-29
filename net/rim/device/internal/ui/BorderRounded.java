@@ -14,6 +14,17 @@ public class BorderRounded extends Border {
    public static final int TRANSPARENT;
 
    public BorderRounded(int top, int right, int bottom, int left, int style) {
+      super(top, right, bottom, left);
+      this._filled = (style & 1) != 0;
+      this._dashed = (style & 2) != 0;
+      if ((style & 4) == 0 && Graphics.isColor()) {
+         this._outerBackground = new BorderSimple(top, right, bottom, left);
+      } else {
+         this._outerBackground = new BorderTransparent(top, right, bottom, left);
+      }
+
+      this._arcWidth = 2 * Math.min(right, left);
+      this._arcHeight = 2 * Math.min(top, bottom);
    }
 
    @Override

@@ -17,6 +17,6 @@ public final class TextMetrics {
    public static int NEEDS_BIDI_REORDERING;
 
    public final void reset() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.iAdvanceX = this.iAdvanceY = this.iBoundsTlX = this.iBoundsTlY = this.iBoundsBrX = this.iBoundsBrY = this.iCharacters = this.iNextAdvanceX = this.iNextAdvanceY = this.iNextCharacters = this.iNextOriginX = this.iNextOriginY = this.iFlags = 0;
    }
 }

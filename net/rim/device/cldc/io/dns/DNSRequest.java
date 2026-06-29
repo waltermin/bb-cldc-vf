@@ -68,7 +68,7 @@ public class DNSRequest {
    }
 
    void setAnswer(DNSMessageIPv4 answer) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._answer = answer;
    }
 
    public int getTimestamp() {
@@ -76,7 +76,7 @@ public class DNSRequest {
    }
 
    void setTimestamp(int timestamp) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._timestamp = timestamp;
    }
 
    public int getStatus() {
@@ -84,7 +84,7 @@ public class DNSRequest {
    }
 
    void setStatus(int status) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._status = status;
    }
 
    public int getQueryType() {
@@ -117,7 +117,7 @@ public class DNSRequest {
    }
 
    void setResult(Vector vec) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._result = vec;
    }
 
    public String getQueryString() {
@@ -145,7 +145,7 @@ public class DNSRequest {
    }
 
    void setDone(boolean done) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._done = done;
    }
 
    public DNSRequest getPreviousRequest() {
@@ -153,7 +153,7 @@ public class DNSRequest {
    }
 
    void setPreviousRequest(DNSRequest req) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._prevRequest = req;
    }
 
    public int getPacketId() {
@@ -169,7 +169,7 @@ public class DNSRequest {
    }
 
    public void setPrimaryDnsIp(byte[] ip) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._primaryDnsIP = ip;
    }
 
    public byte[] getSecondaryDnsIp() {
@@ -177,7 +177,7 @@ public class DNSRequest {
    }
 
    public void setSecondaryDnsIp(byte[] ip) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._secondaryDnsIP = ip;
    }
 
    public int getTimeout() {
@@ -185,7 +185,7 @@ public class DNSRequest {
    }
 
    public void setTimeout(int to) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._timeout = to;
    }
 
    int getCnameAttempts() {
@@ -193,7 +193,7 @@ public class DNSRequest {
    }
 
    void setCnameAttempts(int newAttempts) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._cnames = newAttempts;
    }
 
    int getReferralAttempts() {
@@ -201,7 +201,7 @@ public class DNSRequest {
    }
 
    void setReferralAttempts(int newAttempts) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._referrals = newAttempts;
    }
 
    private void init(String queryStr, DNSListener listener, int apnId, byte[] primaryDnsAddr, byte[] secondaryDnsAddr, int port) {

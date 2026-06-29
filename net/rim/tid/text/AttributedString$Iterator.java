@@ -11,6 +11,11 @@ public class AttributedString$Iterator {
    private final AttributedString this$0;
 
    public AttributedString$Iterator(AttributedString _1) {
+      this.this$0 = _1;
+      this._total_length = _1._length;
+      this._cur_run = _1._run;
+      this._run_length = _1._run._length;
+      this._start = this._pos = 0;
    }
 
    public AttributedString$Iterator(AttributedString _1, int aStart, int aEnd) {
@@ -19,7 +24,33 @@ public class AttributedString$Iterator {
    }
 
    public void set(int aStart, int aEnd) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (aStart >= 0 && aStart <= aEnd && aEnd <= this.this$0._length) {
+         this._total_length = aEnd - aStart;
+         this._cur_run = this.this$0._cursor_run;
+         this._start = this._pos = aStart;
+         int run_start = this.this$0._cursor_run_start;
+         int run_end = run_start + this.this$0._cursor_run._length;
+         if (this._pos >= run_end) {
+            while (this._pos >= run_end && this._cur_run._next != null) {
+               this._cur_run = this._cur_run._next;
+               run_end += this._cur_run._length;
+            }
+         } else {
+            while (this._pos < run_start) {
+               this._cur_run = this._cur_run._prev;
+               run_end = run_start;
+               run_start -= this._cur_run._length;
+            }
+         }
+
+         if (aEnd < run_end) {
+            this._run_length = aEnd - this._pos;
+         } else {
+            this._run_length = run_end - this._pos;
+         }
+      } else {
+         throw new IndexOutOfBoundsException();
+      }
    }
 
    public int pos() {

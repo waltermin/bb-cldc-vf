@@ -170,7 +170,24 @@ public final class StringBuffer {
    }
 
    public final synchronized StringBuffer append(char c) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int newcount = this.count + 1;
+      if (newcount > this.capacity()) {
+         this.expandCapacity(newcount);
+      }
+
+      if (c <= 255) {
+         if (!(this.value instanceof byte[])) {
+            ((char[])this.value)[this.count++] = c;
+            return this;
+         } else {
+            ((byte[])this.value)[this.count++] = (byte)c;
+            return this;
+         }
+      } else {
+         this.promote();
+         ((char[])this.value)[this.count++] = c;
+         return this;
+      }
    }
 
    public final StringBuffer append(int i) {

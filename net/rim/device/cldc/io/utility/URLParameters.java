@@ -54,7 +54,10 @@ public class URLParameters {
    }
 
    public void setParameter(String name, String value) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (name != null) {
+         this._keys.addElement(name.trim());
+         this._values.addElement(value == null ? "" : value.trim());
+      }
    }
 
    @Override

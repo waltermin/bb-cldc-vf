@@ -12,6 +12,12 @@ public final class ImageEncoded implements Image {
    }
 
    private ImageEncoded(EncodedImage image) {
+      if (image == null) {
+         throw new NullPointerException();
+      }
+
+      this._image = image;
+      this._stamp = Graphics.isColor() && this._image.getFrameMonochrome(0) && this._image.getFrameTransparency(0);
    }
 
    @Override

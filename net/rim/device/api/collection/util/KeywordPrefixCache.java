@@ -49,26 +49,57 @@ class KeywordPrefixCache {
    }
 
    synchronized BitSet getPrimaryEntry(String key) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      BitSet result = (BitSet)this._primaryCache.get(key);
+      if (result != null) {
+         this._timestamps.put(key, this._timestamp++);
+         this._timestamps.put(key, this._timestamp++);
+      }
+
+      return result;
    }
 
    synchronized BitSet getSecondaryEntry(String key) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      BitSet result = (BitSet)this._secondaryCache.get(key);
+      if (result != null) {
+         this._timestamps.put(key, this._timestamp++);
+      }
+
+      return result;
    }
 
    synchronized BitSet getReturnResultEntry(String key) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      BitSet result = (BitSet)this._returnResultCache.get(key);
+      if (result != null) {
+         this._timestamps.put(key, this._timestamp++);
+      }
+
+      return result;
    }
 
    synchronized void putPrimaryEntry(String key, BitSet matches) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._primaryCache.size() == 128) {
+         this.removeOldest();
+      }
+
+      this._primaryCache.put(key, new BitSet(matches));
+      this._timestamps.put(key, this._timestamp++);
    }
 
    synchronized void putSecondaryEntry(String key, BitSet matches) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._secondaryCache.size() == 128) {
+         this.removeOldest();
+      }
+
+      this._secondaryCache.put(key, new BitSet(matches));
+      this._timestamps.put(key, this._timestamp++);
    }
 
    synchronized void putReturnResultEntry(String key, BitSet result) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._returnResultCache.size() == 128) {
+         this.removeOldest();
+      }
+
+      this._returnResultCache.put(key, new BitSet(result));
+      this._timestamps.put(key, this._timestamp++);
    }
 }

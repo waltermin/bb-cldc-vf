@@ -42,7 +42,7 @@ public class PopupDialog extends PopupScreen {
    }
 
    public void setOwner(UiEngine owner) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._owner = owner;
    }
 
    public UiEngine getOwner() {
@@ -50,7 +50,7 @@ public class PopupDialog extends PopupScreen {
    }
 
    public void setPopupDialogClosedListener(PopupDialogClosedListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dialogClosedListener = listener;
    }
 
    public PopupDialogClosedListener getPopupDialogClosedListener() {
@@ -58,7 +58,7 @@ public class PopupDialog extends PopupScreen {
    }
 
    public void setStatusPriority(int priority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._statusPriority = priority;
    }
 
    public int getStatusPriority() {
@@ -120,7 +120,7 @@ public class PopupDialog extends PopupScreen {
    }
 
    public void setCancelAllowed(boolean cancelAllowed) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._cancelAllowed = cancelAllowed;
    }
 
    public boolean isCancelAllowed() {

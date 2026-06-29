@@ -22,7 +22,13 @@ final class IOPortInputStream extends InputStream {
 
    @Override
    public final int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.fill();
+      if (this._length > 0) {
+         this._length--;
+         return this._data[this._offset++] & 0xFF;
+      } else {
+         return -1;
+      }
    }
 
    @Override

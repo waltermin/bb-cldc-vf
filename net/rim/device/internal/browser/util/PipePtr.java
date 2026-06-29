@@ -21,7 +21,7 @@ public class PipePtr {
    }
 
    public void setLength(int length) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._length = length;
    }
 
    public int getOffset() {

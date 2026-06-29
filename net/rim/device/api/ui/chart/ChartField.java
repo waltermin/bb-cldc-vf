@@ -47,7 +47,58 @@ public class ChartField extends Field {
    }
 
    private void doSpaceCalculations() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Font currentFont = this.getFont();
+      if (this._previousFont != currentFont || this._needsSpaceCalculations) {
+         for (int index = 0; index < this._axes.length; index++) {
+            if (this._axes[index] != null) {
+               this._axes[index].calculateWidth();
+            }
+         }
+
+         int plotX = this._axes[3] == null ? 0 : this._axes[3].getPreferredWidth();
+         int plotY = this._axes[0] == null ? 0 : this._axes[0].getPreferredHeight();
+         int plotWidth = 0;
+         int plotHeight = 0;
+
+         for (int index = this._renderers.length - 1; index >= 0; index--) {
+            plotWidth = Math.max(plotWidth, this._renderers[index].getPreferredWidth());
+            plotHeight = Math.max(plotHeight, this._renderers[index].getPreferredHeight());
+         }
+
+         for (int index = this._renderers.length - 1; index >= 0; index--) {
+            this._renderers[index].layout(plotWidth, plotHeight);
+            this._renderers[index].setPosition(plotX, plotY);
+         }
+
+         Axis axis = this._axes[0];
+         if (axis != null) {
+            axis.layout(plotWidth, axis.getPreferredHeight());
+            axis.setPosition(plotX, 0);
+         }
+
+         axis = this._axes[1];
+         if (axis != null) {
+            axis.layout(axis.getPreferredWidth(), plotHeight);
+            axis.setPosition(plotX + plotWidth, plotY);
+         }
+
+         axis = this._axes[2];
+         if (axis != null) {
+            axis.layout(plotWidth, axis.getPreferredHeight());
+            axis.setPosition(plotX, plotY + plotHeight);
+         }
+
+         axis = this._axes[3];
+         if (this._axes[3] != null) {
+            this._axes[3].layout(axis.getPreferredWidth(), plotHeight);
+            this._axes[3].setPosition(0, plotY);
+         }
+
+         this._previousFont = currentFont;
+         this._needsSpaceCalculations = false;
+         this._preferredWidth = plotX + plotWidth + (this._axes[1] != null ? this._axes[1].getWidth() : 0);
+         this._preferredHeight = plotY + plotHeight + (this._axes[2] != null ? this._axes[2].getHeight() : 0);
+      }
    }
 
    public int getNumColors() {

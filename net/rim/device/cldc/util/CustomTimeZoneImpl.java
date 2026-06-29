@@ -14,6 +14,26 @@ final class CustomTimeZoneImpl extends TimeZone {
    private static final byte[] staticMonthLength;
 
    CustomTimeZoneImpl(char sign, int hours, int minutes) {
+      this._sign = sign;
+      this._hours = hours;
+      this._minutes = minutes;
+      this._ID = "GMT" + this._sign;
+      if (hours < 10) {
+         this._ID = this._ID + "0";
+      }
+
+      this._ID = this._ID + this._hours;
+      this._ID = this._ID + ":";
+      if (minutes < 10) {
+         this._ID = this._ID + "0";
+      }
+
+      this._ID = this._ID + this._minutes;
+      if (this._sign == '+') {
+         this._rawOffset = this._hours * 3600000 + this._minutes * 60000;
+      } else {
+         this._rawOffset = 0 - this._hours * 3600000 - this._minutes * 60000;
+      }
    }
 
    @Override

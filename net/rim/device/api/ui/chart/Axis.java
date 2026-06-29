@@ -239,7 +239,7 @@ public class Axis {
    }
 
    void setEdge(int edge) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._edge = edge;
    }
 
    public void setIncrement(int increment) {

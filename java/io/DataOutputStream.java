@@ -31,7 +31,7 @@ public class DataOutputStream extends OutputStream implements DataOutput {
 
    @Override
    public final void writeBoolean(boolean v) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      this.write(v ? 1 : 0);
    }
 
    @Override

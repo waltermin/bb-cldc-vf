@@ -23,7 +23,7 @@ public class Edit$BidiLineRuns {
    }
 
    public void ignore(boolean state) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._ignoreState = state;
    }
 
    public boolean isIgnored() {

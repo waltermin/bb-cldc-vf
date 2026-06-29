@@ -41,7 +41,7 @@ public final class Tooltip {
    }
 
    public final void setContent(Field field) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._content = field;
    }
 
    public final void setContent(String text) {
@@ -54,7 +54,7 @@ public final class Tooltip {
    }
 
    public final void setDuration(int duration) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._duration = duration;
    }
 
    public final void setPosition(int x, int y) {

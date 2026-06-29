@@ -13,6 +13,8 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.text.TextRect;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.util.StringProvider;
+import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.i18n.CommonResource;
 import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.SystemIcon;
 
@@ -37,7 +39,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    public void setOptionsMenuText(String optionsMenuText) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._optionsMenuText = optionsMenuText;
    }
 
    public void setChecked(boolean checked) {
@@ -47,7 +49,7 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    public void setImage(Bitmap image) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._image = image;
    }
 
    @Override
@@ -293,12 +295,17 @@ public class CheckboxField extends Field implements FieldLabelProvider {
    }
 
    private void toggle() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._checked = !this._checked;
+      this.fieldChangeNotify(0);
+      this.invalidate();
    }
 
    @Override
    public String toString() {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      StringBuffer s = new StringBuffer();
+      String[] str = CommonResource.getStringArray(10012);
+      s.append('[').append(StringUtilities.removeChars(this._checked ? str[0] : str[1], "̲")).append(']');
+      return s.toString();
    }
 
    @Override

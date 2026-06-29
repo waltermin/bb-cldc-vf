@@ -77,7 +77,11 @@ public final class BufferedInputStream extends InputStream {
 
    @Override
    public final synchronized int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._closed) {
+         throw new IOException();
+      } else {
+         return this._bufferPos >= this._buffer.length && !this.fillBuffer() ? -1 : this._buffer[this._bufferPos++] & 0xFF;
+      }
    }
 
    private final boolean fillBuffer() {

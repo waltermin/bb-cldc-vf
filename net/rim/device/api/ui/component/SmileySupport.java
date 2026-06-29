@@ -1,5 +1,6 @@
 package net.rim.device.api.ui.component;
 
+import net.rim.device.api.util.CharacterUtilities;
 import net.rim.device.api.util.EmoticonStringPattern;
 import net.rim.device.api.util.StringPattern$Match;
 import net.rim.device.internal.ui.FormatParams;
@@ -63,7 +64,24 @@ class SmileySupport {
    }
 
    void scanForSmileys(FormatParams aParams) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int labelLength = this._field.getLabelLength();
+      int start = 0;
+
+      for (int i = aParams._changedTextStart - 1; i > labelLength; i--) {
+         if (CharacterUtilities.isSpaceChar(this._field._text.charAt(i))) {
+            start = i;
+            break;
+         }
+      }
+
+      int diff = this.smileyScan(start, aParams._changedTextStart + aParams._newLength);
+      if (diff != 0) {
+         int lenDiff = aParams._changedTextStart - start;
+         aParams._changedTextStart = start;
+         aParams._oldLength += lenDiff;
+         aParams._newLength += lenDiff + diff;
+         aParams._cursorOffset += lenDiff + diff;
+      }
    }
 
    public int getDecodedStringLength(int start, int end) {

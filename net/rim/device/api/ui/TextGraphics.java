@@ -80,7 +80,7 @@ public class TextGraphics {
    }
 
    public void setStyle(int aStyle) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._style = aStyle;
    }
 
    public void setHeight(int aHeight) {
@@ -124,7 +124,7 @@ public class TextGraphics {
    }
 
    public void setEffects(int aEffects) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._effects = aEffects;
    }
 
    public void setAntialiasingMode(int aMode) {
@@ -136,11 +136,11 @@ public class TextGraphics {
    }
 
    public void setEffectsStrokeColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._effectsStrokeColor = color;
    }
 
    public void setEffectsFillColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._effectsFillColor = color;
    }
 
    public void setFontSpec(Font font) {

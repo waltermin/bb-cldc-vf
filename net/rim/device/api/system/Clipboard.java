@@ -82,7 +82,7 @@ public final class Clipboard {
    }
 
    public final void setNotYetPasted(boolean notYetPasted) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._notYetPasted = notYetPasted;
    }
 
    public final void setPastePriorityTimeout(long pastePriorityTimeout) {

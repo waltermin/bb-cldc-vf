@@ -96,7 +96,7 @@ public final class Tree {
    }
 
    public final void setDefaultExpansion(boolean expanded) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._defaultInfo = (byte)(expanded ? 7 : 6);
    }
 
    public final void deleteSubtree(int node) {

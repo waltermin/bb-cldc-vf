@@ -1,9 +1,14 @@
 package net.rim.device.cldc.io.tcpsocket;
 
 import java.io.IOException;
+import java.util.Vector;
+import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.io.DatagramAddressBase;
+import net.rim.device.api.system.ControlledAccess;
+import net.rim.device.api.system.ControlledAccessException;
 import net.rim.device.api.system.RadioException;
 import net.rim.device.api.system.RadioInfo;
+import net.rim.device.cldc.io.dns.DNSResolverIPv4;
 import net.rim.device.internal.io.tunnel.TunnelCredentialsProvider;
 import net.rim.device.internal.system.TCPPacketHeader;
 
@@ -40,6 +45,38 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public TcpAddress(byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
+      if (apn != null && apn.length() > apnLength) {
+         apn = apn.substring(apnOffset, apnLength);
+      }
+
+      this.processApnInfo(apn);
+      this._ipAddress = TCPPacketHeader.IPv4ByteArrayToInt(ipAddress);
+      if (this._ipAddress == TCP_IP_ADDRESS_NONE) {
+         this._isListenAddress = true;
+         if (destPort != TCP_PORT_NONE) {
+            destPort = TCP_PORT_NONE;
+         }
+      }
+
+      this._port = destPort;
+      if (this._isListenAddress) {
+         if (srcPort == TCP_PORT_NONE) {
+            this._localPort = srcPort;
+         } else {
+            this._localPort = srcPort;
+         }
+      } else if (srcPort != TCP_PORT_NONE && destPort != TCP_PORT_NONE) {
+         this._localPort = srcPort;
+         this._port = destPort;
+      } else {
+         if (destPort == TCP_PORT_NONE) {
+            throw new RuntimeException();
+         }
+
+         this._localPort = destPort;
+      }
+
+      super._address = makeAddress(false, this._ipAddress != 0 ? ipAddress : null, destPort, srcPort);
    }
 
    public TcpAddress(String address) {
@@ -90,11 +127,120 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    protected final void parseAddress(String address) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int scan = 0;
+      int delim = 0;
+      int length = address.length();
+      boolean haveDestPort = false;
+      int index = 0;
+      if (address.startsWith(SLASH_SLASH)) {
+         index = 2;
+      } else {
+         index = address.indexOf(COMPARISON_STRING) + 1;
+      }
+
+      if (address.indexOf(58, index) == -1 && address.equals(SLASH_SLASH)) {
+         address = address + ':';
+      }
+
+      if (length >= 2 && address.charAt(0) == '/' && address.charAt(1) == '/') {
+         this._ipAddress = 0;
+         delim = address.indexOf(58, 2);
+         if (delim != -1 && delim != 2) {
+            this._isListenAddress = false;
+            if (!DatagramAddressBase.isDomainName(address, 2, delim)) {
+               this._ipAddress = DatagramAddressBase.parseIpAddressInt(address, 2);
+            } else {
+               byte[] host = null;
+               Vector hosts = DNSResolverIPv4.instance().getAddressByHostname(address.substring(2, delim), this._apnName);
+               if (hosts != null && hosts.size() > 0) {
+                  host = (byte[])hosts.elementAt(RandomSource.getInt(hosts.size()));
+               }
+
+               if (host == null) {
+                  throw new IOException("DNS query returned no results");
+               }
+
+               StringBuffer sb = new StringBuffer(15);
+
+               for (int i = 0; i < 4; i++) {
+                  sb.append(host[i] & 255);
+                  if (i != 3) {
+                     sb.append('.');
+                  }
+               }
+
+               String h = sb.toString();
+               this._ipAddress = DatagramAddressBase.parseIpAddressInt(h, 0);
+               sb = new StringBuffer(SLASH_SLASH.length() + h.length() + (address.length() - delim));
+               sb.append(SLASH_SLASH);
+               sb.append(h);
+               sb.append(address.substring(delim, address.length()));
+               address = sb.toString();
+               length = address.length();
+            }
+
+            haveDestPort = true;
+         } else {
+            this._isListenAddress = true;
+         }
+      }
+
+      this._port = this._localPort = TCP_PORT_NONE;
+      delim = address.indexOf(58, 2);
+      if ((haveDestPort || !haveDestPort && delim == 2) && length > delim && address.charAt(delim) == ':') {
+         scan = delim + 1;
+         delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+         if (delim <= scan) {
+            throw new IllegalArgumentException("Bad DEST_PORT");
+         }
+
+         int ret = DatagramAddressBase.parseInt(address, scan, delim, 10);
+         if (ret < 0 || ret > 65535) {
+            throw new IllegalArgumentException("Invalid DEST_PORT");
+         }
+
+         if (haveDestPort) {
+            this._port = ret;
+         } else {
+            this._localPort = ret;
+         }
+
+         if (haveDestPort) {
+            if (length > delim && address.charAt(delim) == ';') {
+               scan = delim + 1;
+               delim = DatagramAddressBase.indexOfNextDelim(address, scan);
+               if (delim <= scan) {
+                  throw new IllegalArgumentException("Bad SRC_PORT");
+               }
+
+               try {
+                  int ret0 = DatagramAddressBase.parseInt(address, scan, delim, 10);
+                  if (ret0 < 0 || ret0 > 65535) {
+                     throw new IllegalArgumentException("Invalid SRC_PORT");
+                  }
+
+                  this._localPort = ret0;
+                  ControlledAccess.assertRRISignatures(true);
+               } catch (IllegalArgumentException iae) {
+                  this._localPort = TCP_PORT_NONE;
+               } catch (ControlledAccessException cae) {
+                  this._localPort = TCP_PORT_NONE;
+               }
+            } else {
+               this._localPort = TCP_PORT_NONE;
+            }
+         }
+      }
+
+      super._address = makeAddress(false, this._ipAddress != 0 ? TCPPacketHeader.IPv4IntToByteArray(this._ipAddress) : null, this._port, this._localPort);
    }
 
    public final void setLocalPort(int port) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (port != this.getLocalPort()) {
+         super._address = makeAddress(false, this._ipAddress != 0 ? TCPPacketHeader.IPv4IntToByteArray(this._ipAddress) : null, this._port, port);
+      }
+
+      this._localPort = port;
    }
 
    public final String getConnectionAddress() {
@@ -140,7 +286,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public final void setApnName(String apn) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apnName = apn;
    }
 
    public final String getApnUsername() {
@@ -148,7 +294,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public final void setApnUsername(String apnUsername) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apnUsername = apnUsername;
    }
 
    public final String getApnPassword() {
@@ -156,7 +302,7 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public final void setApnPassword(String apnPassword) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apnPassword = apnPassword;
    }
 
    public final int getLocalPort() {
@@ -184,7 +330,31 @@ final class TcpAddress extends DatagramAddressBase {
    }
 
    public static final String makeAddress(boolean open, byte[] ipAddress, int destPort, int srcPort, String apn, int apnOffset, int apnLength) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      StringBuffer buf = new StringBuffer(128);
+      if (open) {
+         buf.append("tcpcocket://");
+      }
+
+      if (ipAddress != null && DatagramAddressBase.readInt(ipAddress, 0) != TCP_IP_ADDRESS_NONE) {
+         if (!open) {
+            buf.append('/');
+            buf.append('/');
+         }
+
+         convertIpAddressBytesToStringBuffer(ipAddress, buf);
+      }
+
+      if (destPort != TCP_PORT_NONE) {
+         buf.append(':');
+         buf.append(destPort);
+      }
+
+      if (srcPort != TCP_PORT_NONE) {
+         buf.append((char)(destPort != -1 ? ';' : ':'));
+         buf.append(srcPort);
+      }
+
+      return buf.toString();
    }
 
    public static final void convertIpAddressBytesToStringBuffer(byte[] ipAddress, StringBuffer buf) {

@@ -48,7 +48,7 @@ public final class YKEncode {
    }
 
    public final void setPassthroughMode(boolean value) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this.yk_passthroughMode = value;
    }
 
    public static final native boolean isSupported();

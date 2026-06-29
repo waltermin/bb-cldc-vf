@@ -58,6 +58,6 @@ public class Command {
    }
 
    void setMenuLabel(String menuLabel) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._menuLabel = menuLabel;
    }
 }

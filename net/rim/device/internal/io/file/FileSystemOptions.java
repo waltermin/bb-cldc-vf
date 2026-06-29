@@ -83,7 +83,18 @@ public final class FileSystemOptions implements Persistable {
    }
 
    public static final void setContentSizes(long totalSize, long reservedPictureSize) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (reservedPictureSize > 5242880) {
+         reservedPictureSize = 5242880;
+      }
+
+      if (totalSize > 15728640) {
+         totalSize = 15728640;
+      }
+
+      _instance._contentStoreTotalSize = Math.max(totalSize, reservedPictureSize);
+      _instance._picturesReservedSize = reservedPictureSize;
+      _instance._sizesSet = true;
+      _instance._dirty |= 16;
    }
 
    public static final long getPicturesReservedSize() {
@@ -196,23 +207,32 @@ public final class FileSystemOptions implements Persistable {
    }
 
    public static final void setUSBMassStorageMode(boolean mode) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      _instance._usbMassStorageEnabled = mode;
+      _instance._dirty |= 8;
    }
 
    public static final void setExternalEncryptionLevel(int mode) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (mode >= 0 && mode <= 6) {
+         _instance._externalEncryptionLevel = mode;
+         _instance._dirty |= 2;
+      }
    }
 
    public static final void setExternalMemoryEnabled(boolean mode) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      _instance._externalMemoryEnabled = mode;
+      _instance._dirty |= 4;
    }
 
    public static final void setSafelyRemoveMode(int mode) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      _instance._safelyRemoveMode = mode;
+      _instance._dirty |= 32;
    }
 
    public static final void setAutoEnableUSBMassStorageMode(int mode) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (mode >= 0 && mode <= 2) {
+         _instance._autoEnableUsbMassStorageMode = mode;
+         _instance._dirty |= 1;
+      }
    }
 
    public static final void save() {

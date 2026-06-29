@@ -101,7 +101,7 @@ public class ImageItem extends Item {
    }
 
    public void setAltText(String text) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._altText = text;
    }
 
    @Override

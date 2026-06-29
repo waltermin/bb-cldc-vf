@@ -46,7 +46,14 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    public void setType(int type) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (type >= 0) {
+         this._type = type;
+      }
+
+      this._width = type == 0 ? this._f.getBounds("WWWWW") : this._f.getBounds("WWWW");
+      this._isInput = true;
+      this.setCode(this._charCode);
+      this.invalidate();
    }
 
    public boolean setCode(int code) {
@@ -91,7 +98,7 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    public void setHeight(int height) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._height = height;
    }
 
    @Override
@@ -276,7 +283,112 @@ class SymbolScreen$CharacterCodeField extends Field {
    }
 
    public boolean processInputCode(boolean fromBuffer) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._char = 0;
+      this._colour = this.COLOUR_NORMAL;
+      if (!fromBuffer) {
+         this.restoreBuf();
+      }
+
+      switch (this._type) {
+         case -1:
+            break;
+         case 0:
+         default:
+            if (fromBuffer) {
+               this._row = this._buf.length() > 4 ? this.convertDecToInt(this._buf, 0, 3) : this.convertDecToInt(this._buf, 0, 2);
+            }
+
+            if (this._row < 1 || this._row > 92 && this._row < 115) {
+               this._colour = this.COLOUR_ERROR;
+               break;
+            } else {
+               if (fromBuffer) {
+                  this._cell = this._buf.length() > 4 ? this.convertDecToInt(this._buf, 3, 2) : this.convertDecToInt(this._buf, 2, 2);
+               }
+
+               if (this._cell < 1 || this._cell > 94) {
+                  this._colour = this.COLOUR_ERROR;
+                  break;
+               } else {
+                  int first;
+                  if (this._row <= 62) {
+                     first = (this._row + 1) / 2 + 128;
+                  } else {
+                     first = (this._row + 1) / 2 + 192;
+                  }
+
+                  int second;
+                  if ((this._row & 1) != 0) {
+                     second = this._cell <= 63 ? this._cell + 63 : this._cell + 64;
+                  } else {
+                     second = this._cell + 158;
+                  }
+
+                  this._charCode = (first << 8) + second;
+                  fromBuffer = false;
+               }
+            }
+         case 1:
+            if (fromBuffer) {
+               this._charCode = this.convertHexToInt(this._buf, 0, 4);
+            }
+
+            int MSB = this._charCode >>> 8;
+            int LSB = this._charCode & 0xFF;
+            boolean codeGood = true;
+            if (MSB < 129 || 159 < MSB && MSB < 224 || MSB > 239 && MSB < 250 || MSB > 252 || LSB < 64 || LSB == 127 || LSB > 252) {
+               codeGood = false;
+            }
+
+            if (MSB == 0 && (32 <= LSB && LSB <= 126 || 161 <= LSB && LSB <= 223)) {
+               codeGood = true;
+            }
+
+            if (!codeGood) {
+               this._char = 0;
+               this._colour = this.COLOUR_ERROR;
+            } else {
+               this._twoBytes[0] = (byte)MSB;
+               this._twoBytes[1] = (byte)LSB;
+               Object result = null;
+
+               try {
+                  result = Helper.byteToCharArray(this._twoBytes, MSB == 0 ? 1 : 0, MSB == 0 ? 1 : 2, "Shift_JIS");
+               } catch (UnsupportedEncodingException e) {
+                  Dialog.alert("Encoding Shift_JIS is not supported");
+               }
+
+               if (result instanceof char[] && ((char[])result).length == 1) {
+                  this._char = ((char[])result)[0];
+                  if (this._char == '?' && (MSB != 0 || LSB != 63)) {
+                     this._char = 0;
+                  }
+               } else if (result instanceof byte[] && ((byte[])result).length == 2) {
+                  this._char = (char)(((((byte[])result)[0] & 255) << 8) + (((byte[])result)[1] & 255));
+               }
+
+               if ((' ' > this._char || this._char >= 127) && this._char <= 159) {
+                  this._char = 0;
+                  this._colour = this.COLOUR_ERROR;
+               } else {
+                  this._buf.setLength(0);
+                  this._buf.append(this._char);
+               }
+            }
+            break;
+         case 2:
+            if (fromBuffer) {
+               this._charCode = this.convertHexToInt(this._buf, 0, 4);
+            }
+
+            this._char = (char)this._charCode;
+            this._buf.setLength(0);
+            this._buf.append(this._char);
+      }
+
+      this._isInput = false;
+      this.invalidate();
+      return this._colour != this.COLOUR_ERROR;
    }
 
    public int unicodeToSJIS(char unicode) {

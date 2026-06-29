@@ -87,7 +87,7 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    public final void setHTTPBufferingCallback(HTTPBufferingCallback callback) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callback = callback;
    }
 
    public final byte[] getBuffer() {
@@ -126,7 +126,7 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    public final void setBandwidthRequired(int bytesPerSecond) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._consumeRate = bytesPerSecond;
    }
 
    private final void resizeBuffer(int newBufferSize) {
@@ -317,10 +317,10 @@ public final class HTTPBufferingManager extends Thread {
    }
 
    static final int access$512(HTTPBufferingManager x0, int x1) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return x0._readOffset += x1;
    }
 
    static final int access$620(HTTPBufferingManager x0, int x1) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return x0._dataLength -= x1;
    }
 }

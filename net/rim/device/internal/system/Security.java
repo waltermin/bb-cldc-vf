@@ -771,7 +771,7 @@ public final class Security {
    }
 
    public final void setCallHandler(SecurityCallHandler handler) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callHandler = handler;
    }
 
    public final SecurityCallHandler getCallHandler() {
@@ -1014,7 +1014,7 @@ public final class Security {
    }
 
    public final void setAutoOnRequired(boolean required) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._isAutoOnRequired = required;
    }
 
    public final int getUnlockCounter() {

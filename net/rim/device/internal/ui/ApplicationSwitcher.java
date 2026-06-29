@@ -4,6 +4,7 @@ import net.rim.device.api.system.Application;
 import net.rim.device.api.system.ApplicationDescriptor;
 import net.rim.device.api.system.ApplicationManager;
 import net.rim.device.api.system.ApplicationProcess;
+import net.rim.device.api.system.Bitmap;
 import net.rim.device.api.system.SystemListener2;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.FocusChangeListener;
@@ -18,7 +19,11 @@ import net.rim.device.api.ui.component.ListField;
 import net.rim.device.api.ui.component.ListFieldCallback;
 import net.rim.device.api.ui.component.TextInputDialog;
 import net.rim.device.api.ui.container.PopupScreen;
+import net.rim.device.api.ui.container.VerticalFieldManager;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
+import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.api.util.StringUtilities;
+import net.rim.device.internal.system.InternalServices;
 import net.rim.device.internal.ui.component.ApplicationIconField;
 import net.rim.vm.Process;
 
@@ -183,6 +188,79 @@ public final class ApplicationSwitcher extends PopupScreen implements FocusChang
    }
 
    public ApplicationSwitcher(Runnable onExit, int convenienceKey) {
+      super(new VerticalFieldManager(299067162755072L), 0);
+      ApplicationManager applicationManager = ApplicationManager.getApplicationManager();
+      this.setId("taskswitcher");
+      this._onExit = onExit;
+      this._app = UiApplication.getUiApplication();
+      this._app.addSystemListener(this);
+      this._descriptors = applicationManager.getVisibleApplications();
+      this._ignoreAltKey = convenienceKey != 0;
+      this._convenienceKey = convenienceKey;
+      ThemeAttributeSet taskSwitcherTheme = ThemeManager.getActiveTheme().getAttributeSet(this.getTag(), this.getId(), 0);
+      this._verticalDisplay = this.getTaskSwitcherDisplayType(taskSwitcherTheme);
+      boolean isReducedKeyboard = InternalServices.isReducedFormFactor();
+      if (this._descriptors.length > 1 && applicationManager.isConsoleDescriptor(this._descriptors[0])) {
+         ApplicationDescriptor temp = this._descriptors[0];
+         this._descriptors[0] = this._descriptors[1];
+         this._descriptors[1] = temp;
+      }
+
+      if (this._descriptors.length > 2 && applicationManager.isConsoleDescriptor(this._descriptors[1])) {
+         ApplicationDescriptor temp = this._descriptors[1];
+         this._descriptors[1] = this._descriptors[2];
+         this._descriptors[2] = temp;
+      }
+
+      if (this._verticalDisplay) {
+         this._appNames = new String[this._descriptors.length];
+
+         for (int i = 0; i < this._descriptors.length; i++) {
+            this._appNames[i] = this._descriptors[i].getLocalizedName();
+            if (isReducedKeyboard) {
+               this._appNames[i] = StringUtilities.removeChars(this._appNames[i], "̲");
+            }
+         }
+
+         this._listField = new ListField(this._descriptors.length, 8);
+         this._listField.setId(this.getId());
+         this._listField.setThemeAttributeSet(taskSwitcherTheme);
+         this._listField.setCallback(this);
+         this._listField.setFocusListener(this);
+         this.add(this._listField);
+      } else {
+         this._icons = new ApplicationSwitcher$IconHorizontalFieldManager(1125899906842624L);
+         this._selectedTitle = new LabelField("", 1152921504606847040L);
+         this._appIcons = new ApplicationIconField[this._descriptors.length];
+         StringBuffer buffer = new StringBuffer();
+
+         for (int i = 0; i < this._descriptors.length; i++) {
+            ApplicationDescriptor appDesc = this._descriptors[i];
+            Bitmap bitmap = appDesc.getIcon();
+            buffer.append(appDesc.getModuleName());
+            buffer.append('.');
+            buffer.append(appDesc.getName());
+            String name = buffer.toString();
+            buffer.setLength(0);
+            ApplicationIconField icon = new ApplicationIconField(name, null);
+            icon.setIconDefault(bitmap);
+            String title = appDesc.getLocalizedName();
+            if (isReducedKeyboard) {
+               title = StringUtilities.removeChars(title, "̲");
+            }
+
+            icon.setCookie(title);
+            this._icons.add(icon);
+            this._appIcons[i] = icon;
+         }
+
+         this._icons.setFocusListener(this);
+         this.add(this._icons);
+         this.add(this._selectedTitle);
+      }
+
+      this.setIndex(0);
+      this._app.pushGlobalScreen(this, -1073741823, 2);
    }
 
    private final void setIndex(int index) {

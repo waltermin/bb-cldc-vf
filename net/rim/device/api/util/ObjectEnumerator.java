@@ -1,6 +1,7 @@
 package net.rim.device.api.util;
 
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 public class ObjectEnumerator implements Enumeration {
    protected Object[] _elements;
@@ -40,6 +41,10 @@ public class ObjectEnumerator implements Enumeration {
 
    @Override
    public Object nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getNextElement()) {
+         return this._elements[this._index++];
+      } else {
+         throw new NoSuchElementException();
+      }
    }
 }

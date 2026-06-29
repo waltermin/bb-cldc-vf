@@ -262,7 +262,66 @@ public class HexEditField extends EditField {
 
    @Override
    public int inputMethodTextChanged(InputMethodEvent event) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      AttributedString inserted_text = event.getText();
+      if (inserted_text.length() == 0) {
+         return super.inputMethodTextChanged(event);
+      }
+
+      char ch = inserted_text.getText().charAt(0);
+      int hex = NumberUtilities.hexDigitToInt(ch, -1);
+      if (hex == -1) {
+         return 1;
+      }
+
+      ch = NumberUtilities.intToUpperHexDigit(hex);
+      StringBuffer strBuf = this._strBuf;
+      strBuf.setLength(0);
+      int newCc;
+      if (this._firstNibble) {
+         if (this._maxBytes <= this.getNumBytes()) {
+            return 1;
+         }
+
+         strBuf.append('0');
+         strBuf.append(ch);
+         newCc = 2;
+         this._firstNibbleChar = ch;
+         this._nibbleInsertionIndex = this.getComposedTextStart();
+         int len = this.getAttributedText().length() - 1;
+         if (this.getCaretPosition() < len && this.getAnchorPosition() < len) {
+            strBuf.append(' ');
+            newCc++;
+         }
+      } else {
+         if (this.getComposedTextStart() != this._nibbleInsertionIndex
+            && !this.isComposedTextExist()
+            && this.getLatestCommittedTextStart() != this.getLatestCommittedTextEnd()) {
+            this.setComposedText(this.getLatestCommittedTextStart(), this.getLatestCommittedTextEnd());
+         }
+
+         strBuf.append(this._firstNibbleChar);
+         strBuf.append(ch);
+         strBuf.append(' ');
+         newCc = 3;
+      }
+
+      if (event.getCommittedCharacterCount() == 1) {
+         inserted_text.set(strBuf);
+         this._firstNibble = !this._firstNibble;
+         event.init(
+            event.getSource(),
+            event.getID(),
+            event.getModifiers(),
+            inserted_text,
+            event.getTextMask(),
+            newCc,
+            event.getConvertedCharacterCount(),
+            event.getCaret(),
+            event.getVisiblePosition()
+         );
+      }
+
+      return super.inputMethodTextChanged(event);
    }
 
    @Override
@@ -383,6 +442,19 @@ public class HexEditField extends EditField {
 
    @Override
    public void setMaxSize(int maxSize) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      byte[] oldBytes = this.getAsBytes();
+      int pos = this.getCursorPosition();
+      if (pos > maxSize) {
+         pos = maxSize;
+      }
+
+      this._maxBytes = maxSize / 3;
+      synchronized (this) {
+         this.setText("");
+         super.setMaxSize(maxSize);
+         this.setData(oldBytes, 0, this._maxBytes);
+      }
+
+      this.setCursorPosition(pos, this.isCursorPositionSet() ? 0 : Integer.MIN_VALUE);
    }
 }

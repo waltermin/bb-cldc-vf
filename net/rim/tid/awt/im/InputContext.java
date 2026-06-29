@@ -590,7 +590,7 @@ public class InputContext {
    }
 
    public void setInvokableActionProducer(InvokableActionProducer producer) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._invokableActionProducer = producer;
    }
 
    public InvokableAction[] getIMActions(Object comp) {

@@ -6,19 +6,19 @@ import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.Persistable;
 
 class Security$SecurityCache implements Persistable {
-   private int _maxPasswordAttempts;
-   private int _currentTimeOut;
+   private int _maxPasswordAttempts = NvStore.readInt(9, 3);
+   private int _currentTimeOut = 120;
    private long _longTermSecurityTimeStamp;
-   private boolean _passwordRequiredForAppInstall;
-   private boolean _lockWhenHolstered;
+   private boolean _passwordRequiredForAppInstall = ITPolicy.getBoolean(24, 75, false);
+   private boolean _lockWhenHolstered = ITPolicy.getBoolean(24, 12, false);
    private boolean _autoFillUserAuthenticatorPasswordField;
    private boolean _allowOutgoingCallWhileLocked;
    private boolean _numericUserAuthenticatorPassword;
    private boolean _numericHandheldPassword;
-   private boolean _smartPasswordEntry;
-   private int _securityITPolicyServiceColour;
-   private int _securityOtherServiceColour;
-   private boolean _excludeAddressBookFromContentProtection;
+   private boolean _smartPasswordEntry = !ITPolicy.getBoolean(24, 62, false);
+   private int _securityITPolicyServiceColour = -1;
+   private int _securityOtherServiceColour = -1;
+   private boolean _excludeAddressBookFromContentProtection = false;
 
    private Security$SecurityCache() {
    }
@@ -56,7 +56,8 @@ class Security$SecurityCache implements Persistable {
    }
 
    private void setLockWhenHolstered(boolean lockWhenHolstered) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._lockWhenHolstered = lockWhenHolstered || ITPolicy.getBoolean(24, 12, false);
+      this.commit();
    }
 
    private boolean getPasswordRequiredForAppInstall() {
@@ -64,7 +65,8 @@ class Security$SecurityCache implements Persistable {
    }
 
    private void setPasswordRequiredForAppInstall(boolean passwordRequiredForAppInstall) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._passwordRequiredForAppInstall = passwordRequiredForAppInstall || ITPolicy.getBoolean(24, 75, false);
+      this.commit();
    }
 
    private boolean getAllowOutgoingCallWhileLocked() {

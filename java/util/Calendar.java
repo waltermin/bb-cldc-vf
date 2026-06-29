@@ -100,7 +100,7 @@ public class Calendar {
    }
 
    public void setTimeZone(TimeZone value) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._zone = value;
    }
 
    public TimeZone getTimeZone() {

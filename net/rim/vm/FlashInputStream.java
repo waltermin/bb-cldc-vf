@@ -38,7 +38,19 @@ public class FlashInputStream extends InputStream {
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._index == this._bytesInBuffer) {
+         int bytesRead = readBuffer(this._stream, this._buffer, this._handleIndex + 1);
+         if (bytesRead == 0) {
+            return -1;
+         }
+
+         this._bytesInBuffer = bytesRead;
+         this._handleIndex++;
+         this._index = 0;
+      }
+
+      this._amountRead++;
+      return this._buffer[this._index++] & 0xFF;
    }
 
    int getNumHandles() {

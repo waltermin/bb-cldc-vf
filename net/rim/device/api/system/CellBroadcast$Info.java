@@ -22,7 +22,7 @@ public class CellBroadcast$Info implements Persistable {
    }
 
    public void setEnabled(boolean enabled) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._enabled = enabled;
    }
 
    protected void copyInto(CellBroadcast$Info i) {

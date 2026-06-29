@@ -1,6 +1,7 @@
 package net.rim.device.cldc.util;
 
 import java.util.TimeZone;
+import net.rim.vm.Memory;
 
 final class TimeZoneImpl extends TimeZone {
    private String ID;
@@ -13,13 +14,13 @@ final class TimeZoneImpl extends TimeZone {
    private int endDayOfWeek;
    private int endTime;
    private int rawOffset;
-   private boolean useDaylight;
+   private boolean useDaylight = false;
    private int startMode;
    private int endMode;
    private int dstSavings;
    private int _c_year;
-   private int _c_ruleDayStart;
-   private int _c_ruleDayEnd;
+   private int _c_ruleDayStart = -1;
+   private int _c_ruleDayEnd = -1;
    private int serialSyncID;
    static final short NO_MODE;
    static final short DOW_WIM_MODE;
@@ -51,6 +52,25 @@ final class TimeZoneImpl extends TimeZone {
       int initSerialSyncID,
       boolean observeDST
    ) {
+      this.ID = initZoneID;
+      Memory.createGroup(this.ID);
+      this.rawOffset = initGMTOffset * 60000;
+      this.dstSavings = initDSTAmount * 60000;
+      this.useDaylight = initDSTAmount > 0;
+      this.startMode = initStartMode;
+      this.startMonth = initStartMonth;
+      this.startDay = initStartDay;
+      this.startDayOfWeek = initStartDayOfWeek;
+      this.startTime = initStartTime * 60000;
+      this.endMode = initEndMode;
+      this.endMonth = initEndMonth;
+      this.endDay = initEndDay;
+      this.endDayOfWeek = initEndDayOfWeek;
+      this.endTime = initEndTime * 60000;
+      this.serialSyncID = initSerialSyncID;
+      if (!observeDST) {
+         this.useDaylight = false;
+      }
    }
 
    @Override

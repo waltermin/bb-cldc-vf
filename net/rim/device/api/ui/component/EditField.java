@@ -59,6 +59,6 @@ public class EditField extends BasicEditField {
    }
 
    protected void setLastKeyPressed(int key) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._lastKeyPressed = key;
    }
 }

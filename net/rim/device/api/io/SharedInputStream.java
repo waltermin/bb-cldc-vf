@@ -67,7 +67,7 @@ public class SharedInputStream extends InputStream {
 
    @Override
    public int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      return this._currentPosition >= this._maxPosition ? -1 : this._source.read(this._currentPosition++);
    }
 
    @Override

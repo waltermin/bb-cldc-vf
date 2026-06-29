@@ -19,6 +19,7 @@ import net.rim.device.internal.applicationcontrol.ApplicationControl;
 import net.rim.device.internal.content.ContentHandlerRenderingManager;
 import net.rim.device.internal.system.ApplicationManagerInternal;
 import net.rim.device.internal.system.CodeStore;
+import net.rim.device.internal.system.MIDletSecurity;
 import net.rim.vm.Array;
 import net.rim.vm.Message;
 import net.rim.vm.Process;
@@ -107,7 +108,27 @@ class RegistryImpl extends Registry {
    public ContentHandlerServer register(
       String classname, String[] types, String[] suffixes, String[] actions, ActionNameMap[] actionnames, String ID, String[] accessAllowed
    ) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      assertPermission();
+      int moduleHandle = verifyClassname(classname);
+      MIDletSecurity.checkPermission(37);
+      ContentHandlerServerImpl server = new ContentHandlerServerImpl();
+      server.init(types, suffixes, actions, actionnames, ID == null ? getOrCreateID(moduleHandle, classname, true) : ID, accessAllowed);
+      verifyID(server.getID(), classname, false);
+      ApplicationDescriptor appDescriptor = ContentHandlerUtilities.findApplicationDescriptor(moduleHandle, classname);
+      if (appDescriptor == null) {
+         throw new IllegalArgumentException("classname not present in current application");
+      }
+
+      server.setApplicationDescriptor(appDescriptor);
+      server.setAppName(getAppName(moduleHandle, classname, appDescriptor));
+      server.setVersion(appDescriptor.getVersion());
+      server.setAuthority(getAuthority(moduleHandle));
+      server.setClassname(classname);
+      server.setModuleHandle(moduleHandle);
+      server.setDynamic(true);
+      this.registerAndPersistHandler(classname, server);
+      InvocationCleanupManager.getInstance().addContentHandlerModule(moduleHandle, classname, true);
+      return server;
    }
 
    void registerInternal(
@@ -706,11 +727,11 @@ class RegistryImpl extends Registry {
    }
 
    private void setApplication(ApplicationDescriptor application) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._application = application;
    }
 
    private void setAuthority(String authority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._authority = authority;
    }
 
    private String getAppName() {

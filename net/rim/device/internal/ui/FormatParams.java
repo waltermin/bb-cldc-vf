@@ -67,6 +67,6 @@ public class FormatParams {
    }
 
    public void setFormatFlags(int formatFlags) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._formatFlags = formatFlags;
    }
 }

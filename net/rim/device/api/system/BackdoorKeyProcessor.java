@@ -16,7 +16,7 @@ public class BackdoorKeyProcessor {
    }
 
    public void setAltStatus(boolean altStatus) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._altStatus = altStatus ? 1 : 0;
    }
 
    public static boolean isDevelopmentDevice() {

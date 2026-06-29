@@ -198,7 +198,12 @@ public class AutoTextEditField extends EditField {
 
    @Override
    protected boolean keyChar(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._shiftPressed = (status & 4) == 0 && (status & 2) != 0;
+      if (this.isStyle(2147483648L) && key == '\n') {
+         this.handleClauseSeparator(key);
+      }
+
+      return super.keyChar(key, status, time);
    }
 
    @Override

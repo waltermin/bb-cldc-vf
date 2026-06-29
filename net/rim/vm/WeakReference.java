@@ -16,6 +16,6 @@ public class WeakReference {
    }
 
    public void set(Object object) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this.reference = object;
    }
 }

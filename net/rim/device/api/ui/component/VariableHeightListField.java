@@ -603,9 +603,74 @@ public class VariableHeightListField extends Field {
       this.calcFocusRect(false);
    }
 
+   // $VF: Could not verify finally blocks. A semaphore variable has been added to preserve control flow.
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void paint(Graphics graphics) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      int width = this.getContentWidth();
+      if (this._size == 0) {
+         int availableWidth = Math.min(width, this.getManager().getVisibleWidth()) - 1;
+         graphics.drawText(this.getEmptyString(), 0, 0, this._emptyStyle, availableWidth);
+      } else if (this._callback != null) {
+         XYRect redrawRect = graphics.getClippingRect();
+         if (redrawRect.y < 0) {
+            throw new IllegalStateException("Clipping rectangle is wrong.");
+         }
+
+         int selectionStart = Math.min(this._cursor, this._cursor + this._selectionRange);
+         int selectionEnd = Math.max(this._cursor, this._cursor + this._selectionRange);
+         int y = 0;
+         int endY = redrawRect.y + redrawRect.height;
+         this.setThemeAttributesSpecial(null, null);
+
+         for (int line = this._topRow; line < this._size && y < endY; line++) {
+            int rowHeight = this.getRowHeight(line);
+            if (y + rowHeight <= redrawRect.y) {
+               y += rowHeight;
+            } else {
+               boolean var14 = false /* VF: Semaphore variable */;
+
+               try {
+                  var14 = true;
+                  graphics.pushContext(0, y, width, rowHeight, 0, 0);
+                  if (!graphics.isDrawingStyleSet(8)) {
+                     this.setThemeAttributesSpecial((line & 1) == 0 ? this._tasRowEven : this._tasRowOdd, graphics);
+                  }
+
+                  boolean select = selectionStart <= line && line <= selectionEnd && line != this._cursor;
+                  if (select) {
+                     graphics.setDrawingStyle(16, true);
+                     graphics.setColor(ThemeAttributeSet.getColor(this, 5));
+                     graphics.setBackgroundColor(ThemeAttributeSet.getColor(this, 4));
+                  } else {
+                     graphics.setDrawingStyle(16, false);
+                  }
+
+                  if (select || this.getThemeAttributeSetSpecial() != null) {
+                     int fg = graphics.getColor();
+                     graphics.setColor(graphics.getBackgroundColor());
+                     graphics.fillRect(0, y, width, rowHeight);
+                     graphics.setColor(fg);
+                  }
+
+                  this._callback.drawListRow(this, graphics, line, y, width);
+                  var14 = false;
+               } finally {
+                  if (var14) {
+                     this.setThemeAttributesSpecial(null, null);
+                     graphics.popContext();
+                     y += rowHeight;
+                  }
+               }
+
+               this.setThemeAttributesSpecial(null, null);
+               graphics.popContext();
+               y += rowHeight;
+            }
+         }
+
+         this.paintVerticalScrollbar(graphics);
+      }
    }
 
    private void paintVerticalScrollbar(Graphics graphics) {
@@ -639,7 +704,7 @@ public class VariableHeightListField extends Field {
    }
 
    public void setCallback(VariableHeightListFieldCallback callback) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._callback = callback;
    }
 
    public void setEmptyString(ResourceBundleFamily family, int id, int style) {
@@ -756,7 +821,10 @@ public class VariableHeightListField extends Field {
    }
 
    private void updateScrollbar() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getManager() != null) {
+         this._upScrollArrowVisible = this._topRow != 0;
+         this._downScrollArrowVisible = this._topRow + this.getVisibleLinesPageDown(this._topRow) != this._size;
+      }
    }
 
    private static long validateStyle(long style) {

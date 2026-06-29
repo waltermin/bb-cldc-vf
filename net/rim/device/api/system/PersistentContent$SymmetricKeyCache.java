@@ -27,6 +27,16 @@ final class PersistentContent$SymmetricKeyCache {
    }
 
    final void put(char[] encoding, int offset, byte[] symmetricKey) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (++this._victim == 2053) {
+         this._victim = 0;
+      }
+
+      int hash = this._hashes[this._victim];
+      this._keys.remove(hash);
+      this._references.remove(hash);
+      hash = net.rim.vm.Memory.objectToInt(encoding) + offset << 16;
+      this._keys.put(hash, symmetricKey);
+      this._references.put(hash, new WeakReference(encoding));
+      this._hashes[this._victim] = hash;
    }
 }

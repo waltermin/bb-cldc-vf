@@ -104,6 +104,7 @@ public class LayerManager {
    }
 
    private void remove(int index) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      System.arraycopy(this.component, index + 1, this.component, index, this.nlayers - index - 1);
+      this.component[--this.nlayers] = null;
    }
 }

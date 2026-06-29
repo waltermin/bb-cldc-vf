@@ -6,7 +6,7 @@ final class Display$SwitchDisplayablesRunnable implements Runnable {
    private final Display this$0;
 
    public final void setNewDisplayable(Displayable newD) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._newD = newD;
    }
 
    @Override

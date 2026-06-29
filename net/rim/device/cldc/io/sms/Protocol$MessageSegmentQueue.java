@@ -14,6 +14,19 @@ final class Protocol$MessageSegmentQueue {
    }
 
    public final void add(Protocol$StoreMessage x) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.currentSize == this.messages.length) {
+         this.currentSize--;
+         this.messages[this.front] = null;
+         if (++this.front == this.messages.length) {
+            this.front = 0;
+         }
+      }
+
+      if (++this.back == this.messages.length) {
+         this.back = 0;
+      }
+
+      this.messages[this.back] = x;
+      this.currentSize++;
    }
 }

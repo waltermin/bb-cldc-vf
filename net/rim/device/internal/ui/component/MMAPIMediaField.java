@@ -1,5 +1,6 @@
 package net.rim.device.internal.ui.component;
 
+import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.PlayerListener;
 import net.rim.device.api.media.control.VideoPositionControl;
@@ -53,7 +54,7 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
 
    @Override
    public void setComponent(Object component) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._component = component;
    }
 
    @Override
@@ -190,7 +191,25 @@ public class MMAPIMediaField extends Field implements LcduiPlayerController, Pla
    }
 
    private void toggleVideoVisibility(boolean visible) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._obscured = !visible;
+      if (visible) {
+         if (this._player != null && this._player.getState() == 300 && this._playerPausedByObscure) {
+            try {
+               this._player.start();
+               this._playerPausedByObscure = false;
+               return;
+            } catch (MediaException var3) {
+               return;
+            }
+         }
+      } else if (this._player != null && this._player.getState() == 400) {
+         try {
+            this._player.stop();
+            this._playerPausedByObscure = true;
+            return;
+         } catch (MediaException var4) {
+         }
+      }
    }
 
    @Override

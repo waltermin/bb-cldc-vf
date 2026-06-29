@@ -3,15 +3,19 @@ package net.rim.device.api.ui.text;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.i18n.ResourceBundleFamily;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.ui.DrawTextParam;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
+import net.rim.device.api.ui.TextMetrics;
 import net.rim.device.api.ui.Ui;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.theme.Tag;
 import net.rim.device.api.ui.theme.ThemeAttributeSet;
 import net.rim.device.api.ui.theme.ThemeManager;
+import net.rim.device.internal.ui.ArticInterface;
+import net.rim.device.internal.ui.ArticInterface$LayoutRun;
 import net.rim.device.internal.ui.ArticInterface$Line;
 import net.rim.device.internal.ui.ArticInterface$LineInfo;
 import net.rim.device.internal.ui.FormatParams;
@@ -98,7 +102,23 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    public synchronized void layout(int width, int height) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.checkLocale();
+      this.setAttributesFromFont();
+      int adjustedWidth;
+      if ((this._style & 64) != 0) {
+         adjustedWidth = Integer.MAX_VALUE;
+         this._widthForPaintWithEllipsis = width == Display.getWidth() ? width - 1 : width;
+      } else {
+         adjustedWidth = width == Display.getWidth() ? width - 1 : width;
+      }
+
+      this.update(adjustedWidth);
+      if (this._lineCount > 1 && (this._style & 64) != 0) {
+         this._lineCount = 1;
+      }
+
+      int sumOfHeights = this.getLineTop(this._lineCount);
+      this.setExtent(width, sumOfHeights);
    }
 
    public void setSelection(int selStart, int selEnd) {
@@ -154,11 +174,33 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    public boolean reduceWidthToFit(int width) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._layoutValid && width >= this.getWidth() && width <= this._extent.width && this._width != Integer.MAX_VALUE) {
+         this._extent.width = width;
+         if (this._layoutOffsetX != 0) {
+            int halign = this._style & 7;
+            int delta = 0;
+            if (halign == 5) {
+               delta = this._width - width;
+            } else if (halign == 4) {
+               delta = (this._width - width) / 2;
+            }
+
+            this._layoutOffsetX -= delta;
+            this._width = width;
+
+            for (ArticInterface$Line line = this._lineList; line != null; line = line._next) {
+               line._originX -= delta;
+            }
+         }
+
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public void setId(String id) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._id = id;
    }
 
    public final void setPosition(int x, int y) {
@@ -167,7 +209,7 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    public void setTag(Tag tag) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._tag = tag;
    }
 
    public void setText(Object text) {
@@ -189,11 +231,51 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    public void setStyle(int style) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._style = style;
    }
 
    public XYRect[] getTextBounds(int start, int end) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if ((this._style & 128) != 0) {
+         return new XYRect[]{this.getTruncatedTextBounds(start, end)};
+      }
+
+      end--;
+      XYRect rect1 = Ui.getTmpXYRect();
+      ArticInterface.DocPosToCaret(rect1, this._text, this._lineList, 0, 0, start, true);
+      this.invertForR2L(rect1);
+      XYRect rect2 = Ui.getTmpXYRect();
+      ArticInterface.DocPosToCaret(rect2, this._text, this._lineList, 0, 0, end, true);
+      this.invertForR2L(rect2);
+      XYRect[] bounds = null;
+      if (rect2.y <= rect1.y + rect1.height) {
+         bounds = new XYRect[]{new XYRect(rect1)};
+         bounds[0].union(rect2);
+      } else {
+         ArticInterface$LineInfo info = this.getLineInfoForDocPos(start, true);
+         ArticInterface$Line firstLine = info._line;
+         int offset = info._start;
+         XYRect rect = Ui.getTmpXYRect();
+         ArticInterface.DocPosToCaret(rect, this._text, this._lineList, 0, 0, offset + firstLine._textLength, false);
+         this.invertForR2L(rect);
+         XYRect firstRect = new XYRect(rect1);
+         firstRect.union(rect);
+         info = this.getLineInfoForDocPos(end, false);
+         XYRect lastRect = new XYRect(rect2);
+         ArticInterface.DocPosToCaret(rect, this._text, this._lineList, 0, 0, info._start, false);
+         this.invertForR2L(rect);
+         lastRect.union(rect);
+         Ui.returnTmpXYRect(rect);
+         bounds = new XYRect[]{firstRect, lastRect};
+      }
+
+      for (int i = 0; i < bounds.length; i++) {
+         bounds[i].x = bounds[i].x + this._extent.x;
+         bounds[i].y = bounds[i].y + this._extent.y;
+      }
+
+      Ui.returnTmpXYRect(rect1);
+      Ui.returnTmpXYRect(rect2);
+      return bounds;
    }
 
    public ArticInterface$LineInfo getLineInfoForYPos(int aY) {
@@ -213,11 +295,55 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    public synchronized void getSelectionRect(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      rect.set(0, 0, 0, 0);
+      if (this._cursor != this._anchor) {
+         ArticInterface$LineInfo info = this.getLineInfoForDocPos(this._anchor, true);
+         ArticInterface$Line firstLine = info._line;
+         int offset = info._start;
+         int y = info._top;
+         info = this.getLineInfoForDocPos(this._cursor, true);
+         ArticInterface$Line lastLine = info._line;
+         boolean atTheEnd = false;
+
+         for (ArticInterface$Line currentLine = firstLine; currentLine != lastLine._next; currentLine = currentLine._next) {
+            int left = currentLine._originX;
+            int width = 0;
+            int runs = currentLine._layoutRun == null ? 0 : currentLine._layoutRun.length;
+
+            for (int j = 0; j < runs; j++) {
+               ArticInterface$LayoutRun run = currentLine._layoutRun[j];
+               if (offset + run._textStart == this._anchor) {
+                  left += width;
+                  width = 0;
+               }
+
+               width += run._advance;
+               if (offset + run._textStart + run._textLength == this._cursor) {
+                  atTheEnd = true;
+                  break;
+               }
+            }
+
+            int lineHeight = currentLine._boundsBottom - currentLine._boundsTop;
+            rect.union(left, y, width, lineHeight);
+            if (atTheEnd) {
+               break;
+            }
+
+            int lineLength = currentLine._textLength + currentLine._skippedCharacters;
+            offset += lineLength;
+            y += lineHeight;
+         }
+
+         rect.x = rect.x + this._extent.x;
+         rect.y = rect.y + this._extent.y;
+      }
    }
 
    public void getTextBounds(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      rect.set(this._layoutOffsetX, this._layoutOffsetY, this.getWidth(), this.getHeight());
+      rect.x = rect.x + this._extent.x;
+      rect.y = rect.y + this._extent.y;
    }
 
    Field getField() {
@@ -261,7 +387,25 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    private XYRect getTruncatedTextBounds(int start, int end) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      XYRect rect = new XYRect(
+         this._lineList._originX, this._lineList._originY + this._lineList._boundsTop, 0, this._lineList._boundsBottom - this._lineList._boundsTop
+      );
+      Font font = this.getFont();
+      DrawTextParam drawTextParam = Ui.getTmpDrawTextParam();
+      TextMetrics metrics = Ui.getTmpTextMetrics();
+      this.setDrawTextParamFromStyle(drawTextParam);
+      font.measureText(this._text.getText(), start, this._text.length() - start, drawTextParam, metrics);
+      int subtractedLength = metrics.iAdvanceX;
+      drawTextParam.iMaxAdvance -= subtractedLength;
+      font.measureText(this._text.getText(), 0, start, drawTextParam, metrics);
+      int left = metrics.iAdvanceX;
+      rect.x += left;
+      drawTextParam.iMaxAdvance += subtractedLength;
+      font.measureText(this._text.getText(), start, end - start, drawTextParam, metrics);
+      rect.width = metrics.iAdvanceX;
+      Ui.returnTmpDrawTextParam(drawTextParam);
+      Ui.returnTmpTextMetrics(metrics);
+      return rect;
    }
 
    protected TextArea(Field field) {
@@ -360,7 +504,10 @@ public class TextArea implements Formatter$TextRenderer {
    }
 
    private void invertForR2L(XYRect rect) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (rect.width < 0) {
+         rect.x = rect.x + rect.width;
+         rect.width = -rect.width;
+      }
    }
 
    private int getLineTop(int aIndex) {

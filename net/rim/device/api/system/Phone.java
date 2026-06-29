@@ -205,7 +205,7 @@ public class Phone {
    }
 
    public final void setCLIR(int clir) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._defaultCLIR = clir;
    }
 
    public String getCallPhoneNumber(int _1) {

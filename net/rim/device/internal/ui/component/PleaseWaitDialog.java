@@ -97,7 +97,7 @@ public class PleaseWaitDialog extends PopupScreen {
    }
 
    void setThrowable(Throwable t) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._throwable = t;
    }
 
    public Throwable getThrowable() {

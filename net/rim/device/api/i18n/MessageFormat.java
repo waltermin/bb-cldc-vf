@@ -307,6 +307,6 @@ public class MessageFormat extends Format {
    }
 
    public void setLocale(Locale locale) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._locale = locale;
    }
 }

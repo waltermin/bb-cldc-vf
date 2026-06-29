@@ -191,7 +191,7 @@ public class SMSParameters {
    }
 
    public void setProtocolMeaning(int protocolMeaning) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._protocolMeaning = protocolMeaning;
    }
 
    public int getProtocolId() {
@@ -199,7 +199,7 @@ public class SMSParameters {
    }
 
    public void setProtocolId(int protocolId) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._protocolId = protocolId;
    }
 
    public int getMessageCoding() {
@@ -207,7 +207,7 @@ public class SMSParameters {
    }
 
    public void setMessageCoding(int messageCoding) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._messageCoding = messageCoding;
    }
 
    public int getMessageClass() {
@@ -215,7 +215,7 @@ public class SMSParameters {
    }
 
    public void setMessageClass(int messageClass) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._messageClass = messageClass;
    }
 
    public int getValidityPeriod() {
@@ -223,7 +223,7 @@ public class SMSParameters {
    }
 
    public void setValidityPeriod(int validityPeriod) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._validityPeriod = validityPeriod;
    }
 
    public int getPrivacy() {
@@ -231,7 +231,7 @@ public class SMSParameters {
    }
 
    public void setPrivacy(int privacy) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._privacy = privacy;
    }
 
    public int getPriority() {
@@ -239,7 +239,7 @@ public class SMSParameters {
    }
 
    public void setPriority(int priority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._priority = priority;
    }
 
    public int getLanguage() {
@@ -247,7 +247,7 @@ public class SMSParameters {
    }
 
    public void setLanguage(int language) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._language = language;
    }
 
    public String getCallbackAddress() {
@@ -279,6 +279,6 @@ public class SMSParameters {
    }
 
    public void setDeliveryPeriod(int deliveryPeriod) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._deliveryPeriod = deliveryPeriod;
    }
 }

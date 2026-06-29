@@ -14,8 +14,8 @@ public class TextFlowRegion {
    private int _offsetYBottom;
    private short _offsetXLeft;
    private short _offsetXRight;
-   public int _foregroundColour;
-   public int _backgroundColour;
+   public int _foregroundColour = -1;
+   public int _backgroundColour = -1;
    public short _width;
    public short _height;
    public short _margin;
@@ -49,6 +49,11 @@ public class TextFlowRegion {
    public static final short REGION_VISIBILITY_HIDDEN;
    public static final short REGION_ADDITIONAL_FLAGS_MASK;
    public static final short REGION_FIND_MAX_WIDTH;
+
+   public TextFlowRegion() {
+      this._offsetYBottom = this._offsetYTop = 0;
+      this._offsetXLeft = this._offsetXRight = 0;
+   }
 
    public short getFlags() {
       return this._flags;
@@ -99,7 +104,7 @@ public class TextFlowRegion {
    }
 
    public void setFont(Font f) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._font = f;
    }
 
    public Font getFont() {

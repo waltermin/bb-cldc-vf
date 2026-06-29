@@ -61,7 +61,7 @@ public class CollectionListField extends ListField implements FocusChangeListene
    }
 
    public void setExtraRowAtBottom(boolean isExtraRowAtBottom) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._isExtraRowAtBottom = isExtraRowAtBottom;
    }
 
    public void setElementWithFocus(Object element) {

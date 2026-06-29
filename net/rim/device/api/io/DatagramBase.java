@@ -48,11 +48,11 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    }
 
    public void setDatagramId(int datagramId) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._datagramId = datagramId;
    }
 
    public void setAddressBase(DatagramAddressBase addressBase) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._addressBase = addressBase;
    }
 
    public DatagramStatusListener getDatagramStatusListener() {
@@ -60,11 +60,16 @@ public class DatagramBase extends DataBuffer implements Datagram, IOProperties {
    }
 
    public void setDatagramStatusListener(DatagramStatusListener listener) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._listener = listener;
    }
 
    public void copyFlagsInto(DatagramBase dst) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      for (int mask = 1; mask != 0; mask <<= 1) {
+         if ((this._validFlags & mask) != 0) {
+            dst._flags = dst._flags & ~mask | this._flags & mask;
+            dst._validFlags |= mask;
+         }
+      }
    }
 
    @Override

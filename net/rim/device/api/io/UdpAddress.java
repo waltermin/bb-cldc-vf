@@ -1,10 +1,16 @@
 package net.rim.device.api.io;
 
 import java.io.IOException;
+import java.util.Vector;
+import net.rim.device.api.crypto.RandomSource;
 import net.rim.device.api.system.ControlledAccess;
 import net.rim.device.api.system.ControlledAccessException;
+import net.rim.device.api.system.RadioException;
+import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.system.UDPPacketHeader;
 import net.rim.device.api.util.StringUtilities;
+import net.rim.device.cldc.io.dns.DNSResolverIPv4;
+import net.rim.device.internal.io.tunnel.TunnelCredentialsProvider;
 
 public class UdpAddress extends DatagramAddressBase {
    protected int _ipAddress;
@@ -62,7 +68,12 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    private void init(int ipAddress, int destPort, int srcPort, String apn, int type) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._ipAddress = ipAddress;
+      this._destPort = destPort;
+      this._srcPort = srcPort;
+      this._apn = apn;
+      this._type = type;
+      super._key = ipAddress ^ (destPort << 16 | srcPort & 65535) ^ (apn != null ? apn.hashCode() : 0) ^ type;
    }
 
    public byte[] getIpAddress() {
@@ -92,7 +103,7 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public void setApn(String apn) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apn = apn;
    }
 
    public String getApnUsername() {
@@ -100,7 +111,7 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public void setApnUsername(String apnUsername) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apnUsername = apnUsername;
    }
 
    public String getApnPassword() {
@@ -108,15 +119,15 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    public void setApnPassword(String apnPassword) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._apnPassword = apnPassword;
    }
 
    public void setSrcPort(int srcPort) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._srcPort = srcPort;
    }
 
    public void setDestPort(int destPort) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._destPort = destPort;
    }
 
    public int getApnOffset() {
@@ -558,6 +569,30 @@ public class UdpAddress extends DatagramAddressBase {
    }
 
    private static byte[] resolveAddress(String address, String apn, boolean randomize) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (address != null && address.length() != 0) {
+         if (apn == null) {
+            apn = TunnelCredentialsProvider.getInstance().getApn();
+         }
+
+         byte[] host = null;
+
+         try {
+            int apnId = RadioInfo.getAccessPointNumber(apn);
+            Vector hosts = DNSResolverIPv4.instance().getAddressByHostname(address, apnId);
+            if (hosts != null && hosts.size() > 0) {
+               host = (byte[])hosts.elementAt(!randomize ? 0 : RandomSource.getInt(hosts.size()));
+            }
+
+            if (host == null) {
+               throw new IOException("DNS query returned no results");
+            } else {
+               return host;
+            }
+         } catch (RadioException re) {
+            throw new IOException("APN failure");
+         }
+      } else {
+         return null;
+      }
    }
 }

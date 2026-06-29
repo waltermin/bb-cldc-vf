@@ -29,7 +29,7 @@ public final class DNSMessageIPv4Resource {
    }
 
    public final void setType(int type) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._type = type;
    }
 
    public final int getType() {
@@ -37,7 +37,7 @@ public final class DNSMessageIPv4Resource {
    }
 
    public final void setClazz(int clazz) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._class = clazz;
    }
 
    public final int getClazz() {
@@ -45,7 +45,7 @@ public final class DNSMessageIPv4Resource {
    }
 
    public final void setTTL(int ttl) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._ttl = ttl;
    }
 
    public final int getTTL() {
@@ -53,7 +53,7 @@ public final class DNSMessageIPv4Resource {
    }
 
    public final void setRDLength(int rdlength) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._rdlength = rdlength;
    }
 
    public final int getRDLength() {
@@ -61,7 +61,7 @@ public final class DNSMessageIPv4Resource {
    }
 
    public final void setRData(byte[] rdata) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._rdata = rdata;
    }
 
    public final byte[] getRData() {

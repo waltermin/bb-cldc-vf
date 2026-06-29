@@ -27,7 +27,7 @@ public class PipeOutputStream extends OutputStream {
    }
 
    public void setPacketNo(int currentPacketNo) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._currentPacketNo = currentPacketNo;
    }
 
    public boolean isPacketIncluded(int packetNo) {

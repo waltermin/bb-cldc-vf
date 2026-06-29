@@ -1,5 +1,6 @@
 package javax.microedition.lcdui;
 
+import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.Keypad;
@@ -8,6 +9,7 @@ import net.rim.device.api.ui.XYRect;
 import net.rim.device.internal.lcdui.Callbacks;
 import net.rim.device.internal.lcdui.Lcdui;
 import net.rim.device.internal.lcdui.LcduiPlayerController;
+import net.rim.device.internal.media.PlayerRegistry;
 import net.rim.device.internal.system.InternalServices;
 
 class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerController {
@@ -21,7 +23,7 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    private Player _player;
 
    public void setCanvas(Canvas canvas) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._canvas = canvas;
    }
 
    public void setDirty() {
@@ -102,7 +104,7 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
 
    @Override
    public void setPlayer(Player player) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._player = player;
    }
 
    @Override
@@ -132,7 +134,26 @@ class CanvasScreen extends MIDPScreen implements Callbacks, LcduiPlayerControlle
    }
 
    private void toggleVideoVisibility(boolean visible) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._obscured = !visible;
+      if (visible) {
+         if (this._player != null && this._player.getState() == 300 && this._playerPausedByObscure) {
+            try {
+               this._player.start();
+               this._playerPausedByObscure = false;
+            } catch (MediaException var4) {
+            }
+         }
+      } else if (this._player != null && this._player.getState() == 400) {
+         try {
+            this._player.stop();
+            this._playerPausedByObscure = true;
+         } catch (MediaException var3) {
+         }
+      }
+
+      XYRect absoluteRect = this.getContentRect();
+      this.transformToScreen(absoluteRect);
+      PlayerRegistry.getMMAPIConnector().notifyPlayerOffsetChange(this._player, absoluteRect);
    }
 
    @Override

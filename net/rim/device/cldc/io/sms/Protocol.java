@@ -210,7 +210,12 @@ public final class Protocol extends NativeConnectionBase implements MessageConne
 
    @Override
    public final Message newMessage(String type) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      String address = this._address;
+      if (address != null && address.startsWith("//")) {
+         address = "sms:" + address;
+      }
+
+      return this.newMessage(type, this._isServerMode ? null : address);
    }
 
    @Override

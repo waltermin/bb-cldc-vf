@@ -11,11 +11,11 @@ public class MessageImpl implements Message {
    int _encoding;
 
    void setBuffer(byte[] b) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._buffer = b;
    }
 
    void setEncoding(int coding) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._encoding = coding;
    }
 
    int getEncoding() {
@@ -31,12 +31,12 @@ public class MessageImpl implements Message {
    }
 
    public void setSCAddress(String value) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._scAddress = value;
    }
 
    @Override
    public void setAddress(String addr) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._address = addr;
    }
 
    @Override

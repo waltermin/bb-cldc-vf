@@ -21,11 +21,30 @@ public class ZLibInputStream extends InputStream {
    }
 
    public ZLibInputStream(InputStream inputStream, boolean noWrap, int workingBufferSize) {
+      if (inputStream != null && workingBufferSize >= 1024) {
+         this._inputStream = inputStream;
+         this._tempBuffer = new byte[workingBufferSize];
+         this._inflater = new Inflater(noWrap ? -15 : 15);
+      } else {
+         throw new IllegalArgumentException();
+      }
    }
 
    @Override
    public synchronized int read() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._isClosed) {
+         throw new IOCancelledException();
+      }
+
+      if (this._currentChunk == null || this._currentOffset >= this._currentChunk.length) {
+         do {
+            if (!this.readNextChunk()) {
+               return -1;
+            }
+         } while (this._currentChunk.length <= 0);
+      }
+
+      return this._currentChunk[this._currentOffset++] & 0xFF;
    }
 
    @Override

@@ -206,7 +206,12 @@ public class Vector {
    }
 
    public synchronized void addElement(Object obj) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int newcount = this.elementCount + 1;
+      if (newcount > this.elementData.length) {
+         this.ensureCapacityHelper(newcount, false);
+      }
+
+      this.elementData[this.elementCount++] = obj;
    }
 
    public synchronized boolean removeElement(Object obj) {

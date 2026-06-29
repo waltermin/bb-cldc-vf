@@ -447,7 +447,10 @@ public class Manager extends Field {
 
    @Override
    Graphics getGraphics0(XYRect clip, boolean drawBackground) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      Graphics graphics = this.getManager().getGraphics0(clip, drawBackground && this.isFieldTransparent());
+      graphics.pushRegion(this.getContentRect(), -this.getHorizontalScroll(), -this.getVerticalScroll());
+      this.applyTheme(graphics, drawBackground);
+      return graphics;
    }
 
    public int getHorizontalQuantization() {
@@ -964,7 +967,7 @@ public class Manager extends Field {
    }
 
    public void setNonfocusableOverride(boolean override) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._nonfocusableArrowOverride = override;
    }
 
    private void paintScrollbars(Graphics graphics) {
@@ -1188,7 +1191,7 @@ public class Manager extends Field {
    }
 
    final void setValidLayout(boolean validLayout) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._validLayout = validLayout;
    }
 
    protected void sublayout(int _1, int _2) {
@@ -1248,7 +1251,7 @@ public class Manager extends Field {
    }
 
    protected int nextFocus(int direction, boolean alt) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      return this.nextFocus(direction, alt ? 0 : 2);
    }
 
    protected int nextFocus(int direction, int axis) {
@@ -1475,7 +1478,172 @@ public class Manager extends Field {
    }
 
    protected final void scroll(boolean immediate, int xAmount, int yAmount, boolean draw) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Ui.IN_MAKE_REGION_VISIBLE = true;
+      int width = this.getContentWidth();
+      int height = this.getContentHeight();
+      int oldHScroll = this.getHorizontalScroll();
+      int oldVScroll = this.getVerticalScroll();
+      immediate = immediate && !this.getScreen().isTransparent();
+      boolean scrollCopy = this.isScrollCopyable();
+      if (yAmount != 0) {
+         this._verticalScroll += yAmount;
+         if (draw && immediate) {
+            XYRect clip = Ui.getTmpXYRect();
+            clip.set(0, 0, Math.max(this.getContentWidth(), this.getVirtualWidth()), Math.max(this.getContentHeight(), this.getVirtualHeight()));
+            Graphics graphics = super.getGraphics0(clip, false);
+            Ui.returnTmpXYRect(clip);
+            XYRect var19 = null;
+            if (scrollCopy && graphics.copyArea(this.getHorizontalScroll(), this.getVerticalScroll(), width, height, 0, -yAmount)) {
+               XYRect invalid = this.getScreen().getInvalid();
+               if (invalid.height > 0 && invalid.width > 0) {
+                  XYRect myContent = Ui.getTmpXYRect();
+                  myContent.set(this.getContentRect());
+                  Manager manager = this.getManager();
+                  if (manager != null) {
+                     manager.transformToScreen(myContent);
+                  }
+
+                  if (myContent.contains(invalid)) {
+                     invalid.y -= yAmount;
+                  } else {
+                     myContent.intersect(invalid);
+                     if (myContent.height > 0 && myContent.width > 0) {
+                        immediate = false;
+                     }
+                  }
+
+                  Ui.returnTmpXYRect(myContent);
+               }
+
+               if (immediate) {
+                  if (!scrollCopy) {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll(), width, height, 0, 0);
+                  } else if (yAmount < 0) {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll(), width, -yAmount, 0, 0);
+                  } else if (this._verticalScrollbar != null) {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll() + height - yAmount, width + SCROLLBAR_TOTAL_WIDTH, yAmount, 0, 0);
+                  } else {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll() + height - yAmount, width, yAmount, 0, 0);
+                  }
+
+                  this.applyTheme(graphics, true);
+                  int depth = graphics.getContextStackSize();
+                  if (!this.getScreen().isCatchPaintExceptions()) {
+                     this.paint(graphics);
+                  } else {
+                     try {
+                        this.paint(graphics);
+                     } catch (Throwable var17) {
+                     }
+                  }
+
+                  if (graphics.getContextStackSize() != depth) {
+                     throw new IllegalStackSizeException(
+                        "Unpaired Graphics.push/pop(mrv_v) in class "
+                           + this.getClass().getName()
+                           + "depth "
+                           + graphics.getContextStackSize()
+                           + "!="
+                           + depth
+                           + "expected"
+                     );
+                  }
+
+                  graphics.popContext();
+               }
+            } else {
+               immediate = false;
+            }
+         }
+      }
+
+      if (xAmount != 0) {
+         this._horizontalScroll += xAmount;
+         if (draw && immediate) {
+            XYRect clip = Ui.getTmpXYRect();
+            clip.set(0, 0, Math.max(this.getContentWidth(), this.getVirtualWidth()), Math.max(this.getContentHeight(), this.getVirtualHeight()));
+            Graphics graphics = super.getGraphics0(clip, false);
+            Ui.returnTmpXYRect(clip);
+            XYRect var21 = null;
+            if (scrollCopy && graphics.copyArea(this.getHorizontalScroll(), this.getVerticalScroll(), width, height, -xAmount, 0)) {
+               XYRect invalid = this.getScreen().getInvalid();
+               if (invalid.height > 0 && invalid.width > 0) {
+                  XYRect myContent = Ui.getTmpXYRect();
+                  myContent.set(this.getContentRect());
+                  Manager manager = this.getManager();
+                  if (manager != null) {
+                     manager.transformToScreen(myContent);
+                  }
+
+                  if (myContent.contains(invalid)) {
+                     invalid.x -= xAmount;
+                  } else {
+                     myContent.intersect(invalid);
+                     if (myContent.height > 0 && myContent.width > 0) {
+                        immediate = false;
+                     }
+                  }
+
+                  Ui.returnTmpXYRect(myContent);
+               }
+
+               if (immediate) {
+                  if (!scrollCopy) {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll(), width, height, 0, 0);
+                  } else if (xAmount < 0) {
+                     graphics.pushContext(this.getHorizontalScroll(), this.getVerticalScroll(), -xAmount, height, 0, 0);
+                  } else {
+                     graphics.pushContext(this.getHorizontalScroll() + width - xAmount, this.getVerticalScroll(), xAmount, height, 0, 0);
+                  }
+
+                  this.applyTheme(graphics, true);
+                  int depth = graphics.getContextStackSize();
+                  if (!this.getScreen().isCatchPaintExceptions()) {
+                     this.paint(graphics);
+                  } else {
+                     try {
+                        this.paint(graphics);
+                     } catch (Throwable var16) {
+                     }
+                  }
+
+                  if (graphics.getContextStackSize() != depth) {
+                     throw new IllegalStackSizeException(
+                        "Unpaired Graphics.push/pop(mrv_v) in class "
+                           + this.getClass().getName()
+                           + "depth "
+                           + graphics.getContextStackSize()
+                           + "!="
+                           + depth
+                           + "expected"
+                     );
+                  }
+
+                  graphics.popContext();
+               }
+            } else {
+               immediate = false;
+            }
+         }
+      }
+
+      if (draw && !immediate && (xAmount != 0 || yAmount != 0)) {
+         this.invalidate();
+      }
+
+      if (this._scrollListener != null && (oldHScroll != this.getHorizontalScroll() || oldVScroll != this.getVerticalScroll())) {
+         try {
+            this._scrollListener.scrollChanged(this, this.getHorizontalScroll(), this.getVerticalScroll());
+         } catch (Throwable var15) {
+         }
+      }
+
+      if (this.isStyle(8796093022208L)) {
+         XYRect extent = this.getExtent();
+         this.invalidate(extent.X2() + this.getHorizontalScroll() - SCROLLBAR_TOTAL_WIDTH, this.getVerticalScroll(), SCROLLBAR_TOTAL_WIDTH, extent.height);
+      }
+
+      Ui.IN_MAKE_REGION_VISIBLE = false;
    }
 
    @Override

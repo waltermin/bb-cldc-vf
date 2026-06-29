@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import net.rim.device.api.i18n.Locale;
 import net.rim.device.api.util.CharacterUtilities;
+import net.rim.device.internal.ui.UiSettings;
 import net.rim.tid.util.Utils;
 import net.rim.vm.Array;
 
@@ -65,7 +66,7 @@ public class SLKeyLayout {
    }
 
    public void setNameID(String nameID) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._nameID = nameID;
    }
 
    private boolean openMapFile(byte[] data) {
@@ -354,7 +355,22 @@ public class SLKeyLayout {
    }
 
    public synchronized StringBuffer getKeyChars(int keyCode, int modifier, boolean isCapsOn) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      if (keyCode == 36 && !this.getDataFor(keyCode)) {
+         if (this._bytes2StringCache == null) {
+            this._bytes2StringCache = new StringBuffer();
+         }
+
+         this._bytes2StringCache.setLength(1);
+         this._bytes2StringCache.setCharAt(0, UiSettings.getCurrencyKey() != 0 ? UiSettings.getCurrencyKey() : '$');
+         this._KeyCodeCache = keyCode;
+         return this._bytes2StringCache;
+      } else if (this._data != null && (this._KeyCodeCache == keyCode || this.getDataFor(keyCode))) {
+         this._KeyCodeCache = keyCode;
+         modifier &= 11;
+         return this.getKeyChars0(this._cache, this._cacheSize, modifier, isCapsOn);
+      } else {
+         return this.getDefBuffer();
+      }
    }
 
    private synchronized StringBuffer getKeyChars0(byte[] data, int length, int modifier, boolean isCapsOn) {

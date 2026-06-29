@@ -10,6 +10,6 @@ public class TransportBase {
    }
 
    public void setTrafficLogger(TrafficLogger logger) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._tLogger = logger;
    }
 }

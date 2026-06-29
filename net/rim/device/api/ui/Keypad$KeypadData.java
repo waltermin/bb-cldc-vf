@@ -31,6 +31,9 @@ final class Keypad$KeypadData implements Persistable {
    }
 
    private final void setKeymap(Locale locale, ResourceBundle bundle) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      Locale osLocale = Locale.getDefaultForKeyboard();
+      this._osLocale = osLocale.getCode();
+      this._osLocaleVariant = Locale.convertStringToKeyboardID(osLocale.getVariant());
+      this._keypadID = locale.isKeyboardIDSet() ? locale.getKeyboardID() : Keypad.getHardwareLayout();
    }
 }

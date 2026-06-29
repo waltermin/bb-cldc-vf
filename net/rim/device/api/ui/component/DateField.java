@@ -17,8 +17,10 @@ import net.rim.device.api.ui.Font;
 import net.rim.device.api.ui.Graphics;
 import net.rim.device.api.ui.Keypad;
 import net.rim.device.api.ui.MenuItem;
+import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.Trackball;
 import net.rim.device.api.ui.Ui;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.XYRect;
 import net.rim.device.api.ui.text.TextRect;
 import net.rim.device.api.ui.theme.Tag;
@@ -251,7 +253,7 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
    }
 
    void setMinimumWidth(int minimumWidth) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._minimumWidth = minimumWidth;
    }
 
    public void setMinuteIncrements(long minuteIncrements) {
@@ -441,7 +443,46 @@ public class DateField extends Field implements DrawStyle, FieldLabelProvider {
 
    @Override
    protected boolean keyControl(char key, int status, int time) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      char keyPress = Keypad.getAltedChar(key);
+      if (Character.isDigit(keyPress)) {
+         return this.keyChar(keyPress, 1, time);
+      }
+
+      if ((status & 1) == 0) {
+         Screen screen = UiApplication.getUiApplication().getActiveScreen();
+         if (screen != null) {
+            switch (key) {
+               case '\u0080':
+                  break;
+               case '\u0081':
+                  int numEditableBefore = 0;
+
+                  for (int counterEditable = 0; counterEditable < this._position; counterEditable++) {
+                     if (this.isSubFieldEditable(counterEditable)) {
+                        numEditableBefore++;
+                     }
+                  }
+
+                  return screen.dispatchTrackwheelEvent(519, -(numEditableBefore + 1), status, time);
+               case '\u0082':
+                  int numEditableAfter = 0;
+
+                  for (int counterEditable = this._position + 1; counterEditable < this._c_fields.length; counterEditable++) {
+                     if (this.isSubFieldEditable(counterEditable)) {
+                        numEditableAfter++;
+                     }
+                  }
+
+                  return screen.dispatchTrackwheelEvent(519, numEditableAfter + 1, status, time);
+               case '\u0083':
+               case '\u0084':
+               default:
+                  return screen.dispatchTrackwheelEvent(519, key == 131 ? -1 : 1, status, time);
+            }
+         }
+      }
+
+      return super.keyControl(key, status, time);
    }
 
    @Override

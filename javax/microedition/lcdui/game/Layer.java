@@ -41,7 +41,7 @@ public class Layer {
    }
 
    public void setVisible(boolean visible) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this.visible = visible;
    }
 
    public final boolean isVisible() {

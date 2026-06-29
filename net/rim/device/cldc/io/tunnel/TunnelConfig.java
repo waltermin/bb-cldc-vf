@@ -102,7 +102,7 @@ public final class TunnelConfig {
    }
 
    public final void setName(String name) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._name = name;
    }
 
    public final String getDescription() {
@@ -126,7 +126,7 @@ public final class TunnelConfig {
    }
 
    public final void setPriority(int priority) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._priority = priority;
    }
 
    public final TunnelListener getListener() {
@@ -162,7 +162,7 @@ public final class TunnelConfig {
    }
 
    public final void setMaxAttempts(int maxAttempts) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._maxAttempts = maxAttempts;
    }
 
    public final int getBackoff(int index) {

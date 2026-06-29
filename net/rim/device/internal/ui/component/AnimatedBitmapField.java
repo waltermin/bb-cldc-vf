@@ -106,7 +106,7 @@ public class AnimatedBitmapField extends BitmapField implements Animation {
    }
 
    public void setUnderlyingBackgroundColor(int color) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._backgroundColourBelow = color;
    }
 
    public void startAnimation() {

@@ -52,7 +52,35 @@ public class LingDataRegistry {
    }
 
    private synchronized int addData(int locale, LinguisticData aData) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      int imLocale = this._context.getLocale().getCode();
+      aData.setID(this._idCounter++);
+      LinguisticData[] unloadData = new LinguisticData[]{null};
+      if (!this.isValid(locale, aData, unloadData)) {
+         this._idCounter--;
+         return -1;
+      }
+
+      if (imLocale == locale || (locale & 65535) == 0 && locale == (imLocale & -65536)) {
+         InputMethod im = this._context.getInputMethod();
+         if (im != null && (im.loadLinguisticData(aData) & 2) != 0) {
+            this._idCounter--;
+            return -1;
+         }
+      }
+
+      LinguisticData data = (LinguisticData)this._store.get(locale);
+      if (data != null) {
+         data.addToChain(aData);
+      } else {
+         this._store.put(locale, aData);
+         this.fireLingDataRegistration(locale, true);
+      }
+
+      if (unloadData[0] != null) {
+         this.unload(locale, unloadData[0].getName(), unloadData[0].getType());
+      }
+
+      return aData.getID();
    }
 
    public synchronized int unloadLingData(int locale, String name, int type) {

@@ -376,7 +376,7 @@ public final class Bitmap {
    }
 
    final void setAlphaDirect(Bitmap alpha) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._alpha = alpha;
    }
 
    public final void createAlpha(int bitDepth) {

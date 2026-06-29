@@ -32,7 +32,7 @@ public class NetworkInfo {
    }
 
    public void setName(String name) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._name = name;
    }
 
    public int getNetworkId() {
@@ -40,7 +40,7 @@ public class NetworkInfo {
    }
 
    public void setNetworkId(int id) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._networkId = id;
    }
 
    public int getLAC() {
@@ -48,7 +48,7 @@ public class NetworkInfo {
    }
 
    public void setLAC(int lac) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._lac = lac;
    }
 
    public int getAccessTechnology() {
@@ -60,7 +60,7 @@ public class NetworkInfo {
    }
 
    public void setCategory(int category) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._category = category;
    }
 
    public String getCountryCode() {
@@ -68,7 +68,7 @@ public class NetworkInfo {
    }
 
    public void setCountryCode(String countryCode) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._countryCode = countryCode;
    }
 
    public int getMcc() {

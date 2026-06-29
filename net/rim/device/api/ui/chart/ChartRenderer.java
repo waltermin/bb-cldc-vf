@@ -72,7 +72,7 @@ public class ChartRenderer {
    }
 
    public void setDataset(XYDataset dataset) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._dataset = dataset;
    }
 
    protected void setExtent(int width, int height) {
@@ -86,10 +86,10 @@ public class ChartRenderer {
    }
 
    public void setPreferredHeight(int height) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._preferredHeight = height;
    }
 
    public void setPreferredWidth(int width) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._preferredWidth = width;
    }
 }

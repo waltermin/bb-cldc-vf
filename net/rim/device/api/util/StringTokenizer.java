@@ -19,7 +19,16 @@ public class StringTokenizer implements Enumeration {
    }
 
    public String nextToken() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this.currentPosition = this.newPosition >= 0 && !this.delimsChanged ? this.newPosition : this.skipDelimiters(this.currentPosition);
+      this.delimsChanged = false;
+      this.newPosition = -1;
+      if (this.currentPosition >= this.maxPosition) {
+         return null;
+      }
+
+      int start = this.currentPosition;
+      this.currentPosition = this.scanToken(this.currentPosition);
+      return this.str.substring(start, this.currentPosition);
    }
 
    public String nextToken(String delim) {

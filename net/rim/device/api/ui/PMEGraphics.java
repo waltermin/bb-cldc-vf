@@ -116,7 +116,24 @@ public final class PMEGraphics {
    }
 
    public final int renderLeafNodes(Object g, int iNodeOffset) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this._leafNodeList == null) {
+         this._returnState = 2;
+      } else if (g instanceof Graphics) {
+         int[] listOld = this._nodeList;
+         this._nodeList = this._leafNodeList;
+         if (_regOptions != null) {
+            this._drawBounds = _regOptions._showBounds ? 1 : 0;
+         } else {
+            this._drawBounds = 0;
+         }
+
+         this._returnState = this.renderListNative((Graphics)g, iNodeOffset);
+         this._nodeList = listOld;
+      } else {
+         this._returnState = 2;
+      }
+
+      return this._returnState;
    }
 
    public final int renderNode(Object g, int iNode) {
@@ -163,7 +180,7 @@ public final class PMEGraphics {
    }
 
    public final void setRootIndex(int rootIndex) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._iNodeRoot = rootIndex;
    }
 
    public final boolean setCoords(int[][][] coords) {
@@ -221,11 +238,11 @@ public final class PMEGraphics {
    }
 
    public final void setDefaultFontFamily(String defaultFontFamily) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._defaultFontFamily = defaultFontFamily;
    }
 
    public final void setNodeList(int[] nodeList) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._nodeList = nodeList;
    }
 
    public final void setClip(int x, int y, int width, int height) {
@@ -301,7 +318,7 @@ public final class PMEGraphics {
    }
 
    public final void setBackgroundColour(int rgbColour) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._bkgrndColour = rgbColour;
    }
 
    public final int getBackgroundColour() {
@@ -362,7 +379,26 @@ public final class PMEGraphics {
    }
 
    public static final boolean toggleRegOption(int option) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (_regOptions == null) {
+         return false;
+      }
+
+      switch (option) {
+         case 1:
+         default:
+            _regOptions._disabled = !_regOptions._disabled;
+            return true;
+         case 2:
+            _regOptions._showClip = !_regOptions._showClip;
+            return true;
+         case 3:
+            _regOptions._showBounds = !_regOptions._showBounds;
+            return true;
+         case 4:
+            _regOptions._logStats = !_regOptions._logStats;
+         case 0:
+            return true;
+      }
    }
 
    public final void renderClip(Object g) {

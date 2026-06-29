@@ -55,6 +55,6 @@ public class NavigationEvent extends ComponentEvent {
    }
 
    public void setEventConsumptionId(int consumptionId) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._eventConsumptionId = consumptionId;
    }
 }

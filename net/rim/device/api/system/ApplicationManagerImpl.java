@@ -1,6 +1,8 @@
 package net.rim.device.api.system;
 
 import java.util.Vector;
+import net.rim.device.api.i18n.MessageFormat;
+import net.rim.device.api.i18n.ResourceBundle;
 import net.rim.device.api.lowmemory.LowMemoryManager;
 import net.rim.device.api.util.Arrays;
 import net.rim.device.api.util.ListenerUtilities;
@@ -416,7 +418,14 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void logSchedulingEvent(String msg) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      System.out.println(msg);
+      if (this._schedulingLog != null) {
+         if (this._schedulingLogIndex >= this._schedulingLog.length) {
+            this._schedulingLogIndex = 0;
+         }
+
+         this._schedulingLog[this._schedulingLogIndex++] = Long.toString(System.currentTimeMillis()) + ":" + msg;
+      }
    }
 
    private final int runApplication(ApplicationDescriptor descriptor, boolean grabForeground, Thread testingThread, int callingModule) {
@@ -716,7 +725,137 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void processExited(boolean inStartup) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      synchronized (this._processes) {
+         boolean foregroundProcessDied = false;
+         int numProcesses = this._processes.numberOfProcesses();
+         int[] deadProcesses = new int[0];
+         Throwable[] exceptions = new Throwable[0];
+
+         for (int i = numProcesses - 1; i >= 0; i--) {
+            ApplicationProcess process = this._processes.getProcessAtIndex(i);
+            if (!process.isAlive()) {
+               int pid = process.getProcessId();
+               System.out.println("Exit " + process.toString());
+               Throwable ex = process.getException();
+               String msg = null;
+               Arrays.add(deadProcesses, pid);
+               Arrays.add(exceptions, ex);
+               if (ex != null) {
+                  if (ex instanceof PersistentContentException) {
+                     PersistentContentException pce = (PersistentContentException)ex;
+                     ApplicationDescriptor appDescriptor = process.getApplicationDescriptor();
+                     String string = "Content Protection Error: An application is persisting plaintext data.\nApp: "
+                        + appDescriptor.getName()
+                        + "\nModule: "
+                        + appDescriptor.getModuleName()
+                        + "\nObject: 0x"
+                        + Integer.toHexString(pce.getObjectId());
+                     System.out.println(string);
+                     InternalServices.catastrophicFailure(204, string);
+                  }
+
+                  if (!(ex instanceof ControlledAccessException)) {
+                     msg = ex.getMessage();
+                     msg = "Uncaught exception: " + (msg == null ? ex.toString() : msg);
+                  } else {
+                     String deniedPermission = ((ControlledAccessException)ex).getDeniedPermissionString();
+                     if (deniedPermission != null) {
+                        ApplicationDescriptor appDescriptor = process.getApplicationDescriptor();
+                        String appName = appDescriptor.getName();
+                        ResourceBundle rb = ResourceBundle.getBundle(8732645638888225014L, "net.rim.device.internal.resource.PlatformSecurity");
+                        msg = MessageFormat.format(rb.getString(21), new String[]{appName, deniedPermission});
+                     } else {
+                        msg = ex.getMessage();
+                        msg = "Uncaught exception: " + (msg == null ? ex.toString() : msg);
+                     }
+                  }
+
+                  Object backTrace = process.getException();
+                  int j = 0;
+
+                  while (true) {
+                     String str = TraceBack.getMessage(backTrace, j);
+                     if (str == null) {
+                        this.postInternalGlobalEvent(this._consoleProcess, 9056933960126321432L, 0, 0, msg, ex);
+                        break;
+                     }
+
+                     System.out.println(str);
+                     j++;
+                  }
+               }
+
+               if (process == this._inHolsterInputProcess) {
+                  this._inHolsterInputProcess = null;
+               } else if (process == this._redirectInputProcess) {
+                  this._redirectInputProcess = null;
+               }
+
+               boolean wasForeground = process == this._foregroundProcess;
+               if (wasForeground) {
+                  foregroundProcessDied = true;
+               }
+
+               if (process == this._securityProcess) {
+                  if (ex != null) {
+                     throw new RuntimeException("Security process failure");
+                  }
+
+                  this._securityProcess = null;
+                  this._processes.notifyAll();
+               }
+
+               process.cleanup();
+               numProcesses--;
+               this._processes.removeProcess(i);
+               boolean restartApp = false;
+               ApplicationDescriptor ad = process.getApplicationDescriptor();
+
+               try {
+                  if ((ad.getFlags() & 4) != 0) {
+                     restartApp = true;
+                  }
+               } catch (Throwable var22) {
+               }
+
+               if (restartApp) {
+                  try {
+                     String appName = ad.getModuleName();
+                     if (!ControlledAccess.verifyCodeModuleSignature(ad.getModuleHandle(), 51)) {
+                        appError("module " + appName + " missing RRI signature");
+                     } else {
+                        try {
+                           System.out.println("Restarting " + appName);
+                           this.runApplication(ad, wasForeground);
+                           if (wasForeground) {
+                              foregroundProcessDied = false;
+                           }
+                        } catch (ApplicationManagerException var19) {
+                        } catch (TooManyProcessesError tmpe) {
+                           appError("cannot restart module " + appName);
+                        }
+
+                        numProcesses = this._processes.numberOfProcesses();
+                     }
+                  } catch (Throwable var21) {
+                  }
+               }
+            }
+         }
+
+         if (!inStartup) {
+            this.postInternalGlobalEvent(-1270659756336956134L, 0, 0, deadProcesses, exceptions);
+         }
+
+         if (foregroundProcessDied) {
+            this._foregroundProcess = null;
+
+            try {
+               this.requestForeground(null, false);
+            } catch (ArrayIndexOutOfBoundsException var18) {
+            }
+         }
+      }
    }
 
    @Override
@@ -1203,7 +1342,17 @@ final class ApplicationManagerImpl extends ApplicationManager implements Applica
    }
 
    private final void holsterStateChange(boolean inHolster) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (this._processes) {
+         if (inHolster) {
+            this._inputProcess = this._inHolsterInputProcess;
+            if (this._securityManager != null && this._securityManager.isLockRequired()) {
+               LockEventLogger.logLockEvent(1281912684);
+               this.lockSystemInternal(true);
+            }
+         } else {
+            this._inputProcess = this._redirectInputProcess == null ? this._foregroundProcess : this._redirectInputProcess;
+         }
+      }
    }
 
    @Override

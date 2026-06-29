@@ -26,7 +26,7 @@ class MIDletMain$StreamConnectionNotifier_PushRegistryConnectionWrapper implemen
    }
 
    void pushBack(StreamConnection sc) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._streamConnection = sc;
    }
 
    public MIDletMain$StreamConnectionNotifier_PushRegistryConnectionWrapper(StreamConnectionNotifier impl) {

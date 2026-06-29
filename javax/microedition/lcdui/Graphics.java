@@ -55,7 +55,10 @@ public class Graphics {
    }
 
    public synchronized void translate(int x, int y) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      this._translation.x += x;
+      this._translation.y += y;
+      this._clipRect.translate(-x, -y);
+      this.updateClipAndOffset();
    }
 
    private final void updateClipAndOffset() {

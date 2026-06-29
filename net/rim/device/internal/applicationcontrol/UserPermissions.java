@@ -2,17 +2,20 @@ package net.rim.device.internal.applicationcontrol;
 
 import java.util.Enumeration;
 import java.util.Vector;
+import net.rim.device.api.system.ApplicationRegistry;
 import net.rim.device.api.system.CodeModuleManager;
 import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.RIMPersistentStore;
 import net.rim.device.api.util.IntEnumeration;
 import net.rim.device.api.util.IntHashtable;
+import net.rim.device.internal.proxy.Proxy;
 import net.rim.device.internal.system.CodeStore;
 import net.rim.vm.Array;
 
 final class UserPermissions {
-   private IntHashtable _lookupTable;
+   private IntHashtable _lookupTable = new IntHashtable();
    private Vector _storage;
-   private PersistentObject _persistentStorage;
+   private PersistentObject _persistentStorage = RIMPersistentStore.getPersistentObject(3147043076836770146L);
    private UserSetting _backedUpDefaults;
    private UserSetting _defaults;
    private UserSettingsSync _sync;
@@ -20,6 +23,14 @@ final class UserPermissions {
    private static final int DEFAULTS_HANDLE;
    private static final int BACKUP_DEFAULTS_HANDLE;
    private static final long USER_SETTINGS_SYNC_KEY;
+
+   UserPermissions() {
+      if ((this._sync = (UserSettingsSync)ApplicationRegistry.getApplicationRegistry().getOrWaitFor(-8759977085745458596L)) == null) {
+         this._sync = new UserSettingsSync(this);
+         Proxy.getInstance().invokeLater(this._sync);
+         ApplicationRegistry.getApplicationRegistry().put(-8759977085745458596L, this._sync);
+      }
+   }
 
    public final void load(long defaultPermissions) {
       this._lookupTable.clear();

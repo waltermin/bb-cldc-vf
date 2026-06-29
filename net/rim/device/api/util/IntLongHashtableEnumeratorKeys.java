@@ -1,5 +1,7 @@
 package net.rim.device.api.util;
 
+import java.util.NoSuchElementException;
+
 class IntLongHashtableEnumeratorKeys implements IntEnumeration {
    int[] _table;
    byte[] _occupied;
@@ -32,6 +34,10 @@ class IntLongHashtableEnumeratorKeys implements IntEnumeration {
 
    @Override
    public int nextElement() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (this.getNextElement()) {
+         return this._table[this._index++];
+      } else {
+         throw new NoSuchElementException();
+      }
    }
 }

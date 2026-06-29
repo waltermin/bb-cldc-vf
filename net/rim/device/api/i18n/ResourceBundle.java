@@ -99,11 +99,11 @@ public class ResourceBundle {
    }
 
    void setFamily(ResourceBundleFamily family) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._family = family;
    }
 
    void setParent(ResourceBundle parent) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._parent = parent;
    }
 
    private static void verifyHash(long bundle, String name) {

@@ -391,7 +391,15 @@ public class NativeTransport
 
    @Override
    public void run() {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      synchronized (this._sendChokeLock) {
+         this._timerId = -1;
+         this._networkChoked = RadioInfo.getState() == 0 && !WLAN.isRadioOn();
+         if (!this._networkChoked) {
+            EventLogger.logEvent(super.GUID, 1430484073, 4);
+            this._timeBackoff = this.SEND_BACKOFF_DEF;
+            this._sendChokeLock.notify();
+         }
+      }
    }
 
    @Override
@@ -513,7 +521,11 @@ public class NativeTransport
 
    @Override
    protected synchronized int getNextDatagramId(DatagramBase dgram) {
-      throw new RuntimeException("cod2jar: field: unknown receiver");
+      if (++this._nextDgramId == 0) {
+         this._nextDgramId = 1;
+      }
+
+      return this._nextDgramId;
    }
 
    private int[] dequeueSendStatus() {

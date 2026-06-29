@@ -53,11 +53,11 @@ public class RadioButtonField extends Field implements FieldLabelProvider {
    }
 
    public void setImage(Bitmap image) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._image = image;
    }
 
    public void setOptionsMenuText(String optionsMenuText) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._optionsMenuText = optionsMenuText;
    }
 
    @Override

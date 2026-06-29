@@ -210,7 +210,33 @@ public final class Theme$Writer {
    }
 
    public final void put(ThemeAttributeSet$Writer attributesWriter, boolean force) {
-      throw new RuntimeException("cod2jar: invokevirtual: unknown receiver");
+      ThemeAttributeSet attributes = attributesWriter.getThemeAttributeSet();
+      String key = attributes.getElement();
+      String tagname = key;
+      String idname = null;
+      String statename = null;
+      int idstart = key.indexOf(35);
+      int statestart = key.indexOf(58);
+      if (statestart != -1 && statestart < idstart) {
+         throw new IllegalArgumentException();
+      }
+
+      if (statestart != -1) {
+         statename = key.substring(statestart + 1);
+         tagname = key.substring(0, statestart);
+      }
+
+      if (idstart != -1) {
+         idname = key.substring(idstart + 1, statestart != -1 ? statestart : key.length());
+         tagname = key.substring(0, idstart);
+      }
+
+      Tag tag = Tag.create(tagname);
+      int state = this.getStateForName(statename);
+      long lkey = this.this$0.getKey(tag.hashCode(), idname, state);
+      if (force || this.this$0._attributeSets.get(lkey) == null) {
+         this.this$0._attributeSets.put(lkey, attributes);
+      }
    }
 
    public final void putBorder(String name, Border border) {
@@ -263,7 +289,7 @@ public final class Theme$Writer {
    }
 
    public final void setResourceFetcher(ResourceFetcher resourceFetcher) {
-      throw new RuntimeException("cod2jar: field: receiver depth");
+      this._resourceFetcher = resourceFetcher;
    }
 
    public final void addAlias(String name, String aka) {
